@@ -1,0 +1,76 @@
+package mccompat.v1_7_10.cpw.mods.fml.common;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLPaths;
+import org.kylepitcock.mccompat.core.LegacyModRecord;
+import org.kylepitcock.mccompat.core.LegacyMods;
+import org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710;
+
+public class Loader {
+    public static final String MC_VERSION = "1.7.10";
+    private static final Loader INSTANCE = new Loader();
+
+    public static Loader instance() {
+        return INSTANCE;
+    }
+
+    /**
+     * True for legacy mods (by legacy id), for platform ids legacy code probes for, and for modern NeoForge mods
+     * whose id equals the normalized legacy id (so {@code isModLoaded("Baubles")} finds a modern "baubles").
+     */
+    public static boolean isModLoaded(String modname) {
+        if (modname == null) return false;
+        String lower = modname.toLowerCase(Locale.ROOT);
+        if (lower.equals("forge") || lower.equals("fml") || lower.equals("mcp") || lower.equals("minecraft")) return true;
+        if (LegacyMods.byLegacyId(modname) != null) return true;
+        ModList list = ModList.get();
+        return list != null && list.isLoaded(org.kylepitcock.mccompat.core.Ids.modernModId(modname));
+    }
+
+    public File getConfigDir() {
+        return FMLPaths.CONFIGDIR.get().toFile();
+    }
+
+    public List<ModContainer> getModList() {
+        return new ArrayList<>(getIndexedModList().values());
+    }
+
+    public List<ModContainer> getActiveModList() {
+        return getModList();
+    }
+
+    public Map<String, ModContainer> getIndexedModList() {
+        Map<String, ModContainer> out = new LinkedHashMap<>();
+        for (LegacyModRecord r : LegacyMods.ordered()) {
+            if (r.platformData instanceof LegacyModContainer1710 c) out.put(r.legacyId, c);
+        }
+        return out;
+    }
+
+    public ModContainer activeModContainer() {
+        return LegacyModContainer1710.active();
+    }
+
+    public String getMCVersionString() {
+        return "Minecraft " + MC_VERSION;
+    }
+
+    public String getMCPVersionString() {
+        return "MCP 9.05";
+    }
+
+    public boolean hasReachedState(LoaderState state) {
+        return true;
+    }
+
+    public enum LoaderState {
+        NOINIT, LOADING, CONSTRUCTING, PREINITIALIZATION, INITIALIZATION, POSTINITIALIZATION, AVAILABLE, SERVER_ABOUT_TO_START,
+        SERVER_STARTING, SERVER_STARTED, SERVER_STOPPING, SERVER_STOPPED, ERRORED
+    }
+}

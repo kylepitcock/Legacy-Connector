@@ -1,0 +1,28 @@
+package mccompat.v1_7_10.cpw.mods.fml.common.event;
+
+import mccompat.v1_7_10.cpw.mods.fml.common.Loader;
+import mccompat.v1_7_10.net.minecraft.command.ICommand;
+import mccompat.v1_7_10.net.minecraft.server.MinecraftServer;
+import org.kylepitcock.mccompat.v1_7_10.bridge.CommandBridge1710;
+
+public class FMLServerStartingEvent extends FMLStateEvent {
+    private final MinecraftServer server;
+
+    public FMLServerStartingEvent(MinecraftServer server) {
+        this.server = server;
+    }
+
+    public MinecraftServer getServer() {
+        return server;
+    }
+
+    /** Legacy ICommand -> Brigadier literal with a greedy string argument, see {@link CommandBridge1710}. */
+    public void registerServerCommand(ICommand command) {
+        CommandBridge1710.register(server.mcc$modern(), command);
+    }
+
+    @Override
+    public Loader.LoaderState getModState() {
+        return Loader.LoaderState.SERVER_STARTING;
+    }
+}

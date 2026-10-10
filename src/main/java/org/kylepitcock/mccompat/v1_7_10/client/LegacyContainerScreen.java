@@ -1,0 +1,122 @@
+package org.kylepitcock.mccompat.v1_7_10.client;
+
+import mccompat.v1_7_10.net.minecraft.client.Minecraft;
+import mccompat.v1_7_10.net.minecraft.client.gui.GuiButton;
+import mccompat.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import org.kylepitcock.mccompat.v1_7_10.gui.LegacyMenu;
+
+/**
+ * Hosts a legacy {@link GuiContainer}. Modern code draws slots and items and handles clicking/dragging; the
+ * legacy screen draws its background (usually one textured rect), foreground text and buttons.
+ */
+public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
+    private final GuiContainer legacy;
+    private final boolean customKeys;
+
+    public LegacyContainerScreen(LegacyMenu menu, Inventory inventory, Component title) {
+        super(menu, inventory, title);
+        this.legacy = (GuiContainer) menu.clientGui();
+        this.customKeys = legacy != null && ClientGui.overrides(legacy, "keyTyped", char.class, int.class);
+    }
+
+    public GuiContainer legacy() {
+        return legacy;
+    }
+
+    @Override
+    protected void init() {
+        if (legacy != null) {
+            imageWidth = legacy.mcc$xSize();
+            imageHeight = legacy.mcc$ySize();
+        }
+        super.init();
+        if (legacy != null) {
+            legacy.setWorldAndResolution(Minecraft.getMinecraft(), width, height);
+            legacy.mcc$setOrigin(leftPos, topPos);
+        }
+    }
+
+    @Override
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.render(graphics, mouseX, mouseY, partialTick);
+        if (legacy == null) return;
+        RenderContext.beginGui(graphics);
+        try {
+            for (Object b : legacy.mcc$buttons()) ((GuiButton) b).drawButton(Minecraft.getMinecraft(), mouseX, mouseY);
+        } finally {
+            RenderContext.end();
+        }
+    }
+
+    @Override
+    protected void renderBg(GuiGraphics graphics, float partialTick, int mouseX, int mouseY) {
+        if (legacy == null) return;
+        RenderContext.beginGui(graphics);
+        try {
+            legacy.mcc$drawBackground(partialTick, mouseX, mouseY);
+        } finally {
+            RenderContext.end();
+        }
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics graphics, int mouseX, int mouseY) {
+        if (legacy == null) return;
+        RenderContext.beginGui(graphics);
+        try {
+            legacy.mcc$drawForeground(mouseX, mouseY);
+        } finally {
+            RenderContext.end();
+        }
+    }
+
+    @Override
+    public boolean mouseClicked(double x, double y, int button) {
+        if (legacy != null) {
+            boolean onButton = false;
+            for (Object o : legacy.mcc$buttons()) {
+                if (((GuiButton) o).mousePressed(Minecraft.getMinecraft(), (int) x, (int) y)) onButton = true;
+            }
+            legacy.mcc$mouseClicked((int) x, (int) y, button);
+            if (onButton) return true;
+        }
+        return super.mouseClicked(x, y, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double x, double y, int button) {
+        if (legacy != null) legacy.mcc$mouseReleased((int) x, (int) y, button);
+        return super.mouseReleased(x, y, button);
+    }
+
+    @Override
+    public boolean keyPressed(int key, int scanCode, int modifiers) {
+        if (customKeys) {
+            int legacyKey = LegacyKeys.toLegacy(key);
+            if (legacyKey != 0 && legacyKey != 1) legacy.mcc$keyTyped('\0', legacyKey);
+        }
+        return super.keyPressed(key, scanCode, modifiers);
+    }
+
+    @Override
+    public boolean charTyped(char c, int modifiers) {
+        if (customKeys) legacy.mcc$keyTyped(c, 0);
+        return super.charTyped(c, modifiers);
+    }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        if (legacy != null) legacy.updateScreen();
+    }
+
+    @Override
+    public void removed() {
+        if (legacy != null) legacy.onGuiClosed();
+        super.removed();
+    }
+}

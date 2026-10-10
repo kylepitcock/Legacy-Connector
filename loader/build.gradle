@@ -1,0 +1,96 @@
+plugins {
+    id 'java-library'
+}
+
+// The loader runs on FML's SERVICE module layer, before Minecraft classes exist.
+// It may only depend on FML / modlauncher / ASM / Gson / SLF4J, all of which NeoForge ships.
+group = mod_group_id
+version = mod_version
+base.archivesName = 'mccompat-loader'
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+repositories {
+    mavenCentral()
+    maven { url = 'https://maven.neoforged.net/releases' }
+}
+
+configurations {
+    forge1710
+    mcp1710
+    mcp1122
+}
+
+dependencies {
+    compileOnly("net.neoforged.fancymodloader:loader:4.0.45") { transitive = false }
+    compileOnly("cpw.mods:securejarhandler:3.0.8") { transitive = false }
+    compileOnly("cpw.mods:modlauncher:11.0.5") { transitive = false }
+    compileOnly "org.slf4j:slf4j-api:2.0.9"
+    compileOnly "com.google.code.gson:gson:2.10.1"
+    compileOnly "org.jetbrains:annotations:24.1.0"
+    api "org.ow2.asm:asm:${asm_version}"
+    api "org.ow2.asm:asm-commons:${asm_version}"
+    api "org.ow2.asm:asm-tree:${asm_version}"
+
+    // 1.7.10: the names Forge itself shipped (setBlockName, registerBlockIcons, ...) are what mod authors
+    // actually wrote against; MCP stable_12 fills ids Forge's table lacks.
+    forge1710 "net.minecraftforge:forge:${forge_1_7_10}:userdev@jar"
+    mcp1710 "de.oceanlabs.mcp:mcp_stable:${mcp_1_7_10}@zip"
+    mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "com.google.code.gson:gson:2.10.1"
+    testImplementation "org.slf4j:slf4j-api:2.0.9"
+    testRuntimeOnly "org.slf4j:slf4j-simple:2.0.9"
+}
+
+repositories {
+    maven {
+        url = 'https://maven.minecraftforge.net'
+        metadataSources { mavenPom(); artifact() } // ancient Forge artifacts have no POM
+        content {
+            includeGroup 'de.oceanlabs.mcp'
+            includeModule 'net.minecraftforge', 'forge'
+        }
+    }
+}
+
+// SRG -> MCP name tables. Legacy mod jars are reobfuscated to SRG names (func_1234_a / field_1234_a);
+// the shim API is written with readable MCP names, so the transformer renames members on the fly.
+def extractMappings = tasks.register('extractMappings', Sync) {
+    into layout.buildDirectory.dir('generated/mappings')
+    [('1.7.10'): configurations.mcp1710, ('1.12.2'): configurations.mcp1122].each { ver, conf ->
+        from({ zipTree(conf.singleFile) }) {
+            include 'methods.csv', 'fields.csv'
+            into "mccompat/mappings/${ver}"
+            // For 1.7.10 the MCP export is only the fallback table.
+            if (ver == '1.7.10') rename { "fallback-${it}" }
+        }
+    }
+    from({ zipTree(configurations.forge1710.singleFile) }) {
+        include 'conf/methods.csv', 'conf/fields.csv'
+        eachFile { it.path = "mccompat/mappings/1.7.10/${it.name}" }
+        includeEmptyDirs = false
+    }
+}
+sourceSets.main.resources.srcDir extractMappings
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Automatic-Module-Name': 'mccompat.loader',
+                'Implementation-Version': project.version
+        )
+    }
+}

@@ -1,0 +1,185 @@
+plugins {
+    id 'java-library'
+    id 'idea'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+
+// The root project is the *runtime* half of MC Compatibility: a normal NeoForge mod that contains the
+// re-implemented legacy APIs (the "shim", packages mccompat.v1_7_10 / mccompat.v1_12_2) and the bridges
+// that connect them to NeoForge. The :loader project is the service-layer half that translates jars.
+evaluationDependsOn(':loader')
+
+version = mod_version
+group = mod_group_id
+
+repositories {
+    mavenLocal()
+}
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/mccompat/shim-index.txt')
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            // The fixture mod stops the server after its self test when this is set (CI-style smoke test).
+            systemProperty 'legacytest.autostop', System.getProperty('legacytest.autostop', 'false')
+        }
+
+        // Automated smoke test in its own directory: boots a dedicated server with the mods in run-servertest/mods,
+        // lets the fixture mod run its self test, then stops.
+        serverTest {
+            server()
+            gameDirectory = project.file('run-servertest')
+            programArgument '--nogui'
+            systemProperty 'legacytest.autostop', 'true'
+        }
+
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            // In production the loader reads the index from the embedded runtime jar.
+            systemProperty 'mccompat.shimIndex', shimIndexFile.get().asFile.absolutePath
+            logLevel = org.slf4j.event.Level.INFO
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+dependencies {
+    // The loader must sit on the boot/service layer in development, exactly like in production.
+    additionalRuntimeClasspath project(':loader')
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Shim index: every legacy API class/member the runtime provides. The loader uses it to drop duplicate
+// copies of Forge classes from legacy jars and to report APIs a legacy mod needs that are not implemented.
+// ---------------------------------------------------------------------------------------------------------
+def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
+    dependsOn tasks.named('compileJava')
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.mccompat.loader.shim.ShimIndexGenerator'
+    def classDirs = sourceSets.main.output.classesDirs
+    inputs.files classDirs
+    outputs.file shimIndexFile
+    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
+}
+sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
+tasks.named('processResources') { dependsOn generateShimIndex }
+
+// Compile-only "legacy API" jars that look like the original Forge/Minecraft API to a Java 8 compiler.
+['1_7_10', '1_12_2'].each { ver ->
+    tasks.register("legacyApiStubs${ver}", JavaExec) {
+        dependsOn tasks.named('compileJava')
+        classpath = project(':loader').sourceSets.main.runtimeClasspath
+        mainClass = 'org.kylepitcock.mccompat.loader.shim.LegacyApiStubGenerator'
+        def classDir = sourceSets.main.java.classesDirectory
+        def out = layout.buildDirectory.file("legacy-api/legacy-api-${ver}.jar")
+        inputs.dir classDir
+        outputs.file out
+        argumentProviders.add({ [classDir.get().asFile.absolutePath, "mccompat/v${ver}/".toString(), out.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+    }
+}
+
+// Offline compatibility check: ./gradlew checkLegacyMod -PlegacyJar=/path/to/mod.jar
+tasks.register('checkLegacyMod', JavaExec) {
+    dependsOn generateShimIndex
+    classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.mccompat.loader.tools.CheckJar'
+    argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
+}
+
+// Copies the fixture legacy mods into run/mods so `runServer` / `runClient` exercise the full pipeline.
+tasks.register('installTestMods', Copy) {
+    dependsOn ':testmods:assemble'
+    from project(':testmods').layout.buildDirectory.dir('libs')
+    include 'LegacyTest-*.jar'
+    into layout.projectDirectory.dir('run/mods')
+}
+
+// Include resources generated by data generators.
+sourceSets.main.resources { srcDir 'src/generated/resources' }
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [minecraft_version      : minecraft_version,
+                             minecraft_version_range: minecraft_version_range,
+                             neo_version            : neo_version,
+                             neo_version_range      : neo_version_range,
+                             loader_version_range   : loader_version_range,
+                             mod_id                 : mod_id,
+                             mod_name               : mod_name,
+                             mod_license            : mod_license,
+                             mod_version            : mod_version,
+                             mod_authors            : mod_authors,
+                             mod_description        : mod_description]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// ---------------------------------------------------------------------------------------------------------
+// Distribution: ONE jar for players. It is the loader (an FML service, picked up from the mods folder) with
+// the runtime mod embedded; the loader extracts and registers the runtime mod at discovery time.
+// ---------------------------------------------------------------------------------------------------------
+tasks.register('bundleJar', Jar) {
+    group = 'build'
+    description = 'Builds the single distributable jar (loader service + embedded runtime mod).'
+    archiveBaseName = 'mccompat'
+    archiveVersion = project.version
+    archiveClassifier = ''
+    destinationDirectory = layout.buildDirectory.dir('dist')
+    def loaderJar = project(':loader').tasks.named('jar')
+    def runtimeJar = tasks.named('jar')
+    dependsOn loaderJar, runtimeJar
+    from({ zipTree(loaderJar.get().archiveFile) }) {
+        exclude 'META-INF/MANIFEST.MF'
+    }
+    from(runtimeJar) {
+        into 'META-INF/mccompat'
+        rename { 'mccompat-runtime.jar' }
+    }
+    manifest {
+        attributes(
+                'Automatic-Module-Name': 'mccompat.loader',
+                'Implementation-Title': 'MC Compatibility',
+                'Implementation-Version': project.version
+        )
+    }
+}
+tasks.named('assemble') { dependsOn 'bundleJar' }
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

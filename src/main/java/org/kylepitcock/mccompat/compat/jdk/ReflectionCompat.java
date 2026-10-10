@@ -1,0 +1,115 @@
+package org.kylepitcock.mccompat.compat.jdk;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.Set;
+import java.util.WeakHashMap;
+import sun.misc.Unsafe;
+
+/**
+ * Restores the classic "make a final field writable" reflection hack.
+ *
+ * <p>Java 8 mods did {@code Field m = Field.class.getDeclaredField("modifiers"); m.setInt(f, f.getModifiers() & ~FINAL);
+ * f.set(null, value)}. Since Java 12 {@code modifiers} is hidden, and since Java 18 static finals cannot be
+ * written reflectively at all. The transformer redirects those calls here; writes to final fields that the JVM
+ * refuses fall back to {@link Unsafe}.</p>
+ */
+@SuppressWarnings({"deprecation", "removal"})
+public final class ReflectionCompat {
+    private static final Unsafe UNSAFE;
+    /** Stand-in returned for {@code Field.class.getDeclaredField("modifiers")}. */
+    @SuppressWarnings("unused")
+    private static int modifiers;
+    private static final Field MODIFIERS_PLACEHOLDER;
+    private static final Set<Field> UNFINALIZED = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+
+    static {
+        try {
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            UNSAFE = (Unsafe) f.get(null);
+            MODIFIERS_PLACEHOLDER = ReflectionCompat.class.getDeclaredField("modifiers");
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
+    private ReflectionCompat() {}
+
+    public static Field getDeclaredField(Class<?> owner, String name) throws NoSuchFieldException {
+        if (owner == Field.class && name.equals("modifiers")) return MODIFIERS_PLACEHOLDER;
+        return owner.getDeclaredField(name);
+    }
+
+    public static void setInt(Field field, Object target, int value) throws IllegalAccessException {
+        if (field.equals(MODIFIERS_PLACEHOLDER)) {
+            if (target instanceof Field f && (value & Modifier.FINAL) == 0) UNFINALIZED.add(f);
+            return;
+        }
+        try {
+            field.setInt(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    public static void set(Field field, Object target, Object value) throws IllegalAccessException {
+        try {
+            field.set(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    public static void setBoolean(Field field, Object target, boolean value) throws IllegalAccessException {
+        try {
+            field.setBoolean(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    public static void setLong(Field field, Object target, long value) throws IllegalAccessException {
+        try {
+            field.setLong(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    public static void setFloat(Field field, Object target, float value) throws IllegalAccessException {
+        try {
+            field.setFloat(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    public static void setDouble(Field field, Object target, double value) throws IllegalAccessException {
+        try {
+            field.setDouble(target, value);
+        } catch (IllegalAccessException e) {
+            if (!unsafePut(field, target, value)) throw e;
+        }
+    }
+
+    /** Writes a final field the JVM refused to write. Only used for fields that are actually final. */
+    private static boolean unsafePut(Field field, Object target, Object value) {
+        if (!Modifier.isFinal(field.getModifiers())) return false;
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
+        Object base = isStatic ? UNSAFE.staticFieldBase(field) : target;
+        long offset = isStatic ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
+        Class<?> t = field.getType();
+        if (t == int.class) UNSAFE.putIntVolatile(base, offset, ((Number) value).intValue());
+        else if (t == long.class) UNSAFE.putLongVolatile(base, offset, ((Number) value).longValue());
+        else if (t == boolean.class) UNSAFE.putBooleanVolatile(base, offset, (Boolean) value);
+        else if (t == float.class) UNSAFE.putFloatVolatile(base, offset, ((Number) value).floatValue());
+        else if (t == double.class) UNSAFE.putDoubleVolatile(base, offset, ((Number) value).doubleValue());
+        else if (t == short.class) UNSAFE.putShortVolatile(base, offset, ((Number) value).shortValue());
+        else if (t == byte.class) UNSAFE.putByteVolatile(base, offset, ((Number) value).byteValue());
+        else if (t == char.class) UNSAFE.putCharVolatile(base, offset, (Character) value);
+        else UNSAFE.putObjectVolatile(base, offset, value);
+        return true;
+    }
+}

@@ -1,0 +1,15 @@
+[
+{
+  "modid": "LegacyTest",
+  "name": "Legacy Test Mod",
+  "description": "Fixture mod written against the Forge 1.7.10 API to exercise MC Compatibility.",
+  "version": "1.0",
+  "mcversion": "1.7.10",
+  "url": "",
+  "authorList": ["kylepitcock"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

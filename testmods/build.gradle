@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+}
+
+// Fixture mods that imitate real legacy Forge mods. They are compiled with Java 8 against the generated legacy API
+// stubs (see :legacyApiStubs1_7_10), then reobfuscated to SRG names exactly like ForgeGradle released them.
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+sourceSets {
+    legacy1710
+}
+
+dependencies {
+    legacy1710CompileOnly files(rootProject.layout.buildDirectory.file('legacy-api/legacy-api-1_7_10.jar'))
+    legacy1710CompileOnly 'io.netty:netty-buffer:4.1.97.Final'
+    legacy1710CompileOnly 'org.apache.logging.log4j:log4j-api:2.22.1'
+    legacy1710CompileOnly 'com.google.guava:guava:17.0'
+}
+
+repositories {
+    mavenCentral()
+}
+
+tasks.named('compileLegacy1710Java') {
+    dependsOn ':legacyApiStubs1_7_10'
+    options.release = 8
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xlint:-options']
+}
+
+def devJar = tasks.register('legacy1710DevJar', Jar) {
+    from sourceSets.legacy1710.output
+    archiveFileName = 'legacytest-1.7.10-dev.jar'
+    destinationDirectory = layout.buildDirectory.dir('dev')
+}
+
+tasks.register('legacy1710Jar', JavaExec) {
+    dependsOn devJar, ':loader:classes'
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.mccompat.loader.tools.Reobfuscator'
+    def input = devJar.get().archiveFile
+    def output = layout.buildDirectory.file('libs/LegacyTest-1.0-1.7.10.jar')
+    inputs.file input
+    outputs.file output
+    args input.get().asFile.absolutePath, rootProject.file('build/devtools/legacy-1.7.10.sig').absolutePath, output.get().asFile.absolutePath
+}
+
+tasks.named('assemble') { dependsOn 'legacy1710Jar' }

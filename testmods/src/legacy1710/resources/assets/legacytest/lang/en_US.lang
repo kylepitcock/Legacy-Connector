@@ -1,0 +1,7 @@
+# Legacy 1.7.10 language file
+tile.legacytest.ore.copper.name=Copper Ore
+tile.legacytest.ore.tin.name=Tin Ore
+tile.legacytest.machine.name=Counting Machine
+item.legacytest.ingot.copper.name=Copper Ingot
+item.legacytest.ingot.tin.name=Tin Ingot
+legacytest.machine.count=Machine has counted %d ticks
