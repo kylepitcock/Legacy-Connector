@@ -193,6 +193,7 @@ public final class Platform1710 implements LegacyPlatform {
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);
         org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.retryFailedDiscovery();
+        org.kylepitcock.mccompat.v1_7_10.bridge.FluidBridge.register();
         TileEntityBridge.registerType(adapters);
         CreativeTabBridge.registerTabs();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.mccompat.compat.curios.CuriosBaubles.registerItems();

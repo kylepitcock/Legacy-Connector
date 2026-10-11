@@ -93,6 +93,7 @@ public final class MCCompat {
     /** Hoppers, comparators-by-capability and modern item pipes can use legacy tile entity inventories. */
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
         org.kylepitcock.mccompat.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
+        org.kylepitcock.mccompat.v1_7_10.bridge.FluidBridge.registerCapabilities(event);
         var type = org.kylepitcock.mccompat.v1_7_10.bridge.TileEntityBridge.type();
         if (type == null) return;
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type, (be, side) ->

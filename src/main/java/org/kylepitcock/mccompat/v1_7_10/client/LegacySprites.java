@@ -67,12 +67,54 @@ public final class LegacySprites {
                     };
                 }
             }
+            byte[] fallback = modernResource(ns, path);
+            if (fallback != null) {
+                byte[] bytes = fallback;
+                return new IResource() {
+                    @Override
+                    public InputStream getInputStream() {
+                        return new java.io.ByteArrayInputStream(bytes);
+                    }
+
+                    @Override
+                    public boolean hasMetadata() {
+                        return false;
+                    }
+
+                    @Override
+                    public String getResourcePackName() {
+                        return "minecraft";
+                    }
+                };
+            }
             if (!reportedMissing) {
                 reportedMissing = true;
                 LOG.warn("Legacy resource {}:{} (assets/{}/{}) not found in {} mod files", location.getResourceDomain(),
                         location.getResourcePath(), ns, path, ModList.get().getModFiles().size());
             }
             throw new java.io.FileNotFoundException(location.getResourceDomain() + ":" + location.getResourcePath());
+        }
+
+        /** Assets of the running game (vanilla textures and the like); 1.7.10's glyph widths, which 1.21 no longer ships. */
+        private static byte[] modernResource(String ns, String path) {
+            try {
+                var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(ns, path);
+                var manager = net.minecraft.client.Minecraft.getInstance().getResourceManager();
+                var found = manager.getResource(id);
+                if (found.isPresent()) {
+                    try (InputStream in = found.get().open()) {
+                        return in.readAllBytes();
+                    }
+                }
+            } catch (Exception | LinkageError e) {
+                // not available this early, or not a valid location
+            }
+            if (ns.equals("minecraft") && path.equals("font/glyph_sizes.bin")) {
+                byte[] sizes = new byte[65536];
+                java.util.Arrays.fill(sizes, (byte) 0x07);
+                return sizes;
+            }
+            return null;
         }
 
         @Override

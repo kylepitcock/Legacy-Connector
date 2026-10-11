@@ -37,6 +37,13 @@ public class Minecraft {
         return resources;
     }
 
+    private mccompat.v1_7_10.net.minecraft.client.resources.LanguageManager languageManager;
+
+    public mccompat.v1_7_10.net.minecraft.client.resources.LanguageManager getLanguageManager() {
+        if (languageManager == null) languageManager = new mccompat.v1_7_10.net.minecraft.client.resources.LanguageManager();
+        return languageManager;
+    }
+
     public boolean isAmbientOcclusionEnabled() {
         return true;
     }
