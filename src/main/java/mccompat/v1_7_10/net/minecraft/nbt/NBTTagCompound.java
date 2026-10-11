@@ -37,6 +37,7 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public void setTag(String key, NBTBase value) {
+        if (value == null) return; // legacy stored null and failed later when writing the tag
         mcc$children.remove(key);
         mcc$tag.put(key, value.mcc$modern());
         if (value instanceof NBTTagCompound || value instanceof NBTTagList) {

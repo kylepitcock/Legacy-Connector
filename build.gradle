@@ -58,6 +58,7 @@ neoForge {
             gameDirectory = project.file('run-servertest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
+            systemProperty 'retrofit.entitySelfTest', 'true'
         }
 
         configureEach {

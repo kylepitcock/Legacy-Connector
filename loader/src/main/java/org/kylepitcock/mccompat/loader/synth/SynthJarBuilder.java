@@ -168,7 +168,8 @@ public final class SynthJarBuilder {
             if (enumType && isStatic && m.desc().equals("L" + name + ";")) {
                 fa |= Opcodes.ACC_ENUM | Opcodes.ACC_FINAL;
                 enumConstants.add(m);
-            } else if (isStatic && (Defaults.isCollection(m.desc()) || m.desc().startsWith("[") || itf || instantiable(m.desc()) != null)) {
+            } else if (isStatic && (Defaults.isCollection(m.desc()) || m.desc().startsWith("[") || itf || instantiable(m.desc()) != null
+                    || synthDefaultOwner(m.desc()) != null)) {
                 staticInits.add(m);
             } else if (!isStatic && (Defaults.isCollection(m.desc()) || m.desc().startsWith("["))) {
                 instanceInits.add(m);
@@ -269,7 +270,16 @@ public final class SynthJarBuilder {
             }
             for (Member f : staticInits) {
                 String concrete = instantiable(f.desc());
-                if (concrete != null) {
+                String factory = synthDefaultOwner(f.desc());
+                if (factory != null) {
+                    // A hand-written shim type that knows how to stand in for vanilla constants of its type
+                    // (e.g. IAttribute -> a RangedAttribute named after the vanilla attribute).
+                    mv.visitLdcInsn(legacyName(name) + "." + f.name());
+                    String t = f.desc().substring(1, f.desc().length() - 1);
+                    ClassInfo ti = hierarchy.find(t);
+                    boolean tItf = ti != null && (ti.access & Opcodes.ACC_INTERFACE) != 0;
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, t, "mcc$synthDefault", "(Ljava/lang/String;)" + f.desc(), tItf);
+                } else if (concrete != null) {
                     // Registries/handlers held in static fields (BlockDispenser.dispenseBehaviorRegistry): mods call
                     // methods on them right away, so give them an object whose methods are the usual stubs.
                     mv.visitTypeInsn(Opcodes.NEW, concrete);
@@ -347,6 +357,17 @@ public final class SynthJarBuilder {
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
+    }
+
+    /** The hand-written shim type of a field descriptor when it declares {@code static T mcc$synthDefault(String)}. */
+    private String synthDefaultOwner(String desc) {
+        if (!desc.startsWith("L")) return null;
+        String t = desc.substring(1, desc.length() - 1);
+        if (hierarchy.isSynth(t)) return null;
+        ClassInfo info = hierarchy.find(t);
+        if (info == null) return null;
+        Integer access = info.methods.get("mcc$synthDefault(Ljava/lang/String;)" + desc);
+        return access != null && (access & Opcodes.ACC_STATIC) != 0 ? t : null;
     }
 
     /** True when a hand-written shim superclass of {@code name} has a concrete {@code nameDesc}. */

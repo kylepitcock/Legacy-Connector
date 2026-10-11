@@ -48,6 +48,7 @@ public final class RenderContext {
 
     public static void end() {
         Frame f = FRAMES.pop();
+        if (FRAMES.isEmpty()) resetState();
         // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
         for (int guard = 0; f.pose.last() != f.base && !f.pose.clear() && guard < 64; guard++) f.pose.popPose();
         if (f.gui != null) f.gui.setColor(1, 1, 1, 1);
@@ -110,6 +111,81 @@ public final class RenderContext {
 
     public static int argb() {
         return ((int) (a * 255) & 255) << 24 | ((int) (r * 255) & 255) << 16 | ((int) (g * 255) & 255) << 8 | ((int) (b * 255) & 255);
+    }
+
+    // ------------------------------------------------------------------ emulated GL state and raw geometry
+
+    private static boolean texture2d = true;
+    private static boolean blend;
+    private static boolean additive;
+    private static boolean lighting = true;
+    private static int forcedLight = -1;
+
+    public static void setTexture2d(boolean on) {
+        texture2d = on;
+    }
+
+    public static void setBlend(boolean on) {
+        blend = on;
+    }
+
+    public static void setBlendFunc(int src, int dst) {
+        additive = dst == 1; // GL_ONE
+    }
+
+    public static void setLighting(boolean on) {
+        lighting = on;
+    }
+
+    /** Light set through OpenGlHelper.setLightmapTextureCoords / Tessellator.setBrightness (-1 = context light). */
+    public static void setForcedLight(int packed) {
+        forcedLight = packed;
+    }
+
+    public static int vertexLight() {
+        return forcedLight >= 0 ? forcedLight : light();
+    }
+
+    /** Buffer for raw legacy geometry (Tessellator, glBegin), chosen from the emulated texture and blend state. */
+    public static VertexConsumer geometryBuffer() {
+        if (!texture2d) return buffers().getBuffer(additive ? RenderType.lightning() : RenderType.debugQuads());
+        if (additive) return buffers().getBuffer(RenderType.eyes(texture));
+        return buffers().getBuffer(blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
+    }
+
+    /** Whether the current geometry buffer takes the full entity vertex format (uv, overlay, light, normal). */
+    public static boolean geometryHasEntityFormat() {
+        return texture2d;
+    }
+
+    /**
+     * Emits one quad of legacy geometry (positions in the current matrix space). Vertices are x, y, z, u, v, argb,
+     * light; normal is the face normal.
+     */
+    public static void quad(double[][] v, float nx, float ny, float nz) {
+        PoseStack p = pose();
+        if (p == null) return;
+        VertexConsumer buffer = geometryBuffer();
+        PoseStack.Pose last = p.last();
+        boolean entity = geometryHasEntityFormat();
+        for (double[] x : v) {
+            int argb = (int) (long) x[5];
+            var vc = buffer.addVertex(last, (float) x[0], (float) x[1], (float) x[2]).setColor(argb);
+            if (texture2d) vc.setUv((float) x[3], (float) x[4]);
+            if (entity) {
+                vc.setOverlay(overlay());
+                vc.setLight((int) x[6]);
+                vc.setNormal(last, nx, ny, nz);
+            }
+        }
+    }
+
+    public static void resetState() {
+        texture2d = true;
+        blend = false;
+        additive = false;
+        lighting = true;
+        forcedLight = -1;
     }
 
     /** Entity-style buffer for the bound texture, used by legacy models. */

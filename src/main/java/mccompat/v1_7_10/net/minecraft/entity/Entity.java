@@ -196,6 +196,17 @@ public abstract class Entity implements ICommandSender {
         if (host == null && world != null) host = org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts.adopt(this, world);
         if (host != null) this.mcc$entity = host.mcc$self();
         entityInit();
+        mcc$fireConstructing();
+    }
+
+    /** Forge's EntityConstructing (legacy fired it at the end of the base constructor). */
+    public final void mcc$fireConstructing() {
+        try {
+            mccompat.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                    new mccompat.v1_7_10.net.minecraftforge.event.entity.EntityEvent.EntityConstructing(this));
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Entities").warn("EntityConstructing handler failed for {}: {}", getClass().getName(), e.toString());
+        }
     }
 
     /** View constructor used by the bridge for existing modern entities. */
@@ -238,6 +249,51 @@ public abstract class Entity implements ICommandSender {
 
     public DataWatcher getDataWatcher() {
         return dataWatcher;
+    }
+
+    // ------------------------------------------------------------------ Forge extended properties
+
+    private java.util.Map<String, mccompat.v1_7_10.net.minecraftforge.common.IExtendedEntityProperties> mcc$extended;
+
+    public String registerExtendedProperties(String identifier, mccompat.v1_7_10.net.minecraftforge.common.IExtendedEntityProperties properties) {
+        if (identifier == null || properties == null) return identifier;
+        if (mcc$extended == null) mcc$extended = new java.util.LinkedHashMap<>();
+        String id = identifier;
+        for (int i = 1; mcc$extended.containsKey(id); i++) id = identifier + i;
+        mcc$extended.put(id, properties);
+        properties.init(this, mcc$world);
+        return id;
+    }
+
+    public mccompat.v1_7_10.net.minecraftforge.common.IExtendedEntityProperties getExtendedProperties(String identifier) {
+        return mcc$extended == null ? null : mcc$extended.get(identifier);
+    }
+
+    /** Saves every extended property into its own compound under {@code tag} (legacy layout). */
+    public final void mcc$saveExtended(NBTTagCompound tag) {
+        if (mcc$extended == null) return;
+        mcc$extended.forEach((id, p) -> {
+            try {
+                p.saveNBTData(tag);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Entities").warn("Extended properties {} failed to save: {}", id, e.toString());
+            }
+        });
+    }
+
+    public final void mcc$loadExtended(NBTTagCompound tag) {
+        if (mcc$extended == null) return;
+        mcc$extended.forEach((id, p) -> {
+            try {
+                p.loadNBTData(tag);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Entities").warn("Extended properties {} failed to load: {}", id, e.toString());
+            }
+        });
+    }
+
+    public final boolean mcc$hasExtended() {
+        return mcc$extended != null && !mcc$extended.isEmpty();
     }
 
     public static double mcc$get$posX(Entity e) {

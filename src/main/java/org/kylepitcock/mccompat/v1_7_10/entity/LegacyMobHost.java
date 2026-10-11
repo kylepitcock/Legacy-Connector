@@ -31,7 +31,8 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.SoundBridge;
  * movement/look/jump control, attributes, equipment, combat and despawning; the legacy object's overrides run in
  * their place (tick -> onUpdate, aiStep -> onLivingUpdate, AI step -> updateAITasks / updateEntityActionState, ...).
  */
-public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IEntityWithComplexSpawn {
+public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IEntityWithComplexSpawn,
+        net.minecraft.world.entity.monster.RangedAttackMob {
     static final EntityDataAccessor<CompoundTag> WATCHER = SynchedEntityData.defineId(LegacyMobHost.class, EntityDataSerializers.COMPOUND_TAG);
 
     private Entity legacy;
@@ -210,15 +211,25 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     }
 
     private boolean inTravel;
-    private double travelUp;
+
+    public void mcc$jump() {
+        jumpFromGround();
+    }
 
     @Override
     public void mcc$superTravel(float strafe, float forward) {
         inTravel = true;
         try {
-            super.travel(new net.minecraft.world.phys.Vec3(strafe, travelUp, forward));
+            super.travel(new net.minecraft.world.phys.Vec3(strafe, 0.0, forward));
         } finally {
             inTravel = false;
+        }
+    }
+
+    @Override
+    public void performRangedAttack(LivingEntity target, float power) {
+        if (legacy instanceof mccompat.v1_7_10.net.minecraft.entity.IRangedAttackMob r) {
+            r.attackEntityWithRangedAttack((EntityLivingBase) EntityBridge.wrap(target), power);
         }
     }
 
@@ -264,6 +275,11 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     }
 
     // ------------------------------------------------------------------ despawning, interaction, size
+
+    @Override
+    public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level, net.minecraft.world.entity.MobSpawnType reason) {
+        return legacy instanceof EntityLiving l ? l.getCanSpawnHere() : super.checkSpawnRules(level, reason);
+    }
 
     @Override
     public boolean removeWhenFarAway(double distanceSq) {
@@ -314,13 +330,19 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
-        if (legacy != null) legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
+        if (legacy != null) {
+            legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
+            legacy.mcc$saveExtended(new NBTTagCompound(tag));
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
-        if (legacy != null) legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
+        if (legacy != null) {
+            legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
+            legacy.mcc$loadExtended(new NBTTagCompound(tag));
+        }
     }
 
     @Override

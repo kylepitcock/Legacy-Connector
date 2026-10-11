@@ -86,7 +86,9 @@ public class SharedMonsterAttributes {
     }
 
     public static Holder<Attribute> mcc$modern(IAttribute attribute) {
-        return switch (attribute.getAttributeUnlocalizedName()) {
+        String name = attribute.getAttributeUnlocalizedName();
+        if (name == null) return null;
+        return switch (name) {
             case "generic.maxHealth" -> Attributes.MAX_HEALTH;
             case "generic.followRange" -> Attributes.FOLLOW_RANGE;
             case "generic.knockbackResistance" -> Attributes.KNOCKBACK_RESISTANCE;

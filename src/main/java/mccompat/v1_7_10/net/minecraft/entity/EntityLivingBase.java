@@ -54,7 +54,8 @@ public abstract class EntityLivingBase extends Entity {
     public EntityLivingBase(World world) {
         super(world);
         applyEntityAttributes();
-        setHealth(getMaxHealth());
+        // Not the overridable setHealth: mods mirror health into watcher ids they only add later in their constructor.
+        if (mcc$entity instanceof LivingEntity l) l.setHealth(l.getMaxHealth());
     }
 
     protected EntityLivingBase(LivingEntity modern) {

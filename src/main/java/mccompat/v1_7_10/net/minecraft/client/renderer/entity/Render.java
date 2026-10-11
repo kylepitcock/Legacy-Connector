@@ -25,6 +25,20 @@ public abstract class Render {
         if (location != null) RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 
+    public void doRenderShadowAndFire(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
+    }
+
+    protected void renderLivingLabel(Entity entity, String label, double x, double y, double z, int maxDistance) {
+    }
+
+    public boolean isStaticEntity() {
+        return false;
+    }
+
+    public float mcc$shadowSize() {
+        return shadowSize;
+    }
+
     public void setRenderManager(RenderManager manager) {
         this.renderManager = manager;
     }

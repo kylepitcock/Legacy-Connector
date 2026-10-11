@@ -186,6 +186,8 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.mccompat.compat.waila.WailaBridge.processRegistrations();
         org.kylepitcock.mccompat.v1_7_10.bridge.LegacyBiomeLayers.register();
         org.kylepitcock.mccompat.v1_7_10.bridge.LegacyWorldPresets.registerNames();
+        org.kylepitcock.mccompat.v1_7_10.entity.EntitySelfTest.register();
+        org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.registerSaving();
         LOG.info("1.7.10: {} block(s), {} item(s), {} recipe(s) translated", adapters.size(),
                 org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.modItems().size(), org.kylepitcock.mccompat.v1_7_10.bridge.RecipeBridge.count());
     }

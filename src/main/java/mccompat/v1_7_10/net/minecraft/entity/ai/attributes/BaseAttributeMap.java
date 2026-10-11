@@ -1,6 +1,7 @@
 package mccompat.v1_7_10.net.minecraft.entity.ai.attributes;
 
 import com.google.common.collect.Multimap;
+import mccompat.v1_7_10.net.minecraft.entity.SharedMonsterAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -24,7 +25,11 @@ public abstract class BaseAttributeMap {
         if (attribute == null) return null;
         IAttributeInstance modern = SharedMonsterAttributes.mcc$instance(mcc$entity.get(), attribute);
         if (modern != null) return modern;
-        return attributes.get(attribute);
+        IAttributeInstance local = attributes.get(attribute);
+        // Vanilla attribute constants the shim only synthesizes (no name; e.g. zombie reinforcements) were always
+        // registered by their vanilla class: give them an instance instead of null.
+        if (local == null && attribute.getAttributeUnlocalizedName() == null) local = registerAttribute(attribute);
+        return local;
     }
 
     public IAttributeInstance getAttributeInstanceByName(String name) {
@@ -37,11 +42,12 @@ public abstract class BaseAttributeMap {
     }
 
     public IAttributeInstance registerAttribute(IAttribute attribute) {
-        IAttributeInstance existing = getAttributeInstance(attribute);
+        IAttributeInstance existing = SharedMonsterAttributes.mcc$instance(mcc$entity.get(), attribute);
+        if (existing == null) existing = attributes.get(attribute);
         if (existing != null) return existing;
         IAttributeInstance instance = new ModifiableAttributeInstance(this, attribute);
         attributes.put(attribute, instance);
-        attributesByName.put(attribute.getAttributeUnlocalizedName(), instance);
+        if (attribute.getAttributeUnlocalizedName() != null) attributesByName.put(attribute.getAttributeUnlocalizedName(), instance);
         return instance;
     }
 

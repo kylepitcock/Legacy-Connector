@@ -81,17 +81,42 @@ New bridges are declared in `loader/.../LibraryBridges.java` and implemented und
 ### World generation
 
 Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generated as data: climate, colours, and the
-generation features of the closest vanilla biome, plus the legacy biome's own surface blocks and decorator (its trees,
-plants and features). Where they appear is decided by the 1.7.10 biome layer system (`GenLayer`, `WorldType`,
-Forge's `BiomeManager`), re-implemented in the shim, so a mod's own layer chain (BoP's world type) runs unmodified.
+ores, caves and small plants of the closest vanilla biome. Trees and grass come from the legacy biome itself: its
+decorator runs the legacy passes (the biome's own tree and plant generators) and its extra features, gated by Forge's
+terrain-gen events as on 1.7.10. Where legacy biomes appear is decided by the 1.7.10 biome layer system (`GenLayer`,
+`WorldType`, Forge's `BiomeManager`), re-implemented in the shim, so a mod's own layer chain runs unmodified.
 1.21 terrain, oceans, rivers, beaches, mountains and caves are kept; legacy biomes replace ordinary land biomes where
 the legacy layers place them. Mods' `IWorldGenerator`s (ores, structures) run for every chunk.
+
+A world type a mod registers (BoP's "BIOMESOP") appears on the Create World screen's world type button; on a
+dedicated server use `level-type=<modid>:<type>` (e.g. `biomesoplenty:biomesop`). With the default type, mod biomes
+that mods added to Forge's `BiomeManager` still generate.
+
+### Entities
+
+Each legacy entity class a mod registers (`EntityRegistry.registerModEntity` / `registerGlobalEntityID`) becomes a
+modern entity type. Its instances are run by a host: a vanilla entity (`PathfinderMob` for living ones, an `Enemy`
+monster for `IMob`s) that constructs the legacy object and forwards ticking, AI, damage, death and drops, sounds,
+interaction, saving and spawn data to it. The legacy base classes (`Entity`, `EntityLivingBase`, `EntityLiving`,
+`EntityCreature`, `EntityMob`, `EntityAgeable`, `EntityAnimal`, `EntityTameable`) are real implementations on top of
+the host, so `super` calls compose as on 1.7.10: the legacy AI scheduler (`EntityAITasks`) runs the mod's tasks, the
+vanilla AI tasks are backed by the equivalent modern goals, navigation and move/look/jump helpers drive the host's
+own, `DataWatcher` values are synced to clients, legacy attributes map to modern ones, Forge's
+`EntityConstructing` event and `IExtendedEntityProperties` work (also for players), and `addSpawn` entries become
+biome modifiers.
+
+On the client, renderers registered with `RenderingRegistry.registerEntityRenderingHandler` draw the entities: the
+legacy `Render`/`RenderLiving` code runs inside a render context that maps its OpenGL matrix and state calls onto
+the modern pose stack and buffers, legacy models (`ModelBase`, `ModelBiped`, `ModelQuadruped`, ...) emit real
+geometry, and `Tessellator`/immediate-mode (`glBegin`) geometry is assembled into quads with the matching modern
+render type (textured, translucent or additive). Not yet: armour and held items on legacy mobs, particles
+(`EntityFX`).
 
 ## Compatibility status
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes, dimensions, custom entities and fluids in the world are not bridged yet. |
+| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (308 of 337 entity types in the test packs pass a spawn/save/load self test). Entity rendering is bridged (not yet verified in game for every mod); particles, dimensions and fluids in the world are not bridged yet. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |

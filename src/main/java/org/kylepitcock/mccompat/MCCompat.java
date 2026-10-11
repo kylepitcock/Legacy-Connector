@@ -51,6 +51,7 @@ public final class MCCompat {
 
         CompatComponents.REGISTER.register(modBus);
         FEATURES.register(modBus);
+        modBus.addListener(org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
             if (e.getRegistryKey().equals(Registries.MENU)) org.kylepitcock.mccompat.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());

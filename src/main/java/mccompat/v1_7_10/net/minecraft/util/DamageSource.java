@@ -39,6 +39,8 @@ public class DamageSource {
     private boolean explosion;
     protected Entity mcc$source;
     protected Entity mcc$direct;
+    /** The modern source this legacy one was made from (kept so it round-trips unchanged). */
+    private net.minecraft.world.damagesource.DamageSource mcc$original;
 
     public DamageSource(String type) {
         this.damageType = type;
@@ -160,6 +162,7 @@ public class DamageSource {
 
     /** Translates to the closest modern damage source. */
     public net.minecraft.world.damagesource.DamageSource mcc$modern(Level level) {
+        if (mcc$original != null) return mcc$original;
         DamageSources s = level.damageSources();
         var attacker = getEntity() == null ? null : getEntity().mcc$entity;
         var direct = getSourceOfDamage() == null ? null : getSourceOfDamage().mcc$entity;
@@ -182,5 +185,32 @@ public class DamageSource {
             case "fallingBlock" -> s.fallingBlock(null);
             default -> fireDamage ? s.inFire() : explosion ? s.explosion(direct, attacker) : s.generic();
         };
+    }
+
+    /** Legacy view of a modern damage source (vanilla names and flags; attacker entities as legacy views). */
+    public static DamageSource mcc$wrap(net.minecraft.world.damagesource.DamageSource modern) {
+        if (modern == null) return null;
+        String type = modern.getMsgId();
+        String legacyType = switch (type) {
+            case "outOfWorld" -> "outOfWorld";
+            case "player" -> "player";
+            case "mob" -> "mob";
+            default -> type;
+        };
+        Entity attacker = modern.getEntity() == null ? null : org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.wrap(modern.getEntity());
+        Entity direct = modern.getDirectEntity() == null ? null : org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.wrap(modern.getDirectEntity());
+        DamageSource out;
+        if (attacker != null && direct != null && direct != attacker) out = new EntityDamageSourceIndirect(legacyType, direct, attacker);
+        else if (attacker != null) out = new EntityDamageSource(legacyType, attacker);
+        else out = new DamageSource(legacyType);
+        if (modern.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR)) out.setDamageBypassesArmor();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) out.setFireDamage();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE)) out.setProjectile();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) out.setExplosion();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.WITCH_RESISTANT_TO)) out.setMagicDamage();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) out.setDamageAllowedInCreativeMode();
+        if (modern.scalesWithDifficulty()) out.setDifficultyScaled();
+        out.mcc$original = modern;
+        return out;
     }
 }

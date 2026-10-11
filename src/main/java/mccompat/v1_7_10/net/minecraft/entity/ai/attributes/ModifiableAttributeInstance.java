@@ -76,6 +76,7 @@ public class ModifiableAttributeInstance implements IAttributeInstance {
         double total = v;
         for (AttributeModifier m : func_111130_a(1)) total += v * m.getAmount();
         for (AttributeModifier m : func_111130_a(2)) total *= 1.0 + m.getAmount();
-        return genericAttribute.clampValue(total);
+        // Synthesized attribute constants have no range to clamp to.
+        return genericAttribute.getAttributeUnlocalizedName() == null ? total : genericAttribute.clampValue(total);
     }
 }

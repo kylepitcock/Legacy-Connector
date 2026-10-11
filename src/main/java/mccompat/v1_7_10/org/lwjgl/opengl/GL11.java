@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
  * {@link RenderContext} instead of crashing the game.
  */
 public class GL11 extends org.lwjgl.opengl.GL11 {
-    private static boolean warnedImmediate;
 
     protected GL11() {
     }
@@ -90,6 +89,7 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
     // ------------------------------------------------------------------ capabilities
 
     public static void glEnable(int cap) {
+        mcc$track(cap, true);
         switch (cap) {
             case GL_BLEND -> RenderSystem.enableBlend();
             case GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
@@ -104,7 +104,18 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
         }
     }
 
+    private static void mcc$track(int cap, boolean on) {
+        switch (cap) {
+            case 3553 -> org.kylepitcock.mccompat.v1_7_10.client.RenderContext.setTexture2d(on); // GL_TEXTURE_2D
+            case 3042 -> org.kylepitcock.mccompat.v1_7_10.client.RenderContext.setBlend(on); // GL_BLEND
+            case 2896 -> org.kylepitcock.mccompat.v1_7_10.client.RenderContext.setLighting(on); // GL_LIGHTING
+            default -> {
+            }
+        }
+    }
+
     public static void glDisable(int cap) {
+        mcc$track(cap, false);
         switch (cap) {
             case GL_BLEND -> RenderSystem.disableBlend();
             case GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
@@ -119,6 +130,7 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
 
     public static void glBlendFunc(int src, int dst) {
         RenderSystem.blendFunc(src, dst);
+        org.kylepitcock.mccompat.v1_7_10.client.RenderContext.setBlendFunc(src, dst);
     }
 
     public static void glDepthMask(boolean flag) {
@@ -132,6 +144,7 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glNormal3f(float x, float y, float z) {
+        IMMEDIATE.normal(x, y, z);
     }
 
     public static void glLightModel(int pname, FloatBuffer params) {
@@ -159,37 +172,39 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
     public static void glDeleteLists(int list, int range) {
     }
 
-    // ------------------------------------------------------------------ immediate mode (not emulated yet)
+    // ------------------------------------------------------------------ immediate mode
 
-    private static void immediate() {
-        if (!warnedImmediate) {
-            warnedImmediate = true;
-            LoggerFactory.getLogger("Retrofit/GL11").warn("A legacy mod uses immediate-mode OpenGL (glBegin/glVertex); this geometry is not drawn yet");
-        }
-    }
+    private static final org.kylepitcock.mccompat.v1_7_10.client.LegacyVertices IMMEDIATE = new org.kylepitcock.mccompat.v1_7_10.client.LegacyVertices();
 
     public static void glBegin(int mode) {
-        immediate();
+        IMMEDIATE.begin(mode);
     }
 
     public static void glEnd() {
+        if (IMMEDIATE.isDrawing()) IMMEDIATE.end();
     }
 
     public static void glVertex3f(float x, float y, float z) {
+        IMMEDIATE.vertex(x, y, z);
     }
 
     public static void glVertex3d(double x, double y, double z) {
+        IMMEDIATE.vertex(x, y, z);
     }
 
     public static void glVertex2f(float x, float y) {
+        IMMEDIATE.vertex(x, y, 0);
     }
 
     public static void glVertex2i(int x, int y) {
+        IMMEDIATE.vertex(x, y, 0);
     }
 
     public static void glTexCoord2f(float u, float v) {
+        IMMEDIATE.uv(u, v);
     }
 
     public static void glTexCoord2d(double u, double v) {
+        IMMEDIATE.uv(u, v);
     }
 }

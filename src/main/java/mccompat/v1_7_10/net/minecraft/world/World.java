@@ -252,6 +252,11 @@ public class World implements IBlockAccess {
         return mcc$level.canSeeSky(pos(x, y, z));
     }
 
+    /** Brightness 0..1 (light level scaled by the dimension's ambient light curve). */
+    public float getLightBrightness(int x, int y, int z) {
+        return mcc$level.getLightLevelDependentMagicValue(pos(x, y, z));
+    }
+
     public int getBlockLightValue(int x, int y, int z) {
         return mcc$level.getMaxLocalRawBrightness(pos(x, y, z));
     }
@@ -417,6 +422,11 @@ public class World implements IBlockAccess {
 
     public EntityPlayer getClosestVulnerablePlayerToEntity(Entity entity, double distance) {
         return getClosestVulnerablePlayer(entity.mcc$x(), entity.mcc$y(), entity.mcc$z(), distance);
+    }
+
+    public EntityPlayer func_152378_a(java.util.UUID id) {
+        var p = id == null ? null : mcc$level.getPlayerByUUID(id);
+        return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
     }
 
     public EntityPlayer getPlayerEntityByName(String name) {

@@ -104,10 +104,7 @@ public class DataWatcher {
         }
         WatchableObject o = watched.get(id);
         if (o == null) {
-            int type = typeOf(value);
-            if (type < 0) return;
-            o = new WatchableObject(type, id, value);
-            watched.put(id, o);
+            return; // never added: vanilla would throw; ignoring keeps the id free for a later addObject
         } else if (java.util.Objects.equals(o.object, value)) {
             return;
         } else {

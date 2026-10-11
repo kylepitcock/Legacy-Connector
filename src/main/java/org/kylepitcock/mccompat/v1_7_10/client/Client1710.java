@@ -23,6 +23,11 @@ public final class Client1710 {
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         if (TileEntityBridge.type() != null) event.registerBlockEntityRenderer(TileEntityBridge.type(), ctx -> new LegacyBlockEntityRenderer());
+        for (var type : org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts.allTypes()) {
+            @SuppressWarnings("unchecked")
+            var t = (net.minecraft.world.entity.EntityType<net.minecraft.world.entity.Entity>) type;
+            event.registerEntityRenderer(t, LegacyEntityRenderer::new);
+        }
     }
 
     private static void onRegisterExtensions(RegisterClientExtensionsEvent event) {

@@ -29,7 +29,35 @@ public final class EntityBridge {
     private static final Map<net.minecraft.world.entity.Entity, Entity> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
     private static boolean warnedCustom;
 
+    /** Where extended properties of vanilla entities (players) are kept in the modern persistent data. */
+    public static final String EXTENDED_KEY = "RetrofitExtended";
+
     private EntityBridge() {}
+
+    /** Saves the extended properties of every vanilla entity view (world saves, logouts, server stop). */
+    public static void registerSaving() {
+        var bus = net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) -> saveExtended(e.getEntity()));
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppingEvent e) -> saveAllExtended());
+        bus.addListener((net.neoforged.neoforge.event.level.LevelEvent.Save e) -> saveAllExtended());
+    }
+
+    private static void saveAllExtended() {
+        java.util.List<net.minecraft.world.entity.Entity> entities;
+        synchronized (VIEWS) {
+            entities = new java.util.ArrayList<>(VIEWS.keySet());
+        }
+        for (var e : entities) saveExtended(e);
+    }
+
+    /** Writes the extended properties of a vanilla entity's view into its persistent data (before it is saved). */
+    public static void saveExtended(net.minecraft.world.entity.Entity modern) {
+        Entity view = VIEWS.get(modern);
+        if (view == null || view.mcc$hosted() || !view.mcc$hasExtended()) return;
+        var tag = new mccompat.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        view.mcc$saveExtended(tag);
+        modern.getPersistentData().put(EXTENDED_KEY, tag.mcc$modern());
+    }
 
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern == null) return null;
@@ -37,6 +65,12 @@ public final class EntityBridge {
         if (view != null) return view;
         view = create(modern);
         VIEWS.put(modern, view);
+        // Legacy fired EntityConstructing for every entity; mods attach attributes and extended properties here.
+        view.mcc$fireConstructing();
+        if (view.mcc$hasExtended()) {
+            var saved = modern.getPersistentData().getCompound(EXTENDED_KEY);
+            if (!saved.isEmpty()) view.mcc$loadExtended(new mccompat.v1_7_10.net.minecraft.nbt.NBTTagCompound(saved));
+        }
         return view;
     }
 
@@ -67,13 +101,21 @@ public final class EntityBridge {
         Level level = world.mcc$fullLevel();
         if (level == null) return false;
         if (entity.mcc$entity == null) {
-            if (!warnedCustom) {
-                warnedCustom = true;
-                LOG.warn("Legacy mod tried to spawn custom entity {}; legacy entity classes are not supported yet", entity.getClass().getName());
+            // Constructed without a world (or before the world was known): give it a host now.
+            var host = org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts.adopt(entity, world);
+            if (host == null) {
+                if (!warnedCustom) {
+                    warnedCustom = true;
+                    LOG.warn("Legacy entity {} could not be given a modern host", entity.getClass().getName());
+                }
+                return false;
             }
-            return false;
+            entity.mcc$entity = host.mcc$self();
         }
         VIEWS.put(entity.mcc$entity, entity);
+        if (entity.mcc$hosted() && !level.isClientSide()) {
+            ((org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost) entity.mcc$entity).mcc$syncWatcher(entity.mcc$dataWatcher().mcc$toTag());
+        }
         return world.mcc$level().addFreshEntity(entity.mcc$entity);
     }
 
