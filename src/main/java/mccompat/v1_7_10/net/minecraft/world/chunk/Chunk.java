@@ -130,6 +130,20 @@ public class Chunk {
         return modern != null && modern.isUnsaved();
     }
 
+    private mccompat.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] mcc$storage;
+
+    /** Sixteen 16-block sections covering legacy heights 0-255, as views onto this chunk. */
+    public mccompat.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] getBlockStorageArray() {
+        if (mcc$storage == null) {
+            mcc$storage = new mccompat.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[16];
+            for (int i = 0; i < 16; i++) mcc$storage[i] = new mccompat.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage(this, i << 4);
+        }
+        return mcc$storage;
+    }
+
+    public void setStorageArrays(mccompat.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] storage) {
+    }
+
     public ChunkCoordIntPair getChunkCoordIntPair() {
         return new ChunkCoordIntPair(xPosition, zPosition);
     }

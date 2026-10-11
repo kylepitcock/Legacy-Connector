@@ -340,7 +340,14 @@ public final class SynthJarBuilder {
             mv.visitMethodInsn(Opcodes.INVOKESPECIAL, sup, "<init>", desc, false);
         } else {
             ClassInfo supInfo = hierarchy.find(sup);
-            CtorChooser.Choice choice = supInfo == null ? null : CtorChooser.choose(supInfo, args);
+            CtorChooser.Choice choice = null;
+            if (supInfo != null && supInfo.methods.containsKey("<init>" + desc)) {
+                // The superclass has this exact constructor (e.g. the vanilla wrapper constructor): pass through.
+                int[] identity = new int[args.length];
+                for (int i = 0; i < identity.length; i++) identity[i] = i;
+                choice = new CtorChooser.Choice(desc, identity);
+            }
+            if (choice == null && supInfo != null) choice = CtorChooser.choose(supInfo, args);
             if (choice == null) choice = new CtorChooser.Choice("()V", new int[0]);
             Type[] target = Type.getArgumentTypes(choice.desc());
             for (int j = 0; j < target.length; j++) {

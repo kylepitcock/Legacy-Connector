@@ -83,4 +83,50 @@ public class WorldChunkManager {
 
     public void cleanupCache() {
     }
+
+    /** A world's biomes as a chunk manager (World.getWorldChunkManager): every query reads the actual biomes. */
+    public static final class WorldView extends WorldChunkManager {
+        private final World world;
+
+        public WorldView(World world) {
+            this.world = world;
+        }
+
+        @Override
+        public BiomeGenBase getBiomeGenAt(int x, int z) {
+            return world.getBiomeGenForCoords(x, z);
+        }
+
+        @Override
+        public BiomeGenBase[] getBiomesForGeneration(BiomeGenBase[] out, int x, int z, int w, int h) {
+            if (out == null || out.length < w * h) out = new BiomeGenBase[w * h];
+            for (int i = 0; i < h; i++) for (int j = 0; j < w; j++) out[j + i * w] = world.getBiomeGenForCoords((x + j) << 2, (z + i) << 2);
+            return out;
+        }
+
+        @Override
+        public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] out, int x, int z, int w, int h, boolean cache) {
+            if (out == null || out.length < w * h) out = new BiomeGenBase[w * h];
+            for (int i = 0; i < h; i++) for (int j = 0; j < w; j++) out[j + i * w] = world.getBiomeGenForCoords(x + j, z + i);
+            return out;
+        }
+
+        @Override
+        public float[] getRainfall(float[] out, int x, int z, int w, int h) {
+            if (out == null || out.length < w * h) out = new float[w * h];
+            BiomeGenBase[] biomes = getBiomeGenAt(null, x, z, w, h, false);
+            for (int i = 0; i < w * h; i++) out[i] = Math.min(1.0F, biomes[i].getIntRainfall() / 65536.0F);
+            return out;
+        }
+
+        @Override
+        public boolean areBiomesViable(int x, int z, int radius, List<?> allowed) {
+            for (int dx = -radius; dx <= radius; dx += 4) {
+                for (int dz = -radius; dz <= radius; dz += 4) {
+                    if (!allowed.contains(world.getBiomeGenForCoords(x + dx, z + dz))) return false;
+                }
+            }
+            return true;
+        }
+    }
 }

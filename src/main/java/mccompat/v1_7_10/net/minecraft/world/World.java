@@ -116,6 +116,14 @@ public class World implements IBlockAccess {
         return mcc$fullLevel(mcc$level);
     }
 
+    /**
+     * The level for block updates, neighbour notifications, sounds and entities: null while this world is a
+     * generation region (calls would reach the live level from a world-gen thread and deadlock waiting for chunks).
+     */
+    public Level mcc$liveLevel() {
+        return mcc$level instanceof Level l ? l : null;
+    }
+
     private static Level mcc$fullLevel(LevelAccessor level) {
         if (level instanceof Level l) return l;
         if (level instanceof WorldGenLevel g) return g.getLevel();
@@ -290,7 +298,7 @@ public class World implements IBlockAccess {
     // ------------------------------------------------------------------ updates and redstone
 
     public void markBlockForUpdate(int x, int y, int z) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level == null) return;
         BlockPos p = pos(x, y, z);
         BlockState s = level.getBlockState(p);
@@ -305,7 +313,7 @@ public class World implements IBlockAccess {
     }
 
     public void markTileEntityChunkModified(int x, int y, int z, TileEntity te) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) level.blockEntityChanged(pos(x, y, z));
     }
 
@@ -314,14 +322,14 @@ public class World implements IBlockAccess {
     }
 
     public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block, int skipSide) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level == null) return;
         Direction skip = skipSide >= 0 && skipSide < 6 ? Direction.from3DDataValue(skipSide) : null;
         level.updateNeighborsAtExceptFromFacing(pos(x, y, z), BlockBridge.modernBlock(block), skip);
     }
 
     public void notifyBlockOfNeighborChange(int x, int y, int z, Block block) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) level.neighborChanged(pos(x, y, z), BlockBridge.modernBlock(block), pos(x, y, z));
     }
 
@@ -330,7 +338,7 @@ public class World implements IBlockAccess {
     }
 
     public void func_147453_f(int x, int y, int z, Block block) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) level.updateNeighbourForOutputSignal(pos(x, y, z), BlockBridge.modernBlock(block));
     }
 
@@ -351,7 +359,7 @@ public class World implements IBlockAccess {
     }
 
     public void addBlockEvent(int x, int y, int z, Block block, int id, int param) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) level.blockEvent(pos(x, y, z), BlockBridge.modernBlock(block), id, param);
     }
 
@@ -425,8 +433,25 @@ public class World implements IBlockAccess {
     }
 
     /** The legacy biome at a column (the modern biome at its surface, as its legacy counterpart). */
+    /** Reseeds {@link #rand} for a position (structures and generators use it for repeatable placement). */
+    public java.util.Random setRandomSeed(int x, int z, int salt) {
+        long seed = x * 341873128712L + z * 132897987541L + getSeed() + salt;
+        rand.setSeed(seed);
+        return rand;
+    }
+
+    private mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager mcc$chunkManager;
+
+    public mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager getWorldChunkManager() {
+        if (mcc$chunkManager == null) mcc$chunkManager = new mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager.WorldView(this);
+        return mcc$chunkManager;
+    }
+
     public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
-        int y = mcc$level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        // Outside a generation region's chunks there is no heightmap to read: sample at sea level.
+        int y = mcc$level.hasChunk(x >> 4, z >> 4)
+                ? mcc$level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
+                : mcc$level.getSeaLevel();
         var key = mcc$level.getBiome(pos(x, y, z)).unwrapKey().map(k -> k.location()).orElse(null);
         var legacy = org.kylepitcock.mccompat.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
         return legacy != null ? legacy : mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
@@ -468,7 +493,7 @@ public class World implements IBlockAccess {
     }
 
     public Entity getEntityByID(int id) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level == null) return null;
         var e = level.getEntity(id);
         return e == null ? null : EntityBridge.wrap(e);
@@ -543,17 +568,17 @@ public class World implements IBlockAccess {
     // ------------------------------------------------------------------ sound, particles, explosions
 
     public void playSoundEffect(double x, double y, double z, String name, float volume, float pitch) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) SoundBridge.play(level, null, x, y, z, name, volume, pitch);
     }
 
     public void playSoundAtEntity(Entity entity, String name, float volume, float pitch) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) SoundBridge.play(level, null, entity.mcc$x(), entity.mcc$y(), entity.mcc$z(), name, volume, pitch);
     }
 
     public void playSoundToNearExcept(EntityPlayer player, String name, float volume, float pitch) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level != null) SoundBridge.play(level, player.mcc$player(), player.mcc$x(), player.mcc$y(), player.mcc$z(), name, volume, pitch);
     }
 
@@ -578,7 +603,7 @@ public class World implements IBlockAccess {
     }
 
     public Explosion newExplosion(Entity entity, double x, double y, double z, float strength, boolean fire, boolean smoke) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         if (level == null) return new Explosion(this, entity, x, y, z, strength);
         level.explode(entity == null ? null : entity.mcc$entity(), x, y, z, strength, fire,
                 smoke ? Level.ExplosionInteraction.TNT : Level.ExplosionInteraction.NONE);
@@ -615,7 +640,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean canLightningStrikeAt(int x, int y, int z) {
-        Level level = mcc$fullLevel();
+        Level level = mcc$liveLevel();
         return level != null && level.isRainingAt(pos(x, y, z));
     }
 
@@ -666,7 +691,7 @@ public class World implements IBlockAccess {
     }
 
     public void mcc$dropXp(int x, int y, int z, int amount) {
-        if (mcc$fullLevel() instanceof ServerLevel s && amount > 0) {
+        if (mcc$liveLevel() instanceof ServerLevel s && amount > 0) {
             net.minecraft.world.entity.ExperienceOrb.award(s, net.minecraft.world.phys.Vec3.atCenterOf(pos(x, y, z)), amount);
         }
     }
