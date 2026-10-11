@@ -84,7 +84,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         return te ? new LegacyEntityBlockAdapter(legacy, p) : new LegacyBlockAdapter(legacy, p);
     }
 
-    static boolean overrides(Object obj, String name, Class<?>... params) {
+    public static boolean overrides(Object obj, String name, Class<?>... params) {
         for (Class<?> c = obj.getClass(); c != null && c != Block.class && c != Object.class; c = c.getSuperclass()) {
             if (c.getName().startsWith("mccompat.")) return false; // shim classes are not mod overrides
             try {

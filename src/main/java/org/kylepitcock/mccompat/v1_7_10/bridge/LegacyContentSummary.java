@@ -36,7 +36,7 @@ public final class LegacyContentSummary {
             entities += c[2];
             sb.append(String.format("%n  %-28s %5d items %5d blocks %4d entities", e.getKey(), c[0], c[1], c[2]));
         }
-        LoggerFactory.getLogger("Retrofit/Content").info("Legacy content: {} mods, {} items, {} blocks, {} entity types{}", byMod.size(), items, blocks,
-                entities, sb);
+        LoggerFactory.getLogger("Retrofit/Content").info("Legacy content: {} mods, {} items, {} blocks, {} entity types, {} spawn eggs{}", byMod.size(),
+                items, blocks, entities, org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.ids().size(), sb);
     }
 }

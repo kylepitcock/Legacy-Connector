@@ -25,9 +25,17 @@ public class EntityRegistry {
         return c == null ? "retrofit" : c.record().modernId;
     }
 
+    private static String activeLegacyModId() {
+        var c = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
+        return c == null ? null : c.record().legacyId;
+    }
+
     public static void registerModEntity(Class<?> entityClass, String entityName, int id, Object mod, int trackingRange,
             int updateFrequency, boolean sendsVelocityUpdates) {
-        LegacyHosts.register(entityClass, entityName, activeModId(), trackingRange, updateFrequency, sendsVelocityUpdates);
+        String legacyMod = activeLegacyModId();
+        // FML names mod entities "<legacy mod id>.<name>" (their translation key is entity.<that>.name).
+        LegacyHosts.register(entityClass, entityName, activeModId(), legacyMod == null ? entityName : legacyMod + "." + entityName,
+                trackingRange, updateFrequency, sendsVelocityUpdates);
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id) {
@@ -35,7 +43,8 @@ public class EntityRegistry {
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id, int backgroundEggColour, int foregroundEggColour) {
-        LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
+        var info = LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
+        org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.register(info, backgroundEggColour, foregroundEggColour);
     }
 
     public static synchronized int findGlobalUniqueEntityId() {

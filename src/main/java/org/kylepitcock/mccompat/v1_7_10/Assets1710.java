@@ -44,6 +44,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.CLIENT_RESOURCES) return;
+        org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.contributeModels(out);
         IIconRegister blocks = name -> new Icon(texture(name, true));
         IIconRegister items = name -> new Icon(texture(name, false));
         for (Block b : BlockBridge.modBlocks()) {
@@ -226,10 +227,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 JsonObject tex = new JsonObject();
                 tex.addProperty("layer0", icon == null ? "minecraft:missingno" : icon.getIconName());
                 if (item.requiresMultipleRenderPasses()) {
+                    // One layer per render pass; item/generated tints layer N with tint index N (the legacy pass).
+                    int passes = 2;
                     try {
-                        IIcon second = item.getIconFromDamageForRenderPass(meta, 1);
-                        if (second != null) tex.addProperty("layer1", second.getIconName());
+                        passes = Math.max(1, Math.min(8, item.getRenderPasses(meta)));
                     } catch (RuntimeException ignored) {
+                    }
+                    for (int pass = 0; pass < passes; pass++) {
+                        try {
+                            IIcon layer = item.getIconFromDamageForRenderPass(meta, pass);
+                            if (layer != null) tex.addProperty("layer" + pass, layer.getIconName());
+                        } catch (RuntimeException ignored) {
+                        }
                     }
                 }
                 model.add("textures", tex);
@@ -243,46 +252,59 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         out.put(path, () -> bytes);
     }
 
-    /** Recorded icon; its "name" is already the modern sprite id. UVs are full-sprite placeholders. */
+    /**
+     * Recorded icon; its "name" is already the modern sprite id. On the client its UVs are the sprite's position in
+     * the block atlas (legacy code draws atlas-textured quads with them); elsewhere they cover the whole texture.
+     */
     record Icon(String getIconName) implements IIcon {
+        private float[] uv() {
+            return net.neoforged.fml.loading.FMLEnvironment.dist.isClient() ? org.kylepitcock.mccompat.v1_7_10.client.AtlasUV.of(getIconName) : null;
+        }
+
         @Override
         public int getIconWidth() {
-            return 16;
+            float[] uv = uv();
+            return uv == null ? 16 : (int) uv[4];
         }
 
         @Override
         public int getIconHeight() {
-            return 16;
+            float[] uv = uv();
+            return uv == null ? 16 : (int) uv[5];
         }
 
         @Override
         public float getMinU() {
-            return 0;
+            float[] uv = uv();
+            return uv == null ? 0 : uv[0];
         }
 
         @Override
         public float getMaxU() {
-            return 1;
+            float[] uv = uv();
+            return uv == null ? 1 : uv[1];
         }
 
         @Override
         public float getInterpolatedU(double u) {
-            return (float) (u / 16.0);
+            return getMinU() + (getMaxU() - getMinU()) * (float) u / 16.0F;
         }
 
         @Override
         public float getMinV() {
-            return 0;
+            float[] uv = uv();
+            return uv == null ? 0 : uv[2];
         }
 
         @Override
         public float getMaxV() {
-            return 1;
+            float[] uv = uv();
+            return uv == null ? 1 : uv[3];
         }
 
         @Override
         public float getInterpolatedV(double v) {
-            return (float) (v / 16.0);
+            return getMinV() + (getMaxV() - getMinV()) * (float) v / 16.0F;
         }
     }
 

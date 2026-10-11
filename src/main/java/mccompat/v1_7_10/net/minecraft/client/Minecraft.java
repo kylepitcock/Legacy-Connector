@@ -26,6 +26,8 @@ public class Minecraft {
     public TextureManager renderEngine = TextureManager.INSTANCE;
     public FontRenderer fontRenderer = FontRenderer.INSTANCE;
     public FontRenderer standardGalacticFontRenderer = FontRenderer.INSTANCE;
+    public final mccompat.v1_7_10.net.minecraft.client.particle.EffectRenderer effectRenderer =
+            new mccompat.v1_7_10.net.minecraft.client.particle.EffectRenderer(null, TextureManager.INSTANCE);
 
     public static Minecraft getMinecraft() {
         return INSTANCE;

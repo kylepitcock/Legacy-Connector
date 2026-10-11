@@ -1,1 +1,5 @@
-{ "retrofit.legacy_mods": "Legacy Mods" }
+{
+  "retrofit.legacy_mods": "Legacy Mods",
+  "retrofit.spawn_egg_prefix": "Spawn",
+  "retrofit.spawn_egg": "%s Spawn Egg"
+}

@@ -18,7 +18,9 @@ public final class Client1710 {
     public static void register(IEventBus modBus) {
         modBus.addListener(ClientGui::onRegisterScreens);
         modBus.addListener(Client1710::onRegisterRenderers);
+        LegacyParticles.register();
         modBus.addListener(Client1710::onRegisterExtensions);
+        modBus.addListener(Client1710::onRegisterItemColors);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -27,6 +29,21 @@ public final class Client1710 {
             @SuppressWarnings("unchecked")
             var t = (net.minecraft.world.entity.EntityType<net.minecraft.world.entity.Entity>) type;
             event.registerEntityRenderer(t, LegacyEntityRenderer::new);
+        }
+    }
+
+    /** Legacy items tinted per render pass (spawn eggs, dyed items): layer N of the item model is pass N. */
+    private static void onRegisterItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
+        for (Item item : ItemBridge.modItems()) {
+            if (!org.kylepitcock.mccompat.v1_7_10.adapter.LegacyBlockAdapter.overrides(item, "getColorFromItemStack",
+                    mccompat.v1_7_10.net.minecraft.item.ItemStack.class, int.class)) continue;
+            event.register((stack, tint) -> {
+                try {
+                    return 0xFF000000 | item.getColorFromItemStack(mccompat.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), tint);
+                } catch (RuntimeException | LinkageError e) {
+                    return 0xFFFFFFFF;
+                }
+            }, item.mcc$variants.values().toArray(new net.minecraft.world.item.Item[0]));
         }
     }
 

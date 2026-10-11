@@ -42,7 +42,8 @@ public final class LegacyHosts {
         ENTITY, MOB, MONSTER
     }
 
-    public record Info(Class<?> legacyClass, ResourceLocation id, EntityType<?> type, Kind kind) {}
+    /** {@code translationKey}: the legacy entity name key ("entity.Thaumcraft.Firebat.name"). */
+    public record Info(Class<?> legacyClass, ResourceLocation id, EntityType<?> type, Kind kind, String translationKey, String fallbackName) {}
 
     private static final Map<Class<?>, Info> BY_CLASS = new ConcurrentHashMap<>();
     private static final Map<EntityType<?>, Info> BY_TYPE = new ConcurrentHashMap<>();
@@ -56,6 +57,12 @@ public final class LegacyHosts {
 
     /** Legacy {@code EntityRegistry.registerModEntity}. Must run while registries are open (legacy loading). */
     public static synchronized Info register(Class<?> cls, String name, String modId, int trackingRange, int updateFrequency, boolean velocityUpdates) {
+        return register(cls, name, modId, name, trackingRange, updateFrequency, velocityUpdates);
+    }
+
+    /** @param legacyName the entity's legacy name (FML prefixes mod entities with the legacy mod id: "Thaumcraft.Firebat") */
+    public static synchronized Info register(Class<?> cls, String name, String modId, String legacyName, int trackingRange, int updateFrequency,
+            boolean velocityUpdates) {
         Info existing = BY_CLASS.get(cls);
         if (existing != null) return existing;
         if (!Entity.class.isAssignableFrom(cls) || EntityPlayer.class.isAssignableFrom(cls)) {
@@ -73,7 +80,7 @@ public final class LegacyHosts {
                 .updateInterval(Math.max(1, updateFrequency))
                 .setShouldReceiveVelocityUpdates(velocityUpdates);
         EntityType<?> type = builder.build(id.toString());
-        Info info = new Info(cls, id, type, kind);
+        Info info = new Info(cls, id, type, kind, "entity." + legacyName + ".name", name);
         // Indexed before the registry callbacks so the type's factory can already resolve its class.
         BY_CLASS.put(cls, info);
         BY_TYPE.put(type, info);
@@ -126,6 +133,14 @@ public final class LegacyHosts {
             }
         }
         return MobCategory.MISC;
+    }
+
+    /** Display name of a legacy entity type: the mod's own translation of its legacy name. */
+    public static net.minecraft.network.chat.Component displayName(EntityType<?> type) {
+        Info i = BY_TYPE.get(type);
+        if (i == null) return null;
+        String translated = mccompat.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(i.translationKey());
+        return net.minecraft.network.chat.Component.literal(translated.equals(i.translationKey()) ? i.fallbackName() : translated);
     }
 
     public static Info info(EntityType<?> type) {
@@ -182,12 +197,20 @@ public final class LegacyHosts {
     /** A host for a legacy object a mod constructed itself; null when the world is not a real level. */
     public static LegacyHost adopt(Entity legacy, World world) {
         Level level = world == null ? null : world.mcc$fullLevel();
-        if (level == null) return null;
+        if (level == null || isParticle(legacy.getClass())) return null;
         Info info = info(legacy.getClass());
         Kind kind = info != null ? info.kind() : kindOf(legacy.getClass());
         EntityType<?> type = info != null ? info.type() : FALLBACK.get(kind);
         if (type == null) return null;
         return create(type, kind, level, legacy);
+    }
+
+    /** Legacy particles (EntityFX) are client-side effects, never world entities (checked by name: client class). */
+    private static boolean isParticle(Class<?> cls) {
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            if (c.getName().equals("mccompat.v1_7_10.net.minecraft.client.particle.EntityFX")) return true;
+        }
+        return false;
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -225,10 +248,10 @@ public final class LegacyHosts {
 
     // ------------------------------------------------------------------ failures
 
-    /** Logs a legacy entity failure once per class; returns true the first time. */
+    /** Construction failures (no legacy object can be made for this class). */
     public static boolean failed(Class<?> cls, String what, Throwable t) {
         if (FAILED.add(cls)) {
-            LOG.error("Legacy entity {} failed during {}; entities of this class are removed", cls.getName(), what, t);
+            LOG.error("Legacy entity {} failed during {}", cls.getName(), what, t);
             return true;
         }
         return false;
@@ -236,6 +259,36 @@ public final class LegacyHosts {
 
     public static boolean hasFailed(Class<?> cls) {
         return FAILED.contains(cls);
+    }
+
+    private static final Set<String> LOGGED_TICK_FAILURES = ConcurrentHashMap.newKeySet();
+    /** Whether entities of this class threw while ticking on the server (diagnostics). */
+    public static boolean hadServerTickFailure(Class<?> cls) {
+        String prefix = cls.getName() + "@server:";
+        for (String k : LOGGED_TICK_FAILURES) if (k.startsWith(prefix)) return true;
+        return false;
+    }
+
+    /** Consecutive failing server ticks after which an entity is removed (it would otherwise be stuck broken). */
+    static final int MAX_FAILED_TICKS = 200;
+
+    /**
+     * A legacy entity threw while ticking. Logged once per class, side and exception type; never removes anything on
+     * the client (where failures are usually particles or client-only effects), and on the server only removes an
+     * entity that keeps failing.
+     *
+     * @return true when the entity should be removed
+     */
+    static boolean tickFailed(net.minecraft.world.entity.Entity host, Class<?> cls, Throwable t, int consecutive) {
+        boolean client = host.level().isClientSide();
+        if (LOGGED_TICK_FAILURES.add(cls.getName() + (client ? "@client:" : "@server:") + t.getClass().getName())) {
+            LOG.error("Legacy entity {} failed while ticking on the {} (logged once)", cls.getName(), client ? "client" : "server", t);
+        }
+        if (!client && consecutive >= MAX_FAILED_TICKS) {
+            LOG.warn("Removing {} at {}: it failed {} ticks in a row", cls.getName(), host.blockPosition().toShortString(), consecutive);
+            return true;
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ attributes

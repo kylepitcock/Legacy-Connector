@@ -29,9 +29,16 @@ public class RenderBiped extends RenderLiving {
         modelArmourChestplate = field_82423_g;
     }
 
+    private static final ResourceLocation STEVE = new ResourceLocation("textures/entity/player/wide/steve.png");
+
+    /** Biped renderers (and mod subclasses) choose the texture per living entity. */
+    protected ResourceLocation getEntityTexture(mccompat.v1_7_10.net.minecraft.entity.EntityLiving entity) {
+        return STEVE;
+    }
+
     @Override
     protected ResourceLocation getEntityTexture(Entity entity) {
-        return new ResourceLocation("textures/entity/steve.png");
+        return entity instanceof mccompat.v1_7_10.net.minecraft.entity.EntityLiving l ? getEntityTexture(l) : STEVE;
     }
 
     @Override

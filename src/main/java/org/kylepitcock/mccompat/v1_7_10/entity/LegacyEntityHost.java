@@ -69,16 +69,20 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
             if (!level().isClientSide()) discard();
             return;
         }
-        if (LegacyHosts.hasFailed(legacy.getClass())) {
-            if (!level().isClientSide()) discard();
-            return;
-        }
         try {
             legacy.onUpdate();
+            failedTicks = 0;
         } catch (RuntimeException | LinkageError e) {
-            LegacyHosts.failed(legacy.getClass(), "tick", e);
-            if (!level().isClientSide()) discard();
+            if (LegacyHosts.tickFailed(this, legacy.getClass(), e, ++failedTicks)) discard();
         }
+    }
+
+    private int failedTicks;
+
+    @Override
+    protected net.minecraft.network.chat.Component getTypeName() {
+        var name = LegacyHosts.displayName(getType());
+        return name != null ? name : super.getTypeName();
     }
 
     @Override

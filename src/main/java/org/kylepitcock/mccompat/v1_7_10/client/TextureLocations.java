@@ -12,7 +12,11 @@ public final class TextureLocations {
     private static final Map<String, String> RENAMES = Map.ofEntries(
             Map.entry("textures/atlas/items.png", "textures/atlas/blocks.png"),
             Map.entry("textures/gui/container/generic_54.png", "textures/gui/container/generic_54.png"),
-            Map.entry("textures/entity/chest/normal.png", "textures/entity/chest/normal.png"));
+            Map.entry("textures/entity/chest/normal.png", "textures/entity/chest/normal.png"),
+            Map.entry("textures/entity/steve.png", "textures/entity/player/wide/steve.png"),
+            Map.entry("textures/entity/alex.png", "textures/entity/player/slim/alex.png"),
+            Map.entry("textures/entity/zombie_villager/zombie_villager.png", "textures/entity/zombie_villager/zombie_villager.png"),
+            Map.entry("textures/entity/villager/villager.png", "textures/entity/villager/villager.png"));
 
     private TextureLocations() {}
 

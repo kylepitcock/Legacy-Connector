@@ -9,6 +9,7 @@ public class TextureManager {
     public static final TextureManager INSTANCE = new TextureManager();
 
     public void bindTexture(ResourceLocation location) {
+        if (location == null) return; // legacy renderers with an unset texture keep the previous one
         RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 

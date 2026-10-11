@@ -65,6 +65,7 @@ public final class MCCompat {
         modBus.addListener(GeneratedPack::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
         modBus.addListener(CreativeTabBridge::onBuildContents);
+        modBus.addListener(org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs::addToTab);
 
         GeneratedPack.addContributor(new CoreData());
         GeneratedPack.addContributor(new Data1710());

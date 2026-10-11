@@ -1034,6 +1034,10 @@ public abstract class Entity implements ICommandSender {
         if (host != null) host.mcc$setSize(width, height);
     }
 
+    protected boolean canTriggerWalking() {
+        return true;
+    }
+
     public boolean canBeCollidedWith() {
         return !mcc$hosted() && mcc$entity != null && mcc$entity.isPickable();
     }

@@ -93,25 +93,26 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     // ------------------------------------------------------------------ ticking
 
-    private boolean broken() {
-        if (legacy != null && !LegacyHosts.hasFailed(legacy.getClass())) return false;
-        if (!level().isClientSide()) discard();
-        return true;
-    }
-
-    private void fail(String what, Throwable e) {
-        LegacyHosts.failed(legacy.getClass(), what, e);
-        if (!level().isClientSide()) discard();
-    }
+    private int failedTicks;
 
     @Override
     public void tick() {
-        if (broken()) return;
+        if (legacy == null) {
+            if (!level().isClientSide()) discard();
+            return;
+        }
         try {
             legacy.onUpdate();
+            failedTicks = 0;
         } catch (RuntimeException | LinkageError e) {
-            fail("tick", e);
+            if (LegacyHosts.tickFailed(this, legacy.getClass(), e, ++failedTicks)) discard();
         }
+    }
+
+    @Override
+    protected net.minecraft.network.chat.Component getTypeName() {
+        var name = LegacyHosts.displayName(getType());
+        return name != null ? name : super.getTypeName();
     }
 
     @Override

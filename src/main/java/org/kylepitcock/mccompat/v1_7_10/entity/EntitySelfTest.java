@@ -111,7 +111,7 @@ public final class EntitySelfTest {
         for (Entity e : SPAWNED) {
             String name = EntityType.getKey(e.getType()).toString();
             Object legacy = e instanceof LegacyHost h ? h.mcc$legacy() : null;
-            if (legacy != null && LegacyHosts.hasFailed(legacy.getClass())) {
+            if (legacy == null || LegacyHosts.hadServerTickFailure(legacy.getClass())) {
                 failed++;
                 RESULT.put(name, "FAILED (see log)");
             } else if (e.isAlive()) {

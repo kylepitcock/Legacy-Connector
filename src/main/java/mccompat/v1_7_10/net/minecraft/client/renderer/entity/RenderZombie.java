@@ -2,7 +2,6 @@ package mccompat.v1_7_10.net.minecraft.client.renderer.entity;
 
 import mccompat.v1_7_10.net.minecraft.client.model.ModelBiped;
 import mccompat.v1_7_10.net.minecraft.client.model.ModelZombie;
-import mccompat.v1_7_10.net.minecraft.entity.Entity;
 import mccompat.v1_7_10.net.minecraft.util.ResourceLocation;
 
 /** Zombie renderer (also the base of mod zombie variants). */
@@ -33,7 +32,7 @@ public class RenderZombie extends RenderBiped {
     }
 
     @Override
-    protected ResourceLocation getEntityTexture(Entity entity) {
+    protected ResourceLocation getEntityTexture(mccompat.v1_7_10.net.minecraft.entity.EntityLiving entity) {
         return ZOMBIE;
     }
 }
