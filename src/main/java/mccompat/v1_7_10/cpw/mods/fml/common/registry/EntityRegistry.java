@@ -34,17 +34,22 @@ public class EntityRegistry {
             int updateFrequency, boolean sendsVelocityUpdates) {
         String legacyMod = activeLegacyModId();
         // FML names mod entities "<legacy mod id>.<name>" (their translation key is entity.<that>.name).
-        LegacyHosts.register(entityClass, entityName, activeModId(), legacyMod == null ? entityName : legacyMod + "." + entityName,
-                trackingRange, updateFrequency, sendsVelocityUpdates);
+        String legacyName = legacyMod == null ? entityName : legacyMod + "." + entityName;
+        LegacyHosts.register(entityClass, entityName, activeModId(), legacyName, trackingRange, updateFrequency, sendsVelocityUpdates);
+        // FML recorded mod entities in EntityList's name tables (not its id tables).
+        mccompat.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.put(legacyName, entityClass);
+        mccompat.v1_7_10.net.minecraft.entity.EntityList.classToStringMapping.put(entityClass, legacyName);
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id) {
         LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
+        mccompat.v1_7_10.net.minecraft.entity.EntityList.addMapping(entityClass, entityName, id);
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id, int backgroundEggColour, int foregroundEggColour) {
-        var info = LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
-        org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.register(info, backgroundEggColour, foregroundEggColour);
+        LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
+        // The egg is created by EntityList when the egg info is recorded.
+        mccompat.v1_7_10.net.minecraft.entity.EntityList.addMapping(entityClass, entityName, id, backgroundEggColour, foregroundEggColour);
     }
 
     public static synchronized int findGlobalUniqueEntityId() {

@@ -264,6 +264,8 @@ public final class RecipeBridge {
                 net.minecraft.world.item.ItemStack modern = stack.mcc$modern();
                 Integer extra = modern.get(CompatComponents.legacyMeta());
                 if (extra != null) {
+                    // An item that did not translate is air: clients refuse recipes with empty stacks (disconnect).
+                    if (itemId(modern).equals("minecraft:air")) return null;
                     JsonObject j = new JsonObject();
                     j.addProperty("type", "neoforge:components");
                     j.addProperty("items", itemId(modern));
@@ -341,8 +343,13 @@ public final class RecipeBridge {
     }
 
     private static void collectIds(JsonElement ing, Set<String> into) {
+        collectAll(ing, into);
+        into.remove("minecraft:air"); // a tag containing air is an empty stack on the client
+    }
+
+    private static void collectAll(JsonElement ing, Set<String> into) {
         if (ing == null) return;
-        if (ing.isJsonArray()) for (JsonElement e : ing.getAsJsonArray()) collectIds(e, into);
+        if (ing.isJsonArray()) for (JsonElement e : ing.getAsJsonArray()) collectAll(e, into);
         else if (ing.isJsonObject() && ing.getAsJsonObject().has("item")) into.add(ing.getAsJsonObject().get("item").getAsString());
         else if (ing.isJsonObject() && ing.getAsJsonObject().has("items")) into.add(ing.getAsJsonObject().get("items").getAsString());
     }

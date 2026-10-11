@@ -54,7 +54,7 @@ public final class ModMetadataGenerator {
             sb.append("[[mods]]\n");
             sb.append("modId=").append(q(mod.modernId())).append('\n');
             sb.append("version=").append(q(sanitizeVersion(mod.version))).append('\n');
-            sb.append("displayName=").append(q(mod.name + " [" + jar.version.id() + "]")).append('\n');
+            sb.append("displayName=").append(q(mod.name)).append('\n');
             if (!mod.authors.isEmpty()) sb.append("authors=").append(q(String.join(", ", mod.authors))).append('\n');
             if (mod.credits != null) sb.append("credits=").append(q(mod.credits)).append('\n');
             if (mod.url != null) sb.append("displayURL=").append(q(mod.url)).append('\n');

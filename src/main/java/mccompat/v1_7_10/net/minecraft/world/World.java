@@ -700,4 +700,9 @@ public class World implements IBlockAccess {
     public String toString() {
         return "LegacyWorld{" + mcc$level + "}";
     }
+
+    /** Forge: chunks held loaded by chunk-loading tickets. */
+    public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, mccompat.v1_7_10.net.minecraftforge.common.ForgeChunkManager.Ticket> getPersistentChunks() {
+        return mccompat.v1_7_10.net.minecraftforge.common.ForgeChunkManager.getPersistentChunksFor(this);
+    }
 }
