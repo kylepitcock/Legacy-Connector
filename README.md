@@ -163,6 +163,8 @@ Requires JDK 21.
 ./gradlew bundleJar             # single distributable jar
 ./gradlew runClient             # dev client, mods from run/mods
 ./gradlew runServerTest         # headless smoke test with run-servertest/mods; the fixture mod self-tests and stops
+tools/dev/run-subset.sh hbm thaumcraft     # server test over a few mods only, with the
+                                # block/item/entity self tests; the whole corpus takes minutes
 ./gradlew runClientTest         # client smoke test (run-clienttest, mods linked from run/mods): reports per mod
                                 # which models show the missing texture, then quits
 ./gradlew checkLegacyMod -PlegacyJar=/path/a.jar,/path/b.jar   # e.g. every jar in test-mods/

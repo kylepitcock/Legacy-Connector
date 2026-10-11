@@ -114,6 +114,20 @@ public final class LegacyJarTransformer {
                     data = in.readAllBytes();
                 }
                 String name = e.getName();
+                if (name.matches("(?i)(.*/)?(lib|libs|libraries)/[^/]+\\.jar")) {
+                    // A library bundled inside the mod (IC2's EJML): its classes join the mod's own, as if it had
+                    // been put on the classpath by the mod's coremod.
+                    try (java.util.zip.ZipInputStream nested = new java.util.zip.ZipInputStream(new ByteArrayInputStream(data))) {
+                        for (ZipEntry n; (n = nested.getNextEntry()) != null; ) {
+                            String nn = n.getName();
+                            if (n.isDirectory() || nn.startsWith("META-INF/") && !nn.startsWith("META-INF/services/")) continue;
+                            byte[] bytes = nested.readAllBytes();
+                            if (nn.endsWith(".class")) classes.putIfAbsent(nn.substring(0, nn.length() - 6), bytes);
+                            else other.putIfAbsent(nn, bytes);
+                        }
+                    }
+                    continue;
+                }
                 if (name.equals(JarFile.MANIFEST_NAME)) {
                     manifest = new Manifest(new ByteArrayInputStream(data));
                 } else if (name.endsWith(".class")) {

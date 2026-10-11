@@ -819,6 +819,11 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity == null ? -1 : mcc$entity.getId();
     }
 
+    /** Forge: the id that persists across sessions (the player's profile id). */
+    public UUID getPersistentID() {
+        return getUniqueID();
+    }
+
     public UUID getUniqueID() {
         return mcc$get$entityUniqueID(this);
     }
