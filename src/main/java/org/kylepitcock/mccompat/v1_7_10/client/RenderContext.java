@@ -29,6 +29,19 @@ public final class RenderContext {
     private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base) {}
 
     private static final Deque<Frame> FRAMES = new ArrayDeque<>();
+    /**
+     * Legacy renderers share global state (the Tessellator, the emulated GL state, these frames), so every use is
+     * serialized: the render thread holds the lock for the duration of a legacy render, and chunk-meshing threads for
+     * the duration of a captured block render. Reentrant for nested frames on one thread.
+     */
+    private static final java.util.concurrent.locks.ReentrantLock LOCK = new java.util.concurrent.locks.ReentrantLock();
+    private static Capture capture;
+
+    /** Geometry drawn while capturing: quads of {x, y, z, u, v, argb, light} corners and their face normals. */
+    public static final class Capture {
+        public final java.util.List<double[][]> quads = new java.util.ArrayList<>();
+        public final java.util.List<float[]> normals = new java.util.ArrayList<>();
+    }
     private static ResourceLocation texture = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
     private static float r = 1, g = 1, b = 1, a = 1;
     /** Matrices pushed by legacy code outside any context (should be rare): count only, so pops stay balanced. */
@@ -37,22 +50,47 @@ public final class RenderContext {
     private RenderContext() {}
 
     public static void beginGui(GuiGraphics gui) {
+        LOCK.lock();
         FRAMES.push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last()));
         resetColor();
     }
 
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        LOCK.lock();
         FRAMES.push(new Frame(null, pose, buffers, light, overlay, pose.last()));
         resetColor();
     }
 
     public static void end() {
-        Frame f = FRAMES.pop();
-        if (FRAMES.isEmpty()) resetState();
-        // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
-        for (int guard = 0; f.pose.last() != f.base && !f.pose.clear() && guard < 64; guard++) f.pose.popPose();
-        if (f.gui != null) f.gui.setColor(1, 1, 1, 1);
+        try {
+            Frame f = FRAMES.pop();
+            if (FRAMES.isEmpty()) resetState();
+            // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
+            for (int guard = 0; f.pose.last() != f.base && !f.pose.clear() && guard < 64; guard++) f.pose.popPose();
+            if (f.gui != null) f.gui.setColor(1, 1, 1, 1);
+            resetColor();
+        } finally {
+            LOCK.unlock();
+        }
+    }
+
+    /**
+     * Starts capturing geometry instead of drawing it (a block rendered into a baked model). Positions come out in
+     * the space of the emulated matrix stack, which starts as the identity.
+     */
+    public static Capture beginCapture() {
+        LOCK.lock();
+        PoseStack pose = new PoseStack();
+        FRAMES.push(new Frame(null, pose, null, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose.last()));
         resetColor();
+        Capture c = new Capture();
+        capture = c;
+        return c;
+    }
+
+    public static void endCapture() {
+        capture = null;
+        end();
     }
 
     public static boolean active() {
@@ -165,6 +203,26 @@ public final class RenderContext {
     public static void quad(double[][] v, float nx, float ny, float nz) {
         PoseStack p = pose();
         if (p == null) return;
+        if (capture != null) {
+            org.joml.Matrix4f m = p.last().pose();
+            org.joml.Matrix3f n = p.last().normal();
+            double[][] out = new double[4][];
+            org.joml.Vector3f tmp = new org.joml.Vector3f();
+            for (int i = 0; i < 4; i++) {
+                double[] c = v[i].clone();
+                tmp.set((float) c[0], (float) c[1], (float) c[2]);
+                m.transformPosition(tmp);
+                c[0] = tmp.x;
+                c[1] = tmp.y;
+                c[2] = tmp.z;
+                out[i] = c;
+            }
+            tmp.set(nx, ny, nz);
+            n.transform(tmp);
+            capture.quads.add(out);
+            capture.normals.add(new float[] {tmp.x, tmp.y, tmp.z});
+            return;
+        }
         VertexConsumer buffer = geometryBuffer();
         PoseStack.Pose last = p.last();
         boolean entity = geometryHasEntityFormat();

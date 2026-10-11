@@ -22,6 +22,7 @@ public final class Client1710 {
         ClientSelfTest.register();
         modBus.addListener(Client1710::onRegisterExtensions);
         modBus.addListener(Client1710::onRegisterItemColors);
+        modBus.addListener(Client1710::onModifyBaking);
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -31,6 +32,30 @@ public final class Client1710 {
             var t = (net.minecraft.world.entity.EntityType<net.minecraft.world.entity.Entity>) type;
             event.registerEntityRenderer(t, LegacyEntityRenderer::new);
         }
+    }
+
+    /** Blocks drawn by a legacy ISimpleBlockRenderingHandler get a model that runs it (see IsbrhBlockModel). */
+    private static void onModifyBaking(net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult event) {
+        var models = event.getModels();
+        int replaced = 0;
+        for (Block block : org.kylepitcock.mccompat.v1_7_10.bridge.BlockBridge.modBlocks()) {
+            if (block.mcc$modern == null) continue;
+            int renderId;
+            try {
+                renderId = block.getRenderType();
+            } catch (RuntimeException | LinkageError e) {
+                continue;
+            }
+            if (mccompat.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null) continue;
+            for (var state : block.mcc$modern.getStateDefinition().getPossibleStates()) {
+                var location = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);
+                var original = models.get(location);
+                if (original == null || original instanceof IsbrhBlockModel) continue;
+                models.put(location, new IsbrhBlockModel(original, block, renderId));
+                replaced++;
+            }
+        }
+        if (replaced > 0) org.slf4j.LoggerFactory.getLogger("Retrofit/ISBRH").info("{} block states are drawn by legacy block renderers", replaced);
     }
 
     /** Legacy items tinted per render pass (spawn eggs, dyed items): layer N of the item model is pass N. */

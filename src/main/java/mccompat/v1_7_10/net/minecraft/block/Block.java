@@ -541,8 +541,77 @@ public class Block {
     public void onBlockPreDestroy(World world, int x, int y, int z, int meta) {
     }
 
-    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
+    /** Forge: how the block is removed when a player breaks it (return false to keep it). */
+    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z) {
         return world.setBlockToAir(x, y, z);
+    }
+
+    public boolean removedByPlayer(World world, EntityPlayer player, int x, int y, int z, boolean willHarvest) {
+        return removedByPlayer(world, player, x, y, z);
+    }
+
+    /** Vanilla: adds the collision boxes that intersect {@code mask} (blocks with several boxes override this). */
+    public void addCollisionBoxesToList(World world, int x, int y, int z, AxisAlignedBB mask, List list, Entity entity) {
+        AxisAlignedBB box = getCollisionBoundingBoxFromPool(world, x, y, z);
+        if (box != null && mask.intersectsWith(box)) list.add(box);
+    }
+
+    /** Forge: whether entities can climb this block. */
+    public boolean isLadder(IBlockAccess world, int x, int y, int z, EntityLivingBase entity) {
+        return false;
+    }
+
+    /** Forge: whether the plant can grow on this block from the given side. */
+    public boolean canSustainPlant(IBlockAccess world, int x, int y, int z, ForgeDirection direction,
+            mccompat.v1_7_10.net.minecraftforge.common.IPlantable plantable) {
+        return false;
+    }
+
+    /** Forge: whether a creature type can spawn on this block. */
+    public boolean canCreatureSpawn(mccompat.v1_7_10.net.minecraft.entity.EnumCreatureType type, IBlockAccess world, int x, int y, int z) {
+        return isSideSolid(world, x, y, z, ForgeDirection.UP);
+    }
+
+    /** Forge: the block is destroyed by an explosion. */
+    public void onBlockExploded(World world, int x, int y, int z, mccompat.v1_7_10.net.minecraft.world.Explosion explosion) {
+        world.setBlockToAir(x, y, z);
+        onBlockDestroyedByExplosion(world, x, y, z, explosion);
+    }
+
+    public void onBlockDestroyedByExplosion(World world, int x, int y, int z, mccompat.v1_7_10.net.minecraft.world.Explosion explosion) {
+    }
+
+    public boolean canDropFromExplosion(mccompat.v1_7_10.net.minecraft.world.Explosion explosion) {
+        return true;
+    }
+
+    /** Forge: how much this block adds to an enchanting table's power (bookshelves: 1). */
+    public float getEnchantPowerBonus(World world, int x, int y, int z) {
+        return 0.0F;
+    }
+
+    public boolean isBeaconBase(IBlockAccess world, int x, int y, int z, int beaconX, int beaconY, int beaconZ) {
+        return false;
+    }
+
+    public boolean isFoliage(IBlockAccess world, int x, int y, int z) {
+        return false;
+    }
+
+    public boolean canBeReplacedByLeaves(IBlockAccess world, int x, int y, int z) {
+        return !isOpaqueCube();
+    }
+
+    public boolean canSustainLeaves(IBlockAccess world, int x, int y, int z) {
+        return false;
+    }
+
+    public boolean isBlockSolid(IBlockAccess world, int x, int y, int z, int side) {
+        return getMaterial().isSolid();
+    }
+
+    public int getMixedBrightnessForBlock(IBlockAccess world, int x, int y, int z) {
+        return world.getLightBrightnessForSkyBlocks(x, y, z, getLightValue());
     }
 
     public void harvestBlock(World world, EntityPlayer player, int x, int y, int z, int meta) {

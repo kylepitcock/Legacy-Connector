@@ -67,6 +67,12 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean dynamicBounds;
     private final boolean customHardness;
     private final VoxelShape[] staticShapes = new VoxelShape[16];
+    private final boolean collisionList;
+    private final boolean ladder;
+    private final boolean customRemoval;
+    private final boolean sustainsPlants;
+    private final boolean customExplosion;
+    private final boolean enchantBonus;
 
     protected LegacyBlockAdapter(Block legacy, BlockBehaviour.Properties properties) {
         super(properties);
@@ -74,6 +80,18 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.dynamicBounds = overrides(legacy, "setBlockBoundsBasedOnState", mccompat.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
         this.customHardness = overrides(legacy, "getPlayerRelativeBlockHardness", EntityPlayer.class, World.class, int.class, int.class, int.class)
                 || overrides(legacy, "getBlockHardness", World.class, int.class, int.class, int.class);
+        this.collisionList = overrides(legacy, "addCollisionBoxesToList", World.class, int.class, int.class, int.class, AxisAlignedBB.class,
+                java.util.List.class, mccompat.v1_7_10.net.minecraft.entity.Entity.class);
+        this.ladder = overrides(legacy, "isLadder", mccompat.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class,
+                EntityLivingBase.class);
+        this.customRemoval = overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class)
+                || overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class, boolean.class);
+        this.sustainsPlants = overrides(legacy, "canSustainPlant", mccompat.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
+                int.class, mccompat.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class,
+                mccompat.v1_7_10.net.minecraftforge.common.IPlantable.class);
+        this.customExplosion = overrides(legacy, "onBlockExploded", World.class, int.class, int.class, int.class,
+                mccompat.v1_7_10.net.minecraft.world.Explosion.class);
+        this.enchantBonus = overrides(legacy, "getEnchantPowerBonus", World.class, int.class, int.class, int.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
     }
 
@@ -382,6 +400,26 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     @Override
     protected VoxelShape getCollisionShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         if (!hasCollision) return Shapes.empty();
+        if (collisionList && level instanceof LevelAccessor acc) {
+            // Several boxes (machines, frames): collect what the legacy block adds for a mask around the block.
+            java.util.List<Object> boxes = new java.util.ArrayList<>();
+            AxisAlignedBB mask = AxisAlignedBB.getBoundingBox(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2);
+            synchronized (legacy) {
+                try {
+                    legacy.addCollisionBoxesToList(world(acc), pos.getX(), pos.getY(), pos.getZ(), mask, boxes, null);
+                } catch (RuntimeException | LinkageError e) {
+                    shapeFailure(e);
+                    return Shapes.block();
+                }
+            }
+            VoxelShape shape = Shapes.empty();
+            for (Object o : boxes) {
+                if (!(o instanceof AxisAlignedBB b)) continue;
+                shape = Shapes.or(shape, Shapes.create(b.minX - pos.getX(), b.minY - pos.getY(), b.minZ - pos.getZ(),
+                        b.maxX - pos.getX(), b.maxY - pos.getY(), b.maxZ - pos.getZ()));
+            }
+            return shape;
+        }
         if (level instanceof LevelAccessor acc) {
             AxisAlignedBB box;
             synchronized (legacy) {
@@ -397,6 +435,71 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                     box.maxX - pos.getX(), box.maxY - pos.getY(), box.maxZ - pos.getZ());
         }
         return getShape(state, level, pos, context);
+    }
+
+    // ------------------------------------------------------------------ Forge hooks
+
+    @Override
+    public boolean isLadder(BlockState state, LevelReader level, BlockPos pos, LivingEntity entity) {
+        if (!ladder) return super.isLadder(state, level, pos, entity);
+        try {
+            return legacy.isLadder(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), (EntityLivingBase) EntityBridge.wrap(entity));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean onDestroyedByPlayer(BlockState state, Level level, BlockPos pos, Player player, boolean willHarvest,
+            net.minecraft.world.level.material.FluidState fluid) {
+        if (!customRemoval) return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+        try {
+            return legacy.removedByPlayer(World.mcc$wrap(level), (EntityPlayer) EntityBridge.wrap(player), pos.getX(), pos.getY(), pos.getZ(), willHarvest);
+        } catch (RuntimeException | LinkageError e) {
+            return super.onDestroyedByPlayer(state, level, pos, player, willHarvest, fluid);
+        }
+    }
+
+    @Override
+    public net.neoforged.neoforge.common.util.TriState canSustainPlant(BlockState state, BlockGetter level, BlockPos pos, Direction facing,
+            BlockState plant) {
+        if (!sustainsPlants || !(plant.getBlock() instanceof LegacyBlockAdapter adapter)
+                || !(adapter.legacy() instanceof mccompat.v1_7_10.net.minecraftforge.common.IPlantable plantable)) {
+            return super.canSustainPlant(state, level, pos, facing, plant);
+        }
+        try {
+            boolean ok = legacy.canSustainPlant(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
+                    mccompat.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(facing.get3DDataValue()), plantable);
+            return ok ? net.neoforged.neoforge.common.util.TriState.TRUE : net.neoforged.neoforge.common.util.TriState.FALSE;
+        } catch (RuntimeException | LinkageError e) {
+            return net.neoforged.neoforge.common.util.TriState.DEFAULT;
+        }
+    }
+
+    @Override
+    public void onBlockExploded(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.Explosion explosion) {
+        if (!customExplosion) {
+            super.onBlockExploded(state, level, pos, explosion);
+            return;
+        }
+        try {
+            World world = World.mcc$wrap(level);
+            var center = explosion.center();
+            legacy.onBlockExploded(world, pos.getX(), pos.getY(), pos.getZ(),
+                    new mccompat.v1_7_10.net.minecraft.world.Explosion(world, null, center.x, center.y, center.z, 4.0F));
+        } catch (RuntimeException | LinkageError e) {
+            super.onBlockExploded(state, level, pos, explosion);
+        }
+    }
+
+    @Override
+    public float getEnchantPowerBonus(BlockState state, LevelReader level, BlockPos pos) {
+        if (!enchantBonus || !(level instanceof LevelAccessor acc)) return super.getEnchantPowerBonus(state, level, pos);
+        try {
+            return legacy.getEnchantPowerBonus(world(acc), pos.getX(), pos.getY(), pos.getZ());
+        } catch (RuntimeException | LinkageError e) {
+            return 0.0F;
+        }
     }
 
     // ------------------------------------------------------------------ drops

@@ -116,8 +116,24 @@ On the client, renderers registered with `RenderingRegistry.registerEntityRender
 legacy `Render`/`RenderLiving` code runs inside a render context that maps its OpenGL matrix and state calls onto
 the modern pose stack and buffers, legacy models (`ModelBase`, `ModelBiped`, `ModelQuadruped`, ...) emit real
 geometry, and `Tessellator`/immediate-mode (`glBegin`) geometry is assembled into quads with the matching modern
-render type (textured, translucent or additive). Not yet: armour and held items on legacy mobs, particles
-(`EntityFX`).
+render type (textured, translucent or additive). Not yet: armour and held items on legacy mobs.
+
+### Block and item rendering
+
+- **Textures:** `registerBlockIcons`/`registerIcons` run when the resource pack is generated; icon names become sprite
+  ids (vanilla 1.7.10 names map through a rename table to the 1.21 names). `TextureMap`/`TextureAtlasSprite` are real:
+  sprites a mod builds itself with a custom loader (Railcraft's unstitched sheets, HBM's recoloured textures) are run
+  at pack generation and written out as ordinary textures.
+- **Blocks:** the generated block models cover cubes, partial blocks, plants, crops and stairs. Blocks drawn by an
+  `ISimpleBlockRenderingHandler` get a model that runs the handler while the chunk is meshed: the Tessellator
+  captures its quads (`RenderBlocks` implements the face renderers) and they become the block's baked quads.
+  Tile entity special renderers (`TileEntitySpecialRenderer`) run in the render context like entity renderers.
+- **Items:** Forge `IItemRenderer`s and 3D `ISimpleBlockRenderingHandler` inventory renders draw through a
+  `builtin/entity` model. `AdvancedModelLoader` loads Wavefront OBJ models for renderers.
+- **Vanilla behaviour constants** (render types, opacity of the vanilla block classes) come from a table generated
+  from the 1.7.10 jar (`tools/extract_block_constants.sh`), since the vanilla classes are shells.
+- Not yet: per-vertex colour and ambient occlusion of handler-drawn blocks, fluids (`BlockFluidClassic`),
+  `IIcon`s of non-block atlases, mod dimensions.
 
 ## Compatibility status
 
@@ -147,6 +163,8 @@ Requires JDK 21.
 ./gradlew bundleJar             # single distributable jar
 ./gradlew runClient             # dev client, mods from run/mods
 ./gradlew runServerTest         # headless smoke test with run-servertest/mods; the fixture mod self-tests and stops
+./gradlew runClientTest         # client smoke test (run-clienttest, mods linked from run/mods): reports per mod
+                                # which models show the missing texture, then quits
 ./gradlew checkLegacyMod -PlegacyJar=/path/a.jar,/path/b.jar   # e.g. every jar in test-mods/
                                 # translate offline as one modset, list unlinkable references,
                                 # generate + JVM-verify the synthesized API (no game launch)

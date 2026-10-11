@@ -159,6 +159,16 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return model;
     }
 
+    private static boolean isbrhIn3d(Block b) {
+        try {
+            int rt = b.getRenderType();
+            var h = mccompat.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(rt);
+            return h != null && h.shouldRender3DInInventory(rt);
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     private static String iconName(Block b, int side, int meta) {
         try {
             IIcon icon = b.getIcon(side, meta);
@@ -253,6 +263,13 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.add("display", GENERATED_DISPLAY.deepCopy());
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", icon == null ? "minecraft:missingno" : icon.getIconName());
+                model.add("textures", tex);
+            } else if (item instanceof ItemBlock ib && isbrhIn3d(ib.mcc$block())) {
+                // Drawn by the block's ISimpleBlockRenderingHandler (LegacyItemRenderer).
+                model.addProperty("parent", "minecraft:builtin/entity");
+                model.add("display", GENERATED_DISPLAY.deepCopy());
+                JsonObject tex = new JsonObject();
+                tex.addProperty("particle", iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
                 model.add("textures", tex);
             } else if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == -1) {
                 // 1.7.10 drew blocks without a block model as their 2D icon.

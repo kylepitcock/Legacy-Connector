@@ -40,6 +40,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             int light, int overlay) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null || view.getItem() == null) return;
+        if (view.getItem() instanceof mccompat.v1_7_10.net.minecraft.item.ItemBlock ib && renderIsbrhItem(ib, view, context, pose, buffers, light, overlay)) return;
         ItemRenderType type = switch (context) {
             case GUI -> ItemRenderType.INVENTORY;
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> ItemRenderType.EQUIPPED_FIRST_PERSON;
@@ -81,6 +82,39 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderer.renderItem(type, view, data);
         } catch (RuntimeException | LinkageError e) {
             // a broken legacy renderer must not take the inventory down
+        } finally {
+            RenderContext.end();
+            pose.popPose();
+        }
+    }
+
+    /** A block drawn by an ISimpleBlockRenderingHandler, in inventories/hands/drops (3D handlers only). */
+    private boolean renderIsbrhItem(mccompat.v1_7_10.net.minecraft.item.ItemBlock ib, ItemStack view, ItemDisplayContext context,
+            PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        var block = ib.mcc$block();
+        int renderId;
+        try {
+            renderId = block.getRenderType();
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+        var handler = mccompat.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId);
+        if (handler == null) return false;
+        pose.pushPose();
+        RenderContext.beginWorld(pose, buffers, light, overlay);
+        try {
+            if (!handler.shouldRender3DInInventory(renderId)) return false;
+            RenderContext.bindTexture(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
+            pose.translate(0.5, 0.5, 0.5);
+            if (context == ItemDisplayContext.GUI) {
+                pose.scale(0.625F, 0.625F, 0.625F);
+                pose.mulPose(Axis.XP.rotationDegrees(30));
+                pose.mulPose(Axis.YP.rotationDegrees(225));
+            }
+            handler.renderInventoryBlock(block, view.getItem().getMetadata(view.getItemDamage()), renderId, renderBlocks);
+            return true;
+        } catch (RuntimeException | LinkageError e) {
+            return true; // a broken legacy renderer must not take the inventory down
         } finally {
             RenderContext.end();
             pose.popPose();
