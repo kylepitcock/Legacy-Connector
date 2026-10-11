@@ -1,5 +1,6 @@
 package mccompat.v1_7_10.cpw.mods.fml.common.discovery;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -14,7 +15,7 @@ import net.neoforged.fml.ModList;
 public class ASMDataTable {
     private static ASMDataTable instance;
     private final Map<String, Set<ASMData>> byAnnotation = new HashMap<>();
-    private final Map<String, Set<ASMData>> byPackage = new HashMap<>();
+    private final Map<String, Set<ModCandidate>> byPackage = new HashMap<>();
 
     public static synchronized ASMDataTable mcc$get() {
         if (instance == null) instance = new ASMDataTable(true);
@@ -26,13 +27,20 @@ public class ASMDataTable {
 
     private ASMDataTable(boolean scan) {
         for (var scanData : ModList.get().getAllScanData()) {
+            File file = null;
+            try {
+                if (!scanData.getIModInfoData().isEmpty()) file = scanData.getIModInfoData().get(0).getFile().getFilePath().toFile();
+            } catch (RuntimeException ignored) {
+                // file system without java.io.File paths
+            }
+            ModCandidate candidate = new ModCandidate(file);
+            for (var c : scanData.getClasses()) candidate.mcc$addClass(c.clazz().getInternalName());
+            for (String pkg : candidate.getContainedPackages()) byPackage.computeIfAbsent(pkg, k -> new LinkedHashSet<>()).add(candidate);
             for (var a : scanData.getAnnotations()) {
                 String annotation = a.annotationType().getClassName();
                 String className = a.clazz().getClassName();
-                ASMData data = new ASMData(null, annotation, className, a.memberName(), new HashMap<>(a.annotationData()));
+                ASMData data = new ASMData(candidate, annotation, className, a.memberName(), new HashMap<>(a.annotationData()));
                 byAnnotation.computeIfAbsent(annotation, k -> new LinkedHashSet<>()).add(data);
-                int dot = className.lastIndexOf('.');
-                byPackage.computeIfAbsent(dot < 0 ? "" : className.substring(0, dot), k -> new LinkedHashSet<>()).add(data);
             }
         }
     }
@@ -44,26 +52,34 @@ public class ASMDataTable {
         return out;
     }
 
-    public Set<ASMData> getAnnotationsFor(Object container) {
-        return new HashSet<>();
+    public com.google.common.collect.SetMultimap<String, ASMData> getAnnotationsFor(mccompat.v1_7_10.cpw.mods.fml.common.ModContainer container) {
+        com.google.common.collect.SetMultimap<String, ASMData> out = com.google.common.collect.LinkedHashMultimap.create();
+        File source = container == null ? null : container.getSource();
+        if (source == null) return out;
+        for (var e : byAnnotation.entrySet()) {
+            for (ASMData d : e.getValue()) {
+                if (d.getCandidate() != null && source.equals(d.getCandidate().getModContainer())) out.put(e.getKey(), d);
+            }
+        }
+        return out;
     }
 
-    public Set<ASMData> getCandidatesFor(String pkg) {
+    public Set<ModCandidate> getCandidatesFor(String pkg) {
         return new LinkedHashSet<>(byPackage.getOrDefault(pkg, Set.of()));
     }
 
-    public void addASMData(Object candidate, String annotation, String className, String objectName, Map<String, Object> info) {
+    public void addASMData(ModCandidate candidate, String annotation, String className, String objectName, Map<String, Object> info) {
         byAnnotation.computeIfAbsent(annotation, k -> new LinkedHashSet<>()).add(new ASMData(candidate, annotation, className, objectName, info));
     }
 
     public static final class ASMData implements Cloneable {
-        private final Object candidate;
+        private final ModCandidate candidate;
         private final String annotationName;
         private final String className;
         private final String objectName;
         private final Map<String, Object> annotationInfo;
 
-        public ASMData(Object candidate, String annotationName, String className, String objectName, Map<String, Object> info) {
+        public ASMData(ModCandidate candidate, String annotationName, String className, String objectName, Map<String, Object> info) {
             this.candidate = candidate;
             this.annotationName = annotationName;
             this.className = className;
@@ -71,7 +87,7 @@ public class ASMDataTable {
             this.annotationInfo = info;
         }
 
-        public Object getCandidate() {
+        public ModCandidate getCandidate() {
             return candidate;
         }
 

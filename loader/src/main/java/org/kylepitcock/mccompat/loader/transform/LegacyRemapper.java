@@ -39,7 +39,9 @@ public final class LegacyRemapper extends Remapper {
 
     static final Map<String, String> JDK_PACKAGE_RELOCATIONS = Map.of(
             "jdk/nashorn/", "org/openjdk/nashorn/",
-            "org/apache/commons/lang/", "org/apache/commons/lang3/");
+            "org/apache/commons/lang/", "org/apache/commons/lang3/",
+            // log4j 2.0-beta9 (1.7.10) -> 2.x: the core helpers package became core.util.
+            "org/apache/logging/log4j/core/helpers/", "org/apache/logging/log4j/core/util/");
 
     private final LegacyVersion version;
     private final McpMappings mcp;
@@ -135,6 +137,15 @@ public final class LegacyRemapper extends Remapper {
         if (s.startsWith("field_")) recordReflectedField(s);
         String member = mcp.anyMember(s);
         if (member != s) return member;
+        // Class.toString() / getName() forms compared against literals: "class X", "interface X", "[LX;".
+        for (String prefix : new String[] {"class ", "interface "}) {
+            if (s.startsWith(prefix) && s.length() > prefix.length()) return prefix + mapString(s.substring(prefix.length()));
+        }
+        if (s.startsWith("[") && s.endsWith(";")) {
+            int dims = 0;
+            while (dims < s.length() && s.charAt(dims) == '[') dims++;
+            if (dims < s.length() - 2 && s.charAt(dims) == 'L') return s.substring(0, dims + 1) + mapString(s.substring(dims + 1, s.length() - 1)) + ";";
+        }
         if (!looksLikeClassName(s)) return s;
         boolean dotted = s.indexOf('.') >= 0;
         String internal = dotted ? s.replace('.', '/') : s;

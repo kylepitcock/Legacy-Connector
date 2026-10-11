@@ -42,4 +42,34 @@ public class LanguageRegistry {
     public static void addName(Object obj, String name) {
         instance().addNameForObject(obj, "en_US", name);
     }
+
+    /** Adds a whole language table (mods load their own .lang files and inject them). */
+    public void injectLanguage(String language, java.util.HashMap<String, String> parsedLangFile) {
+        if (parsedLangFile != null) parsedLangFile.forEach((k, v) -> addStringLocalization(k, language, v));
+    }
+
+    public void loadLocalization(String localizationFile, String lang, boolean isXML) {
+        java.io.InputStream in = LanguageRegistry.class.getResourceAsStream(localizationFile);
+        if (in == null) return;
+        mcc$load(in, lang, isXML);
+    }
+
+    public void loadLocalization(java.net.URL localizationFile, String lang, boolean isXML) {
+        try {
+            mcc$load(localizationFile.openStream(), lang, isXML);
+        } catch (java.io.IOException ignored) {
+            // missing file: FML logged and continued
+        }
+    }
+
+    private void mcc$load(java.io.InputStream in, String lang, boolean isXML) {
+        try (in) {
+            java.util.Properties p = new java.util.Properties();
+            if (isXML) p.loadFromXML(in);
+            else p.load(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+            for (String k : p.stringPropertyNames()) addStringLocalization(k, lang, p.getProperty(k));
+        } catch (java.io.IOException ignored) {
+            // malformed file: FML logged and continued
+        }
+    }
 }

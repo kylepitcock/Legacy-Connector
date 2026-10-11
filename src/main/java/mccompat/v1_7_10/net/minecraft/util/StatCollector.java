@@ -7,7 +7,10 @@ public class StatCollector {
         Language lang = Language.getInstance();
         if (key == null || lang.has(key)) return lang.getOrDefault(key);
         String modern = mcc$modernKey(key);
-        return modern != null && lang.has(modern) ? lang.getOrDefault(modern) : lang.getOrDefault(key);
+        if (modern != null && lang.has(modern)) return lang.getOrDefault(modern);
+        // Code-registered translations (LanguageRegistry, StringTranslate): on a server no resource pack serves them.
+        String registered = org.kylepitcock.mccompat.core.pack.GeneratedTranslations.get("en_US", key);
+        return registered != null ? registered : lang.getOrDefault(key);
     }
 
     /** Legacy vanilla keys whose 1.21 counterparts were renamed (vanilla entity names, the spawn egg prefix). */
@@ -44,7 +47,7 @@ public class StatCollector {
     }
 
     public static boolean canTranslate(String key) {
-        return Language.getInstance().has(key);
+        return Language.getInstance().has(key) || org.kylepitcock.mccompat.core.pack.GeneratedTranslations.get("en_US", key) != null;
     }
 
     public static long getLastTranslationUpdateTimeInMilliseconds() {

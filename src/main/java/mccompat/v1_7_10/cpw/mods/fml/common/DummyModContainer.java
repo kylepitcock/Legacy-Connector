@@ -8,6 +8,8 @@ import java.util.Map;
 public class DummyModContainer implements ModContainer {
     private final ModMetadata md;
     private String label;
+    /** The coremod's jar (FML's coremod containers reported it; mods map jars to mods with it). */
+    public File mcc$source;
 
     public DummyModContainer(ModMetadata md) {
         this.md = md == null ? new ModMetadata() : md;
@@ -39,7 +41,7 @@ public class DummyModContainer implements ModContainer {
 
     @Override
     public File getSource() {
-        return null;
+        return mcc$source;
     }
 
     @Override

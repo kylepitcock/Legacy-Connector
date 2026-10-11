@@ -19,7 +19,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Constructs legacy coremod plugins the way FML did before mods loaded: the plugin is instantiated, gets its
  * injectData, and its setup hook runs. Many mods check that their coremod was loaded (or are configured by it).
- * Bytecode transformers are never applied (they patch 1.7.10 Minecraft classes that do not exist here).
+ * Their class transformers already ran over the legacy mod classes before translation (LegacyCoreModTransformers);
+ * those aimed at 1.7.10 Minecraft classes have nothing to patch.
  */
 public final class CoreModPlugins {
     private static final Logger LOG = LoggerFactory.getLogger("Retrofit/CoreMods");
@@ -48,64 +49,98 @@ public final class CoreModPlugins {
         File gameDir = FMLPaths.GAMEDIR.get().toFile();
         // Plugins may show download dialogs (CodeChickenCore's DepLoader); there is no one to answer them.
         System.setProperty("java.awt.headless", "true");
+        // As FML: every plugin is constructed first; then, by sorting index, each is set up (plugins check each
+        // other's state there, e.g. OpenBlocks requires OpenModsLib's plugin to have run).
+        List<Object[]> constructed = new ArrayList<>();
         for (String name : classes) {
-            // Each plugin gets a bounded amount of time: a network wait must not block startup.
-            Thread worker = new Thread(() -> runOne(name, loader, gameDir, plugins), "Retrofit coremod " + name);
-            worker.setDaemon(true);
-            worker.setContextClassLoader(loader);
-            worker.start();
-            try {
-                worker.join(30_000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                return;
-            }
-            if (worker.isAlive()) LOG.warn("Legacy coremod {} is still running after 30 s; continuing without waiting for it", name);
+            timed(name, loader, () -> {
+                Class<?> cls = Class.forName(name, true, loader);
+                Object plugin = cls.getDeclaredConstructor().newInstance();
+                var index = cls.getAnnotation(IFMLLoadingPlugin.SortingIndex.class);
+                synchronized (plugins) {
+                    plugins.add(plugin);
+                    constructed.add(new Object[] {name, plugin, index == null ? 0 : index.value()});
+                }
+            });
+        }
+        List<Object[]> ordered;
+        synchronized (plugins) {
+            ordered = new ArrayList<>(constructed);
+        }
+        ordered.sort(java.util.Comparator.comparingInt(o -> (Integer) o[2]));
+        for (Object[] o : ordered) {
+            String name = (String) o[0];
+            timed(name, loader, () -> setUp(name, o[1], loader, gameDir, plugins));
         }
     }
 
-    private static void runOne(String name, ClassLoader loader, File gameDir, List<Object> plugins) {
-        {
+    private interface Step {
+        void run() throws Throwable;
+    }
+
+    /** One step of a plugin, on its own thread with a time limit: a network wait must not block startup. */
+    private static void timed(String name, ClassLoader loader, Step step) {
+        Thread worker = new Thread(() -> {
             try {
-                Class<?> cls = Class.forName(name, true, loader);
-                Object plugin = cls.getDeclaredConstructor().newInstance();
-                synchronized (plugins) {
-                    plugins.add(plugin);
-                }
-                if (!(plugin instanceof IFMLLoadingPlugin p)) return;
-                Map<String, Object> data = baseData(gameDir, cls);
-                data.put("coremodList", plugins);
-                p.injectData(data);
-                // FML registered the plugin's mod container as a mod: mods check isModLoaded("<its id>").
-                String containerClass = p.getModContainerClass();
-                if (containerClass != null && !containerClass.isEmpty()) {
-                    Object container = containerClass.equals(cls.getName()) ? plugin
-                            : Class.forName(containerClass, true, loader).getDeclaredConstructor().newInstance();
-                    if (container instanceof mccompat.v1_7_10.cpw.mods.fml.common.ModContainer mc) {
-                        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$addCoreModContainer(mc);
-                    }
-                }
-                String setup = p.getSetupClass();
-                if (setup != null && !setup.isEmpty()) {
-                    Object hook = Class.forName(setup, true, loader).getDeclaredConstructor().newInstance();
-                    if (hook instanceof IFMLCallHook h) {
-                        Map<String, Object> hookData = baseData(gameDir, cls);
-                        hookData.put("classLoader", mccompat.v1_7_10.net.minecraft.launchwrapper.Launch.classLoader);
-                        hookData.put("deobfuscationFileName", null);
-                        h.injectData(hookData);
-                        h.call();
-                    }
-                }
-                String[] transformers = p.getASMTransformerClass();
-                LOG.info("Legacy coremod {} loaded{}", name,
-                        transformers == null || transformers.length == 0 ? "" : " (its " + transformers.length + " bytecode transformer(s) are not applied)");
+                step.run();
             } catch (Throwable t) {
                 Throwable root = t;
                 while ((root instanceof java.lang.reflect.InvocationTargetException || root instanceof ExceptionInInitializerError)
                         && root.getCause() != null) root = root.getCause();
                 LOG.warn("Legacy coremod {} could not be loaded: {}", name, root.toString(), root);
             }
+        }, "Retrofit coremod " + name);
+        worker.setDaemon(true);
+        worker.setContextClassLoader(loader);
+        worker.start();
+        try {
+            worker.join(30_000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            return;
         }
+        if (worker.isAlive()) LOG.warn("Legacy coremod {} is still running after 30 s; continuing without waiting for it", name);
+    }
+
+    private static void setUp(String name, Object plugin, ClassLoader loader, File gameDir, List<Object> plugins) throws Throwable {
+        if (!(plugin instanceof IFMLLoadingPlugin p)) return;
+        Class<?> cls = plugin.getClass();
+        // As FML: the transformers exist before injectData, which may configure them. They were already applied to
+        // the legacy classes before translation; these instances only serve the plugin's own code.
+        String[] transformers = p.getASMTransformerClass();
+        if (transformers != null) for (String t : transformers) {
+            if (t == null || t.isBlank()) continue;
+            try {
+                Class.forName(t.trim(), true, loader).getDeclaredConstructor().newInstance();
+            } catch (Throwable e) {
+                LOG.debug("Legacy coremod {}: transformer {} could not be created: {}", name, t, e.toString());
+            }
+        }
+        Map<String, Object> data = baseData(gameDir, cls);
+        data.put("coremodList", plugins);
+        p.injectData(data);
+        // FML registered the plugin's mod container as a mod: mods check isModLoaded("<its id>").
+        String containerClass = p.getModContainerClass();
+        if (containerClass != null && !containerClass.isEmpty()) {
+            Object container = containerClass.equals(cls.getName()) ? plugin
+                    : Class.forName(containerClass, true, loader).getDeclaredConstructor().newInstance();
+            if (container instanceof mccompat.v1_7_10.cpw.mods.fml.common.ModContainer mc) {
+                if (mc instanceof mccompat.v1_7_10.cpw.mods.fml.common.DummyModContainer d && d.mcc$source == null) d.mcc$source = location(cls);
+                mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$addCoreModContainer(mc);
+            }
+        }
+        String setup = p.getSetupClass();
+        if (setup != null && !setup.isEmpty()) {
+            Object hook = Class.forName(setup, true, loader).getDeclaredConstructor().newInstance();
+            if (hook instanceof IFMLCallHook h) {
+                Map<String, Object> hookData = baseData(gameDir, cls);
+                hookData.put("classLoader", mccompat.v1_7_10.net.minecraft.launchwrapper.Launch.classLoader);
+                hookData.put("deobfuscationFileName", null);
+                h.injectData(hookData);
+                h.call();
+            }
+        }
+        LOG.info("Legacy coremod {} loaded", name);
     }
 
     private static Map<String, Object> baseData(File gameDir, Class<?> plugin) {
@@ -121,7 +156,7 @@ public final class CoreModPlugins {
         try {
             var src = cls.getProtectionDomain().getCodeSource();
             if (src == null || src.getLocation() == null) return null;
-            var uri = src.getLocation().toURI();
+            var uri = org.kylepitcock.mccompat.compat.jdk.ResourceCompat.getLocation(src).toURI();
             return "file".equals(uri.getScheme()) ? new File(uri) : null;
         } catch (Exception e) {
             return null;

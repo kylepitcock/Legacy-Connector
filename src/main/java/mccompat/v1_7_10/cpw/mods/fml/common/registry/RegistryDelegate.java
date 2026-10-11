@@ -11,7 +11,9 @@ public interface RegistryDelegate<T> {
     Class<T> type();
 
     final class Delegate<T> implements RegistryDelegate<T> {
-        private final T referant;
+        // Not final, as in FML: mods replacing a vanilla entry repoint the delegate by reflection.
+        private T referant;
+        private String name;
         private final Class<T> type;
         private final RegistryNamespaced registry;
 
@@ -28,6 +30,7 @@ public interface RegistryDelegate<T> {
 
         @Override
         public String name() {
+            if (name != null) return name;
             return registry == null ? null : registry.getNameForObject((Object) referant);
         }
 

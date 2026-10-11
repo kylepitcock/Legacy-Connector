@@ -54,7 +54,14 @@ Mod-specific code is reserved for rare edge cases (none exist today).
   `NoClassDefFoundError`, so the rest of the class still loads (the JVM verifies whole classes at once).
 - Access transformers: the shim is public and non-final throughout, as mods compiled against AT-widened Minecraft.
 - FML's Scala language adapter (`object` mods) and the libraries 1.7.10 shipped: Scala 2.11, Trove, vecmath.
-- LaunchWrapper's `Launch.blackboard` / `Launch.classLoader` (transformer registration is accepted and ignored).
+- Coremods: their plugins are constructed and set up as FML did (construct all, then `getASMTransformerClass` /
+  `injectData` / setup hook by sorting index; mod containers count as loaded mods). Their class transformers run over
+  the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so
+  coremods that patch *mod* classes work: CoFH `@Strippable`, AE2 `@Integration`, OpenMods, Steve's Addons, patcher
+  mods fixing other mods' API mismatches. Transformers aimed at Minecraft's own classes find nothing to patch.
+- LaunchWrapper's `Launch.blackboard` / `Launch.classLoader`.
+- Resource URLs: mod jars are served from NeoForge's `union:` file system; mods that list their own jar's files
+  (checking for `jar:`/`file:` URLs) get the equivalent `jar:file:` URL.
 - Mods linking against each other's classes (e.g. RotaryCraft extends DragonAPI) are linked as one modset; APIs
   shaded into several jars are merged, preferring the copy from the mod that owns the API.
 
@@ -121,7 +128,7 @@ render type (textured, translucent or additive). Not yet: armour and held items 
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
 
-Not supported (and likely never fully): coremods / ASM transformers and mixins that patch legacy Minecraft code,
+Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
 LaunchWrapper tweakers. They are reported, and the rest of the mod still loads.
 
 ### What happens to a mod

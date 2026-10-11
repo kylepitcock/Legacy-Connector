@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 3;
+    public static final int TRANSFORMER_VERSION = 4;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/retrofit-coremod.txt";
 
@@ -59,6 +59,24 @@ public final class LegacyJarTransformer {
     public LegacyJarTransformer side(String side) {
         this.side = side;
         return this;
+    }
+
+    /** Rewrites a legacy class before translation (legacy coremods' class transformers); null leaves classes as shipped. */
+    public interface ClassPatcher {
+        byte[] patch(LegacyJar jar, String internalName, byte[] bytes);
+    }
+
+    private ClassPatcher patcher;
+
+    public LegacyJarTransformer patcher(ClassPatcher patcher) {
+        this.patcher = patcher;
+        return this;
+    }
+
+    private Contents readPatched(LegacyJar jar) throws IOException {
+        Contents c = read(jar);
+        if (patcher != null) c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
+        return c;
     }
 
     public LegacyJarTransformer presentMods(java.util.Collection<String> legacyIds) {
@@ -145,7 +163,7 @@ public final class LegacyJarTransformer {
      * into it. Cheap: method bodies are skipped.
      */
     public List<ClassInfo> scan(LegacyJar jar) throws IOException {
-        Contents c = read(jar);
+        Contents c = readPatched(jar);
         LegacyRemapper remapper = new LegacyRemapper(jar.version, McpMappings.forVersion(jar.version), shim, null);
         relocateBundled(jar, c.classes, remapper);
         preventCollisions(c.classes, remapper);
@@ -172,7 +190,7 @@ public final class LegacyJarTransformer {
         LegacyVersion version = jar.version;
         LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version), shim, result.demand);
 
-        Contents contents = read(jar);
+        Contents contents = readPatched(jar);
         Map<String, byte[]> classes = contents.classes;
         Map<String, byte[]> other = contents.other;
         Manifest manifest = contents.manifest;

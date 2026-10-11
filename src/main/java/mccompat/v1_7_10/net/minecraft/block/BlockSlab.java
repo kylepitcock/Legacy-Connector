@@ -6,6 +6,9 @@ package mccompat.v1_7_10.net.minecraft.block;
  * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
  */
 public class BlockSlab extends mccompat.v1_7_10.net.minecraft.block.Block {
+    /** Whether this is the double slab (mods create the other half when it is false). */
+    protected boolean isFullBlock;
+
     public BlockSlab(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -16,5 +19,6 @@ public class BlockSlab extends mccompat.v1_7_10.net.minecraft.block.Block {
 
     public BlockSlab(boolean p0, mccompat.v1_7_10.net.minecraft.block.material.Material p1) {
         this(p1);
+        this.isFullBlock = p0;
     }
 }

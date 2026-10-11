@@ -6,6 +6,9 @@ package mccompat.v1_7_10.net.minecraft.block;
  * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
  */
 public class BlockPistonBase extends mccompat.v1_7_10.net.minecraft.block.Block {
+    /** Whether this is the sticky piston. */
+    protected boolean isSticky;
+
     public BlockPistonBase(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -16,5 +19,6 @@ public class BlockPistonBase extends mccompat.v1_7_10.net.minecraft.block.Block 
 
     public BlockPistonBase(boolean p0) {
         this(mccompat.v1_7_10.net.minecraft.block.material.Material.piston);
+        this.isSticky = p0;
     }
 }

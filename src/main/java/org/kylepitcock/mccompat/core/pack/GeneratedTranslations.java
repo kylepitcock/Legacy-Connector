@@ -22,6 +22,11 @@ public final class GeneratedTranslations {
         BY_LANG.computeIfAbsent(lang(lang), k -> new ConcurrentHashMap<>()).put(key, value);
     }
 
+    /** The live table of one language (writes are served like {@link #put}). */
+    public static Map<String, String> table(String lang) {
+        return BY_LANG.computeIfAbsent(lang(lang), k -> new ConcurrentHashMap<>());
+    }
+
     public static String get(String lang, String key) {
         Map<String, String> m = BY_LANG.get(lang(lang));
         return m == null ? null : m.get(key);

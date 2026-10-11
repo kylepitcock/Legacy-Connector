@@ -15,6 +15,6 @@ public class BlockRedstoneComparator extends mccompat.v1_7_10.net.minecraft.bloc
     }
 
     public BlockRedstoneComparator(boolean p0) {
-        this(mccompat.v1_7_10.net.minecraft.block.material.Material.circuits);
+        super(p0);
     }
 }

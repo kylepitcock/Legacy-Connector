@@ -105,6 +105,19 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             if (!bridges.isEmpty()) LOG.info("Retrofit: bridging {} to their modern replacements", bridges);
             String side = side();
             LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
+            // Legacy coremods' class transformers, loaded on the first cache miss (only then is anything translated).
+            List<LegacyJar> loading = legacy.stream()
+                    .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList();
+            var coremods = new java.util.concurrent.atomic.AtomicReference<org.kylepitcock.mccompat.loader.transform.LegacyCoreModTransformers>();
+            transformer.patcher((jar, name, bytes) -> {
+                if (jar.version != LegacyVersion.V1_7_10) return bytes;
+                synchronized (coremods) {
+                    if (coremods.get() == null) {
+                        coremods.set(org.kylepitcock.mccompat.loader.transform.LegacyCoreModTransformers.load(loading, cacheDir, gameDir, side, runtimeJar));
+                    }
+                }
+                return coremods.get().apply(name, bytes);
+            });
             org.kylepitcock.mccompat.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null)
                     .flatMap(j -> j.mods.stream()).map(LegacyModDecl::modernId).toList());
@@ -112,6 +125,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             List<Path> translated = new ArrayList<>();
             Set<Path> keep = new HashSet<>();
             if (runtimeJar != null) keep.add(runtimeJar);
+            keep.add(cacheDir.resolve("coremod-api.jar"));
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
             // every legacy jar of its version: that set is part of the cache key, and peers are scanned on a miss.
             Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges);

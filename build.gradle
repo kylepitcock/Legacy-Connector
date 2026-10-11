@@ -65,6 +65,8 @@ neoForge {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             // In production the loader reads the index from the embedded runtime jar.
             systemProperty 'mccompat.shimIndex', shimIndexFile.get().asFile.absolutePath
+            // ... and legacy coremods' FML classes from the runtime jar; in development, from its compiled classes.
+            systemProperty 'mccompat.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
             logLevel = org.slf4j.event.Level.INFO
         }
     }

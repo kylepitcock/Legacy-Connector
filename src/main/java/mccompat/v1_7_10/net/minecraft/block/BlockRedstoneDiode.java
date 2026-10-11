@@ -6,6 +6,9 @@ package mccompat.v1_7_10.net.minecraft.block;
  * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
  */
 public class BlockRedstoneDiode extends mccompat.v1_7_10.net.minecraft.block.BlockDirectional {
+    /** Whether this is the powered variant. */
+    protected boolean isRepeaterPowered;
+
     public BlockRedstoneDiode(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -16,5 +19,6 @@ public class BlockRedstoneDiode extends mccompat.v1_7_10.net.minecraft.block.Blo
 
     protected BlockRedstoneDiode(boolean p0) {
         this(mccompat.v1_7_10.net.minecraft.block.material.Material.circuits);
+        this.isRepeaterPowered = p0;
     }
 }

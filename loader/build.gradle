@@ -112,3 +112,19 @@ def generateBuildId = tasks.register('generateBuildId') {
     }
 }
 sourceSets.main.resources.srcDir(files(buildIdDir).builtBy(generateBuildId))
+
+// Legacy-named LaunchWrapper / FML relauncher API that 1.7.10 coremod plugins and class transformers link against.
+// Packed as a nested jar: it is only ever loaded in the isolated class loader that runs legacy coremods.
+sourceSets {
+    coremodApi
+}
+dependencies {
+    coremodApiCompileOnly "org.ow2.asm:asm-commons:${asm_version}"
+    coremodApiCompileOnly "org.apache.logging.log4j:log4j-api:2.22.1"
+}
+def coremodApiJar = tasks.register('coremodApiJar', Jar) {
+    from sourceSets.coremodApi.output
+    archiveFileName = 'coremod-api.jar'
+    destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/mccompat/legacy/1.7.10')
+}
+sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar))
