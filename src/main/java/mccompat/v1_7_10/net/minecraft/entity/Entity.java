@@ -936,6 +936,41 @@ public abstract class Entity implements ICommandSender {
         return Vec3.createVectorHelper(v.x, v.y, v.z);
     }
 
+    /** The look direction, interpolated by the partial tick (1.0 = current). */
+    public Vec3 getLook(float partialTick) {
+        if (mcc$entity == null) return Vec3.createVectorHelper(0, 0, 1);
+        var v = mcc$entity.getViewVector(partialTick);
+        return Vec3.createVectorHelper(v.x, v.y, v.z);
+    }
+
+    public float getCollisionBorderSize() {
+        return 0.1F;
+    }
+
+    public boolean doesEntityNotTriggerPressurePlate() {
+        return false;
+    }
+
+    public boolean hitByEntity(Entity attacker) {
+        return false;
+    }
+
+    public void setBeenAttacked() {
+        if (mcc$entity != null) mcc$entity.hurtMarked = true;
+    }
+
+    public boolean canAttackWithItem() {
+        return true;
+    }
+
+    public int getPortalCooldown() {
+        return 900;
+    }
+
+    public boolean pushOutOfBlocks(double x, double y, double z) {
+        return false;
+    }
+
     public float getEyeHeight() {
         return mcc$entity == null ? 1.62F : mcc$entity.getEyeHeight();
     }

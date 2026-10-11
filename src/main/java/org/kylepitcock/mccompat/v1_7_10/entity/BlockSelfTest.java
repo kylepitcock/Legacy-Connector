@@ -99,15 +99,17 @@ public final class BlockSelfTest {
     private static String describe(Throwable t) {
         Throwable root = t;
         while (root.getCause() != null && root.getCause() != root) root = root.getCause();
-        String where = "";
+        StringBuilder where = new StringBuilder();
+        int frames = 0;
         for (StackTraceElement e : root.getStackTrace()) {
             String c = e.getClassName();
             if (c.startsWith("net.minecraft.") || c.startsWith("java.") || c.startsWith("jdk.") || c.startsWith("com.mojang.")
-                    || c.startsWith("net.neoforged.")) continue;
-            where = " at " + c + "." + e.getMethodName() + ":" + e.getLineNumber();
-            break;
+                    || c.startsWith("net.neoforged.") || c.startsWith("mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayer")) continue;
+            where.append(frames == 0 ? " at " : " < ").append(c.substring(c.lastIndexOf('.') + 1)).append('.').append(e.getMethodName())
+                    .append(':').append(e.getLineNumber());
+            if (++frames == 3) break;
         }
-        return root + where;
+        return root + where.toString();
     }
 
     private static void tick(MinecraftServer server) {
@@ -132,9 +134,45 @@ public final class BlockSelfTest {
             }
         }
         for (BlockPos pos : PLACED) level.removeBlock(pos, false);
+        Map<String, String> itemProblems = itemTest(level, player);
         StringBuilder sb = new StringBuilder();
         PROBLEMS.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));
         LOG.info("BLOCK SELF TEST: {} placed, {} still there after 60 ticks, {} activated, {} with problems{}", placed, survived,
                 activated, PROBLEMS.size(), sb);
+        StringBuilder ib = new StringBuilder();
+        itemProblems.forEach((k, v) -> ib.append("\n  ").append(k).append(": ").append(v));
+        LOG.info("ITEM SELF TEST: {} items with problems{}", itemProblems.size(), ib);
+    }
+
+    /** Names, tooltips and right clicks (in the air and on the ground) of every legacy item. */
+    private static Map<String, String> itemTest(ServerLevel level, net.minecraft.server.level.ServerPlayer player) {
+        Map<String, String> problems = new LinkedHashMap<>();
+        BlockPos ground = level.getSharedSpawnPos().above(2);
+        for (var item : org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.modItems()) {
+            for (var modern : item.mcc$variants.values()) {
+                String name = String.valueOf(BuiltInRegistries.ITEM.getKey(modern));
+                if (problems.containsKey(name)) continue;
+                var stack = new net.minecraft.world.item.ItemStack(modern);
+                String stage = "name";
+                try {
+                    modern.getName(stack);
+                    stage = "tooltip";
+                    stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(level), player, net.minecraft.world.item.TooltipFlag.ADVANCED);
+                    stage = "use";
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
+                    modern.use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);
+                    stage = "useOn";
+                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
+                    var hit = new BlockHitResult(Vec3.atCenterOf(ground), Direction.UP, ground, false);
+                    modern.useOn(new net.minecraft.world.item.context.UseOnContext(level, player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                            player.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND), hit));
+                    player.closeContainer();
+                } catch (RuntimeException | LinkageError ex) {
+                    problems.put(name, stage + " threw " + describe(ex));
+                }
+            }
+        }
+        player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
+        return problems;
     }
 }

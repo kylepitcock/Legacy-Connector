@@ -21,6 +21,10 @@ public abstract class EntityPlayer extends EntityLivingBase {
     /** Phantom: the legacy container behind the open menu (null for modern menus). */
     @Deprecated
     public mccompat.v1_7_10.net.minecraft.inventory.Container openContainer;
+    /** Phantom: the container of the player's own inventory (redirected to {@code mcc$get$inventoryContainer}). */
+    @Deprecated
+    public mccompat.v1_7_10.net.minecraft.inventory.Container inventoryContainer;
+    private mccompat.v1_7_10.net.minecraft.inventory.Container mcc$inventoryContainer;
     @Deprecated
     public int experienceLevel;
     @Deprecated
@@ -39,6 +43,13 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public Player mcc$player() {
         return (Player) mcc$entity;
+    }
+
+    public static mccompat.v1_7_10.net.minecraft.inventory.Container mcc$get$inventoryContainer(EntityPlayer p) {
+        if (p.mcc$inventoryContainer == null) {
+            p.mcc$inventoryContainer = new mccompat.v1_7_10.net.minecraft.inventory.ContainerPlayer(p.inventory, !p.mcc$player().level().isClientSide(), p);
+        }
+        return p.mcc$inventoryContainer;
     }
 
     public static mccompat.v1_7_10.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {

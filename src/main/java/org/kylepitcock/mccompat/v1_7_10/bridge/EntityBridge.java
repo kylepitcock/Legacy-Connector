@@ -79,6 +79,7 @@ public final class EntityBridge {
     }
 
     private static Entity create(net.minecraft.world.entity.Entity modern) {
+        if (modern instanceof net.neoforged.neoforge.common.util.FakePlayer fp) return new mccompat.v1_7_10.net.minecraftforge.common.util.FakePlayer(fp);
         if (modern instanceof ServerPlayer sp) return new EntityPlayerMP(sp);
         if (modern instanceof Player p) {
             if (!p.level().isClientSide()) return new EntityPlayerClient(p);

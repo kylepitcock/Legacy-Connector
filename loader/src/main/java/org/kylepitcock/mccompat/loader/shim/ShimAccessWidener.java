@@ -41,7 +41,7 @@ public final class ShimAccessWidener {
                 byte[] in = Files.readAllBytes(p);
                 ClassNode node = new ClassNode();
                 new ClassReader(in).accept(node, 0);
-                int n = addLegacyFields(node, legacyFields, classes);
+                int n = addLegacyFields(node, legacyFields, classes) + addStaticArrays(node);
                 added += n;
                 if (!widen(node) && n == 0) continue;
                 ClassWriter cw = new ClassWriter(0);
@@ -61,6 +61,46 @@ public final class ShimAccessWidener {
      * ReflectionHelper). Skipped: names the class already has (also phantom fields served by accessors) and fields
      * whose type is only synthesized (no hand-written class to type them with).
      */
+    /**
+     * Declares vanilla's literal static arrays the shell class lacks (ItemDye names, flower names), with their
+     * values, at the start of the class initialiser.
+     */
+    static int addStaticArrays(ClassNode node) {
+        if (!node.name.startsWith(PREFIX) || (node.access & Opcodes.ACC_INTERFACE) != 0) return 0;
+        String legacyOwner = node.name.substring(PREFIX.length()).replace('/', '.');
+        var rows = org.kylepitcock.mccompat.loader.synth.StaticArrays.entriesFor(org.kylepitcock.mccompat.loader.LegacyVersion.V1_7_10, legacyOwner);
+        if (rows.isEmpty()) return 0;
+        java.util.Set<String> present = new java.util.HashSet<>();
+        for (FieldNode f : node.fields) present.add(f.name);
+        org.objectweb.asm.tree.MethodNode init = null;
+        for (MethodNode m : node.methods) if (m.name.equals("<clinit>")) init = m;
+        org.objectweb.asm.tree.InsnList code = new org.objectweb.asm.tree.InsnList();
+        int n = 0;
+        for (String[] row : rows) {
+            String field = row[0], desc = row[1];
+            if (present.contains(field)) continue;
+            org.objectweb.asm.tree.MethodNode tmp = new org.objectweb.asm.tree.MethodNode();
+            if (!org.kylepitcock.mccompat.loader.synth.StaticArrays.push(tmp, org.kylepitcock.mccompat.loader.LegacyVersion.V1_7_10, legacyOwner,
+                    field, desc)) continue;
+            node.fields.add(new FieldNode(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, field, desc, null, null));
+            code.add(tmp.instructions);
+            code.add(new org.objectweb.asm.tree.FieldInsnNode(Opcodes.PUTSTATIC, node.name, field, desc));
+            n++;
+        }
+        if (n == 0) return 0;
+        if (init == null) {
+            init = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
+            init.instructions.add(code);
+            init.instructions.add(new org.objectweb.asm.tree.InsnNode(Opcodes.RETURN));
+            init.maxStack = 8;
+            node.methods.add(init);
+        } else {
+            init.instructions.insert(code);
+            init.maxStack = Math.max(init.maxStack, 8);
+        }
+        return n;
+    }
+
     static int addLegacyFields(ClassNode node, java.util.Map<String, java.util.List<org.kylepitcock.mccompat.loader.synth.LegacyFields.Field>> legacy,
             Path classes) {
         if (!node.name.startsWith(PREFIX) || (node.access & Opcodes.ACC_INTERFACE) != 0) return 0;

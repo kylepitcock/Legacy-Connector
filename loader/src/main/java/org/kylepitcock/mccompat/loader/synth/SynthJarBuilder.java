@@ -306,6 +306,8 @@ public final class SynthJarBuilder {
                     mv.visitTypeInsn(Opcodes.NEW, concrete);
                     mv.visitInsn(Opcodes.DUP);
                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, concrete, "<init>", "()V", false);
+                } else if (f.desc().startsWith("[") && StaticArrays.push(mv, version, legacyName(name), f.name(), f.desc())) {
+                    // vanilla's literal array (dye names, ...)
                 } else {
                     Defaults.pushDefault(mv, Type.getType(f.desc()));
                 }
