@@ -41,6 +41,17 @@ public final class MCCompat {
         FEATURES.register("legacy_biome", () -> new org.kylepitcock.mccompat.core.worldgen.LegacyBiomeFeature(NoneFeatureConfiguration.CODEC));
     }
 
+    private static final DeferredRegister<com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.chunk.ChunkGenerator>> CHUNK_GENERATORS =
+            DeferredRegister.create(Registries.CHUNK_GENERATOR, MOD_ID);
+    private static final DeferredRegister<com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.biome.BiomeSource>> BIOME_SOURCES =
+            DeferredRegister.create(Registries.BIOME_SOURCE, MOD_ID);
+
+    static {
+        // Mod dimensions (see org.kylepitcock.mccompat.v1_7_10.dimension): ids "retrofit:legacy".
+        CHUNK_GENERATORS.register("legacy", () -> org.kylepitcock.mccompat.v1_7_10.dimension.LegacyChunkGenerator.CODEC);
+        BIOME_SOURCES.register("legacy", () -> org.kylepitcock.mccompat.v1_7_10.dimension.LegacyBiomeSource.CODEC);
+    }
+
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.mccompat.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
             MENUS.register("legacy_1_7_10", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
@@ -51,6 +62,8 @@ public final class MCCompat {
 
         CompatComponents.REGISTER.register(modBus);
         FEATURES.register(modBus);
+        CHUNK_GENERATORS.register(modBus);
+        BIOME_SOURCES.register(modBus);
         modBus.addListener(org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {

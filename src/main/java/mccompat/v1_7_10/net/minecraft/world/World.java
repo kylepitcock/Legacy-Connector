@@ -40,7 +40,10 @@ public class World implements IBlockAccess {
 
     public final boolean isRemote;
     public Random rand = new Random();
-    public final WorldProvider provider;
+    /** Phantom: redirected to {@link #mcc$get$provider} (created on first use: mod providers need a usable world). */
+    @Deprecated
+    public WorldProvider provider;
+    private WorldProvider mcc$provider;
     public boolean scheduledUpdatesAreImmediate;
     /** Phantom: redirected to {@link #mcc$get$playerEntities}. */
     @Deprecated
@@ -95,9 +98,45 @@ public class World implements IBlockAccess {
     protected World(LevelAccessor level) {
         this.mcc$level = level;
         this.isRemote = level.isClientSide();
-        Level full = mcc$fullLevel(level);
-        this.provider = full == null ? new WorldProvider(Level.OVERWORLD, true, false)
-                : new WorldProvider(full.dimension(), full.dimensionType().hasSkyLight(), full.dimensionType().ultraWarm());
+    }
+
+    /**
+     * While set on a thread, this world's methods act on the given generation region instead of the full level
+     * (legacy chunk providers keep the full world and run populate/decorate from world generation threads, where
+     * touching the live level deadlocks).
+     */
+    private static final ThreadLocal<LevelAccessor> REGION = new ThreadLocal<>();
+
+    /** Routes all legacy worlds of the region's level to the region on this thread; returns the previous value. */
+    public static LevelAccessor mcc$enterRegion(LevelAccessor region) {
+        LevelAccessor previous = REGION.get();
+        REGION.set(region);
+        return previous;
+    }
+
+    public static void mcc$leaveRegion(LevelAccessor previous) {
+        if (previous == null) REGION.remove();
+        else REGION.set(previous);
+    }
+
+    private LevelAccessor lvl() {
+        LevelAccessor region = REGION.get();
+        if (region != null && region != mcc$level && mcc$level instanceof Level full && mcc$fullLevel(region) == full) return region;
+        return mcc$level;
+    }
+
+    public static WorldProvider mcc$get$provider(World w) {
+        WorldProvider p = w.mcc$provider;
+        if (p != null) return p;
+        synchronized (w) {
+            if (w.mcc$provider != null) return w.mcc$provider;
+            Level full = w.mcc$fullLevel();
+            WorldProvider created = full == null ? new WorldProvider(Level.OVERWORLD, true, false)
+                    : org.kylepitcock.mccompat.v1_7_10.dimension.LegacyDimensions.newProvider(full);
+            w.mcc$provider = created;
+            if (full != null && created.worldObj == null) created.registerWorld(w);
+            return created;
+        }
     }
 
     public static World mcc$wrap(LevelAccessor level) {
@@ -108,12 +147,12 @@ public class World implements IBlockAccess {
     }
 
     public LevelAccessor mcc$level() {
-        return mcc$level;
+        return lvl();
     }
 
     /** The full level, or null for a detached world-gen region without one. */
     public Level mcc$fullLevel() {
-        return mcc$fullLevel(mcc$level);
+        return mcc$fullLevel(lvl());
     }
 
     /**
@@ -121,7 +160,7 @@ public class World implements IBlockAccess {
      * generation region (calls would reach the live level from a world-gen thread and deadlock waiting for chunks).
      */
     public Level mcc$liveLevel() {
-        return mcc$level instanceof Level l ? l : null;
+        return lvl() instanceof Level l ? l : null;
     }
 
     private static Level mcc$fullLevel(LevelAccessor level) {
@@ -138,7 +177,7 @@ public class World implements IBlockAccess {
 
     public static List mcc$get$playerEntities(World w) {
         List<EntityPlayer> out = new ArrayList<>();
-        for (var p : w.mcc$level.players()) out.add((EntityPlayer) EntityBridge.wrap(p));
+        for (var p : w.lvl().players()) out.add((EntityPlayer) EntityBridge.wrap(p));
         return out;
     }
 
@@ -157,19 +196,19 @@ public class World implements IBlockAccess {
 
     @Override
     public Block getBlock(int x, int y, int z) {
-        return BlockBridge.legacyBlock(mcc$level.getBlockState(pos(x, y, z)));
+        return BlockBridge.legacyBlock(lvl().getBlockState(pos(x, y, z)));
     }
 
     @Override
     public int getBlockMetadata(int x, int y, int z) {
-        return BlockBridge.legacyMeta(mcc$level.getBlockState(pos(x, y, z)));
+        return BlockBridge.legacyMeta(lvl().getBlockState(pos(x, y, z)));
     }
 
     public boolean setBlock(int x, int y, int z, Block block, int meta, int flags) {
         BlockState state = BlockBridge.toModern(block, meta);
         BlockPos p = pos(x, y, z);
         TileEntityBridge.beforeBlockChange(this, p);
-        return mcc$level.setBlock(p, state, flags);
+        return lvl().setBlock(p, state, flags);
     }
 
     public boolean setBlock(int x, int y, int z, Block block) {
@@ -178,34 +217,34 @@ public class World implements IBlockAccess {
 
     public boolean setBlockMetadataWithNotify(int x, int y, int z, int meta, int flags) {
         BlockPos p = pos(x, y, z);
-        BlockState current = mcc$level.getBlockState(p);
+        BlockState current = lvl().getBlockState(p);
         BlockState next = BlockBridge.withMeta(current, meta);
         if (next == current) return false;
-        return mcc$level.setBlock(p, next, flags);
+        return lvl().setBlock(p, next, flags);
     }
 
     public boolean setBlockToAir(int x, int y, int z) {
         TileEntityBridge.beforeBlockChange(this, pos(x, y, z));
-        return mcc$level.setBlock(pos(x, y, z), Blocks.AIR.defaultBlockState(), 3);
+        return lvl().setBlock(pos(x, y, z), Blocks.AIR.defaultBlockState(), 3);
     }
 
     /** {@code func_147480_a}: break a block, optionally dropping its items. */
     public boolean breakBlock(int x, int y, int z, boolean drop) {
         TileEntityBridge.beforeBlockChange(this, pos(x, y, z));
-        return mcc$level.destroyBlock(pos(x, y, z), drop);
+        return lvl().destroyBlock(pos(x, y, z), drop);
     }
 
     @Override
     public boolean isAirBlock(int x, int y, int z) {
-        return mcc$level.getBlockState(pos(x, y, z)).isAir();
+        return lvl().getBlockState(pos(x, y, z)).isAir();
     }
 
     public boolean blockExists(int x, int y, int z) {
-        return mcc$level.hasChunkAt(pos(x, y, z));
+        return lvl().hasChunkAt(pos(x, y, z));
     }
 
     public boolean checkChunksExist(int x1, int y1, int z1, int x2, int y2, int z2) {
-        return mcc$level.hasChunksAt(x1, z1, x2, z2);
+        return lvl().hasChunksAt(x1, z1, x2, z2);
     }
 
     public boolean doChunksNearChunkExist(int x, int y, int z, int range) {
@@ -214,21 +253,21 @@ public class World implements IBlockAccess {
 
     public boolean isBlockNormalCubeDefault(int x, int y, int z, boolean def) {
         BlockPos p = pos(x, y, z);
-        if (!mcc$level.hasChunkAt(p)) return def;
-        return mcc$level.getBlockState(p).isRedstoneConductor(mcc$level, p);
+        if (!lvl().hasChunkAt(p)) return def;
+        return lvl().getBlockState(p).isRedstoneConductor(lvl(), p);
     }
 
     public boolean isBlockFullCube(int x, int y, int z) {
         BlockPos p = pos(x, y, z);
-        return mcc$level.getBlockState(p).isCollisionShapeFullBlock(mcc$level, p);
+        return lvl().getBlockState(p).isCollisionShapeFullBlock(lvl(), p);
     }
 
     @Override
     public boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean defaultValue) {
         BlockPos p = pos(x, y, z);
-        if (!mcc$level.hasChunkAt(p)) return defaultValue;
+        if (!lvl().hasChunkAt(p)) return defaultValue;
         Direction d = side.mcc$modern();
-        return d != null && mcc$level.getBlockState(p).isFaceSturdy(mcc$level, p, d);
+        return d != null && lvl().getBlockState(p).isFaceSturdy(lvl(), p, d);
     }
 
     public boolean isSideSolid(int x, int y, int z, ForgeDirection side) {
@@ -245,28 +284,28 @@ public class World implements IBlockAccess {
     }
 
     public int getHeightValue(int x, int z) {
-        return mcc$level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
     public int getTopSolidOrLiquidBlock(int x, int z) {
-        return mcc$level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
     }
 
     public int getPrecipitationHeight(int x, int z) {
-        return mcc$level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
     }
 
     public boolean canBlockSeeTheSky(int x, int y, int z) {
-        return mcc$level.canSeeSky(pos(x, y, z));
+        return lvl().canSeeSky(pos(x, y, z));
     }
 
     /** Brightness 0..1 (light level scaled by the dimension's ambient light curve). */
     public float getLightBrightness(int x, int y, int z) {
-        return mcc$level.getLightLevelDependentMagicValue(pos(x, y, z));
+        return lvl().getLightLevelDependentMagicValue(pos(x, y, z));
     }
 
     public int getBlockLightValue(int x, int y, int z) {
-        return mcc$level.getMaxLocalRawBrightness(pos(x, y, z));
+        return lvl().getMaxLocalRawBrightness(pos(x, y, z));
     }
 
     public int getFullBlockLightValue(int x, int y, int z) {
@@ -276,8 +315,8 @@ public class World implements IBlockAccess {
     @Override
     public int getLightBrightnessForSkyBlocks(int x, int y, int z, int min) {
         BlockPos p = pos(x, y, z);
-        int sky = mcc$level.getBrightness(net.minecraft.world.level.LightLayer.SKY, p);
-        int block = Math.max(min, mcc$level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p));
+        int sky = lvl().getBrightness(net.minecraft.world.level.LightLayer.SKY, p);
+        int block = Math.max(min, lvl().getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p));
         return sky << 20 | block << 4;
     }
 
@@ -287,7 +326,7 @@ public class World implements IBlockAccess {
     }
 
     public int getActualHeight() {
-        return provider.getActualHeight();
+        return mcc$get$provider(this).getActualHeight();
     }
 
     @Override
@@ -318,7 +357,7 @@ public class World implements IBlockAccess {
     }
 
     public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block) {
-        mcc$level.blockUpdated(pos(x, y, z), BlockBridge.modernBlock(block));
+        lvl().blockUpdated(pos(x, y, z), BlockBridge.modernBlock(block));
     }
 
     public void notifyBlocksOfNeighborChange(int x, int y, int z, Block block, int skipSide) {
@@ -343,7 +382,7 @@ public class World implements IBlockAccess {
     }
 
     public void scheduleBlockUpdate(int x, int y, int z, Block block, int delay) {
-        mcc$level.scheduleTick(pos(x, y, z), BlockBridge.modernBlock(block), delay);
+        lvl().scheduleTick(pos(x, y, z), BlockBridge.modernBlock(block), delay);
     }
 
     public void scheduleBlockUpdateWithPriority(int x, int y, int z, Block block, int delay, int priority) {
@@ -355,7 +394,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean isBlockTickScheduledThisTick(int x, int y, int z, Block block) {
-        return mcc$level.getBlockTicks().willTickThisTick(pos(x, y, z), BlockBridge.modernBlock(block));
+        return lvl().getBlockTicks().willTickThisTick(pos(x, y, z), BlockBridge.modernBlock(block));
     }
 
     public void addBlockEvent(int x, int y, int z, Block block, int id, int param) {
@@ -364,11 +403,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean isBlockIndirectlyGettingPowered(int x, int y, int z) {
-        return mcc$level instanceof SignalGetter s && s.hasNeighborSignal(pos(x, y, z));
+        return lvl() instanceof SignalGetter s && s.hasNeighborSignal(pos(x, y, z));
     }
 
     public int getStrongestIndirectPower(int x, int y, int z) {
-        return mcc$level instanceof SignalGetter s ? s.getBestNeighborSignal(pos(x, y, z)) : 0;
+        return lvl() instanceof SignalGetter s ? s.getBestNeighborSignal(pos(x, y, z)) : 0;
     }
 
     public boolean getIndirectPowerOutput(int x, int y, int z, int side) {
@@ -376,17 +415,17 @@ public class World implements IBlockAccess {
     }
 
     public int getIndirectPowerLevelTo(int x, int y, int z, int side) {
-        return mcc$level instanceof SignalGetter s ? s.getSignal(pos(x, y, z), Direction.from3DDataValue(side)) : 0;
+        return lvl() instanceof SignalGetter s ? s.getSignal(pos(x, y, z), Direction.from3DDataValue(side)) : 0;
     }
 
     public int getBlockPowerInput(int x, int y, int z) {
-        return mcc$level instanceof SignalGetter s ? s.getDirectSignalTo(pos(x, y, z)) : 0;
+        return lvl() instanceof SignalGetter s ? s.getDirectSignalTo(pos(x, y, z)) : 0;
     }
 
     @Override
     public int isBlockProvidingPowerTo(int x, int y, int z, int side) {
         BlockPos p = pos(x, y, z);
-        return mcc$level.getBlockState(p).getDirectSignal(mcc$level, p, Direction.from3DDataValue(side));
+        return lvl().getBlockState(p).getDirectSignal(lvl(), p, Direction.from3DDataValue(side));
     }
 
     // ------------------------------------------------------------------ tile entities
@@ -401,7 +440,7 @@ public class World implements IBlockAccess {
     }
 
     public void removeTileEntity(int x, int y, int z) {
-        mcc$level.getChunk(pos(x, y, z)).removeBlockEntity(pos(x, y, z));
+        lvl().getChunk(pos(x, y, z)).removeBlockEntity(pos(x, y, z));
     }
 
     // ------------------------------------------------------------------ entities
@@ -415,7 +454,7 @@ public class World implements IBlockAccess {
     }
 
     public EntityPlayer getClosestPlayer(double x, double y, double z, double distance) {
-        var p = mcc$level.getNearestPlayer(x, y, z, distance, false);
+        var p = lvl().getNearestPlayer(x, y, z, distance, false);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
     }
 
@@ -424,7 +463,7 @@ public class World implements IBlockAccess {
     }
 
     public EntityPlayer getClosestVulnerablePlayer(double x, double y, double z, double distance) {
-        var p = mcc$level.getNearestPlayer(x, y, z, distance, true);
+        var p = lvl().getNearestPlayer(x, y, z, distance, true);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
     }
 
@@ -443,16 +482,30 @@ public class World implements IBlockAccess {
     private mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager mcc$chunkManager;
 
     public mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager getWorldChunkManager() {
-        if (mcc$chunkManager == null) mcc$chunkManager = new mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager.WorldView(this);
+        if (mcc$chunkManager == null) {
+            // A mod dimension's provider has its own biome layers (1.7.10: provider.worldChunkMgr).
+            var provided = mcc$get$provider(this).worldChunkMgr;
+            mcc$chunkManager = provided != null ? provided
+                    : new mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager.WorldView(this);
+        }
         return mcc$chunkManager;
     }
 
     public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
+        // A mod dimension's biomes come from its provider's layers (not from the chunks, which may not exist yet).
+        var provided = mcc$get$provider(this).worldChunkMgr;
+        if (provided != null && !(provided instanceof mccompat.v1_7_10.net.minecraft.world.biome.WorldChunkManager.WorldView)) {
+            mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome;
+            synchronized (provided) {
+                biome = provided.getBiomeGenAt(x, z);
+            }
+            if (biome != null) return biome;
+        }
         // Outside a generation region's chunks there is no heightmap to read: sample at sea level.
-        int y = mcc$level.hasChunk(x >> 4, z >> 4)
-                ? mcc$level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
-                : mcc$level.getSeaLevel();
-        var key = mcc$level.getBiome(pos(x, y, z)).unwrapKey().map(k -> k.location()).orElse(null);
+        int y = lvl().hasChunk(x >> 4, z >> 4)
+                ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
+                : lvl().getSeaLevel();
+        var key = lvl().getBiome(pos(x, y, z)).unwrapKey().map(k -> k.location()).orElse(null);
         var legacy = org.kylepitcock.mccompat.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
         return legacy != null ? legacy : mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
     }
@@ -467,12 +520,12 @@ public class World implements IBlockAccess {
 
     /** A view of the chunk; null when it is not available here (outside a generation region, or not loaded). */
     public mccompat.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromChunkCoords(int cx, int cz) {
-        var access = mcc$level.getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
+        var access = lvl().getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
         return access == null ? null : new mccompat.v1_7_10.net.minecraft.world.chunk.Chunk(this, access);
     }
 
     public boolean chunkExists(int cx, int cz) {
-        return mcc$level.hasChunk(cx, cz);
+        return lvl().hasChunk(cx, cz);
     }
 
     /** The world's chunks as a 1.7.10 chunk provider (only chunks that are loaded or generating here are provided). */
@@ -502,19 +555,19 @@ public class World implements IBlockAccess {
     }
 
     public EntityPlayer func_152378_a(java.util.UUID id) {
-        var p = id == null ? null : mcc$level.getPlayerByUUID(id);
+        var p = id == null ? null : lvl().getPlayerByUUID(id);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
     }
 
     public EntityPlayer getPlayerEntityByName(String name) {
-        for (var p : mcc$level.players()) {
+        for (var p : lvl().players()) {
             if (p.getGameProfile().getName().equals(name)) return (EntityPlayer) EntityBridge.wrap(p);
         }
         return null;
     }
 
     public EntityPlayer getPlayerEntityByUUID(java.util.UUID uuid) {
-        var p = mcc$level.getPlayerByUUID(uuid);
+        var p = lvl().getPlayerByUUID(uuid);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
     }
 
@@ -532,7 +585,7 @@ public class World implements IBlockAccess {
     public List selectEntitiesWithinAABB(Class type, AxisAlignedBB box, mccompat.v1_7_10.net.minecraft.command.IEntitySelector selector) {
         List<Entity> out = new ArrayList<>();
         AABB modern = box.mcc$modern();
-        for (var e : mcc$level.getEntities((net.minecraft.world.entity.Entity) null, modern, e -> true)) {
+        for (var e : lvl().getEntities((net.minecraft.world.entity.Entity) null, modern, e -> true)) {
             Entity legacy = EntityBridge.wrap(e);
             if (type.isInstance(legacy) && (selector == null || selector.isEntityApplicable(legacy))) out.add(legacy);
         }
@@ -542,7 +595,7 @@ public class World implements IBlockAccess {
     public List getEntitiesWithinAABBExcludingEntity(Entity except, AxisAlignedBB box) {
         List<Entity> out = new ArrayList<>();
         var exceptModern = except == null ? null : except.mcc$entity();
-        for (var e : mcc$level.getEntities(exceptModern, box.mcc$modern(), e -> true)) out.add(EntityBridge.wrap(e));
+        for (var e : lvl().getEntities(exceptModern, box.mcc$modern(), e -> true)) out.add(EntityBridge.wrap(e));
         return out;
     }
 
@@ -581,7 +634,7 @@ public class World implements IBlockAccess {
 
     public boolean checkNoEntityCollision(AxisAlignedBB box, Entity except) {
         var exceptModern = except == null ? null : except.mcc$entity();
-        return mcc$level.isUnobstructed(exceptModern, net.minecraft.world.phys.shapes.Shapes.create(box.mcc$modern()));
+        return lvl().isUnobstructed(exceptModern, net.minecraft.world.phys.shapes.Shapes.create(box.mcc$modern()));
     }
 
     public boolean canPlaceEntityOnSide(Block block, int x, int y, int z, boolean skipCollision, int side, Entity placer, ItemStack stack) {
@@ -613,15 +666,15 @@ public class World implements IBlockAccess {
     }
 
     public void playAuxSFX(int type, int x, int y, int z, int data) {
-        mcc$level.levelEvent(type, pos(x, y, z), data);
+        lvl().levelEvent(type, pos(x, y, z), data);
     }
 
     public void playAuxSFXAtEntity(EntityPlayer player, int type, int x, int y, int z, int data) {
-        mcc$level.levelEvent(player == null ? null : player.mcc$player(), type, pos(x, y, z), data);
+        lvl().levelEvent(player == null ? null : player.mcc$player(), type, pos(x, y, z), data);
     }
 
     public void spawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
-        SoundBridge.particle(mcc$level, name, x, y, z, vx, vy, vz);
+        SoundBridge.particle(lvl(), name, x, y, z, vx, vy, vz);
     }
 
     public Explosion createExplosion(Entity entity, double x, double y, double z, float strength, boolean smoke) {
@@ -639,11 +692,11 @@ public class World implements IBlockAccess {
     // ------------------------------------------------------------------ time and weather
 
     public long getTotalWorldTime() {
-        return mcc$level.getLevelData().getGameTime();
+        return lvl().getLevelData().getGameTime();
     }
 
     public long getWorldTime() {
-        return mcc$level.getLevelData().getDayTime();
+        return lvl().getLevelData().getDayTime();
     }
 
     public void setWorldTime(long time) {
@@ -676,15 +729,15 @@ public class World implements IBlockAccess {
     }
 
     public int getMoonPhase() {
-        return mcc$level.getMoonPhase();
+        return lvl().getMoonPhase();
     }
 
     public float getCelestialAngle(float partial) {
-        return mcc$level.getTimeOfDay(partial);
+        return lvl().getTimeOfDay(partial);
     }
 
     public long getSeed() {
-        if (mcc$level instanceof WorldGenLevel g) return g.getSeed();
+        if (lvl() instanceof WorldGenLevel g) return g.getSeed();
         return mcc$fullLevel() instanceof ServerLevel s ? s.getSeed() : 0L;
     }
 
@@ -702,13 +755,13 @@ public class World implements IBlockAccess {
     }
 
     public String getProviderName() {
-        return provider.getDimensionName();
+        return mcc$get$provider(this).getDimensionName();
     }
 
     // ------------------------------------------------------------------ helpers used by other shims
 
     public int mcc$maxBuildHeight() {
-        return mcc$level.getMaxBuildHeight();
+        return lvl().getMaxBuildHeight();
     }
 
     public void mcc$playPlaceSound(Block block, int x, int y, int z) {
@@ -724,7 +777,7 @@ public class World implements IBlockAccess {
 
     @Override
     public String toString() {
-        return "LegacyWorld{" + mcc$level + "}";
+        return "LegacyWorld{" + lvl() + "}";
     }
 
     /** Forge: chunks held loaded by chunk-loading tickets. */

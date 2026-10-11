@@ -99,6 +99,15 @@ A world type a mod registers (BoP's "BIOMESOP") appears on the Create World scre
 dedicated server use `level-type=<modid>:<type>` (e.g. `biomesoplenty:biomesop`). With the default type, mod biomes
 that mods added to Forge's `BiomeManager` still generate.
 
+### Mod dimensions
+
+A dimension a legacy mod registers with `DimensionManager.registerDimension` becomes the modern dimension
+`retrofit:dim_<id>`. Its chunk generator (`LegacyChunkGenerator`) runs the mod's `WorldProvider.createChunkGenerator()`:
+terrain comes from `provideChunk` (block/metadata arrays), trees, structures and ores from `populate`. Biomes come from the
+provider's own `WorldChunkManager` layers (`LegacyBiomeSource`), and `World.provider` is an instance of the mod's provider class.
+`ServerConfigurationManager.transferPlayerToDimension` and `Teleporter` work as in 1.7.10. Verified with Twilight Forest's
+terrain; portal placement and dimension-specific rendering (sky, fog) are not done yet.
+
 ### Entities
 
 Each legacy entity class a mod registers (`EntityRegistry.registerModEntity` / `registerGlobalEntityID`) becomes a

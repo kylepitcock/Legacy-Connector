@@ -26,7 +26,7 @@ public class WorldGenFlowers extends WorldGenerator {
             int px = x + random.nextInt(8) - random.nextInt(8);
             int py = y + random.nextInt(4) - random.nextInt(4);
             int pz = z + random.nextInt(8) - random.nextInt(8);
-            if (world.isAirBlock(px, py, pz) && (!world.provider.hasNoSky || py < 255) && field_150552_a.canBlockStay(world, px, py, pz)) {
+            if (world.isAirBlock(px, py, pz) && (!World.mcc$get$provider(world).hasNoSky || py < 255) && field_150552_a.canBlockStay(world, px, py, pz)) {
                 world.setBlock(px, py, pz, field_150552_a, field_150551_b, 2);
             }
         }

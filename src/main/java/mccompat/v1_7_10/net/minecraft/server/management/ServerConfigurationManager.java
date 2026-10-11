@@ -36,6 +36,31 @@ public class ServerConfigurationManager {
         sendChatMsg(message);
     }
 
+    /**
+     * Moves a player to another dimension and lets the teleporter place them there. Coordinates are kept (1.7.10 scaled
+     * them by the dimensions' move factors for the nether; mod dimensions do not).
+     */
+    public void transferPlayerToDimension(EntityPlayerMP player, int dimension, mccompat.v1_7_10.net.minecraft.world.Teleporter teleporter) {
+        var target = org.kylepitcock.mccompat.v1_7_10.bridge.DimensionBridge.level(mcc$server.mcc$modern(), dimension);
+        if (target == null) return;
+        var sp = player.mcc$serverPlayer();
+        double x = sp.getX(), y = sp.getY(), z = sp.getZ();
+        float yaw = sp.getYRot();
+        sp.teleportTo(target, x, y, z, yaw, sp.getXRot());
+        if (teleporter != null) {
+            try {
+                teleporter.placeInPortal(player, x, y, z, yaw);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Dimensions").error("The teleporter {} failed", teleporter.getClass().getName(), e);
+            }
+        }
+    }
+
+    public void transferEntityToWorld(mccompat.v1_7_10.net.minecraft.entity.Entity entity, int fromDimension,
+            mccompat.v1_7_10.net.minecraft.world.WorldServer from, mccompat.v1_7_10.net.minecraft.world.WorldServer to) {
+        entity.travelToDimension(mccompat.v1_7_10.net.minecraft.world.World.mcc$get$provider(to).dimensionId);
+    }
+
     public int getCurrentPlayerCount() {
         return mcc$server.getCurrentPlayerCount();
     }

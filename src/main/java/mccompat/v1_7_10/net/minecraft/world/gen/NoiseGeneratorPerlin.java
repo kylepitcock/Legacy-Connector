@@ -23,24 +23,28 @@ public class NoiseGeneratorPerlin {
         return sum;
     }
 
-    public double func_151600_a(double[] out, double x, double z, int sizeX, int sizeZ, double scaleX, double scaleZ, double amplitude) {
-        return func_151599_a(out, x, z, sizeX, sizeZ, scaleX, scaleZ, amplitude, 0.5D);
+    /** Fills {@code sizeX * sizeZ} values (x outermost); the 1.7.10 default persistence is 0.5. */
+    public double[] func_151599_a(double[] out, double x, double z, int sizeX, int sizeZ, double scaleX, double scaleZ, double frequency) {
+        return func_151600_a(out, x, z, sizeX, sizeZ, scaleX, scaleZ, frequency, 0.5D);
     }
 
-    public double func_151599_a(double[] out, double x, double z, int sizeX, int sizeZ, double scaleX, double scaleZ, double amplitude,
+    public double[] func_151600_a(double[] out, double x, double z, int sizeX, int sizeZ, double scaleX, double scaleZ, double frequency,
             double persistence) {
-        int index = 0;
-        for (int dx = 0; dx < sizeX; dx++) {
-            for (int dz = 0; dz < sizeZ; dz++) {
-                double v = 0.0D, freq = 1.0D, amp = 1.0D;
-                for (int i = 0; i < levels; i++) {
-                    v += octaves[i].func_151605_a((x + dx) * scaleX * freq + octaves[i].xo, (z + dz) * scaleZ * freq + octaves[i].yo) * amp;
-                    freq *= amplitude;
-                    amp *= persistence;
+        int n = sizeX * sizeZ;
+        if (out == null || out.length < n) out = new double[n];
+        else java.util.Arrays.fill(out, 0, n, 0.0D);
+        double freq = 1.0D, amp = 1.0D;
+        for (int i = 0; i < levels; i++) {
+            int index = 0;
+            for (int dx = 0; dx < sizeX; dx++) {
+                for (int dz = 0; dz < sizeZ; dz++) {
+                    out[index++] += octaves[i].func_151605_a((x + dx) * scaleX * freq + octaves[i].xo, (z + dz) * scaleZ * freq + octaves[i].yo)
+                            * 0.55D * amp;
                 }
-                if (index < out.length) out[index++] = v;
             }
+            freq *= frequency;
+            amp *= persistence;
         }
-        return 0.0D;
+        return out;
     }
 }

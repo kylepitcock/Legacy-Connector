@@ -30,6 +30,10 @@ public class Chunk {
     public List<Object>[] entityLists = new List[16];
     public int[] heightMap = new int[256];
     private final ChunkAccess modern;
+    /** Array mode (a chunk a mod's generator builds): blocks as x << 12 | z << 8 | y, metadata by the same index. */
+    private Block[] mcc$blocks;
+    private byte[] mcc$meta;
+    private byte[] mcc$biomes;
 
     public Chunk(World world, int x, int z) {
         this(world, x, z, null);
@@ -37,6 +41,31 @@ public class Chunk {
 
     public Chunk(World world, ChunkAccess modern) {
         this(world, modern.getPos().x, modern.getPos().z, modern);
+    }
+
+    /** A chunk of 256-high column arrays, as legacy terrain generators build them. */
+    public Chunk(World world, Block[] blocks, byte[] meta, int x, int z) {
+        this(world, x, z, null);
+        this.mcc$blocks = blocks;
+        this.mcc$meta = meta == null ? new byte[blocks.length] : meta;
+        this.isTerrainPopulated = false;
+        this.isLightPopulated = false;
+    }
+
+    public boolean mcc$hasArrays() {
+        return mcc$blocks != null;
+    }
+
+    public Block[] mcc$blocks() {
+        return mcc$blocks;
+    }
+
+    public byte[] mcc$meta() {
+        return mcc$meta;
+    }
+
+    private static int index(int x, int y, int z) {
+        return (x & 15) << 12 | (z & 15) << 8 | (y & 255);
     }
 
     private Chunk(World world, int x, int z, ChunkAccess modern) {
@@ -64,22 +93,47 @@ public class Chunk {
     }
 
     public Block getBlock(int x, int y, int z) {
+        if (mcc$blocks != null) {
+            if (y < 0 || y > 255) return mccompat.v1_7_10.net.minecraft.init.Blocks.air;
+            Block b = mcc$blocks[index(x, y, z)];
+            return b == null ? mccompat.v1_7_10.net.minecraft.init.Blocks.air : b;
+        }
         return worldObj.getBlock(wx(x), y, wz(z));
     }
 
     public int getBlockMetadata(int x, int y, int z) {
+        if (mcc$blocks != null) return y < 0 || y > 255 ? 0 : mcc$meta[index(x, y, z)] & 15;
         return worldObj.getBlockMetadata(wx(x), y, wz(z));
     }
 
     public boolean setBlockMetadata(int x, int y, int z, int meta) {
+        if (mcc$blocks != null) {
+            if (y < 0 || y > 255) return false;
+            mcc$meta[index(x, y, z)] = (byte) meta;
+            return true;
+        }
         return worldObj.setBlockMetadataWithNotify(wx(x), y, wz(z), meta, 2);
     }
 
     public boolean func_150807_a(int x, int y, int z, Block block, int meta) {
+        if (mcc$blocks != null) {
+            if (y < 0 || y > 255) return false;
+            int i = index(x, y, z);
+            mcc$blocks[i] = block;
+            mcc$meta[i] = (byte) meta;
+            return true;
+        }
         return worldObj.setBlock(wx(x), y, wz(z), block, meta, 2);
     }
 
     public int getHeightValue(int x, int z) {
+        if (mcc$blocks != null) {
+            for (int y = 255; y > 0; y--) {
+                Block b = mcc$blocks[index(x, y, z)];
+                if (b != null && b != mccompat.v1_7_10.net.minecraft.init.Blocks.air) return y + 1;
+            }
+            return 0;
+        }
         return worldObj.getHeightValue(wx(x), wz(z));
     }
 
@@ -91,6 +145,8 @@ public class Chunk {
 
     /** Legacy biome id per column (z << 4 | x), from the modern biomes at the surface. */
     public byte[] getBiomeArray() {
+        if (mcc$biomes != null) return mcc$biomes;
+        if (mcc$blocks != null) return mcc$biomes = new byte[256];
         byte[] ids = new byte[256];
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -103,6 +159,7 @@ public class Chunk {
     }
 
     public void setBiomeArray(byte[] biomes) {
+        this.mcc$biomes = biomes;
     }
 
     public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForWorldCoords(int x, int z, Object chunkManager) {

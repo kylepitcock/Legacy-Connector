@@ -32,6 +32,7 @@ L=$D/logs/latest.log
 grep -E "Legacy mods loaded|Legacy content:|LegacyTest SUMMARY|ENTITY SELF TEST|WORLDGEN SELF TEST" $L | cut -c40-300
 echo "--- mod failures"
 grep -E "\] \[Retrofit/\]: Legacy mod .* failed during" $L | sed -E 's/.*Legacy mod ([^ ]+) \(.*failed during ([a-zA-Z]+): (.*)/  \1 \2: \3/' | cut -c1-260 | sort -u
+grep -A12 "DIMENSION SELF TEST" $L | head -14 | cut -c40-300
 awk '/BLOCK SELF TEST/{f=1} f&&/^\[/&&!/BLOCK SELF TEST/{exit} f' $L > build/devtools/subtest-blocks.txt
 echo "--- $(head -1 build/devtools/subtest-blocks.txt | sed -E 's/.*BLOCK SELF TEST: //')"
 sed -n 2,60p build/devtools/subtest-blocks.txt | cut -c1-240

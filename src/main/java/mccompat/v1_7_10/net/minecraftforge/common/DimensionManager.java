@@ -55,6 +55,20 @@ public class DimensionManager {
     public static void init() {
     }
 
+    /** Dimension id -> provider class of every mod dimension registered so far (vanilla's 0, -1 and 1 excluded). */
+    public static Map<Integer, Class<?>> mcc$modDimensions() {
+        Map<Integer, Class<?>> out = new TreeMap<>();
+        synchronized (DIMENSIONS) {
+            for (var e : DIMENSIONS.entrySet()) {
+                int id = e.getKey();
+                if (id == 0 || id == -1 || id == 1) continue;
+                Class<?> provider = PROVIDERS.get(e.getValue());
+                if (provider != null) out.put(id, provider);
+            }
+        }
+        return out;
+    }
+
     public static void registerDimension(int id, int providerType) {
         if (!PROVIDERS.containsKey(providerType)) {
             throw new IllegalArgumentException(String.format("Failed to register dimension for id %d, provider type %d does not exist", id, providerType));
@@ -92,12 +106,12 @@ public class DimensionManager {
 
     public static WorldProvider getProvider(int dim) {
         WorldServer w = getWorld(dim);
-        return w == null ? null : w.provider;
+        return w == null ? null : World.mcc$get$provider(w);
     }
 
     public static Integer[] getIDs() {
         List<Integer> ids = new ArrayList<>();
-        for (WorldServer w : getWorlds()) ids.add(w.provider.dimensionId);
+        for (WorldServer w : getWorlds()) ids.add(World.mcc$get$provider(w).dimensionId);
         return ids.toArray(Integer[]::new);
     }
 
@@ -116,7 +130,7 @@ public class DimensionManager {
     }
 
     public static WorldServer getWorld(int id) {
-        for (WorldServer w : getWorlds()) if (w.provider != null && w.provider.dimensionId == id) return w;
+        for (WorldServer w : getWorlds()) if (World.mcc$get$provider(w).dimensionId == id) return w;
         return null;
     }
 
@@ -138,7 +152,7 @@ public class DimensionManager {
 
     public static WorldProvider createProviderFor(int dim) {
         WorldServer w = getWorld(dim);
-        return w == null ? null : w.provider;
+        return w == null ? null : World.mcc$get$provider(w);
     }
 
     public static File getCurrentSaveRootDirectory() {
