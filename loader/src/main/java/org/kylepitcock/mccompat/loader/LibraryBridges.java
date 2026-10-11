@@ -23,7 +23,11 @@ import java.util.zip.ZipFile;
  * to Curios). Without the modern mod, the legacy library is translated and loaded as usual.
  */
 public final class LibraryBridges {
-    /** @param apiRoot internal-name package root of the legacy API, re-implemented under the shim prefix */
+    /**
+     * @param legacyModId  the legacy library mod this bridge replaces, or null when the API is only shaded into other mods
+     * @param apiRoot      internal-name package root of the legacy API, re-implemented under the shim prefix
+     * @param modernModId  modern mod the bridge needs, or null when it targets NeoForge itself (always active)
+     */
     public record Bridge(String legacyModId, String apiRoot, String modernModId) {}
 
     public static final List<Bridge> KNOWN = List.of(
@@ -31,7 +35,9 @@ public final class LibraryBridges {
             // Waila tooltip providers are shown through Jade.
             new Bridge("Waila", "mcp/mobius/waila/api/", "jade"),
             // NEI recipe handlers and hidden items are shown through JEI.
-            new Bridge("NotEnoughItems", "codechicken/nei/", "jei"));
+            new Bridge("NotEnoughItems", "codechicken/nei/", "jei"),
+            // CoFH's RF energy API (shaded by most 1.7.10 tech mods) is backed by NeoForge's Energy capability.
+            new Bridge(null, "cofh/api/energy/", null));
 
     /**
      * Mods that only make sense on the 1.7.10 engine or launcher (performance/bug-fix patches, ID extenders, mixin
@@ -96,7 +102,8 @@ public final class LibraryBridges {
         String forced = System.getProperty("mccompat.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         for (Bridge b : KNOWN) {
-            if (modern.contains(b.modernModId) || forced.contains(b.legacyModId.toLowerCase(Locale.ROOT))) out.add(b);
+            if (b.modernModId == null || modern.contains(b.modernModId)
+                    || b.legacyModId != null && forced.contains(b.legacyModId.toLowerCase(Locale.ROOT))) out.add(b);
         }
         return out;
     }
@@ -126,7 +133,7 @@ public final class LibraryBridges {
     /** True if this legacy jar is the library a bridge replaces (it declares the bridged mod id). */
     public static Bridge replacing(LegacyJar jar, List<Bridge> active) {
         for (Bridge b : active) {
-            for (LegacyModDecl m : jar.mods) if (m.legacyId.equalsIgnoreCase(b.legacyModId)) return b;
+            for (LegacyModDecl m : jar.mods) if (b.legacyModId != null && m.legacyId.equalsIgnoreCase(b.legacyModId)) return b;
         }
         return null;
     }

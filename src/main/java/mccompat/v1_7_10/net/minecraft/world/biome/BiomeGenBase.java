@@ -91,6 +91,8 @@ public class BiomeGenBase {
     protected boolean enableSnow;
     protected boolean enableRain = true;
     public final int biomeID;
+    /** Modern id of the legacy mod that created this biome (null for the vanilla biomes). */
+    public final String mcc$owner;
 
     public BiomeGenBase(int id) {
         this(id, true);
@@ -98,6 +100,8 @@ public class BiomeGenBase {
 
     public BiomeGenBase(int id, boolean register) {
         this.biomeID = id;
+        var owner = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
+        this.mcc$owner = owner == null ? null : owner.record().modernId;
         this.rootHeight = height_Default.rootHeight;
         this.heightVariation = height_Default.variation;
         this.temperature = 0.5F;
@@ -215,6 +219,18 @@ public class BiomeGenBase {
 
     public static BiomeGenBase getBiome(int id) {
         return id >= 0 && id < biomeList.length && biomeList[id] != null ? biomeList[id] : ocean;
+    }
+
+    /** True for biomes created by legacy mods (generated as modern biomes by Retrofit). */
+    public boolean mcc$isModBiome() {
+        return mcc$owner != null && biomeID > 39 && (biomeID < 128 || biomeID > 167);
+    }
+
+    /** Id of the modern biome generated for this legacy biome. */
+    public net.minecraft.resources.ResourceLocation mcc$modernId() {
+        String name = biomeName == null || biomeName.isBlank() ? "biome_" + biomeID : biomeName;
+        return net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(mcc$owner == null ? "retrofit" : mcc$owner,
+                org.kylepitcock.mccompat.core.Ids.normalizePath(name).replace('/', '_'));
     }
 
     @Override

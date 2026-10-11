@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.kylepitcock.mccompat.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MultiNoiseBiomeSourceMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

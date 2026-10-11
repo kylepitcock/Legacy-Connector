@@ -27,6 +27,8 @@ public final class Data1710 implements GeneratedPack.Contributor {
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.SERVER_DATA) return;
         RecipeBridge.generate(out);
+        org.kylepitcock.mccompat.v1_7_10.bridge.LegacyBiomes.contribute(out);
+        org.kylepitcock.mccompat.v1_7_10.bridge.LegacyWorldPresets.contributeData(out);
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.mccompat.compat.curios.CuriosBaubles.data(out);
         Map<String, Set<String>> tags = new LinkedHashMap<>();
         for (Block b : BlockBridge.modBlocks()) {

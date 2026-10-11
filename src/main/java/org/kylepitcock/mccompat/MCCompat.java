@@ -37,6 +37,9 @@ public final class MCCompat {
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
     public static final DeferredHolder<Feature<?>, LegacyWorldGenFeature> LEGACY_WORLDGEN =
             FEATURES.register("legacy_worldgen", () -> new LegacyWorldGenFeature(NoneFeatureConfiguration.CODEC));
+    static {
+        FEATURES.register("legacy_biome", () -> new org.kylepitcock.mccompat.core.worldgen.LegacyBiomeFeature(NoneFeatureConfiguration.CODEC));
+    }
 
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.mccompat.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
@@ -74,6 +77,7 @@ public final class MCCompat {
 
     /** Hoppers, comparators-by-capability and modern item pipes can use legacy tile entity inventories. */
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        org.kylepitcock.mccompat.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
         var type = org.kylepitcock.mccompat.v1_7_10.bridge.TileEntityBridge.type();
         if (type == null) return;
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type, (be, side) ->

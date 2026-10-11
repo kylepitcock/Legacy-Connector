@@ -184,6 +184,8 @@ public final class Platform1710 implements LegacyPlatform {
         CreativeTabBridge.registerTabs();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.mccompat.compat.curios.CuriosBaubles.registerItems();
         org.kylepitcock.mccompat.compat.waila.WailaBridge.processRegistrations();
+        org.kylepitcock.mccompat.v1_7_10.bridge.LegacyBiomeLayers.register();
+        org.kylepitcock.mccompat.v1_7_10.bridge.LegacyWorldPresets.registerNames();
         LOG.info("1.7.10: {} block(s), {} item(s), {} recipe(s) translated", adapters.size(),
                 org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.modItems().size(), org.kylepitcock.mccompat.v1_7_10.bridge.RecipeBridge.count());
     }

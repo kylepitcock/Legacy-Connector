@@ -65,9 +65,27 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 
 | Legacy library | Modern replacement | Status |
 |---|---|---|
-| Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Bridged: Baubles is skipped, `IBauble` items become curios in the ring/necklace/belt slots, `BaublesApi.getBaubles` reads the Curios slots. Without Curios, Baubles itself is translated and loaded. |
+| Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
+| NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category over its own GUI texture; NEI-hidden items are hidden in JEI. |
+| Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
+| CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
+
+Without the modern mod, the legacy library is translated and loaded as usual (except the RF API, which needs none).
+
+Mods that only make sense on 1.7.10's engine or launcher (performance/bug-fix patches such as FastCraft or Hodgepodge,
+ID extenders, LWJGL 3 ports) and client mods with modern versions (JourneyMap, Inventory Tweaks, ...) are not loaded;
+`retrofit-report.txt` says why.
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
+
+### World generation
+
+Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generated as data: climate, colours, and the
+generation features of the closest vanilla biome, plus the legacy biome's own surface blocks and decorator (its trees,
+plants and features). Where they appear is decided by the 1.7.10 biome layer system (`GenLayer`, `WorldType`,
+Forge's `BiomeManager`), re-implemented in the shim, so a mod's own layer chain (BoP's world type) runs unmodified.
+1.21 terrain, oceans, rivers, beaches, mountains and caves are kept; legacy biomes replace ordinary land biomes where
+the legacy layers place them. Mods' `IWorldGenerator`s (ores, structures) run for every chunk.
 
 ## Compatibility status
 

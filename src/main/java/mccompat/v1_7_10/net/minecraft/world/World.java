@@ -601,6 +601,13 @@ public class World implements IBlockAccess {
         return mcc$fullLevel() instanceof ServerLevel s ? s.getSeed() : 0L;
     }
 
+    private mccompat.v1_7_10.net.minecraft.world.storage.WorldInfo mcc$info;
+
+    public mccompat.v1_7_10.net.minecraft.world.storage.WorldInfo getWorldInfo() {
+        if (mcc$info == null) mcc$info = new mccompat.v1_7_10.net.minecraft.world.storage.WorldInfo(this);
+        return mcc$info;
+    }
+
     public ChunkCoordinates getSpawnPoint() {
         Level level = mcc$fullLevel();
         BlockPos spawn = level == null ? BlockPos.ZERO : level.getSharedSpawnPos();

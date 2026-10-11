@@ -24,6 +24,21 @@ public class WeightedRandom {
         return getRandomItem(random, items, getTotalWeight(items));
     }
 
+    /** Forge: the item at a given point of the cumulative weight (for callers that draw the number themselves). */
+    public static Item getItem(Collection<? extends Item> items, int weight) {
+        Item last = null;
+        for (Item i : items) {
+            weight -= i.itemWeight;
+            last = i;
+            if (weight < 0) return i;
+        }
+        return last;
+    }
+
+    public static Item getItem(Item[] items, int weight) {
+        return getItem(java.util.Arrays.asList(items), weight);
+    }
+
     public static int getTotalWeight(Item[] items) {
         int total = 0;
         for (Item i : items) total += i.itemWeight;
