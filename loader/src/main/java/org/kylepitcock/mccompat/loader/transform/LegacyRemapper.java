@@ -26,6 +26,12 @@ public final class LegacyRemapper extends Remapper {
             Map.entry("sun/misc/BASE64Decoder", "org/kylepitcock/mccompat/compat/jdk/BASE64Decoder"),
             Map.entry("sun/reflect/Reflection", "org/kylepitcock/mccompat/compat/jdk/Reflection"),
             Map.entry("java/lang/Compiler", "org/kylepitcock/mccompat/compat/jdk/Compiler"),
+            // ASM 5 -> 9: the Remapping*Adapter classes were replaced by *Remapper with the same constructors.
+            Map.entry("org/objectweb/asm/commons/RemappingClassAdapter", "org/objectweb/asm/commons/ClassRemapper"),
+            Map.entry("org/objectweb/asm/commons/RemappingMethodAdapter", "org/objectweb/asm/commons/MethodRemapper"),
+            Map.entry("org/objectweb/asm/commons/RemappingFieldAdapter", "org/objectweb/asm/commons/FieldRemapper"),
+            Map.entry("org/objectweb/asm/commons/RemappingAnnotationAdapter", "org/objectweb/asm/commons/AnnotationRemapper"),
+            Map.entry("org/objectweb/asm/commons/RemappingSignatureAdapter", "org/objectweb/asm/commons/SignatureRemapper"),
             // Guava 17-21 -> 32: Objects.ToStringHelper moved to MoreObjects.
             Map.entry("com/google/common/base/Objects$ToStringHelper", "com/google/common/base/MoreObjects$ToStringHelper"),
             // commons-lang 2 was bundled with 1.7.10; only commons-lang3 ships today.

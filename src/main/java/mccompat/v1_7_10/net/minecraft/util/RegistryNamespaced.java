@@ -16,6 +16,8 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
     private final IntFunction<Object> byId;
     private final ToIntFunction<Object> idOf;
     private final Supplier<Iterator<Object>> all;
+    /** The numeric id map (mods opened it with access transformers to read and assign ids). */
+    protected ObjectIntIdentityMap underlyingIntegerMap;
 
     public RegistryNamespaced(Function<String, Object> byName, Function<Object, String> nameOf, IntFunction<Object> byId,
                               ToIntFunction<Object> idOf, Supplier<Iterator<Object>> all) {
@@ -24,6 +26,7 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
         this.byId = byId;
         this.idOf = idOf;
         this.all = all;
+        this.underlyingIntegerMap = new ObjectIntIdentityMap(byId, idOf);
     }
 
     public Object getObject(String name) {

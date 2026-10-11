@@ -97,6 +97,8 @@ public class Block {
     protected final Material blockMaterial;
     public float slipperiness;
     private String unlocalizedName;
+    /** Forge: whether this block provides a tile entity (mods reflect on it). */
+    protected boolean isTileProvider = this instanceof ITileEntityProvider;
     protected IIcon blockIcon;
     private CreativeTabs displayOnCreativeTab;
 

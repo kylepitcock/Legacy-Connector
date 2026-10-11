@@ -17,6 +17,22 @@ public final class LegacyFields {
 
     private LegacyFields() {}
 
+    /** Every legacy field of every class (for completing hand-written shim classes), by owner. */
+    public static Map<String, java.util.List<Field>> byOwner(String versionId) {
+        Map<String, java.util.List<Field>> out = new HashMap<>();
+        try (InputStream in = LegacyFields.class.getClassLoader().getResourceAsStream("mccompat/legacy/" + versionId + "/fields.txt")) {
+            if (in == null) return out;
+            BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+            for (String line; (line = r.readLine()) != null; ) {
+                String[] p = line.split(" ");
+                if (p.length == 5) out.computeIfAbsent(p[1], k -> new java.util.ArrayList<>()).add(new Field(p[1], p[2], p[3], p[4].equals("1")));
+            }
+        } catch (Exception e) {
+            // no table
+        }
+        return out;
+    }
+
     public static Field bySrg(LegacyVersion version, String srg) {
         return CACHE.computeIfAbsent(version, LegacyFields::load).get(srg);
     }
@@ -29,7 +45,7 @@ public final class LegacyFields {
             BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
             for (String line; (line = r.readLine()) != null; ) {
                 String[] p = line.split(" ");
-                if (p.length == 5) map.put(p[0], new Field(p[1], p[2], p[3], p[4].equals("1")));
+                if (p.length == 5 && p[0].startsWith("field_")) map.put(p[0], new Field(p[1], p[2], p[3], p[4].equals("1")));
             }
         } catch (Exception e) {
             // no table: reflected fields are simply not synthesized

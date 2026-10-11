@@ -39,6 +39,7 @@ public final class Platform1710 implements LegacyPlatform {
 
     @Override
     public void construct(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.CONSTRUCTING);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.mccompat.v1_7_10.bridge.CoreModPlugins.runAll(loader);
         // FML's Scala adapter: an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$.
@@ -161,16 +162,19 @@ public final class Platform1710 implements LegacyPlatform {
 
     @Override
     public void preInit(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.PREINITIALIZATION);
         dispatch(mod, new FMLPreInitializationEvent(mod));
     }
 
     @Override
     public void init(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.INITIALIZATION);
         dispatch(mod, new FMLInitializationEvent());
     }
 
     @Override
     public void postInit(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.POSTINITIALIZATION);
         // IMC is delivered between init and postInit, like FML 7.10.
         var messages = FMLInterModComms.mcc$drain(mod.legacyId);
         if (!messages.isEmpty()) dispatch(mod, new FMLInterModComms.IMCEvent(messages));
@@ -179,6 +183,7 @@ public final class Platform1710 implements LegacyPlatform {
 
     @Override
     public void afterPostInit() {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);
         TileEntityBridge.registerType(adapters);
@@ -197,6 +202,7 @@ public final class Platform1710 implements LegacyPlatform {
 
     @Override
     public void loadComplete(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         dispatch(mod, new FMLLoadCompleteEvent());
     }
 }

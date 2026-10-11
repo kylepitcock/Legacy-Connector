@@ -24,8 +24,21 @@ public class Loader {
      * True for legacy mods (by legacy id), for platform ids legacy code probes for, and for modern NeoForge mods
      * whose id equals the normalized legacy id (so {@code isModLoaded("Baubles")} finds a modern "baubles").
      */
+    /** Mod containers of legacy coremods (FML registered them as mods; mods check their ids). */
+    private static final List<ModContainer> MCC$CORE_CONTAINERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static volatile LoaderState mcc$state = LoaderState.LOADING;
+
+    public static void mcc$addCoreModContainer(ModContainer container) {
+        if (container != null && container.getModId() != null) MCC$CORE_CONTAINERS.add(container);
+    }
+
+    public static void mcc$setState(LoaderState state) {
+        mcc$state = state;
+    }
+
     public static boolean isModLoaded(String modname) {
         if (modname == null) return false;
+        for (ModContainer c : MCC$CORE_CONTAINERS) if (modname.equals(c.getModId())) return true;
         String lower = modname.toLowerCase(Locale.ROOT);
         if (lower.equals("forge") || lower.equals("fml") || lower.equals("mcp") || lower.equals("minecraft")) return true;
         if (LegacyMods.byLegacyId(modname) != null) return true;
@@ -54,6 +67,7 @@ public class Loader {
         for (LegacyModRecord r : LegacyMods.ordered()) {
             if (r.platformData instanceof LegacyModContainer1710 c) out.put(r.legacyId, c);
         }
+        for (ModContainer c : MCC$CORE_CONTAINERS) out.putIfAbsent(c.getModId(), c);
         return out;
     }
 
@@ -70,11 +84,15 @@ public class Loader {
     }
 
     public boolean hasReachedState(LoaderState state) {
-        return true;
+        return mcc$state.ordinal() >= state.ordinal() && mcc$state != LoaderState.ERRORED;
     }
 
-    public enum LoaderState {
-        NOINIT, LOADING, CONSTRUCTING, PREINITIALIZATION, INITIALIZATION, POSTINITIALIZATION, AVAILABLE, SERVER_ABOUT_TO_START,
-        SERVER_STARTING, SERVER_STARTED, SERVER_STOPPING, SERVER_STOPPED, ERRORED
+    public boolean isInState(LoaderState state) {
+        return mcc$state == state;
     }
+
+    public LoaderState getLoaderState() {
+        return mcc$state;
+    }
+
 }

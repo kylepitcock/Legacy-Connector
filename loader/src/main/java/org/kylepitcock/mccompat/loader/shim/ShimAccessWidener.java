@@ -33,18 +33,69 @@ public final class ShimAccessWidener {
             try (Stream<Path> walk = Files.walk(root)) {
                 files = walk.filter(p -> p.toString().endsWith(".class")).toList();
             }
+            java.util.Map<String, java.util.List<org.kylepitcock.mccompat.loader.synth.LegacyFields.Field>> legacyFields =
+                    org.kylepitcock.mccompat.loader.synth.LegacyFields.byOwner("1.7.10");
+            Path classes = Path.of(dir);
+            int added = 0;
             for (Path p : files) {
                 byte[] in = Files.readAllBytes(p);
                 ClassNode node = new ClassNode();
                 new ClassReader(in).accept(node, 0);
-                if (!widen(node)) continue;
+                int n = addLegacyFields(node, legacyFields, classes);
+                added += n;
+                if (!widen(node) && n == 0) continue;
                 ClassWriter cw = new ClassWriter(0);
                 node.accept(cw);
                 Files.write(p, cw.toByteArray());
                 changed++;
             }
+            if (added > 0) System.out.println("Declared " + added + " missing legacy fields on hand-written shim classes");
         }
         System.out.println("Widened access in " + changed + " shim classes");
+    }
+
+    private static final String PREFIX = "mccompat/v1_7_10/";
+
+    /**
+     * Declares the 1.7.10 fields a hand-written shim class does not have (mods find them by reflection, e.g. through
+     * ReflectionHelper). Skipped: names the class already has (also phantom fields served by accessors) and fields
+     * whose type is only synthesized (no hand-written class to type them with).
+     */
+    static int addLegacyFields(ClassNode node, java.util.Map<String, java.util.List<org.kylepitcock.mccompat.loader.synth.LegacyFields.Field>> legacy,
+            Path classes) {
+        if (!node.name.startsWith(PREFIX) || (node.access & Opcodes.ACC_INTERFACE) != 0) return 0;
+        var fields = legacy.get(node.name.substring(PREFIX.length()));
+        if (fields == null) return 0;
+        java.util.Set<String> present = new java.util.HashSet<>();
+        for (FieldNode f : node.fields) present.add(f.name);
+        for (MethodNode m : node.methods) if (m.name.startsWith("mcc$get$")) present.add(m.name.substring("mcc$get$".length()));
+        int n = 0;
+        for (var f : fields) {
+            if (present.contains(f.name())) continue;
+            String desc = shimDesc(f.desc(), classes);
+            if (desc == null) continue;
+            node.fields.add(new FieldNode(Opcodes.ACC_PUBLIC | (f.isStatic() ? Opcodes.ACC_STATIC : 0), f.name(), desc, null, null));
+            present.add(f.name());
+            n++;
+        }
+        return n;
+    }
+
+    /** The field descriptor with legacy types moved into the shim, or null when a type has no hand-written class. */
+    private static String shimDesc(String desc, Path classes) {
+        // Arrays and collections stay with the synthesized helpers: those default to empty values, a plain field to null.
+        if (desc.startsWith("[") || desc.startsWith("Ljava/util/") || desc.equals("Ljava/lang/Iterable;")
+                || desc.startsWith("Lcom/google/common/collect/")) return null;
+        int dims = 0;
+        while (desc.charAt(dims) == '[') dims++;
+        String elem = desc.substring(dims);
+        if (!elem.startsWith("L")) return desc;
+        String type = elem.substring(1, elem.length() - 1);
+        if (type.startsWith("net/minecraft/") || type.startsWith("cpw/mods/fml/") || type.startsWith("net/minecraftforge/")) {
+            if (!Files.exists(classes.resolve(PREFIX + type + ".class"))) return null;
+            return desc.substring(0, dims) + "L" + PREFIX + type + ";";
+        }
+        return type.startsWith("java/") || type.startsWith("com/google/") || type.startsWith("org/apache/") ? desc : null;
     }
 
     static boolean widen(ClassNode node) {

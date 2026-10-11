@@ -16,8 +16,8 @@ public class FMLPreInitializationEvent extends FMLStateEvent {
     }
 
     @Override
-    public Loader.LoaderState getModState() {
-        return Loader.LoaderState.PREINITIALIZATION;
+    public mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.ModState getModState() {
+        return mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.ModState.PREINITIALIZED;
     }
 
     public mccompat.v1_7_10.cpw.mods.fml.common.discovery.ASMDataTable getAsmData() {

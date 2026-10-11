@@ -76,6 +76,15 @@ public final class CoreModPlugins {
                 Map<String, Object> data = baseData(gameDir, cls);
                 data.put("coremodList", plugins);
                 p.injectData(data);
+                // FML registered the plugin's mod container as a mod: mods check isModLoaded("<its id>").
+                String containerClass = p.getModContainerClass();
+                if (containerClass != null && !containerClass.isEmpty()) {
+                    Object container = containerClass.equals(cls.getName()) ? plugin
+                            : Class.forName(containerClass, true, loader).getDeclaredConstructor().newInstance();
+                    if (container instanceof mccompat.v1_7_10.cpw.mods.fml.common.ModContainer mc) {
+                        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$addCoreModContainer(mc);
+                    }
+                }
                 String setup = p.getSetupClass();
                 if (setup != null && !setup.isEmpty()) {
                     Object hook = Class.forName(setup, true, loader).getDeclaredConstructor().newInstance();

@@ -15,7 +15,7 @@ public class FMLServerAboutToStartEvent extends FMLStateEvent {
     }
 
     @Override
-    public Loader.LoaderState getModState() {
-        return Loader.LoaderState.SERVER_ABOUT_TO_START;
+    public mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.ModState getModState() {
+        return mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.ModState.AVAILABLE;
     }
 }
