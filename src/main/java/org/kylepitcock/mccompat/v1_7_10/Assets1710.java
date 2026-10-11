@@ -134,6 +134,14 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return "minecraft:missingno";
     }
 
+    /**
+     * Plants drawn by a mod's own block renderer (a custom render id): legacy plants are BlockBush subclasses and
+     * their renderers draw crossed planes, which the vanilla cross model reproduces.
+     */
+    private static boolean plantLike(Block b, int renderType) {
+        return renderType > 41 && b instanceof mccompat.v1_7_10.net.minecraft.block.BlockBush;
+    }
+
     private static JsonObject model(Block b, String[] faces) {
         JsonObject model = new JsonObject();
         JsonObject tex = new JsonObject();
@@ -143,7 +151,13 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             model.add("textures", tex);
             return model;
         }
-        if (b.getRenderType() == 1) {
+        int rt = b.getRenderType();
+        if (rt == 6) {
+            // Crops: four planes in a '#'.
+            model.addProperty("parent", "minecraft:block/crop");
+            tex.addProperty("crop", faces[0]);
+            model.addProperty("render_type", "minecraft:cutout");
+        } else if (rt == 1 || rt == 40 || plantLike(b, rt)) {
             model.addProperty("parent", "minecraft:block/cross");
             tex.addProperty("cross", faces[0]);
             model.addProperty("render_type", "minecraft:cutout");
