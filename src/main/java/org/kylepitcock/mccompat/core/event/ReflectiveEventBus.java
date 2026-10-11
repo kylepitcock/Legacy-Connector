@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * Each shim's {@code EventBus} class is a thin facade over one of these.
  */
 public final class ReflectiveEventBus {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/EventBus");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/EventBus");
 
     /** Version-specific knowledge: which annotation marks handlers and how events report cancellation. */
     public interface Adapter {

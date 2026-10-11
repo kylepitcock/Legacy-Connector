@@ -21,6 +21,10 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge;
  */
 public class Item {
     public static final RegistryNamespaced itemRegistry = ItemBridge.legacyRegistry();
+
+    /** Forge: stable handle to this item. */
+    public final mccompat.v1_7_10.cpw.mods.fml.common.registry.RegistryDelegate<Item> delegate =
+            new mccompat.v1_7_10.cpw.mods.fml.common.registry.RegistryDelegate.Delegate<>(this, Item.class, itemRegistry);
     protected static final UUID field_111210_e = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
     protected static Random itemRand = new Random();
 

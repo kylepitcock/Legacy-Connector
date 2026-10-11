@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * frequently touched the world from there; here they run on the main thread, which is what they should have done.
  */
 public final class NetworkBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Network");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Network");
     private static final String VERSION = "1.7.10";
     private static final Map<String, Channel> CHANNELS = new ConcurrentHashMap<>();
 

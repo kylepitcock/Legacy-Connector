@@ -20,7 +20,7 @@ public final class LegacyRegistrar {
         }
         if (registry.containsKey(id)) {
             // Legacy FML tolerated (and warned about) duplicate names; the modern registry would throw.
-            org.slf4j.LoggerFactory.getLogger("MCCompat").warn("Duplicate legacy registration of {} in {}; keeping the first", id, registry.key().location());
+            org.slf4j.LoggerFactory.getLogger("Retrofit").warn("Duplicate legacy registration of {} in {}; keeping the first", id, registry.key().location());
             return registry.get(id);
         }
         return Registry.register(registry, id, value);
@@ -49,7 +49,7 @@ public final class LegacyRegistrar {
                     }
                 }
             } catch (ReflectiveOperationException | RuntimeException e) {
-                org.slf4j.LoggerFactory.getLogger("MCCompat").debug("Cannot inspect {} for orphaned legacy entries", registry.key(), e);
+                org.slf4j.LoggerFactory.getLogger("Retrofit").debug("Cannot inspect {} for orphaned legacy entries", registry.key(), e);
             }
         }
         return removed;

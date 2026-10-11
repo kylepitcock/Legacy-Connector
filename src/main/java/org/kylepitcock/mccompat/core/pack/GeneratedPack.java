@@ -51,10 +51,10 @@ public final class GeneratedPack implements PackResources {
             try {
                 c.contribute(type, files);
             } catch (RuntimeException | LinkageError e) {
-                LoggerFactory.getLogger("MCCompat/Pack").error("Generated pack contributor {} failed", c, e);
+                LoggerFactory.getLogger("Retrofit/Pack").error("Generated pack contributor {} failed", c, e);
             }
         }
-        LoggerFactory.getLogger("MCCompat/Pack").info("Generated {} {} file(s) for legacy mods", files.size(), type == PackType.SERVER_DATA ? "data" : "asset");
+        LoggerFactory.getLogger("Retrofit/Pack").info("Generated {} {} file(s) for legacy mods", files.size(), type == PackType.SERVER_DATA ? "data" : "asset");
     }
 
     public static void addContributor(Contributor c) {
@@ -63,8 +63,8 @@ public final class GeneratedPack implements PackResources {
 
     public static void onAddPackFinders(AddPackFindersEvent event) {
         PackType type = event.getPackType();
-        String id = type == PackType.SERVER_DATA ? "mccompat_legacy_data" : "mccompat_legacy_assets";
-        PackLocationInfo info = new PackLocationInfo(id, Component.literal("MC Compatibility: legacy mod content"), PackSource.BUILT_IN, Optional.empty());
+        String id = type == PackType.SERVER_DATA ? "retrofit_legacy_data" : "retrofit_legacy_assets";
+        PackLocationInfo info = new PackLocationInfo(id, Component.literal("Retrofit: legacy mod content"), PackSource.BUILT_IN, Optional.empty());
         Pack.ResourcesSupplier supplier = new Pack.ResourcesSupplier() {
             @Override
             public PackResources openPrimary(PackLocationInfo location) {
@@ -88,7 +88,7 @@ public final class GeneratedPack implements PackResources {
     public IoSupplier<InputStream> getRootResource(String... elements) {
         if (elements.length == 1 && elements[0].equals(PACK_META)) {
             int format = SharedConstants.getCurrentVersion().getPackVersion(type);
-            byte[] meta = ("{\"pack\":{\"pack_format\":" + format + ",\"description\":\"MC Compatibility legacy content\"}}").getBytes(StandardCharsets.UTF_8);
+            byte[] meta = ("{\"pack\":{\"pack_format\":" + format + ",\"description\":\"Retrofit legacy content\"}}").getBytes(StandardCharsets.UTF_8);
             return () -> new ByteArrayInputStream(meta);
         }
         return null;
@@ -129,7 +129,7 @@ public final class GeneratedPack implements PackResources {
     @SuppressWarnings("unchecked")
     public <T> T getMetadataSection(MetadataSectionSerializer<T> serializer) {
         if (serializer.getMetadataSectionName().equals("pack")) {
-            return (T) new PackMetadataSection(Component.literal("MC Compatibility legacy content"), SharedConstants.getCurrentVersion().getPackVersion(type));
+            return (T) new PackMetadataSection(Component.literal("Retrofit legacy content"), SharedConstants.getCurrentVersion().getPackVersion(type));
         }
         return null;
     }

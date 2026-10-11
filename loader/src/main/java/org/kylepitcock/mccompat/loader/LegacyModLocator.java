@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  * translates it into a cached NeoForge jar and submits that instead. The original jar is never modified.</p>
  */
 public final class LegacyModLocator implements IModFileCandidateLocator {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit");
     /** Nested runtime (shim) mod inside the distributed loader jar. Absent in development. */
     static final String EMBEDDED_RUNTIME = "/META-INF/mccompat/mccompat-runtime.jar";
     static final String SHIM_INDEX_PROPERTY = "mccompat.shimIndex";
@@ -63,7 +63,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     public void findCandidates(ILaunchContext context, IDiscoveryPipeline pipeline) {
         Path gameDir = FMLPaths.GAMEDIR.get();
         Path modsDir = FMLPaths.MODSDIR.get();
-        Path cacheDir = gameDir.resolve(".mccompat").resolve("cache");
+        Path cacheDir = gameDir.resolve(".retrofit").resolve("cache");
         try {
             Files.createDirectories(cacheDir);
             Path runtimeJar = extractRuntime(cacheDir);
@@ -72,7 +72,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
 
             ShimIndex index = loadShimIndex(runtimeJar);
-            LOG.info("MC Compatibility: shim index has {} legacy API classes", index.size());
+            LOG.info("Retrofit: shim index has {} legacy API classes", index.size());
 
             List<LegacyJar> legacy = new ArrayList<>();
             if (Files.isDirectory(modsDir)) {
@@ -84,7 +84,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             LegacyJar jar = LegacyJarInspector.inspect(p);
                             if (jar != null) legacy.add(jar);
                         } catch (IOException | RuntimeException e) {
-                            LOG.debug("MC Compatibility: could not inspect {}", p, e);
+                            LOG.debug("Retrofit: could not inspect {}", p, e);
                         }
                     }
                 }
@@ -97,7 +97,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             for (LibraryBridges.Bridge b : bridges) present.add(b.legacyModId());
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
             System.setProperty("mccompat.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId).toList()));
-            if (!bridges.isEmpty()) LOG.info("MC Compatibility: bridging {} to their modern replacements", bridges);
+            if (!bridges.isEmpty()) LOG.info("Retrofit: bridging {} to their modern replacements", bridges);
             String side = side();
             LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
             org.kylepitcock.mccompat.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
@@ -122,7 +122,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 if (skip != null) {
                     outcomes.put(jar, skip);
                     // Unknown translation keys are displayed verbatim by FML's error screen. Bridged libraries are expected.
-                    if (replacedBy == null) pipeline.addIssue(ModLoadingIssue.warning("MC Compatibility skipped " + jar.fileName() + ": " + skip.replace("'", ""))
+                    if (replacedBy == null) pipeline.addIssue(ModLoadingIssue.warning("Retrofit skipped " + jar.fileName() + ": " + skip.replace("'", ""))
                             .withAffectedPath(jar.path));
                     continue;
                 }
@@ -135,7 +135,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         long start = System.nanoTime();
                         LegacyJarTransformer.Result result = transformer.transform(jar, out, jarPeers);
                         result.demand.write(demandFile);
-                        LOG.info("MC Compatibility: translated {} ({} classes, {} JDK fixes, {} virtual fields, {} synthesized API classes) in {} ms",
+                        LOG.info("Retrofit: translated {} ({} classes, {} JDK fixes, {} virtual fields, {} synthesized API classes) in {} ms",
                                 jar.fileName(), result.classes, result.compatRedirects, result.virtualFieldRedirects,
                                 result.links.synthesizedClasses.size(), (System.nanoTime() - start) / 1_000_000);
                         StringBuilder text = new StringBuilder();
@@ -145,7 +145,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         text.append(result.links.render());
                         Files.writeString(linkReport, text);
                         if (result.links.errorCount() > 0) {
-                            LOG.warn("MC Compatibility: {} has {} reference(s) that cannot be linked; see logs/mccompat-report.txt",
+                            LOG.warn("Retrofit: {} has {} reference(s) that cannot be linked; see logs/retrofit-report.txt",
                                     jar.fileName(), result.links.errorCount());
                         }
                     }
@@ -156,9 +156,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
                 } catch (Exception e) {
-                    LOG.error("MC Compatibility: failed to translate {}", jar.fileName(), e);
+                    LOG.error("Retrofit: failed to translate {}", jar.fileName(), e);
                     outcomes.put(jar, "translation failed: " + e);
-                    pipeline.addIssue(ModLoadingIssue.error("MC Compatibility could not translate " + jar.fileName())
+                    pipeline.addIssue(ModLoadingIssue.error("Retrofit could not translate " + jar.fileName())
                             .withAffectedPath(jar.path).withCause(e));
                 }
             }
@@ -174,7 +174,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
             SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir);
             if (split.sharedLibrary() != null) {
-                LOG.info("MC Compatibility: {} packages shipped by several legacy jars were merged into {}",
+                LOG.info("Retrofit: {} packages shipped by several legacy jars were merged into {}",
                         split.sharedPackages().size(), split.sharedLibrary().getFileName());
                 keep.add(split.sharedLibrary());
                 pipeline.addPath(split.sharedLibrary(), ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
@@ -186,7 +186,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             writeReport(gameDir, outcomes, split);
             pruneCache(cacheDir, keep);
         } catch (IOException e) {
-            LOG.error("MC Compatibility: legacy mod discovery failed", e);
+            LOG.error("Retrofit: legacy mod discovery failed", e);
         }
     }
 
@@ -197,7 +197,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             try {
                 for (ClassInfo c : transformer.scan(jar)) out.putIfAbsent(c.name, c);
             } catch (IOException | RuntimeException e) {
-                LOG.debug("MC Compatibility: could not scan {}", jar.fileName(), e);
+                LOG.debug("Retrofit: could not scan {}", jar.fileName(), e);
             }
         }
         return out;
@@ -235,7 +235,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
             md.update(LOADER_DIGEST);
             if (indexDigest != null) md.update(indexDigest);
-            Path target = cacheDir.resolve("mccompat-synth-" + version.id() + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar");
+            Path target = cacheDir.resolve("retrofit-synth-" + version.id() + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar");
             if (Files.exists(target)) return target;
             long start = System.nanoTime();
             Map<String, byte[]> classes = new SynthJarBuilder(version, index, LegacyModLocator.class.getClassLoader(), demand).build();
@@ -254,7 +254,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 }
             }
             Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-            LOG.info("MC Compatibility: synthesized {} legacy {} API classes the shim does not implement yet ({} helpers) in {} ms",
+            LOG.info("Retrofit: synthesized {} legacy {} API classes the shim does not implement yet ({} helpers) in {} ms",
                     classes.size(), version.id(), demand.helperCount(), (System.nanoTime() - start) / 1_000_000);
             return target;
         } finally {
@@ -270,11 +270,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 try {
                     Files.delete(p);
                 } catch (IOException e) {
-                    LOG.debug("MC Compatibility: could not prune {}", p, e);
+                    LOG.debug("Retrofit: could not prune {}", p, e);
                 }
             }
         } catch (IOException e) {
-            LOG.debug("MC Compatibility: could not prune cache", e);
+            LOG.debug("Retrofit: could not prune cache", e);
         }
     }
 
@@ -316,9 +316,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         try (InputStream in = LegacyModLocator.class.getClassLoader().getResourceAsStream("mccompat/loader-build-id.txt")) {
             if (in != null) return in.readAllBytes();
         } catch (IOException e) {
-            LOG.debug("MC Compatibility: cannot read loader build id", e);
+            LOG.debug("Retrofit: cannot read loader build id", e);
         }
-        LOG.warn("MC Compatibility: loader build id missing; translation caches may be stale after updates");
+        LOG.warn("Retrofit: loader build id missing; translation caches may be stale after updates");
         return new byte[0];
     }
 
@@ -327,7 +327,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             if (in == null) return null; // development: the runtime mod is on the classpath already
             byte[] bytes = in.readAllBytes();
             String hash = HexFormat.of().formatHex(SplitPackageResolver.sha256().digest(bytes)).substring(0, 16);
-            Path target = cacheDir.resolve("mccompat-runtime-" + hash + ".jar");
+            Path target = cacheDir.resolve("retrofit-runtime-" + hash + ".jar");
             if (!Files.exists(target)) Files.write(target, bytes);
             return target;
         }
@@ -352,7 +352,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
         }
         if (data == null) {
-            LOG.warn("MC Compatibility: no shim index found; link checking and duplicate-class removal are disabled");
+            LOG.warn("Retrofit: no shim index found; link checking and duplicate-class removal are disabled");
             return ShimIndex.empty();
         }
         indexDigest = SplitPackageResolver.sha256().digest(data);
@@ -360,11 +360,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static void writeReport(Path gameDir, Map<LegacyJar, String> outcomes, SplitPackageResolver.Outcome split) {
-        Path report = gameDir.resolve("logs").resolve("mccompat-report.txt");
+        Path report = gameDir.resolve("logs").resolve("retrofit-report.txt");
         try {
             Files.createDirectories(report.getParent());
             try (Writer w = Files.newBufferedWriter(report, StandardCharsets.UTF_8)) {
-                w.write("MC Compatibility legacy mod report - " + LocalDateTime.now() + "\n");
+                w.write("Retrofit legacy mod report - " + LocalDateTime.now() + "\n");
                 w.write("=".repeat(78) + "\n\n");
                 for (var e : outcomes.entrySet()) {
                     LegacyJar jar = e.getKey();
@@ -388,14 +388,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     for (String p : split.sharedPackages()) w.write("  " + p.replace('/', '.') + "\n");
                 }
             }
-            LOG.info("MC Compatibility: wrote compatibility report to {}", report);
+            LOG.info("Retrofit: wrote compatibility report to {}", report);
         } catch (IOException e) {
-            LOG.warn("MC Compatibility: could not write report", e);
+            LOG.warn("Retrofit: could not write report", e);
         }
     }
 
     @Override
     public String toString() {
-        return "MC Compatibility legacy mod locator";
+        return "Retrofit legacy mod locator";
     }
 }

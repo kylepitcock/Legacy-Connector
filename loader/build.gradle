@@ -6,7 +6,7 @@ plugins {
 // It may only depend on FML / modlauncher / ASM / Gson / SLF4J, all of which NeoForge ships.
 group = mod_group_id
 version = mod_version
-base.archivesName = 'mccompat-loader'
+base.archivesName = 'retrofit-loader'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 

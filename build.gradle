@@ -173,7 +173,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('bundleJar', Jar) {
     group = 'build'
     description = 'Builds the single distributable jar (loader service + embedded runtime mod).'
-    archiveBaseName = 'mccompat'
+    archiveBaseName = 'retrofit'
     archiveVersion = project.version
     archiveClassifier = ''
     destinationDirectory = layout.buildDirectory.dir('dist')

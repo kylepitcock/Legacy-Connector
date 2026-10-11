@@ -21,7 +21,7 @@ public final class LegacyModException extends RuntimeException {
         }
         String hint = "";
         if (t instanceof NoSuchMethodError || t instanceof NoSuchFieldError || t instanceof NoClassDefFoundError || t instanceof AbstractMethodError) {
-            hint = " (the MC Compatibility shim does not implement this legacy API yet - see logs/mccompat-report.txt)";
+            hint = " (the Retrofit layer does not implement this legacy API yet - see logs/retrofit-report.txt)";
         }
         return t + hint;
     }

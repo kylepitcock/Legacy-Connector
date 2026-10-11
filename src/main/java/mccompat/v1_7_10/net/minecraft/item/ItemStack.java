@@ -26,7 +26,7 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge;
  * decrements it. Shim code itself must use {@link #mcc$count()} / {@link #mcc$setCount(int)}.</p>
  *
  * <p>Metadata/damage: for damageable items the legacy damage is the modern {@code DAMAGE} component; for items
- * with subtypes it selects the flattened modern item variant (or the {@code mccompat:legacy_meta} component for
+ * with subtypes it selects the flattened modern item variant (or the {@code retrofit:legacy_meta} component for
  * subtypes that were never registered as variants). NBT lives in the {@code CUSTOM_DATA} component.</p>
  */
 public final class ItemStack {

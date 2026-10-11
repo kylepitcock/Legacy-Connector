@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  * the block atlas. Custom renderers (ISBRH, render types other than cube/cross) fall back to a cube.</p>
  */
 public final class Assets1710 implements GeneratedPack.Contributor {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Models");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Models");
     private static final Map<String, String> VANILLA_TEXTURE_RENAMES = Map.ofEntries(
             Map.entry("planks_oak", "oak_planks"), Map.entry("planks_spruce", "spruce_planks"), Map.entry("planks_birch", "birch_planks"),
             Map.entry("planks_jungle", "jungle_planks"), Map.entry("log_oak", "oak_log"), Map.entry("log_oak_top", "oak_log_top"),

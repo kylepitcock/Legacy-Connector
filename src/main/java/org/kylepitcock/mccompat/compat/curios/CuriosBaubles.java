@@ -34,7 +34,7 @@ import top.theillusivec4.curios.api.type.inventory.ICurioStacksHandler;
  * loading it links against the Curios API.
  */
 public final class CuriosBaubles {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Curios");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Curios");
     /** By BaubleType ordinal. */
     private static final String[] SLOT = {"ring", "necklace", "belt"};
     /** Legacy Baubles inventory slot -> Curios slot id and index. */
@@ -83,7 +83,7 @@ public final class CuriosBaubles {
         }
         JsonObject ring = new JsonObject();
         ring.addProperty("size", 2); // Baubles had two ring slots
-        put(out, "data/mccompat/curios/slots/ring.json", ring);
+        put(out, "data/retrofit/curios/slots/ring.json", ring);
         JsonObject entities = new JsonObject();
         JsonArray ents = new JsonArray();
         ents.add("player");
@@ -91,7 +91,7 @@ public final class CuriosBaubles {
         JsonArray slots = new JsonArray();
         for (String s : SLOT) slots.add(s);
         entities.add("slots", slots);
-        put(out, "data/mccompat/curios/entities/legacy_baubles.json", entities);
+        put(out, "data/retrofit/curios/entities/legacy_baubles.json", entities);
     }
 
     private static void put(Map<String, Supplier<byte[]>> out, String path, JsonObject json) {

@@ -32,6 +32,10 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.BlockBridge;
 public class Block {
     public static final RegistryNamespaced blockRegistry = BlockBridge.legacyRegistry();
 
+    /** Forge: stable handle to this block. */
+    public final mccompat.v1_7_10.cpw.mods.fml.common.registry.RegistryDelegate<Block> delegate =
+            new mccompat.v1_7_10.cpw.mods.fml.common.registry.RegistryDelegate.Delegate<>(this, Block.class, blockRegistry);
+
     public static final SoundType soundTypeStone = new SoundType("stone", 1.0F, 1.0F);
     public static final SoundType soundTypeWood = new SoundType("wood", 1.0F, 1.0F);
     public static final SoundType soundTypeGravel = new SoundType("gravel", 1.0F, 1.0F);

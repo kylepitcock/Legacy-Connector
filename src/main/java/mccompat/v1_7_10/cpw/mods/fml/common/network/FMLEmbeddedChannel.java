@@ -23,7 +23,7 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
         try {
             checkException(); // handler setup failures are otherwise held silently by the embedded channel
         } catch (Throwable t) {
-            org.slf4j.LoggerFactory.getLogger("MCCompat/Network").error("Setting up legacy channel {} ({}) failed", channelName, source, t);
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Network").error("Setting up legacy channel {} ({}) failed", channelName, source, t);
         }
     }
 
@@ -59,7 +59,7 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
             if (!(e.getValue() instanceof FMLOutboundHandler)) last = e.getKey();
         }
         // Mods call this to insert their handlers after their codec; FML's codec was the last handler added.
-        org.slf4j.LoggerFactory.getLogger("MCCompat/Network").warn("Channel {} has no {} handler (pipeline: {}); using {}",
+        org.slf4j.LoggerFactory.getLogger("Retrofit/Network").warn("Channel {} has no {} handler (pipeline: {}); using {}",
                 mcc$name, type.getName(), pipeline().names(), last);
         return last;
     }

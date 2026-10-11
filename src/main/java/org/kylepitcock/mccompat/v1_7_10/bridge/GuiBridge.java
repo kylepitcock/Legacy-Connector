@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * client-side through a small payload, like FML did.</p>
  */
 public final class GuiBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Gui");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Gui");
     static final String FAMILY = "1.7.10-gui";
     private static final Map<Object, IGuiHandler> HANDLERS = new HashMap<>();
     private static MenuType<LegacyMenu> menuType;

@@ -35,7 +35,7 @@ public final class CreativeTabBridge {
         for (CreativeTabs tab : CUSTOM) {
             // A mod that failed to load would crash the creative screen through its tab's callbacks.
             if (org.kylepitcock.mccompat.core.LegacyLifecycle.isFailed(OWNER.get(tab))) continue;
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("mccompat", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("retrofit", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + tab.getTabLabel()))
@@ -67,7 +67,7 @@ public final class CreativeTabBridge {
         try {
             tab.displayAllReleventItems(raw);
         } catch (RuntimeException | LinkageError e) {
-            org.slf4j.LoggerFactory.getLogger("MCCompat/Tabs").warn("Creative tab {} failed to list items", tab.getTabLabel(), e);
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Tabs").warn("Creative tab {} failed to list items", tab.getTabLabel(), e);
         }
         List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
         for (Object o : raw) {

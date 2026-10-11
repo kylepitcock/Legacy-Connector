@@ -1,0 +1,128 @@
+name: Compatibility report
+description: Report how a legacy mod behaves under Retrofit (works, partly works, fails to load, crashes).
+title: "[Compat] <mod name> <mod version> (<legacy Minecraft version>)"
+labels: ["compatibility"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing! One report per mod (or per mod + its required libraries) keeps things easy to track.
+        Retrofit writes a report of every legacy jar it translated to **`logs/retrofit-report.txt`** — please attach it.
+
+  - type: input
+    id: mod
+    attributes:
+      label: Mod
+      description: Name and exact version of the legacy mod, as in its file name.
+      placeholder: "Thaumcraft 4.2.3.5"
+    validations:
+      required: true
+
+  - type: input
+    id: link
+    attributes:
+      label: Download link
+      description: CurseForge / Modrinth / GitHub page of that exact version (do not attach the jar itself).
+      placeholder: "https://www.curseforge.com/minecraft/mc-mods/..."
+
+  - type: dropdown
+    id: legacy-version
+    attributes:
+      label: Legacy Minecraft version of the mod
+      options:
+        - "1.7.10"
+        - "1.8 - 1.12.2"
+        - "1.16.5"
+        - "1.20.1 (Forge)"
+        - "1.20.1 (Fabric, via Sinytra Connector)"
+        - "Other"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: status
+    attributes:
+      label: Result
+      options:
+        - "Works (no problems found)"
+        - "Partially works (loads, some features missing or broken)"
+        - "Fails to load (game starts, mod is disabled)"
+        - "Crashes or hangs the game"
+    validations:
+      required: true
+
+  - type: textarea
+    id: details
+    attributes:
+      label: What works and what doesn't
+      description: Blocks/items/GUIs/world generation/machines you tried, and what happened. Screenshots welcome.
+      placeholder: |
+        - Items show up in the creative tab, but have no textures
+        - Crafting the X works, the Y machine GUI does not open
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce (for crashes or broken features)
+      placeholder: |
+        1. Create a new world
+        2. Place the X block
+        3. Right click it
+
+  - type: input
+    id: retrofit-version
+    attributes:
+      label: Retrofit version / commit
+      placeholder: "0.1.0 or commit 87bace9"
+    validations:
+      required: true
+
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.258"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where did you test?
+      multiple: true
+      options:
+        - "Singleplayer / client"
+        - "Dedicated server"
+
+  - type: textarea
+    id: other-mods
+    attributes:
+      label: Other mods installed
+      description: Legacy mods (and modern ones like JEI, Jade, Curios) in the same instance. A short list is best — ideally only the mod and its dependencies.
+
+  - type: textarea
+    id: report
+    attributes:
+      label: retrofit-report.txt
+      description: Drag the file from `logs/retrofit-report.txt` here, or paste the section for this mod.
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: latest.log and crash report
+      description: Drag `logs/latest.log` and, if the game crashed, the newest file from `crash-reports/` here. Please don't paste whole logs inline.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues for this mod and version.
+          required: true
+        - label: I tested with the newest Retrofit build.
+        - label: I tested with only this mod (and its required libraries) installed.

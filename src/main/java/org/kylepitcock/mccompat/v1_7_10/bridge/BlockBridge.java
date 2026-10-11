@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public final class BlockBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Blocks");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Blocks");
     /** First numeric id handed to mod blocks (vanilla 1.7.10 used 0-197). */
     private static final int FIRST_MOD_ID = 256;
 
@@ -52,7 +52,7 @@ public final class BlockBridge {
     private BlockBridge() {}
 
     public static RegistryNamespaced legacyRegistry() {
-        return new RegistryNamespaced(name -> byName(name), o -> nameOf((Block) o), BlockBridge::byId, o -> idOf((Block) o),
+        return new mccompat.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Block>(name -> byName(name), o -> nameOf((Block) o), BlockBridge::byId, o -> idOf((Block) o),
                 () -> new ArrayList<Object>(BY_NAME.values()).iterator());
     }
 

@@ -78,7 +78,7 @@ public class LegacyBlockEntity extends BlockEntity {
             te.updateEntity();
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;
-            LoggerFactory.getLogger("MCCompat/TileEntity").error("Legacy tile entity {} at {} crashed while ticking; it will no longer tick",
+            LoggerFactory.getLogger("Retrofit/TileEntity").error("Legacy tile entity {} at {} crashed while ticking; it will no longer tick",
                     te.getClass().getName(), worldPosition, e);
         }
     }

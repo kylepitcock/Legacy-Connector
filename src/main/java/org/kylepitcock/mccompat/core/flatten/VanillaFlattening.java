@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * {@code grass_block}, {@code dye:4} becomes {@code lapis_lazuli}, and so on, for every vanilla id.</p>
  */
 public final class VanillaFlattening {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Flattening");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Flattening");
     /** Data version of post-flattening block states (BlockStateFlatteningFix lives in schema 1450). */
     private static final int FLATTENED_BLOCK_VERSION = 1450;
     /** 1.12.2 data version; item stacks in legacy format are upgraded from here. */

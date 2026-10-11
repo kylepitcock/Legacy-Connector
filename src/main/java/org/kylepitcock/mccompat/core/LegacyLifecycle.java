@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
  * </pre>
  */
 public final class LegacyLifecycle {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit");
     private static volatile boolean registrationOpen;
     private static boolean ran;
     private static final Map<LegacyModRecord, Throwable> FAILED = new LinkedHashMap<>();

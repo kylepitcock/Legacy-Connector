@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * exclusion registration is accepted and ignored.
  */
 public class LaunchClassLoader extends URLClassLoader {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/LaunchWrapper");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/LaunchWrapper");
     private final ClassLoader game;
     private final List<IClassTransformer> transformers = new ArrayList<>();
 

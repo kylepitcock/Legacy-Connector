@@ -31,11 +31,11 @@ public final class ClientGui {
             try {
                 gui = handler.getClientGuiElement(id, player, World.mcc$wrap(inv.player.level()), x, y, z);
             } catch (RuntimeException | LinkageError e) {
-                LoggerFactory.getLogger("MCCompat/Gui").error("Legacy client GUI {} failed to construct", id, e);
+                LoggerFactory.getLogger("Retrofit/Gui").error("Legacy client GUI {} failed to construct", id, e);
             }
         }
         if (gui instanceof GuiContainer gc && gc.inventorySlots != null) return new LegacyMenu(type, windowId, inv, gc.inventorySlots, gc);
-        LoggerFactory.getLogger("MCCompat/Gui").warn("Legacy server opened GUI {} but the client element is {}", id, gui);
+        LoggerFactory.getLogger("Retrofit/Gui").warn("Legacy server opened GUI {} but the client element is {}", id, gui);
         return new LegacyMenu(type, windowId, inv, new Empty(), null);
     }
 

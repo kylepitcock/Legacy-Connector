@@ -44,10 +44,10 @@ import org.slf4j.LoggerFactory;
  * vanilla 1.13 flattening - every subtype a legacy item reports through {@code getSubItems} becomes its own modern
  * item ({@code mymod:gem}, {@code mymod:gem_1}, ...). That makes tags, recipes, JEI and every modern system see
  * them as distinct items. Tool wear maps to the {@code DAMAGE} component, and unexpected subtype values that were
- * never registered ride along in the {@code mccompat:legacy_meta} component.</p>
+ * never registered ride along in the {@code retrofit:legacy_meta} component.</p>
  */
 public final class ItemBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Items");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Items");
     private static final int FIRST_MOD_ID = 4096;
 
     private static final Map<String, Item> BY_NAME = new LinkedHashMap<>();
@@ -66,7 +66,7 @@ public final class ItemBridge {
     private ItemBridge() {}
 
     public static RegistryNamespaced legacyRegistry() {
-        return new RegistryNamespaced(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
+        return new mccompat.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
                 () -> new ArrayList<Object>(BY_NAME.values()).iterator());
     }
 
@@ -180,7 +180,7 @@ public final class ItemBridge {
                     net.minecraft.world.entity.EquipmentSlotGroup.FEET}[armor.armorType];
             modifiers.add(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,
                     new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("mccompat", "legacy_armor_" + armor.armorType),
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("retrofit", "legacy_armor_" + armor.armorType),
                             armor.damageReduceAmount, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE), group);
             anyModifier = true;
         }

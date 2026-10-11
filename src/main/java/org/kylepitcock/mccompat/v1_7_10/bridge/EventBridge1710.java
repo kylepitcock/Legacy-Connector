@@ -281,6 +281,6 @@ public final class EventBridge1710 {
         if (failures.isEmpty() || !player.hasPermissions(2)) return;
         player.sendSystemMessage(Component.literal("§c[MC Compatibility] " + failures.size()
                 + " legacy mod(s) failed to load: " + String.join(", ", failures.keySet().stream().map(m -> m.legacyId).toList())
-                + ". See logs/latest.log and logs/mccompat-report.txt."));
+                + ". See logs/latest.log and logs/retrofit-report.txt."));
     }
 }

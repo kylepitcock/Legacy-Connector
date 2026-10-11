@@ -71,7 +71,7 @@ public final class OreDictBridge {
 
     private OreDictBridge() {}
 
-    /** Tag for an ore dictionary name; unknown conventions get a private {@code mccompat:oredict/...} tag. */
+    /** Tag for an ore dictionary name; unknown conventions get a private {@code retrofit:oredict/...} tag. */
     public static ResourceLocation tagFor(String oreName) {
         String special = SPECIAL.get(oreName);
         if (special != null) return ResourceLocation.parse(special);
@@ -81,7 +81,7 @@ public final class OreDictBridge {
                 return ResourceLocation.parse(e.getValue() + snake(oreName.substring(p.length())));
             }
         }
-        return ResourceLocation.fromNamespaceAndPath("mccompat", "oredict/" + snake(oreName));
+        return ResourceLocation.fromNamespaceAndPath("retrofit", "oredict/" + snake(oreName));
     }
 
     static String snake(String camel) {

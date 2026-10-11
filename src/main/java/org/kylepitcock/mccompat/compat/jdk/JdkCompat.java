@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 /** Behavioural shims for JDK APIs whose semantics changed between Java 8 and Java 21. */
 public final class JdkCompat {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/JDK");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/JDK");
     private static final Map<ClassLoader, URLClassLoader> VIEWS = new WeakHashMap<>();
 
     private JdkCompat() {}

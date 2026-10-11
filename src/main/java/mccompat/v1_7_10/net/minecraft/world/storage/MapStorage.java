@@ -61,7 +61,7 @@ public class MapStorage {
             ctor.setAccessible(true);
             return (WorldSavedData) ctor.newInstance(name);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            org.slf4j.LoggerFactory.getLogger("MCCompat/SavedData").warn("Cannot create legacy saved data {} ({})", name, type.getName(), e);
+            org.slf4j.LoggerFactory.getLogger("Retrofit/SavedData").warn("Cannot create legacy saved data {} ({})", name, type.getName(), e);
             return null;
         }
     }

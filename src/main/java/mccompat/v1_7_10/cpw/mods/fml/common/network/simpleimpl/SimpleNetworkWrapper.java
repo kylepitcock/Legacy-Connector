@@ -6,7 +6,7 @@ import mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;
 import org.kylepitcock.mccompat.v1_7_10.bridge.NetworkBridge;
 
 /**
- * Legacy message channel. All legacy channels share one modern payload type ({@code mccompat:legacy}) that carries
+ * Legacy message channel. All legacy channels share one modern payload type ({@code retrofit:legacy}) that carries
  * the channel name, discriminator and the bytes written by {@link IMessage#toBytes}.
  */
 public class SimpleNetworkWrapper {

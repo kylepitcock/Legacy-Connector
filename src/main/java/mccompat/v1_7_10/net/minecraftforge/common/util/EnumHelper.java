@@ -43,7 +43,7 @@ public class EnumHelper {
             Class<?>[] user = java.util.Arrays.copyOfRange(p, 2, p.length);
             if (matches(user, paramValues)) return addEnum(enumType, enumName, user, paramValues);
         }
-        LoggerFactory.getLogger("MCCompat/EnumHelper").warn("No constructor of {} matches {} for {}", enumType.getName(),
+        LoggerFactory.getLogger("Retrofit/EnumHelper").warn("No constructor of {} matches {} for {}", enumType.getName(),
                 java.util.Arrays.toString(paramValues), enumName);
         return null;
     }
@@ -81,7 +81,7 @@ public class EnumHelper {
             resetEnumCaches(enumType);
             return value;
         } catch (Throwable t) {
-            LoggerFactory.getLogger("MCCompat/EnumHelper").error("Could not add {} to {}", enumName, enumType.getName(), t);
+            LoggerFactory.getLogger("Retrofit/EnumHelper").error("Could not add {} to {}", enumName, enumType.getName(), t);
             return null;
         }
     }

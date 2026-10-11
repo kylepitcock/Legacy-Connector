@@ -19,7 +19,7 @@ import org.objectweb.asm.Opcodes;
  * and, per legacy mod, a tiny {@code @Mod}-annotated entrypoint class that hands control to the shim.
  */
 public final class ModMetadataGenerator {
-    public static final String RUNTIME_MOD_ID = "mccompat";
+    public static final String RUNTIME_MOD_ID = "retrofit";
     public static final String BOOTSTRAP = "org/kylepitcock/mccompat/core/LegacyBootstrap";
     public static final String LEGACY_JSON = "META-INF/mccompat/legacy-mods.json";
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();

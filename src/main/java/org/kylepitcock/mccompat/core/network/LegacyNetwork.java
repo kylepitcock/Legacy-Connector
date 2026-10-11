@@ -25,7 +25,7 @@ public final class LegacyNetwork {
     private static void receive(LegacyPayload payload, IPayloadContext context) {
         var receiver = RECEIVERS.get(payload.version());
         if (receiver == null) {
-            LoggerFactory.getLogger("MCCompat/Network").debug("Dropping legacy message for unknown family {}", payload.version());
+            LoggerFactory.getLogger("Retrofit/Network").debug("Dropping legacy message for unknown family {}", payload.version());
             return;
         }
         receiver.accept(payload, context);

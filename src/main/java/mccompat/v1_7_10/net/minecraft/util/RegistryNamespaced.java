@@ -108,6 +108,14 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
         return containsKey(String.valueOf(name));
     }
 
+    public String getNameForObject(Object obj) {
+        return nameOf.apply(obj);
+    }
+
+    public boolean containsKey(String name) {
+        return getObject(name) != null;
+    }
+
     public int getIDForObject(Object obj) {
         return idOf.applyAsInt(obj);
     }

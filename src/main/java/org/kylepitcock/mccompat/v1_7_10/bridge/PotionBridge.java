@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 /** Legacy numeric potion ids <-> modern mob effects. Mod potions become modern effects driven by the legacy class. */
 public final class PotionBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Potions");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Potions");
     private static final java.util.List<Holder<MobEffect>> BY_ID = java.util.Arrays.asList(
             null, MobEffects.MOVEMENT_SPEED, MobEffects.MOVEMENT_SLOWDOWN, MobEffects.DIG_SPEED, MobEffects.DIG_SLOWDOWN, MobEffects.DAMAGE_BOOST,
             MobEffects.HEAL, MobEffects.HARM, MobEffects.JUMP, MobEffects.CONFUSION, MobEffects.REGENERATION, MobEffects.DAMAGE_RESISTANCE,
@@ -36,7 +36,7 @@ public final class PotionBridge {
     /** Called from the legacy Potion constructor for every non-vanilla id. */
     public static void registerLegacy(Potion potion) {
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
-        String ns = owner == null ? "mccompat" : owner.record().modernId;
+        String ns = owner == null ? "retrofit" : owner.record().modernId;
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(ns, "legacy_potion_" + potion.id);
         try {
             MobEffect effect = LegacyRegistrar.register(BuiltInRegistries.MOB_EFFECT, id, new LegacyMobEffect(potion));

@@ -9,7 +9,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 /** Data components that carry legacy state no modern component expresses. */
 public final class CompatComponents {
-    public static final DeferredRegister<DataComponentType<?>> REGISTER = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, "mccompat");
+    public static final DeferredRegister<DataComponentType<?>> REGISTER = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, "retrofit");
 
     /**
      * Legacy item metadata for subtypes that were not flattened into their own modern item (for example values a

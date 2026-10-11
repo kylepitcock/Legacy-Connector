@@ -32,7 +32,7 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.FuelBridge;
  */
 @Mod(MCCompat.MOD_ID)
 public final class MCCompat {
-    public static final String MOD_ID = "mccompat";
+    public static final String MOD_ID = "retrofit";
 
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
     public static final DeferredHolder<Feature<?>, LegacyWorldGenFeature> LEGACY_WORLDGEN =

@@ -40,7 +40,7 @@ public class LegacyWorldGenFeature extends Feature<NoneFeatureConfiguration> {
             try {
                 d.decorate(level, chunkX, chunkZ, level.getSeed());
             } catch (RuntimeException | LinkageError e) {
-                LoggerFactory.getLogger("MCCompat/WorldGen").error("Legacy world generator failed in chunk {},{}", chunkX, chunkZ, e);
+                LoggerFactory.getLogger("Retrofit/WorldGen").error("Legacy world generator failed in chunk {},{}", chunkX, chunkZ, e);
             }
         }
         return true;

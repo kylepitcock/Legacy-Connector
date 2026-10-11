@@ -18,11 +18,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Legacy tile entity id mappings and the single modern block entity type ({@code mccompat:legacy_tile_1_7_10}) that
+ * Legacy tile entity id mappings and the single modern block entity type ({@code retrofit:legacy_tile_1_7_10}) that
  * hosts every legacy tile entity. One type suffices because the legacy class is recorded in the saved NBT.
  */
 public final class TileEntityBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/TileEntities");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/TileEntities");
     private static final Map<String, Class<? extends TileEntity>> BY_ID = new HashMap<>();
     private static final Map<Class<?>, String> IDS = new HashMap<>();
     private static BlockEntityType<LegacyBlockEntity> type;
@@ -80,7 +80,7 @@ public final class TileEntityBridge {
         if (type != null) return;
         var blocks = adapters.stream().filter(a -> a instanceof LegacyEntityBlockAdapter).toArray(net.minecraft.world.level.block.Block[]::new);
         BlockEntityType<LegacyBlockEntity> built = BlockEntityType.Builder.of(LegacyBlockEntity::new, blocks).build(null);
-        LegacyRegistrar.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("mccompat", "legacy_tile_1_7_10"),
+        LegacyRegistrar.register(BuiltInRegistries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath("retrofit", "legacy_tile_1_7_10"),
                 (BlockEntityType<?>) built);
         type = built;
     }

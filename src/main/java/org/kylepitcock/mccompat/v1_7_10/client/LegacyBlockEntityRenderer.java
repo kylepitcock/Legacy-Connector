@@ -40,7 +40,7 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
             renderer.renderTileEntityAt(te, x, y, z, partialTick);
         } catch (RuntimeException | LinkageError e) {
             FAILED.add(renderer.getClass());
-            LoggerFactory.getLogger("MCCompat/Render").error("Legacy renderer {} failed and is disabled", renderer.getClass().getName(), e);
+            LoggerFactory.getLogger("Retrofit/Render").error("Legacy renderer {} failed and is disabled", renderer.getClass().getName(), e);
         } finally {
             RenderContext.end();
         }

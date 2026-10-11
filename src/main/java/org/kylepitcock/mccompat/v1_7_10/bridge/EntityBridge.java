@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * ({@code entity == player}) and per-entity legacy state keep working.
  */
 public final class EntityBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Entities");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Entities");
     private static final Map<net.minecraft.world.entity.Entity, Entity> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
     private static boolean warnedCustom;
 

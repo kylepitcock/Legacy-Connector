@@ -75,7 +75,7 @@ public class Configuration {
                 load();
             } catch (Throwable e) {
                 File backup = new File(file.getAbsolutePath() + "_" + System.currentTimeMillis() + ".errored");
-                org.slf4j.LoggerFactory.getLogger("MCCompat/Config").error("Error loading {}, renaming to {}", file, backup.getName(), e);
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Config").error("Error loading {}, renaming to {}", file, backup.getName(), e);
                 file.renameTo(backup);
                 load();
             }
@@ -565,7 +565,7 @@ public class Configuration {
             }
             resetChangedState();
         } catch (IOException e) {
-            org.slf4j.LoggerFactory.getLogger("MCCompat/Config").error("Error while saving config {}", fileName, e);
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Config").error("Error while saving config {}", fileName, e);
         }
     }
 

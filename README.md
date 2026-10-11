@@ -1,4 +1,4 @@
-# MC Compatibility Layer
+# Retrofit
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
@@ -21,7 +21,7 @@ mods/SomeMod-1.7.10.jar
                     b. the synthesized API     - generated for whatever the shim lacks (links, default behaviour)
   4. Resources    lang files, textures and models converted to 1.21 formats
         ▼
-.mccompat/cache/SomeMod-<hash>.jar  +  mccompat-synth-1.7.10-<hash>.jar  ->  loaded by NeoForge
+.retrofit/cache/SomeMod-<hash>.jar  +  retrofit-synth-1.7.10-<hash>.jar  ->  loaded by NeoForge
         │  runtime (normal NeoForge mod)
         ▼
   Bridges         legacy registrations -> modern registries (blocks, items with metadata, tile entities,
@@ -83,9 +83,9 @@ LaunchWrapper tweakers. They are reported, and the rest of the mod still loads.
 
 ### What happens to a mod
 
-After launching, read **`logs/mccompat-report.txt`**. For every legacy jar it lists the detected version and mod
+After launching, read **`logs/retrofit-report.txt`**. For every legacy jar it lists the detected version and mod
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
-At runtime, `MCCompat/Stubs` log lines show which synthesized APIs are actually called.
+At runtime, `Retrofit/Stubs` log lines show which synthesized APIs are actually called.
 
 
 ## Development

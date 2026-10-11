@@ -48,7 +48,7 @@ public final class CommandBridge1710 {
             ctx.getSource().sendFailure(Component.translatable(e.getMessage(), e.getErrorOjbects()));
             return 0;
         } catch (RuntimeException e) {
-            LoggerFactory.getLogger("MCCompat/Commands").error("Legacy command /{} failed", command.getCommandName(), e);
+            LoggerFactory.getLogger("Retrofit/Commands").error("Legacy command /{} failed", command.getCommandName(), e);
             ctx.getSource().sendFailure(Component.literal("An error occurred while executing legacy command: " + e));
             return 0;
         }

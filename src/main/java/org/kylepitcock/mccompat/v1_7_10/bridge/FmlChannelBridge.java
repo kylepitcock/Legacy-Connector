@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * the mod's own codec and handlers process them exactly as on FML.
  */
 public final class FmlChannelBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/FmlChannels");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/FmlChannels");
     static final String FAMILY = "1.7.10-fml";
     private static final Map<String, EnumMap<Side, FMLEmbeddedChannel>> CHANNELS = new ConcurrentHashMap<>();
 

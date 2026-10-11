@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
  * discriminator, and the raw bytes the legacy message serialized itself into.
  */
 public record LegacyPayload(String version, String channel, int discriminator, byte[] data) implements CustomPacketPayload {
-    public static final Type<LegacyPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("mccompat", "legacy"));
+    public static final Type<LegacyPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath("retrofit", "legacy"));
     public static final StreamCodec<ByteBuf, LegacyPayload> CODEC = StreamCodec.composite(
             ByteBufCodecs.STRING_UTF8, LegacyPayload::version,
             ByteBufCodecs.STRING_UTF8, LegacyPayload::channel,

@@ -164,7 +164,7 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
     private static void immediate() {
         if (!warnedImmediate) {
             warnedImmediate = true;
-            LoggerFactory.getLogger("MCCompat/GL11").warn("A legacy mod uses immediate-mode OpenGL (glBegin/glVertex); this geometry is not drawn yet");
+            LoggerFactory.getLogger("Retrofit/GL11").warn("A legacy mod uses immediate-mode OpenGL (glBegin/glVertex); this geometry is not drawn yet");
         }
     }
 

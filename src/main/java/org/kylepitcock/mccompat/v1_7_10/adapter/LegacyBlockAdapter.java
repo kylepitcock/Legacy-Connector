@@ -364,7 +364,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private void shapeFailure(Throwable e) {
         if (reportedShapeFailure) return;
         reportedShapeFailure = true;
-        org.slf4j.LoggerFactory.getLogger("MCCompat/Blocks").debug("Legacy bounds of {} failed outside a world context: {}", legacy, e.toString());
+        org.slf4j.LoggerFactory.getLogger("Retrofit/Blocks").debug("Legacy bounds of {} failed outside a world context: {}", legacy, e.toString());
     }
 
     private VoxelShape boundsShape() {

@@ -42,7 +42,7 @@ import org.slf4j.LoggerFactory;
  * </ul>
  */
 public final class RecipeBridge {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/Recipes");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Recipes");
     private static final Gson GSON = new Gson();
 
     private sealed interface Spec permits Shaped, Shapeless, Smelting {}
@@ -60,7 +60,7 @@ public final class RecipeBridge {
 
     private static String owner() {
         LegacyModContainer1710 c = LegacyModContainer1710.active();
-        return c == null ? "mccompat" : c.record().modernId;
+        return c == null ? "retrofit" : c.record().modernId;
     }
 
     public static synchronized IRecipe addShaped(ItemStack output, Object[] params, boolean mirrored) {
@@ -268,7 +268,7 @@ public final class RecipeBridge {
                     j.addProperty("type", "neoforge:components");
                     j.addProperty("items", itemId(modern));
                     JsonObject comps = new JsonObject();
-                    comps.addProperty("mccompat:legacy_meta", extra);
+                    comps.addProperty("retrofit:legacy_meta", extra);
                     j.add("components", comps);
                     return j;
                 }

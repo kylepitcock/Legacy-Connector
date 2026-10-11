@@ -27,6 +27,15 @@ final class Defaults {
             Map.entry("java/util/LinkedHashMap", "java/util/LinkedHashMap"),
             Map.entry("java/util/TreeMap", "java/util/TreeMap"));
 
+    /** Guava immutable collections -> their static empty factory. */
+    private static final Map<String, String> IMMUTABLES = Map.of(
+            "com/google/common/collect/ImmutableList", "of",
+            "com/google/common/collect/ImmutableSet", "of",
+            "com/google/common/collect/ImmutableMap", "of",
+            "com/google/common/collect/ImmutableCollection", "com/google/common/collect/ImmutableList",
+            "com/google/common/collect/ImmutableMultimap", "of",
+            "com/google/common/collect/ImmutableSortedSet", "of");
+
     static boolean isCollection(String desc) {
         return desc.startsWith("L") && COLLECTIONS.containsKey(desc.substring(1, desc.length() - 1));
     }
@@ -56,7 +65,11 @@ final class Defaults {
             }
             case Type.OBJECT -> {
                 String impl = COLLECTIONS.get(t.getInternalName());
-                if (impl != null) {
+                String immutable = IMMUTABLES.get(t.getInternalName());
+                if (immutable != null) {
+                    String owner = immutable.equals("of") ? t.getInternalName() : immutable;
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "of", "()L" + owner + ";", false);
+                } else if (impl != null) {
                     mv.visitTypeInsn(Opcodes.NEW, impl);
                     mv.visitInsn(Opcodes.DUP);
                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, impl, "<init>", "()V", false);

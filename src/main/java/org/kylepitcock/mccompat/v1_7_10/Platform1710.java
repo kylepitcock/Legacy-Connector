@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /** 1.7.10 FML semantics: {@code @Mod} lifecycle handlers, instance/proxy/metadata injection, IMC. */
 public final class Platform1710 implements LegacyPlatform {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat/1.7.10");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit/1.7.10");
     private static final String SIDED_PROXY = Type.getDescriptor(SidedProxy.class);
 
     @Override

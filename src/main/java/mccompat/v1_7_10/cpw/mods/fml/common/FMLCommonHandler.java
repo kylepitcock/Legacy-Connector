@@ -42,7 +42,7 @@ public class FMLCommonHandler {
     }
 
     public void exitJava(int exitCode, boolean hardExit) {
-        org.slf4j.LoggerFactory.getLogger("MCCompat").warn("Legacy mod requested JVM exit ({}); halting", exitCode);
+        org.slf4j.LoggerFactory.getLogger("Retrofit").warn("Legacy mod requested JVM exit ({}); halting", exitCode);
         if (hardExit) Runtime.getRuntime().halt(exitCode);
         else System.exit(exitCode);
     }

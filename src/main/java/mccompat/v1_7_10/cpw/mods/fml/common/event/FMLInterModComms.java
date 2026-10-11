@@ -45,11 +45,11 @@ public class FMLInterModComms {
         return true;
     }
 
-    public static List<IMCMessage> fetchRuntimeMessages(Object forMod) {
+    public static com.google.common.collect.ImmutableList<IMCMessage> fetchRuntimeMessages(Object forMod) {
         var c = mccompat.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().findContainerFor(forMod);
-        if (c == null) return new ArrayList<>();
+        if (c == null) return com.google.common.collect.ImmutableList.of();
         List<IMCMessage> list = QUEUE.remove(c.getModId().toLowerCase(java.util.Locale.ROOT));
-        return list == null ? new ArrayList<>() : list;
+        return list == null ? com.google.common.collect.ImmutableList.of() : com.google.common.collect.ImmutableList.copyOf(list);
     }
 
     public static List<IMCMessage> mcc$drain(String legacyId) {

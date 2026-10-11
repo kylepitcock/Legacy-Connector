@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * one by one in dependency order, on the main thread.</p>
  */
 public final class LegacyBootstrap {
-    private static final Logger LOG = LoggerFactory.getLogger("MCCompat");
+    private static final Logger LOG = LoggerFactory.getLogger("Retrofit");
 
     private LegacyBootstrap() {}
 
