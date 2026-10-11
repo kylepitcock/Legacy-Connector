@@ -190,6 +190,27 @@ public abstract class EntityLivingBase extends Entity {
         return mcc$entity != null && org.kylepitcock.mccompat.v1_7_10.bridge.PotionBridge.isActive(mcc$living(), potionId);
     }
 
+    public boolean isPotionActive(mccompat.v1_7_10.net.minecraft.potion.Potion potion) {
+        return potion != null && isPotionActive(potion.id);
+    }
+
+    public mccompat.v1_7_10.net.minecraft.potion.PotionEffect getActivePotionEffect(mccompat.v1_7_10.net.minecraft.potion.Potion potion) {
+        if (mcc$entity == null || potion == null) return null;
+        var holder = org.kylepitcock.mccompat.v1_7_10.bridge.PotionBridge.effectOrNull(potion.id);
+        var modern = holder == null ? null : mcc$living().getEffect(holder);
+        return modern == null ? null : mccompat.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern);
+    }
+
+    public java.util.Collection<mccompat.v1_7_10.net.minecraft.potion.PotionEffect> getActivePotionEffects() {
+        java.util.List<mccompat.v1_7_10.net.minecraft.potion.PotionEffect> out = new java.util.ArrayList<>();
+        if (mcc$entity == null) return out;
+        for (var modern : mcc$living().getActiveEffects()) {
+            var e = mccompat.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern);
+            if (e != null) out.add(e);
+        }
+        return out;
+    }
+
     public void removePotionEffect(int potionId) {
         if (mcc$entity != null) org.kylepitcock.mccompat.v1_7_10.bridge.PotionBridge.remove(mcc$living(), potionId);
     }

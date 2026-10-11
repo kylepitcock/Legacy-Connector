@@ -26,6 +26,40 @@ public final class LegacyRegistrar {
         return Registry.register(registry, id, value);
     }
 
+    /**
+     * Blocks/items a legacy mod constructed but never got registered (the mod failed half-way, or registered a
+     * duplicate name) still own an "intrusive holder", and 1.21 refuses to freeze a registry with orphans. Drop the
+     * orphans that belong to legacy content once legacy loading is over.
+     */
+    public static int discardOrphans() {
+        int removed = 0;
+        for (Registry<?> registry : net.minecraft.core.registries.BuiltInRegistries.REGISTRY) {
+            if (!(registry instanceof MappedRegistry<?> mapped)) continue;
+            try {
+                java.lang.reflect.Field f = MappedRegistry.class.getDeclaredField("unregisteredIntrusiveHolders");
+                f.setAccessible(true);
+                java.util.Map<?, ?> orphans = (java.util.Map<?, ?>) f.get(mapped);
+                if (orphans == null) continue;
+                var it = orphans.keySet().iterator();
+                while (it.hasNext()) {
+                    Object value = it.next();
+                    if (isLegacyContent(value)) {
+                        it.remove();
+                        removed++;
+                    }
+                }
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                org.slf4j.LoggerFactory.getLogger("MCCompat").debug("Cannot inspect {} for orphaned legacy entries", registry.key(), e);
+            }
+        }
+        return removed;
+    }
+
+    private static boolean isLegacyContent(Object value) {
+        String n = value.getClass().getName();
+        return n.startsWith("org.kylepitcock.mccompat.") || n.startsWith("mccompat.") || n.startsWith("mccompat_synth.");
+    }
+
     private static boolean isFrozen(MappedRegistry<?> registry) {
         return registry.frozen; // made public by META-INF/accesstransformer.cfg
     }

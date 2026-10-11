@@ -17,6 +17,10 @@ public final class LinkReport {
     public final Map<String, TreeSet<String>> missingShimMembers = new TreeMap<>();
     /** Library/JDK members removed since the mod was built (e.g. old Guava APIs). */
     public final Map<String, TreeSet<String>> missingLibraryMembers = new TreeMap<>();
+    /** Legacy API members the shim lacks that were synthesized (they link, but do nothing yet). Informational. */
+    public final Map<String, TreeSet<String>> stubbedMembers = new TreeMap<>();
+    /** Legacy API classes the shim lacks, generated with their legacy supertypes. Informational. */
+    public final java.util.Set<String> synthesizedClasses = new TreeSet<>();
     /** Classes found nowhere: usually optional integrations with other mods. Informational. */
     public final Map<String, TreeSet<String>> externalClasses = new TreeMap<>();
 
@@ -26,6 +30,10 @@ public final class LinkReport {
 
     void missingMember(String owner, String member, String from, boolean shim) {
         (shim ? missingShimMembers : missingLibraryMembers).computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
+    }
+
+    void stubbed(String owner, String member, String from) {
+        stubbedMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
     }
 
     void externalClass(String owner, String from) {
@@ -38,9 +46,13 @@ public final class LinkReport {
 
     public String render() {
         StringBuilder sb = new StringBuilder();
+        if (!synthesizedClasses.isEmpty()) {
+            sb.append("  Synthesized ").append(synthesizedClasses.size()).append(" legacy API class(es) the shim lacks (they link, behaviour is default)\n");
+        }
         section(sb, "Missing shim classes (legacy API not implemented yet)", missingClasses);
         section(sb, "Missing shim members", missingShimMembers);
         section(sb, "Removed library/JDK members", missingLibraryMembers);
+        section(sb, "Synthesized legacy APIs (link, but have no behaviour yet)", stubbedMembers);
         section(sb, "Unresolved external classes (optional mod integrations, usually harmless)", externalClasses);
         return sb.toString();
     }

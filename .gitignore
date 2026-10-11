@@ -1,8 +1,35 @@
+# Gradle / build output
 .gradle/
 build/
 out/
+bin/
+**/build/
+
+# Game run directories (worlds, configs, logs, third-party mod jars, translation caches)
 run/
-run-servertest/
+run-*/
+.mccompat/
+logs/
+crash-reports/
 *.log
+*.log.gz
+
+# IDEs
 .idea/
 *.iml
+*.ipr
+*.iws
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS clutter
+.DS_Store
+Thumbs.db
+
+# Never commit third-party mods or Mojang code; reference data is fetched by tools/fetch_devtools.sh
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+*.tmp
+/test-mods/

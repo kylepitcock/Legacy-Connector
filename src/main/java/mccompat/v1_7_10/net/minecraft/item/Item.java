@@ -416,4 +416,59 @@ public class Item {
     public String toString() {
         return "LegacyItem{" + unlocalizedName + "}";
     }
+
+    /** Tool tiers. Mods add their own through {@code EnumHelper.addToolMaterial}. */
+    public enum ToolMaterial {
+        WOOD(0, 59, 2.0F, 0.0F, 15),
+        STONE(1, 131, 4.0F, 1.0F, 5),
+        IRON(2, 250, 6.0F, 2.0F, 14),
+        EMERALD(3, 1561, 8.0F, 3.0F, 10),
+        GOLD(0, 32, 12.0F, 0.0F, 22);
+
+        private final int harvestLevel;
+        private final int maxUses;
+        private final float efficiencyOnProperMaterial;
+        private final float damageVsEntity;
+        private final int enchantability;
+        /** Forge: repair item of mod materials. */
+        public Item customCraftingMaterial = null;
+
+        ToolMaterial(int harvestLevel, int maxUses, float efficiency, float damage, int enchantability) {
+            this.harvestLevel = harvestLevel;
+            this.maxUses = maxUses;
+            this.efficiencyOnProperMaterial = efficiency;
+            this.damageVsEntity = damage;
+            this.enchantability = enchantability;
+        }
+
+        public int getMaxUses() {
+            return maxUses;
+        }
+
+        public float getEfficiencyOnProperMaterial() {
+            return efficiencyOnProperMaterial;
+        }
+
+        public float getDamageVsEntity() {
+            return damageVsEntity;
+        }
+
+        public int getHarvestLevel() {
+            return harvestLevel;
+        }
+
+        public int getEnchantability() {
+            return enchantability;
+        }
+
+        public Item getBaseItemForRepair() {
+            // No switch: EnumHelper appends constants after javac's switch map was built.
+            if (this == WOOD) return Item.getItemFromBlock(mccompat.v1_7_10.net.minecraft.init.Blocks.planks);
+            if (this == STONE) return Item.getItemFromBlock(mccompat.v1_7_10.net.minecraft.init.Blocks.cobblestone);
+            if (this == IRON) return mccompat.v1_7_10.net.minecraft.init.Items.iron_ingot;
+            if (this == EMERALD) return mccompat.v1_7_10.net.minecraft.init.Items.diamond;
+            if (this == GOLD) return mccompat.v1_7_10.net.minecraft.init.Items.gold_ingot;
+            return customCraftingMaterial;
+        }
+    }
 }

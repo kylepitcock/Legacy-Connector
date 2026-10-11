@@ -1,19 +1,36 @@
 package org.kylepitcock.mccompat.loader.transform;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.kylepitcock.mccompat.loader.shim.ClassInfo;
 import org.kylepitcock.mccompat.loader.shim.ShimIndex;
+import org.kylepitcock.mccompat.loader.synth.CtorChooser;
+import org.kylepitcock.mccompat.loader.synth.SynthDemand;
+import org.kylepitcock.mccompat.loader.synth.SynthDemand.Kind;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /**
- * Post-relocation pass that (1) turns field accesses on shim classes into accessor calls where the shim
- * models the field "virtually", and (2) records every reference the shim cannot satisfy.
+ * Post-relocation pass that makes every legacy API reference link:
+ * <ol>
+ *     <li>field accesses on shim classes become accessor calls where the shim models the field "virtually";</li>
+ *     <li>members missing from a <em>synthesized</em> class are recorded as demand, so the generated class
+ *     declares them;</li>
+ *     <li>members missing from a <em>hand-written</em> shim class are redirected to generated static helpers
+ *     (dynamic dispatch to a mod override where one exists, otherwise a logged default);</li>
+ *     <li>constructors missing from a hand-written shim class are adapted in place to the closest real one.</li>
+ * </ol>
  *
  * <p>Virtual fields exist because legacy mods read Minecraft state straight from fields
  * ({@code entity.posX}, {@code world.isRemote}) while the shim objects are views over modern objects
@@ -21,9 +38,16 @@ import org.objectweb.asm.tree.TypeInsnNode;
  * {@code static T mcc$get$name(Owner)} and optionally {@code static void mcc$set$name(Owner, T)}.</p>
  */
 public final class ShimLinker {
+    /** Helper classes for hand-written shim class {@code X} are named {@code <synth prefix><legacy X>$$Missing}. */
+    public static final String HELPER_SUFFIX = "$$Missing";
+
     private ShimLinker() {}
 
     public static int apply(ClassNode node, Hierarchy hierarchy, LinkReport report) {
+        return apply(node, hierarchy, report, null);
+    }
+
+    public static int apply(ClassNode node, Hierarchy hierarchy, LinkReport report, SynthDemand demand) {
         int redirected = 0;
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
@@ -35,14 +59,27 @@ public final class ShimLinker {
                         insn = replacement;
                         redirected++;
                         check(hierarchy, report, node.name, (MethodInsnNode) replacement);
-                    } else if (isShimNamespace(f.owner) || hierarchy.isLocal(f.owner)) {
+                    } else if (isLegacyApi(f.owner, hierarchy) || isModClass(f.owner, hierarchy)) {
                         // Local owners matter too: `this.blockHardness` in a mod block resolves into the shim.
                         Hierarchy.Lookup l = hierarchy.resolveField(f.owner, f.name, f.desc);
-                        record(report, l, node.name, f.owner, f.name + ":" + f.desc, true);
+                        AbstractInsnNode fixed = demand == null ? null : missingField(f, l, hierarchy, demand, report, node.name);
+                        if (fixed == null) {
+                            record(report, l, node.name, f.owner, f.name + ":" + f.desc, true);
+                        } else if (fixed != f) {
+                            insns.set(f, fixed);
+                            insn = fixed;
+                        }
                     } else {
                         checkLibrary(hierarchy, report, node.name, f.owner, f.name + ":" + f.desc, hierarchy.resolveField(f.owner, f.name, f.desc));
                     }
                 } else if (insn instanceof MethodInsnNode m) {
+                    if (demand != null && !m.owner.startsWith("[")) {
+                        AbstractInsnNode fixed = missingMethod(method, m, hierarchy, demand, report, node.name);
+                        if (fixed != null) {
+                            insn = fixed;
+                            continue;
+                        }
+                    }
                     check(hierarchy, report, node.name, m);
                 } else if (insn instanceof TypeInsnNode t) {
                     String type = t.desc.startsWith("[") ? Type.getType(t.desc).getElementType().getInternalName() : t.desc;
@@ -56,9 +93,170 @@ public final class ShimLinker {
         }
         for (String iface : node.interfaces) {
             if (isShimNamespace(iface) && !hierarchy.isShim(iface)) report.missingClass(iface, node.name);
+            if (demand != null && hierarchy.isSynth(iface)) demand.interfaces.add(iface);
         }
         return redirected;
     }
+
+    // ------------------------------------------------------------------ synthesis
+
+    /** Classes of this jar or of a peer legacy jar. */
+    private static boolean isModClass(String name, Hierarchy h) {
+        return h.isLocal(name) || h.isPeer(name);
+    }
+
+    private static boolean isLegacyApi(String owner, Hierarchy h) {
+        return isShimNamespace(owner) || h.isSynth(owner);
+    }
+
+    /**
+     * The class a missing member gets attached to: the first legacy API class (hand-written or synthesized) on
+     * the owner's superclass chain, or for interface calls on its superinterfaces. Null if the chain leaves the
+     * known world (an optional dependency) or never reaches the legacy API.
+     */
+    static String anchor(String owner, Hierarchy h, boolean itf) {
+        // Superclass chain first: a class member wins over an interface default.
+        List<String> interfaces = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        String c = owner;
+        while (c != null && seen.add(c)) {
+            if (h.isShim(c) || h.isSynth(c)) {
+                if (!itf || (h.find(c).access & Opcodes.ACC_INTERFACE) != 0 || interfaces.isEmpty()) return c;
+                break;
+            }
+            ClassInfo info = h.find(c);
+            if (info == null) return null;
+            interfaces.addAll(info.interfaces);
+            if ((info.access & Opcodes.ACC_INTERFACE) != 0) break;
+            c = info.superName;
+        }
+        // Then superinterfaces (an abstract mod class implementing a legacy interface it does not implement itself).
+        while (!interfaces.isEmpty()) {
+            String i = interfaces.remove(0);
+            if (!seen.add(i)) continue;
+            if (h.isShim(i) || h.isSynth(i)) return i;
+            ClassInfo info = h.find(i);
+            if (info != null) interfaces.addAll(info.interfaces);
+        }
+        return null;
+    }
+
+    public static String helperClass(String shimOwner, Hierarchy h) {
+        String legacy = shimOwner.substring(shimOwner.indexOf('/', "mccompat/".length()) + 1);
+        return h.synthPrefix() + legacy + HELPER_SUFFIX;
+    }
+
+    private static AbstractInsnNode missingField(FieldInsnNode f, Hierarchy.Lookup l, Hierarchy h, SynthDemand demand, LinkReport report, String from) {
+        if (l != Hierarchy.Lookup.MISSING_MEMBER && l != Hierarchy.Lookup.MISSING_CLASS) return null;
+        boolean isStatic = f.getOpcode() == Opcodes.GETSTATIC || f.getOpcode() == Opcodes.PUTSTATIC;
+        String anchor = anchor(f.owner, h, false);
+        if (anchor == null) return null;
+        if (h.isSynth(anchor)) {
+            demand.add(anchor, isStatic ? Kind.STATIC_FIELD : Kind.FIELD, f.name, f.desc);
+            report.stubbed(anchor, f.name + ":" + f.desc, from);
+            return f; // the JVM resolves it through the owner's superclass chain
+        }
+        // Hand-written shim lacks the field: helper accessors backed by side storage.
+        demand.add(anchor, isStatic ? Kind.HELPER_STATIC_FIELD : Kind.HELPER_FIELD, f.name, f.desc);
+        report.stubbed(anchor, f.name + ":" + f.desc, from);
+        String helper = helperClass(anchor, h);
+        boolean get = f.getOpcode() == Opcodes.GETFIELD || f.getOpcode() == Opcodes.GETSTATIC;
+        String self = isStatic ? "" : "L" + anchor + ";";
+        String prefix = isStatic ? (get ? "sget$" : "sput$") : (get ? "get$" : "set$");
+        String desc = get ? "(" + self + ")" + f.desc : "(" + self + f.desc + ")V";
+        return new MethodInsnNode(Opcodes.INVOKESTATIC, helper, prefix + f.name, desc, false);
+    }
+
+    /** Returns the instruction that now stands where {@code m} was (possibly {@code m} itself), or null if untouched. */
+    private static AbstractInsnNode missingMethod(MethodNode method, MethodInsnNode m, Hierarchy h, SynthDemand demand, LinkReport report, String from) {
+        if (!isLegacyApi(m.owner, h) && !isModClass(m.owner, h)) return null;
+        Hierarchy.Lookup l = h.resolveMethod(m.owner, m.name, m.desc);
+        if (l != Hierarchy.Lookup.MISSING_MEMBER && l != Hierarchy.Lookup.MISSING_CLASS) return null;
+
+        if (m.name.equals("<init>")) {
+            if (h.isSynth(m.owner)) {
+                demand.add(m.owner, Kind.CONSTRUCTOR, m.name, m.desc);
+                report.stubbed(m.owner, m.name + m.desc, from);
+                return m;
+            }
+            if (h.isShim(m.owner)) return adaptConstructor(method, m, h, report, from);
+            return null;
+        }
+
+        boolean itf = m.itf || m.getOpcode() == Opcodes.INVOKEINTERFACE;
+        String anchor = anchor(m.owner, h, itf);
+        if (anchor == null) return null;
+        if (h.isSynth(anchor)) {
+            demand.add(anchor, m.getOpcode() == Opcodes.INVOKESTATIC ? Kind.STATIC_METHOD : Kind.METHOD, m.name, m.desc);
+            if (itf && h.isSynth(m.owner)) demand.interfaces.add(m.owner);
+            report.stubbed(anchor, m.name + m.desc, from);
+            return m;
+        }
+        Kind kind;
+        String desc;
+        String name = m.name;
+        switch (m.getOpcode()) {
+            case Opcodes.INVOKESTATIC -> {
+                kind = Kind.HELPER_STATIC;
+                desc = m.desc;
+                name = "static$" + m.name;
+            }
+            case Opcodes.INVOKESPECIAL -> {
+                kind = Kind.HELPER_SPECIAL;
+                desc = "(L" + anchor + ";" + m.desc.substring(1);
+                name = "super$" + m.name;
+            }
+            default -> {
+                kind = Kind.HELPER_VIRTUAL;
+                desc = "(L" + anchor + ";" + m.desc.substring(1);
+            }
+        }
+        demand.add(anchor, kind, m.name, kind == Kind.HELPER_STATIC ? m.desc : desc);
+        report.stubbed(anchor, m.name + m.desc, from);
+        m.setOpcode(Opcodes.INVOKESTATIC);
+        m.owner = helperClass(anchor, h);
+        m.name = name;
+        m.desc = desc;
+        m.itf = false;
+        return m;
+    }
+
+    /**
+     * {@code new Shim(a, b)} / {@code super(a, b)} where the hand-written shim lacks that constructor: spill the
+     * arguments to fresh locals and call the real constructor that can use the most of them (same types, in
+     * order), filling the rest with defaults. Stays inside one basic block, so stack map frames remain valid.
+     */
+    private static AbstractInsnNode adaptConstructor(MethodNode method, MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
+        Type[] args = Type.getArgumentTypes(m.desc);
+        CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args);
+        if (choice == null) {
+            report.missingMember(m.owner, m.name + m.desc, from, true);
+            return null;
+        }
+        InsnList pre = new InsnList();
+        int[] slots = new int[args.length];
+        int slot = method.maxLocals;
+        for (int i = 0; i < args.length; i++) {
+            slots[i] = slot;
+            slot += args[i].getSize();
+        }
+        for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
+        Type[] target = Type.getArgumentTypes(choice.desc());
+        int pushed = 0;
+        for (int j = 0; j < target.length; j++) {
+            int i = choice.map()[j];
+            pre.add(i >= 0 ? new VarInsnNode(target[j].getOpcode(Opcodes.ILOAD), slots[i]) : new InsnNode(CtorChooser.defaultConst(target[j])));
+            pushed += target[j].getSize();
+        }
+        method.maxLocals = slot;
+        method.maxStack += pushed;
+        method.instructions.insertBefore(m, pre);
+        report.stubbed(m.owner, m.name + m.desc + " -> " + choice.desc(), from);
+        m.desc = choice.desc();
+        return m;
+    }
+
+    // ------------------------------------------------------------------ virtual fields and reporting
 
     private static AbstractInsnNode virtualField(FieldInsnNode f, Hierarchy hierarchy) {
         boolean isStatic = f.getOpcode() == Opcodes.GETSTATIC || f.getOpcode() == Opcodes.PUTSTATIC;
@@ -67,6 +265,9 @@ public final class ShimLinker {
         String declaring = hierarchy.findVirtualFieldOwner(f.owner, f.name, f.desc, isStatic);
         if (declaring == null) return null;
         String self = isStatic ? "" : "L" + declaring + ";";
+        // Read-only virtual field: the write links to the phantom field the shim declares (and is lost, as the
+        // modern state it views cannot be assigned this way).
+        if (!isGet && !hierarchy.find(declaring).hasMethod(ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V")) return null;
         if (isGet) {
             return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + f.desc, false);
         }
@@ -75,6 +276,7 @@ public final class ShimLinker {
 
     private static void check(Hierarchy hierarchy, LinkReport report, String from, MethodInsnNode m) {
         if (m.owner.startsWith("[")) return; // array clone() etc.
+        if (hierarchy.isSynth(m.owner)) return; // demanded above
         if (isShimNamespace(m.owner) || hierarchy.isLocal(m.owner)) {
             record(report, hierarchy.resolveMethod(m.owner, m.name, m.desc), from, m.owner, m.name + m.desc, true);
         } else {

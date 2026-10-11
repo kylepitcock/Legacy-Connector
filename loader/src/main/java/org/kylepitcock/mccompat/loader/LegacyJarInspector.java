@@ -88,7 +88,14 @@ public final class LegacyJarInspector {
                 return null;
             }
 
+            // Scala objects carry @Mod on both the mirror class Foo and the module class Foo$; one mod each.
+            java.util.Map<String, LegacyModDecl> unique = new java.util.LinkedHashMap<>();
             for (LegacyModDecl decl : found) {
+                LegacyModDecl prev = unique.get(decl.legacyId);
+                if (prev == null || prev.mainClass.endsWith("$") && !decl.mainClass.endsWith("$")) unique.put(decl.legacyId, decl);
+            }
+            for (LegacyModDecl decl : unique.values()) {
+                if (decl.mainClass.endsWith("$")) decl.mainClass = decl.mainClass.substring(0, decl.mainClass.length() - 1);
                 JsonObject info = infoById.get(decl.legacyId);
                 if (info != null) applyMcModInfo(decl, info);
                 if (decl.name == null) decl.name = decl.legacyId;

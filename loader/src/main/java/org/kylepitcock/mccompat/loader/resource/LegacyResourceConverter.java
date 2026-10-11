@@ -67,7 +67,9 @@ public final class LegacyResourceConverter {
             output.putIfAbsent("mccompat_legacy/" + modern, data);
             return true;
         }
-        if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
+        if (modern.matches("assets/[^/]+/sounds\\.json")) {
+            data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
+        } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
         }
         output.putIfAbsent(modern, data);
@@ -119,6 +121,44 @@ public final class LegacyResourceConverter {
             value = value.replaceAll("%(\\d+\\$)?[dfx]", "%$1s").replaceAll("%(\\d+\\$)?\\.\\d+f", "%$1s");
             out.put(line.substring(0, eq), value);
         }
+    }
+
+    /**
+     * 1.7.10 sounds.json: sound paths without a namespace meant the mod's own domain (1.21 assumes minecraft), names
+     * could contain upper case, and "category" is gone. Event keys are sanitized like every other resource path.
+     */
+    static byte[] convertSounds(byte[] data, String namespace) {
+        try {
+            JsonObject root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8)).getAsJsonObject();
+            JsonObject out = new JsonObject();
+            for (var e : root.entrySet()) {
+                if (!e.getValue().isJsonObject()) continue;
+                JsonObject event = e.getValue().getAsJsonObject().deepCopy();
+                event.remove("category");
+                if (event.has("sounds") && event.get("sounds").isJsonArray()) {
+                    JsonArray sounds = new JsonArray();
+                    for (JsonElement snd : event.getAsJsonArray("sounds")) {
+                        if (snd.isJsonPrimitive()) {
+                            sounds.add(soundRef(snd.getAsString(), namespace));
+                        } else if (snd.isJsonObject()) {
+                            JsonObject o = snd.getAsJsonObject().deepCopy();
+                            if (o.has("name")) o.addProperty("name", soundRef(o.get("name").getAsString(), namespace));
+                            sounds.add(o);
+                        }
+                    }
+                    event.add("sounds", sounds);
+                }
+                out.add(normalizePath(e.getKey()), event);
+            }
+            return GSON.toJson(out).getBytes(StandardCharsets.UTF_8);
+        } catch (RuntimeException e) {
+            return data;
+        }
+    }
+
+    private static String soundRef(String ref, String namespace) {
+        int colon = ref.indexOf(':');
+        return colon < 0 ? namespace + ":" + normalizePath(ref) : normalizeRef(ref);
     }
 
     /** Model/blockstate JSON written for 1.7.10-1.12 may reference textures and parents with upper case. */

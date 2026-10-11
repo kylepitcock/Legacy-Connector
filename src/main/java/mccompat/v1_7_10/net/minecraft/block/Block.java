@@ -130,6 +130,7 @@ public class Block {
     }
 
     protected Block(Material material) {
+        if (material == null) material = Material.rock; // synthesized subclasses may pass none
         this.mcc$vanilla = null;
         this.stepSound = soundTypeStone;
         this.blockParticleGravity = 1.0F;

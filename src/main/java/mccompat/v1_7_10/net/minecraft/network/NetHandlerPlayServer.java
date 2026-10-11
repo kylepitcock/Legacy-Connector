@@ -3,7 +3,7 @@ package mccompat.v1_7_10.net.minecraft.network;
 import mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;
 import mccompat.v1_7_10.net.minecraft.util.ChatComponentText;
 
-public class NetHandlerPlayServer {
+public class NetHandlerPlayServer implements INetHandler {
     public final EntityPlayerMP playerEntity;
 
     public NetHandlerPlayServer(EntityPlayerMP player) {

@@ -98,7 +98,10 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     private static BlockBehaviour.Properties properties(Block legacy) {
         Material material = legacy.getMaterial();
-        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().mapColor(material.getMaterialMapColor().mcc$modern());
+        // Mod materials may be built from map colours the shim does not provide yet; fall back to stone.
+        var legacyColor = material == null ? null : material.getMaterialMapColor();
+        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().mapColor(legacyColor == null
+                ? net.minecraft.world.level.material.MapColor.STONE : legacyColor.mcc$modern());
         float hardness = legacy.mcc$hardness();
         float resistance = legacy.getExplosionResistance(null);
         if (hardness < 0) p.strength(-1.0F, 3600000.0F);
@@ -323,7 +326,13 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected RenderShape getRenderShape(BlockState state) {
-        int type = legacy.getRenderType();
+        int type;
+        try {
+            type = legacy.getRenderType();
+        } catch (RuntimeException | LinkageError e) {
+            // Called by resource reloading and rendering; a throwing legacy block must not abort either.
+            return RenderShape.MODEL;
+        }
         if (type == -1) return RenderShape.INVISIBLE;
         // 22 = chest: drawn entirely by the tile entity renderer.
         return type == 22 ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
@@ -338,9 +347,24 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             return s;
         }
         synchronized (legacy) {
-            legacy.setBlockBoundsBasedOnState(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ());
-            return boundsShape();
+            try {
+                legacy.setBlockBoundsBasedOnState(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ());
+                return boundsShape();
+            } catch (RuntimeException | LinkageError e) {
+                // Shapes are also computed without a world (state cache init, worldgen) where legacy code expects its
+                // tile entity; a full block is the safe answer there.
+                shapeFailure(e);
+                return Shapes.block();
+            }
         }
+    }
+
+    private boolean reportedShapeFailure;
+
+    private void shapeFailure(Throwable e) {
+        if (reportedShapeFailure) return;
+        reportedShapeFailure = true;
+        org.slf4j.LoggerFactory.getLogger("MCCompat/Blocks").debug("Legacy bounds of {} failed outside a world context: {}", legacy, e.toString());
     }
 
     private VoxelShape boundsShape() {
@@ -357,7 +381,12 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         if (level instanceof LevelAccessor acc) {
             AxisAlignedBB box;
             synchronized (legacy) {
-                box = legacy.getCollisionBoundingBoxFromPool(world(acc), pos.getX(), pos.getY(), pos.getZ());
+                try {
+                    box = legacy.getCollisionBoundingBoxFromPool(world(acc), pos.getX(), pos.getY(), pos.getZ());
+                } catch (RuntimeException | LinkageError e) {
+                    shapeFailure(e);
+                    return Shapes.block();
+                }
             }
             if (box == null) return Shapes.empty();
             return Shapes.create(box.minX - pos.getX(), box.minY - pos.getY(), box.minZ - pos.getZ(),

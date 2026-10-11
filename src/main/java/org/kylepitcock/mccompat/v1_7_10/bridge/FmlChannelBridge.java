@@ -43,7 +43,13 @@ public final class FmlChannelBridge {
     }
 
     public static boolean has(String name) {
-        return CHANNELS.containsKey(name);
+        return CHANNELS.containsKey(name) || EVENT_CHANNELS.containsKey(name);
+    }
+
+    private static final Map<String, mccompat.v1_7_10.cpw.mods.fml.common.network.FMLEventChannel> EVENT_CHANNELS = new ConcurrentHashMap<>();
+
+    public static void registerEventChannel(mccompat.v1_7_10.cpw.mods.fml.common.network.FMLEventChannel channel) {
+        EVENT_CHANNELS.put(channel.mcc$name(), channel);
     }
 
     private static LegacyPayload payload(FMLProxyPacket packet) {
@@ -81,6 +87,24 @@ public final class FmlChannelBridge {
 
     /** Feeds raw bytes into a side's pipeline (also used for tile entity description packets). */
     public static void deliver(String channelName, byte[] data, Side side, Object netHandler) {
+        var eventChannel = EVENT_CHANNELS.get(channelName);
+        if (eventChannel != null) {
+            FMLProxyPacket packet = new FMLProxyPacket(Unpooled.wrappedBuffer(data), channelName);
+            var event = side == Side.SERVER
+                    ? new mccompat.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent(null, packet,
+                            (mccompat.v1_7_10.net.minecraft.network.INetHandler) netHandler)
+                    : new mccompat.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent(null, packet);
+            try {
+                eventChannel.mcc$bus().post(event);
+                if (event.reply != null) {
+                    if (netHandler instanceof NetHandlerPlayServer s) send(event.reply, FMLOutboundHandler.OutboundTarget.PLAYER, s.playerEntity);
+                    else send(event.reply, FMLOutboundHandler.OutboundTarget.TOSERVER, null);
+                }
+            } catch (RuntimeException e) {
+                LOG.error("Legacy event channel {} failed to handle a packet", channelName, e);
+            }
+            return;
+        }
         EnumMap<Side, FMLEmbeddedChannel> channels = CHANNELS.get(channelName);
         if (channels == null) {
             LOG.debug("Message for unknown legacy channel {}", channelName);

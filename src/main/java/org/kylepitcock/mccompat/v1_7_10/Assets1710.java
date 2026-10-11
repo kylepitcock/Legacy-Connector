@@ -52,7 +52,12 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerBlockIcons failed for {}", b, e);
             }
-            blockModels(b, out);
+            try {
+                blockModels(b, out);
+            } catch (RuntimeException | LinkageError e) {
+                // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
+                LOG.warn("Model generation failed for {}: {}", b, e.toString());
+            }
         }
         for (Item i : ItemBridge.modItems()) {
             try {
@@ -60,7 +65,11 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerIcons failed for {}", i, e);
             }
-            itemModels(i, out);
+            try {
+                itemModels(i, out);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Model generation failed for {}: {}", i, e.toString());
+            }
         }
     }
 
@@ -168,7 +177,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException ignored) {
             }
             if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == 22) {
-                model.addProperty("parent", "minecraft:item/template_chest");
+                // builtin/entity + chest display transforms; the BEWLR registered in Client1710 draws the legacy model.
+                model.addProperty("parent", "minecraft:item/chest");
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
                 model.add("textures", tex);

@@ -83,9 +83,7 @@ final class SplitPackageResolver {
                 // Collect this jar's copies; a package's "best" copy is the jar with the most classes in it, and
                 // classes only some copies have are unioned in.
                 for (String pkg : mine) {
-                    Path best = owners.get(pkg).stream()
-                            .max((a, b) -> Integer.compare(packageSizes.get(a).get(pkg), packageSizes.get(b).get(pkg)))
-                            .orElseThrow();
+                    Path best = bestCopy(pkg, owners.get(pkg), packageSizes);
                     Enumeration<? extends ZipEntry> en = zip.entries();
                     while (en.hasMoreElements()) {
                         ZipEntry e = en.nextElement();
@@ -111,6 +109,29 @@ final class SplitPackageResolver {
             writeJar(sharedJar, m, sharedClasses);
         }
         return new Outcome(out, sharedJar, shared);
+    }
+
+    /**
+     * The authoritative copy of a shared package: the jar of the mod that owns the API (it also has non-shared code
+     * under the same root, e.g. {@code forestry/core} next to {@code forestry/api}), else the largest copy. Shaded
+     * copies in other mods are often outdated versions of the API.
+     */
+    private static Path bestCopy(String pkg, List<Path> candidates, Map<Path, Map<String, Integer>> packageSizes) {
+        String root = pkg.indexOf('/') > 0 ? pkg.substring(0, pkg.indexOf('/') + 1) : pkg + "/";
+        Path owner = null;
+        int ownerClasses = 0;
+        for (Path jar : candidates) {
+            int own = 0;
+            for (var e : packageSizes.get(jar).entrySet()) {
+                if (e.getKey().startsWith(root) && !e.getKey().contains("/api")) own += e.getValue();
+            }
+            if (own > ownerClasses) {
+                owner = jar;
+                ownerClasses = own;
+            }
+        }
+        if (owner != null) return owner;
+        return candidates.stream().max((a, b) -> Integer.compare(packageSizes.get(a).get(pkg), packageSizes.get(b).get(pkg))).orElseThrow();
     }
 
     private static void copyWithout(ZipFile zip, Path target, Set<String> packages) throws IOException {

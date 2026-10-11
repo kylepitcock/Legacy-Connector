@@ -29,6 +29,10 @@ public class Loader {
         String lower = modname.toLowerCase(Locale.ROOT);
         if (lower.equals("forge") || lower.equals("fml") || lower.equals("mcp") || lower.equals("minecraft")) return true;
         if (LegacyMods.byLegacyId(modname) != null) return true;
+        // Legacy libraries replaced by a modern mod (LibraryBridges in the loader) count as loaded.
+        for (String bridged : System.getProperty("mccompat.bridgedMods", "").split(",")) {
+            if (!bridged.isEmpty() && bridged.equalsIgnoreCase(modname)) return true;
+        }
         ModList list = ModList.get();
         return list != null && list.isLoaded(org.kylepitcock.mccompat.core.Ids.modernModId(modname));
     }

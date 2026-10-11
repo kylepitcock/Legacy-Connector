@@ -26,6 +26,7 @@ import org.kylepitcock.mccompat.loader.meta.ModMetadataGenerator;
 import org.kylepitcock.mccompat.loader.resource.LegacyResourceConverter;
 import org.kylepitcock.mccompat.loader.shim.ShimIndex;
 import org.kylepitcock.mccompat.loader.shim.ClassInfo;
+import org.kylepitcock.mccompat.loader.synth.SynthDemand;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.commons.ClassRemapper;
@@ -37,18 +38,38 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 1;
+    public static final int TRANSFORMER_VERSION = 2;
 
     private final ShimIndex shim;
     private final ClassLoader libraries;
+
+    /** Lower-cased ids of the legacy mods being loaded, for {@code @Optional} stripping. */
+    private java.util.Set<String> presentMods = java.util.Set.of();
 
     public LegacyJarTransformer(ShimIndex shim, ClassLoader libraries) {
         this.shim = shim;
         this.libraries = libraries;
     }
 
+    /** "CLIENT" / "SERVER", or null to keep both sides (offline checks). */
+    private String side;
+
+    public LegacyJarTransformer side(String side) {
+        this.side = side;
+        return this;
+    }
+
+    public LegacyJarTransformer presentMods(java.util.Collection<String> legacyIds) {
+        java.util.Set<String> s = new java.util.HashSet<>();
+        for (String id : legacyIds) s.add(id.toLowerCase(java.util.Locale.ROOT));
+        this.presentMods = s;
+        return this;
+    }
+
     public static final class Result {
         public final LinkReport links = new LinkReport();
+        /** Legacy API this jar needs synthesized (see {@code SynthJarBuilder}). */
+        public final SynthDemand demand = new SynthDemand();
         public final List<String> notes = new ArrayList<>();
         public int classes;
         public int compatRedirects;
@@ -56,11 +77,10 @@ public final class LegacyJarTransformer {
         public int droppedShimDuplicates;
     }
 
-    public Result transform(LegacyJar jar, Path output) throws IOException {
-        Result result = new Result();
-        LegacyVersion version = jar.version;
-        LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version));
+    /** Raw contents of a legacy jar. */
+    private record Contents(Map<String, byte[]> classes, Map<String, byte[]> other, Manifest manifest) {}
 
+    private static Contents read(LegacyJar jar) throws IOException {
         Map<String, byte[]> classes = new LinkedHashMap<>();
         Map<String, byte[]> other = new LinkedHashMap<>();
         Manifest manifest = null;
@@ -83,26 +103,86 @@ public final class LegacyJarTransformer {
                 }
             }
         }
+        return new Contents(classes, other, manifest);
+    }
 
-        // Classes a legacy jar ships inside Minecraft/Forge packages: either a copy of something the shim already
-        // provides (drop it - one canonical copy must exist) or a mod-owned addition (move it to a private package,
-        // otherwise it would split a package with the runtime module and JPMS refuses to boot).
+    /**
+     * Classes a legacy jar ships inside Minecraft/Forge packages: either a copy of something the shim already
+     * provides (dropped - one canonical copy must exist) or a mod-owned addition (moved to a private package,
+     * otherwise it would split a package with the runtime module and JPMS refuses to boot). Returns the number dropped.
+     */
+    private static void preventCollisions(Map<String, byte[]> classes, LegacyRemapper remapper) {
+        for (byte[] data : classes.values()) {
+            try {
+                ClassNode n = new ClassNode();
+                new ClassReader(data).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                remapper.preventCollisions(n);
+            } catch (RuntimeException ignored) {
+                // unreadable classes are reported later
+            }
+        }
+    }
+
+    private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "mccompat_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
+        int dropped = 0;
         for (String name : List.copyOf(classes.keySet())) {
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
-            if (shim.contains(version.shimPrefix() + name)) {
+            if (shim.contains(jar.version.shimPrefix() + name)) {
                 classes.remove(name);
-                result.droppedShimDuplicates++;
+                dropped++;
             } else {
                 remapper.override(name, privateRoot + name);
             }
         }
+        return dropped;
+    }
+
+    /**
+     * Structural view (relocated names, members) of a jar's classes, for linking the jars that extend or call
+     * into it. Cheap: method bodies are skipped.
+     */
+    public List<ClassInfo> scan(LegacyJar jar) throws IOException {
+        Contents c = read(jar);
+        LegacyRemapper remapper = new LegacyRemapper(jar.version, McpMappings.forVersion(jar.version), shim, null);
+        relocateBundled(jar, c.classes, remapper);
+        preventCollisions(c.classes, remapper);
+        List<ClassInfo> out = new ArrayList<>();
+        for (byte[] data : c.classes.values()) {
+            try {
+                ClassNode node = new ClassNode();
+                new ClassReader(data).accept(new ClassRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                out.add(ClassInfo.of(node));
+            } catch (RuntimeException ignored) {
+                // reported when the jar itself is translated
+            }
+        }
+        return out;
+    }
+
+    public Result transform(LegacyJar jar, Path output) throws IOException {
+        return transform(jar, output, Map.of());
+    }
+
+    /** @param peers classes of the other legacy jars of the same version (see {@link #scan}), by name */
+    public Result transform(LegacyJar jar, Path output, Map<String, ClassInfo> peers) throws IOException {
+        Result result = new Result();
+        LegacyVersion version = jar.version;
+        LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version), shim, result.demand);
+
+        Contents contents = read(jar);
+        Map<String, byte[]> classes = contents.classes;
+        Map<String, byte[]> other = contents.other;
+        Manifest manifest = contents.manifest;
+
+        result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
+        preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
             result.notes.add("Dropped " + result.droppedShimDuplicates + " bundled copies of Minecraft/Forge classes (the shim provides them)");
         }
 
         // Pass 1: relocate + rename, build the jar-local half of the class hierarchy.
-        Hierarchy hierarchy = new Hierarchy(shim, libraries);
+        Hierarchy hierarchy = new Hierarchy(shim, libraries, peers, version);
         Map<String, ClassNode> nodes = new LinkedHashMap<>();
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
@@ -118,9 +198,28 @@ public final class LegacyJarTransformer {
 
         // Pass 2: call-site fixes and link checking, then serialize.
         Map<String, byte[]> outClasses = new LinkedHashMap<>();
+        if (side != null) {
+            int sided = 0;
+            for (ClassNode node : nodes.values()) {
+                int n = SideOnlyStripper.apply(node, version.shimPrefix(), side);
+                if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
+                sided += n;
+            }
+            if (sided > 0) result.notes.add("Removed " + sided + " @SideOnly member(s) for the other side");
+        }
+        int optionalStripped = 0;
+        for (ClassNode node : nodes.values()) {
+            int n = OptionalStripper.apply(node, version.shimPrefix(), presentMods, hierarchy);
+            if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
+            optionalStripped += n;
+        }
+        if (optionalStripped > 0) result.notes.add("Stripped " + optionalStripped + " @Optional interface(s)/method(s) for absent mods");
+        int absent = 0;
+        for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy);
+        if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
-            result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links);
+            result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             ClassWriter writer = new ClassWriter(0);
             node.accept(writer);
             outClasses.put(node.name + ".class", writer.toByteArray());
@@ -146,9 +245,28 @@ public final class LegacyJarTransformer {
             }
         }
 
+        // A synthesized class can only be generated with its legacy supertypes, which may be synthesized too.
+        for (String c : List.copyOf(result.demand.classes)) closeSupertypes(c, hierarchy, result.demand);
+        result.links.synthesizedClasses.addAll(result.demand.classes);
+
         Manifest outManifest = cleanManifest(manifest, jar);
         write(output, outManifest, outClasses, outResources);
         return result;
+    }
+
+    private static void closeSupertypes(String name, Hierarchy hierarchy, SynthDemand demand) {
+        ClassInfo info = hierarchy.find(name);
+        if (info == null) return;
+        for (String parent : info.superName == null ? info.interfaces : concat(info.superName, info.interfaces)) {
+            if (hierarchy.isSynth(parent) && demand.classes.add(parent)) closeSupertypes(parent, hierarchy, demand);
+        }
+    }
+
+    private static List<String> concat(String first, List<String> rest) {
+        List<String> out = new ArrayList<>(rest.size() + 1);
+        out.add(first);
+        out.addAll(rest);
+        return out;
     }
 
     private static Manifest cleanManifest(Manifest in, LegacyJar jar) {

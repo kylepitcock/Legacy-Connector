@@ -2,18 +2,27 @@ package org.kylepitcock.mccompat.loader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -24,7 +33,10 @@ import net.neoforged.neoforgespi.locating.IDiscoveryPipeline;
 import net.neoforged.neoforgespi.locating.IModFileCandidateLocator;
 import net.neoforged.neoforgespi.locating.IncompatibleFileReporting;
 import net.neoforged.neoforgespi.locating.ModFileDiscoveryAttributes;
+import org.kylepitcock.mccompat.loader.shim.ClassInfo;
 import org.kylepitcock.mccompat.loader.shim.ShimIndex;
+import org.kylepitcock.mccompat.loader.synth.SynthDemand;
+import org.kylepitcock.mccompat.loader.synth.SynthJarBuilder;
 import org.kylepitcock.mccompat.loader.transform.LegacyJarTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,41 +91,68 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             if (legacy.isEmpty()) return;
 
-            LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader());
+            List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
+            LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
+            List<String> present = new ArrayList<>(legacy.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
+            for (LibraryBridges.Bridge b : bridges) present.add(b.legacyModId());
+            // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
+            System.setProperty("mccompat.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId).toList()));
+            if (!bridges.isEmpty()) LOG.info("MC Compatibility: bridging {} to their modern replacements", bridges);
+            String side = side();
+            LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
+            org.kylepitcock.mccompat.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
+                    .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null)
+                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::modernId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
+            Set<Path> keep = new HashSet<>();
+            if (runtimeJar != null) keep.add(runtimeJar);
+            // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
+            // every legacy jar of its version: that set is part of the cache key, and peers are scanned on a miss.
+            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges);
+            Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
+            Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             for (LegacyJar jar : legacy) {
                 // Claim the original even if we end up skipping it, so FML does not raise its own
                 // "this is an old Forge mod" error on top of ours.
                 context.addLocated(jar.path);
-                String skip = skipReason(jar);
+                LibraryBridges.Bridge replacedBy = LibraryBridges.replacing(jar, bridges);
+                String skip = replacedBy != null ? "replaced by " + replacedBy.modernModId() + " (legacy " + replacedBy.legacyModId()
+                        + " API bridged)" : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);
-                    // Unknown translation keys are displayed verbatim by FML's error screen.
-                    pipeline.addIssue(ModLoadingIssue.warning("MC Compatibility skipped " + jar.fileName() + ": " + skip.replace("'", ""))
+                    // Unknown translation keys are displayed verbatim by FML's error screen. Bridged libraries are expected.
+                    if (replacedBy == null) pipeline.addIssue(ModLoadingIssue.warning("MC Compatibility skipped " + jar.fileName() + ": " + skip.replace("'", ""))
                             .withAffectedPath(jar.path));
                     continue;
                 }
                 try {
-                    Path out = cacheDir.resolve(cacheName(jar, index));
+                    Path out = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
                     Path linkReport = out.resolveSibling(out.getFileName() + ".links.txt");
-                    if (!Files.exists(out)) {
+                    Path demandFile = out.resolveSibling(out.getFileName() + ".synth.txt");
+                    if (!Files.exists(out) || !Files.exists(demandFile)) {
+                        Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
                         long start = System.nanoTime();
-                        LegacyJarTransformer.Result result = transformer.transform(jar, out);
-                        LOG.info("MC Compatibility: translated {} ({} classes, {} JDK fixes, {} virtual fields) in {} ms",
+                        LegacyJarTransformer.Result result = transformer.transform(jar, out, jarPeers);
+                        result.demand.write(demandFile);
+                        LOG.info("MC Compatibility: translated {} ({} classes, {} JDK fixes, {} virtual fields, {} synthesized API classes) in {} ms",
                                 jar.fileName(), result.classes, result.compatRedirects, result.virtualFieldRedirects,
-                                (System.nanoTime() - start) / 1_000_000);
+                                result.links.synthesizedClasses.size(), (System.nanoTime() - start) / 1_000_000);
                         StringBuilder text = new StringBuilder();
                         for (String n : result.notes) text.append("  note: ").append(n).append('\n');
                         text.append("  ").append(result.links.errorCount()).append(" unresolved link(s)")
-                                .append(result.links.errorCount() == 0 ? " - fully covered by the shim\n" : ":\n");
+                                .append(result.links.errorCount() == 0 ? " - every legacy API reference links\n" : ":\n");
                         text.append(result.links.render());
                         Files.writeString(linkReport, text);
                         if (result.links.errorCount() > 0) {
-                            LOG.warn("MC Compatibility: {} uses {} legacy API(s) the shim does not provide yet; see logs/mccompat-report.txt",
+                            LOG.warn("MC Compatibility: {} has {} reference(s) that cannot be linked; see logs/mccompat-report.txt",
                                     jar.fileName(), result.links.errorCount());
                         }
                     }
+                    demand.computeIfAbsent(jar.version, v -> new SynthDemand()).merge(SynthDemand.read(demandFile));
+                    keep.add(out);
+                    keep.add(linkReport);
+                    keep.add(demandFile);
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
                 } catch (Exception e) {
@@ -124,44 +163,164 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 }
             }
 
+            // One generated jar per legacy version with every API class/member the shim lacks, for all mods at once
+            // (mods pass these types to each other, so there must be exactly one copy of each).
+            for (var e : demand.entrySet()) {
+                if (e.getValue().isEmpty()) continue;
+                Path synthJar = buildSynthJar(cacheDir, e.getKey(), index, e.getValue());
+                keep.add(synthJar);
+                pipeline.addPath(synthJar, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
+            }
+
             SplitPackageResolver.Outcome split = SplitPackageResolver.resolve(translated, cacheDir);
             if (split.sharedLibrary() != null) {
                 LOG.info("MC Compatibility: {} packages shipped by several legacy jars were merged into {}",
                         split.sharedPackages().size(), split.sharedLibrary().getFileName());
+                keep.add(split.sharedLibrary());
                 pipeline.addPath(split.sharedLibrary(), ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
             for (Path p : split.jars()) {
+                keep.add(p);
                 pipeline.addPath(p, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
             writeReport(gameDir, outcomes, split);
+            pruneCache(cacheDir, keep);
         } catch (IOException e) {
             LOG.error("MC Compatibility: legacy mod discovery failed", e);
         }
     }
 
-    private static String skipReason(LegacyJar jar) {
-        if (!jar.hasMods() && jar.coreModClass != null) {
-            return "coremod-only jar (" + jar.coreModClass + "); legacy coremods patch "
-                    + jar.version.id() + " Minecraft bytecode that does not exist in 1.21.1";
+    private static Map<String, ClassInfo> scanPeers(LegacyJarTransformer transformer, List<LegacyJar> legacy, LegacyVersion version) {
+        Map<String, ClassInfo> out = new HashMap<>();
+        for (LegacyJar jar : legacy) {
+            if (jar.version != version || skipReason(jar) != null) continue;
+            try {
+                for (ClassInfo c : transformer.scan(jar)) out.putIfAbsent(c.name, c);
+            } catch (IOException | RuntimeException e) {
+                LOG.debug("MC Compatibility: could not scan {}", jar.fileName(), e);
+            }
         }
+        return out;
+    }
+
+    private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges) throws IOException {
+        Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
+        for (LegacyJar jar : legacy) {
+            MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
+            md.update(fileDigest(jar.path));
+            md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
+            md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
+        }
+        Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
+        digests.forEach((v, md) -> out.put(v, md.digest()));
+        return out;
+    }
+
+    private static byte[] fileDigest(Path p) throws IOException {
+        MessageDigest md = SplitPackageResolver.sha256();
+        try (InputStream in = Files.newInputStream(p)) {
+            byte[] buf = new byte[1 << 16];
+            int n;
+            while ((n = in.read(buf)) > 0) md.update(buf, 0, n);
+        }
+        return md.digest();
+    }
+
+    private static Path buildSynthJar(Path cacheDir, LegacyVersion version, ShimIndex index, SynthDemand demand) throws IOException {
+        Path tmpDemand = Files.createTempFile(cacheDir, "demand", ".txt");
+        try {
+            demand.write(tmpDemand);
+            MessageDigest md = SplitPackageResolver.sha256();
+            md.update(Files.readAllBytes(tmpDemand));
+            md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
+            md.update(LOADER_DIGEST);
+            if (indexDigest != null) md.update(indexDigest);
+            Path target = cacheDir.resolve("mccompat-synth-" + version.id() + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar");
+            if (Files.exists(target)) return target;
+            long start = System.nanoTime();
+            Map<String, byte[]> classes = new SynthJarBuilder(version, index, LegacyModLocator.class.getClassLoader(), demand).build();
+            Manifest m = new Manifest();
+            m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+            m.getMainAttributes().putValue("FMLModType", "GAMELIBRARY");
+            m.getMainAttributes().putValue("Automatic-Module-Name", "mccompat.synth.v" + version.id().replace('.', '_'));
+            Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
+            try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, m)) {
+                for (var e : classes.entrySet()) {
+                    ZipEntry z = new ZipEntry(e.getKey() + ".class");
+                    z.setTime(0);
+                    jos.putNextEntry(z);
+                    jos.write(e.getValue());
+                    jos.closeEntry();
+                }
+            }
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            LOG.info("MC Compatibility: synthesized {} legacy {} API classes the shim does not implement yet ({} helpers) in {} ms",
+                    classes.size(), version.id(), demand.helperCount(), (System.nanoTime() - start) / 1_000_000);
+            return target;
+        } finally {
+            Files.deleteIfExists(tmpDemand);
+        }
+    }
+
+    /** Translations of removed or updated mods would otherwise pile up forever. */
+    private static void pruneCache(Path cacheDir, Set<Path> keep) {
+        try (Stream<Path> files = Files.list(cacheDir)) {
+            for (Path p : files.toList()) {
+                if (keep.contains(p) || !Files.isRegularFile(p)) continue;
+                try {
+                    Files.delete(p);
+                } catch (IOException e) {
+                    LOG.debug("MC Compatibility: could not prune {}", p, e);
+                }
+            }
+        } catch (IOException e) {
+            LOG.debug("MC Compatibility: could not prune cache", e);
+        }
+    }
+
+    /** "CLIENT" or "SERVER". Dist is read reflectively: its class is not on the loader's compile classpath. */
+    private static String side() {
+        try {
+            Object dist = net.neoforged.fml.loading.FMLLoader.class.getMethod("getDist").invoke(null);
+            return String.valueOf(dist).equals("CLIENT") ? "CLIENT" : "SERVER";
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return "CLIENT";
+        }
+    }
+
+    private static String skipReason(LegacyJar jar) {
         if (!jar.hasMods() && jar.tweakClass != null) {
             return "LaunchWrapper tweaker (" + jar.tweakClass + ") with no @Mod; tweakers cannot run on modlauncher";
         }
         return null;
     }
 
-    /** Content hash + transformer version + shim index hash: any change re-translates. */
-    private static String cacheName(LegacyJar jar, ShimIndex index) throws IOException {
+    /** Content hash + transformer version + shim index + the other legacy jars of its version: any change re-translates. */
+    private static String cacheName(LegacyJar jar, byte[] modSet) throws IOException {
         MessageDigest md = SplitPackageResolver.sha256();
-        md.update(Files.readAllBytes(jar.path));
-        md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION + ":" + index.size()).getBytes(StandardCharsets.UTF_8));
+        md.update(fileDigest(jar.path));
+        md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
+        md.update(LOADER_DIGEST);
         if (indexDigest != null) md.update(indexDigest);
+        if (modSet != null) md.update(modSet);
         String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
         if (name.endsWith(".jar")) name = name.substring(0, name.length() - 4);
         return name + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar";
     }
 
     private static byte[] indexDigest;
+    /** Digest of the loader's own jar: any change to the translator re-translates, without manual version bumps. */
+    private static final byte[] LOADER_DIGEST = loaderDigest();
+
+    private static byte[] loaderDigest() {
+        try (InputStream in = LegacyModLocator.class.getClassLoader().getResourceAsStream("mccompat/loader-build-id.txt")) {
+            if (in != null) return in.readAllBytes();
+        } catch (IOException e) {
+            LOG.debug("MC Compatibility: cannot read loader build id", e);
+        }
+        LOG.warn("MC Compatibility: loader build id missing; translation caches may be stale after updates");
+        return new byte[0];
+    }
 
     private static Path extractRuntime(Path cacheDir) throws IOException {
         try (InputStream in = LegacyModLocator.class.getResourceAsStream(EMBEDDED_RUNTIME)) {

@@ -19,24 +19,27 @@ import org.kylepitcock.mccompat.core.registry.LegacyRegistrar;
 /** Mod-created legacy creative tabs become modern tabs; items in vanilla legacy tabs join the modern vanilla tabs. */
 public final class CreativeTabBridge {
     private static final List<CreativeTabs> CUSTOM = new ArrayList<>();
+    /** Modern id of the legacy mod that created each tab. */
+    private static final java.util.Map<CreativeTabs, String> OWNER = new java.util.IdentityHashMap<>();
 
     private CreativeTabBridge() {}
 
     public static synchronized void onTabCreated(CreativeTabs tab) {
         CUSTOM.add(tab);
+        org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710 owner = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
+        if (owner != null) OWNER.put(tab, owner.record().modernId);
     }
 
     /** Registers modern tabs for every legacy custom tab; runs at the end of legacy loading. */
     public static synchronized void registerTabs() {
         for (CreativeTabs tab : CUSTOM) {
+            // A mod that failed to load would crash the creative screen through its tab's callbacks.
+            if (org.kylepitcock.mccompat.core.LegacyLifecycle.isFailed(OWNER.get(tab))) continue;
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("mccompat", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + tab.getTabLabel()))
-                    .icon(() -> {
-                        ItemStack icon = tab.getIconItemStack();
-                        return icon == null ? net.minecraft.world.item.ItemStack.EMPTY : icon.mcc$modern().copy();
-                    })
+                    .icon(() -> icon(tab))
                     .displayItems((params, output) -> {
                         for (net.minecraft.world.item.ItemStack s : contents(tab)) output.accept(s);
                     })
@@ -44,6 +47,18 @@ public final class CreativeTabBridge {
                     .build();
             LegacyRegistrar.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, modern);
         }
+    }
+
+    /** The legacy icon, or the tab's first item if the legacy code throws or has none. Called every frame. */
+    private static net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {
+        try {
+            ItemStack icon = tab.getIconItemStack();
+            if (icon != null && !icon.mcc$modern().isEmpty()) return icon.mcc$modern().copy();
+        } catch (RuntimeException | LinkageError e) {
+            // fall through
+        }
+        List<net.minecraft.world.item.ItemStack> items = contents(tab);
+        return items.isEmpty() ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK) : items.get(0);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -56,7 +71,7 @@ public final class CreativeTabBridge {
         }
         List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
         for (Object o : raw) {
-            if (o instanceof ItemStack s && s.mcc$count() > 0 && !s.mcc$modern().isEmpty()) {
+            if (o instanceof ItemStack s && safeNonEmpty(s)) {
                 net.minecraft.world.item.ItemStack m = s.mcc$modern().copy();
                 m.setCount(1);
                 if (out.stream().noneMatch(x -> net.minecraft.world.item.ItemStack.isSameItemSameComponents(x, m))) out.add(m);
@@ -65,11 +80,25 @@ public final class CreativeTabBridge {
         return out;
     }
 
+    private static boolean safeNonEmpty(ItemStack s) {
+        try {
+            if (s.mcc$count() <= 0 || s.mcc$modern().isEmpty()) return false;
+            return !org.kylepitcock.mccompat.core.LegacyLifecycle.isFailed(BuiltInRegistries.ITEM.getKey(s.mcc$modern().getItem()).getNamespace());
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     /** Adds legacy mod items whose legacy tab is a vanilla tab to the corresponding modern tab. */
     public static void onBuildContents(BuildCreativeModeTabContentsEvent event) {
         ResourceKey<CreativeModeTab> key = event.getTabKey();
         for (Item item : ItemBridge.modItems()) {
-            CreativeTabs tab = item.getCreativeTab();
+            CreativeTabs tab;
+            try {
+                tab = item.getCreativeTab();
+            } catch (RuntimeException | LinkageError e) {
+                continue;
+            }
             if (tab == null || tab.mcc$vanillaTab() == null) continue;
             ResourceKey<CreativeModeTab> target = ResourceKey.create(Registries.CREATIVE_MODE_TAB, ResourceLocation.withDefaultNamespace(tab.mcc$vanillaTab()));
             if (!target.equals(key)) continue;
@@ -80,7 +109,7 @@ public final class CreativeTabBridge {
                 continue;
             }
             for (Object o : list) {
-                if (o instanceof ItemStack s && !s.mcc$modern().isEmpty()) {
+                if (o instanceof ItemStack s && safeNonEmpty(s)) {
                     net.minecraft.world.item.ItemStack m = s.mcc$modern().copy();
                     m.setCount(1);
                     try {

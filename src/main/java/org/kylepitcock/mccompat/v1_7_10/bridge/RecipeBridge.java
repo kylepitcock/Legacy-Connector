@@ -16,7 +16,10 @@ import java.util.function.Supplier;
 import mccompat.v1_7_10.net.minecraft.block.Block;
 import mccompat.v1_7_10.net.minecraft.item.Item;
 import mccompat.v1_7_10.net.minecraft.item.ItemStack;
+import mccompat.v1_7_10.net.minecraft.item.crafting.CraftingManager;
 import mccompat.v1_7_10.net.minecraft.item.crafting.IRecipe;
+import mccompat.v1_7_10.net.minecraft.item.crafting.ShapedRecipes;
+import mccompat.v1_7_10.net.minecraft.item.crafting.ShapelessRecipes;
 import mccompat.v1_7_10.net.minecraftforge.oredict.OreDictionary;
 import mccompat.v1_7_10.net.minecraftforge.oredict.ShapedOreRecipe;
 import mccompat.v1_7_10.net.minecraftforge.oredict.ShapelessOreRecipe;
@@ -81,12 +84,15 @@ public final class RecipeBridge {
         } else {
             RECIPES.add(new Shaped(owner(), output.copy(), pattern, key));
         }
-        return new ShapedOreRecipe(output, params);
+        ShapedOreRecipe recipe = new ShapedOreRecipe(output, params);
+        CraftingManager.getInstance().mcc$track(recipe);
+        return recipe;
     }
 
     public static synchronized void addShapeless(ItemStack output, Object[] params) {
         if (output == null) return;
         RECIPES.add(new Shapeless(owner(), output.copy(), new ArrayList<>(List.of(params))));
+        CraftingManager.getInstance().mcc$track(new ShapelessOreRecipe(output, params));
     }
 
     public static synchronized void addSmelting(ItemStack input, ItemStack output, float xp) {
@@ -94,10 +100,60 @@ public final class RecipeBridge {
         RECIPES.add(new Smelting(owner(), input.copy(), output.copy(), xp));
     }
 
-    public static synchronized void add(IRecipe recipe) {
-        if (recipe instanceof ShapedOreRecipe s) addShaped(s.getRecipeOutput(), s.mcc$args, s.mcc$mirrored());
-        else if (recipe instanceof ShapelessOreRecipe s) addShapeless(s.getRecipeOutput(), s.mcc$args);
-        else LOG.warn("Custom legacy IRecipe {} is not supported yet and was skipped", recipe.getClass().getName());
+    /** GameRegistry.addRecipe(IRecipe): listed in the legacy CraftingManager, which translates it. */
+    public static void add(IRecipe recipe) {
+        CraftingManager.getInstance().getRecipeList().add(recipe);
+    }
+
+    /** Translates a legacy recipe object into a data-pack recipe (called for everything added to the legacy list). */
+    public static synchronized void addLegacyRecipe(IRecipe recipe) {
+        if (recipe == null) return;
+        if (recipe instanceof ShapedOreRecipe s) {
+            addShapedSpec(s.getRecipeOutput(), s.mcc$args);
+        } else if (recipe instanceof ShapelessOreRecipe s) {
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
+        } else if (recipe instanceof ShapedRecipes s) {
+            List<String> pattern = new ArrayList<>();
+            Map<Character, Object> key = new LinkedHashMap<>();
+            Map<String, Character> symbols = new LinkedHashMap<>();
+            for (int y = 0; y < s.recipeHeight; y++) {
+                StringBuilder row = new StringBuilder();
+                for (int x = 0; x < s.recipeWidth; x++) {
+                    ItemStack in = s.recipeItems[x + y * s.recipeWidth];
+                    if (in == null) {
+                        row.append(' ');
+                        continue;
+                    }
+                    String id = in.getItem() + "@" + in.getItemDamage();
+                    Character c = symbols.computeIfAbsent(id, k -> (char) ('A' + symbols.size()));
+                    key.putIfAbsent(c, in);
+                    row.append(c);
+                }
+                pattern.add(row.toString());
+            }
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shaped(owner(), s.getRecipeOutput().copy(), pattern, key));
+        } else if (recipe instanceof ShapelessRecipes s) {
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
+        } else {
+            LOG.warn("Custom legacy IRecipe {} is not supported yet and was skipped", recipe.getClass().getName());
+        }
+    }
+
+    private static void addShapedSpec(ItemStack output, Object[] params) {
+        List<String> pattern = new ArrayList<>();
+        Map<Character, Object> key = new LinkedHashMap<>();
+        int i = 0;
+        if (params.length > 0 && params[0] instanceof String[] rows) {
+            pattern.addAll(List.of(rows));
+            i = 1;
+        } else {
+            while (i < params.length && params[i] instanceof String row) {
+                pattern.add(row);
+                i++;
+            }
+        }
+        for (; i + 1 < params.length; i += 2) key.put((Character) params[i], params[i + 1]);
+        if (output != null && !pattern.isEmpty()) RECIPES.add(new Shaped(owner(), output.copy(), pattern, key));
     }
 
     // ------------------------------------------------------------------ data pack generation
@@ -136,8 +192,12 @@ public final class RecipeBridge {
         int width = s.pattern.stream().mapToInt(String::length).max().orElse(0);
         for (String row : s.pattern) pattern.add(String.format("%-" + width + "s", row));
         o.add("pattern", pattern);
+        // Legacy Forge ignored keys the pattern never uses (mods often pass one shared key list to every recipe);
+        // 1.21 rejects the whole recipe, and an untranslatable unused ingredient must not sink it either.
+        String used = String.join("", s.pattern);
         JsonObject key = new JsonObject();
         for (var e : s.key.entrySet()) {
+            if (e.getKey() == ' ' || used.indexOf(e.getKey()) < 0) continue;
             JsonElement ing = ingredient(e.getValue());
             if (ing == null) return null;
             key.add(String.valueOf(e.getKey()), ing);

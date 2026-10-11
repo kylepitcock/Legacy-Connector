@@ -9,6 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.kylepitcock.mccompat.loader.shim.ClassInfo;
 import org.kylepitcock.mccompat.loader.shim.ShimIndex;
 import org.kylepitcock.mccompat.loader.shim.ShimIndexGenerator;
+import org.kylepitcock.mccompat.loader.LegacyVersion;
+import org.kylepitcock.mccompat.loader.synth.LegacyHierarchyData;
 import org.objectweb.asm.ClassReader;
 
 /**
@@ -22,10 +24,76 @@ public final class Hierarchy {
     private final Map<String, ClassInfo> local = new HashMap<>();
     private final ShimIndex shim;
     private final ClassLoader libraries;
+    /** Classes of the other legacy jars being loaded alongside (mods extend each other's classes). */
+    private final Map<String, ClassInfo> peers;
+    private final LegacyVersion version;
+    private final Map<String, ClassInfo> synth = new HashMap<>();
 
     public Hierarchy(ShimIndex shim, ClassLoader libraries) {
+        this(shim, libraries, Map.of(), null);
+    }
+
+    public Hierarchy(ShimIndex shim, ClassLoader libraries, Map<String, ClassInfo> peers, LegacyVersion version) {
         this.shim = shim;
         this.libraries = libraries;
+        this.peers = peers;
+        this.version = version;
+    }
+
+    /** Library namespaces present at runtime but possibly invisible to the loader's class loader (game layer). */
+    private static final String[] RUNTIME_LIBRARIES = {"java/", "javax/", "jdk/", "sun/", "com/google/", "io/netty/", "org/apache/",
+            "com/mojang/", "org/lwjgl/", "gnu/trove/", "it/unimi/", "org/slf4j/", "com/typesafe/", "org/objectweb/", "net/minecraft/",
+            "net/neoforged/", "org/joml/", "paulscode/", "com/ibm/icu/", "org/openjdk/nashorn/", "oshi/", "org/kylepitcock/",
+            "scala/", "javax/vecmath/"};
+
+    /**
+     * True only for a class that cannot exist at runtime: not in any legacy jar, the shim, the synthesized API or a
+     * runtime library. Used to detect integrations with mods that are not installed.
+     */
+    public boolean isAbsent(String name) {
+        if (name.startsWith("mccompat") || isLocal(name) || isPeer(name) || isShim(name) || isSynth(name)) return false;
+        for (String p : RUNTIME_LIBRARIES) if (name.startsWith(p)) return false;
+        return find(name) == null;
+    }
+
+    public boolean isPeer(String name) {
+        return peers.containsKey(name);
+    }
+
+    public String synthPrefix() {
+        return version.synthPrefix();
+    }
+
+    public boolean isSynth(String name) {
+        return version != null && name.startsWith(version.synthPrefix());
+    }
+
+    /** Maps an unrelocated legacy name the way {@link LegacyRemapper} does. */
+    public String relocate(String legacyName) {
+        if (legacyName == null) return null;
+        if (!LegacyVersion.isRelocatedRoot(legacyName)) return legacyName;
+        String s = version.shimPrefix() + legacyName;
+        return shim.contains(s) || shim.size() == 0 ? s : version.synthPrefix() + legacyName;
+    }
+
+    /**
+     * Structural view of a synthesized class: legacy supertypes (relocated), no members. Members are what the
+     * mods demand, so lookups that reach a synthesized class without finding a member must demand it there.
+     */
+    private ClassInfo synthInfo(String name) {
+        return synth.computeIfAbsent(name, n -> {
+            String legacy = n.substring(version.synthPrefix().length());
+            LegacyHierarchyData.Entry e = LegacyHierarchyData.forVersion(version).get(legacy);
+            if (e == null) return new ClassInfo(n, "java/lang/Object", java.util.List.of(), org.objectweb.asm.Opcodes.ACC_PUBLIC);
+            java.util.List<String> ifaces = new java.util.ArrayList<>();
+            for (String i : e.interfaces()) ifaces.add(relocate(i));
+            return new ClassInfo(n, relocate(e.superName()), ifaces, e.access() | org.objectweb.asm.Opcodes.ACC_PUBLIC);
+        });
+    }
+
+    /** Legacy hierarchy entry for a synthesized class, or null when the data does not know it. */
+    public LegacyHierarchyData.Entry legacyEntry(String synthName) {
+        return LegacyHierarchyData.forVersion(version).get(synthName.substring(version.synthPrefix().length()));
     }
 
     public void addLocal(ClassInfo info) {
@@ -49,6 +117,9 @@ public final class Hierarchy {
         ClassInfo info = local.get(name);
         if (info != null) return info;
         info = shim.get(name);
+        if (info != null) return info;
+        if (isSynth(name)) return synthInfo(name);
+        info = peers.get(name);
         if (info != null) return info;
         if (name.startsWith("[")) return null;
         return LIBRARY_CACHE.computeIfAbsent(name, this::loadLibrary).orElse(null);

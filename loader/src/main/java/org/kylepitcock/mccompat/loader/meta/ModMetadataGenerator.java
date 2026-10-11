@@ -26,6 +26,17 @@ public final class ModMetadataGenerator {
 
     private ModMetadataGenerator() {}
 
+    /**
+     * Modern ids of every legacy mod being loaded, or null if unknown. A legacy "required-after:X" only becomes a
+     * mandatory dependency when X is one of them: in 1.7.10 many dependencies were satisfied by coremod dummy
+     * containers or {@code @API} packages (CodeChickenCore, CoFHLib, OpenPeripheralApi) that are not mods here.
+     */
+    private static volatile Set<String> loadedMods;
+
+    public static void setLoadedMods(java.util.Collection<String> modernIds) {
+        loadedMods = Set.copyOf(modernIds);
+    }
+
     public static String entrypointName(LegacyModDecl decl) {
         return "mccompat/generated/" + decl.modernId() + "/LegacyModEntrypoint";
     }
@@ -58,7 +69,8 @@ public final class ModMetadataGenerator {
                 if (target.equals(mod.modernId())) continue;
                 // Dependencies between mods of the same jar are implicit; FML rejects self-file cycles badly.
                 if (ids.contains(target) && !dep.required()) continue;
-                dependency(sb, mod.modernId(), target, dep.required(), dep.ordering());
+                boolean required = dep.required() && (loadedMods == null || loadedMods.contains(target));
+                dependency(sb, mod.modernId(), target, required, dep.ordering());
             }
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);

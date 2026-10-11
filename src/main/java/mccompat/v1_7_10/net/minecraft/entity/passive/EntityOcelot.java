@@ -11,6 +11,10 @@ import net.minecraft.world.entity.LivingEntity;
 public class EntityOcelot extends EntityLivingBase {
     public EntityAITasks tasks = new EntityAITasks();
 
+    public EntityOcelot(mccompat.v1_7_10.net.minecraft.world.World world) {
+        super(world);
+    }
+
     protected EntityOcelot(LivingEntity modern) {
         super(modern);
     }

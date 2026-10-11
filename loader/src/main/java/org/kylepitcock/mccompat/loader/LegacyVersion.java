@@ -16,9 +16,9 @@ import java.util.List;
  */
 public enum LegacyVersion {
     /** Forge 1.6.4 - 1.7.10: {@code cpw.mods.fml}, numeric block ids + metadata, IIcon rendering. */
-    V1_7_10("1.7.10", "mccompat/v1_7_10/"),
+    V1_7_10("1.7.10", "mccompat/v1_7_10/", "mccompat_synth/v1_7_10/"),
     /** Forge 1.8 - 1.12.2: {@code net.minecraftforge.fml}, IBlockState, JSON models, registry events. */
-    V1_12_2("1.12.2", "mccompat/v1_12_2/");
+    V1_12_2("1.12.2", "mccompat/v1_12_2/", "mccompat_synth/v1_12_2/");
 
     /**
      * Package roots (internal names) that are owned by Minecraft/Forge in legacy versions and must be
@@ -43,10 +43,12 @@ public enum LegacyVersion {
 
     private final String id;
     private final String shimPrefix;
+    private final String synthPrefix;
 
-    LegacyVersion(String id, String shimPrefix) {
+    LegacyVersion(String id, String shimPrefix, String synthPrefix) {
         this.id = id;
         this.shimPrefix = shimPrefix;
+        this.synthPrefix = synthPrefix;
     }
 
     /** The canonical Minecraft version this family's shim emulates. Also names the mapping data folder. */
@@ -59,7 +61,24 @@ public enum LegacyVersion {
         return shimPrefix;
     }
 
+    /**
+     * Where legacy API classes the hand-written shim does not provide are synthesized (see
+     * {@code synth.SynthJarBuilder}). A separate root because JPMS forbids splitting a package between the
+     * runtime mod and the generated jar.
+     */
+    public String synthPrefix() {
+        return synthPrefix;
+    }
+
+    /** API packages of bridged legacy libraries (see {@link LibraryBridges}); relocated into the shim like Forge. */
+    private static volatile List<String> bridgedRoots = List.of();
+
+    public static void setBridgedRoots(List<String> roots) {
+        bridgedRoots = List.copyOf(roots);
+    }
+
     public static boolean isRelocatedRoot(String internalName) {
+        for (String root : bridgedRoots) if (internalName.startsWith(root)) return true;
         for (String root : RELOCATED_ROOTS) {
             if (internalName.startsWith(root)) {
                 // Exact-class roots (no trailing slash) must not swallow e.g. "org/lwjgl/opengl/GL11Ext".

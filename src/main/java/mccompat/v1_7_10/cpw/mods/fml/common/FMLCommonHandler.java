@@ -60,6 +60,11 @@ public class FMLCommonHandler {
         for (ModContainer c : Loader.instance().getModList()) {
             if (c.getMod() == mod) return c;
         }
-        return null;
+        // Mods also pass their id, or an instance created before the @Instance field was injected.
+        for (ModContainer c : Loader.instance().getModList()) {
+            if (mod instanceof String id && id.equalsIgnoreCase(c.getModId())) return c;
+            if (mod != null && c.getMod() != null && c.getMod().getClass() == mod.getClass()) return c;
+        }
+        return org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
     }
 }

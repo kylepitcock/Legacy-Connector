@@ -40,14 +40,26 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void construct(LegacyModRecord mod) throws Exception {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        mod.mainClass = Class.forName(mod.mainClassName, true, loader);
-        var ctor = mod.mainClass.getDeclaredConstructor();
-        ctor.setAccessible(true);
+        // FML's Scala adapter: an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$.
+        Class<?> scalaModule = null;
+        try {
+            scalaModule = Class.forName(mod.mainClassName + "$", false, loader);
+            scalaModule.getField("MODULE$");
+        } catch (ClassNotFoundException | NoSuchFieldException e) {
+            scalaModule = null;
+        }
+        mod.mainClass = scalaModule != null ? scalaModule : Class.forName(mod.mainClassName, true, loader);
         LegacyModContainer1710 container = new LegacyModContainer1710(mod);
         mod.platformData = container;
         LegacyModContainer1710.setActive(container);
         try {
-            mod.instance = ctor.newInstance();
+            if (scalaModule != null) {
+                mod.instance = scalaModule.getField("MODULE$").get(null);
+            } else {
+                var ctor = mod.mainClass.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                mod.instance = ctor.newInstance();
+            }
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
         } finally {
@@ -170,6 +182,7 @@ public final class Platform1710 implements LegacyPlatform {
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);
         TileEntityBridge.registerType(adapters);
         CreativeTabBridge.registerTabs();
+        if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.mccompat.compat.curios.CuriosBaubles.registerItems();
         LOG.info("1.7.10: {} block(s), {} item(s), {} recipe(s) translated", adapters.size(),
                 org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.modItems().size(), org.kylepitcock.mccompat.v1_7_10.bridge.RecipeBridge.count());
     }

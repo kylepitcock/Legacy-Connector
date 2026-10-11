@@ -3,12 +3,34 @@ package mccompat.v1_7_10.net.minecraft.world;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-/** Read-only dimension facts. 1.7.10 numeric dimension ids: 0 overworld, -1 nether, 1 end, others hashed. */
+/**
+ * Dimension facts. 1.7.10 numeric dimension ids: 0 overworld, -1 nether, 1 end, others hashed. Mods subclass it
+ * for their own dimensions (no-arg constructor + {@link #setDimension}); those are not registered as modern
+ * dimensions yet, but the classes load and their logic can be called.
+ */
 public class WorldProvider {
-    public final int dimensionId;
-    public final boolean hasNoSky;
-    public final boolean isHellWorld;
-    private final String mcc$name;
+    public int dimensionId;
+    public boolean hasNoSky;
+    public boolean isHellWorld;
+    public World worldObj;
+    public String terrainType;
+    private String mcc$name;
+
+    public WorldProvider() {
+        this.mcc$name = getClass().getSimpleName();
+    }
+
+    public final void registerWorld(World world) {
+        this.worldObj = world;
+        registerWorldChunkManager();
+    }
+
+    protected void registerWorldChunkManager() {
+    }
+
+    public void setDimension(int dim) {
+        this.dimensionId = dim;
+    }
 
     public WorldProvider(ResourceKey<Level> key, boolean hasSkyLight, boolean ultraWarm) {
         this.dimensionId = dimensionId(key);

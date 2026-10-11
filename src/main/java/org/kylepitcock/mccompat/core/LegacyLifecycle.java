@@ -42,6 +42,13 @@ public final class LegacyLifecycle {
         return FAILED;
     }
 
+    /** True if the legacy mod with this modern id (or registry namespace) failed to load and is disabled. */
+    public static boolean isFailed(String modernId) {
+        if (modernId == null) return false;
+        for (LegacyModRecord m : FAILED.keySet()) if (m.modernId.equals(modernId)) return true;
+        return false;
+    }
+
     public static void onRegister(RegisterEvent event) {
         ResourceLocation last = null;
         for (ResourceLocation rl : GameData.getRegistrationOrder()) last = rl;
@@ -52,6 +59,8 @@ public final class LegacyLifecycle {
             runLoading();
         } finally {
             registrationOpen = false;
+            int orphans = org.kylepitcock.mccompat.core.registry.LegacyRegistrar.discardOrphans();
+            if (orphans > 0) LOG.warn("Discarded {} legacy registry object(s) that were created but never registered (failed or duplicate registrations)", orphans);
         }
     }
 

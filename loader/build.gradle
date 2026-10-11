@@ -94,3 +94,21 @@ jar {
         )
     }
 }
+
+// Content hash of the compiled translator, embedded as a resource. Part of every translation cache key, so changing
+// the loader re-translates legacy jars without manual version bumps.
+def buildIdDir = layout.buildDirectory.dir('generated/buildId')
+def generateBuildId = tasks.register('generateBuildId') {
+    def classesDir = sourceSets.main.java.classesDirectory
+    def hierarchy = fileTree('src/main/resources/mccompat/legacy')
+    inputs.files(classesDir, hierarchy)
+    outputs.dir buildIdDir
+    doLast {
+        def md = java.security.MessageDigest.getInstance('SHA-256')
+        (classesDir.get().asFileTree.files + hierarchy.files).sort { it.absolutePath }.each { md.update(it.bytes) }
+        def out = buildIdDir.get().file('mccompat/loader-build-id.txt').asFile
+        out.parentFile.mkdirs()
+        out.text = md.digest().encodeHex().toString()
+    }
+}
+sourceSets.main.resources.srcDir(files(buildIdDir).builtBy(generateBuildId))

@@ -15,6 +15,10 @@ import mccompat.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket;
 /** One discriminator byte, then the message's own bytes. Wire-compatible with FML 7.10's codec. */
 @ChannelHandler.Sharable
 public abstract class FMLIndexedMessageToMessageCodec<A> extends MessageToMessageCodec<FMLProxyPacket, A> {
+    /** The packet currently being decoded, per thread; mods' own codecs read and set it as FML's did. */
+    public static final io.netty.util.AttributeKey<ThreadLocal<java.lang.ref.WeakReference<FMLProxyPacket>>> INBOUNDPACKETTRACKER =
+            io.netty.util.AttributeKey.valueOf("fml:inboundpacket");
+
     private final Byte2ObjectMap<Class<? extends A>> discriminators = new Byte2ObjectOpenHashMap<>();
     private final Object2ByteMap<Class<? extends A>> types = new Object2ByteOpenHashMap<>();
 
@@ -22,6 +26,12 @@ public abstract class FMLIndexedMessageToMessageCodec<A> extends MessageToMessag
         discriminators.put((byte) discriminator, type);
         types.put(type, (byte) discriminator);
         return this;
+    }
+
+    @Override
+    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        super.handlerAdded(ctx);
+        ctx.attr(INBOUNDPACKETTRACKER).set(new ThreadLocal<>());
     }
 
     public abstract void encodeInto(ChannelHandlerContext ctx, A msg, ByteBuf target) throws Exception;
@@ -42,6 +52,8 @@ public abstract class FMLIndexedMessageToMessageCodec<A> extends MessageToMessag
 
     @Override
     protected final void decode(ChannelHandlerContext ctx, FMLProxyPacket msg, List<Object> out) throws Exception {
+        ThreadLocal<java.lang.ref.WeakReference<FMLProxyPacket>> tracker = ctx.attr(INBOUNDPACKETTRACKER).get();
+        if (tracker != null) tracker.set(new java.lang.ref.WeakReference<>(msg));
         ByteBuf payload = msg.payload().duplicate();
         if (payload.readableBytes() < 1) return;
         byte discriminator = payload.readByte();

@@ -15,12 +15,23 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
     private final Side mcc$side;
 
     public FMLEmbeddedChannel(String channelName, Side source, ChannelHandler... handlers) {
-        super(new FMLOutboundHandler());
+        super(withOutbound(handlers));
         this.mcc$name = channelName;
         this.mcc$side = source;
         attr(NetworkRegistry.FML_CHANNEL).set(channelName);
         attr(NetworkRegistry.CHANNEL_SOURCE).set(source);
-        pipeline().addLast(handlers);
+        try {
+            checkException(); // handler setup failures are otherwise held silently by the embedded channel
+        } catch (Throwable t) {
+            org.slf4j.LoggerFactory.getLogger("MCCompat/Network").error("Setting up legacy channel {} ({}) failed", channelName, source, t);
+        }
+    }
+
+    private static ChannelHandler[] withOutbound(ChannelHandler[] handlers) {
+        ChannelHandler[] all = new ChannelHandler[handlers.length + 1];
+        all[0] = new FMLOutboundHandler();
+        System.arraycopy(handlers, 0, all, 1, handlers.length);
+        return all;
     }
 
     public String mcc$name() {
@@ -42,10 +53,15 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
     }
 
     public String findChannelHandlerNameForType(Class<? extends ChannelHandler> type) {
+        String last = null;
         for (var e : pipeline()) {
-            if (type.isInstance(e.getValue())) return e.getKey();
+            if (type.isInstance(e.getValue()) || e.getValue().getClass().getName().equals(type.getName())) return e.getKey();
+            if (!(e.getValue() instanceof FMLOutboundHandler)) last = e.getKey();
         }
-        return null;
+        // Mods call this to insert their handlers after their codec; FML's codec was the last handler added.
+        org.slf4j.LoggerFactory.getLogger("MCCompat/Network").warn("Channel {} has no {} handler (pipeline: {}); using {}",
+                mcc$name, type.getName(), pipeline().names(), last);
+        return last;
     }
 
     public void cleanAttributes() {

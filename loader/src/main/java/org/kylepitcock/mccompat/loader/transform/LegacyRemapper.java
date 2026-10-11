@@ -4,12 +4,15 @@ import java.util.HashMap;
 import java.util.Map;
 import org.kylepitcock.mccompat.loader.LegacyVersion;
 import org.kylepitcock.mccompat.loader.mapping.McpMappings;
+import org.kylepitcock.mccompat.loader.shim.ShimIndex;
+import org.kylepitcock.mccompat.loader.synth.SynthDemand;
 import org.objectweb.asm.commons.Remapper;
 
 /**
  * Renames everything a legacy class references so that it links against the NeoForge 1.21.1 world:
  * <ul>
- *     <li>Minecraft / Forge / FML / LWJGL2 classes move under the version's shim prefix;</li>
+ *     <li>Minecraft / Forge / FML / LWJGL2 classes move under the version's shim prefix, or under its synth
+ *     prefix when the hand-written shim lacks them (they are then generated, see {@code SynthJarBuilder});</li>
  *     <li>SRG member names become MCP names (the names the shim is written with);</li>
  *     <li>JDK and library classes removed since Java 8 are pointed at compat replacements;</li>
  *     <li>string constants that spell relocated class names or SRG ids are rewritten, so reflection keeps working.</li>
@@ -36,14 +39,40 @@ public final class LegacyRemapper extends Remapper {
     private final McpMappings mcp;
     /** Per-jar overrides, e.g. classes a mod bundles inside {@code net/minecraft/} that the shim does not own. */
     private final Map<String, String> overrides = new HashMap<>();
+    /** {@code owner.srgName(.desc)} members left unrenamed because the readable name would collide in that class. */
+    private final java.util.Set<String> keep = new java.util.HashSet<>();
 
-    public LegacyRemapper(LegacyVersion version, McpMappings mcp) {
+    private final ShimIndex shim;
+    private final SynthDemand demand;
+    private boolean recording = true;
+
+    /** {@code shim} null disables synthesis (every legacy class is assumed to be hand-written). */
+    public LegacyRemapper(LegacyVersion version, McpMappings mcp, ShimIndex shim, SynthDemand demand) {
         this.version = version;
         this.mcp = mcp;
+        this.shim = shim;
+        this.demand = demand;
     }
 
     public void override(String from, String to) {
         overrides.put(from, to);
+    }
+
+    /**
+     * Mods that copied Minecraft code can declare both {@code field_70925_g} and their own {@code isShaking}; renaming
+     * the SRG member would produce a duplicate (ClassFormatError). Such members keep their SRG name in that class.
+     */
+    public void preventCollisions(org.objectweb.asm.tree.ClassNode original) {
+        java.util.Map<String, java.util.List<String>> fields = new HashMap<>();
+        for (var f : original.fields) fields.computeIfAbsent(mcp.field(f.name) + ":" + f.desc, k -> new java.util.ArrayList<>()).add(f.name);
+        fields.values().forEach(names -> {
+            if (names.size() > 1) for (String n : names) if (!mcp.field(n).equals(n)) keep.add(original.name + "." + n);
+        });
+        java.util.Map<String, java.util.List<String>> methods = new HashMap<>();
+        for (var m : original.methods) methods.computeIfAbsent(mcp.method(m.name) + m.desc, k -> new java.util.ArrayList<>()).add(m.name);
+        methods.forEach((key, names) -> {
+            if (names.size() > 1) for (String n : names) if (!mcp.method(n).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
+        });
     }
 
     public LegacyVersion version() {
@@ -59,12 +88,21 @@ public final class LegacyRemapper extends Remapper {
         for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
             if (internalName.startsWith(e.getKey())) return e.getValue() + internalName.substring(e.getKey().length());
         }
-        if (LegacyVersion.isRelocatedRoot(internalName)) return version.shimPrefix() + internalName;
+        if (LegacyVersion.isRelocatedRoot(internalName)) return relocate(internalName);
         return internalName;
+    }
+
+    private String relocate(String legacyName) {
+        String shimName = version.shimPrefix() + legacyName;
+        if (shim == null || shim.contains(shimName) || shim.size() == 0) return shimName;
+        String synth = version.synthPrefix() + legacyName;
+        if (recording && demand != null) demand.addClass(synth);
+        return synth;
     }
 
     @Override
     public String mapMethodName(String owner, String name, String descriptor) {
+        if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
         return mcp.method(name);
     }
 
@@ -75,6 +113,7 @@ public final class LegacyRemapper extends Remapper {
 
     @Override
     public String mapFieldName(String owner, String name, String descriptor) {
+        if (!keep.isEmpty() && keep.contains(owner + "." + name)) return name;
         return mcp.field(name);
     }
 
@@ -92,7 +131,16 @@ public final class LegacyRemapper extends Remapper {
         if (!looksLikeClassName(s)) return s;
         boolean dotted = s.indexOf('.') >= 0;
         String internal = dotted ? s.replace('.', '/') : s;
-        String mapped = map(internal);
+        // Strings only create synthetic classes the legacy version really had (reflection on Forge internals);
+        // Class.forName probes for APIs that never existed there (e.g. ModLoader) must keep failing.
+        recording = shim != null && LegacyVersion.isRelocatedRoot(internal)
+                && org.kylepitcock.mccompat.loader.synth.LegacyHierarchyData.forVersion(version).get(internal) != null;
+        String mapped;
+        try {
+            mapped = map(internal);
+        } finally {
+            recording = true;
+        }
         if (mapped.equals(internal)) {
             // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.
             if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.shimPrefix() + internal;

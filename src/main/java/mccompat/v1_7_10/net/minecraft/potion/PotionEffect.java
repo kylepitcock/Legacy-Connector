@@ -8,6 +8,7 @@ public class PotionEffect {
     private final int duration;
     private final int amplifier;
     private boolean isAmbient;
+    private boolean isPotionDurationMax;
 
     public PotionEffect(int id, int duration) {
         this(id, duration, 0);
@@ -44,8 +45,22 @@ public class PotionEffect {
         return isAmbient;
     }
 
+    public boolean getIsPotionDurationMax() {
+        return isPotionDurationMax;
+    }
+
+    public void setPotionDurationMax(boolean max) {
+        this.isPotionDurationMax = max;
+    }
+
     public String getEffectName() {
-        return "potion." + potionID;
+        Potion p = potionID >= 0 && potionID < Potion.potionTypes.length ? Potion.potionTypes[potionID] : null;
+        return p != null ? p.getName() : "potion." + potionID;
+    }
+
+    public static PotionEffect mcc$wrap(MobEffectInstance modern) {
+        int id = PotionBridge.idOf(modern.getEffect());
+        return id < 0 ? null : new PotionEffect(id, modern.getDuration(), modern.getAmplifier(), modern.isAmbient());
     }
 
     public MobEffectInstance mcc$modern() {

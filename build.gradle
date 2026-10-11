@@ -14,6 +14,8 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    mavenCentral()
+    maven { url = 'https://maven.theillusivec4.top/' } // Curios (Baubles bridge)
 }
 
 base {
@@ -71,6 +73,24 @@ neoForge {
 dependencies {
     // The loader must sit on the boot/service layer in development, exactly like in production.
     additionalRuntimeClasspath project(':loader')
+
+    // Optional integrations: only used when the mod is installed (legacy library bridges).
+    compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+
+    // Libraries Minecraft 1.7.10 shipped and legacy mods use directly, absent from 1.21.1. Embedded in the
+    // distributable jar (jar-in-jar) and put on the dev classpath.
+    for (lib in ['net.sf.trove4j:trove4j:3.0.3', 'javax.vecmath:vecmath:1.5.2',
+                 // Forge 1.7.10 shipped Scala 2.11 for Scala mods (ProjectRed, ForgeMultipart, ...).
+                 'org.scala-lang:scala-library:2.11.1', 'org.scala-lang:scala-reflect:2.11.1',
+                 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1', 'org.scala-lang.modules:scala-xml_2.11:1.0.2']) {
+        jarJar(implementation(lib))
+        additionalRuntimeClasspath lib
+    }
+}
+
+// The run configurations reference the loader's jar by path; without this they would launch a stale loader.
+tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && it.name.endsWith('Run')) }.configureEach {
+    dependsOn ':loader:jar'
 }
 
 // ---------------------------------------------------------------------------------------------------------
@@ -181,5 +201,19 @@ idea {
     module {
         downloadSources = true
         downloadJavadoc = true
+    }
+}
+
+// Legacy mods were compiled with FML access transformers applied to Minecraft; the shim mirrors that by making its
+// classes and members public and non-final after compilation (see ShimAccessWidener).
+tasks.named('compileJava', JavaCompile) {
+    dependsOn ':loader:classes'
+    def loaderClasspath = project(':loader').sourceSets.main.runtimeClasspath
+    doLast {
+        project.javaexec {
+            classpath = loaderClasspath
+            mainClass = 'org.kylepitcock.mccompat.loader.shim.ShimAccessWidener'
+            args destinationDirectory.get().asFile.absolutePath
+        }
     }
 }

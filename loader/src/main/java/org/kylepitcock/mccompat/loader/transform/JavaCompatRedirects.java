@@ -47,6 +47,23 @@ public final class JavaCompatRedirects {
         staticToStatic("com/google/common/collect/Iterators", "emptyIterator", "()Lcom/google/common/collect/UnmodifiableIterator;", COMPAT + "GuavaCompat", "emptyIterator");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedMillis", "()J", COMPAT + "GuavaCompat");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
+        // LWJGL 2 -> 3: typed-buffer overloads got explicit suffixes (glUniform1(int, FloatBuffer) -> glUniform1fv).
+        String gl20 = "org/lwjgl/opengl/GL20";
+        for (int n = 1; n <= 4; n++) {
+            staticToStatic(gl20, "glUniform" + n, "(ILjava/nio/FloatBuffer;)V", gl20, "glUniform" + n + "fv");
+            staticToStatic(gl20, "glUniform" + n, "(ILjava/nio/IntBuffer;)V", gl20, "glUniform" + n + "iv");
+        }
+        for (int n = 2; n <= 4; n++) staticToStatic(gl20, "glUniformMatrix" + n, "(IZLjava/nio/FloatBuffer;)V", gl20, "glUniformMatrix" + n + "fv");
+        staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", gl20, "glGetShaderiv");
+        staticToStatic(gl20, "glGetProgram", "(IILjava/nio/IntBuffer;)V", gl20, "glGetProgramiv");
+        staticToStatic(gl20, "glShaderSource", "(ILjava/nio/ByteBuffer;)V", COMPAT + "LibraryCompat", "glShaderSource");
+        // Guava 17 -> 32: TypeToken.isAssignableFrom was renamed isSupertypeOf.
+        rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Lcom/google/common/reflect/TypeToken;)Z", "isSupertypeOf");
+        rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Ljava/lang/reflect/Type;)Z", "isSupertypeOf");
+        // authlib 1.5 -> 6: profile completeness and property filling moved.
+        virtualToStatic("com/mojang/authlib/GameProfile", "isComplete", "()Z", COMPAT + "LibraryCompat");
+        virtualToStatic("com/mojang/authlib/minecraft/MinecraftSessionService", "fillProfileProperties",
+                "(Lcom/mojang/authlib/GameProfile;Z)Lcom/mojang/authlib/GameProfile;", COMPAT + "LibraryCompat");
     }
 
     private JavaCompatRedirects() {}
@@ -55,6 +72,17 @@ public final class JavaCompatRedirects {
         String staticDesc = "(L" + owner + ";" + desc.substring(1);
         INVOKES.put(owner + "." + name + desc, new MethodInsnNode(Opcodes.INVOKESTATIC, target, name, staticDesc, false));
     }
+
+    /** Same call shape, new name (virtual stays virtual). */
+    private static void rename(String owner, String name, String desc, String newName) {
+        INVOKES.put(owner + "." + name + desc, new MethodInsnNode(Opcodes.INVOKEVIRTUAL, owner, newName, desc, false));
+    }
+
+    /** Library classes whose public constructor became a factory method: owner -> factory name. */
+    private static final Map<String, String> CONSTRUCTOR_FACTORIES = Map.of(
+            "com/google/common/base/Stopwatch", "createUnstarted",
+            // Netty 4.0 -> 4.1: new AttributeKey(name) -> AttributeKey.valueOf(name)
+            "io/netty/util/AttributeKey", "valueOf");
 
     private static void staticToStatic(String owner, String name, String desc, String target, String targetName) {
         INVOKES.put(owner + "." + name + desc, new MethodInsnNode(Opcodes.INVOKESTATIC, target, targetName, desc, false));
@@ -74,10 +102,10 @@ public final class JavaCompatRedirects {
                         insns.set(call, replacement);
                         insn = replacement;
                         count++;
-                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.owner.equals("com/google/common/base/Stopwatch")
-                            && call.name.equals("<init>")) {
-                        // new Stopwatch() / new Stopwatch(Ticker) -> Stopwatch.createUnstarted(...)
-                        AbstractInsnNode replaced = rewriteConstructor(insns, call, "createUnstarted");
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
+                            && CONSTRUCTOR_FACTORIES.containsKey(call.owner) && !node.name.equals(call.owner)) {
+                        // new Stopwatch(...) -> Stopwatch.createUnstarted(...), new AttributeKey(n) -> AttributeKey.valueOf(n)
+                        AbstractInsnNode replaced = rewriteConstructor(insns, call, CONSTRUCTOR_FACTORIES.get(call.owner));
                         if (replaced != null) {
                             insn = replaced;
                             count++;

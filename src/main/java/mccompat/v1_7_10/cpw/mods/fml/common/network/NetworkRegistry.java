@@ -31,6 +31,12 @@ public enum NetworkRegistry {
         return FmlChannelBridge.has(name);
     }
 
+    public FMLEventChannel newEventDrivenChannel(String name) {
+        FMLEventChannel channel = new FMLEventChannel(name);
+        FmlChannelBridge.registerEventChannel(channel);
+        return channel;
+    }
+
     public SimpleNetworkWrapper newSimpleChannel(String name) {
         return new SimpleNetworkWrapper(name);
     }
