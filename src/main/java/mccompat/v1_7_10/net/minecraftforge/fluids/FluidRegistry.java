@@ -18,9 +18,11 @@ public abstract class FluidRegistry {
 
     public static final Fluid WATER = new Fluid("water").setUnlocalizedName("water");
     public static final Fluid LAVA = new Fluid("lava").setUnlocalizedName("lava").setLuminosity(15).setDensity(3000).setViscosity(6000).setTemperature(1300);
-    public static int renderIdFluid = -1;
+    /** The render id of fluid blocks (Forge assigned it at client start; the handler is {@link RenderBlockFluid}). */
+    public static int renderIdFluid = mccompat.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId();
 
     static {
+        mccompat.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(new RenderBlockFluid());
         registerFluid(WATER);
         registerFluid(LAVA);
     }

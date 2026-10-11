@@ -94,8 +94,61 @@ public final class BlockSelfTest {
                 }
             }
         }
+        startFluids(level, baseX, baseZ + 84, y0 + 20);
         ticks = 0;
         LOG.info("Placed {} legacy blocks for the self test ({} outside the loaded area)", placed, skipped);
+    }
+
+    private static final List<Object[]> FLUIDS = new ArrayList<>();
+
+    /** A stone floor with a source block of each flowing legacy fluid on it: the fluid must spread by scheduled ticks. */
+    private static void startFluids(ServerLevel level, int baseX, int z, int y) {
+        int k = 0;
+        for (Block legacy : BlockBridge.modBlocks()) {
+            if (!(legacy instanceof mccompat.v1_7_10.net.minecraftforge.fluids.BlockFluidBase) || legacy.mcc$modern == null) continue;
+            if (k >= 6) break;
+            int x = baseX + 4 + k * 12;
+            k++;
+            if (!level.hasChunk(x >> 4, z >> 4)) continue;
+            try {
+                for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
+                    level.setBlock(new BlockPos(x + dx, y - 1, z + dz), net.minecraft.world.level.block.Blocks.STONE.defaultBlockState(), 2);
+                    for (int dy = 0; dy < 6; dy++) {
+                        level.setBlock(new BlockPos(x + dx, y + dy, z + dz), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+                BlockPos pos = new BlockPos(x, y + 3, z);
+                level.setBlock(pos, legacy.mcc$modern.defaultBlockState(), 3);
+                FLUIDS.add(new Object[] {BuiltInRegistries.BLOCK.getKey(legacy.mcc$modern).toString(), legacy.mcc$modern, x, y, z});
+            } catch (RuntimeException | LinkageError ex) {
+                PROBLEMS.putIfAbsent("fluid " + legacy, "placement threw " + describe(ex));
+            }
+        }
+    }
+
+    private static void checkFluids(ServerLevel level) {
+        for (Object[] f : FLUIDS) {
+            net.minecraft.world.level.block.Block block = (net.minecraft.world.level.block.Block) f[1];
+            int x = (Integer) f[2], y = (Integer) f[3], z = (Integer) f[4], count = 0, floor = 0;
+            // (no player is near, so the world's own scheduled ticks do not run: tick the fluid blocks directly)
+            try {
+                for (int round = 0; round < 40; round++) {
+                    for (int dy = 5; dy >= 0; dy--) for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
+                        BlockPos p = new BlockPos(x + dx, y + dy, z + dz);
+                        BlockState st = level.getBlockState(p);
+                        if (st.is(block)) st.tick(level, p, level.random);
+                    }
+                }
+            } catch (RuntimeException | LinkageError ex) {
+                PROBLEMS.putIfAbsent("fluid " + f[0], "tick threw " + describe(ex));
+            }
+            for (int dx = -4; dx <= 4; dx++) for (int dz = -4; dz <= 4; dz++) {
+                if (level.getBlockState(new BlockPos(x + dx, y, z + dz)).is(block)) floor++;
+                for (int dy = 0; dy < 6; dy++) if (level.getBlockState(new BlockPos(x + dx, y + dy, z + dz)).is(block)) count++;
+            }
+            if (floor < 4) PROBLEMS.putIfAbsent("fluid " + f[0], "did not flow: " + count + " blocks, " + floor + " on the floor after 60 ticks");
+            else LOG.info("Fluid {} flowed over {} floor blocks ({} blocks)", f[0], floor, count);
+        }
     }
 
     private static String describe(Throwable t) {
@@ -118,6 +171,7 @@ public final class BlockSelfTest {
         if (ticks < 0 || ++ticks != 60) return;
         ServerLevel level = server.overworld();
         var player = FakePlayerFactory.get(level, new GameProfile(UUID.nameUUIDFromBytes("retrofit-block-test".getBytes()), "[RetrofitTest]"));
+        checkFluids(level);
         int survived = 0, activated = 0;
         for (int i = 0; i < PLACED.size(); i++) {
             BlockPos pos = PLACED.get(i);
