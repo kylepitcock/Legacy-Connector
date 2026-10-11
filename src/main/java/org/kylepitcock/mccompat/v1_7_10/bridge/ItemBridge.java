@@ -303,6 +303,47 @@ public final class ItemBridge {
             LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
             item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(base, meta), adapter));
         }
+        if (discoveryFailed) {
+            discoveryFailed = false;
+            RETRY.add(() -> {
+                for (int meta : discoverMetas(item)) {
+                    if (item.mcc$variants.containsKey(meta)) continue;
+                    LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
+                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(base, meta), adapter));
+                }
+            });
+        }
+    }
+
+    /** Items whose getSubItems failed while mods were still registering (it may need content created later). */
+    private static final List<Runnable> RETRY = new ArrayList<>();
+    private static boolean discoveryFailed;
+    private static boolean deferring;
+    private static boolean retrying;
+
+    /** While set, subtype discovery waits for {@link #retryFailedDiscovery()} (the end of the registering mod's preInit). */
+    public static synchronized void setDeferDiscovery(boolean on) {
+        deferring = on;
+    }
+
+    /** Called once every legacy mod has loaded: subtypes that could not be listed during registration. */
+    public static synchronized void retryFailedDiscovery() {
+        List<Runnable> todo = new ArrayList<>(RETRY);
+        RETRY.clear();
+        int before = BuiltInRegistries.ITEM.size();
+        retrying = true;
+        try {
+            for (Runnable r : todo) {
+                try {
+                    r.run();
+                } catch (RuntimeException | LinkageError e) {
+                    LOG.warn("Subtype discovery failed again", e);
+                }
+            }
+        } finally {
+            retrying = false;
+        }
+        if (!todo.isEmpty()) LOG.debug("Late subtype discovery: {} item(s), {} more item variant(s)", todo.size(), BuiltInRegistries.ITEM.size() - before);
     }
 
     public static synchronized void registerBlockItem(ItemBlock item, Block block, ResourceLocation blockId, String legacyName) {
@@ -316,6 +357,16 @@ public final class ItemBridge {
         for (int meta : metas) {
             LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
             item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(blockId, meta), modern));
+        }
+        if (discoveryFailed) {
+            discoveryFailed = false;
+            RETRY.add(() -> {
+                for (int meta : discoverMetas(item)) {
+                    if (item.mcc$variants.containsKey(meta)) continue;
+                    LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
+                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(blockId, meta), modern));
+                }
+            });
         }
     }
 
@@ -366,13 +417,18 @@ public final class ItemBridge {
     private static List<Integer> discoverMetas(Item item) {
         TreeSet<Integer> metas = new TreeSet<>();
         metas.add(0);
-        if (item.getHasSubtypes()) {
+        if (item.getHasSubtypes() && deferring && !retrying) {
+            // Forge asked for subtypes when the creative tabs were filled, long after the mod's content existed;
+            // some mods' getSubItems read content their preInit has not created yet.
+            discoveryFailed = true;
+        } else if (item.getHasSubtypes()) {
             List<Object> list = new ArrayList<>();
             discovering = item;
             try {
                 item.getSubItems(item, item.getCreativeTab(), list);
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("getSubItems failed for {} while discovering subtypes; registering metadata 0 only", item, e);
+                discoveryFailed = true;
             } finally {
                 discovering = null;
             }

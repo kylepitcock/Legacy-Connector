@@ -35,6 +35,7 @@ public enum LegacyVersion {
             "org/lwjgl/opengl/Display",
             "org/lwjgl/opengl/DisplayMode",
             "org/lwjgl/opengl/GL11",
+            "org/lwjgl/opengl/GL15",
             "org/lwjgl/opengl/PixelFormat",
             "org/lwjgl/opengl/ContextCapabilities",
             "org/lwjgl/opengl/GLContext",

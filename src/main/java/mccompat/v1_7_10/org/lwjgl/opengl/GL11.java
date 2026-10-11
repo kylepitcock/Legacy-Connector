@@ -207,4 +207,71 @@ public class GL11 extends org.lwjgl.opengl.GL11 {
     public static void glTexCoord2d(double u, double v) {
         IMMEDIATE.uv(u, v);
     }
+
+    // ------------------------------------------------------------------ fixed-function vertex arrays
+
+    public static void glEnableClientState(int array) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.enable(array, true);
+    }
+
+    public static void glDisableClientState(int array) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.enable(array, false);
+    }
+
+    public static void glVertexPointer(int size, int type, int stride, long offset) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8074, size, type, stride, offset);
+    }
+
+    public static void glNormalPointer(int type, int stride, long offset) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8075, 3, type, stride, offset);
+    }
+
+    public static void glTexCoordPointer(int size, int type, int stride, long offset) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8078, size, type, stride, offset);
+    }
+
+    public static void glColorPointer(int size, int type, int stride, long offset) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8076, size, type, stride, offset);
+    }
+
+    public static void glVertexPointer(int size, int stride, FloatBuffer data) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8074, size, 0x1406, stride, data);
+    }
+
+    public static void glNormalPointer(int stride, FloatBuffer data) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8075, 3, 0x1406, stride, data);
+    }
+
+    public static void glTexCoordPointer(int size, int stride, FloatBuffer data) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.setPointer(0x8078, size, 0x1406, stride, data);
+    }
+
+    public static void glDrawArrays(int mode, int first, int count) {
+        org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.draw(mode, first, count, new org.kylepitcock.mccompat.v1_7_10.client.ClientArrays.Emitter() {
+            @Override
+            public void begin(int m) {
+                glBegin(m);
+            }
+
+            @Override
+            public void texCoord(float u, float v) {
+                glTexCoord2f(u, v);
+            }
+
+            @Override
+            public void normal(float x, float y, float z) {
+                glNormal3f(x, y, z);
+            }
+
+            @Override
+            public void vertex(float x, float y, float z) {
+                glVertex3f(x, y, z);
+            }
+
+            @Override
+            public void end() {
+                glEnd();
+            }
+        });
+    }
 }

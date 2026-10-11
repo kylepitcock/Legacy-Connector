@@ -163,7 +163,13 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void preInit(LegacyModRecord mod) throws Exception {
         mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.PREINITIALIZATION);
-        dispatch(mod, new FMLPreInitializationEvent(mod));
+        org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.setDeferDiscovery(true);
+        try {
+            dispatch(mod, new FMLPreInitializationEvent(mod));
+        } finally {
+            org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.setDeferDiscovery(false);
+            org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.retryFailedDiscovery();
+        }
     }
 
     @Override
@@ -186,6 +192,7 @@ public final class Platform1710 implements LegacyPlatform {
         mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);
+        org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.retryFailedDiscovery();
         TileEntityBridge.registerType(adapters);
         CreativeTabBridge.registerTabs();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.mccompat.compat.curios.CuriosBaubles.registerItems();
