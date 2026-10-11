@@ -41,10 +41,9 @@ public class FMLCommonHandler {
         return server == null ? null : MinecraftServer.mcc$wrap(server);
     }
 
+    /** A legacy mod giving up must not end the game: it fails (and is disabled) instead. */
     public void exitJava(int exitCode, boolean hardExit) {
-        org.slf4j.LoggerFactory.getLogger("Retrofit").warn("Legacy mod requested JVM exit ({}); halting", exitCode);
-        if (hardExit) Runtime.getRuntime().halt(exitCode);
-        else System.exit(exitCode);
+        throw org.kylepitcock.mccompat.compat.jdk.JdkCompat.exitRequested(exitCode);
     }
 
     public void raiseException(Throwable exception, String message, boolean stopGame) {

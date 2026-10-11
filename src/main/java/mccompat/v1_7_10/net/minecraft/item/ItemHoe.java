@@ -4,6 +4,11 @@ package mccompat.v1_7_10.net.minecraft.item;
 public class ItemHoe extends Item {
     protected Item.ToolMaterial theToolMaterial;
 
+    public ItemHoe(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+        this.theToolMaterial = ItemTool.mcc$materialOf(info);
+    }
+
     public ItemHoe(Item.ToolMaterial material) {
         this.theToolMaterial = material == null ? Item.ToolMaterial.WOOD : material;
         this.maxStackSize = 1;

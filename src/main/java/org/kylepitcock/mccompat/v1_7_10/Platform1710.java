@@ -40,6 +40,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void construct(LegacyModRecord mod) throws Exception {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        org.kylepitcock.mccompat.v1_7_10.bridge.CoreModPlugins.runAll(loader);
         // FML's Scala adapter: an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$.
         Class<?> scalaModule = null;
         try {

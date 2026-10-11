@@ -11,6 +11,12 @@ public class ItemSword extends Item {
     private final float field_150934_a;
     private final Item.ToolMaterial field_150933_b;
 
+    public ItemSword(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+        this.field_150933_b = ItemTool.mcc$materialOf(info);
+        this.field_150934_a = 4.0F + field_150933_b.getDamageVsEntity();
+    }
+
     public ItemSword(Item.ToolMaterial material) {
         this.field_150933_b = material == null ? Item.ToolMaterial.WOOD : material;
         this.maxStackSize = 1;

@@ -75,11 +75,15 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LOG.info("Retrofit: shim index has {} legacy API classes", index.size());
 
             List<LegacyJar> legacy = new ArrayList<>();
-            if (Files.isDirectory(modsDir)) {
-                try (Stream<Path> files = Files.list(modsDir)) {
+            java.util.Set<String> seenNames = new java.util.HashSet<>();
+            // FML also loaded mods/<minecraft version>/ (where dependency downloaders such as CodeChickenCore's put
+            // CodeChickenLib); a jar present in both places is taken from mods/.
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.7.10"))) {
+                if (!Files.isDirectory(dir)) continue;
+                try (Stream<Path> files = Files.list(dir)) {
                     for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar"))
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
-                        if (context.isLocated(p)) continue;
+                        if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
                             LegacyJar jar = LegacyJarInspector.inspect(p);
                             if (jar != null) legacy.add(jar);
@@ -375,7 +379,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         w.write("  mod " + mod.legacyId + " -> " + mod.modernId() + "  (" + mod.name + " " + mod.version + ")\n");
                     }
                     if (jar.coreModClass != null) {
-                        w.write("  WARNING: ships a coremod (" + jar.coreModClass + ") which is NOT executed. Features that\n"
+                        w.write("  WARNING: ships a coremod (" + jar.coreModClass + "): its plugin runs, its bytecode transformers do NOT. Features that\n"
                                 + "           depend on patching Minecraft code will be missing.\n");
                     }
                     if (jar.mixinConfigs != null) w.write("  WARNING: ships mixins (" + jar.mixinConfigs + ") targeting legacy Minecraft; not applied.\n");

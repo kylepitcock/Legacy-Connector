@@ -46,6 +46,10 @@ public class LaunchClassLoader extends URLClassLoader {
     }
 
     public byte[] getClassBytes(String name) throws IOException {
+        // In a production 1.7.10 game Minecraft's classes only existed under obfuscated names: mods probe for
+        // "net.minecraft.world.World" to detect a development environment (and then ask for MCP mappings).
+        String plain = name.startsWith("mccompat.v1_7_10.") ? name.substring("mccompat.v1_7_10.".length()) : name;
+        if (plain.startsWith("net.minecraft.") && !plain.startsWith("net.minecraftforge.")) return null;
         for (String n : new String[] {name, relocate(name)}) {
             if (n == null) continue;
             try (InputStream in = game.getResourceAsStream(n.replace('.', '/') + ".class")) {

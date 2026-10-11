@@ -20,6 +20,10 @@ public class FMLPreInitializationEvent extends FMLStateEvent {
         return Loader.LoaderState.PREINITIALIZATION;
     }
 
+    public mccompat.v1_7_10.cpw.mods.fml.common.discovery.ASMDataTable getAsmData() {
+        return mccompat.v1_7_10.cpw.mods.fml.common.discovery.ASMDataTable.mcc$get();
+    }
+
     public File getModConfigurationDirectory() {
         return Loader.instance().getConfigDir();
     }

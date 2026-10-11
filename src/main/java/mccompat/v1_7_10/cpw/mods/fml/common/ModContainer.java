@@ -20,4 +20,44 @@ public interface ModContainer {
     String getDisplayVersion();
 
     Map<String, String> getCustomModProperties();
+
+    default mccompat.v1_7_10.cpw.mods.fml.common.versioning.ArtifactVersion getProcessedVersion() {
+        return new mccompat.v1_7_10.cpw.mods.fml.common.versioning.DefaultArtifactVersion(getModId(), getVersion());
+    }
+
+    default java.util.Set<mccompat.v1_7_10.cpw.mods.fml.common.versioning.ArtifactVersion> getRequirements() {
+        return new java.util.HashSet<>();
+    }
+
+    default java.util.List<mccompat.v1_7_10.cpw.mods.fml.common.versioning.ArtifactVersion> getDependencies() {
+        return new java.util.ArrayList<>();
+    }
+
+    default java.util.List<mccompat.v1_7_10.cpw.mods.fml.common.versioning.ArtifactVersion> getDependants() {
+        return new java.util.ArrayList<>();
+    }
+
+    default String getSortingRules() {
+        return "";
+    }
+
+    default boolean matches(Object mod) {
+        return mod == getMod();
+    }
+
+    default boolean isImmutable() {
+        return false;
+    }
+
+    default String getGuiClassName() {
+        return null;
+    }
+
+    default java.util.List<String> getOwnedPackages() {
+        return new java.util.ArrayList<>();
+    }
+
+    default boolean shouldLoadInEnvironment() {
+        return true;
+    }
 }

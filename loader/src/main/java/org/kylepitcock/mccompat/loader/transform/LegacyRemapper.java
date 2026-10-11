@@ -126,6 +126,7 @@ public final class LegacyRemapper extends Remapper {
     /** Rewrites string literals used for reflection: class names (dotted or slashed) and SRG ids. */
     public String mapString(String s) {
         if (s.isEmpty() || s.length() > 512) return s;
+        if (s.startsWith("field_")) recordReflectedField(s);
         String member = mcp.anyMember(s);
         if (member != s) return member;
         if (!looksLikeClassName(s)) return s;
@@ -147,6 +148,19 @@ public final class LegacyRemapper extends Remapper {
             else return s;
         }
         return dotted ? mapped.replace('/', '.') : mapped;
+    }
+
+    /**
+     * A field named by its SRG id in a string is looked up by reflection; when its legacy owner is synthesized, the
+     * field must be generated too (e.g. EntityBoat.isBoatEmpty, which IC2 reflects on).
+     */
+    private void recordReflectedField(String srg) {
+        if (demand == null || shim == null || shim.size() == 0) return;
+        org.kylepitcock.mccompat.loader.synth.LegacyFields.Field f = org.kylepitcock.mccompat.loader.synth.LegacyFields.bySrg(version, srg);
+        if (f == null || shim.contains(version.shimPrefix() + f.owner())) return;
+        String owner = map(f.owner());
+        if (owner.equals(f.owner())) return;
+        demand.add(owner, f.isStatic() ? SynthDemand.Kind.STATIC_FIELD : SynthDemand.Kind.FIELD, f.name(), mapDesc(f.desc()));
     }
 
     private static boolean looksLikeClassName(String s) {

@@ -47,6 +47,20 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/lang/Thread", "suspend", "()V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "resume", "()V", COMPAT + "JdkCompat");
         // Java 18+: installing a SecurityManager throws by default.
+        // Swing dialogs (fatal-error popups, update notices) cannot show in the headless game: log them instead.
+        for (String desc : new String[] {"(Ljava/awt/Component;Ljava/lang/Object;)V", "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;I)V",
+                "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;ILjavax/swing/Icon;)V"}) {
+            staticToStatic("javax/swing/JOptionPane", "showMessageDialog", desc, COMPAT + "DialogCompat", "showMessageDialog");
+        }
+        for (String desc : new String[] {"(Ljava/awt/Component;Ljava/lang/Object;)I", "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;I)I",
+                "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;II)I"}) {
+            staticToStatic("javax/swing/JOptionPane", "showConfirmDialog", desc, COMPAT + "DialogCompat", "showConfirmDialog");
+        }
+        staticToStatic("javax/swing/JOptionPane", "showOptionDialog",
+                "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;IILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)I",
+                COMPAT + "DialogCompat", "showOptionDialog");
+        // A mod giving up must not end the game: System.exit fails that mod instead.
+        staticToStatic("java/lang/System", "exit", "(I)V", COMPAT + "JdkCompat", "exit");
         staticToStatic("java/lang/System", "setSecurityManager", "(Ljava/lang/SecurityManager;)V", COMPAT + "JdkCompat", "setSecurityManager");
         // Guava 17 -> 32 removals.
         staticToStatic("com/google/common/base/Objects", "toStringHelper", "(Ljava/lang/Object;)Lcom/google/common/base/MoreObjects$ToStringHelper;", "com/google/common/base/MoreObjects", "toStringHelper");

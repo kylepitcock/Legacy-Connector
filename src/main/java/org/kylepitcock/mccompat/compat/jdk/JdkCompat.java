@@ -44,4 +44,13 @@ public final class JdkCompat {
     public static void setSecurityManager(SecurityManager manager) {
         LOG.warn("Legacy code tried to install a SecurityManager ({}); ignored", manager == null ? "null" : manager.getClass().getName());
     }
+
+    /** Thrown instead of exiting the JVM when a legacy mod asks to; the mod's loading fails with it. */
+    public static RuntimeException exitRequested(int code) {
+        return new IllegalStateException("Legacy mod requested the game to exit (code " + code + "); the mod is disabled instead");
+    }
+
+    public static void exit(int code) {
+        throw exitRequested(code);
+    }
 }

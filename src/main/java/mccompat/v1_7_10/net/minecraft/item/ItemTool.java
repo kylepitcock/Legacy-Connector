@@ -22,6 +22,24 @@ public class ItemTool extends Item {
     private String toolClass;
 
     @SuppressWarnings({"rawtypes", "unchecked"})
+    /** Vanilla tool wrapper: the material follows from the vanilla name (wooden_/stone_/iron_/golden_/diamond_). */
+    protected ItemTool(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info, float damage) {
+        super(info);
+        this.toolMaterial = mcc$materialOf(info);
+        this.efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
+        this.damageVsEntity = damage + toolMaterial.getDamageVsEntity();
+        this.field_150914_c = java.util.Collections.emptySet();
+    }
+
+    public static Item.ToolMaterial mcc$materialOf(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
+        String n = info.legacyName();
+        if (n.contains("diamond")) return Item.ToolMaterial.EMERALD;
+        if (n.contains("golden")) return Item.ToolMaterial.GOLD;
+        if (n.contains("iron")) return Item.ToolMaterial.IRON;
+        if (n.contains("stone")) return Item.ToolMaterial.STONE;
+        return Item.ToolMaterial.WOOD;
+    }
+
     protected ItemTool(float damage, Item.ToolMaterial material, Set effectiveBlocks) {
         this.toolMaterial = material == null ? Item.ToolMaterial.WOOD : material;
         this.field_150914_c = effectiveBlocks == null ? Collections.emptySet() : effectiveBlocks;

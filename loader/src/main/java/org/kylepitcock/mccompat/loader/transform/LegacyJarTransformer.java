@@ -38,7 +38,9 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 2;
+    public static final int TRANSFORMER_VERSION = 3;
+    /** Names the legacy coremod plugin class of a translated jar. */
+    public static final String COREMOD_RESOURCE = "META-INF/retrofit-coremod.txt";
 
     private final ShimIndex shim;
     private final ClassLoader libraries;
@@ -237,6 +239,10 @@ public final class LegacyJarTransformer {
         }
         outResources.putAll(resources.finish());
 
+        if (jar.coreModClass != null) {
+            // The runtime constructs the coremod's plugin (without applying its transformers), as FML did.
+            outResources.put(COREMOD_RESOURCE, jar.coreModClass.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        }
         if (jar.hasMods()) {
             outResources.put("META-INF/neoforge.mods.toml", ModMetadataGenerator.modsToml(jar));
             outResources.put(ModMetadataGenerator.LEGACY_JSON, ModMetadataGenerator.legacyJson(jar));

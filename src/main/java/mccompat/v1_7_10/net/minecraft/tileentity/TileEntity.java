@@ -27,7 +27,17 @@ public class TileEntity {
     /** The modern host; set by the bridge. */
     public net.minecraft.world.level.block.entity.BlockEntity mcc$host;
 
+    /** Legacy id <-> class registry (mods read these maps by reflection). */
+    private static java.util.Map<String, Class<?>> nameToClassMap = new java.util.HashMap<>();
+    private static java.util.Map<Class<?>, String> classToNameMap = new java.util.HashMap<>();
+
     public static void addMapping(Class<?> cls, String id) {
+        if (nameToClassMap.containsKey(id) && nameToClassMap.get(id) != cls) {
+            org.slf4j.LoggerFactory.getLogger("Retrofit/TileEntities").warn("Duplicate tile entity id {} ({} and {})", id, nameToClassMap.get(id).getName(), cls.getName());
+            return;
+        }
+        nameToClassMap.put(id, cls);
+        classToNameMap.put(cls, id);
         TileEntityBridge.addMapping(cls, id);
     }
 

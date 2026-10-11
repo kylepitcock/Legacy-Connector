@@ -55,11 +55,11 @@ public class GameRegistry {
     }
 
     public static void registerTileEntity(Class<? extends TileEntity> tileEntityClass, String id) {
-        TileEntityBridge.addMapping(tileEntityClass, id);
+        mccompat.v1_7_10.net.minecraft.tileentity.TileEntity.addMapping(tileEntityClass, id);
     }
 
     public static void registerTileEntityWithAlternatives(Class<? extends TileEntity> tileEntityClass, String id, String... alternatives) {
-        TileEntityBridge.addMapping(tileEntityClass, id);
+        mccompat.v1_7_10.net.minecraft.tileentity.TileEntity.addMapping(tileEntityClass, id);
         for (String alt : alternatives) TileEntityBridge.addAlias(alt, id);
     }
 

@@ -15,7 +15,9 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
     private final Side mcc$side;
 
     public FMLEmbeddedChannel(String channelName, Side source, ChannelHandler... handlers) {
-        super(withOutbound(handlers));
+        super(handlers);
+        // FML's name for the outbound handler; mods insert their own handlers relative to it.
+        pipeline().addFirst("fml:outbound", new FMLOutboundHandler());
         this.mcc$name = channelName;
         this.mcc$side = source;
         attr(NetworkRegistry.FML_CHANNEL).set(channelName);
@@ -25,13 +27,6 @@ public class FMLEmbeddedChannel extends EmbeddedChannel {
         } catch (Throwable t) {
             org.slf4j.LoggerFactory.getLogger("Retrofit/Network").error("Setting up legacy channel {} ({}) failed", channelName, source, t);
         }
-    }
-
-    private static ChannelHandler[] withOutbound(ChannelHandler[] handlers) {
-        ChannelHandler[] all = new ChannelHandler[handlers.length + 1];
-        all[0] = new FMLOutboundHandler();
-        System.arraycopy(handlers, 0, all, 1, handlers.length);
-        return all;
     }
 
     public String mcc$name() {

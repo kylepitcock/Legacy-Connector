@@ -14,7 +14,7 @@ import org.objectweb.asm.tree.InnerClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
 /**
- * Build-time step over the compiled shim ({@code mccompat/**}): every non-private member and class becomes public,
+ * Build-time step over the compiled shim ({@code mccompat/**}): every field, non-private method and class becomes public,
  * and methods/classes lose {@code final}. Legacy mods were routinely built with FML access transformers that did
  * exactly this to Minecraft classes, and the shim lives in another module, so a protected member called from a mod
  * would otherwise fail with IllegalAccessError. Private members (runtime internals) are untouched.
@@ -66,7 +66,10 @@ public final class ShimAccessWidener {
             // keep their ConstantValue attribute, so compiled-in values are unaffected.
             boolean isStatic = (f.access & Opcodes.ACC_STATIC) != 0 && (node.access & Opcodes.ACC_INTERFACE) == 0
                     && (f.access & Opcodes.ACC_ENUM) == 0 && f.value == null;
-            int w = publicNonFinal(f.access, isStatic);
+            // Private fields too: legacy fields mods reached through access transformers (Block.unlocalizedName, ...).
+            // Unlike methods, a widened field cannot change dispatch; subclasses can only shadow it.
+            int fa = (f.access & Opcodes.ACC_SYNTHETIC) == 0 ? f.access & ~Opcodes.ACC_PRIVATE : f.access;
+            int w = publicNonFinal(fa, isStatic);
             if (w != f.access) {
                 f.access = w;
                 changed = true;

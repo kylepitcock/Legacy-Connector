@@ -76,6 +76,162 @@ public final class ItemBridge {
 
     // ------------------------------------------------------------------ vanilla wrappers
 
+
+    /** 1.7.10 runtime classes of vanilla items whose declared type is less specific (mods cast to these). */
+    private static final Map<String, String> RUNTIME_CLASSES = Map.ofEntries(
+            Map.entry("apple", "ItemFood"),
+            Map.entry("baked_potato", "ItemFood"),
+            Map.entry("bed", "ItemBed"),
+            Map.entry("beef", "ItemFood"),
+            Map.entry("boat", "ItemBoat"),
+            Map.entry("book", "ItemBook"),
+            Map.entry("bow", "ItemBow"),
+            Map.entry("bread", "ItemFood"),
+            Map.entry("brewing_stand", "ItemReed"),
+            Map.entry("bucket", "ItemBucket"),
+            Map.entry("cake", "ItemReed"),
+            Map.entry("carrot", "ItemSeedFood"),
+            Map.entry("carrot_on_a_stick", "ItemCarrotOnAStick"),
+            Map.entry("cauldron", "ItemReed"),
+            Map.entry("chainmail_boots", "ItemArmor"),
+            Map.entry("chainmail_chestplate", "ItemArmor"),
+            Map.entry("chainmail_helmet", "ItemArmor"),
+            Map.entry("chainmail_leggings", "ItemArmor"),
+            Map.entry("chest_minecart", "ItemMinecart"),
+            Map.entry("chicken", "ItemFood"),
+            Map.entry("coal", "ItemCoal"),
+            Map.entry("command_block_minecart", "ItemMinecart"),
+            Map.entry("comparator", "ItemReed"),
+            Map.entry("cooked_beef", "ItemFood"),
+            Map.entry("cooked_chicken", "ItemFood"),
+            Map.entry("cooked_fished", "ItemFishFood"),
+            Map.entry("cooked_porkchop", "ItemFood"),
+            Map.entry("cookie", "ItemFood"),
+            Map.entry("diamond_axe", "ItemAxe"),
+            Map.entry("diamond_boots", "ItemArmor"),
+            Map.entry("diamond_chestplate", "ItemArmor"),
+            Map.entry("diamond_helmet", "ItemArmor"),
+            Map.entry("diamond_hoe", "ItemHoe"),
+            Map.entry("diamond_leggings", "ItemArmor"),
+            Map.entry("diamond_pickaxe", "ItemPickaxe"),
+            Map.entry("diamond_shovel", "ItemSpade"),
+            Map.entry("diamond_sword", "ItemSword"),
+            Map.entry("dye", "ItemDye"),
+            Map.entry("egg", "ItemEgg"),
+            Map.entry("enchanted_book", "ItemEnchantedBook"),
+            Map.entry("ender_eye", "ItemEnderEye"),
+            Map.entry("ender_pearl", "ItemEnderPearl"),
+            Map.entry("experience_bottle", "ItemExpBottle"),
+            Map.entry("filled_map", "ItemMap"),
+            Map.entry("fire_charge", "ItemFireball"),
+            Map.entry("firework_charge", "ItemFireworkCharge"),
+            Map.entry("fireworks", "ItemFirework"),
+            Map.entry("fish", "ItemFishFood"),
+            Map.entry("fishing_rod", "ItemFishingRod"),
+            Map.entry("flint_and_steel", "ItemFlintAndSteel"),
+            Map.entry("flower_pot", "ItemReed"),
+            Map.entry("furnace_minecart", "ItemMinecart"),
+            Map.entry("glass_bottle", "ItemGlassBottle"),
+            Map.entry("golden_apple", "ItemAppleGold"),
+            Map.entry("golden_axe", "ItemAxe"),
+            Map.entry("golden_boots", "ItemArmor"),
+            Map.entry("golden_chestplate", "ItemArmor"),
+            Map.entry("golden_helmet", "ItemArmor"),
+            Map.entry("golden_hoe", "ItemHoe"),
+            Map.entry("golden_leggings", "ItemArmor"),
+            Map.entry("golden_pickaxe", "ItemPickaxe"),
+            Map.entry("golden_shovel", "ItemSpade"),
+            Map.entry("golden_sword", "ItemSword"),
+            Map.entry("hopper_minecart", "ItemMinecart"),
+            Map.entry("iron_axe", "ItemAxe"),
+            Map.entry("iron_boots", "ItemArmor"),
+            Map.entry("iron_chestplate", "ItemArmor"),
+            Map.entry("iron_door", "ItemDoor"),
+            Map.entry("iron_helmet", "ItemArmor"),
+            Map.entry("iron_hoe", "ItemHoe"),
+            Map.entry("iron_leggings", "ItemArmor"),
+            Map.entry("iron_pickaxe", "ItemPickaxe"),
+            Map.entry("iron_shovel", "ItemSpade"),
+            Map.entry("iron_sword", "ItemSword"),
+            Map.entry("item_frame", "ItemHangingEntity"),
+            Map.entry("lava_bucket", "ItemBucket"),
+            Map.entry("lead", "ItemLead"),
+            Map.entry("leather_boots", "ItemArmor"),
+            Map.entry("leather_chestplate", "ItemArmor"),
+            Map.entry("leather_helmet", "ItemArmor"),
+            Map.entry("leather_leggings", "ItemArmor"),
+            Map.entry("map", "ItemEmptyMap"),
+            Map.entry("melon", "ItemFood"),
+            Map.entry("melon_seeds", "ItemSeeds"),
+            Map.entry("milk_bucket", "ItemBucketMilk"),
+            Map.entry("minecart", "ItemMinecart"),
+            Map.entry("mushroom_stew", "ItemSoup"),
+            Map.entry("name_tag", "ItemNameTag"),
+            Map.entry("nether_star", "ItemSimpleFoiled"),
+            Map.entry("nether_wart", "ItemSeeds"),
+            Map.entry("painting", "ItemHangingEntity"),
+            Map.entry("poisonous_potato", "ItemFood"),
+            Map.entry("porkchop", "ItemFood"),
+            Map.entry("potato", "ItemSeedFood"),
+            Map.entry("potion", "ItemPotion"),
+            Map.entry("pumpkin_pie", "ItemFood"),
+            Map.entry("pumpkin_seeds", "ItemSeeds"),
+            Map.entry("record_11", "ItemRecord"),
+            Map.entry("record_13", "ItemRecord"),
+            Map.entry("record_blocks", "ItemRecord"),
+            Map.entry("record_cat", "ItemRecord"),
+            Map.entry("record_chirp", "ItemRecord"),
+            Map.entry("record_far", "ItemRecord"),
+            Map.entry("record_mall", "ItemRecord"),
+            Map.entry("record_mellohi", "ItemRecord"),
+            Map.entry("record_stal", "ItemRecord"),
+            Map.entry("record_strad", "ItemRecord"),
+            Map.entry("record_wait", "ItemRecord"),
+            Map.entry("record_ward", "ItemRecord"),
+            Map.entry("redstone", "ItemRedstone"),
+            Map.entry("reeds", "ItemReed"),
+            Map.entry("repeater", "ItemReed"),
+            Map.entry("rotten_flesh", "ItemFood"),
+            Map.entry("saddle", "ItemSaddle"),
+            Map.entry("shears", "ItemShears"),
+            Map.entry("sign", "ItemSign"),
+            Map.entry("skull", "ItemSkull"),
+            Map.entry("snowball", "ItemSnowball"),
+            Map.entry("spawn_egg", "ItemMonsterPlacer"),
+            Map.entry("spider_eye", "ItemFood"),
+            Map.entry("stone_axe", "ItemAxe"),
+            Map.entry("stone_hoe", "ItemHoe"),
+            Map.entry("stone_pickaxe", "ItemPickaxe"),
+            Map.entry("stone_shovel", "ItemSpade"),
+            Map.entry("stone_sword", "ItemSword"),
+            Map.entry("tnt_minecart", "ItemMinecart"),
+            Map.entry("water_bucket", "ItemBucket"),
+            Map.entry("wheat_seeds", "ItemSeeds"),
+            Map.entry("wooden_axe", "ItemAxe"),
+            Map.entry("wooden_door", "ItemDoor"),
+            Map.entry("wooden_hoe", "ItemHoe"),
+            Map.entry("wooden_pickaxe", "ItemPickaxe"),
+            Map.entry("wooden_shovel", "ItemSpade"),
+            Map.entry("wooden_sword", "ItemSword"),
+            Map.entry("writable_book", "ItemWritableBook"),
+            Map.entry("written_book", "ItemEditableBook"));
+
+    /** The legacy runtime class for a vanilla item if it exists (hand-written or synthesized) and fits the declared type. */
+    @SuppressWarnings("unchecked")
+    private static <T extends Item> Class<? extends T> runtimeClass(String legacyName, Class<T> declared) {
+        String simple = RUNTIME_CLASSES.get(legacyName);
+        if (simple == null) return declared;
+        for (String prefix : new String[] {"mccompat.v1_7_10.net.minecraft.item.", "mccompat_synth.v1_7_10.net.minecraft.item."}) {
+            try {
+                Class<?> c = Class.forName(prefix + simple, false, Item.class.getClassLoader());
+                if (declared.isAssignableFrom(c) && !java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return (Class<? extends T>) c;
+            } catch (ClassNotFoundException | LinkageError ignored) {
+                // not part of this modset's API
+            }
+        }
+        return declared;
+    }
+
     @SuppressWarnings("unchecked")
     public static synchronized <T extends Item> T vanilla(String legacyName, Class<T> type) {
         String full = legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName;
@@ -83,7 +239,13 @@ public final class ItemBridge {
         if (existing != null) return (T) existing;
         int id = VanillaFlattening.itemId(full);
         try {
-            Constructor<T> c = type.getConstructor(VanillaInfo.class);
+            Class<? extends T> cls = runtimeClass(full.substring(full.indexOf(':') + 1), type);
+            Constructor<? extends T> c;
+            try {
+                c = cls.getConstructor(VanillaInfo.class);
+            } catch (NoSuchMethodException e) {
+                c = type.getConstructor(VanillaInfo.class);
+            }
             T item = c.newInstance(new VanillaInfo(full, id, null));
             index(full, id, item);
             return item;
