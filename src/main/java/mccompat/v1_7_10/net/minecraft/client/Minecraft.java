@@ -29,6 +29,18 @@ public class Minecraft {
     public final mccompat.v1_7_10.net.minecraft.client.particle.EffectRenderer effectRenderer =
             new mccompat.v1_7_10.net.minecraft.client.particle.EffectRenderer(null, TextureManager.INSTANCE);
 
+    private static mccompat.v1_7_10.net.minecraft.client.resources.IResourceManager resources;
+
+    /** The mods' resources (legacy mods read their own lang files, structures and models through this). */
+    public mccompat.v1_7_10.net.minecraft.client.resources.IResourceManager getResourceManager() {
+        if (resources == null) resources = new org.kylepitcock.mccompat.v1_7_10.client.LegacySprites.ModResources();
+        return resources;
+    }
+
+    public boolean isAmbientOcclusionEnabled() {
+        return true;
+    }
+
     public static Minecraft getMinecraft() {
         return INSTANCE;
     }

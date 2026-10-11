@@ -40,7 +40,7 @@ public final class BlockBridge {
     /** First numeric id handed to mod blocks (vanilla 1.7.10 used 0-197). */
     private static final int FIRST_MOD_ID = 256;
 
-    private static final Map<String, Block> BY_NAME = new LinkedHashMap<>();
+    private static final CaseIndexedMap<Block> BY_NAME = new CaseIndexedMap<>();
     private static final Map<Block, String> NAMES = new IdentityHashMap<>();
     private static final Map<Integer, Block> BY_ID = new HashMap<>();
     private static final Map<Block, Integer> IDS = new IdentityHashMap<>();
@@ -257,7 +257,8 @@ public final class BlockBridge {
         Block b = BY_NAME.get(full);
         if (b != null) return b;
         // Case-insensitive legacy ids ("IC2:blockOre") and modern names of other mods.
-        for (var e : BY_NAME.entrySet()) if (e.getKey().equalsIgnoreCase(full)) return e.getValue();
+        Block ci = BY_NAME.getIgnoreCase(full);
+        if (ci != null) return ci;
         ResourceLocation rl = ResourceLocation.tryParse(full.toLowerCase(java.util.Locale.ROOT));
         if (rl != null && BuiltInRegistries.BLOCK.containsKey(rl)) return legacyBlock(BuiltInRegistries.BLOCK.get(rl).defaultBlockState());
         return null;

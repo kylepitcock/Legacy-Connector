@@ -40,6 +40,7 @@ public final class BlockSelfTest {
     private static int ticks = -1;
     private static int placed;
     private static int skipped;
+    private static boolean stopping;
 
     private BlockSelfTest() {}
 
@@ -50,6 +51,7 @@ public final class BlockSelfTest {
         // Other dev fixtures stop the server early (the fixture mod after its own test): report what there is.
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppingEvent e) -> {
             if (ticks >= 0 && ticks < 60) {
+                stopping = true;
                 ticks = 59;
                 tick(e.getServer());
             }
@@ -133,7 +135,16 @@ public final class BlockSelfTest {
                 PROBLEMS.putIfAbsent(name, "activation threw " + describe(ex));
             }
         }
-        for (BlockPos pos : PLACED) level.removeBlock(pos, false);
+        // (not while the server shuts down: mods' services are already stopped, and the world is discarded anyway)
+        if (!stopping) {
+            for (BlockPos pos : PLACED) {
+                try {
+                    level.removeBlock(pos, false);
+                } catch (RuntimeException | LinkageError e) {
+                    PROBLEMS.putIfAbsent("removal at " + pos.toShortString(), "threw " + describe(e));
+                }
+            }
+        }
         Map<String, String> itemProblems = itemTest(level, player);
         StringBuilder sb = new StringBuilder();
         PROBLEMS.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));

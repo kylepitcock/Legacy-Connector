@@ -50,7 +50,7 @@ public final class ItemBridge {
     private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Items");
     private static final int FIRST_MOD_ID = 4096;
 
-    private static final Map<String, Item> BY_NAME = new LinkedHashMap<>();
+    private static final CaseIndexedMap<Item> BY_NAME = new CaseIndexedMap<>();
     private static final Map<Item, String> NAMES = new IdentityHashMap<>();
     private static final Map<Integer, Item> BY_ID = new HashMap<>();
     private static final Map<Item, Integer> IDS = new IdentityHashMap<>();
@@ -554,7 +554,8 @@ public final class ItemBridge {
         String full = name.indexOf(':') < 0 ? "minecraft:" + name : name;
         Item i = BY_NAME.get(full);
         if (i != null) return i;
-        for (var e : BY_NAME.entrySet()) if (e.getKey().equalsIgnoreCase(full)) return e.getValue();
+        Item ci = BY_NAME.getIgnoreCase(full);
+        if (ci != null) return ci;
         Block b = BlockBridge.byName(full);
         if (b != null) return fromBlock(b);
         ResourceLocation rl = ResourceLocation.tryParse(full.toLowerCase(java.util.Locale.ROOT));

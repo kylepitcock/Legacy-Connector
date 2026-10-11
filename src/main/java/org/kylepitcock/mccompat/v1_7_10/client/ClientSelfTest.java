@@ -77,6 +77,24 @@ public final class ClientSelfTest {
                 }
             }
         }
+        // Names and tooltips of every legacy item (client-only code paths such as FluidType.getLocalizedName run here).
+        Map<String, String> tooltipProblems = new TreeMap<>();
+        for (Item item : ItemBridge.modItems()) {
+            for (var modern : item.mcc$variants.values()) {
+                ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+                var stack = new net.minecraft.world.item.ItemStack(modern);
+                try {
+                    stack.getHoverName();
+                    stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.EMPTY, null, net.minecraft.world.item.TooltipFlag.ADVANCED);
+                } catch (RuntimeException | LinkageError ex) {
+                    Throwable root = ex;
+                    while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+                    StackTraceElement at = java.util.Arrays.stream(root.getStackTrace())
+                            .filter(e -> !e.getClassName().startsWith("net.minecraft.") && !e.getClassName().startsWith("java.")).findFirst().orElse(null);
+                    tooltipProblems.putIfAbsent(id.toString(), root + (at == null ? "" : " at " + at.getClassName() + "." + at.getMethodName() + ":" + at.getLineNumber()));
+                }
+            }
+        }
         // Spawn eggs (modern items, not legacy ones): the model must be the egg template with two layers, tinted.
         StringBuilder eggs = new StringBuilder();
         for (ResourceLocation id : org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.ids()) {
@@ -119,8 +137,11 @@ public final class ClientSelfTest {
             Set<String> ex = examples.get(e.getKey());
             if (ex != null) sb.append("\n      e.g. ").append(ex.stream().limit(6).toList());
         }
-        LOG.info("CLIENT SELF TEST: {} of {} items and {} of {} blocks show the missing texture; {} referenced texture files missing{}",
-                itemsBad, items, blocksBad, blocks, files, sb.append(eggs));
+        StringBuilder tp = new StringBuilder();
+        tooltipProblems.forEach((k, v) -> tp.append("\n  tooltip ").append(k).append(": ").append(v));
+        sb.append(tp);
+        LOG.info("CLIENT SELF TEST: {} tooltip problems; {} of {} items and {} of {} blocks show the missing texture; {} referenced texture files missing{}",
+                tooltipProblems.size(), itemsBad, items, blocksBad, blocks, files, sb.append(eggs));
     }
 
     private static boolean shows(java.util.List<net.minecraft.client.renderer.block.model.BakedQuad> quads, ResourceLocation missing) {
