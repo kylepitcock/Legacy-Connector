@@ -33,18 +33,27 @@ public class WorldType {
         this(id, name, 0);
     }
 
+    /** Vanilla types (no owner, even when this class is first loaded while a legacy mod is initialising). */
     private WorldType(int id, String name, int version) {
+        this(id, name, version, null);
+    }
+
+    private WorldType(int id, String name, int version, String owner) {
         this.worldType = name;
         this.generatorVersion = version;
         this.worldTypeId = id;
-        var owner = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
-        this.mcc$owner = owner == null ? null : owner.record().modernId;
+        this.mcc$owner = owner;
         worldTypes[id] = this;
     }
 
     /** Forge: mod world types take the next free id. */
     public WorldType(String name) {
-        this(getNextID(), name);
+        this(getNextID(), name, 0, mcc$activeMod());
+    }
+
+    private static String mcc$activeMod() {
+        var owner = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
+        return owner == null ? "retrofit" : owner.record().modernId;
     }
 
     private static int getNextID() {

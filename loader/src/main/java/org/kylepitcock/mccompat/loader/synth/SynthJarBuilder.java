@@ -197,8 +197,23 @@ public final class SynthJarBuilder {
             }
             MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC | (isStatic ? Opcodes.ACC_STATIC : 0), m.name(), m.desc(), null, null);
             mv.visitCode();
-            stubCall(mv, legacyName(name) + "." + m.name() + m.desc());
             Type ret = Type.getReturnType(m.desc());
+            if (!isStatic && !itf && implementedAbove(name, m.name() + m.desc())) {
+                // The legacy class overrode a method the hand-written shim implements further up: keep that
+                // behaviour (mods reach it through super.m(), e.g. EntityFlying.moveEntityWithHeading).
+                mv.visitVarInsn(Opcodes.ALOAD, 0);
+                int slot = 1;
+                for (Type a : Type.getArgumentTypes(m.desc())) {
+                    mv.visitVarInsn(a.getOpcode(Opcodes.ILOAD), slot);
+                    slot += a.getSize();
+                }
+                mv.visitMethodInsn(Opcodes.INVOKESPECIAL, superOf(name), m.name(), m.desc(), false);
+                mv.visitInsn(ret.getOpcode(Opcodes.IRETURN));
+                mv.visitMaxs(0, 0);
+                mv.visitEnd();
+                continue;
+            }
+            stubCall(mv, legacyName(name) + "." + m.name() + m.desc());
             if (!isStatic && returnsSelf(name, ret)) {
                 // Builder-style setters (fluid.setDensity(..).setViscosity(..)) must keep the chain alive.
                 mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -332,6 +347,21 @@ public final class SynthJarBuilder {
         mv.visitInsn(Opcodes.ARETURN);
         mv.visitMaxs(0, 0);
         mv.visitEnd();
+    }
+
+    /** True when a hand-written shim superclass of {@code name} has a concrete {@code nameDesc}. */
+    private boolean implementedAbove(String name, String nameDesc) {
+        Set<String> seen = new HashSet<>();
+        for (String c = superOf(name); c != null && seen.add(c); ) {
+            ClassInfo info = hierarchy.find(c);
+            if (info == null) return false;
+            if (!hierarchy.isSynth(c)) {
+                Integer access = info.methods.get(nameDesc);
+                if (access != null) return (access & (Opcodes.ACC_ABSTRACT | Opcodes.ACC_STATIC)) == 0;
+            }
+            c = info.superName;
+        }
+        return false;
     }
 
     /**

@@ -105,7 +105,15 @@ public final class LegacyBiomes {
             json.add("features", steps);
         }
         while (steps.size() <= VEGETAL_DECORATION) steps.add(new JsonArray());
-        steps.get(VEGETAL_DECORATION).getAsJsonArray().add("retrofit:legacy_biome");
+        // Trees and grass come from the legacy decorator (the biome's own generators); keep the small plants.
+        JsonArray vegetation = new JsonArray();
+        for (JsonElement f : steps.get(VEGETAL_DECORATION).getAsJsonArray()) {
+            String id = f.isJsonPrimitive() ? f.getAsString() : "";
+            if (id.contains("tree") || id.contains("grass") || id.contains("bamboo") || id.contains("vines")) continue;
+            vegetation.add(f);
+        }
+        vegetation.add("retrofit:legacy_biome");
+        steps.set(VEGETAL_DECORATION, vegetation);
         return json;
     }
 

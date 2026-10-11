@@ -88,6 +88,7 @@ public final class SoundBridge {
     private SoundBridge() {}
 
     public static SoundEvent sound(String legacyName) {
+        if (legacyName == null || legacyName.isEmpty()) return null;
         SoundEvent known = SOUNDS.get(legacyName);
         if (known != null) return known;
         // modid:path stays a mod sound; vanilla names that changed fall back to their 1.9+ dotted path guess.

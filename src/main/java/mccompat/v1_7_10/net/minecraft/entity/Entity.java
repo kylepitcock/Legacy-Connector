@@ -184,14 +184,24 @@ public abstract class Entity implements ICommandSender {
     private UUID mcc$uuid = UUID.randomUUID();
     private NBTTagCompound mcc$customData;
 
+    protected DataWatcher dataWatcher;
+
     public Entity(World world) {
         this.mcc$world = world;
+        this.dataWatcher = new DataWatcher(this);
+        dataWatcher.addObject(0, Byte.valueOf((byte) 0));
+        dataWatcher.addObject(1, Short.valueOf((short) 300));
+        // A host constructing this legacy entity, or a new host for an entity a mod constructs itself.
+        org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost host = org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts.takeBinding();
+        if (host == null && world != null) host = org.kylepitcock.mccompat.v1_7_10.entity.LegacyHosts.adopt(this, world);
+        if (host != null) this.mcc$entity = host.mcc$self();
         entityInit();
     }
 
     /** View constructor used by the bridge for existing modern entities. */
     protected Entity(net.minecraft.world.entity.Entity modern) {
         this.mcc$entity = modern;
+        this.dataWatcher = new DataWatcher(this);
     }
 
     protected void entityInit() {
@@ -201,6 +211,33 @@ public abstract class Entity implements ICommandSender {
     }
 
     protected void writeEntityToNBT(NBTTagCompound tag) {
+    }
+
+    // Bridges for the host (legacy protected methods, overridden by mods with protected access).
+
+    public final void mcc$readEntityFromNBT(NBTTagCompound tag) {
+        readEntityFromNBT(tag);
+    }
+
+    public final void mcc$writeEntityToNBT(NBTTagCompound tag) {
+        writeEntityToNBT(tag);
+    }
+
+    public final DataWatcher mcc$dataWatcher() {
+        return dataWatcher;
+    }
+
+    /** True when this legacy object is run by a host (rather than being a view of a vanilla entity). */
+    public final boolean mcc$hosted() {
+        return mcc$entity instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost h && h.mcc$legacy() == this;
+    }
+
+    protected final org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost mcc$host() {
+        return mcc$entity instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost h ? h : null;
+    }
+
+    public DataWatcher getDataWatcher() {
+        return dataWatcher;
     }
 
     public static double mcc$get$posX(Entity e) {
@@ -907,6 +944,9 @@ public abstract class Entity implements ICommandSender {
 
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (mcc$entity == null) return false;
+        if (mcc$entity instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyHost h) {
+            return h.mcc$superHurt(source.mcc$modern(mcc$entity.level()), amount);
+        }
         return mcc$entity.hurt(source.mcc$modern(mcc$entity.level()), amount);
     }
 
@@ -934,15 +974,16 @@ public abstract class Entity implements ICommandSender {
     }
 
     public void setSize(float width, float height) {
-        // Dimensions are entity-type properties in modern Minecraft; legacy mod entities carry them in their adapter.
+        var host = mcc$host();
+        if (host != null) host.mcc$setSize(width, height);
     }
 
     public boolean canBeCollidedWith() {
-        return mcc$entity != null && mcc$entity.isPickable();
+        return !mcc$hosted() && mcc$entity != null && mcc$entity.isPickable();
     }
 
     public boolean canBePushed() {
-        return mcc$entity != null && mcc$entity.isPushable();
+        return !mcc$hosted() && mcc$entity != null && mcc$entity.isPushable();
     }
 
     public AxisAlignedBB getBoundingBox() {
@@ -950,9 +991,13 @@ public abstract class Entity implements ICommandSender {
     }
 
     public void onUpdate() {
+        var host = mcc$host();
+        if (host != null) host.mcc$superTick();
     }
 
     public void onEntityUpdate() {
+        var host = mcc$host();
+        if (host != null) host.mcc$superBaseTick();
     }
 
     public void onCollideWithPlayer(mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
@@ -974,12 +1019,21 @@ public abstract class Entity implements ICommandSender {
 
     public void writeToNBT(NBTTagCompound tag) {
         if (mcc$entity != null) mcc$entity.saveWithoutId(tag.mcc$modern());
-        writeEntityToNBT(tag);
+        if (!mcc$hosted()) writeEntityToNBT(tag); // a host's save already includes the legacy data
     }
 
     public void readFromNBT(NBTTagCompound tag) {
         if (mcc$entity != null) mcc$entity.load(tag.mcc$modern());
-        readEntityFromNBT(tag);
+        if (!mcc$hosted()) readEntityFromNBT(tag);
+    }
+
+    public boolean writeToNBTOptional(NBTTagCompound tag) {
+        if (mcc$get$isDead(this) || mcc$entity == null) return false;
+        if (mcc$entity.getType().canSerialize()) {
+            tag.setString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mcc$entity.getType()).toString());
+        }
+        writeToNBT(tag);
+        return true;
     }
 
     public String getEntityString() {

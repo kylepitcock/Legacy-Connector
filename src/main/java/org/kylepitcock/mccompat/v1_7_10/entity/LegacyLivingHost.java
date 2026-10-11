@@ -12,4 +12,7 @@ public interface LegacyLivingHost extends LegacyHost {
     void mcc$superDropEquipment();
 
     void mcc$superSetTarget(net.minecraft.world.entity.LivingEntity target);
+
+    /** Vanilla movement for one tick (LivingEntity.travel). */
+    void mcc$superTravel(float strafe, float forward);
 }

@@ -20,8 +20,41 @@ public abstract class EntityLivingBase extends Entity {
     public float prevHealth;
     private final Random mcc$rng = new Random();
 
+    private mccompat.v1_7_10.net.minecraft.entity.ai.attributes.BaseAttributeMap mcc$attributeMap;
+    public int attackTime;
+    protected int entityAge;
+    protected float randomYawVelocity;
+    /** Phantom field: accesses are redirected to {@code mcc$get$moveForward} (the modern forward input). */
+    @Deprecated
+    public float moveForward;
+    private float mcc$local_moveForward;
+    /** Phantom field: accesses are redirected to {@code mcc$get$moveStrafing} (the modern strafe input). */
+    @Deprecated
+    public float moveStrafing;
+    private float mcc$local_moveStrafing;
+
+    public static float mcc$get$moveForward(EntityLivingBase e) {
+        return e.mcc$entity instanceof LivingEntity l ? l.zza : e.mcc$local_moveForward;
+    }
+
+    public static void mcc$set$moveForward(EntityLivingBase e, float v) {
+        if (e.mcc$entity instanceof LivingEntity l) l.zza = v;
+        else e.mcc$local_moveForward = v;
+    }
+
+    public static float mcc$get$moveStrafing(EntityLivingBase e) {
+        return e.mcc$entity instanceof LivingEntity l ? l.xxa : e.mcc$local_moveStrafing;
+    }
+
+    public static void mcc$set$moveStrafing(EntityLivingBase e, float v) {
+        if (e.mcc$entity instanceof LivingEntity l) l.xxa = v;
+        else e.mcc$local_moveStrafing = v;
+    }
+
     public EntityLivingBase(World world) {
         super(world);
+        applyEntityAttributes();
+        setHealth(getMaxHealth());
     }
 
     protected EntityLivingBase(LivingEntity modern) {
@@ -228,9 +261,173 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public void onDeath(DamageSource source) {
+        if (mcc$host() instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyLivingHost h) {
+            h.mcc$superDie(source.mcc$modern(mcc$entity.level()));
+        }
     }
 
     public void onLivingUpdate() {
+        if (attackTime > 0) --attackTime;
+        if (mcc$host() instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyLivingHost h) h.mcc$superAiStep();
+    }
+
+    @Override
+    protected void entityInit() {
+        dataWatcher.addObject(7, Integer.valueOf(0));
+        dataWatcher.addObject(8, Byte.valueOf((byte) 0));
+        dataWatcher.addObject(9, Byte.valueOf((byte) 0));
+        dataWatcher.addObject(6, Float.valueOf(1.0F));
+    }
+
+    // ------------------------------------------------------------------ attributes
+
+    protected void applyEntityAttributes() {
+        getAttributeMap().registerAttribute(SharedMonsterAttributes.maxHealth);
+        getAttributeMap().registerAttribute(SharedMonsterAttributes.knockbackResistance);
+        getAttributeMap().registerAttribute(SharedMonsterAttributes.movementSpeed);
+    }
+
+    public mccompat.v1_7_10.net.minecraft.entity.ai.attributes.BaseAttributeMap getAttributeMap() {
+        if (mcc$attributeMap == null) {
+            mcc$attributeMap = new mccompat.v1_7_10.net.minecraft.entity.ai.attributes.ServersideAttributeMap();
+            mcc$attributeMap.mcc$bind(() -> mcc$entity instanceof LivingEntity l ? l : null);
+        }
+        return mcc$attributeMap;
+    }
+
+    public mccompat.v1_7_10.net.minecraft.entity.ai.attributes.IAttributeInstance getEntityAttribute(
+            mccompat.v1_7_10.net.minecraft.entity.ai.attributes.IAttribute attribute) {
+        return getAttributeMap().getAttributeInstance(attribute);
+    }
+
+    public EnumCreatureAttribute getCreatureAttribute() {
+        if (mcc$entity instanceof LivingEntity l && !mcc$hosted()) {
+            if (l.getType().is(net.minecraft.tags.EntityTypeTags.UNDEAD)) return EnumCreatureAttribute.UNDEAD;
+            if (l.getType().is(net.minecraft.tags.EntityTypeTags.ARTHROPOD)) return EnumCreatureAttribute.ARTHROPOD;
+        }
+        return EnumCreatureAttribute.UNDEFINED;
+    }
+
+    // ------------------------------------------------------------------ movement
+
+    /** Vanilla movement for one tick; legacy flying/swimming mobs override this. */
+    public void moveEntityWithHeading(float strafe, float forward) {
+        if (mcc$host() instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyLivingHost h) h.mcc$superTravel(strafe, forward);
+    }
+
+    public void moveFlying(float strafe, float forward, float friction) {
+        if (mcc$entity != null) mcc$entity.moveRelative(friction, new net.minecraft.world.phys.Vec3(strafe, 0, forward));
+    }
+
+    public float getAIMoveSpeed() {
+        return mcc$entity instanceof LivingEntity l ? l.getSpeed() : 0.1F;
+    }
+
+    public void setAIMoveSpeed(float speed) {
+        if (mcc$entity instanceof LivingEntity l) l.setSpeed(speed);
+    }
+
+    public void setJumping(boolean jumping) {
+        if (mcc$entity instanceof LivingEntity l) l.setJumping(jumping);
+    }
+
+    protected void jump() {
+        if (mcc$entity instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyMobHost m) m.mcc$jump();
+    }
+
+    public float getRotationYawHead() {
+        return mcc$get$rotationYawHead(this);
+    }
+
+    public void setRotationYawHead(float yaw) {
+        mcc$set$rotationYawHead(this, yaw);
+    }
+
+    public boolean isAIEnabled() {
+        return false;
+    }
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return mcc$hosted() ? isEntityAlive() : super.canBeCollidedWith();
+    }
+
+    @Override
+    public boolean canBePushed() {
+        return mcc$hosted() ? isEntityAlive() : super.canBePushed();
+    }
+
+    // ------------------------------------------------------------------ combat
+
+    public void setRevengeTarget(EntityLivingBase target) {
+        if (mcc$entity instanceof LivingEntity l) l.setLastHurtByMob(target == null ? null : target.mcc$living());
+    }
+
+    public int getRevengeTimer() {
+        return mcc$entity instanceof LivingEntity l ? l.getLastHurtByMobTimestamp() : 0;
+    }
+
+    public void setLastAttacker(Entity target) {
+        if (mcc$entity instanceof LivingEntity l && target != null && target.mcc$entity instanceof LivingEntity t) l.setLastHurtMob(t);
+    }
+
+    public boolean isOnSameTeam(EntityLivingBase other) {
+        return mcc$entity != null && other != null && other.mcc$entity != null && mcc$entity.isAlliedTo(other.mcc$entity);
+    }
+
+    public boolean canBreatheUnderwater() {
+        return mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
+    }
+
+    // ------------------------------------------------------------------ death, drops, sounds (bridged for the host)
+
+    protected void dropFewItems(boolean recentlyHit, int looting) {
+    }
+
+    protected void dropEquipment(boolean recentlyHit, int looting) {
+        if (mcc$host() instanceof org.kylepitcock.mccompat.v1_7_10.entity.LegacyLivingHost h) h.mcc$superDropEquipment();
+    }
+
+    protected void dropRareDrop(int looting) {
+    }
+
+    public final void mcc$dropLoot(boolean recentlyHit, int looting) {
+        dropFewItems(recentlyHit, looting);
+        dropEquipment(recentlyHit, looting);
+        if (recentlyHit && getRNG().nextFloat() < 0.025F + looting * 0.01F) dropRareDrop(looting);
+    }
+
+    protected String getHurtSound() {
+        return "game.neutral.hurt";
+    }
+
+    protected String getDeathSound() {
+        return "game.neutral.die";
+    }
+
+    protected float getSoundVolume() {
+        return 1.0F;
+    }
+
+    protected float getSoundPitch() {
+        float base = isChild() ? 1.5F : 1.0F;
+        return (getRNG().nextFloat() - getRNG().nextFloat()) * 0.2F + base;
+    }
+
+    public final String mcc$hurtSound() {
+        return getHurtSound();
+    }
+
+    public final String mcc$deathSound() {
+        return getDeathSound();
+    }
+
+    public final float mcc$soundVolume() {
+        return getSoundVolume();
+    }
+
+    public final float mcc$soundPitch() {
+        return getSoundPitch();
     }
 
     public boolean isClientWorld() {

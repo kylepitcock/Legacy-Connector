@@ -187,6 +187,22 @@ public class BiomeGenBase {
         theBiomeDecorator.decorateChunk(world, rand, this, chunkX, chunkZ);
     }
 
+    protected mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenTrees worldGeneratorTrees =
+            new mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenTrees(false);
+    protected mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigTree worldGeneratorBigTree =
+            new mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigTree(false);
+
+    /** The tree generator for one tree of this biome (mods override this to grow their own trees). */
+    public mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenAbstractTree func_150567_a(Random rand) {
+        return rand.nextInt(10) == 0 ? worldGeneratorBigTree : worldGeneratorTrees;
+    }
+
+    /** The plant generator for one grass patch of this biome. */
+    public mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator getRandomWorldGenForGrass(Random rand) {
+        return new mccompat.v1_7_10.net.minecraft.world.gen.feature.WorldGenTallGrass(
+                mccompat.v1_7_10.net.minecraft.init.Blocks.tallgrass, 1);
+    }
+
     public int getBiomeGrassColor(int x, int y, int z) {
         return 0x91BD59;
     }
