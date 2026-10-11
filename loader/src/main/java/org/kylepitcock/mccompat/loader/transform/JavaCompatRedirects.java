@@ -112,6 +112,14 @@ public final class JavaCompatRedirects {
                         }
                     }
                 } else if (insn instanceof TypeInsnNode type && type.getOpcode() == Opcodes.CHECKCAST
+                        && type.desc.endsWith("/net/minecraft/launchwrapper/LaunchClassLoader") && type.desc.startsWith("mccompat/")) {
+                    // (LaunchClassLoader) getClass().getClassLoader(): modlauncher's loader is no LaunchClassLoader.
+                    MethodInsnNode replacement = new MethodInsnNode(Opcodes.INVOKESTATIC, type.desc, "mcc$cast",
+                            "(Ljava/lang/Object;)L" + type.desc + ";", false);
+                    insns.set(type, replacement);
+                    insn = replacement;
+                    count++;
+                } else if (insn instanceof TypeInsnNode type && type.getOpcode() == Opcodes.CHECKCAST
                         && type.desc.equals("java/net/URLClassLoader")) {
                     // Java 9+: the app/system class loader is no longer a URLClassLoader.
                     MethodInsnNode replacement = new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "JdkCompat", "asURLClassLoader",

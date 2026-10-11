@@ -29,6 +29,11 @@ public class LaunchClassLoader extends URLClassLoader {
         this.game = game;
     }
 
+    /** Target of rewritten {@code (LaunchClassLoader) x} casts: any other class loader becomes {@link Launch#classLoader}. */
+    public static LaunchClassLoader mcc$cast(Object o) {
+        return o == null || o instanceof LaunchClassLoader ? (LaunchClassLoader) o : Launch.classLoader;
+    }
+
     @Override
     public Class<?> findClass(String name) throws ClassNotFoundException {
         try {

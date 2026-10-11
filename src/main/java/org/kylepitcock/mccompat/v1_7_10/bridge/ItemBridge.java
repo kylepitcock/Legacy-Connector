@@ -171,6 +171,20 @@ public final class ItemBridge {
         } catch (RuntimeException e) {
             damage = 0;
         }
+        var modifiers = net.minecraft.world.item.component.ItemAttributeModifiers.builder();
+        boolean anyModifier = false;
+        if (item instanceof mccompat.v1_7_10.net.minecraft.item.ItemArmor armor && armor.armorType >= 0 && armor.armorType < 4
+                && armor.damageReduceAmount > 0) {
+            var group = new net.minecraft.world.entity.EquipmentSlotGroup[] {net.minecraft.world.entity.EquipmentSlotGroup.HEAD,
+                    net.minecraft.world.entity.EquipmentSlotGroup.CHEST, net.minecraft.world.entity.EquipmentSlotGroup.LEGS,
+                    net.minecraft.world.entity.EquipmentSlotGroup.FEET}[armor.armorType];
+            modifiers.add(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,
+                    new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("mccompat", "legacy_armor_" + armor.armorType),
+                            armor.damageReduceAmount, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE), group);
+            anyModifier = true;
+        }
+        if (anyModifier && damage <= 0) p.attributes(modifiers.build());
         if (damage > 0) {
             // Legacy weapon damage is the total; the modern attribute adds to the player's base 1.
             p.attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder()

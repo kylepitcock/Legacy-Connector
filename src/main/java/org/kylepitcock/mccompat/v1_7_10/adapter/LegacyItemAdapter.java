@@ -153,4 +153,17 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
     public int legacyMeta() {
         return meta;
     }
+
+    /** Legacy armor is worn in the slot its armorType names. */
+    @Override
+    public net.minecraft.world.entity.EquipmentSlot getEquipmentSlot(ItemStack stack) {
+        if (legacy instanceof mccompat.v1_7_10.net.minecraft.item.ItemArmor armor && armor.armorType >= 0 && armor.armorType < 4) {
+            return ARMOR_SLOTS[armor.armorType];
+        }
+        return null;
+    }
+
+    private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {
+            net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+            net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
 }

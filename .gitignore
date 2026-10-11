@@ -33,3 +33,4 @@ Thumbs.db
 !gradle/wrapper/gradle-wrapper.jar
 *.tmp
 /test-mods/
+/test-mods2/

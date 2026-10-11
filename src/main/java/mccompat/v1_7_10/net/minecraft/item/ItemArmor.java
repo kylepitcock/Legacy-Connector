@@ -1,17 +1,66 @@
 package mccompat.v1_7_10.net.minecraft.item;
 
 /**
- * Generated shell of the 1.7.10 class {@code net.minecraft.item.ItemArmor}: correct type hierarchy for {@code instanceof} checks and
- * subclassing, legacy constructors, inherited default behaviour. Vanilla-specific logic is not ported yet.
- * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
+ * Vanilla 1.7.10 armor: armorType 0 helmet, 1 chestplate, 2 leggings, 3 boots. Legacy armor is wearable in that
+ * slot and gives its armor points (see LegacyItemAdapter / ItemBridge).
  */
 public class ItemArmor extends mccompat.v1_7_10.net.minecraft.item.Item {
+    public final int armorType;
+    public final int damageReduceAmount;
+    public final int renderIndex;
+    private final ArmorMaterial material;
+
     public ItemArmor(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);
+        int type = 1;
+        int defense = 0;
+        if (info.modern() instanceof net.minecraft.world.item.ArmorItem a) {
+            type = switch (a.getType()) {
+                case HELMET -> 0;
+                case CHESTPLATE, BODY -> 1;
+                case LEGGINGS -> 2;
+                case BOOTS -> 3;
+            };
+            defense = a.getDefense();
+        }
+        this.armorType = type;
+        this.damageReduceAmount = defense;
+        this.renderIndex = 0;
+        this.material = ArmorMaterial.IRON;
     }
 
     protected ItemArmor() {
+        this(ArmorMaterial.IRON, 0, 1);
+    }
+
+    public ItemArmor(ArmorMaterial material, int renderIndex, int armorType) {
         super();
+        this.material = material == null ? ArmorMaterial.IRON : material;
+        this.armorType = armorType;
+        this.renderIndex = renderIndex;
+        this.damageReduceAmount = armorType >= 0 && armorType < 4 ? this.material.getDamageReductionAmount(armorType) : 0;
+        this.setMaxDamage(armorType >= 0 && armorType < 4 ? this.material.getDurability(armorType) : 0);
+        this.maxStackSize = 1;
+    }
+
+    public ArmorMaterial getArmorMaterial() {
+        return material;
+    }
+
+    @Override
+    public int getItemEnchantability() {
+        return material.getEnchantability();
+    }
+
+    @Override
+    public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
+        Item base = material.getBaseItemForRepair();
+        return base != null && repair != null && repair.getItem() == base || super.getIsRepairable(toRepair, repair);
+    }
+
+    /** Forge: texture of the worn armor ("modid:textures/models/armor/x_layer_1.png"), or null for the default. */
+    public String getArmorTexture(ItemStack stack, mccompat.v1_7_10.net.minecraft.entity.Entity entity, int slot, String type) {
+        return null;
     }
 
     /** Armor tiers. Mods add their own through {@code EnumHelper.addArmorMaterial}. */
