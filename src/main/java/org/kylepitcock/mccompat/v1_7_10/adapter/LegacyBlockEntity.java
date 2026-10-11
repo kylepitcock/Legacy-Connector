@@ -63,6 +63,11 @@ public class LegacyBlockEntity extends BlockEntity {
     private static final java.util.Set<String> CREATE_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private boolean createFailed;
 
+    /** Whether creating the legacy tile entity threw (as opposed to the block having none for this metadata). */
+    public boolean createFailed() {
+        return createFailed;
+    }
+
     public void replaceLegacy(TileEntity te) {
         if (legacy != null) legacy.invalidate();
         legacy = te;

@@ -775,4 +775,9 @@ public class World implements IBlockAccess {
         calendar.setTimeInMillis(System.currentTimeMillis());
         return calendar;
     }
+
+    /** Notifies the neighbours of a block that its state changed (comparators and redstone read this). */
+    public void updateNeighborsAboutBlockChange(int x, int y, int z, Block block) {
+        notifyBlocksOfNeighborChange(x, y, z, block);
+    }
 }

@@ -1,8 +1,6 @@
 package org.kylepitcock.mccompat.v1_7_10.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.HashSet;
-import java.util.Set;
 import mccompat.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import mccompat.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import mccompat.v1_7_10.net.minecraft.tileentity.TileEntity;
@@ -20,7 +18,9 @@ import org.slf4j.LoggerFactory;
  * equals the modern block position while distance checks inside the legacy code still see real distances.
  */
 public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBlockEntity> {
-    private static final Set<Class<?>> FAILED = new HashSet<>();
+    /** Consecutive failures per renderer class: a renderer that keeps failing is disabled, an occasional one is not. */
+    private static final java.util.Map<Class<?>, Integer> FAILURES = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final int MAX_FAILURES = 20;
 
     @Override
     public void render(LegacyBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -28,7 +28,7 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         if (te == null) return;
         TileEntityRendererDispatcher dispatcher = TileEntityRendererDispatcher.instance;
         TileEntitySpecialRenderer renderer = dispatcher.getSpecialRenderer(te);
-        if (renderer == null || FAILED.contains(renderer.getClass())) return;
+        if (renderer == null || FAILURES.getOrDefault(renderer.getClass(), 0) >= MAX_FAILURES) return;
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         dispatcher.mcc$setCamera(cam.x, cam.y, cam.z);
         if (be.getLevel() != null) dispatcher.worldObj = World.mcc$wrap(be.getLevel());
@@ -38,9 +38,13 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
             pose.pushPose();
             pose.translate(-x, -y, -z);
             renderer.renderTileEntityAt(te, x, y, z, partialTick);
+            if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
         } catch (RuntimeException | LinkageError e) {
-            FAILED.add(renderer.getClass());
-            LoggerFactory.getLogger("Retrofit/Render").error("Legacy renderer {} failed and is disabled", renderer.getClass().getName(), e);
+            int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
+            if (n == 1 || n == MAX_FAILURES) {
+                LoggerFactory.getLogger("Retrofit/Render").error("Legacy renderer {} failed{}", renderer.getClass().getName(),
+                        n >= MAX_FAILURES ? " repeatedly and is disabled" : "", e);
+            }
         } finally {
             RenderContext.end();
         }

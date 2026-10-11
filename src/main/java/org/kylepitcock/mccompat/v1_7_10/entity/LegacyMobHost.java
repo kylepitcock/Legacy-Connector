@@ -279,7 +279,15 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     @Override
     public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level, net.minecraft.world.entity.MobSpawnType reason) {
-        return legacy instanceof EntityLiving l ? l.getCanSpawnHere() : super.checkSpawnRules(level, reason);
+        if (!(legacy instanceof EntityLiving l)) return super.checkSpawnRules(level, reason);
+        // During chunk generation `level` is the generation region, not the entity's level.
+        boolean region = !(level instanceof ServerLevel);
+        if (region) l.mcc$worldOverride = level;
+        try {
+            return l.getCanSpawnHere();
+        } finally {
+            if (region) l.mcc$worldOverride = null;
+        }
     }
 
     @Override

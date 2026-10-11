@@ -193,6 +193,7 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.mccompat.v1_7_10.bridge.LegacyBiomeLayers.register();
         org.kylepitcock.mccompat.v1_7_10.bridge.LegacyWorldPresets.registerNames();
         org.kylepitcock.mccompat.v1_7_10.entity.EntitySelfTest.register();
+        org.kylepitcock.mccompat.v1_7_10.entity.BlockSelfTest.register();
         org.kylepitcock.mccompat.v1_7_10.entity.WorldGenSelfTest.register();
         org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.registerSaving();
         org.kylepitcock.mccompat.v1_7_10.bridge.LegacyContentSummary.register();

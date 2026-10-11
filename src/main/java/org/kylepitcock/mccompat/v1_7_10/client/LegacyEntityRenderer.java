@@ -1,7 +1,6 @@
 package org.kylepitcock.mccompat.v1_7_10.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import mccompat.v1_7_10.net.minecraft.client.renderer.entity.Render;
 import mccompat.v1_7_10.net.minecraft.client.renderer.entity.RenderManager;
@@ -28,7 +27,8 @@ import org.slf4j.LoggerFactory;
  */
 public class LegacyEntityRenderer extends EntityRenderer<Entity> {
     private static final ResourceLocation NONE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
-    private static final Set<Class<?>> FAILED = ConcurrentHashMap.newKeySet();
+    private static final java.util.Map<Class<?>, Integer> FAILURES = new ConcurrentHashMap<>();
+    private static final int MAX_FAILURES = 20;
 
     public LegacyEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -44,7 +44,7 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
     public void render(Entity entity, float yaw, float partialTicks, PoseStack pose, MultiBufferSource buffers, int light) {
         var legacy = entity instanceof LegacyHost h ? h.mcc$legacy() : null;
         Render renderer = legacy == null ? null : RenderManager.instance.getEntityRenderObject(legacy);
-        if (renderer != null && !FAILED.contains(renderer.getClass())) {
+        if (renderer != null && FAILURES.getOrDefault(renderer.getClass(), 0) < MAX_FAILURES) {
             this.shadowRadius = renderer.mcc$shadowSize();
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             updateRenderManager(cam, entity);
@@ -57,9 +57,13 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
             try {
                 pose.translate(-x, -y, -z);
                 renderer.doRender(legacy, x, y, z, Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()), partialTicks);
+                if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
             } catch (RuntimeException | LinkageError e) {
-                FAILED.add(renderer.getClass());
-                LoggerFactory.getLogger("Retrofit/Render").error("Legacy entity renderer {} failed and is disabled", renderer.getClass().getName(), e);
+                int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
+                if (n == 1 || n == MAX_FAILURES) {
+                    LoggerFactory.getLogger("Retrofit/Render").error("Legacy entity renderer {} failed{}", renderer.getClass().getName(),
+                            n >= MAX_FAILURES ? " repeatedly and is disabled" : "", e);
+                }
             } finally {
                 pose.popPose();
                 RenderContext.end();

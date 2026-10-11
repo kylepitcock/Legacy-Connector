@@ -758,7 +758,15 @@ public abstract class Entity implements ICommandSender {
         }
     }
 
+    /**
+     * The level accessor to answer {@code worldObj} with instead of the entity's own level: spawn checks during chunk
+     * generation run against the generation region (asking the real level for a chunk under generation deadlocks).
+     */
+    public net.minecraft.world.level.LevelAccessor mcc$worldOverride;
+
     public static World mcc$get$worldObj(Entity e) {
+        var override = e.mcc$worldOverride;
+        if (override != null) return World.mcc$wrap(override);
         var m = e.mcc$entity;
         return m != null ? World.mcc$wrap(m.level()) : e.mcc$world;
     }

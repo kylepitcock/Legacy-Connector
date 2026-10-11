@@ -61,6 +61,15 @@ neoForge {
             systemProperty 'retrofit.entitySelfTest', 'true'
         }
 
+        // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
+        serverSubTest {
+            server()
+            gameDirectory = project.file('run-subtest')
+            programArgument '--nogui'
+            systemProperty 'legacytest.autostop', 'true'
+            systemProperty 'retrofit.entitySelfTest', 'true'
+        }
+
         // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
         // model problems per mod once the title screen shows, then quits.
         clientTest {
