@@ -12,6 +12,15 @@ public class FMLClientHandler {
         return INSTANCE;
     }
 
+    /** Records a texture that failed to load (FML showed them in its error screen); logged instead. */
+    public void trackBrokenTexture(mccompat.v1_7_10.net.minecraft.util.ResourceLocation location, String error) {
+        org.slf4j.LoggerFactory.getLogger("Retrofit/Textures").warn("Broken texture {}: {}", location, error);
+    }
+
+    public void trackMissingTexture(mccompat.v1_7_10.net.minecraft.util.ResourceLocation location) {
+        org.slf4j.LoggerFactory.getLogger("Retrofit/Textures").warn("Missing texture {}", location);
+    }
+
     public Minecraft getClient() {
         return Minecraft.getMinecraft();
     }

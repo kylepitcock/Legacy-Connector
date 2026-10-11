@@ -475,6 +475,32 @@ public class World implements IBlockAccess {
         return mcc$level.hasChunk(cx, cz);
     }
 
+    /** The world's chunks as a 1.7.10 chunk provider (only chunks that are loaded or generating here are provided). */
+    public mccompat.v1_7_10.net.minecraft.world.chunk.IChunkProvider getChunkProvider() {
+        World world = this;
+        return new mccompat.v1_7_10.net.minecraft.world.chunk.IChunkProvider() {
+            @Override
+            public boolean chunkExists(int x, int z) {
+                return world.chunkExists(x, z);
+            }
+
+            @Override
+            public mccompat.v1_7_10.net.minecraft.world.chunk.Chunk provideChunk(int x, int z) {
+                return world.getChunkFromChunkCoords(x, z);
+            }
+
+            @Override
+            public String makeString() {
+                return "ServerChunkCache";
+            }
+
+            @Override
+            public int getLoadedChunkCount() {
+                return world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel s ? s.getChunkSource().getLoadedChunksCount() : 0;
+            }
+        };
+    }
+
     public EntityPlayer func_152378_a(java.util.UUID id) {
         var p = id == null ? null : mcc$level.getPlayerByUUID(id);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
@@ -704,5 +730,49 @@ public class World implements IBlockAccess {
     /** Forge: chunks held loaded by chunk-loading tickets. */
     public com.google.common.collect.ImmutableSetMultimap<ChunkCoordIntPair, mccompat.v1_7_10.net.minecraftforge.common.ForgeChunkManager.Ticket> getPersistentChunks() {
         return mccompat.v1_7_10.net.minecraftforge.common.ForgeChunkManager.getPersistentChunksFor(this);
+    }
+
+    public GameRules getGameRules() {
+        return GameRules.mcc$of(mcc$fullLevel());
+    }
+
+    /** Whether any block overlapping the box has the given material (vanilla: water checks of items, entities). */
+    public boolean isMaterialInBB(mccompat.v1_7_10.net.minecraft.util.AxisAlignedBB box,
+            mccompat.v1_7_10.net.minecraft.block.material.Material material) {
+        int x1 = (int) Math.floor(box.minX), x2 = (int) Math.floor(box.maxX + 1.0);
+        int y1 = (int) Math.floor(box.minY), y2 = (int) Math.floor(box.maxY + 1.0);
+        int z1 = (int) Math.floor(box.minZ), z2 = (int) Math.floor(box.maxZ + 1.0);
+        for (int x = x1; x < x2; x++) {
+            for (int y = y1; y < y2; y++) {
+                for (int z = z1; z < z2; z++) {
+                    var block = getBlock(x, y, z);
+                    if (block != null && block.getMaterial() == material) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Whether any block overlapping the box is a liquid. */
+    public boolean isAnyLiquid(mccompat.v1_7_10.net.minecraft.util.AxisAlignedBB box) {
+        int x1 = (int) Math.floor(box.minX), x2 = (int) Math.floor(box.maxX + 1.0);
+        int y1 = (int) Math.floor(box.minY), y2 = (int) Math.floor(box.maxY + 1.0);
+        int z1 = (int) Math.floor(box.minZ), z2 = (int) Math.floor(box.maxZ + 1.0);
+        for (int x = x1; x < x2; x++) {
+            for (int y = Math.max(0, y1); y < y2; y++) {
+                for (int z = z1; z < z2; z++) {
+                    var block = getBlock(x, y, z);
+                    if (block != null && block.getMaterial().isLiquid()) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** The calendar date (vanilla: the real clock; mods time-limit features by it). */
+    public java.util.Calendar getCurrentDate() {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        return calendar;
     }
 }

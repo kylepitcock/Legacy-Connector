@@ -190,8 +190,9 @@ public final class ItemStack {
     // ------------------------------------------------------------------ NBT
 
     public boolean hasTagCompound() {
-        CustomData data = mcc$stack.get(DataComponents.CUSTOM_DATA);
-        return data != null && !data.isEmpty();
+        // As 1.7.10: a stack whose tag was assigned an (empty) compound has one. Code such as
+        // "if (!stack.hasTagCompound()) stack.stackTagCompound = new NBTTagCompound();" relies on it.
+        return mcc$stack.get(DataComponents.CUSTOM_DATA) != null;
     }
 
     public NBTTagCompound getTagCompound() {

@@ -51,6 +51,19 @@ public class Minecraft {
         return ClientGui.currentLegacyScreen();
     }
 
+    /** The entity the camera follows (the local player unless a mod/spectating changed it). */
+    public static mccompat.v1_7_10.net.minecraft.entity.EntityLivingBase mcc$get$renderViewEntity(Minecraft m) {
+        var camera = mc().getCameraEntity();
+        return camera == null ? null : (mccompat.v1_7_10.net.minecraft.entity.EntityLivingBase) EntityBridge.wrap(camera);
+    }
+
+    private static final mccompat.v1_7_10.net.minecraft.client.settings.GameSettings SETTINGS =
+            new mccompat.v1_7_10.net.minecraft.client.settings.GameSettings();
+
+    public static mccompat.v1_7_10.net.minecraft.client.settings.GameSettings mcc$get$gameSettings(Minecraft m) {
+        return SETTINGS;
+    }
+
     public static int mcc$get$displayWidth(Minecraft m) {
         return mc().getWindow().getWidth();
     }

@@ -18,12 +18,21 @@ public class PlayerCapabilities {
 
     private final net.minecraft.world.entity.player.Player mcc$player;
 
+    private final Abilities mcc$own;
+
     public PlayerCapabilities(net.minecraft.world.entity.player.Player player) {
         this.mcc$player = player;
+        this.mcc$own = null;
+    }
+
+    /** A detached set of abilities (mods build their own to copy or inspect flags). */
+    public PlayerCapabilities() {
+        this.mcc$player = null;
+        this.mcc$own = new Abilities();
     }
 
     private Abilities a() {
-        return mcc$player.getAbilities();
+        return mcc$player != null ? mcc$player.getAbilities() : mcc$own;
     }
 
     public static boolean mcc$get$disableDamage(PlayerCapabilities c) {

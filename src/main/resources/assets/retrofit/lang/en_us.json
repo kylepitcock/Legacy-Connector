@@ -1,5 +1,7 @@
 {
   "retrofit.legacy_mods": "Legacy Mods",
   "retrofit.spawn_egg_prefix": "Spawn",
-  "retrofit.spawn_egg": "%s Spawn Egg"
+  "retrofit.spawn_egg": "%s Spawn Egg",
+  "config.jade.plugin_retrofit.legacy_waila_blocks": "Legacy mod blocks (Waila)",
+  "config.jade.plugin_retrofit.legacy_waila_entities": "Legacy mod entities (Waila)"
 }

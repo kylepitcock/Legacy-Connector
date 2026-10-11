@@ -1,0 +1,41 @@
+package mccompat.v1_7_10.net.minecraftforge.client;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import mccompat.v1_7_10.net.minecraft.item.Item;
+import mccompat.v1_7_10.net.minecraft.item.ItemStack;
+
+/** Forge client hooks: custom item renderers (drawn through the item's modern model, see LegacyItemRenderer). */
+public class MinecraftForgeClient {
+    private static final Map<Item, IItemRenderer> RENDERERS = new ConcurrentHashMap<>();
+
+    public static void registerItemRenderer(Item item, IItemRenderer renderer) {
+        if (item != null && renderer != null) RENDERERS.put(item, renderer);
+    }
+
+    public static IItemRenderer getItemRenderer(ItemStack item, IItemRenderer.ItemRenderType type) {
+        if (item == null || item.getItem() == null) return null;
+        IItemRenderer r = RENDERERS.get(item.getItem());
+        try {
+            return r != null && r.handleRenderType(item, type) ? r : null;
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    public static boolean mcc$hasRenderer(Item item) {
+        return RENDERERS.containsKey(item);
+    }
+
+    public static IItemRenderer mcc$renderer(Item item) {
+        return RENDERERS.get(item);
+    }
+
+    public static int getRenderPass() {
+        return 0;
+    }
+
+    public static int getStencilBits() {
+        return 8;
+    }
+}

@@ -38,6 +38,13 @@ public class EntityList {
         }
     };
 
+    /** Called when FML registered a mod entity: an egg recorded earlier (the mod wrote the maps first) is created now. */
+    public static void mcc$registered(Class<?> cls) {
+        for (var e : IDtoClassMapping.entrySet()) {
+            if (e.getValue() == cls && entityEggs.get(e.getKey()) instanceof EntityEggInfo egg) mcc$egg(cls, egg);
+        }
+    }
+
     private static void mcc$egg(Class<?> cls, EntityEggInfo egg) {
         LegacySpawnEggs.register(LegacyHosts.info(cls), egg.primaryColor, egg.secondaryColor);
     }

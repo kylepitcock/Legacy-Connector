@@ -26,7 +26,11 @@ import org.slf4j.LoggerFactory;
  */
 public final class EntityBridge {
     private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Entities");
-    private static final Map<net.minecraft.world.entity.Entity, Entity> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
+    /**
+     * Identity-keyed (Guava weak keys compare by ==): Minecraft's Entity.equals compares ids, and in singleplayer the
+     * client and server players share one, which handed the client the server player's view (and vice versa).
+     */
+    private static final Map<net.minecraft.world.entity.Entity, Entity> VIEWS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
     private static boolean warnedCustom;
 
     /** Where extended properties of vanilla entities (players) are kept in the modern persistent data. */

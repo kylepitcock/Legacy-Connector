@@ -19,6 +19,7 @@ public final class Client1710 {
         modBus.addListener(ClientGui::onRegisterScreens);
         modBus.addListener(Client1710::onRegisterRenderers);
         LegacyParticles.register();
+        ClientSelfTest.register();
         modBus.addListener(Client1710::onRegisterExtensions);
         modBus.addListener(Client1710::onRegisterItemColors);
     }
@@ -57,9 +58,23 @@ public final class Client1710 {
                 return renderer;
             }
         };
+        IClientItemExtensions custom = new IClientItemExtensions() {
+            private BlockEntityWithoutLevelRenderer renderer;
+
+            @Override
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
+                if (renderer == null) renderer = new LegacyItemRenderer();
+                return renderer;
+            }
+        };
         for (Item item : ItemBridge.modItems()) {
+            var variants = item.mcc$variants.values().toArray(new net.minecraft.world.item.Item[0]);
             if (item instanceof ItemBlock ib && isChestStyle(ib.mcc$block())) {
-                event.registerItem(chest, item.mcc$variants.values().toArray(new net.minecraft.world.item.Item[0]));
+                event.registerItem(chest, variants);
+            } else {
+                // Only used where the generated model is builtin/entity: items with a Forge IItemRenderer, which mods
+                // may register after this event (the renderer is looked up per stack).
+                event.registerItem(custom, variants);
             }
         }
     }

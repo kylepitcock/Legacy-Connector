@@ -61,6 +61,14 @@ neoForge {
             systemProperty 'retrofit.entitySelfTest', 'true'
         }
 
+        // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
+        // model problems per mod once the title screen shows, then quits.
+        clientTest {
+            client()
+            gameDirectory = project.file('run-clienttest')
+            systemProperty 'retrofit.clientSelfTest', 'true'
+        }
+
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             // In production the loader reads the index from the embedded runtime jar.

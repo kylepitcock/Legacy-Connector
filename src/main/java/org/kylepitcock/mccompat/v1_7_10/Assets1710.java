@@ -45,8 +45,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.CLIENT_RESOURCES) return;
         org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.contributeModels(out);
-        IIconRegister blocks = name -> new Icon(texture(name, true));
-        IIconRegister items = name -> new Icon(texture(name, false));
+        var blocks = new mccompat.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
+        var items = new mccompat.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
         for (Block b : BlockBridge.modBlocks()) {
             try {
                 b.registerBlockIcons(blocks);
@@ -72,17 +72,52 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 LOG.warn("Model generation failed for {}: {}", i, e.toString());
             }
         }
+        bakeSprites(blocks, true, out);
+        bakeSprites(items, false, out);
+    }
+
+    /** (called after all registerIcons) writes the textures of sprites mods built themselves, e.g. unstitched sheets. */
+    private static void bakeSprites(mccompat.v1_7_10.net.minecraft.client.renderer.texture.TextureMap map, boolean block,
+            Map<String, Supplier<byte[]>> out) {
+        org.kylepitcock.mccompat.v1_7_10.client.LegacySprites.bake(map, block, out);
     }
 
     /** {@code "modid:name"} -> {@code modid:blocks/name}; bare vanilla names map to the modern vanilla textures. */
-    static String texture(String legacy, boolean block) {
+    private static final Map<String, String> VANILLA_RENAMES = loadRenames();
+
+    /** 1.7.10 vanilla texture names that 1.13+ renamed ({@code blocks/planks_oak} -> {@code block/oak_planks}). */
+    private static Map<String, String> loadRenames() {
+        Map<String, String> out = new java.util.HashMap<>();
+        try (var in = Assets1710.class.getResourceAsStream("/mccompat/legacy/1.7.10/texture-renames.txt")) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+                    String[] p = line.trim().split(" ");
+                    if (p.length == 2) out.put(p[0], p[1]);
+                }
+            }
+        } catch (java.io.IOException e) {
+            // no table: legacy names are used as they are
+        }
+        return out;
+    }
+
+    /** {@code "modid:name"} -> {@code modid:blocks/name}; bare vanilla names map to the modern vanilla textures. */
+    public static String texture(String legacy, boolean block) {
         if (legacy == null) return "minecraft:missingno";
         int colon = legacy.indexOf(':');
-        if (colon < 0) {
-            String n = VANILLA_TEXTURE_RENAMES.getOrDefault(legacy, legacy);
-            return "minecraft:" + (block ? "block/" : "item/") + Ids.normalizePath(n);
+        String domain = colon < 0 ? "minecraft" : Ids.namespace(legacy.substring(0, colon));
+        String name = colon < 0 ? legacy : legacy.substring(colon + 1);
+        if (domain.equals("minecraft")) {
+            // Vanilla names may carry their folder ("blocks/stone") or not.
+            String bare = name.startsWith("blocks/") || name.startsWith("items/") ? name.substring(name.indexOf('/') + 1) : name;
+            String folder = name.startsWith("items/") ? "items/" : name.startsWith("blocks/") ? "blocks/" : block ? "blocks/" : "items/";
+            String renamed = VANILLA_RENAMES.get(folder + bare);
+            if (renamed == null && !folder.equals(block ? "blocks/" : "items/")) renamed = null;
+            if (renamed != null) return "minecraft:" + renamed;
+            String n = VANILLA_TEXTURE_RENAMES.getOrDefault(bare, bare);
+            return "minecraft:" + (folder.equals("items/") ? "item/" : "block/") + Ids.normalizePath(n);
         }
-        return Ids.namespace(legacy.substring(0, colon)) + ":" + (block ? "blocks/" : "items/") + Ids.normalizePath(legacy.substring(colon + 1));
+        return domain + ":" + (block ? "blocks/" : "items/") + Ids.normalizePath(name);
     }
 
     private static void blockModels(Block b, Map<String, Supplier<byte[]>> out) {
@@ -146,7 +181,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static JsonObject model(Block b, String[] faces) {
         JsonObject model = new JsonObject();
         JsonObject tex = new JsonObject();
-        if (b.getRenderType() == 22) {
+        if (b.getRenderType() == 22 || b.getRenderType() == -1) {
+            // 22: chest; -1: not drawn as a block at all (a TileEntitySpecialRenderer draws it, e.g. BiblioCraft).
             // Chest-style: no geometry, the tile entity renderer draws it; keep the particle texture for breaking.
             tex.addProperty("particle", faces[1]);
             model.add("textures", tex);
@@ -211,7 +247,20 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 icon = item.getIconFromDamage(meta);
             } catch (RuntimeException ignored) {
             }
-            if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == 22) {
+            if (mccompat.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item)) {
+                // Forge IItemRenderer: LegacyItemRenderer draws it (item/generated transforms, see that class).
+                model.addProperty("parent", "minecraft:builtin/entity");
+                model.add("display", GENERATED_DISPLAY.deepCopy());
+                JsonObject tex = new JsonObject();
+                tex.addProperty("particle", icon == null ? "minecraft:missingno" : icon.getIconName());
+                model.add("textures", tex);
+            } else if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == -1) {
+                // 1.7.10 drew blocks without a block model as their 2D icon.
+                model.addProperty("parent", "minecraft:item/generated");
+                JsonObject tex = new JsonObject();
+                tex.addProperty("layer0", icon != null ? icon.getIconName() : iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
+                model.add("textures", tex);
+            } else if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == 22) {
                 // builtin/entity + chest display transforms; the BEWLR registered in Client1710 draws the legacy model.
                 model.addProperty("parent", "minecraft:item/chest");
                 JsonObject tex = new JsonObject();
@@ -247,7 +296,27 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
     }
 
+    /** item/generated's display transforms (builtin/entity models have none of their own). */
+    private static final JsonObject GENERATED_DISPLAY = com.google.gson.JsonParser.parseString("""
+            {"ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+             "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+             "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 3, 1], "scale": [0.55, 0.55, 0.55]},
+             "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13], "scale": [0.68, 0.68, 0.68]},
+             "fixed": {"rotation": [0, 180, 0], "scale": [1, 1, 1]},
+             "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}}
+            """).getAsJsonObject();
+
+    /** Textures referenced by generated models, by the model's namespace (checked by the client self test). */
+    public static final Map<String, java.util.Set<String>> TEXTURE_REFS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static void put(Map<String, Supplier<byte[]>> out, String path, JsonObject json) {
+        if (json.has("textures") && path.startsWith("assets/")) {
+            String ns = path.substring("assets/".length(), path.indexOf('/', "assets/".length()));
+            for (var t : json.getAsJsonObject("textures").entrySet()) {
+                String ref = t.getValue().getAsString();
+                if (!ref.startsWith("#")) TEXTURE_REFS.computeIfAbsent(ns, k -> java.util.concurrent.ConcurrentHashMap.newKeySet()).add(ref);
+            }
+        }
         byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
         out.put(path, () -> bytes);
     }

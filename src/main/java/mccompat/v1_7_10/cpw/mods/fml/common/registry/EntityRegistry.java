@@ -39,6 +39,7 @@ public class EntityRegistry {
         // FML recorded mod entities in EntityList's name tables (not its id tables).
         mccompat.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.put(legacyName, entityClass);
         mccompat.v1_7_10.net.minecraft.entity.EntityList.classToStringMapping.put(entityClass, legacyName);
+        mccompat.v1_7_10.net.minecraft.entity.EntityList.mcc$registered(entityClass);
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id) {

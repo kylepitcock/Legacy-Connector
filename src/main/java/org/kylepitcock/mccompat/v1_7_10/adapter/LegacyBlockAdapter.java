@@ -115,6 +115,9 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             p.isSuffocating((s, g, pos) -> false);
             p.isRedstoneConductor((s, g, pos) -> false);
         }
+        // Material.air blocks (Railcraft's hidden residual-heat markers, force fields): not solid, not selectable,
+        // not rendered - they are air that carries a tile entity.
+        if (material == Material.air) p.air();
         if (!material.blocksMovement()) p.noCollission();
         if (legacy.getTickRandomly()) p.randomTicks();
         if (material.isReplaceable()) p.replaceable();
@@ -340,6 +343,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (legacy.getMaterial() == Material.air) return Shapes.empty();
         if (!dynamicBounds) {
             int m = meta(state);
             VoxelShape s = staticShapes[m];

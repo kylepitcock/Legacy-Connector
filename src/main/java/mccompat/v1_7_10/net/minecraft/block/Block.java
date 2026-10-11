@@ -338,11 +338,11 @@ public class Block {
     }
 
     public boolean isOpaqueCube() {
-        return true;
+        return org.kylepitcock.mccompat.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149662_c", 1) != 0;
     }
 
     public boolean renderAsNormalBlock() {
-        return true;
+        return org.kylepitcock.mccompat.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149686_d", 1) != 0;
     }
 
     public boolean isNormalCube() {
@@ -378,11 +378,11 @@ public class Block {
     }
 
     public int getRenderType() {
-        return 0;
+        return org.kylepitcock.mccompat.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149645_b", 0);
     }
 
     public int getRenderBlockPass() {
-        return 0;
+        return org.kylepitcock.mccompat.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149701_w", 0);
     }
 
     public int getMobilityFlag() {
@@ -662,8 +662,27 @@ public class Block {
         }
     }
 
+    /** Forge: while capturing (see {@link #captureDrops}), drops are collected instead of spawned. */
+    protected ThreadLocal<Boolean> captureDrops = ThreadLocal.withInitial(() -> Boolean.FALSE);
+    protected ThreadLocal<java.util.List<ItemStack>> capturedDrops = ThreadLocal.withInitial(java.util.ArrayList::new);
+
+    /** Forge: start capturing drops (returns null), or stop and return what was captured. */
+    protected java.util.List<ItemStack> captureDrops(boolean start) {
+        if (start) {
+            captureDrops.set(Boolean.TRUE);
+            capturedDrops.get().clear();
+            return null;
+        }
+        captureDrops.set(Boolean.FALSE);
+        return capturedDrops.get();
+    }
+
     protected void dropBlockAsItem(World world, int x, int y, int z, ItemStack stack) {
         if (world.isRemote || stack == null || stack.mcc$count() <= 0) return;
+        if (captureDrops.get()) {
+            capturedDrops.get().add(stack);
+            return;
+        }
         float f = 0.7F;
         double dx = world.rand.nextFloat() * f + (1.0F - f) * 0.5D;
         double dy = world.rand.nextFloat() * f + (1.0F - f) * 0.5D;

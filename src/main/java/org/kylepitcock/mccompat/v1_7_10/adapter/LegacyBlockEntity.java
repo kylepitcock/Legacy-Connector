@@ -76,7 +76,14 @@ public class LegacyBlockEntity extends BlockEntity {
         te.yCoord = worldPosition.getY();
         te.zCoord = worldPosition.getZ();
         if (level != null) te.setWorldObj(World.mcc$wrap(level));
-        te.validate();
+        try {
+            te.validate();
+        } catch (RuntimeException | LinkageError e) {
+            // e.g. multiblock registration using an API this world view lacks: the tile entity still exists and ticks.
+            if (CREATE_FAILURES.add("validate:" + te.getClass().getName())) {
+                LoggerFactory.getLogger("Retrofit/TileEntity").error("Legacy tile entity {} failed in validate()", te.getClass().getName(), e);
+            }
+        }
     }
 
     @Override
