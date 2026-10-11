@@ -742,4 +742,17 @@ public class Block {
             return getBreakSound();
         }
     }
+
+    /**
+     * Forge: may ore generation targeting {@code target} replace this block? Generation that targets stone also
+     * replaces the modern stone variants (granite, deepslate, tuff, ...) that took its place underground.
+     */
+    public boolean isReplaceableOreGen(World world, int x, int y, int z, Block target) {
+        if (this == target) return true;
+        if (target == mccompat.v1_7_10.net.minecraft.init.Blocks.stone && mcc$modern != null) {
+            var state = mcc$modern.defaultBlockState();
+            return state.is(net.minecraft.tags.BlockTags.STONE_ORE_REPLACEABLES) || state.is(net.minecraft.tags.BlockTags.DEEPSLATE_ORE_REPLACEABLES);
+        }
+        return false;
+    }
 }

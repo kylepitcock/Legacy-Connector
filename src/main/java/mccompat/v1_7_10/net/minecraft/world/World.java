@@ -52,6 +52,44 @@ public class World implements IBlockAccess {
     @Deprecated
     public List loadedTileEntityList;
 
+    /** Phantom: redirected to {@link #mcc$get$mapStorage}. Global (overworld) saved data. */
+    @Deprecated
+    public mccompat.v1_7_10.net.minecraft.world.storage.MapStorage mapStorage;
+    /** Phantom: redirected to {@link #mcc$get$perWorldStorage}. Saved data of this dimension. */
+    @Deprecated
+    public mccompat.v1_7_10.net.minecraft.world.storage.MapStorage perWorldStorage;
+
+    private static final Map<Object, mccompat.v1_7_10.net.minecraft.world.storage.MapStorage> STORAGES =
+            Collections.synchronizedMap(new WeakHashMap<>());
+    private static final mccompat.v1_7_10.net.minecraft.world.storage.MapStorage CLIENT_STORAGE =
+            new mccompat.v1_7_10.net.minecraft.world.storage.MapStorage(null);
+
+    private static mccompat.v1_7_10.net.minecraft.world.storage.MapStorage storage(ServerLevel level) {
+        if (level == null) return CLIENT_STORAGE;
+        var data = level.getDataStorage();
+        return STORAGES.computeIfAbsent(data, d -> new mccompat.v1_7_10.net.minecraft.world.storage.MapStorage(data));
+    }
+
+    public static mccompat.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$mapStorage(World w) {
+        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s.getServer().overworld() : null);
+    }
+
+    public static mccompat.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$perWorldStorage(World w) {
+        return storage(w.mcc$fullLevel() instanceof ServerLevel s ? s : null);
+    }
+
+    public WorldSavedData loadItemData(Class<?> type, String name) {
+        return mcc$get$mapStorage(this).loadData(type, name);
+    }
+
+    public void setItemData(String name, WorldSavedData data) {
+        mcc$get$mapStorage(this).setData(name, data);
+    }
+
+    public int getUniqueDataId(String key) {
+        return mcc$get$mapStorage(this).getUniqueDataId(key);
+    }
+
     private final LevelAccessor mcc$level;
 
     protected World(LevelAccessor level) {

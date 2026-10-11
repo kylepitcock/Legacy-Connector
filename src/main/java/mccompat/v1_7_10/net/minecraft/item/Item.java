@@ -301,12 +301,26 @@ public class Item {
         return false;
     }
 
+    /** Forge: tool class -> harvest level, set with {@link #setHarvestLevel}. */
+    private final java.util.Map<String, Integer> mcc$toolClasses = new java.util.HashMap<>();
+
+    public void setHarvestLevel(String toolClass, int level) {
+        if (level < 0) mcc$toolClasses.remove(toolClass);
+        else mcc$toolClasses.put(toolClass, level);
+    }
+
     public int getHarvestLevel(ItemStack stack, String toolClass) {
-        return -1;
+        Integer level = mcc$toolClasses.get(toolClass);
+        return level == null ? -1 : level;
     }
 
     public java.util.Set<String> getToolClasses(ItemStack stack) {
-        return java.util.Collections.emptySet();
+        return java.util.Collections.unmodifiableSet(mcc$toolClasses.keySet());
+    }
+
+    /** Melee damage this item adds (swords, tools); becomes the modern attack damage attribute. */
+    public float mcc$attackDamage() {
+        return 0.0F;
     }
 
     // ------------------------------------------------------------------ rendering (client)

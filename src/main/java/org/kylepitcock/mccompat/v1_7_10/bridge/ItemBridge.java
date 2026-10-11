@@ -165,6 +165,21 @@ public final class ItemBridge {
         var p = new net.minecraft.world.item.Item.Properties();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
+        float damage;
+        try {
+            damage = item.mcc$attackDamage();
+        } catch (RuntimeException e) {
+            damage = 0;
+        }
+        if (damage > 0) {
+            // Legacy weapon damage is the total; the modern attribute adds to the player's base 1.
+            p.attributes(net.minecraft.world.item.component.ItemAttributeModifiers.builder()
+                    .add(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE,
+                            new net.minecraft.world.entity.ai.attributes.AttributeModifier(net.minecraft.world.item.Item.BASE_ATTACK_DAMAGE_ID,
+                                    damage, net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE),
+                            net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND)
+                    .build());
+        }
         if (item.hasContainerItem() && item.getContainerItem() != null && item.getContainerItem().mcc$variants.containsKey(0)) {
             p.craftRemainder(item.getContainerItem().mcc$variants.get(0));
         }

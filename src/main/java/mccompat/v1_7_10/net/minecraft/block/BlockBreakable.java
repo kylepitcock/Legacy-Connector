@@ -1,20 +1,41 @@
 package mccompat.v1_7_10.net.minecraft.block;
 
-/**
- * Generated shell of the 1.7.10 class {@code net.minecraft.block.BlockBreakable}: correct type hierarchy for {@code instanceof} checks and
- * subclassing, legacy constructors, inherited default behaviour. Vanilla-specific logic is not ported yet.
- * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
- */
-public class BlockBreakable extends mccompat.v1_7_10.net.minecraft.block.Block {
+import mccompat.v1_7_10.net.minecraft.block.material.Material;
+import mccompat.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister;
+import mccompat.v1_7_10.net.minecraft.world.IBlockAccess;
+
+/** Vanilla 1.7.10 glass/ice base: a named texture, not opaque, hides faces against itself. */
+public class BlockBreakable extends Block {
+    private boolean field_149996_a;
+    private String field_149995_b;
+
     public BlockBreakable(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
 
-    protected BlockBreakable(mccompat.v1_7_10.net.minecraft.block.material.Material material) {
+    protected BlockBreakable(Material material) {
         super(material);
     }
 
-    protected BlockBreakable(java.lang.String p0, mccompat.v1_7_10.net.minecraft.block.material.Material p1, boolean p2) {
-        this(p1);
+    protected BlockBreakable(String textureName, Material material, boolean ignoreSimilarity) {
+        super(material);
+        this.field_149996_a = ignoreSimilarity;
+        this.field_149995_b = textureName;
+    }
+
+    @Override
+    public boolean isOpaqueCube() {
+        return false;
+    }
+
+    @Override
+    public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
+        if (!field_149996_a && world.getBlock(x, y, z) == this) return false;
+        return super.shouldSideBeRendered(world, x, y, z, side);
+    }
+
+    @Override
+    public void registerBlockIcons(IIconRegister register) {
+        this.blockIcon = register.registerIcon(field_149995_b != null ? field_149995_b : getTextureName());
     }
 }

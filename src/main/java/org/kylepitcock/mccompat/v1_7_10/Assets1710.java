@@ -91,16 +91,36 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         for (int meta = 0; meta < 16; meta++) {
             String[] faces = new String[6];
             for (int side = 0; side < 6; side++) faces[side] = iconName(b, side, meta);
-            JsonObject model = model(b, faces);
+            boolean stairs = b.getRenderType() == 10;
+            JsonObject model = stairs ? stairsModel(faces) : model(b, faces);
             String path = "block/" + id.getPath() + "_m" + meta;
             put(out, "assets/" + id.getNamespace() + "/models/" + path + ".json", model);
             JsonObject v = new JsonObject();
             v.addProperty("model", id.getNamespace() + ":" + path);
+            if (stairs) {
+                // Legacy facing bits: 0 east, 1 west, 2 south, 3 north; bit 2 upside-down. The model faces east.
+                int y = new int[] {0, 180, 90, 270}[meta & 3];
+                if (y != 0) v.addProperty("y", y);
+                if ((meta & 4) != 0) v.addProperty("x", 180);
+                v.addProperty("uvlock", true);
+            }
             variants.add("meta=" + meta, v);
         }
         JsonObject state = new JsonObject();
         state.add("variants", variants);
         put(out, "assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", state);
+    }
+
+    private static JsonObject stairsModel(String[] faces) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/stairs");
+        JsonObject tex = new JsonObject();
+        tex.addProperty("bottom", faces[0]);
+        tex.addProperty("top", faces[1]);
+        tex.addProperty("side", faces[2]);
+        tex.addProperty("particle", faces[2]);
+        model.add("textures", tex);
+        return model;
     }
 
     private static String iconName(Block b, int side, int meta) {
