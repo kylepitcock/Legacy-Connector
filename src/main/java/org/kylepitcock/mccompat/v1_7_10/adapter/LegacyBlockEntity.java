@@ -34,19 +34,34 @@ public class LegacyBlockEntity extends BlockEntity {
 
     /** The legacy tile entity, created on first use (legacy createTileEntity may need the world). */
     public TileEntity legacy() {
-        if (legacy == null) {
-            if (pending != null) {
-                legacy = TileEntityBridge.createAndLoad(new NBTTagCompound(pending));
-                pending = null;
-            }
-            if (legacy == null && level != null) {
-                Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
-                legacy = block.createTileEntity(World.mcc$wrap(level), getBlockState().getValue(LegacyBlockAdapter.META));
+        if (legacy == null && !createFailed) {
+            try {
+                if (pending != null) {
+                    legacy = TileEntityBridge.createAndLoad(new NBTTagCompound(pending));
+                    pending = null;
+                }
+                if (legacy == null && level != null) {
+                    Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
+                    legacy = block.createTileEntity(World.mcc$wrap(level), getBlockState().getValue(LegacyBlockAdapter.META));
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // A tile entity that cannot be created must not take the server down (this runs while chunks are sent
+                // and saved): the block stays, without its tile entity.
+                createFailed = true;
+                legacy = null;
+                Object block = getBlockState().getBlock() instanceof LegacyBlockAdapter a ? a.legacy() : getBlockState().getBlock();
+                if (CREATE_FAILURES.add(block.getClass().getName())) {
+                    org.slf4j.LoggerFactory.getLogger("Retrofit/TileEntities").error("Legacy tile entity of {} could not be created; such blocks have none",
+                            block.getClass().getName(), e);
+                }
             }
             if (legacy != null) attach(legacy);
         }
         return legacy;
     }
+
+    private static final java.util.Set<String> CREATE_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private boolean createFailed;
 
     public void replaceLegacy(TileEntity te) {
         if (legacy != null) legacy.invalidate();

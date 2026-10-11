@@ -6,6 +6,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -129,6 +130,22 @@ public final class JavaCompatRedirects {
                         MethodInsnNode replacement = (MethodInsnNode) target.clone(null);
                         insns.set(call, replacement);
                         insn = replacement;
+                        count++;
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
+                            && call.owner.equals("com/mojang/authlib/GameProfile") && call.desc.equals("(Ljava/util/UUID;Ljava/lang/String;)V")) {
+                        // Old authlib allowed a null id (or name), e.g. mods' fake players "[Railcraft]"; today it throws.
+                        // The arguments are fixed in place (NEW/DUP stay, so stack map frames are unaffected):
+                        // [id, name] -> DUP2, fixId -> [id, name, id'] -> DUP_X2, POP, SWAP, POP -> [id', name] -> fixName.
+                        InsnList fix = new InsnList();
+                        fix.add(new InsnNode(Opcodes.DUP2));
+                        fix.add(new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GameProfileCompat", "id", "(Ljava/util/UUID;Ljava/lang/String;)Ljava/util/UUID;", false));
+                        fix.add(new InsnNode(Opcodes.DUP_X2));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        fix.add(new InsnNode(Opcodes.SWAP));
+                        fix.add(new InsnNode(Opcodes.POP));
+                        fix.add(new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "GameProfileCompat", "name", "(Ljava/lang/String;)Ljava/lang/String;", false));
+                        insns.insertBefore(call, fix);
+                        method.maxStack += 2;
                         count++;
                     } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
                             && CONSTRUCTOR_FACTORIES.containsKey(call.owner) && !node.name.equals(call.owner)) {
