@@ -42,6 +42,8 @@ public final class LegacyBiomes {
     private static final int VEGETAL_DECORATION = 9;
     private static volatile Map<ResourceLocation, BiomeGenBase> byId = Map.of();
     private static boolean hooked;
+    /** Chunks the legacy biome decoration ran in (diagnostics). */
+    public static final java.util.concurrent.atomic.AtomicInteger DECORATED = new java.util.concurrent.atomic.AtomicInteger();
 
     private LegacyBiomes() {}
 
@@ -177,6 +179,7 @@ public final class LegacyBiomes {
         BlockPos center = new BlockPos((chunkX << 4) + 8, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, (chunkX << 4) + 8, (chunkZ << 4) + 8), (chunkZ << 4) + 8);
         BiomeGenBase legacy = level.getBiome(center).unwrapKey().map(k -> byModernId(k.location())).orElse(null);
         if (legacy == null) return false;
+        DECORATED.incrementAndGet();
         applySurface(level, chunkX, chunkZ, legacy);
         // 1.7.10 seeded each chunk's decoration from the world seed and chunk position.
         Random rand = new Random(level.getSeed());

@@ -32,7 +32,7 @@ public class ReflectionHelper {
         for (String n : names) {
             try {
                 Field f = cls.getDeclaredField(n);
-                f.setAccessible(true);
+                ReflectionCompat.setAccessible(f, true);
                 return f;
             } catch (Exception e) {
                 last = e;
@@ -45,7 +45,7 @@ public class ReflectionHelper {
     public static <T, E> T getPrivateValue(Class<? super E> cls, E instance, int fieldIndex) {
         try {
             Field f = cls.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            ReflectionCompat.setAccessible(f, true);
             return (T) read(f, instance);
         } catch (Exception e) {
             throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e);
@@ -66,7 +66,7 @@ public class ReflectionHelper {
     public static <T, E> void setPrivateValue(Class<? super T> cls, T instance, E value, int fieldIndex) {
         try {
             Field f = cls.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            ReflectionCompat.setAccessible(f, true);
             write(f, instance, value);
         } catch (Exception e) {
             throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e);
@@ -110,7 +110,7 @@ public class ReflectionHelper {
     private static Object read(Field f, Object instance) throws Exception {
         Method getter = accessor(f, "mcc$get$");
         if (getter != null) return java.lang.reflect.Modifier.isStatic(f.getModifiers()) ? getter.invoke(null) : getter.invoke(null, instance);
-        return f.get(instance);
+        return ReflectionCompat.get(f, instance);
     }
 
     private static void write(Field f, Object instance, Object value) throws Exception {

@@ -96,7 +96,8 @@ public final class ReflectionCompat {
 
     /** Writes a final field the JVM refused to write. Only used for fields that are actually final. */
     private static boolean unsafePut(Field field, Object target, Object value) {
-        if (!Modifier.isFinal(field.getModifiers())) return false;
+        // Reached when the JVM refused the write: a final field, or a private field of a JDK class.
+        if (!isStaticOk(field, target)) return false;
         boolean isStatic = Modifier.isStatic(field.getModifiers());
         Object base = isStatic ? UNSAFE.staticFieldBase(field) : target;
         long offset = isStatic ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
@@ -111,5 +112,70 @@ public final class ReflectionCompat {
         else if (t == char.class) UNSAFE.putCharVolatile(base, offset, (Character) value);
         else UNSAFE.putObjectVolatile(base, offset, value);
         return true;
+    }
+
+    private static boolean isStaticOk(Field field, Object target) {
+        return Modifier.isStatic(field.getModifiers()) || target != null;
+    }
+
+    /**
+     * {@code setAccessible(true)} that tolerates the module system's refusal (private fields of JDK classes, which
+     * legacy mods reflected into freely on Java 8): reads and writes of such fields then go through Unsafe.
+     */
+    public static void setAccessible(java.lang.reflect.AccessibleObject object, boolean flag) {
+        try {
+            object.setAccessible(flag);
+        } catch (RuntimeException e) {
+            // InaccessibleObjectException: handled by the get/set fallbacks
+        }
+    }
+
+    public static void setAccessible(Field field, boolean flag) {
+        setAccessible((java.lang.reflect.AccessibleObject) field, flag);
+    }
+
+    public static Object get(Field field, Object target) throws IllegalAccessException {
+        try {
+            return field.get(target);
+        } catch (IllegalAccessException e) {
+            if (!isStaticOk(field, target)) throw e;
+            return unsafeGet(field, target);
+        }
+    }
+
+    public static int getInt(Field field, Object target) throws IllegalAccessException {
+        return ((Number) get(field, target)).intValue();
+    }
+
+    public static long getLong(Field field, Object target) throws IllegalAccessException {
+        return ((Number) get(field, target)).longValue();
+    }
+
+    public static boolean getBoolean(Field field, Object target) throws IllegalAccessException {
+        return (Boolean) get(field, target);
+    }
+
+    public static float getFloat(Field field, Object target) throws IllegalAccessException {
+        return ((Number) get(field, target)).floatValue();
+    }
+
+    public static double getDouble(Field field, Object target) throws IllegalAccessException {
+        return ((Number) get(field, target)).doubleValue();
+    }
+
+    private static Object unsafeGet(Field field, Object target) {
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
+        Object base = isStatic ? UNSAFE.staticFieldBase(field) : target;
+        long offset = isStatic ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
+        Class<?> t = field.getType();
+        if (t == int.class) return UNSAFE.getIntVolatile(base, offset);
+        if (t == long.class) return UNSAFE.getLongVolatile(base, offset);
+        if (t == boolean.class) return UNSAFE.getBooleanVolatile(base, offset);
+        if (t == float.class) return UNSAFE.getFloatVolatile(base, offset);
+        if (t == double.class) return UNSAFE.getDoubleVolatile(base, offset);
+        if (t == short.class) return UNSAFE.getShortVolatile(base, offset);
+        if (t == byte.class) return UNSAFE.getByteVolatile(base, offset);
+        if (t == char.class) return UNSAFE.getCharVolatile(base, offset);
+        return UNSAFE.getObjectVolatile(base, offset);
     }
 }

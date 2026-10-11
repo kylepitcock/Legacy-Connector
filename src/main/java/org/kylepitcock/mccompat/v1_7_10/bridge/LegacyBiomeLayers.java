@@ -32,9 +32,13 @@ import org.slf4j.LoggerFactory;
 public final class LegacyBiomeLayers implements BiomeOverride.Provider {
     private static final Logger LOG = LoggerFactory.getLogger("Retrofit/Biomes");
     private static final int REGION = 32;
+    /** Modern biomes tied to their terrain (caves, peaks and slopes, shores): never replaced. */
     private static final Set<ResourceKey<Biome>> KEEP = Set.of(Biomes.LUSH_CAVES, Biomes.DRIPSTONE_CAVES, Biomes.DEEP_DARK,
-            Biomes.MUSHROOM_FIELDS, Biomes.STONY_SHORE);
+            Biomes.MUSHROOM_FIELDS, Biomes.STONY_SHORE, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.STONY_PEAKS,
+            Biomes.SNOWY_SLOPES);
     private static boolean registered;
+    /** Legacy ocean, river and beach ids: where the legacy layout has water, the modern terrain decides. */
+    private static final Set<Integer> WATER_OR_SHORE = Set.of(0, 7, 10, 11, 16, 24, 25, 26);
 
     private final MinecraftServer server;
     private final BiomeSource overworld;
@@ -84,6 +88,7 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
         if (registered) return;
         registered = true;
         NeoForge.EVENT_BUS.addListener(LegacyBiomeLayers::onServerAboutToStart);
+        BiomeOverride.setExtraBiomes(LegacyBiomeLayers::generatedBiomes);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> BiomeOverride.set(null));
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> logSample(e.getServer()));
     }
@@ -94,20 +99,44 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
         try {
             var registry = server.registryAccess().registryOrThrow(Registries.BIOME);
             Map<Integer, Holder<Biome>> map = new HashMap<>();
+            int modCount = 0;
             for (BiomeGenBase b : LegacyBiomes.modBiomes()) {
-                registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId())).ifPresent(h -> map.put(b.biomeID, h));
+                var holder = registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId()));
+                if (holder.isPresent()) {
+                    map.put(b.biomeID, holder.get());
+                    modCount++;
+                }
             }
-            if (map.isEmpty()) return;
+            if (modCount == 0) return;
+            // The legacy layout covers all land: vanilla biomes the legacy layers place map to their modern
+            // counterparts (water and shore biomes are left to the modern terrain).
+            for (BiomeGenBase b : BiomeGenBase.getBiomeGenArray()) {
+                if (b == null || map.containsKey(b.biomeID) || WATER_OR_SHORE.contains(b.biomeID)) continue;
+                var id = LegacyEntitySpawns.modernBiome(b);
+                if (id != null) registry.getHolder(ResourceKey.create(Registries.BIOME, id)).ifPresent(h -> map.put(b.biomeID, h));
+            }
             LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD);
             if (stem == null) return;
             WorldType type = worldType(stem);
             long seed = server.getWorldData().worldGenOptions().seed();
             mccompat.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = type;
             BiomeOverride.set(new LegacyBiomeLayers(server, stem.generator().getBiomeSource(), type, seed, map));
-            LOG.info("Placing {} legacy biome(s) in the overworld with the {} biome layers", map.size(), type.getWorldTypeName());
+            LOG.info("Placing {} legacy biome(s) in the overworld with the {} biome layers", modCount, type.getWorldTypeName());
         } catch (RuntimeException | LinkageError e) {
             LOG.error("Legacy biome layers could not be set up; legacy biomes will not generate", e);
         }
+    }
+
+    /** The generated legacy biomes of the running server (empty without one). */
+    private static java.util.List<Holder<Biome>> generatedBiomes() {
+        MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return java.util.List.of();
+        var registry = server.registryAccess().registryOrThrow(Registries.BIOME);
+        java.util.List<Holder<Biome>> out = new java.util.ArrayList<>();
+        for (BiomeGenBase b : LegacyBiomes.modBiomes()) {
+            registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId())).ifPresent(out::add);
+        }
+        return out;
     }
 
     /** Samples the overworld biome source on a coarse grid around spawn and logs how much legacy biome there is. */
@@ -152,7 +181,7 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
     public Holder<Biome> apply(BiomeSource source, Holder<Biome> modern, int x, int y, int z) {
         if (source != overworld || modern == null) return null;
         if (modern.is(BiomeTags.IS_OCEAN) || modern.is(BiomeTags.IS_DEEP_OCEAN) || modern.is(BiomeTags.IS_RIVER)
-                || modern.is(BiomeTags.IS_BEACH) || modern.is(BiomeTags.IS_MOUNTAIN)) return null;
+                || modern.is(BiomeTags.IS_BEACH)) return null;
         if (modern.unwrapKey().map(KEEP::contains).orElse(false)) return null;
         return biomes.get(legacyAt(x, z));
     }

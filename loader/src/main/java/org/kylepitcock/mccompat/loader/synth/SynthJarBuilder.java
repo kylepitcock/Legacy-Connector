@@ -123,6 +123,7 @@ public final class SynthJarBuilder {
             for (Member m : demand.members.getOrDefault(c, Set.of())) if (m.kind() == Kind.CONSTRUCTOR) set.add(m.desc());
             set.add("()V"); // reflection (newInstance) and subclasses that never call a specific one
             if (isEnum(c)) set.add("(Ljava/lang/String;I)V");
+            set.addAll(runtimeConstructors(c));
         }
         boolean changed = true;
         while (changed) {
@@ -133,6 +134,26 @@ public final class SynthJarBuilder {
                 if (ctors.get(sup).addAll(ctors.get(c))) changed = true;
             }
         }
+    }
+
+    /**
+     * Constructors of the nearest hand-written ancestor that take Retrofit-internal parameters (the vanilla wrapper
+     * constructors, e.g. {@code Block(VanillaInfo)}): mirrored so the runtime can create vanilla objects as their
+     * legacy runtime class (a synthesized {@code BlockSapling} for the vanilla sapling).
+     */
+    private Set<String> runtimeConstructors(String c) {
+        Set<String> out = new TreeSet<>();
+        Set<String> seen = new HashSet<>();
+        for (String a = superOf(c); a != null && !a.equals("java/lang/Object") && seen.add(a); a = superOf(a)) {
+            if (hierarchy.isSynth(a)) continue;
+            ClassInfo info = hierarchy.find(a);
+            if (info == null) break;
+            for (String key : info.methods.keySet()) {
+                if (key.startsWith("<init>(") && key.contains("Lorg/kylepitcock/")) out.add(key.substring("<init>".length()));
+            }
+            break;
+        }
+        return out;
     }
 
     // ------------------------------------------------------------------ synthesized classes

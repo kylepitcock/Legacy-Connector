@@ -424,6 +424,32 @@ public class World implements IBlockAccess {
         return getClosestVulnerablePlayer(entity.mcc$x(), entity.mcc$y(), entity.mcc$z(), distance);
     }
 
+    /** The legacy biome at a column (the modern biome at its surface, as its legacy counterpart). */
+    public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
+        int y = mcc$level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        var key = mcc$level.getBiome(pos(x, y, z)).unwrapKey().map(k -> k.location()).orElse(null);
+        var legacy = org.kylepitcock.mccompat.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
+        return legacy != null ? legacy : mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+    }
+
+    public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoordsBody(int x, int z) {
+        return getBiomeGenForCoords(x, z);
+    }
+
+    public mccompat.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromBlockCoords(int x, int z) {
+        return getChunkFromChunkCoords(x >> 4, z >> 4);
+    }
+
+    /** A view of the chunk; null when it is not available here (outside a generation region, or not loaded). */
+    public mccompat.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromChunkCoords(int cx, int cz) {
+        var access = mcc$level.getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
+        return access == null ? null : new mccompat.v1_7_10.net.minecraft.world.chunk.Chunk(this, access);
+    }
+
+    public boolean chunkExists(int cx, int cz) {
+        return mcc$level.hasChunk(cx, cz);
+    }
+
     public EntityPlayer func_152378_a(java.util.UUID id) {
         var p = id == null ? null : mcc$level.getPlayerByUUID(id);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);

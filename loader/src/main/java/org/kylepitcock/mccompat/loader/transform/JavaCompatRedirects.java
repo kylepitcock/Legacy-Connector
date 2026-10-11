@@ -33,6 +33,15 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/lang/reflect/Field", "setLong", "(Ljava/lang/Object;J)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setFloat", "(Ljava/lang/Object;F)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setDouble", "(Ljava/lang/Object;D)V", COMPAT + "ReflectionCompat");
+        // Reads of (and access to) private fields of JDK classes, which the module system refuses since Java 16.
+        virtualToStatic("java/lang/reflect/Field", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/AccessibleObject", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "get", "(Ljava/lang/Object;)Ljava/lang/Object;", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "getInt", "(Ljava/lang/Object;)I", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "getLong", "(Ljava/lang/Object;)J", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "getBoolean", "(Ljava/lang/Object;)Z", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "getFloat", "(Ljava/lang/Object;)F", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Field", "getDouble", "(Ljava/lang/Object;)D", COMPAT + "ReflectionCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.
         virtualToStatic("java/lang/Thread", "stop", "()V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "suspend", "()V", COMPAT + "JdkCompat");

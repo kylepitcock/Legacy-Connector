@@ -62,6 +62,72 @@ public final class BlockBridge {
 
     // ------------------------------------------------------------------ vanilla wrappers
 
+
+    /** 1.7.10 runtime classes of vanilla blocks whose declared type is less specific (mods cast to these). */
+    private static final Map<String, String> RUNTIME_CLASSES = Map.ofEntries(
+            Map.entry("stone", "BlockStone"), Map.entry("dirt", "BlockDirt"), Map.entry("planks", "BlockWood"),
+            Map.entry("sapling", "BlockSapling"), Map.entry("flowing_water", "BlockDynamicLiquid"), Map.entry("water", "BlockStaticLiquid"),
+            Map.entry("flowing_lava", "BlockDynamicLiquid"), Map.entry("lava", "BlockStaticLiquid"), Map.entry("gravel", "BlockGravel"),
+            Map.entry("gold_ore", "BlockOre"), Map.entry("iron_ore", "BlockOre"), Map.entry("coal_ore", "BlockOre"),
+            Map.entry("log", "BlockOldLog"), Map.entry("log2", "BlockNewLog"), Map.entry("leaves", "BlockOldLeaf"), Map.entry("leaves2", "BlockNewLeaf"),
+            Map.entry("sponge", "BlockSponge"), Map.entry("glass", "BlockGlass"), Map.entry("lapis_ore", "BlockOre"), Map.entry("lapis_block", "BlockCompressed"),
+            Map.entry("dispenser", "BlockDispenser"), Map.entry("sandstone", "BlockSandStone"), Map.entry("noteblock", "BlockNote"),
+            Map.entry("bed", "BlockBed"), Map.entry("golden_rail", "BlockRailPowered"), Map.entry("detector_rail", "BlockRailDetector"),
+            Map.entry("web", "BlockWeb"), Map.entry("wool", "BlockColored"), Map.entry("brown_mushroom", "BlockMushroom"),
+            Map.entry("red_mushroom", "BlockMushroom"), Map.entry("gold_block", "BlockCompressed"), Map.entry("iron_block", "BlockCompressed"),
+            Map.entry("double_stone_slab", "BlockStoneSlab"), Map.entry("stone_slab", "BlockStoneSlab"), Map.entry("tnt", "BlockTNT"),
+            Map.entry("bookshelf", "BlockBookshelf"), Map.entry("obsidian", "BlockObsidian"), Map.entry("torch", "BlockTorch"),
+            Map.entry("mob_spawner", "BlockMobSpawner"), Map.entry("oak_stairs", "BlockStairs"), Map.entry("diamond_ore", "BlockOre"),
+            Map.entry("diamond_block", "BlockCompressed"), Map.entry("crafting_table", "BlockWorkbench"), Map.entry("wheat", "BlockCrops"),
+            Map.entry("farmland", "BlockFarmland"), Map.entry("furnace", "BlockFurnace"), Map.entry("lit_furnace", "BlockFurnace"),
+            Map.entry("standing_sign", "BlockSign"), Map.entry("wooden_door", "BlockDoor"), Map.entry("ladder", "BlockLadder"),
+            Map.entry("rail", "BlockRail"), Map.entry("stone_stairs", "BlockStairs"), Map.entry("wall_sign", "BlockSign"),
+            Map.entry("lever", "BlockLever"), Map.entry("stone_pressure_plate", "BlockPressurePlate"), Map.entry("iron_door", "BlockDoor"),
+            Map.entry("wooden_pressure_plate", "BlockPressurePlate"), Map.entry("redstone_ore", "BlockRedstoneOre"),
+            Map.entry("lit_redstone_ore", "BlockRedstoneOre"), Map.entry("unlit_redstone_torch", "BlockRedstoneTorch"),
+            Map.entry("redstone_torch", "BlockRedstoneTorch"), Map.entry("stone_button", "BlockButtonStone"), Map.entry("snow_layer", "BlockSnow"),
+            Map.entry("ice", "BlockIce"), Map.entry("snow", "BlockSnowBlock"), Map.entry("cactus", "BlockCactus"), Map.entry("clay", "BlockClay"),
+            Map.entry("reeds", "BlockReed"), Map.entry("jukebox", "BlockJukebox"), Map.entry("fence", "BlockFence"), Map.entry("pumpkin", "BlockPumpkin"),
+            Map.entry("netherrack", "BlockNetherrack"), Map.entry("soul_sand", "BlockSoulSand"), Map.entry("glowstone", "BlockGlowstone"),
+            Map.entry("lit_pumpkin", "BlockPumpkin"), Map.entry("cake", "BlockCake"), Map.entry("trapdoor", "BlockTrapDoor"),
+            Map.entry("monster_egg", "BlockSilverfish"), Map.entry("stonebrick", "BlockStoneBrick"), Map.entry("brown_mushroom_block", "BlockHugeMushroom"),
+            Map.entry("red_mushroom_block", "BlockHugeMushroom"), Map.entry("iron_bars", "BlockPane"), Map.entry("glass_pane", "BlockPane"),
+            Map.entry("melon_block", "BlockMelon"), Map.entry("pumpkin_stem", "BlockStem"), Map.entry("melon_stem", "BlockStem"),
+            Map.entry("vine", "BlockVine"), Map.entry("fence_gate", "BlockFenceGate"), Map.entry("brick_stairs", "BlockStairs"),
+            Map.entry("stone_brick_stairs", "BlockStairs"), Map.entry("waterlily", "BlockLilyPad"), Map.entry("nether_brick_fence", "BlockFence"),
+            Map.entry("nether_brick_stairs", "BlockStairs"), Map.entry("nether_wart", "BlockNetherWart"), Map.entry("enchanting_table", "BlockEnchantmentTable"),
+            Map.entry("end_portal", "BlockEndPortal"), Map.entry("end_portal_frame", "BlockEndPortalFrame"), Map.entry("dragon_egg", "BlockDragonEgg"),
+            Map.entry("redstone_lamp", "BlockRedstoneLight"), Map.entry("lit_redstone_lamp", "BlockRedstoneLight"),
+            Map.entry("double_wooden_slab", "BlockWoodSlab"), Map.entry("wooden_slab", "BlockWoodSlab"), Map.entry("cocoa", "BlockCocoa"),
+            Map.entry("sandstone_stairs", "BlockStairs"), Map.entry("emerald_ore", "BlockOre"), Map.entry("ender_chest", "BlockEnderChest"),
+            Map.entry("tripwire", "BlockTripWire"), Map.entry("emerald_block", "BlockCompressed"), Map.entry("spruce_stairs", "BlockStairs"),
+            Map.entry("birch_stairs", "BlockStairs"), Map.entry("jungle_stairs", "BlockStairs"), Map.entry("command_block", "BlockCommandBlock"),
+            Map.entry("cobblestone_wall", "BlockWall"), Map.entry("flower_pot", "BlockFlowerPot"), Map.entry("carrots", "BlockCarrot"),
+            Map.entry("potatoes", "BlockPotato"), Map.entry("wooden_button", "BlockButtonWood"), Map.entry("skull", "BlockSkull"),
+            Map.entry("anvil", "BlockAnvil"), Map.entry("trapped_chest", "BlockChest"), Map.entry("light_weighted_pressure_plate", "BlockPressurePlateWeighted"),
+            Map.entry("heavy_weighted_pressure_plate", "BlockPressurePlateWeighted"), Map.entry("redstone_block", "BlockCompressedPowered"),
+            Map.entry("quartz_ore", "BlockOre"), Map.entry("quartz_block", "BlockQuartz"), Map.entry("quartz_stairs", "BlockStairs"),
+            Map.entry("activator_rail", "BlockRailPowered"), Map.entry("dropper", "BlockDropper"), Map.entry("stained_hardened_clay", "BlockColored"),
+            Map.entry("stained_glass_pane", "BlockStainedGlassPane"), Map.entry("acacia_stairs", "BlockStairs"), Map.entry("dark_oak_stairs", "BlockStairs"),
+            Map.entry("hay_block", "BlockHay"), Map.entry("carpet", "BlockCarpet"), Map.entry("hardened_clay", "BlockHardenedClay"),
+            Map.entry("packed_ice", "BlockPackedIce"), Map.entry("double_plant", "BlockDoublePlant"), Map.entry("stained_glass", "BlockStainedGlass"));
+
+    /** The legacy runtime class for a vanilla block if it exists (hand-written or synthesized) and fits the declared type. */
+    @SuppressWarnings("unchecked")
+    private static <T extends Block> Class<? extends T> runtimeClass(String legacyName, Class<T> declared) {
+        String simple = RUNTIME_CLASSES.get(legacyName);
+        if (simple == null) return declared;
+        for (String prefix : new String[] {"mccompat.v1_7_10.net.minecraft.block.", "mccompat_synth.v1_7_10.net.minecraft.block."}) {
+            try {
+                Class<?> c = Class.forName(prefix + simple, false, Block.class.getClassLoader());
+                if (declared.isAssignableFrom(c) && !java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return (Class<? extends T>) c;
+            } catch (ClassNotFoundException | LinkageError ignored) {
+                // not part of this modset's API
+            }
+        }
+        return declared;
+    }
+
     @SuppressWarnings("unchecked")
     public static synchronized <T extends Block> T vanilla(String legacyName, Class<T> type) {
         String full = legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName;
@@ -70,7 +136,13 @@ public final class BlockBridge {
         int id = VanillaFlattening.blockId(full);
         VanillaInfo info = new VanillaInfo(full, id, null);
         try {
-            Constructor<T> c = type.getConstructor(VanillaInfo.class);
+            Class<? extends T> cls = runtimeClass(full.substring(full.indexOf(':') + 1), type);
+            Constructor<? extends T> c;
+            try {
+                c = cls.getConstructor(VanillaInfo.class);
+            } catch (NoSuchMethodException e) {
+                c = type.getConstructor(VanillaInfo.class);
+            }
             T block = c.newInstance(info);
             BY_NAME.put(full, block);
             NAMES.put(block, full);

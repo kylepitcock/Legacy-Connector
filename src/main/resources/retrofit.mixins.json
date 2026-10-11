@@ -4,7 +4,8 @@
   "package": "org.kylepitcock.mccompat.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "MultiNoiseBiomeSourceMixin"
+    "MultiNoiseBiomeSourceMixin",
+    "MultiNoiseBiomeSourcePossibleMixin"
   ],
   "injectors": {
     "defaultRequire": 1

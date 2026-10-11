@@ -34,7 +34,43 @@ public final class LegacyEntitySpawns {
             Map.entry(163, "windswept_savanna"), Map.entry(164, "windswept_savanna"), Map.entry(165, "eroded_badlands"),
             Map.entry(166, "wooded_badlands"), Map.entry(167, "badlands"));
 
+    private static volatile Map<ResourceLocation, Integer> reverse;
+
     private LegacyEntitySpawns() {}
+
+    /** The legacy biome a modern biome corresponds to (a generated mod biome, or the vanilla legacy biome). */
+    public static BiomeGenBase legacyBiome(ResourceLocation modern) {
+        if (modern == null) return null;
+        BiomeGenBase mod = LegacyBiomes.byModernId(modern);
+        if (mod != null) return mod;
+        Map<ResourceLocation, Integer> r = reverse;
+        if (r == null) {
+            java.util.Map<ResourceLocation, Integer> m = new java.util.HashMap<>();
+            new java.util.TreeMap<>(VANILLA).forEach((id, name) -> m.putIfAbsent(ResourceLocation.withDefaultNamespace(name), id));
+            m.put(ResourceLocation.withDefaultNamespace("meadow"), 1);
+            m.put(ResourceLocation.withDefaultNamespace("cherry_grove"), 4);
+            m.put(ResourceLocation.withDefaultNamespace("grove"), 30);
+            m.put(ResourceLocation.withDefaultNamespace("snowy_slopes"), 13);
+            m.put(ResourceLocation.withDefaultNamespace("frozen_peaks"), 13);
+            m.put(ResourceLocation.withDefaultNamespace("jagged_peaks"), 13);
+            m.put(ResourceLocation.withDefaultNamespace("stony_peaks"), 3);
+            m.put(ResourceLocation.withDefaultNamespace("mangrove_swamp"), 6);
+            m.put(ResourceLocation.withDefaultNamespace("lush_caves"), 4);
+            m.put(ResourceLocation.withDefaultNamespace("dripstone_caves"), 1);
+            m.put(ResourceLocation.withDefaultNamespace("deep_dark"), 1);
+            m.put(ResourceLocation.withDefaultNamespace("soul_sand_valley"), 8);
+            m.put(ResourceLocation.withDefaultNamespace("crimson_forest"), 8);
+            m.put(ResourceLocation.withDefaultNamespace("warped_forest"), 8);
+            m.put(ResourceLocation.withDefaultNamespace("basalt_deltas"), 8);
+            r = reverse = m;
+        }
+        Integer id = r.get(modern);
+        if (id == null) {
+            String path = modern.getPath();
+            id = path.contains("ocean") ? 0 : path.contains("end") ? 9 : 1;
+        }
+        return BiomeGenBase.getBiome(id);
+    }
 
     /** The modern biome a legacy biome generates as, or null. */
     public static ResourceLocation modernBiome(BiomeGenBase biome) {

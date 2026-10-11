@@ -12,6 +12,20 @@ public final class BiomeOverride {
     }
 
     private static volatile Provider provider;
+    /** Biomes the overworld may contain besides its preset's (legacy biomes): their features must be scheduled. */
+    private static volatile java.util.function.Supplier<java.util.List<Holder<Biome>>> extraBiomes = java.util.List::of;
+
+    public static void setExtraBiomes(java.util.function.Supplier<java.util.List<Holder<Biome>>> supplier) {
+        extraBiomes = supplier;
+    }
+
+    public static java.util.List<Holder<Biome>> extraBiomes() {
+        try {
+            return extraBiomes.get();
+        } catch (RuntimeException e) {
+            return java.util.List.of();
+        }
+    }
 
     private BiomeOverride() {}
 
