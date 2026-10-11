@@ -16,6 +16,11 @@ repositories {
     mavenLocal()
     mavenCentral()
     maven { url = 'https://maven.theillusivec4.top/' } // Curios (Baubles bridge)
+    maven { url = 'https://maven.blamejared.com/' } // JEI (NEI bridge)
+    maven { // Jade (Waila bridge)
+        url = 'https://api.modrinth.com/maven'
+        content { includeGroup 'maven.modrinth' }
+    }
 }
 
 base {
@@ -76,6 +81,8 @@ dependencies {
 
     // Optional integrations: only used when the mod is installed (legacy library bridges).
     compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+    compileOnly "maven.modrinth:jade:${jade_version}"
+    compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
 
     // Libraries Minecraft 1.7.10 shipped and legacy mods use directly, absent from 1.21.1. Embedded in the
     // distributable jar (jar-in-jar) and put on the dev classpath.

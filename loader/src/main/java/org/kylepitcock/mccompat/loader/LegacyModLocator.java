@@ -101,7 +101,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             String side = side();
             LegacyJarTransformer transformer = new LegacyJarTransformer(index, LegacyModLocator.class.getClassLoader()).presentMods(present).side(side);
             org.kylepitcock.mccompat.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
-                    .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null)
+                    .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null)
                     .flatMap(j -> j.mods.stream()).map(LegacyModDecl::modernId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
@@ -117,12 +117,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 // "this is an old Forge mod" error on top of ours.
                 context.addLocated(jar.path);
                 LibraryBridges.Bridge replacedBy = LibraryBridges.replacing(jar, bridges);
+                String obsolete = LibraryBridges.obsoleteReason(jar);
                 String skip = replacedBy != null ? "replaced by " + replacedBy.modernModId() + " (legacy " + replacedBy.legacyModId()
-                        + " API bridged)" : skipReason(jar);
+                        + " API bridged)" : obsolete != null ? "not loaded: " + obsolete : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);
                     // Unknown translation keys are displayed verbatim by FML's error screen. Bridged libraries are expected.
-                    if (replacedBy == null) pipeline.addIssue(ModLoadingIssue.warning("Retrofit skipped " + jar.fileName() + ": " + skip.replace("'", ""))
+                    if (replacedBy == null && obsolete == null) pipeline.addIssue(ModLoadingIssue.warning("Retrofit skipped " + jar.fileName() + ": " + skip.replace("'", ""))
                             .withAffectedPath(jar.path));
                     continue;
                 }

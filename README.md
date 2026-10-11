@@ -87,7 +87,7 @@ After launching, read **`logs/retrofit-report.txt`**. For every legacy jar it li
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
 At runtime, `Retrofit/Stubs` log lines show which synthesized APIs are actually called.
 
-
+/
 ## Development
 
 Requires JDK 21.
