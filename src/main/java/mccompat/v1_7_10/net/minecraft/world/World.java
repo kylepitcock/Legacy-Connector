@@ -283,16 +283,38 @@ public class World implements IBlockAccess {
         return getBlock(x, y - 1, z);
     }
 
+    /**
+     * Height of the first block that stops motion or holds fluid, scanning down the column. While a chunk is being
+     * generated only the generation heightmaps exist (MOTION_BLOCKING reads as unprimed there), so decoration and
+     * structure code that asks for the surface must be answered from the blocks themselves.
+     */
+    private int surface(int x, int z, Heightmap.Types type) {
+        LevelAccessor level = lvl();
+        if (level instanceof net.minecraft.server.level.WorldGenRegion region) {
+            if (!region.hasChunk(x >> 4, z >> 4)) return region.getSeaLevel();
+            BlockPos.MutableBlockPos p = new BlockPos.MutableBlockPos();
+            boolean noLeaves = type == Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
+            for (int y = region.getMaxBuildHeight() - 1; y >= region.getMinBuildHeight(); y--) {
+                var state = region.getBlockState(p.set(x, y, z));
+                if (state.isAir()) continue;
+                if (noLeaves && state.is(net.minecraft.tags.BlockTags.LEAVES)) continue;
+                if (state.blocksMotion() || !state.getFluidState().isEmpty()) return y + 1;
+            }
+            return region.getMinBuildHeight();
+        }
+        return level.getHeight(type, x, z);
+    }
+
     public int getHeightValue(int x, int z) {
-        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        return surface(x, z, Heightmap.Types.MOTION_BLOCKING);
     }
 
     public int getTopSolidOrLiquidBlock(int x, int z) {
-        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+        return surface(x, z, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES);
     }
 
     public int getPrecipitationHeight(int x, int z) {
-        return lvl().getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
+        return surface(x, z, Heightmap.Types.MOTION_BLOCKING);
     }
 
     public boolean canBlockSeeTheSky(int x, int y, int z) {

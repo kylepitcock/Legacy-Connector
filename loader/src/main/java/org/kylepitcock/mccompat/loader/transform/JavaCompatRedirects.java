@@ -86,11 +86,6 @@ public final class JavaCompatRedirects {
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
         // LWJGL 2 -> 3: typed-buffer overloads got explicit suffixes (glUniform1(int, FloatBuffer) -> glUniform1fv).
         String gl20 = "org/lwjgl/opengl/GL20";
-        for (int n = 1; n <= 4; n++) {
-            staticToStatic(gl20, "glUniform" + n, "(ILjava/nio/FloatBuffer;)V", gl20, "glUniform" + n + "fv");
-            staticToStatic(gl20, "glUniform" + n, "(ILjava/nio/IntBuffer;)V", gl20, "glUniform" + n + "iv");
-        }
-        for (int n = 2; n <= 4; n++) staticToStatic(gl20, "glUniformMatrix" + n, "(IZLjava/nio/FloatBuffer;)V", gl20, "glUniformMatrix" + n + "fv");
         staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
         staticToStatic(gl20, "glGetProgram", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetProgramiv");
         staticToStatic(gl20, "glGetShaderi", "(II)I", COMPAT + "GlCompat", "glGetShaderi");
@@ -117,6 +112,44 @@ public final class JavaCompatRedirects {
         staticToStatic(gl20, "glGetUniformLocation", "(ILjava/lang/CharSequence;)I", gl, "glGetUniformLocation");
         staticToStatic(gl20, "glBindAttribLocation", "(IILjava/lang/CharSequence;)V", gl, "glBindAttribLocation");
         String arb = "org/lwjgl/opengl/ARBShaderObjects";
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform1fARB", "(IF)V", gl, "glUniform1fARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform1f", "(IF)V", gl, "glUniform1f");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform1iARB", "(II)V", gl, "glUniform1iARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform1i", "(II)V", gl, "glUniform1i");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform1ARB", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform1ARBvf");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform1", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform1vf");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform1ARB", "(ILjava/nio/IntBuffer;)V", gl, "glUniform1ARBvi");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform1", "(ILjava/nio/IntBuffer;)V", gl, "glUniform1vi");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform2fARB", "(IFF)V", gl, "glUniform2fARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform2f", "(IFF)V", gl, "glUniform2f");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform2iARB", "(III)V", gl, "glUniform2iARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform2i", "(III)V", gl, "glUniform2i");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform2ARB", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform2ARBvf");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform2", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform2vf");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform2ARB", "(ILjava/nio/IntBuffer;)V", gl, "glUniform2ARBvi");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform2", "(ILjava/nio/IntBuffer;)V", gl, "glUniform2vi");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform3fARB", "(IFFF)V", gl, "glUniform3fARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform3f", "(IFFF)V", gl, "glUniform3f");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform3iARB", "(IIII)V", gl, "glUniform3iARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform3i", "(IIII)V", gl, "glUniform3i");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform3ARB", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform3ARBvf");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform3", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform3vf");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform3ARB", "(ILjava/nio/IntBuffer;)V", gl, "glUniform3ARBvi");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform3", "(ILjava/nio/IntBuffer;)V", gl, "glUniform3vi");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform4fARB", "(IFFFF)V", gl, "glUniform4fARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform4f", "(IFFFF)V", gl, "glUniform4f");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform4iARB", "(IIIII)V", gl, "glUniform4iARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform4i", "(IIIII)V", gl, "glUniform4i");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform4ARB", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform4ARBvf");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform4", "(ILjava/nio/FloatBuffer;)V", gl, "glUniform4vf");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniform4ARB", "(ILjava/nio/IntBuffer;)V", gl, "glUniform4ARBvi");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniform4", "(ILjava/nio/IntBuffer;)V", gl, "glUniform4vi");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniformMatrix2ARB", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix2ARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniformMatrix2", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix2");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniformMatrix3ARB", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix3ARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniformMatrix3", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix3");
+        staticToStatic("org/lwjgl/opengl/ARBShaderObjects", "glUniformMatrix4ARB", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix4ARB");
+        staticToStatic("org/lwjgl/opengl/GL20", "glUniformMatrix4", "(IZLjava/nio/FloatBuffer;)V", gl, "glUniformMatrix4");
         staticToStatic(arb, "glCreateShaderObjectARB", "(I)I", gl, "glCreateShaderObjectARB");
         staticToStatic(arb, "glShaderSourceARB", "(ILjava/nio/ByteBuffer;)V", gl, "glShaderSourceARB");
         staticToStatic(arb, "glShaderSourceARB", "(ILjava/lang/CharSequence;)V", gl, "glShaderSourceARB");

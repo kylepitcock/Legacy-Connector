@@ -39,7 +39,7 @@ public class ItemBlock extends Item {
 
     @Override
     public IIcon getIconFromDamage(int damage) {
-        return blockInstance.getIcon(1, damage);
+        return blockInstance == null ? super.getIconFromDamage(damage) : blockInstance.getIcon(1, damage);
     }
 
     /** Vanilla 1.7.10 placement logic, verbatim in behaviour. */
@@ -88,27 +88,27 @@ public class ItemBlock extends Item {
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
-        return blockInstance.getUnlocalizedName();
+        return blockInstance == null ? super.getUnlocalizedName(stack) : blockInstance.getUnlocalizedName();
     }
 
     @Override
     public String getUnlocalizedName() {
-        return blockInstance.getUnlocalizedName();
+        return blockInstance == null ? super.getUnlocalizedName() : blockInstance.getUnlocalizedName();
     }
 
     @Override
     public CreativeTabs getCreativeTab() {
-        return blockInstance.getCreativeTabToDisplayOn();
+        return blockInstance == null ? super.getCreativeTab() : blockInstance.getCreativeTabToDisplayOn();
     }
 
     @Override
     public void getSubItems(Item item, CreativeTabs tab, List list) {
-        blockInstance.getSubBlocks(item, tab, list);
+        if (blockInstance != null) blockInstance.getSubBlocks(item, tab, list);
     }
 
     @Override
     public void registerIcons(IIconRegister register) {
-        String s = blockInstance.getItemIconName();
+        String s = blockInstance == null ? null : blockInstance.getItemIconName();
         if (s != null) this.itemIcon = register.registerIcon(s);
     }
 }

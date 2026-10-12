@@ -95,6 +95,31 @@ public final class ClientSelfTest {
                 }
             }
         }
+        // Every legacy item drawn as the inventory / creative menu does (their IItemRenderers run here).
+        Map<String, java.util.List<String>> renderProblems = new TreeMap<>();
+        try {
+            var graphics = new net.minecraft.client.gui.GuiGraphics(mc, mc.renderBuffers().bufferSource());
+            for (Item item : ItemBridge.modItems()) {
+                for (var modern : item.mcc$variants.values()) {
+                    ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+                    try {
+                        graphics.renderItem(new net.minecraft.world.item.ItemStack(modern), 0, 0);
+                        graphics.flush();
+                    } catch (Throwable ex) {
+                        Throwable root = ex;
+                        while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+                        StackTraceElement at = java.util.Arrays.stream(root.getStackTrace())
+                                .filter(e -> !e.getClassName().startsWith("net.minecraft.") && !e.getClassName().startsWith("java.")).findFirst().orElse(null);
+                        String key = root + (at == null ? "" : " at " + at.getClassName() + "." + at.getMethodName() + ":" + at.getLineNumber());
+                        renderProblems.computeIfAbsent(key, k -> new java.util.ArrayList<>()).add(id.toString());
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            LOG.warn("Item render pass could not run", t);
+        }
+        StringBuilder renders = new StringBuilder();
+        renderProblems.forEach((k, v) -> renders.append(String.format("%n  render x%d (%s...): %s", v.size(), v.get(0), k)));
         // Spawn eggs (modern items, not legacy ones): the model must be the egg template with two layers, tinted.
         StringBuilder eggs = new StringBuilder();
         for (ResourceLocation id : org.kylepitcock.mccompat.v1_7_10.entity.LegacySpawnEggs.ids()) {
@@ -139,7 +164,7 @@ public final class ClientSelfTest {
         }
         StringBuilder tp = new StringBuilder();
         tooltipProblems.forEach((k, v) -> tp.append("\n  tooltip ").append(k).append(": ").append(v));
-        sb.append(tp);
+        sb.append(tp).append(renders);
         LOG.info("CLIENT SELF TEST: {} tooltip problems; {} of {} items and {} of {} blocks show the missing texture; {} referenced texture files missing{}",
                 tooltipProblems.size(), itemsBad, items, blocksBad, blocks, files, sb.append(eggs));
     }

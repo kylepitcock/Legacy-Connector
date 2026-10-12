@@ -32,6 +32,7 @@ public final class WorldGenSelfTest {
         int cx = spawn.getX() >> 4, cz = spawn.getZ() >> 4;
         Map<String, Integer> biomes = new TreeMap<>();
         Map<String, Integer> blocks = new TreeMap<>();
+        Map<String, Integer> floating = new TreeMap<>();
         int before = LegacyBiomes.DECORATED.get();
         for (int x = cx - RADIUS; x <= cx + RADIUS; x++) {
             for (int z = cz - RADIUS; z <= cz + RADIUS; z++) {
@@ -47,7 +48,15 @@ public final class WorldGenSelfTest {
                         }
                         for (int y = top - 6; y <= top + 1; y++) {
                             var id = BuiltInRegistries.BLOCK.getKey(chunk.getBlockState(pos.set(wx, y, wz)).getBlock());
-                            if (!id.getNamespace().equals("minecraft")) blocks.merge(id.getNamespace(), 1, Integer::sum);
+                            if (!id.getNamespace().equals("minecraft")) {
+                                blocks.merge(id.getNamespace(), 1, Integer::sum);
+                                // a mod block with air below it and not a tree part: planted in mid air
+                                var self = chunk.getBlockState(pos.set(wx, y, wz));
+                                if (!self.is(net.minecraft.tags.BlockTags.LEAVES) && !self.is(net.minecraft.tags.BlockTags.LOGS)
+                                        && chunk.getBlockState(pos.set(wx, y - 1, wz)).isAir()) {
+                                    floating.merge(id.getNamespace() + ":" + id.getPath(), 1, Integer::sum);
+                                }
+                            }
                         }
                     }
                 }
@@ -55,7 +64,7 @@ public final class WorldGenSelfTest {
         }
         int chunks = (2 * RADIUS + 1) * (2 * RADIUS + 1);
         LoggerFactory.getLogger("Retrofit/WorldGenTest").info("WORLDGEN SELF TEST: {} chunks, legacy decoration ran in {} chunk(s) so far ({} during this test); "
-                + "mod blocks near the surface by mod: {}; surface biomes: {}", chunks, LegacyBiomes.DECORATED.get(), LegacyBiomes.DECORATED.get() - before,
-                blocks, biomes);
+                + "mod blocks near the surface by mod: {}; surface biomes: {}; mod blocks with air below: {}", chunks, LegacyBiomes.DECORATED.get(),
+                LegacyBiomes.DECORATED.get() - before, blocks, biomes, floating);
     }
 }
