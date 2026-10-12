@@ -135,7 +135,8 @@ On the client, renderers registered with `RenderingRegistry.registerEntityRender
 legacy `Render`/`RenderLiving` code runs inside a render context that maps its OpenGL matrix and state calls onto
 the modern pose stack and buffers, legacy models (`ModelBase`, `ModelBiped`, `ModelQuadruped`, ...) emit real
 geometry, and `Tessellator`/immediate-mode (`glBegin`) geometry is assembled into quads with the matching modern
-render type (textured, translucent or additive). Not yet: armour and held items on legacy mobs.
+render type (textured, translucent or additive). Biped renderers draw worn armour (vanilla layers or a mod's
+`getArmorTexture`) as render passes and the held item through the modern item renderer.
 
 ### Block and item rendering
 
@@ -151,14 +152,13 @@ render type (textured, translucent or additive). Not yet: armour and held items 
   `builtin/entity` model. `AdvancedModelLoader` loads Wavefront OBJ models for renderers.
 - **Vanilla behaviour constants** (render types, opacity of the vanilla block classes) come from a table generated
   from the 1.7.10 jar (`tools/extract_block_constants.sh`), since the vanilla classes are shells.
-- Not yet: per-vertex colour and ambient occlusion of handler-drawn blocks, fluids (`BlockFluidClassic`),
-  `IIcon`s of non-block atlases, mod dimensions.
+- Not yet: per-vertex colour and ambient occlusion of handler-drawn blocks, `IIcon`s of non-block atlases.
 
 ## Compatibility status
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (308 of 337 entity types in the test packs pass a spawn/save/load self test). Entity rendering is bridged (not yet verified in game for every mod); particles, dimensions and fluids in the world are not bridged yet. |
+| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (308 of 337 entity types in the test packs pass a spawn/save/load self test). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
