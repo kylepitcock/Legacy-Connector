@@ -68,6 +68,21 @@ public final class DimensionSelfTest {
                 sb.append("\n  dimension ").append(id).append(": generation threw ").append(ex);
             }
         }
+        // An entity sent there through the legacy API (what portals call for mobs and items).
+        try {
+            for (int id : dims.keySet()) {
+                var target = org.kylepitcock.mccompat.v1_7_10.bridge.DimensionBridge.level(server, id);
+                if (target == null) continue;
+                var item = new net.minecraft.world.entity.item.ItemEntity(server.overworld(), 0, 80, 0,
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.STICK));
+                server.overworld().addFreshEntity(item);
+                var view = org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.wrap(item);
+                org.kylepitcock.mccompat.v1_7_10.bridge.EntityBridge.travelToDimension(view, id);
+                sb.append("\n  entity transfer to ").append(id).append(": ").append(item.isRemoved() ? "moved" : "stayed");
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            sb.append("\n  transfer threw ").append(ex);
+        }
         LOG.info("DIMENSION SELF TEST: {} of {} mod dimensions generated{}", ok, dims.size(), sb);
     }
 }
