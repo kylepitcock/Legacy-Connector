@@ -111,7 +111,11 @@ public final class CoreModPlugins {
         if (transformers != null) for (String t : transformers) {
             if (t == null || t.isBlank()) continue;
             try {
-                Class.forName(t.trim(), true, loader).getDeclaredConstructor().newInstance();
+                Object instance = Class.forName(t.trim(), true, loader).getDeclaredConstructor().newInstance();
+                // Mods ask the launch class loader whether their transformer is installed (anti-tamper checks).
+                if (instance instanceof mccompat.v1_7_10.net.minecraft.launchwrapper.IClassTransformer ct) {
+                    mccompat.v1_7_10.net.minecraft.launchwrapper.Launch.classLoader.getTransformers().add(ct);
+                }
             } catch (Throwable e) {
                 LOG.debug("Legacy coremod {}: transformer {} could not be created: {}", name, t, e.toString());
             }

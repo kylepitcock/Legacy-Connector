@@ -37,6 +37,13 @@ public class Minecraft {
         return resources;
     }
 
+    private mccompat.v1_7_10.net.minecraft.util.Session session;
+
+    public mccompat.v1_7_10.net.minecraft.util.Session getSession() {
+        if (session == null) session = mccompat.v1_7_10.net.minecraft.util.Session.mcc$current();
+        return session;
+    }
+
     private mccompat.v1_7_10.net.minecraft.client.resources.LanguageManager languageManager;
 
     public mccompat.v1_7_10.net.minecraft.client.resources.LanguageManager getLanguageManager() {

@@ -83,9 +83,45 @@ public final class JavaCompatRedirects {
             staticToStatic(gl20, "glUniform" + n, "(ILjava/nio/IntBuffer;)V", gl20, "glUniform" + n + "iv");
         }
         for (int n = 2; n <= 4; n++) staticToStatic(gl20, "glUniformMatrix" + n, "(IZLjava/nio/FloatBuffer;)V", gl20, "glUniformMatrix" + n + "fv");
-        staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", gl20, "glGetShaderiv");
-        staticToStatic(gl20, "glGetProgram", "(IILjava/nio/IntBuffer;)V", gl20, "glGetProgramiv");
-        staticToStatic(gl20, "glShaderSource", "(ILjava/nio/ByteBuffer;)V", COMPAT + "LibraryCompat", "glShaderSource");
+        staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
+        staticToStatic(gl20, "glGetProgram", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetProgramiv");
+        staticToStatic(gl20, "glGetShaderi", "(II)I", COMPAT + "GlCompat", "glGetShaderi");
+        staticToStatic(gl20, "glGetProgrami", "(II)I", COMPAT + "GlCompat", "glGetProgrami");
+        staticToStatic(gl20, "glGetShaderiv", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
+        staticToStatic(gl20, "glGetProgramiv", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetProgramiv");
+        // Shader set-up runs on loading threads that have no GL context (the driver call would abort the JVM).
+        String gl = COMPAT + "GlCompat";
+        staticToStatic(gl20, "glShaderSource", "(ILjava/nio/ByteBuffer;)V", gl, "glShaderSource");
+        staticToStatic(gl20, "glShaderSource", "(ILjava/lang/CharSequence;)V", gl, "glShaderSource");
+        staticToStatic(gl20, "glCreateShader", "(I)I", gl, "glCreateShader");
+        staticToStatic(gl20, "glCompileShader", "(I)V", gl, "glCompileShader");
+        staticToStatic(gl20, "glGetShader", "(II)I", gl, "glGetShader");
+        staticToStatic(gl20, "glGetShaderInfoLog", "(II)Ljava/lang/String;", gl, "glGetShaderInfoLog");
+        staticToStatic(gl20, "glCreateProgram", "()I", gl, "glCreateProgram");
+        staticToStatic(gl20, "glAttachShader", "(II)V", gl, "glAttachShader");
+        staticToStatic(gl20, "glLinkProgram", "(I)V", gl, "glLinkProgram");
+        staticToStatic(gl20, "glValidateProgram", "(I)V", gl, "glValidateProgram");
+        staticToStatic(gl20, "glGetProgram", "(II)I", gl, "glGetProgram");
+        staticToStatic(gl20, "glGetProgramInfoLog", "(II)Ljava/lang/String;", gl, "glGetProgramInfoLog");
+        staticToStatic(gl20, "glUseProgram", "(I)V", gl, "glUseProgram");
+        staticToStatic(gl20, "glDeleteShader", "(I)V", gl, "glDeleteShader");
+        staticToStatic(gl20, "glDeleteProgram", "(I)V", gl, "glDeleteProgram");
+        staticToStatic(gl20, "glGetUniformLocation", "(ILjava/lang/CharSequence;)I", gl, "glGetUniformLocation");
+        staticToStatic(gl20, "glBindAttribLocation", "(IILjava/lang/CharSequence;)V", gl, "glBindAttribLocation");
+        String arb = "org/lwjgl/opengl/ARBShaderObjects";
+        staticToStatic(arb, "glCreateShaderObjectARB", "(I)I", gl, "glCreateShaderObjectARB");
+        staticToStatic(arb, "glShaderSourceARB", "(ILjava/nio/ByteBuffer;)V", gl, "glShaderSourceARB");
+        staticToStatic(arb, "glShaderSourceARB", "(ILjava/lang/CharSequence;)V", gl, "glShaderSourceARB");
+        staticToStatic(arb, "glCompileShaderARB", "(I)V", gl, "glCompileShaderARB");
+        staticToStatic(arb, "glGetObjectParameteriARB", "(II)I", gl, "glGetObjectParameteriARB");
+        staticToStatic(arb, "glGetInfoLogARB", "(II)Ljava/lang/String;", gl, "glGetInfoLogARB");
+        staticToStatic(arb, "glCreateProgramObjectARB", "()I", gl, "glCreateProgramObjectARB");
+        staticToStatic(arb, "glAttachObjectARB", "(II)V", gl, "glAttachObjectARB");
+        staticToStatic(arb, "glLinkProgramARB", "(I)V", gl, "glLinkProgramARB");
+        staticToStatic(arb, "glValidateProgramARB", "(I)V", gl, "glValidateProgramARB");
+        staticToStatic(arb, "glUseProgramObjectARB", "(I)V", gl, "glUseProgramObjectARB");
+        staticToStatic(arb, "glDeleteObjectARB", "(I)V", gl, "glDeleteObjectARB");
+        staticToStatic(arb, "glGetUniformLocationARB", "(ILjava/lang/CharSequence;)I", gl, "glGetUniformLocationARB");
         // Guava 17 -> 32: TypeToken.isAssignableFrom was renamed isSupertypeOf.
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Lcom/google/common/reflect/TypeToken;)Z", "isSupertypeOf");
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Ljava/lang/reflect/Type;)Z", "isSupertypeOf");

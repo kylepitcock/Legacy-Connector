@@ -17,15 +17,26 @@ public class EntityItem extends Entity {
     private float mcc$hover = (float) (Math.random() * Math.PI * 2.0D);
 
     public EntityItem(World world, double x, double y, double z, ItemStack stack) {
-        super(new ItemEntity(world.mcc$fullLevel(), x, y, z, ItemStack.mcc$toModern(stack).copy()));
+        super(mcc$make(world, x, y, z, ItemStack.mcc$toModern(stack).copy()));
     }
 
     public EntityItem(World world, double x, double y, double z) {
-        super(new ItemEntity(world.mcc$fullLevel(), x, y, z, net.minecraft.world.item.ItemStack.EMPTY));
+        super(mcc$make(world, x, y, z, net.minecraft.world.item.ItemStack.EMPTY));
     }
 
     public EntityItem(World world) {
         this(world, 0, 0, 0);
+    }
+
+    /** Mods build detached items for rendering (no world yet): the entity then has no level until it is spawned. */
+    private static ItemEntity mcc$make(World world, double x, double y, double z, net.minecraft.world.item.ItemStack stack) {
+        if (world == null) {
+            ItemEntity e = new ItemEntity(net.minecraft.world.entity.EntityType.ITEM, null);
+            e.setPos(x, y, z);
+            e.setItem(stack);
+            return e;
+        }
+        return new ItemEntity(world.mcc$fullLevel(), x, y, z, stack);
     }
 
     public EntityItem(ItemEntity modern) {

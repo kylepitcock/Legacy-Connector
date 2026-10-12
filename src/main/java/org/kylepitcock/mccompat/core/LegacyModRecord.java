@@ -53,6 +53,15 @@ public final class LegacyModRecord {
         return metadata != null && metadata.has(key) && metadata.get(key).getAsBoolean();
     }
 
+    /** The mod's jar as the user installed it (mods read their own jar through the container's source). */
+    public Path originalFile() {
+        if (metadata != null && metadata.has("sourcePath")) {
+            Path p = Path.of(metadata.get("sourcePath").getAsString());
+            if (java.nio.file.Files.isRegularFile(p)) return p;
+        }
+        return sourceFile();
+    }
+
     public Path sourceFile() {
         return container.getModInfo().getOwningFile().getFile().getFilePath();
     }

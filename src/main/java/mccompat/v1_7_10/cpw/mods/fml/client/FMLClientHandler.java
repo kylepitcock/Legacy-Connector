@@ -21,6 +21,10 @@ public class FMLClientHandler {
         org.slf4j.LoggerFactory.getLogger("Retrofit/Textures").warn("Missing texture {}", location);
     }
 
+    /** The resource packs mods contributed (FML kept them here; mods read it by reflection to add their own). */
+    private final java.util.List resourcePackList = new java.util.ArrayList();
+    private final java.util.Map resourcePackMap = new java.util.HashMap();
+
     public Minecraft getClient() {
         return Minecraft.getMinecraft();
     }

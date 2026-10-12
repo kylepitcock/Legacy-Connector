@@ -51,7 +51,7 @@ public final class LegacyModContainer1710 implements ModContainer {
 
     @Override
     public File getSource() {
-        return record.sourceFile().toFile();
+        return record.originalFile().toFile();
     }
 
     @Override

@@ -62,6 +62,16 @@ public class Loader {
         return getModList();
     }
 
+    /** Mod container -> the mod's instance (FML's registry of {@code @Mod} objects). */
+    public com.google.common.collect.BiMap<ModContainer, Object> getModObjectList() {
+        com.google.common.collect.BiMap<ModContainer, Object> map = com.google.common.collect.HashBiMap.create();
+        for (ModContainer c : getModList()) {
+            Object mod = c.getMod();
+            if (mod != null && !map.containsValue(mod)) map.put(c, mod);
+        }
+        return map;
+    }
+
     public Map<String, ModContainer> getIndexedModList() {
         Map<String, ModContainer> out = new LinkedHashMap<>();
         for (LegacyModRecord r : LegacyMods.ordered()) {

@@ -40,7 +40,9 @@ public enum LegacyVersion {
             "org/lwjgl/opengl/ContextCapabilities",
             "org/lwjgl/opengl/GLContext",
             "org/lwjgl/LWJGLException",
-            "org/lwjgl/Sys");
+            "org/lwjgl/Sys",
+            // The sound library 1.7.10 bundled (mods configure it directly); the modern game has its own engine.
+            "paulscode/sound/");
 
     private final String id;
     private final String shimPrefix;

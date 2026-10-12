@@ -34,10 +34,35 @@ public final class LegacySprites {
     /** Mods' resources by legacy resource location (the generated pack is not readable while it is being built). */
     private static boolean reportedMissing;
 
-    public static final class ModResources implements IResourceManager {
+    public static final class ModResources extends mccompat.v1_7_10.net.minecraft.client.resources.SimpleReloadableResourceManager {
         @Override
         public Set getResourceDomains() {
             return Set.of();
+        }
+
+        private final java.util.List<mccompat.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener> listeners =
+                new java.util.concurrent.CopyOnWriteArrayList<>();
+
+        /** As 1.7.10: a listener is told right away, and again whenever the game reloads. */
+        @Override
+        public void registerReloadListener(mccompat.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener listener) {
+            listeners.add(listener);
+            try {
+                listener.onResourceManagerReload(this);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("A legacy resource reload listener failed", e);
+            }
+        }
+
+        @Override
+        public void reloadResources(List resourcePacks) {
+            for (var l : listeners) {
+                try {
+                    l.onResourceManagerReload(this);
+                } catch (RuntimeException | LinkageError e) {
+                    LOG.warn("A legacy resource reload listener failed", e);
+                }
+            }
         }
 
         @Override

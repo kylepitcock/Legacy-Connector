@@ -17,6 +17,15 @@ public final class Client1710 {
 
     public static void register(IEventBus modBus) {
         modBus.addListener(ClientGui::onRegisterScreens);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent e) -> {
+            for (var key : mccompat.v1_7_10.net.minecraft.client.settings.KeyBinding.mcc$registered()) {
+                try {
+                    e.register(key.mcc$modern());
+                } catch (RuntimeException ex) {
+                    org.slf4j.LoggerFactory.getLogger("Retrofit/Keys").warn("Could not register key binding {}", key.getKeyDescription(), ex);
+                }
+            }
+        });
         modBus.addListener(Client1710::onRegisterRenderers);
         LegacyParticles.register();
         ClientSelfTest.register();
