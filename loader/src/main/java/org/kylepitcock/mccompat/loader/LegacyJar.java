@@ -20,6 +20,8 @@ public final class LegacyJar {
     public String mixinConfigs;
     public String accessTransformer;
     public final List<String> notes = new ArrayList<>();
+    /** {class, field} of every @SidedProxy field in the jar. */
+    public final List<String[]> sidedProxies = new ArrayList<>();
 
     public LegacyJar(Path path) {
         this.path = path;

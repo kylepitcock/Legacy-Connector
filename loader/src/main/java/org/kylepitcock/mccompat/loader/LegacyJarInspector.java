@@ -82,6 +82,9 @@ public final class LegacyJarInspector {
                     LegacyModDecl decl = readModAnnotation(reader);
                     if (decl != null) found.add(decl);
                 }
+                if (pool.contains("cpw/mods/fml/common/SidedProxy") || pool.contains("net/minecraftforge/fml/common/SidedProxy")) {
+                    collectSidedProxies(reader, jar);
+                }
             }
 
             if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
@@ -198,6 +201,32 @@ public final class LegacyJarInspector {
     private static String str(JsonObject o, String key, String fallback) {
         JsonElement e = o.get(key);
         return e != null && e.isJsonPrimitive() && !e.getAsString().isBlank() ? e.getAsString() : fallback;
+    }
+
+    /** Fields annotated @SidedProxy, wherever they are in the jar: the runtime injects them for the jar's mods. */
+    private static void collectSidedProxies(ClassReader reader, LegacyJar jar) {
+        reader.accept(new ClassVisitor(Opcodes.ASM9) {
+            String className;
+
+            @Override
+            public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+                className = name;
+            }
+
+            @Override
+            public org.objectweb.asm.FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+                return new org.objectweb.asm.FieldVisitor(Opcodes.ASM9) {
+                    @Override
+                    public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                        if (descriptor.equals("Lcpw/mods/fml/common/SidedProxy;")
+                                || descriptor.equals("Lnet/minecraftforge/fml/common/SidedProxy;")) {
+                            jar.sidedProxies.add(new String[] {className.replace('/', '.'), name});
+                        }
+                        return null;
+                    }
+                };
+            }
+        }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
     }
 
     private static LegacyModDecl readModAnnotation(ClassReader reader) {

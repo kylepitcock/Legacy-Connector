@@ -95,6 +95,9 @@ public final class ModMetadataGenerator {
         for (LegacyModDecl mod : jar.mods) {
             JsonObject o = new JsonObject();
             o.addProperty("sourcePath", jar.path.toAbsolutePath().toString());
+            JsonArray proxies = new JsonArray();
+            for (String[] sp : jar.sidedProxies) proxies.add(sp[0] + "#" + sp[1]);
+            o.add("sidedProxies", proxies);
             o.addProperty("legacyId", mod.legacyId);
             o.addProperty("modernId", mod.modernId());
             o.addProperty("mainClass", mod.mainClass.replace('/', '.'));

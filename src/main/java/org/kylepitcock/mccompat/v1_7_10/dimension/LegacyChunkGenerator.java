@@ -86,7 +86,12 @@ public class LegacyChunkGenerator extends ChunkGenerator {
             try {
                 synchronized (provider) {
                     synchronized (biomeLock(provider)) {
-                        generated = provider.provideChunk(cx, cz);
+                        Chunk.mcc$beginDetached();
+                        try {
+                            generated = provider.provideChunk(cx, cz);
+                        } finally {
+                            Chunk.mcc$endDetached();
+                        }
                     }
                 }
             } catch (RuntimeException | LinkageError e) {

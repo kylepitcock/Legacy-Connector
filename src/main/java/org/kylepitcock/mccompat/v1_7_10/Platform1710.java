@@ -96,9 +96,25 @@ public final class Platform1710 implements LegacyPlatform {
             for (var a : scan.getAnnotations()) if (a.annotationType().getDescriptor().equals(SIDED_PROXY)) found.add(a);
         }
         boolean client = FMLEnvironment.dist.isClient();
-        for (var a : found) {
-            Class<?> owner = Class.forName(a.clazz().getClassName(), true, loader);
-            Field f = owner.getDeclaredField(a.memberName());
+        // The translator's own list: classes moved to shared jars are not in this mod file's scan.
+        List<String[]> targets = new ArrayList<>();
+        for (var a : found) targets.add(new String[] {a.clazz().getClassName(), a.memberName()});
+        if (mod.metadata != null && mod.metadata.has("sidedProxies")) {
+            for (var e : mod.metadata.getAsJsonArray("sidedProxies")) {
+                String[] parts = e.getAsString().split("#", 2);
+                boolean dup = false;
+                for (String[] t : targets) if (t[0].equals(parts[0]) && t[1].equals(parts[1])) dup = true;
+                if (!dup && parts.length == 2) targets.add(parts);
+            }
+        }
+        for (var t : targets) {
+            Class<?> owner;
+            try {
+                owner = Class.forName(t[0], true, loader);
+            } catch (ClassNotFoundException | LinkageError e) {
+                continue;
+            }
+            Field f = owner.getDeclaredField(t[1]);
             SidedProxy sp = f.getAnnotation(SidedProxy.class);
             if (sp == null) continue;
             if (!sp.modId().isEmpty() && !sp.modId().equals(mod.legacyId)) continue;

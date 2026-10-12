@@ -35,8 +35,27 @@ public class Chunk {
     private byte[] mcc$meta;
     private byte[] mcc$biomes;
 
+    /** While set on a thread, {@code new Chunk(world, x, z)} builds a detached array chunk (a generator's new chunk). */
+    private static final ThreadLocal<Boolean> DETACHED = new ThreadLocal<>();
+
+    public static void mcc$beginDetached() {
+        DETACHED.set(Boolean.TRUE);
+    }
+
+    public static void mcc$endDetached() {
+        DETACHED.remove();
+    }
+
     public Chunk(World world, int x, int z) {
         this(world, x, z, null);
+        if (DETACHED.get() != null) {
+            // 1.7.10's fresh chunk: empty storage the generator fills (directly or through ExtendedBlockStorage).
+            this.mcc$blocks = new Block[65536];
+            this.mcc$meta = new byte[65536];
+            this.mcc$height = 256;
+            this.isTerrainPopulated = false;
+            this.isLightPopulated = false;
+        }
     }
 
     public Chunk(World world, ChunkAccess modern) {
