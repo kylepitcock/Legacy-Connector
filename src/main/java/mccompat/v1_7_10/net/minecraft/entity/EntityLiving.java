@@ -229,6 +229,24 @@ public abstract class EntityLiving extends EntityLivingBase {
     public boolean getCanSpawnHere() {
         Mob m = mcc$mob();
         if (m == null) return true;
+        var region = mcc$worldOverride;
+        if (region != null) {
+            // During chunk generation the real level must not be read (its chunks are the ones being generated, so
+            // a blocking getChunk deadlocks the worldgen pool): scan the generation region's blocks instead.
+            var box = m.getBoundingBox();
+            var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+            for (int x = net.minecraft.util.Mth.floor(box.minX); x <= net.minecraft.util.Mth.floor(box.maxX); x++) {
+                for (int y = net.minecraft.util.Mth.floor(box.minY); y <= net.minecraft.util.Mth.floor(box.maxY); y++) {
+                    for (int z = net.minecraft.util.Mth.floor(box.minZ); z <= net.minecraft.util.Mth.floor(box.maxZ); z++) {
+                        pos.set(x, y, z);
+                        if (!region.hasChunk(x >> 4, z >> 4)) continue;
+                        var state = region.getBlockState(pos);
+                        if (!state.getCollisionShape(region, pos).isEmpty() || !state.getFluidState().isEmpty()) return false;
+                    }
+                }
+            }
+            return true;
+        }
         var level = m.level();
         return level.isUnobstructed(m) && level.noCollision(m) && !level.containsAnyLiquid(m.getBoundingBox());
     }
