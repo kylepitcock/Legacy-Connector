@@ -47,6 +47,7 @@ public class Chunk {
     public Chunk(World world, Block[] blocks, byte[] meta, int x, int z) {
         this(world, x, z, null);
         this.mcc$blocks = blocks;
+        this.mcc$height = Math.max(1, blocks.length / 256);
         this.mcc$meta = meta == null ? new byte[blocks.length] : meta;
         this.isTerrainPopulated = false;
         this.isLightPopulated = false;
@@ -64,8 +65,15 @@ public class Chunk {
         return mcc$meta;
     }
 
-    private static int index(int x, int y, int z) {
-        return (x & 15) << 12 | (z & 15) << 8 | (y & 255);
+    /** Column height of an array chunk: the arrays hold (x * 16 + z) * height + y (vanilla 256, some mods' 128). */
+    private int mcc$height = 256;
+
+    public int mcc$arrayHeight() {
+        return mcc$height;
+    }
+
+    private int index(int x, int y, int z) {
+        return ((x & 15) * 16 + (z & 15)) * mcc$height + y;
     }
 
     private Chunk(World world, int x, int z, ChunkAccess modern) {
@@ -94,7 +102,7 @@ public class Chunk {
 
     public Block getBlock(int x, int y, int z) {
         if (mcc$blocks != null) {
-            if (y < 0 || y > 255) return mccompat.v1_7_10.net.minecraft.init.Blocks.air;
+            if (y < 0 || y >= mcc$height) return mccompat.v1_7_10.net.minecraft.init.Blocks.air;
             Block b = mcc$blocks[index(x, y, z)];
             return b == null ? mccompat.v1_7_10.net.minecraft.init.Blocks.air : b;
         }
@@ -102,13 +110,13 @@ public class Chunk {
     }
 
     public int getBlockMetadata(int x, int y, int z) {
-        if (mcc$blocks != null) return y < 0 || y > 255 ? 0 : mcc$meta[index(x, y, z)] & 15;
+        if (mcc$blocks != null) return y < 0 || y >= mcc$height ? 0 : mcc$meta[index(x, y, z)] & 15;
         return worldObj.getBlockMetadata(wx(x), y, wz(z));
     }
 
     public boolean setBlockMetadata(int x, int y, int z, int meta) {
         if (mcc$blocks != null) {
-            if (y < 0 || y > 255) return false;
+            if (y < 0 || y >= mcc$height) return false;
             mcc$meta[index(x, y, z)] = (byte) meta;
             return true;
         }
@@ -117,7 +125,7 @@ public class Chunk {
 
     public boolean func_150807_a(int x, int y, int z, Block block, int meta) {
         if (mcc$blocks != null) {
-            if (y < 0 || y > 255) return false;
+            if (y < 0 || y >= mcc$height) return false;
             int i = index(x, y, z);
             mcc$blocks[i] = block;
             mcc$meta[i] = (byte) meta;
@@ -128,7 +136,7 @@ public class Chunk {
 
     public int getHeightValue(int x, int z) {
         if (mcc$blocks != null) {
-            for (int y = 255; y > 0; y--) {
+            for (int y = mcc$height - 1; y > 0; y--) {
                 Block b = mcc$blocks[index(x, y, z)];
                 if (b != null && b != mccompat.v1_7_10.net.minecraft.init.Blocks.air) return y + 1;
             }

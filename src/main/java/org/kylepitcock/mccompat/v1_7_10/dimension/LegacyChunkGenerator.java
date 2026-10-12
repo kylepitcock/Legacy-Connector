@@ -97,10 +97,11 @@ public class LegacyChunkGenerator extends ChunkGenerator {
             Block[] blocks = generated.mcc$blocks();
             byte[] meta = generated.mcc$meta();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            int height = generated.mcc$arrayHeight();
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
-                    int column = x << 12 | z << 8;
-                    for (int y = 0; y < 256; y++) {
+                    int column = (x * 16 + z) * height;
+                    for (int y = 0; y < height && y < 256; y++) {
                         Block block = blocks[column | y];
                         if (block == null) continue;
                         BlockState state = BlockBridge.toModern(block, meta[column | y] & 15);

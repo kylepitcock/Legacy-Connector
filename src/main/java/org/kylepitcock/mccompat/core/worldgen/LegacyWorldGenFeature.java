@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
  * WorldGenRegion allows writes into all neighbours of the decorated chunk, so those writes are legal.
  */
 public class LegacyWorldGenFeature extends Feature<NoneFeatureConfiguration> {
+    private static final java.util.concurrent.atomic.AtomicInteger FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
     /** Implemented by each legacy family's world generator bridge. */
     public interface Decorator {
         void decorate(WorldGenLevel level, int chunkX, int chunkZ, long seed);
@@ -40,7 +42,12 @@ public class LegacyWorldGenFeature extends Feature<NoneFeatureConfiguration> {
             try {
                 d.decorate(level, chunkX, chunkZ, level.getSeed());
             } catch (RuntimeException | LinkageError e) {
-                LoggerFactory.getLogger("Retrofit/WorldGen").error("Legacy world generator failed in chunk {},{}", chunkX, chunkZ, e);
+                int n = FAILURES.incrementAndGet();
+                if (n <= 3) {
+                    LoggerFactory.getLogger("Retrofit/WorldGen").error("Legacy world generator failed in chunk {},{}", chunkX, chunkZ, e);
+                } else if (n % 200 == 0) {
+                    LoggerFactory.getLogger("Retrofit/WorldGen").error("Legacy world generators failed {} times so far (last: {})", n, e.toString());
+                }
             }
         }
         return true;

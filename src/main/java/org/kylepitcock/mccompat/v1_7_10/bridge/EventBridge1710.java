@@ -180,7 +180,9 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((EntityTickEvent.Pre e) -> {
             if (!(e.getEntity() instanceof LivingEntity l) || !wants(forge(), LivingEvent.LivingUpdateEvent.class)) return;
-            if (forge().post(new LivingEvent.LivingUpdateEvent((EntityLivingBase) EntityBridge.wrap(l)))) e.setCanceled(true);
+            EntityLivingBase view = (EntityLivingBase) EntityBridge.wrap(l);
+            if (forge().post(new LivingEvent.LivingUpdateEvent(view))) e.setCanceled(true);
+            view.mcc$syncPreviousEquipment();
         });
         gameBus.addListener((LivingIncomingDamageEvent e) -> {
             boolean attack = wants(forge(), LivingAttackEvent.class);

@@ -777,6 +777,9 @@ public class Block {
         return canSilkHarvest() && !hasTileEntity(metadata);
     }
 
+    /** Forge: the player harvesting the block, set around getDrops/harvestBlock. */
+    protected ThreadLocal<mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayer> harvesters = new ThreadLocal<>();
+
     protected ItemStack createStackedBlock(int meta) {
         Item item = Item.getItemFromBlock(this);
         return item == null ? null : new ItemStack(item, 1, item.getHasSubtypes() ? meta : 0);

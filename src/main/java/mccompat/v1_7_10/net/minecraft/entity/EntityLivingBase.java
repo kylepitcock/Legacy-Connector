@@ -162,6 +162,17 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     /** 0 = held item, 1-4 = armor from boots to helmet. */
+    /** Vanilla's per-tick copy of the equipment (mods diff it against the current items to notice equip changes). */
+    public ItemStack[] previousEquipment = new ItemStack[5];
+
+    /** Called after the living-update event handlers ran, where vanilla's own update refreshed the copy. */
+    public void mcc$syncPreviousEquipment() {
+        for (int i = 0; i < 5; i++) {
+            ItemStack current = getEquipmentInSlot(i);
+            previousEquipment[i] = current == null ? null : current.copy();
+        }
+    }
+
     public ItemStack getEquipmentInSlot(int slot) {
         if (mcc$entity == null) return null;
         return ItemStack.mcc$wrap(mcc$living().getItemBySlot(mcc$slot(slot)));

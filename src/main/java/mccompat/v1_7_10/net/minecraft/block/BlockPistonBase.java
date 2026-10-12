@@ -21,4 +21,9 @@ public class BlockPistonBase extends mccompat.v1_7_10.net.minecraft.block.Block 
         this(mccompat.v1_7_10.net.minecraft.block.material.Material.piston);
         this.isSticky = p0;
     }
+
+    /** func_150079_i: whether the piston can push the blocks in front of it (the push logic is the engine's). */
+    public boolean tryExtend(mccompat.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta) {
+        return false;
+    }
 }

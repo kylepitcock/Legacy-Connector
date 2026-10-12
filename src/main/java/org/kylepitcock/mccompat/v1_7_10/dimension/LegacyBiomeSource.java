@@ -90,8 +90,12 @@ public class LegacyBiomeSource extends BiomeSource {
         if (fallback == null) fallback = biomes.stream().findFirst().orElseThrow();
         if (m == null) return fallback;
         BiomeGenBase biome;
-        synchronized (m) { // legacy layers keep per-call state
-            biome = m.getBiomeGenAt((qx << 2) + 2, (qz << 2) + 2);
+        try {
+            synchronized (m) { // legacy layers keep per-call state
+                biome = m.getBiomeGenAt((qx << 2) + 2, (qz << 2) + 2);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            return fallback; // a broken biome provider must not take the server down
         }
         Holder<Biome> h = biome == null ? null : map.get(biome.biomeID);
         return h == null ? fallback : h;

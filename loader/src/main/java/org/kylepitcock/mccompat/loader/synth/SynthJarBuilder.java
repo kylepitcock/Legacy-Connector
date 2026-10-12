@@ -175,6 +175,15 @@ public final class SynthJarBuilder {
         ClassWriter cw = writer();
         cw.visit(Opcodes.V1_8, access, name, null, sup, ifaces.toArray(new String[0]));
         Set<Member> members = demand.members.getOrDefault(name, Set.of());
+        // Everything vanilla declared on the class it stands in for (not only what mods call): reflection finds it.
+        List<LegacyMethods.Method> vanillaMethods = LegacyMethods.of(version, legacyName(name).replace('.', '/'));
+        if (!vanillaMethods.isEmpty()) {
+            Set<Member> all = new java.util.TreeSet<>(members);
+            for (LegacyMethods.Method vm : vanillaMethods) {
+                all.add(new Member(vm.isStatic() ? Kind.STATIC_METHOD : Kind.METHOD, vm.name(), relocateDesc(vm.desc())));
+            }
+            members = all;
+        }
         Set<String> declared = new HashSet<>();
         List<Member> enumConstants = new ArrayList<>();
         List<Member> staticInits = new ArrayList<>();
@@ -659,6 +668,16 @@ public final class SynthJarBuilder {
     private static void stubCall(MethodVisitor mv, String key) {
         mv.visitLdcInsn(key);
         mv.visitMethodInsn(Opcodes.INVOKESTATIC, RT, "stub", "(Ljava/lang/String;)V", false);
+    }
+
+    /** A vanilla descriptor with its class names relocated the way mod bytecode is (shim class, or synthesized). */
+    private String relocateDesc(String desc) {
+        if (desc.indexOf('L') < 0) return desc;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("L([^;\\[()]+);").matcher(desc);
+        StringBuilder out = new StringBuilder();
+        while (m.find()) m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement("L" + hierarchy.relocate(m.group(1)) + ";"));
+        m.appendTail(out);
+        return out.toString();
     }
 
     private String legacyName(String relocated) {

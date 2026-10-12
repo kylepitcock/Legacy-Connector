@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
  */
 public final class ReflectiveEventBus {
     private static final Logger LOG = LoggerFactory.getLogger("Retrofit/EventBus");
+    private static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicInteger> FAILURES =
+            new java.util.concurrent.ConcurrentHashMap<>();
 
     /** Version-specific knowledge: which annotation marks handlers and how events report cancellation. */
     public interface Adapter {
@@ -105,7 +107,14 @@ public final class ReflectiveEventBus {
             try {
                 l.handle.invoke(event);
             } catch (Throwable t) {
-                LOG.error("[{}] Exception in legacy event handler {} for {}", name, l.name, event.getClass().getName(), t);
+                // A handler that fails every tick would flood the log (and the disk) in seconds: say so a few times.
+                int n = FAILURES.computeIfAbsent(l.name, k -> new java.util.concurrent.atomic.AtomicInteger()).incrementAndGet();
+                if (n <= 3) {
+                    LOG.error("[{}] Exception in legacy event handler {} for {}", name, l.name, event.getClass().getName(), t);
+                } else if (n == 4 || n % 5000 == 0) {
+                    LOG.error("[{}] Legacy event handler {} keeps failing ({} times so far, last: {}); further failures are not logged", name,
+                            l.name, n, t.toString());
+                }
                 if (t instanceof Error err && !(t instanceof LinkageError)) throw err;
             }
         }

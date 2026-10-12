@@ -41,7 +41,8 @@ public final class ShimAccessWidener {
                 byte[] in = Files.readAllBytes(p);
                 ClassNode node = new ClassNode();
                 new ClassReader(in).accept(node, 0);
-                int n = addLegacyFields(node, legacyFields, classes) + addStaticArrays(node);
+                int n = addStaticArrays(node);
+                n += addLegacyFields(node, legacyFields, classes);
                 added += n;
                 if (!widen(node) && n == 0) continue;
                 ClassWriter cw = new ClassWriter(0);
@@ -116,15 +117,61 @@ public final class ShimAccessWidener {
             if (desc == null) continue;
             node.fields.add(new FieldNode(Opcodes.ACC_PUBLIC | (f.isStatic() ? Opcodes.ACC_STATIC : 0), f.name(), desc, null, null));
             present.add(f.name());
+            if (desc.startsWith("[")) initEmptyArray(node, f.name(), desc, f.isStatic());
             n++;
         }
         return n;
     }
 
+    /** Gives an array field an empty array (a plain field would be null: legacy code loops over vanilla's arrays). */
+    private static void initEmptyArray(ClassNode node, String name, String desc, boolean isStatic) {
+        org.objectweb.asm.tree.InsnList init = new org.objectweb.asm.tree.InsnList();
+        if (!isStatic) init.add(new org.objectweb.asm.tree.VarInsnNode(Opcodes.ALOAD, 0));
+        init.add(new org.objectweb.asm.tree.InsnNode(Opcodes.ICONST_0));
+        String element = desc.substring(1);
+        switch (element.charAt(0)) {
+            case 'Z' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_BOOLEAN));
+            case 'B' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_BYTE));
+            case 'C' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_CHAR));
+            case 'S' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_SHORT));
+            case 'I' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_INT));
+            case 'J' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_LONG));
+            case 'F' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_FLOAT));
+            case 'D' -> init.add(new org.objectweb.asm.tree.IntInsnNode(Opcodes.NEWARRAY, Opcodes.T_DOUBLE));
+            case 'L' -> init.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.ANEWARRAY, element.substring(1, element.length() - 1)));
+            default -> init.add(new org.objectweb.asm.tree.TypeInsnNode(Opcodes.ANEWARRAY, element));
+        }
+        init.add(new org.objectweb.asm.tree.FieldInsnNode(isStatic ? Opcodes.PUTSTATIC : Opcodes.PUTFIELD, node.name, name, desc));
+        if (isStatic) {
+            MethodNode clinit = null;
+            for (MethodNode m : node.methods) if (m.name.equals("<clinit>")) clinit = m;
+            if (clinit == null) {
+                clinit = new MethodNode(Opcodes.ACC_STATIC, "<clinit>", "()V", null, null);
+                clinit.instructions.add(new org.objectweb.asm.tree.InsnNode(Opcodes.RETURN));
+                node.methods.add(clinit);
+            }
+            clinit.instructions.insert(init);
+            clinit.maxStack = Math.max(clinit.maxStack, 3);
+        } else {
+            for (MethodNode m : node.methods) {
+                if (!m.name.equals("<init>")) continue;
+                m.instructions.insert(copy(init));
+                m.maxStack = Math.max(m.maxStack, 3);
+            }
+        }
+    }
+
+    private static org.objectweb.asm.tree.InsnList copy(org.objectweb.asm.tree.InsnList list) {
+        org.objectweb.asm.tree.InsnList out = new org.objectweb.asm.tree.InsnList();
+        java.util.Map<org.objectweb.asm.tree.LabelNode, org.objectweb.asm.tree.LabelNode> labels = new java.util.HashMap<>();
+        for (var insn : list) out.add(insn.clone(labels));
+        return out;
+    }
+
     /** The field descriptor with legacy types moved into the shim, or null when a type has no hand-written class. */
     private static String shimDesc(String desc, Path classes) {
-        // Arrays and collections stay with the synthesized helpers: those default to empty values, a plain field to null.
-        if (desc.startsWith("[") || desc.startsWith("Ljava/util/") || desc.equals("Ljava/lang/Iterable;")
+        // Collections stay with the synthesized helpers: those default to empty values, a plain field to null.
+        if (desc.startsWith("Ljava/util/") || desc.equals("Ljava/lang/Iterable;")
                 || desc.startsWith("Lcom/google/common/collect/")) return null;
         int dims = 0;
         while (desc.charAt(dims) == '[') dims++;

@@ -9,6 +9,7 @@ public class ClientRegistry {
         renderer.func_147497_a(TileEntityRendererDispatcher.instance);
     }
 
-    public static void registerKeyBinding(Object key) {
+    public static void registerKeyBinding(mccompat.v1_7_10.net.minecraft.client.settings.KeyBinding key) {
+        if (key != null) mccompat.v1_7_10.net.minecraft.client.settings.KeyBinding.mcc$register(key);
     }
 }

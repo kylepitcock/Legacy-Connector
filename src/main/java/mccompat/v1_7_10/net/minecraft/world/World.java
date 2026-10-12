@@ -505,9 +505,29 @@ public class World implements IBlockAccess {
         int y = lvl().hasChunk(x >> 4, z >> 4)
                 ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
                 : lvl().getSeaLevel();
-        var key = lvl().getBiome(pos(x, y, z)).unwrapKey().map(k -> k.location()).orElse(null);
+        net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> holder;
+        try {
+            holder = lvl().getBiome(pos(x, y, z));
+        } catch (RuntimeException e) {
+            // A generation region only holds its own chunks: ask the generator's biome source (what vanilla
+            // 1.7.10's chunk manager answered for any coordinate).
+            holder = generatorBiome(x, y, z);
+        }
+        var key = holder == null ? null : holder.unwrapKey().map(k -> k.location()).orElse(null);
         var legacy = org.kylepitcock.mccompat.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
         return legacy != null ? legacy : mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+    }
+
+    private net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> generatorBiome(int x, int y, int z) {
+        try {
+            if (mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel sl) {
+                var cache = sl.getChunkSource();
+                return cache.getGenerator().getBiomeSource().getNoiseBiome(x >> 2, y >> 2, z >> 2, cache.randomState().sampler());
+            }
+        } catch (RuntimeException e) {
+            // fall through
+        }
+        return null;
     }
 
     public mccompat.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoordsBody(int x, int z) {
