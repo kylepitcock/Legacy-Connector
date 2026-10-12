@@ -6,6 +6,10 @@ import net.minecraft.core.Direction;
 
 /** A textured box; becomes a modern {@link ModelPart.Cube}, which uses the identical UV unwrapping. */
 public class ModelBox {
+    // Declaration order matters: mods read these by field index (ObfuscationReflectionHelper.getPrivateValue(.., 1)).
+    private PositionTextureVertex[] vertexPositions;
+    /** The six faces (west, east, down, up, north, south as in vanilla's unwrapping), for code that reads or adjusts vertices. */
+    public TexturedQuad[] quadList;
     public final float posX1;
     public final float posY1;
     public final float posZ1;
@@ -13,8 +17,6 @@ public class ModelBox {
     public final float posY2;
     public final float posZ2;
     public String field_78247_g;
-    /** The six faces (west, east, down, up, north, south as in vanilla's unwrapping), for code that reads or adjusts vertices. */
-    public TexturedQuad[] quadList;
     final ModelPart.Cube mcc$cube;
 
     public ModelBox(ModelRenderer renderer, int u, int v, float x, float y, float z, int w, int h, int d, float grow) {
@@ -35,6 +37,7 @@ public class ModelBox {
         PositionTextureVertex v5 = new PositionTextureVertex(x, y, z2, 0.0F, 8.0F);
         PositionTextureVertex v6 = new PositionTextureVertex(x, y2, z2, 8.0F, 8.0F);
         PositionTextureVertex v7 = new PositionTextureVertex(x2, y2, z2, 8.0F, 0.0F);
+        this.vertexPositions = new PositionTextureVertex[] {v0, v1, v2, v3, v4, v5, v6, v7};
         this.quadList = new TexturedQuad[] {
                 new TexturedQuad(new PositionTextureVertex[] {v4, v0, v3, v7}), new TexturedQuad(new PositionTextureVertex[] {v1, v5, v6, v2}),
                 new TexturedQuad(new PositionTextureVertex[] {v4, v5, v1, v0}), new TexturedQuad(new PositionTextureVertex[] {v3, v2, v6, v7}),

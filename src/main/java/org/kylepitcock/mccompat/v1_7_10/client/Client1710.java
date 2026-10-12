@@ -70,8 +70,12 @@ public final class Client1710 {
     /** Legacy items tinted per render pass (spawn eggs, dyed items): layer N of the item model is pass N. */
     private static void onRegisterItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
         for (Item item : ItemBridge.modItems()) {
-            if (!org.kylepitcock.mccompat.v1_7_10.adapter.LegacyBlockAdapter.overrides(item, "getColorFromItemStack",
-                    mccompat.v1_7_10.net.minecraft.item.ItemStack.class, int.class)) continue;
+            try {
+                if (!org.kylepitcock.mccompat.v1_7_10.adapter.LegacyBlockAdapter.overrides(item, "getColorFromItemStack",
+                        mccompat.v1_7_10.net.minecraft.item.ItemStack.class, int.class)) continue;
+            } catch (RuntimeException | LinkageError e) {
+                continue;
+            }
             event.register((stack, tint) -> {
                 try {
                     return 0xFF000000 | item.getColorFromItemStack(mccompat.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack), tint);
@@ -103,12 +107,18 @@ public final class Client1710 {
         };
         for (Item item : ItemBridge.modItems()) {
             var variants = item.mcc$variants.values().toArray(new net.minecraft.world.item.Item[0]);
-            if (item instanceof ItemBlock ib && isChestStyle(ib.mcc$block())) {
-                event.registerItem(chest, variants);
-            } else {
-                // Only used where the generated model is builtin/entity: items with a Forge IItemRenderer, which mods
-                // may register after this event (the renderer is looked up per stack).
-                event.registerItem(custom, variants);
+            try {
+                if (item instanceof ItemBlock ib && isChestStyle(ib.mcc$block())) {
+                    event.registerItem(chest, variants);
+                } else {
+                    // Only used where the generated model is builtin/entity: items with a Forge IItemRenderer, which mods
+                    // may register after this event (the renderer is looked up per stack).
+                    event.registerItem(custom, variants);
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // A mod whose classes failed to initialise must not take the whole game down at start-up.
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Client").debug("Skipping client extensions of {}: {}", item, e.toString());
+                continue;
             }
         }
     }

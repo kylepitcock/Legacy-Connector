@@ -37,6 +37,9 @@ public class Minecraft {
         return resources;
     }
 
+    public mccompat.v1_7_10.net.minecraft.client.renderer.EntityRenderer entityRenderer =
+            new mccompat.v1_7_10.net.minecraft.client.renderer.EntityRenderer();
+
     private mccompat.v1_7_10.net.minecraft.util.Session session;
 
     public mccompat.v1_7_10.net.minecraft.util.Session getSession() {

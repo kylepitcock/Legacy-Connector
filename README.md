@@ -108,6 +108,16 @@ provider's own `WorldChunkManager` layers (`LegacyBiomeSource`), and `World.prov
 `ServerConfigurationManager.transferPlayerToDimension` and `Teleporter` work as in 1.7.10. Verified with Twilight Forest's
 terrain; portal placement and dimension-specific rendering (sky, fog) are not done yet.
 
+### Structures, fluids and input
+
+`MapGenBase`, `MapGenStructure`, `StructureStart`, `StructureComponent` and `StructureBoundingBox` are ported, so mods'
+dungeons, villages and ruins generate through their own legacy code (structure starts are recomputed from the seed rather
+than persisted). Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
+by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
+are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and
+register with the controls screen. Shaders written for the fixed-function pipeline are virtual (they compile "successfully"
+and have no effect); VBO and vertex-array calls are emulated on top of immediate mode.
+
 ### Entities
 
 Each legacy entity class a mod registers (`EntityRegistry.registerModEntity` / `registerGlobalEntityID`) becomes a
