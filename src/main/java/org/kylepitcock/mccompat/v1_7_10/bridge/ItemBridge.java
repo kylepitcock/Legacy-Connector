@@ -455,7 +455,13 @@ public final class ItemBridge {
             net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m
                     : VanillaFlattening.item(info.legacyName(), item.getHasSubtypes() ? meta : 0);
             var stack = new net.minecraft.world.item.ItemStack(modern, count);
-            if (stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) stack.setDamageValue(meta);
+            if (stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
+                stack.setDamageValue(meta);
+            } else if (!stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
+                // A metadata value the flattening has no item for (log2 with 2, 3) still reads back as it was given.
+                Object[] reverse = vanillaReverse(modern);
+                if (reverse == null || !Integer.valueOf(meta).equals(reverse[1])) stack.set(CompatComponents.legacyMeta(), meta);
+            }
             return stack;
         }
         if (item.mcc$variants.isEmpty()) {

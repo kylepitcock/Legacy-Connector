@@ -156,9 +156,12 @@ public final class Platform1710 implements LegacyPlatform {
 
     private static List<Method> handlers(Class<?> cls) {
         List<Method> out = new ArrayList<>();
+        // An override of an annotated superclass method is the same handler: invoking both would run it twice.
+        java.util.Set<String> seen = new java.util.HashSet<>();
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(Mod.EventHandler.class) && m.getParameterCount() == 1) out.add(m);
+                if (m.isAnnotationPresent(Mod.EventHandler.class) && m.getParameterCount() == 1
+                        && seen.add(m.getName() + ":" + m.getParameterTypes()[0].getName())) out.add(m);
             }
         }
         return out;

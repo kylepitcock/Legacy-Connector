@@ -15,7 +15,8 @@ import net.minecraft.tags.TagKey;
  */
 public class ItemTool extends Item {
     protected float efficiencyOnProperMaterial = 4.0F;
-    private final float damageVsEntity;
+    /** Not final and not private: mods (RotaryCraft's bedrock tools) assign it from their own constructors. */
+    public float damageVsEntity;
     protected Item.ToolMaterial toolMaterial;
     private final Set<Block> field_150914_c;
     /** Forge: the tool class ("pickaxe", "axe", "shovel") this tool mines with, if any. */

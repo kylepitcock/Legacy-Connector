@@ -8,8 +8,9 @@ import mccompat.v1_7_10.net.minecraft.world.World;
 
 /** Vanilla 1.7.10 sword: 4 + material damage, fast on cobwebs and plants, blocks on right click. */
 public class ItemSword extends Item {
-    private final float field_150934_a;
-    private final Item.ToolMaterial field_150933_b;
+    /** Not final: mods assign the damage from their own constructors (RotaryCraft's bedrock sword). */
+    public float field_150934_a;
+    public Item.ToolMaterial field_150933_b;
 
     public ItemSword(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {
         super(info);

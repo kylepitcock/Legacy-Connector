@@ -20,7 +20,21 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.TileEntityBridge;
 import org.kylepitcock.mccompat.v1_7_10.bridge.WorldGenBridge;
 
 public class GameRegistry {
+    /** Forge's private registry of generators; DragonAPI's retrogen settings read it reflectively. */
+    private static final java.util.Set<IWorldGenerator> worldGenerators = new java.util.LinkedHashSet<>();
+    /** Forge's generator list sorted by weight (read reflectively like {@code worldGenerators}). */
+    private static final java.util.List<IWorldGenerator> sortedGeneratorList = new java.util.ArrayList<>();
+
+    /** Forge recomputes {@code sortedGeneratorList} from the registered generators; callers invoke it reflectively. */
+    private static void computeSortedGeneratorList() {
+        java.util.List<IWorldGenerator> sorted = new java.util.ArrayList<>(worldGenerators);
+        sortedGeneratorList.clear();
+        sortedGeneratorList.addAll(sorted);
+    }
+
     public static void registerWorldGenerator(IWorldGenerator generator, int modGenerationWeight) {
+        worldGenerators.add(generator);
+        sortedGeneratorList.add(generator);
         WorldGenBridge.register(generator, modGenerationWeight);
     }
 

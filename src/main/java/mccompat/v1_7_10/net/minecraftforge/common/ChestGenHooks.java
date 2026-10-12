@@ -25,12 +25,12 @@ public class ChestGenHooks {
     public static final String BONUS_CHEST = "bonusChest";
     public static final String DUNGEON_CHEST = "dungeonChest";
 
-    private static final Map<String, ChestGenHooks> CHEST_INFO = new HashMap<>();
+    private static final HashMap<String, ChestGenHooks> chestInfo = new HashMap<>();
 
     private final String category;
     private int countMin;
     private int countMax;
-    private final List<WeightedRandomChestContent> contents = new ArrayList<>();
+    private final ArrayList<WeightedRandomChestContent> contents = new ArrayList<>();
 
     public ChestGenHooks(String category) {
         this.category = category;
@@ -44,7 +44,7 @@ public class ChestGenHooks {
     }
 
     public static synchronized ChestGenHooks getInfo(String category) {
-        return CHEST_INFO.computeIfAbsent(category, c -> new ChestGenHooks(c, new WeightedRandomChestContent[0], 3, 8));
+        return chestInfo.computeIfAbsent(category, c -> new ChestGenHooks(c, new WeightedRandomChestContent[0], 3, 8));
     }
 
     public static ItemStack[] generateStacks(Random rand, ItemStack source, int min, int max) {

@@ -35,7 +35,9 @@ public final class LegacyRemapper extends Remapper {
             // Guava 17-21 -> 32: Objects.ToStringHelper moved to MoreObjects.
             Map.entry("com/google/common/base/Objects$ToStringHelper", "com/google/common/base/MoreObjects$ToStringHelper"),
             // commons-lang 2 was bundled with 1.7.10; only commons-lang3 ships today.
-            Map.entry("org/apache/commons/lang/WordUtils", "org/apache/commons/lang3/text/WordUtils"));
+            Map.entry("org/apache/commons/lang/WordUtils", "org/apache/commons/lang3/text/WordUtils"),
+            // commons-codec's Charsets constants are the JDK's StandardCharsets (same field names); not on every runtime.
+            Map.entry("org/apache/commons/codec/Charsets", "java/nio/charset/StandardCharsets"));
 
     static final Map<String, String> JDK_PACKAGE_RELOCATIONS = Map.of(
             "jdk/nashorn/", "org/openjdk/nashorn/",

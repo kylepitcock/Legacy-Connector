@@ -71,13 +71,27 @@ public class OreDictionary {
 
     /** All stacks registered under {@code name}, plus modern items in the equivalent tag. */
     public static ArrayList<ItemStack> getOres(String name) {
-        ArrayList<ItemStack> out = new ArrayList<>(idToStack.get(getOreID(name)));
+        ArrayList<ItemStack> backing = idToStack.get(getOreID(name));
+        ArrayList<ItemStack> out = new UnmodifiableArrayList<>(backing);
         for (ItemStack modern : OreDictBridge.modernItemsFor(name)) {
             boolean dupe = false;
             for (ItemStack s : out) if (itemMatches(s, modern, false)) dupe = true;
             if (!dupe) out.add(modern);
         }
         return out;
+    }
+
+    /**
+     * Forge returns this view of a registration list; DragonAPI reaches the mutable backing list through the private
+     * {@code list} field, so the field and the class name are part of the contract.
+     */
+    private static class UnmodifiableArrayList<E> extends ArrayList<E> {
+        private final ArrayList<E> list;
+
+        UnmodifiableArrayList(ArrayList<E> list) {
+            super(list);
+            this.list = list;
+        }
     }
 
     public static ArrayList<ItemStack> getOres(Integer id) {
