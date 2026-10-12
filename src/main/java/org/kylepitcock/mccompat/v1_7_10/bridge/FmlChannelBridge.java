@@ -42,6 +42,11 @@ public final class FmlChannelBridge {
         CHANNELS.put(name, channels);
     }
 
+    public static FMLEmbeddedChannel channel(String name, Side side) {
+        EnumMap<Side, FMLEmbeddedChannel> channels = CHANNELS.get(name);
+        return channels == null ? null : channels.get(side);
+    }
+
     public static boolean has(String name) {
         return CHANNELS.containsKey(name) || EVENT_CHANNELS.containsKey(name);
     }

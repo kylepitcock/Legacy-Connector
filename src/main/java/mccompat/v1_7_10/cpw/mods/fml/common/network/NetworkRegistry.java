@@ -27,6 +27,11 @@ public enum NetworkRegistry {
         return channels;
     }
 
+    /** The pipeline of a channel created with newChannel (null when there is none). */
+    public FMLEmbeddedChannel getChannel(String name, Side source) {
+        return FmlChannelBridge.channel(name, source);
+    }
+
     public boolean hasChannel(String name, Side source) {
         return FmlChannelBridge.has(name);
     }

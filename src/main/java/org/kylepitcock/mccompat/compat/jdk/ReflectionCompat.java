@@ -122,12 +122,34 @@ public final class ReflectionCompat {
      * {@code setAccessible(true)} that tolerates the module system's refusal (private fields of JDK classes, which
      * legacy mods reflected into freely on Java 8): reads and writes of such fields then go through Unsafe.
      */
+    /** Layout twin of AccessibleObject's first field, to find where {@code override} lives (the field itself is hidden). */
+    @SuppressWarnings("unused")
+    private static final class OverrideProbe {
+        boolean override;
+    }
+
     public static void setAccessible(java.lang.reflect.AccessibleObject object, boolean flag) {
         try {
             object.setAccessible(flag);
         } catch (RuntimeException e) {
-            // InaccessibleObjectException: handled by the get/set fallbacks
+            // InaccessibleObjectException (a JDK member in a module that is not opened to the mod): the legacy mod ran
+            // on a JVM with no such protection, so force the override flag. Fields also have the get/set fallbacks.
+            if (flag) {
+                try {
+                    UNSAFE.putBoolean(object, UNSAFE.objectFieldOffset(OverrideProbe.class.getDeclaredField("override")), true);
+                } catch (ReflectiveOperationException | RuntimeException ignored) {
+                    // stays inaccessible
+                }
+            }
         }
+    }
+
+    public static void setAccessible(java.lang.reflect.Method method, boolean flag) {
+        setAccessible((java.lang.reflect.AccessibleObject) method, flag);
+    }
+
+    public static void setAccessible(java.lang.reflect.Constructor<?> constructor, boolean flag) {
+        setAccessible((java.lang.reflect.AccessibleObject) constructor, flag);
     }
 
     public static void setAccessible(Field field, boolean flag) {

@@ -8,7 +8,7 @@ export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home -v 21 2>/dev/null)}"
 [ $# -eq 0 ] && { echo "usage: $0 <name-fragment>..."; exit 1; }
 patterns=("$@" ${=EXTRA} codechicken baubles legacytest)
 D=run-subtest
-rm -rf $D/mods run-subtest/crash-reports; mkdir -p $D/mods $D/logs $D/config
+rm -rf $D/mods $D/crash-reports; mkdir -p $D/mods $D/logs $D/config
 : > $D/logs/latest.log
 for src in run-servertest/mods run-servertest/mods/1.7.10; do
   for jar in $src/*.jar(N); do

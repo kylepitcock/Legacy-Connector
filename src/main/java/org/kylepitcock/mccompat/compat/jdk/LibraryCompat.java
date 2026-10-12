@@ -26,4 +26,31 @@ public final class LibraryCompat {
     public static GameProfile fillProfileProperties(MinecraftSessionService service, GameProfile profile, boolean secure) {
         return profile;
     }
+
+    // ASM 5 never validated descriptors (anything unknown parsed as a method type); ASM 9 throws. Legacy mods that
+    // pass class names or field descriptors to these keep working with the old leniency.
+    public static org.objectweb.asm.Type asmGetType(String descriptor) {
+        try {
+            return org.objectweb.asm.Type.getType(descriptor);
+        } catch (RuntimeException e) {
+            // Callers hand over internal names ("a/b/C"): treat them as such.
+            return org.objectweb.asm.Type.getObjectType(descriptor);
+        }
+    }
+
+    public static org.objectweb.asm.Type asmGetReturnType(String descriptor) {
+        try {
+            return org.objectweb.asm.Type.getReturnType(descriptor);
+        } catch (RuntimeException e) {
+            return asmGetType(descriptor);
+        }
+    }
+
+    public static org.objectweb.asm.Type[] asmGetArgumentTypes(String descriptor) {
+        try {
+            return org.objectweb.asm.Type.getArgumentTypes(descriptor);
+        } catch (RuntimeException e) {
+            return new org.objectweb.asm.Type[0];
+        }
+    }
 }

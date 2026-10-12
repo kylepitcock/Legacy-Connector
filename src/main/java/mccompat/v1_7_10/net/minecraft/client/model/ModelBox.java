@@ -26,8 +26,11 @@ public class ModelBox {
         this.posX2 = x + w;
         this.posY2 = y + h;
         this.posZ2 = z + d;
-        this.mcc$cube = new ModelPart.Cube(u, v, x, y, z, w, h, d, grow, grow, grow, renderer.mirror, renderer.textureWidth, renderer.textureHeight,
-                EnumSet.allOf(Direction.class));
+        // Models are built by common code too (entity constructors); only a client has the modern cube class.
+        this.mcc$cube = net.neoforged.fml.loading.FMLEnvironment.dist.isClient()
+                ? new ModelPart.Cube(u, v, x, y, z, w, h, d, grow, grow, grow, renderer.mirror, renderer.textureWidth, renderer.textureHeight,
+                        EnumSet.allOf(Direction.class))
+                : null;
         float x2 = x + w, y2 = y + h, z2 = z + d;
         PositionTextureVertex v0 = new PositionTextureVertex(x2, y, z, 0.0F, 0.0F);
         PositionTextureVertex v1 = new PositionTextureVertex(x, y, z, 0.0F, 8.0F);

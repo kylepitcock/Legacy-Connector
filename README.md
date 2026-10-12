@@ -115,7 +115,7 @@ dungeons, villages and ruins generate through their own legacy code (structure s
 than persisted). Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
 by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
 are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and
-register with the controls screen. Shaders written for the fixed-function pipeline are virtual (they compile "successfully"
+register with the controls screen. ForgeMultipart's runtime mixin compiler works (Scala signatures of translated classes are rewritten to the relocated names, and ASM 5's lenient descriptor parsing is kept). Shaders written for the fixed-function pipeline are virtual (they compile "successfully"
 and have no effect); VBO and vertex-array calls are emulated on top of immediate mode.
 
 ### Entities

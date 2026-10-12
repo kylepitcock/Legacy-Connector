@@ -74,10 +74,24 @@ public class LaunchClassLoader extends URLClassLoader {
         return transformers;
     }
 
+    private final Set<String> transformerExceptions = new java.util.HashSet<>();
+    private final Set<String> classLoaderExceptions = new java.util.HashSet<>();
+    private final Set<String> invalidClasses = new java.util.HashSet<>();
+
+    /**
+     * LaunchWrapper's private hook that libraries call by reflection (ForgeMultipart's mixin compiler) on classes it
+     * assembled from already translated bytes: nothing is left to transform.
+     */
+    private byte[] runTransformers(String name, String transformedName, byte[] basicClass) {
+        return basicClass;
+    }
+
     public void addTransformerExclusion(String prefix) {
+        transformerExceptions.add(prefix);
     }
 
     public void addClassLoaderExclusion(String prefix) {
+        classLoaderExceptions.add(prefix);
     }
 
     public void clearNegativeEntries(Set<String> entries) {

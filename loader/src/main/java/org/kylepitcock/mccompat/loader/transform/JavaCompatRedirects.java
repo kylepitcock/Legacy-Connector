@@ -37,6 +37,8 @@ public final class JavaCompatRedirects {
         // Reads of (and access to) private fields of JDK classes, which the module system refuses since Java 16.
         virtualToStatic("java/lang/reflect/Field", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/AccessibleObject", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Method", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
+        virtualToStatic("java/lang/reflect/Constructor", "setAccessible", "(Z)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "get", "(Ljava/lang/Object;)Ljava/lang/Object;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "getInt", "(Ljava/lang/Object;)I", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "getLong", "(Ljava/lang/Object;)J", COMPAT + "ReflectionCompat");
@@ -70,6 +72,10 @@ public final class JavaCompatRedirects {
         // A mod giving up must not end the game: System.exit fails that mod instead.
         staticToStatic("java/lang/System", "exit", "(I)V", COMPAT + "JdkCompat", "exit");
         staticToStatic("java/lang/System", "setSecurityManager", "(Ljava/lang/SecurityManager;)V", COMPAT + "JdkCompat", "setSecurityManager");
+        // ASM 5 -> 9: descriptor parsing became strict.
+        staticToStatic("org/objectweb/asm/Type", "getType", "(Ljava/lang/String;)Lorg/objectweb/asm/Type;", COMPAT + "LibraryCompat", "asmGetType");
+        staticToStatic("org/objectweb/asm/Type", "getReturnType", "(Ljava/lang/String;)Lorg/objectweb/asm/Type;", COMPAT + "LibraryCompat", "asmGetReturnType");
+        staticToStatic("org/objectweb/asm/Type", "getArgumentTypes", "(Ljava/lang/String;)[Lorg/objectweb/asm/Type;", COMPAT + "LibraryCompat", "asmGetArgumentTypes");
         // Guava 17 -> 32 removals.
         staticToStatic("com/google/common/base/Objects", "toStringHelper", "(Ljava/lang/Object;)Lcom/google/common/base/MoreObjects$ToStringHelper;", "com/google/common/base/MoreObjects", "toStringHelper");
         staticToStatic("com/google/common/base/Objects", "toStringHelper", "(Ljava/lang/Class;)Lcom/google/common/base/MoreObjects$ToStringHelper;", "com/google/common/base/MoreObjects", "toStringHelper");

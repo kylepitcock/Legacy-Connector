@@ -76,7 +76,9 @@ public class Loader {
                 case "Minecraft" -> "1.7.10";
                 default -> "1.0.0";
             };
-            return new DummyModContainer(md);
+            DummyModContainer c = new DummyModContainer(md);
+            c.mcc$source = new java.io.File(k.equals("Minecraft") ? "minecraft.jar" : "minecraftforge-universal.jar");
+            return c;
         });
     }
 
