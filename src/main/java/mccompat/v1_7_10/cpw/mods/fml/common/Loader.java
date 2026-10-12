@@ -62,6 +62,24 @@ public class Loader {
         return getModList();
     }
 
+    private static final Map<String, ModContainer> PSEUDO = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static ModContainer pseudo(String id) {
+        return PSEUDO.computeIfAbsent(id, k -> {
+            ModMetadata md = new ModMetadata();
+            md.modId = k;
+            md.name = k;
+            md.version = switch (k) {
+                case "Forge" -> "10.13.4.1614";
+                case "FML" -> "7.10.99.99";
+                case "mcp" -> "9.05";
+                case "Minecraft" -> "1.7.10";
+                default -> "1.0.0";
+            };
+            return new DummyModContainer(md);
+        });
+    }
+
     /** Mod container -> the mod's instance (FML's registry of {@code @Mod} objects). */
     public com.google.common.collect.BiMap<ModContainer, Object> getModObjectList() {
         com.google.common.collect.BiMap<ModContainer, Object> map = com.google.common.collect.HashBiMap.create();
@@ -78,6 +96,11 @@ public class Loader {
             if (r.platformData instanceof LegacyModContainer1710 c) out.put(r.legacyId, c);
         }
         for (ModContainer c : MCC$CORE_CONTAINERS) out.putIfAbsent(c.getModId(), c);
+        // Forge itself and the libraries bridged to modern mods are "mods" too (mods read their versions).
+        for (String id : new String[] {"Forge", "FML", "mcp", "Minecraft"}) out.computeIfAbsent(id, Loader::pseudo);
+        for (String bridged : System.getProperty("mccompat.bridgedMods", "").split(",")) {
+            if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
+        }
         return out;
     }
 

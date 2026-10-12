@@ -13,6 +13,8 @@ public class ModelBox {
     public final float posY2;
     public final float posZ2;
     public String field_78247_g;
+    /** The six faces (west, east, down, up, north, south as in vanilla's unwrapping), for code that reads or adjusts vertices. */
+    public TexturedQuad[] quadList;
     final ModelPart.Cube mcc$cube;
 
     public ModelBox(ModelRenderer renderer, int u, int v, float x, float y, float z, int w, int h, int d, float grow) {
@@ -24,6 +26,19 @@ public class ModelBox {
         this.posZ2 = z + d;
         this.mcc$cube = new ModelPart.Cube(u, v, x, y, z, w, h, d, grow, grow, grow, renderer.mirror, renderer.textureWidth, renderer.textureHeight,
                 EnumSet.allOf(Direction.class));
+        float x2 = x + w, y2 = y + h, z2 = z + d;
+        PositionTextureVertex v0 = new PositionTextureVertex(x2, y, z, 0.0F, 0.0F);
+        PositionTextureVertex v1 = new PositionTextureVertex(x, y, z, 0.0F, 8.0F);
+        PositionTextureVertex v2 = new PositionTextureVertex(x, y2, z, 8.0F, 8.0F);
+        PositionTextureVertex v3 = new PositionTextureVertex(x2, y2, z, 8.0F, 0.0F);
+        PositionTextureVertex v4 = new PositionTextureVertex(x2, y, z2, 0.0F, 0.0F);
+        PositionTextureVertex v5 = new PositionTextureVertex(x, y, z2, 0.0F, 8.0F);
+        PositionTextureVertex v6 = new PositionTextureVertex(x, y2, z2, 8.0F, 8.0F);
+        PositionTextureVertex v7 = new PositionTextureVertex(x2, y2, z2, 8.0F, 0.0F);
+        this.quadList = new TexturedQuad[] {
+                new TexturedQuad(new PositionTextureVertex[] {v4, v0, v3, v7}), new TexturedQuad(new PositionTextureVertex[] {v1, v5, v6, v2}),
+                new TexturedQuad(new PositionTextureVertex[] {v4, v5, v1, v0}), new TexturedQuad(new PositionTextureVertex[] {v3, v2, v6, v7}),
+                new TexturedQuad(new PositionTextureVertex[] {v0, v1, v2, v3}), new TexturedQuad(new PositionTextureVertex[] {v5, v4, v7, v6})};
     }
 
     public ModelBox func_78244_a(String name) {

@@ -131,8 +131,16 @@ public class RegistryNamespaced extends RegistrySimple implements Iterable<Objec
         return byId.apply(id) != null;
     }
 
+    private static boolean WARNED;
+
     public void addObject(int id, String name, Object obj) {
-        throw new UnsupportedOperationException("Direct registry writes are not supported; use GameRegistry");
+        // Mods re-register (often vanilla) entries under their own ids; the modern registries are frozen and are
+        // filled through GameRegistry, so the write is dropped.
+        if (!WARNED) {
+            WARNED = true;
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Registry").info(
+                    "A legacy mod wrote to a vanilla registry directly (e.g. {} as {}); such writes are ignored", name, obj);
+        }
     }
 
     @Override

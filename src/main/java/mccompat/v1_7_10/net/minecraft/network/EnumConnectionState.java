@@ -7,6 +7,9 @@ import com.google.common.collect.HashBiMap;
 public enum EnumConnectionState {
     HANDSHAKING, PLAY, STATUS, LOGIN;
 
+    /** Packet class -> the state it belongs to (mods read this by reflection). */
+    public static final java.util.Map<Class, EnumConnectionState> STATES_BY_CLASS = new java.util.HashMap<>();
+
     private final BiMap<Integer, Class> serverPackets = HashBiMap.create();
     private final BiMap<Integer, Class> clientPackets = HashBiMap.create();
 
