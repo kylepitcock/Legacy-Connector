@@ -24,11 +24,50 @@ public final class ResourceCompat {
     private ResourceCompat() {}
 
     public static URL getResource(Class<?> cls, String name) {
-        return legacy(cls.getResource(name));
+        URL url = cls.getResource(name);
+        if (url == null) {
+            String lower = lowerAssets(name);
+            if (lower != null) url = cls.getResource(lower);
+        }
+        return legacy(url);
     }
 
     public static URL getResource(ClassLoader loader, String name) {
-        return legacy(loader.getResource(name));
+        URL url = loader.getResource(name);
+        if (url == null) {
+            String lower = lowerAssets(name);
+            if (lower != null) url = loader.getResource(lower);
+        }
+        return legacy(url);
+    }
+
+    public static java.io.InputStream getResourceAsStream(Class<?> cls, String name) {
+        java.io.InputStream in = cls.getResourceAsStream(name);
+        if (in == null) {
+            String lower = lowerAssets(name);
+            if (lower != null) in = cls.getResourceAsStream(lower);
+        }
+        return in;
+    }
+
+    public static java.io.InputStream getResourceAsStream(ClassLoader loader, String name) {
+        java.io.InputStream in = loader.getResourceAsStream(name);
+        if (in == null) {
+            String lower = lowerAssets(name);
+            if (lower != null) in = loader.getResourceAsStream(lower);
+        }
+        return in;
+    }
+
+    /**
+     * The asset path with the part below {@code assets/<domain>/} lower-cased: legacy resource names are case
+     * sensitive, but the translated jars (modern resource pack rules) keep them lower case.
+     */
+    private static String lowerAssets(String name) {
+        int at = name.indexOf("assets/");
+        if (at < 0) return null;
+        String lower = name.substring(0, at) + name.substring(at).toLowerCase(java.util.Locale.ROOT);
+        return lower.equals(name) ? null : lower;
     }
 
     public static Enumeration<URL> getResources(ClassLoader loader, String name) throws IOException {

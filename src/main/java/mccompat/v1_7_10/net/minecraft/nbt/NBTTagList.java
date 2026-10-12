@@ -9,6 +9,48 @@ import net.minecraft.nbt.Tag;
 public class NBTTagList extends NBTBase {
     private final ListTag mcc$list;
 
+    /** Phantom field: accesses are redirected to {@link #mcc$get$tagList} (mods read the tags directly). */
+    @Deprecated
+    public java.util.List tagList;
+
+    /** A live view of the tags as legacy wrappers; writes go through to the list. */
+    public static java.util.List mcc$get$tagList(NBTTagList list) {
+        ListTag backing = list.mcc$list;
+        return new java.util.AbstractList<NBTBase>() {
+            @Override
+            public NBTBase get(int index) {
+                return NBTBase.mcc$wrap(backing.get(index), list);
+            }
+
+            @Override
+            public int size() {
+                return backing.size();
+            }
+
+            @Override
+            public NBTBase set(int index, NBTBase value) {
+                NBTBase old = get(index);
+                backing.set(index, value.mcc$modern());
+                list.mcc$markDirty();
+                return old;
+            }
+
+            @Override
+            public void add(int index, NBTBase value) {
+                backing.add(index, value.mcc$modern());
+                list.mcc$markDirty();
+            }
+
+            @Override
+            public NBTBase remove(int index) {
+                NBTBase old = get(index);
+                backing.remove(index);
+                list.mcc$markDirty();
+                return old;
+            }
+        };
+    }
+
     public NBTTagList() {
         this(new ListTag());
     }

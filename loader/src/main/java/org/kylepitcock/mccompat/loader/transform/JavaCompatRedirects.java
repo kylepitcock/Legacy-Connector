@@ -46,6 +46,8 @@ public final class JavaCompatRedirects {
         // Mod jars are served from union: URLs; mods listing their own files expect jar:/file: (ResourceCompat).
         virtualToStatic("java/lang/Class", "getResource", "(Ljava/lang/String;)Ljava/net/URL;", COMPAT + "ResourceCompat");
         virtualToStatic("java/lang/ClassLoader", "getResource", "(Ljava/lang/String;)Ljava/net/URL;", COMPAT + "ResourceCompat");
+        virtualToStatic("java/lang/Class", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", COMPAT + "ResourceCompat");
+        virtualToStatic("java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", COMPAT + "ResourceCompat");
         virtualToStatic("java/lang/ClassLoader", "getResources", "(Ljava/lang/String;)Ljava/util/Enumeration;", COMPAT + "ResourceCompat");
         virtualToStatic("java/security/CodeSource", "getLocation", "()Ljava/net/URL;", COMPAT + "ResourceCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.

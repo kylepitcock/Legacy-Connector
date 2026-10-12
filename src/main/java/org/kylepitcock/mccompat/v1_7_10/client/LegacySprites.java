@@ -69,8 +69,11 @@ public final class LegacySprites {
         public IResource getResource(ResourceLocation location) throws IOException {
             String ns = Ids.namespace(location.getResourceDomain());
             String path = Ids.normalizePath(location.getResourcePath());
+            String rawPath = location.getResourcePath();
             for (var file : ModList.get().getModFiles()) {
-                Path p = file.getFile().findResource("assets", ns, path);
+                // Legacy resource names are case sensitive (structures/ntmruinsA.nbt); the generated pack lower-cases.
+                Path p = file.getFile().findResource("assets", ns, rawPath);
+                if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("assets", ns, path);
                 if (p != null && Files.isRegularFile(p)) {
                     byte[] bytes = Files.readAllBytes(p);
                     String name = file.getFile().getFileName();
