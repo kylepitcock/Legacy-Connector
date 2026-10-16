@@ -88,6 +88,68 @@ public final class Platform1710 implements LegacyPlatform {
         }
     }
 
+    @Override
+    public void registryEvents() {
+        injectObjectHolders();
+    }
+
+    private static final String OBJECT_HOLDER = Type.getDescriptor(mccompat.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.ObjectHolder.class);
+
+    /**
+     * FML filled {@code @GameRegistry.ObjectHolder} fields (whole classes keyed by field name, or single fields keyed by
+     * "modid:name") from the registries once the mods had registered their content; static finals included.
+     */
+    private static void injectObjectHolders() {
+        for (LegacyModRecord mod : LegacyMods.ordered()) {
+            if (!mod.version.equals("1.7.10")) continue;
+            try {
+                var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
+                if (scan == null) continue;
+                var loader = mod.mainClass != null ? mod.mainClass.getClassLoader() : Platform1710.class.getClassLoader();
+                java.util.Map<String, String> classHolders = new java.util.HashMap<>();
+                List<ModFileScanData.AnnotationData> fieldHolders = new ArrayList<>();
+                for (var a : scan.getAnnotations()) {
+                    if (!a.annotationType().getDescriptor().equals(OBJECT_HOLDER)) continue;
+                    if (a.targetType() == java.lang.annotation.ElementType.TYPE) {
+                        classHolders.put(a.clazz().getClassName(), String.valueOf(a.annotationData().get("value")));
+                    } else {
+                        fieldHolders.add(a);
+                    }
+                }
+                for (var e : classHolders.entrySet()) {
+                    Class<?> owner = Class.forName(e.getKey(), false, loader);
+                    for (Field f : owner.getDeclaredFields()) {
+                        if (!Modifier.isStatic(f.getModifiers()) || f.getType().isPrimitive()) continue;
+                        var own = f.getAnnotation(mccompat.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.ObjectHolder.class);
+                        applyHolder(f, own != null ? own.value() : e.getValue() + ":" + f.getName(), e.getValue());
+                    }
+                }
+                for (var a : fieldHolders) {
+                    Class<?> owner = Class.forName(a.clazz().getClassName(), false, loader);
+                    Field f = owner.getDeclaredField(a.memberName());
+                    if (classHolders.containsKey(owner.getName())) continue;
+                    applyHolder(f, String.valueOf(a.annotationData().get("value")), mod.legacyId);
+                }
+            } catch (Throwable t) {
+                LOG.warn("{}: could not inject @ObjectHolder fields: {}", mod.legacyId, t.toString());
+            }
+        }
+    }
+
+    private static void applyHolder(Field f, String name, String defaultMod) throws Exception {
+        String full = name.contains(":") ? name : defaultMod + ":" + name;
+        Object value = null;
+        Class<?> type = f.getType();
+        if (mccompat.v1_7_10.net.minecraft.block.Block.class.isAssignableFrom(type)) {
+            value = BlockBridge.byName(full);
+        } else if (mccompat.v1_7_10.net.minecraft.item.Item.class.isAssignableFrom(type)) {
+            value = org.kylepitcock.mccompat.v1_7_10.bridge.ItemBridge.byName(full);
+        }
+        if (value == null || !type.isInstance(value)) return;
+        f.setAccessible(true);
+        org.kylepitcock.mccompat.compat.jdk.ReflectionCompat.set(f, null, value);
+    }
+
     /** @SidedProxy may sit on any class of the mod; FML found them through its annotation scan, as we do. */
     private static void injectProxies(LegacyModRecord mod, ClassLoader loader) throws Exception {
         List<ModFileScanData.AnnotationData> found = new ArrayList<>();
@@ -198,16 +260,22 @@ public final class Platform1710 implements LegacyPlatform {
     }
 
     @Override
-    public void postInit(LegacyModRecord mod) throws Exception {
-        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.POSTINITIALIZATION);
-        // IMC is delivered between init and postInit, like FML 7.10.
+    public void interMod(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.INITIALIZATION);
+        // IMC is delivered after every mod's init and before any postInit, like FML 7.10.
         var messages = FMLInterModComms.mcc$drain(mod.legacyId);
         if (!messages.isEmpty()) dispatch(mod, new FMLInterModComms.IMCEvent(messages));
+    }
+
+    @Override
+    public void postInit(LegacyModRecord mod) throws Exception {
+        mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.POSTINITIALIZATION);
         dispatch(mod, new FMLPostInitializationEvent());
     }
 
     @Override
     public void afterPostInit() {
+        injectObjectHolders();
         mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);

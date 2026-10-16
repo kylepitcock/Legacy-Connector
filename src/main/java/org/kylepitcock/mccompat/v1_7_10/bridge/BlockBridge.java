@@ -278,7 +278,11 @@ public final class BlockBridge {
 
     public static synchronized Block byId(int id) {
         ensureVanilla();
-        return BY_ID.get(id);
+        Block b = BY_ID.get(id);
+        if (b != null) return b;
+        // 1.7.10 ItemBlocks share their block's id, so mods probe Block.blockRegistry with item ids
+        // (ForgeMultipart's IMC check); item ids here are separate, so resolve them through the item.
+        return id >= 4096 ? ItemBridge.blockOf(ItemBridge.byId(id)) : null;
     }
 
     /** The generated Blocks class creates every vanilla wrapper; make sure it ran before any lookup. */

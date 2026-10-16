@@ -20,6 +20,9 @@ public interface LegacyPlatform {
 
     void init(LegacyModRecord mod) throws Exception;
 
+    /** After every mod's init, before any postInit: deliver inter-mod messages (FML order). */
+    default void interMod(LegacyModRecord mod) throws Exception {}
+
     void postInit(LegacyModRecord mod) throws Exception;
 
     /** After every mod's postInit: flush deferred registrations (block items, recipes, ...). */
