@@ -51,6 +51,7 @@ public final class Platform1710 implements LegacyPlatform {
             scalaModule = null;
         }
         mod.mainClass = scalaModule != null ? scalaModule : Class.forName(mod.mainClassName, true, loader);
+        org.kylepitcock.mccompat.v1_7_10.bridge.CoremodHooks.afterConstruct(loader);
         LegacyModContainer1710 container = new LegacyModContainer1710(mod);
         mod.platformData = container;
         LegacyModContainer1710.setActive(container);
@@ -277,6 +278,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         injectObjectHolders();
+        mccompat.v1_7_10.net.minecraft.item.crafting.CraftingManager.getInstance().mcc$syncSwappedList();
         mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(mccompat.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);

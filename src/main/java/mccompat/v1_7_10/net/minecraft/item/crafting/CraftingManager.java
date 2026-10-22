@@ -18,6 +18,9 @@ public class CraftingManager {
     private static final CraftingManager instance = new CraftingManager();
     @SuppressWarnings("rawtypes")
     private List recipes = new RecipeList();
+    /** Recipes already handed to the bridge (a list a mod swapped in cannot do that itself). */
+    private final java.util.Set<Object> bridged = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+    private boolean listSwapChecked;
 
     public static CraftingManager getInstance() {
         return instance;
@@ -55,7 +58,7 @@ public class CraftingManager {
             items[k] = s == null ? null : s.copy();
         }
         ShapedRecipes recipe = new ShapedRecipes(width, height, items, output);
-        recipes.add(recipe);
+        register(recipe);
         return recipe;
     }
 
@@ -66,7 +69,7 @@ public class CraftingManager {
             else if (o instanceof Item it) items.add(new ItemStack(it));
             else if (o instanceof Block b) items.add(new ItemStack(b));
         }
-        recipes.add(new ShapelessRecipes(output, items));
+        register(new ShapelessRecipes(output, items));
     }
 
     public ItemStack findMatchingRecipe(InventoryCrafting inv, World world) {
@@ -77,14 +80,55 @@ public class CraftingManager {
         return null;
     }
 
-    @SuppressWarnings("rawtypes")
-    public List getRecipeList() {
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private void register(IRecipe recipe) {
+        bridge(recipe);
+        recipes.add(recipe);
+    }
+
+    private void bridge(IRecipe recipe) {
+        synchronized (bridged) {
+            if (!bridged.add(recipe)) return;
+        }
+        RecipeBridge.addLegacyRecipe(recipe);
+    }
+
+    /**
+     * DragonAPI's coremod makes the vanilla list its own EventRecipeList (a patch of CraftingManager's constructor
+     * that cannot run on this class), and casts what getRecipeList() returns. If that class is installed, serve one.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public synchronized List getRecipeList() {
+        if (!listSwapChecked) {
+            listSwapChecked = true;
+            for (ClassLoader loader : new ClassLoader[] {Thread.currentThread().getContextClassLoader(), CraftingManager.class.getClassLoader()}) {
+                if (loader == null) continue;
+                try {
+                    Class<?> cls = Class.forName("Reika.DragonAPI.Instantiable.Data.Collections.EventRecipeList", true, loader);
+                    List swapped = (List) cls.getDeclaredConstructor().newInstance();
+                    swapped.addAll(recipes);
+                    recipes = swapped;
+                    break;
+                } catch (ReflectiveOperationException | LinkageError | RuntimeException ignored) {
+                    // not installed
+                }
+            }
+        }
         return recipes;
+    }
+
+    /** Recipes added straight to a list a mod swapped in are translated once loading is over. */
+    public synchronized void mcc$syncSwappedList() {
+        if (recipes instanceof RecipeList) return;
+        for (Object o : new ArrayList<>(recipes)) if (o instanceof IRecipe r) bridge(r);
     }
 
     /** Lists a recipe the bridge already translated (GameRegistry paths), without translating it again. */
     public void mcc$track(IRecipe recipe) {
         // A mod may have swapped the list for its own (DragonAPI's EventRecipeList): then the recipe is only listed.
+        synchronized (bridged) {
+            bridged.add(recipe);
+        }
         if (recipes instanceof RecipeList list) list.addUntracked(recipe);
         else recipes.add(recipe);
     }
@@ -98,19 +142,19 @@ public class CraftingManager {
 
         @Override
         public boolean add(Object o) {
-            if (o instanceof IRecipe r) RecipeBridge.addLegacyRecipe(r);
+            if (o instanceof IRecipe r) CraftingManager.instance.bridge(r);
             return super.add(o);
         }
 
         @Override
         public void add(int index, Object o) {
-            if (o instanceof IRecipe r) RecipeBridge.addLegacyRecipe(r);
+            if (o instanceof IRecipe r) CraftingManager.instance.bridge(r);
             super.add(index, o);
         }
 
         @Override
         public boolean addAll(Collection c) {
-            for (Object o : c) if (o instanceof IRecipe r) RecipeBridge.addLegacyRecipe(r);
+            for (Object o : c) if (o instanceof IRecipe r) CraftingManager.instance.bridge(r);
             return super.addAll(c);
         }
     }

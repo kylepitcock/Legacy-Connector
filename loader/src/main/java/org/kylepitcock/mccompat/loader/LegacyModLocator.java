@@ -99,6 +99,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
             List<String> present = new ArrayList<>(legacy.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
             for (LibraryBridges.Bridge b : bridges) if (b.legacyModId() != null) present.add(b.legacyModId());
+            // Coremods decide what to strip while the jars are translated, before any mod is registered with the game.
+            System.setProperty("mccompat.presentLegacyMods", String.join(",", present));
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.
             System.setProperty("mccompat.bridgedMods", String.join(",", bridges.stream().map(LibraryBridges.Bridge::legacyModId)
                     .filter(java.util.Objects::nonNull).toList()));
