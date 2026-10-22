@@ -83,6 +83,73 @@ public final class LegacyBiomes {
             }
         }
         if (n > 0) LOG.info("Generated {} legacy biome(s)", n);
+        contributeTags(out);
+    }
+
+    /**
+     * Vanilla structures, mob spawns and biome modifiers are keyed by biome tags ({@code #minecraft:has_structure/village_plains},
+     * {@code #minecraft:is_overworld}, ...): a legacy biome joins every tag that contains the vanilla biome it is modelled on.
+     */
+    private static void contributeTags(Map<String, Supplier<byte[]>> out) {
+        List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> keys = new ArrayList<>();
+        for (Class<?> holder : new Class<?>[] {net.minecraft.tags.BiomeTags.class, net.neoforged.neoforge.common.Tags.Biomes.class}) {
+            for (var f : holder.getFields()) {
+                if (!java.lang.reflect.Modifier.isStatic(f.getModifiers()) || !net.minecraft.tags.TagKey.class.isAssignableFrom(f.getType())) continue;
+                try {
+                    @SuppressWarnings("unchecked")
+                    var key = (net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>) f.get(null);
+                    if (key.registry().equals(net.minecraft.core.registries.Registries.BIOME)) keys.add(key);
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // not a readable constant
+                }
+            }
+        }
+        Map<String, java.util.Set<String>> memberCache = new HashMap<>();
+        Map<String, List<String>> membership = new HashMap<>();
+        for (BiomeGenBase b : modBiomes()) {
+            String template = "minecraft:" + templateFor(b);
+            for (var key : keys) {
+                if (!resolveTag(key.location(), memberCache, new java.util.HashSet<>()).contains(template)) continue;
+                membership.computeIfAbsent("data/" + key.location().getNamespace() + "/tags/worldgen/biome/" + key.location().getPath() + ".json", k -> new ArrayList<>())
+                        .add(b.mcc$modernId().toString());
+            }
+        }
+        for (var e : membership.entrySet()) {
+            JsonObject json = new JsonObject();
+            json.addProperty("replace", false);
+            JsonArray values = new JsonArray();
+            e.getValue().forEach(values::add);
+            json.add("values", values);
+            byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
+            out.put(e.getKey(), () -> bytes);
+        }
+        if (!membership.isEmpty()) LOG.info("Legacy biomes joined {} biome tag(s)", membership.size());
+    }
+
+    /** The biome ids a data-pack biome tag contains (nested tags resolved), read from the vanilla and NeoForge jars. */
+    private static java.util.Set<String> resolveTag(ResourceLocation tag, Map<String, java.util.Set<String>> cache, java.util.Set<String> visiting) {
+        String id = tag.toString();
+        var cached = cache.get(id);
+        if (cached != null) return cached;
+        java.util.Set<String> members = new java.util.HashSet<>();
+        if (!visiting.add(id)) return members;
+        String path = "data/" + tag.getNamespace() + "/tags/worldgen/biome/" + tag.getPath() + ".json";
+        for (ClassLoader cl : new ClassLoader[] {net.minecraft.world.level.biome.Biome.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
+            if (cl == null) continue;
+            try (InputStream in = cl.getResourceAsStream(path)) {
+                if (in == null) continue;
+                JsonObject json = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonObject();
+                for (JsonElement v : json.getAsJsonArray("values")) {
+                    String value = v.isJsonObject() ? v.getAsJsonObject().get("id").getAsString() : v.getAsString();
+                    if (value.startsWith("#")) members.addAll(resolveTag(ResourceLocation.parse(value.substring(1)), cache, visiting));
+                    else members.add(value);
+                }
+            } catch (Exception ignored) {
+                // try the next loader
+            }
+        }
+        cache.put(id, members);
+        return members;
     }
 
     private static JsonObject biomeJson(BiomeGenBase b) {
