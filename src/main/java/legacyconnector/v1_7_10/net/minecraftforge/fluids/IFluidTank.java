@@ -1,0 +1,15 @@
+package legacyconnector.v1_7_10.net.minecraftforge.fluids;
+
+public interface IFluidTank {
+    FluidStack getFluid();
+
+    int getFluidAmount();
+
+    int getCapacity();
+
+    FluidTankInfo getInfo();
+
+    int fill(FluidStack resource, boolean doFill);
+
+    FluidStack drain(int maxDrain, boolean doDrain);
+}

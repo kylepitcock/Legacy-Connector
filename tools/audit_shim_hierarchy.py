@@ -10,13 +10,13 @@ import os, sys
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 ver = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
-prefix = "mccompat/v" + ver.replace(".", "_") + "/"
+prefix = "legacyconnector/v" + ver.replace(".", "_") + "/"
 legacy = {}
-for line in open(os.path.join(ROOT, "loader/src/main/resources/mccompat/legacy", ver, "hierarchy.txt")):
+for line in open(os.path.join(ROOT, "loader/src/main/resources/legacyconnector/legacy", ver, "hierarchy.txt")):
     n, s, i, a = line.split()
     legacy[n] = ([] if s == "-" else [s]) + ([] if i == "-" else i.split(","))
 shim = {}
-for line in open(os.path.join(ROOT, "build/generated/shimIndex/mccompat/shim-index.txt")):
+for line in open(os.path.join(ROOT, "build/generated/shimIndex/legacyconnector/shim-index.txt")):
     p = line.split()
     if p[0] == "C" and p[1].startswith(prefix):
         shim[p[1][len(prefix):]] = [x[len(prefix):] if x.startswith(prefix) else x for x in ([p[2]] + ([] if p[3] == "-" else p[3].split(",")))]

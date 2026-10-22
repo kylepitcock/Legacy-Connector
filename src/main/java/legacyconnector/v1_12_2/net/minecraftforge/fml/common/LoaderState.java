@@ -1,0 +1,11 @@
+package legacyconnector.v1_12_2.net.minecraftforge.fml.common;
+
+/** FML's loader lifecycle states, and (nested) the per-mod states events report. */
+public enum LoaderState {
+    NOINIT, LOADING, CONSTRUCTING, PREINITIALIZATION, INITIALIZATION, POSTINITIALIZATION, AVAILABLE, SERVER_ABOUT_TO_START,
+    SERVER_STARTING, SERVER_STARTED, SERVER_STOPPING, SERVER_STOPPED, ERRORED;
+
+    public enum ModState {
+        UNLOADED, LOADED, CONSTRUCTED, PREINITIALIZED, INITIALIZED, POSTINITIALIZED, AVAILABLE, DISABLED, ERRORED
+    }
+}

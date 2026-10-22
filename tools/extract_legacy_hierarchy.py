@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Builds the legacy class hierarchy the loader ships for API synthesis:
-loader/src/main/resources/mccompat/legacy/<ver>/hierarchy.txt
+loader/src/main/resources/legacyconnector/legacy/<ver>/hierarchy.txt
 
 Each line: <internal name> <super|-> <iface,iface|-> <access flags>
 Covers every vanilla class (from build/devtools/legacy-<ver>.sig) plus every Forge/FML class, parsed from the
@@ -210,7 +210,7 @@ if ver == "1.12.2":
             for i in ifs:
                 if i not in classes[owner][1]: classes[owner][1].append(i)
 
-out_dir = os.path.join(ROOT, "loader", "src", "main", "resources", "mccompat", "legacy", ver)
+out_dir = os.path.join(ROOT, "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
 os.makedirs(out_dir, exist_ok=True)
 with open(os.path.join(out_dir, "hierarchy.txt"), "w") as f:
     for name in sorted(classes):

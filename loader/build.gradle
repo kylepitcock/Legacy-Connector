@@ -6,7 +6,7 @@ plugins {
 // It may only depend on FML / modlauncher / ASM / Gson / SLF4J, all of which NeoForge ships.
 group = mod_group_id
 version = mod_version
-base.archivesName = 'retrofit-loader'
+base.archivesName = 'legacyconnector-loader'
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
@@ -64,14 +64,14 @@ def extractMappings = tasks.register('extractMappings', Sync) {
     [('1.7.10'): configurations.mcp1710, ('1.12.2'): configurations.mcp1122].each { ver, conf ->
         from({ zipTree(conf.singleFile) }) {
             include 'methods.csv', 'fields.csv'
-            into "mccompat/mappings/${ver}"
+            into "legacyconnector/mappings/${ver}"
             // For 1.7.10 the MCP export is only the fallback table.
             if (ver == '1.7.10') rename { "fallback-${it}" }
         }
     }
     from({ zipTree(configurations.forge1710.singleFile) }) {
         include 'conf/methods.csv', 'conf/fields.csv'
-        eachFile { it.path = "mccompat/mappings/1.7.10/${it.name}" }
+        eachFile { it.path = "legacyconnector/mappings/1.7.10/${it.name}" }
         includeEmptyDirs = false
     }
 }
@@ -89,7 +89,7 @@ test {
 jar {
     manifest {
         attributes(
-                'Automatic-Module-Name': 'mccompat.loader',
+                'Automatic-Module-Name': 'legacyconnector.loader',
                 'Implementation-Version': project.version
         )
     }
@@ -100,13 +100,13 @@ jar {
 def buildIdDir = layout.buildDirectory.dir('generated/buildId')
 def generateBuildId = tasks.register('generateBuildId') {
     def classesDir = sourceSets.main.java.classesDirectory
-    def hierarchy = fileTree('src/main/resources/mccompat/legacy')
+    def hierarchy = fileTree('src/main/resources/legacyconnector/legacy')
     inputs.files(classesDir, hierarchy)
     outputs.dir buildIdDir
     doLast {
         def md = java.security.MessageDigest.getInstance('SHA-256')
         (classesDir.get().asFileTree.files + hierarchy.files).sort { it.absolutePath }.each { md.update(it.bytes) }
-        def out = buildIdDir.get().file('mccompat/loader-build-id.txt').asFile
+        def out = buildIdDir.get().file('legacyconnector/loader-build-id.txt').asFile
         out.parentFile.mkdirs()
         out.text = md.digest().encodeHex().toString()
     }
@@ -125,6 +125,6 @@ dependencies {
 def coremodApiJar = tasks.register('coremodApiJar', Jar) {
     from sourceSets.coremodApi.output
     archiveFileName = 'coremod-api.jar'
-    destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/mccompat/legacy/1.7.10')
+    destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.7.10')
 }
 sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar))

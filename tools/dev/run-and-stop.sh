@@ -13,7 +13,7 @@ done
 pkill -f serverTestRunProgramArgs; sleep 3; pkill -9 -f serverTestRunProgramArgs
 wait
 L=run-servertest/logs/latest.log
-grep -E "Legacy mods loaded|Done \(|LegacyTest SUMMARY|Retrofit/Biomes|layers failed|chunk manager failed|Offering|ENTITY SELF TEST|Spawned .* legacy entities|WORLDGEN SELF TEST" $L | cut -c40-600
+grep -E "Legacy mods loaded|Done \(|LegacyTest SUMMARY|LegacyConnector/Biomes|layers failed|chunk manager failed|Offering|ENTITY SELF TEST|Spawned .* legacy entities|WORLDGEN SELF TEST" $L | cut -c40-600
 ls run-servertest/crash-reports 2>/dev/null
 echo "decoration failures: $(grep -c 'Legacy biome decoration failed' $L)"
 awk '/ENTITY SELF TEST/{f=1} f&&/^\[/&&!/ENTITY SELF TEST/{exit} f' $L > build/devtools/entity-selftest.txt

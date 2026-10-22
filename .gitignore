@@ -8,7 +8,7 @@ bin/
 # Game run directories (worlds, configs, logs, third-party mod jars, translation caches)
 run/
 run-*/
-.mccompat/
+.legacyconnector/
 logs/
 crash-reports/
 *.log

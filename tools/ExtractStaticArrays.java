@@ -6,7 +6,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 /**
- * Writes loader/src/main/resources/mccompat/legacy/1.7.10/static-arrays.txt: the vanilla 1.7.10 static fields initialised with
+ * Writes loader/src/main/resources/legacyconnector/legacy/1.7.10/static-arrays.txt: the vanilla 1.7.10 static fields initialised with
  * literal arrays (String[], int[], float[], float[][], ...), e.g. ItemDye's dye names and colours. Mods read them
  * (ItemDye.field_150923_a[meta]) and the shim classes do not run vanilla's static initialisers; the shim build
  * declares them with these values.

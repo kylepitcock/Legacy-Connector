@@ -14,12 +14,12 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 
 /**
- * Retrofit's stand-in for LaunchWrapper's class loader while legacy coremods are asked for their class transformers
+ * Legacy Connector's stand-in for LaunchWrapper's class loader while legacy coremods are asked for their class transformers
  * (before translation). It loads coremod classes from the legacy jars; Minecraft itself is not present.
  */
 public class LaunchClassLoader extends URLClassLoader {
     public static final int BUFFER_SIZE = 1 << 12;
-    /** Applied to every class this loader defines (renamed ASM 5 API). Set by Retrofit. */
+    /** Applied to every class this loader defines (renamed ASM 5 API). Set by Legacy Connector. */
     public static UnaryOperator<byte[]> mcc$definer = UnaryOperator.identity();
 
     private final List<IClassTransformer> transformers = new ArrayList<>();

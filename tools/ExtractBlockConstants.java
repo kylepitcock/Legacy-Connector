@@ -6,7 +6,7 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 
 /**
- * Writes src/main/resources/mccompat/legacy/1.7.10/block-constants.txt: for every vanilla 1.7.10 block class, the
+ * Writes src/main/resources/legacyconnector/legacy/1.7.10/block-constants.txt: for every vanilla 1.7.10 block class, the
  * overrides of getRenderType / isOpaqueCube / renderAsNormalBlock / getRenderBlockPass that just return a constant
  * ("net/minecraft/block/BlockBush func_149645_b 1"). The shim's vanilla shells do not carry vanilla logic, so
  * Block.getRenderType() etc. consult this table by class hierarchy.

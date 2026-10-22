@@ -1,0 +1,278 @@
+package legacyconnector.v1_7_10.net.minecraft.entity.player;
+
+import com.mojang.authlib.GameProfile;
+import legacyconnector.v1_7_10.net.minecraft.block.Block;
+import legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;
+import legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem;
+import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
+import legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates;
+import legacyconnector.v1_7_10.net.minecraft.util.FoodStats;
+import legacyconnector.v1_7_10.net.minecraft.util.IChatComponent;
+import legacyconnector.v1_7_10.net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.player.Player;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge;
+
+public abstract class EntityPlayer extends EntityLivingBase {
+    public final InventoryPlayer inventory;
+    public final PlayerCapabilities capabilities;
+    /** Phantom: the legacy container behind the open menu (null for modern menus). */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.inventory.Container openContainer;
+    /** Phantom: the container of the player's own inventory (redirected to {@code mcc$get$inventoryContainer}). */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.inventory.Container inventoryContainer;
+    private legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$inventoryContainer;
+    @Deprecated
+    public int experienceLevel;
+    @Deprecated
+    public int experienceTotal;
+    @Deprecated
+    public float experience;
+    private final FoodStats mcc$food;
+    private ItemStack mcc$itemInUse;
+
+    protected EntityPlayer(Player modern) {
+        super(modern);
+        this.inventory = new InventoryPlayer(this);
+        this.capabilities = new PlayerCapabilities(modern);
+        this.mcc$food = new FoodStats(modern.getFoodData());
+    }
+
+    public Player mcc$player() {
+        return (Player) mcc$entity;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$get$inventoryContainer(EntityPlayer p) {
+        if (p.mcc$inventoryContainer == null) {
+            p.mcc$inventoryContainer = new legacyconnector.v1_7_10.net.minecraft.inventory.ContainerPlayer(p.inventory, !p.mcc$player().level().isClientSide(), p);
+        }
+        return p.mcc$inventoryContainer;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
+        return p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m ? m.legacy() : null;
+    }
+
+    public static void mcc$set$openContainer(EntityPlayer p, legacyconnector.v1_7_10.net.minecraft.inventory.Container c) {
+        // Legacy code assigned this when opening containers manually; modern menus are opened by the bridge.
+    }
+
+    public static int mcc$get$experienceLevel(EntityPlayer p) {
+        return p.mcc$player().experienceLevel;
+    }
+
+    public static void mcc$set$experienceLevel(EntityPlayer p, int v) {
+        p.mcc$player().experienceLevel = v;
+    }
+
+    public static int mcc$get$experienceTotal(EntityPlayer p) {
+        return p.mcc$player().totalExperience;
+    }
+
+    public static void mcc$set$experienceTotal(EntityPlayer p, int v) {
+        p.mcc$player().totalExperience = v;
+    }
+
+    public static float mcc$get$experience(EntityPlayer p) {
+        return p.mcc$player().experienceProgress;
+    }
+
+    public static void mcc$set$experience(EntityPlayer p, float v) {
+        p.mcc$player().experienceProgress = v;
+    }
+
+    public GameProfile getGameProfile() {
+        return mcc$player().getGameProfile();
+    }
+
+    @Override
+    public String getCommandSenderName() {
+        return getGameProfile().getName();
+    }
+
+    public String getDisplayName() {
+        return mcc$player().getDisplayName().getString();
+    }
+
+    public void addChatComponentMessage(IChatComponent message) {
+        mcc$player().sendSystemMessage(message.mcc$toModern());
+    }
+
+    public ItemStack getCurrentEquippedItem() {
+        return inventory.getCurrentItem();
+    }
+
+    public void destroyCurrentEquippedItem() {
+        mcc$player().getInventory().setItem(mcc$player().getInventory().selected, net.minecraft.world.item.ItemStack.EMPTY);
+    }
+
+    public ItemStack getCurrentArmor(int slot) {
+        return inventory.armorItemInSlot(slot);
+    }
+
+    public FoodStats getFoodStats() {
+        return mcc$food;
+    }
+
+    public boolean canEat(boolean ignoreHunger) {
+        return mcc$player().canEat(ignoreHunger);
+    }
+
+    public boolean shouldHeal() {
+        return getHealth() > 0 && getHealth() < getMaxHealth();
+    }
+
+    public void addExhaustion(float amount) {
+        mcc$player().causeFoodExhaustion(amount);
+    }
+
+    public void addExperience(int amount) {
+        mcc$player().giveExperiencePoints(amount);
+    }
+
+    public void addExperienceLevel(int levels) {
+        mcc$player().giveExperienceLevels(levels);
+    }
+
+    public int xpBarCap() {
+        return mcc$player().getXpNeededForNextLevel();
+    }
+
+    public void addScore(int score) {
+        mcc$player().increaseScore(score);
+    }
+
+    public int getScore() {
+        return mcc$player().getScore();
+    }
+
+    public boolean canPlayerEdit(int x, int y, int z, int side, ItemStack stack) {
+        Direction d = side >= 0 && side < 6 ? Direction.from3DDataValue(side) : Direction.UP;
+        return mcc$player().mayUseItemAt(new BlockPos(x, y, z), d, ItemStack.mcc$toModern(stack));
+    }
+
+    public boolean canHarvestBlock(Block block) {
+        return mcc$player().hasCorrectToolForDrops(BlockBridge.toModern(block, 0));
+    }
+
+    public float getCurrentPlayerStrVsBlock(Block block, boolean useTool) {
+        return mcc$player().getDestroySpeed(BlockBridge.toModern(block, 0));
+    }
+
+    public float getBreakSpeed(Block block, boolean useTool, int meta, int x, int y, int z) {
+        return mcc$breakSpeed(block, meta);
+    }
+
+    public float mcc$breakSpeed(Block block, int meta) {
+        return mcc$player().getDestroySpeed(BlockBridge.toModern(block, meta));
+    }
+
+    public void setItemInUse(ItemStack stack, int duration) {
+        mcc$itemInUse = stack;
+        mcc$player().startUsingItem(net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+
+    public ItemStack getItemInUse() {
+        return mcc$player().isUsingItem() ? ItemStack.mcc$wrap(mcc$player().getUseItem()) : null;
+    }
+
+    public int getItemInUseCount() {
+        return mcc$player().getUseItemRemainingTicks();
+    }
+
+    public boolean isUsingItem() {
+        return mcc$player().isUsingItem();
+    }
+
+    public int getItemInUseDuration() {
+        return mcc$player().getTicksUsingItem();
+    }
+
+    public void stopUsingItem() {
+        mcc$player().releaseUsingItem();
+    }
+
+    public void clearItemInUse() {
+        mcc$player().stopUsingItem();
+    }
+
+    public boolean isBlocking() {
+        return mcc$player().isBlocking();
+    }
+
+    public EntityItem dropPlayerItemWithRandomChoice(ItemStack stack, boolean randomly) {
+        var dropped = mcc$player().drop(ItemStack.mcc$toModern(stack), randomly, false);
+        return dropped == null ? null : (EntityItem) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(dropped);
+    }
+
+    public EntityItem dropOneItem(boolean wholeStack) {
+        return null;
+    }
+
+    public void openGui(Object mod, int id, World world, int x, int y, int z) {
+        GuiBridge.openGui(this, mod, id, world, x, y, z);
+    }
+
+    public void closeScreen() {
+        mcc$player().closeContainer();
+    }
+
+    public ChunkCoordinates getBedLocation() {
+        return null;
+    }
+
+    public boolean isPlayerFullyAsleep() {
+        return mcc$player().isSleepingLongEnough();
+    }
+
+    public boolean isSpectator() {
+        return mcc$player().isSpectator();
+    }
+
+    public void triggerAchievement(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat) {
+        addStat(stat, 1);
+    }
+
+    /** Counts are not tracked yet (modern statistics are not driven by legacy stats). */
+    public void addStat(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat, int amount) {
+    }
+
+    public float getDefaultEyeHeight() {
+        return 0.12F;
+    }
+
+    public void setSpawnChunk(ChunkCoordinates coordinates, boolean forced, int dimension) {
+        if (coordinates == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        var target = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(sp.server, dimension);
+        var key = target == null ? sp.level().dimension() : target.dimension();
+        if (key != null) sp.setRespawnPosition(key, new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ), 0.0F, forced, false);
+    }
+
+    public void mcc$addStat(String name) {
+    }
+
+    public void sendPlayerAbilities() {
+        mcc$player().onUpdateAbilities();
+    }
+
+    public boolean isCurrentToolAdventureModeExempt(int x, int y, int z) {
+        return true;
+    }
+
+    public void setGameType(Object type) {
+    }
+
+    @Override
+    public boolean canCommandSenderUseCommand(int level, String command) {
+        return mcc$player().hasPermissions(level);
+    }
+
+    @Override
+    public ChunkCoordinates getPlayerCoordinates() {
+        BlockPos p = mcc$player().blockPosition();
+        return new ChunkCoordinates(p.getX(), p.getY(), p.getZ());
+    }
+}

@@ -1,5 +1,5 @@
 name: Compatibility report
-description: Report how a legacy mod behaves under Retrofit (works, partly works, fails to load, crashes).
+description: Report how a legacy mod behaves under Legacy Connector (works, partly works, fails to load, crashes).
 title: "[Compat] <mod name> <mod version> (<legacy Minecraft version>)"
 labels: ["compatibility"]
 body:
@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         Thanks for testing! One report per mod (or per mod + its required libraries) keeps things easy to track.
-        Retrofit writes a report of every legacy jar it translated to **`logs/retrofit-report.txt`** — please attach it.
+        Legacy Connector writes a report of every legacy jar it translated to **`logs/legacyconnector-report.txt`** — please attach it.
 
   - type: input
     id: mod
@@ -72,9 +72,9 @@ body:
         3. Right click it
 
   - type: input
-    id: retrofit-version
+    id: legacyconnector-version
     attributes:
-      label: Retrofit version / commit
+      label: Legacy Connector version / commit
       placeholder: "0.1.0 or commit 87bace9"
     validations:
       required: true
@@ -105,8 +105,8 @@ body:
   - type: textarea
     id: report
     attributes:
-      label: retrofit-report.txt
-      description: Drag the file from `logs/retrofit-report.txt` here, or paste the section for this mod.
+      label: legacyconnector-report.txt
+      description: Drag the file from `logs/legacyconnector-report.txt` here, or paste the section for this mod.
       render: text
     validations:
       required: true
@@ -124,5 +124,5 @@ body:
       options:
         - label: I searched existing issues for this mod and version.
           required: true
-        - label: I tested with the newest Retrofit build.
+        - label: I tested with the newest Legacy Connector build.
         - label: I tested with only this mod (and its required libraries) installed.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds loader/src/main/resources/mccompat/legacy/<ver>/methods.txt from build/devtools/legacy-<ver>.sig:
+"""Builds loader/src/main/resources/legacyconnector/legacy/<ver>/methods.txt from build/devtools/legacy-<ver>.sig:
 one "owner name desc flags" line per non-private, non-synthetic method of every vanilla class. The synthesizer
 adds these to the classes it generates for vanilla types missing from the shim, so code that reflects over a
 vanilla class (integrity checks, "does this method exist") finds what vanilla had.
@@ -11,7 +11,7 @@ import os, sys
 ver = sys.argv[1]
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 sig = os.path.join(root, "build", "devtools", "legacy-%s.sig" % ver)
-out = os.path.join(root, "loader", "src", "main", "resources", "mccompat", "legacy", ver, "methods.txt")
+out = os.path.join(root, "loader", "src", "main", "resources", "legacyconnector", "legacy", ver, "methods.txt")
 owner = None
 lines = []
 for line in open(sig, encoding="utf-8"):

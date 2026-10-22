@@ -1,4 +1,4 @@
-# Retrofit
+# Legacy Connector
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
@@ -21,7 +21,7 @@ mods/SomeMod-1.7.10.jar
                     b. the synthesized API     - generated for whatever the shim lacks (links, default behaviour)
   4. Resources    lang files, textures and models converted to 1.21 formats
         ▼
-.retrofit/cache/SomeMod-<hash>.jar  +  retrofit-synth-1.7.10-<hash>.jar  ->  loaded by NeoForge
+.legacyconnector/cache/SomeMod-<hash>.jar  +  legacyconnector-synth-1.7.10-<hash>.jar  ->  loaded by NeoForge
         │  runtime (normal NeoForge mod)
         ▼
   Bridges         legacy registrations -> modern registries (blocks, items with metadata, tile entities,
@@ -33,11 +33,11 @@ mods/SomeMod-1.7.10.jar
 Nothing in the layer is written for a specific mod. Mods are made to work by implementing the **legacy API** they
 were written against:
 
-- **Hand-written shim** (`src/main/java/mccompat/v1_7_10/...`): `Block`, `Item`, `ItemStack`, `World`, `Entity`,
+- **Hand-written shim** (`src/main/java/legacyconnector/v1_7_10/...`): `Block`, `Item`, `ItemStack`, `World`, `Entity`,
   `GameRegistry`, `Container`, `GuiContainer`, `TileEntitySpecialRenderer`, `SimpleNetworkWrapper`, ... as views
   over the modern objects.
 - **Synthesized API** (`loader/.../synth/`): any legacy class or member the shim does not implement yet is generated
-  at load time from the legacy class hierarchy (shipped as `loader/src/main/resources/mccompat/legacy/<ver>/hierarchy.txt`)
+  at load time from the legacy class hierarchy (shipped as `loader/src/main/resources/legacyconnector/legacy/<ver>/hierarchy.txt`)
   and the descriptors the mods use. Generated classes keep their real supertypes (a synthesized `BlockColored` *is*
   a `Block`), constructors chain to the closest real one, methods return safe defaults, and calls on hand-written
   classes for missing methods are dispatched to the mod's own override when it has one. This is what lets an
@@ -81,7 +81,7 @@ Without the modern mod, the legacy library is translated and loaded as usual (ex
 
 Mods that only make sense on 1.7.10's engine or launcher (performance/bug-fix patches such as FastCraft or Hodgepodge,
 ID extenders, LWJGL 3 ports) and client mods with modern versions (JourneyMap, Inventory Tweaks, ...) are not loaded;
-`retrofit-report.txt` says why.
+`legacyconnector-report.txt` says why.
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
 
@@ -106,7 +106,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
 | Commands | `ICommand`, server command manager | Brigadier |
-| Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes, `retrofit:dim_<id>` |
+| Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes, `legacyconnector:dim_<id>` |
 | World generation | `IWorldGenerator`, decorators | chunk generation hooks |
 | Events | Forge/FML event buses | NeoForge event bus |
 | Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events, effects, tabs |
@@ -144,7 +144,7 @@ that mods added to Forge's `BiomeManager` still generate.
 ### Mod dimensions
 
 A dimension a legacy mod registers with `DimensionManager.registerDimension` becomes the modern dimension
-`retrofit:dim_<id>`. Its chunk generator (`LegacyChunkGenerator`) runs the mod's `WorldProvider.createChunkGenerator()`:
+`legacyconnector:dim_<id>`. Its chunk generator (`LegacyChunkGenerator`) runs the mod's `WorldProvider.createChunkGenerator()`:
 terrain comes from `provideChunk` (block/metadata arrays), trees, structures and ores from `populate`. Biomes come from the
 provider's own `WorldChunkManager` layers (`LegacyBiomeSource`), and `World.provider` is an instance of the mod's provider class.
 `ServerConfigurationManager.transferPlayerToDimension` and `Teleporter` work as in 1.7.10. Verified with Twilight Forest's
@@ -230,9 +230,9 @@ full run; "loads" does not mean every feature was played through.
 
 ### What happens to a mod
 
-After launching, read **`logs/retrofit-report.txt`**. For every legacy jar it lists the detected version and mod
+After launching, read **`logs/legacyconnector-report.txt`**. For every legacy jar it lists the detected version and mod
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
-At runtime, `Retrofit/Stubs` log lines show which synthesized APIs are actually called.
+At runtime, `LegacyConnector/Stubs` log lines show which synthesized APIs are actually called.
 
 /
 ## Development
@@ -263,8 +263,8 @@ Project layout:
 | Path | What |
 |---|---|
 | `loader/` | FML locator service: jar inspection, translation, linking, API synthesis, caching, report |
-| `src/main/java/mccompat/v1_7_10/` | 1.7.10 shim (legacy package names, relocated) |
-| `src/main/java/org/kylepitcock/mccompat/` | runtime: bootstrap, bridges to NeoForge, JDK/library compat, synth runtime |
+| `src/main/java/legacyconnector/v1_7_10/` | 1.7.10 shim (legacy package names, relocated) |
+| `src/main/java/org/kylepitcock/legacyconnector/` | runtime: bootstrap, bridges to NeoForge, JDK/library compat, synth runtime |
 | `testmods/` | fixture mod compiled against legacy API stubs, built like a real 2014 jar |
 | `tools/` | developer scripts: reference data download, signature/hierarchy extraction, API lookup, shim hierarchy audit |
 | `tools/docker/`, `tools/dev/` | headless-display container image; dev test scripts (subset server test, client/screenshot tests) |

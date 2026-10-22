@@ -13,7 +13,7 @@ description = '''${mod_description}'''
 file = "META-INF/accesstransformer.cfg"
 
 [[mixins]]
-config = "retrofit.mixins.json"
+config = "legacyconnector.mixins.json"
 
 [[dependencies."${mod_id}"]]
 modId = "neoforge"

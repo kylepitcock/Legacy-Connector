@@ -37,7 +37,7 @@ def devJar = tasks.register('legacy1710DevJar', Jar) {
 tasks.register('legacy1710Jar', JavaExec) {
     dependsOn devJar, ':loader:classes'
     classpath = project(':loader').sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.mccompat.loader.tools.Reobfuscator'
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Reobfuscator'
     def input = devJar.get().archiveFile
     def output = layout.buildDirectory.file('libs/LegacyTest-1.0-1.7.10.jar')
     inputs.file input

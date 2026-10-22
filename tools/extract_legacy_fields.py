@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes loader/src/main/resources/mccompat/legacy/<ver>/fields.txt from the legacy signature dump:
+"""Writes loader/src/main/resources/legacyconnector/legacy/<ver>/fields.txt from the legacy signature dump:
 one line per field: `srgName owner mcpName descriptor static(0/1)` (srgName is the plain name for fields Forge
 added, which have no SRG id).
 usage: tools/extract_legacy_fields.py [1.7.10]   (needs build/devtools/legacy-<ver>.sig)"""
@@ -7,7 +7,7 @@ import os, sys
 ver = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sig = os.path.join(root, "build", "devtools", f"legacy-{ver}.sig")
-out_dir = os.path.join(root, "loader", "src", "main", "resources", "mccompat", "legacy", ver)
+out_dir = os.path.join(root, "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
 owner = None
 rows = []
 with open(sig) as f:

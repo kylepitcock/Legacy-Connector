@@ -1,0 +1,7 @@
+{
+  "legacyconnector.legacy_mods": "Legacy Mods",
+  "legacyconnector.spawn_egg_prefix": "Spawn",
+  "legacyconnector.spawn_egg": "%s Spawn Egg",
+  "config.jade.plugin_legacyconnector.legacy_waila_blocks": "Legacy mod blocks (Waila)",
+  "config.jade.plugin_legacyconnector.legacy_waila_entities": "Legacy mod entities (Waila)"
+}

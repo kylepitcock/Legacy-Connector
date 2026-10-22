@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes src/main/resources/mccompat/legacy/1.7.10/texture-renames.txt: 1.7.10 vanilla block/item texture names
+"""Writes src/main/resources/legacyconnector/legacy/1.7.10/texture-renames.txt: 1.7.10 vanilla block/item texture names
 (`blocks/<name>`, `items/<name>`) that 1.13+ renamed, with their modern `block/<name>` / `item/<name>`.
 usage: tools/gen_texture_renames.py <client-1.7.10.jar> <1.21 client-extra.jar>"""
 import sys, zipfile, re, os
@@ -127,6 +127,6 @@ for n in sorted(old_i - new_i):
     t = item_rule(n)
     if t and (t in new_i or t in new_b): rows.append(f"items/{n} " + (f"item/{t}" if t in new_i else f"block/{t}"))
     else: missing.append(f"items/{n}")
-out = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src/main/resources/mccompat/legacy/1.7.10/texture-renames.txt")
+out = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src/main/resources/legacyconnector/legacy/1.7.10/texture-renames.txt")
 open(out, 'w').write("\n".join(rows) + "\n")
 print(len(rows), "renames;", len(missing), "unmapped:", missing)

@@ -19,7 +19,7 @@ else
   done
   echo "mods: $(ls run-clienttest/mods | wc -l)"
 fi
-mkdir -p run-clienttest/logs; : > run-clienttest/logs/latest.log
+mkdir -p run-clienttest/logs build/devtools; : > run-clienttest/logs/latest.log
 ./gradlew runClientTest > build/devtools/clienttest.log 2>&1 &
 for i in $(seq 1 180); do
   sleep 5

@@ -10,7 +10,7 @@ plugins {
     id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
 }
 
-rootProject.name = 'mccompat'
+rootProject.name = 'legacyconnector'
 
 // Service-layer half of the compatibility layer: discovers legacy mod jars and
 // rewrites them into NeoForge mods before FML ever sees them.

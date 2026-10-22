@@ -5,7 +5,7 @@ plugins {
 }
 
 // The root project is the *runtime* half of MC Compatibility: a normal NeoForge mod that contains the
-// re-implemented legacy APIs (the "shim", packages mccompat.v1_7_10 / mccompat.v1_12_2) and the bridges
+// re-implemented legacy APIs (the "shim", packages legacyconnector.v1_7_10 / legacyconnector.v1_12_2) and the bridges
 // that connect them to NeoForge. The :loader project is the service-layer half that translates jars.
 evaluationDependsOn(':loader')
 
@@ -29,7 +29,7 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
-def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/mccompat/shim-index.txt')
+def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/legacyconnector/shim-index.txt')
 
 neoForge {
     version = project.neo_version
@@ -58,7 +58,7 @@ neoForge {
             gameDirectory = project.file('run-servertest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
-            systemProperty 'retrofit.entitySelfTest', 'true'
+            systemProperty 'legacyconnector.entitySelfTest', 'true'
         }
 
         // Server test over a hand-picked subset of mods (see build/devtools/run-subset.sh): run-subtest/mods holds links.
@@ -67,7 +67,7 @@ neoForge {
             gameDirectory = project.file('run-subtest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
-            systemProperty 'retrofit.entitySelfTest', 'true'
+            systemProperty 'legacyconnector.entitySelfTest', 'true'
         }
 
         // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
@@ -75,7 +75,7 @@ neoForge {
         clientTest {
             client()
             gameDirectory = project.file('run-clienttest')
-            systemProperty 'retrofit.clientSelfTest', 'true'
+            systemProperty 'legacyconnector.clientSelfTest', 'true'
         }
 
         // Graphical test: creates a world, builds showcases of legacy blocks/items and writes screenshots to
@@ -83,18 +83,18 @@ neoForge {
         screenshotTest {
             client()
             gameDirectory = project.file('run-screenshots')
-            systemProperty 'retrofit.screenshotTest', 'true'
-            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed'].each { p ->
-                if (project.hasProperty(p)) systemProperty 'retrofit.' + p, project.property(p)
+            systemProperty 'legacyconnector.screenshotTest', 'true'
+            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario'].each { p ->
+                if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
             }
         }
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             // In production the loader reads the index from the embedded runtime jar.
-            systemProperty 'mccompat.shimIndex', shimIndexFile.get().asFile.absolutePath
+            systemProperty 'legacyconnector.shimIndex', shimIndexFile.get().asFile.absolutePath
             // ... and legacy coremods' FML classes from the runtime jar; in development, from its compiled classes.
-            systemProperty 'mccompat.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
+            systemProperty 'legacyconnector.runtimeClasses', sourceSets.main.java.classesDirectory.get().asFile.absolutePath
             logLevel = org.slf4j.event.Level.INFO
         }
     }
@@ -138,7 +138,7 @@ tasks.matching { it.name.startsWith('run') || (it.name.startsWith('prepare') && 
 def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
     dependsOn tasks.named('compileJava')
     classpath = project(':loader').sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.mccompat.loader.shim.ShimIndexGenerator'
+    mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimIndexGenerator'
     def classDirs = sourceSets.main.output.classesDirs
     inputs.files classDirs
     outputs.file shimIndexFile
@@ -152,12 +152,12 @@ tasks.named('processResources') { dependsOn generateShimIndex }
     tasks.register("legacyApiStubs${ver}", JavaExec) {
         dependsOn tasks.named('compileJava')
         classpath = project(':loader').sourceSets.main.runtimeClasspath
-        mainClass = 'org.kylepitcock.mccompat.loader.shim.LegacyApiStubGenerator'
+        mainClass = 'org.kylepitcock.legacyconnector.loader.shim.LegacyApiStubGenerator'
         def classDir = sourceSets.main.java.classesDirectory
         def out = layout.buildDirectory.file("legacy-api/legacy-api-${ver}.jar")
         inputs.dir classDir
         outputs.file out
-        argumentProviders.add({ [classDir.get().asFile.absolutePath, "mccompat/v${ver}/".toString(), out.get().asFile.absolutePath] } as CommandLineArgumentProvider)
+        argumentProviders.add({ [classDir.get().asFile.absolutePath, "legacyconnector/v${ver}/".toString(), out.get().asFile.absolutePath] } as CommandLineArgumentProvider)
     }
 }
 
@@ -165,7 +165,7 @@ tasks.named('processResources') { dependsOn generateShimIndex }
 tasks.register('checkLegacyMod', JavaExec) {
     dependsOn generateShimIndex
     classpath = project(':loader').sourceSets.main.runtimeClasspath + sourceSets.main.runtimeClasspath
-    mainClass = 'org.kylepitcock.mccompat.loader.tools.CheckJar'
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.CheckJar'
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 
@@ -211,7 +211,7 @@ tasks.withType(JavaCompile).configureEach {
 tasks.register('bundleJar', Jar) {
     group = 'build'
     description = 'Builds the single distributable jar (loader service + embedded runtime mod).'
-    archiveBaseName = 'retrofit'
+    archiveBaseName = 'legacyconnector'
     archiveVersion = project.version
     archiveClassifier = ''
     destinationDirectory = layout.buildDirectory.dir('dist')
@@ -222,12 +222,12 @@ tasks.register('bundleJar', Jar) {
         exclude 'META-INF/MANIFEST.MF'
     }
     from(runtimeJar) {
-        into 'META-INF/mccompat'
-        rename { 'mccompat-runtime.jar' }
+        into 'META-INF/legacyconnector'
+        rename { 'legacyconnector-runtime.jar' }
     }
     manifest {
         attributes(
-                'Automatic-Module-Name': 'mccompat.loader',
+                'Automatic-Module-Name': 'legacyconnector.loader',
                 'Implementation-Title': 'MC Compatibility',
                 'Implementation-Version': project.version
         )
@@ -250,7 +250,7 @@ tasks.named('compileJava', JavaCompile) {
     doLast {
         project.javaexec {
             classpath = loaderClasspath
-            mainClass = 'org.kylepitcock.mccompat.loader.shim.ShimAccessWidener'
+            mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimAccessWidener'
             args destinationDirectory.get().asFile.absolutePath
         }
     }
