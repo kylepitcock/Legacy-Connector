@@ -248,6 +248,11 @@ tools/dev/run-subset.sh hbm thaumcraft     # server test over a few mods only, w
                                 # block/item/entity self tests; the whole corpus takes minutes
 ./gradlew runClientTest         # client smoke test (run-clienttest, mods linked from run/mods): reports per mod
                                 # which models show the missing texture, then quits
+tools/dev/run-screenshot-test.sh agricraft appliedenergistics   # graphical test: creates a world (WORLDTYPE=biomesoplenty:biomesop
+                                # for BoP), builds block/item showcases, writes screenshots to run-screenshots/shots
+tools/dev/docker-headless.sh run-screenshot-test.sh ...        # same, inside a Linux container with a virtual display
+                                # (Xvfb + Mesa; needs `colima start`), so no window opens on the desktop;
+                                # also works for run-client-test.sh
 ./gradlew checkLegacyMod -PlegacyJar=/path/a.jar,/path/b.jar   # e.g. every jar in test-mods/
                                 # translate offline as one modset, list unlinkable references,
                                 # generate + JVM-verify the synthesized API (no game launch)
@@ -262,6 +267,7 @@ Project layout:
 | `src/main/java/org/kylepitcock/mccompat/` | runtime: bootstrap, bridges to NeoForge, JDK/library compat, synth runtime |
 | `testmods/` | fixture mod compiled against legacy API stubs, built like a real 2014 jar |
 | `tools/` | developer scripts: reference data download, signature/hierarchy extraction, API lookup, shim hierarchy audit |
+| `tools/docker/`, `tools/dev/` | headless-display container image; dev test scripts (subset server test, client/screenshot tests) |
 | `test-mods/` | (not committed) local corpus of real legacy mods for `checkLegacyMod` / `runServerTest` |
 
 Reference data (MCP mappings, Forge userdev sources, Mojang client jars) is downloaded into `build/devtools/` by
