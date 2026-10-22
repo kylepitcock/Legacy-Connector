@@ -26,6 +26,8 @@ public final class LegacyRemapper extends Remapper {
             Map.entry("sun/misc/BASE64Decoder", "org/kylepitcock/mccompat/compat/jdk/BASE64Decoder"),
             Map.entry("sun/reflect/Reflection", "org/kylepitcock/mccompat/compat/jdk/Reflection"),
             Map.entry("java/lang/Compiler", "org/kylepitcock/mccompat/compat/jdk/Compiler"),
+            // Not exported since Java 9; mods constructed it instead of asking ImageIO.
+            Map.entry("com/sun/imageio/plugins/png/PNGImageReader", "org/kylepitcock/mccompat/compat/jdk/PNGImageReader"),
             // ASM 5 -> 9: the Remapping*Adapter classes were replaced by *Remapper with the same constructors.
             Map.entry("org/objectweb/asm/commons/RemappingClassAdapter", "org/objectweb/asm/commons/ClassRemapper"),
             Map.entry("org/objectweb/asm/commons/RemappingMethodAdapter", "org/objectweb/asm/commons/MethodRemapper"),

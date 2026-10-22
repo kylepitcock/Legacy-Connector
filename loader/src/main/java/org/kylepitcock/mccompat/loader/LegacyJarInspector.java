@@ -196,6 +196,20 @@ public final class LegacyJarInspector {
             for (JsonElement a : authors.getAsJsonArray()) decl.authors.add(a.getAsString());
         }
         if (decl.acceptedMinecraftVersions == null) decl.acceptedMinecraftVersions = str(info, "mcversion", null);
+        // FML orders by the mcmod.info lists when the mod asks for it (useDependencyInformation).
+        if (info.has("useDependencyInformation") && info.get("useDependencyInformation").isJsonPrimitive()
+                && info.get("useDependencyInformation").getAsBoolean()) {
+            StringBuilder extra = new StringBuilder();
+            for (String key : new String[] {"requiredMods", "dependencies", "dependants"}) {
+                JsonElement list = info.get(key);
+                if (list == null || !list.isJsonArray()) continue;
+                for (JsonElement id : list.getAsJsonArray()) {
+                    if (!id.isJsonPrimitive()) continue;
+                    extra.append(key.equals("dependants") ? ";before:" : ";after:").append(id.getAsString());
+                }
+            }
+            if (!extra.isEmpty()) decl.dependencies = (decl.dependencies == null ? "" : decl.dependencies) + extra;
+        }
     }
 
     private static String str(JsonObject o, String key, String fallback) {

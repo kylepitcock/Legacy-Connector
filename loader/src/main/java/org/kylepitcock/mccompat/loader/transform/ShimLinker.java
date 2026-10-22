@@ -80,7 +80,12 @@ public final class ShimLinker {
                             continue;
                         }
                     }
+                    AbstractInsnNode cast = relinkReturnType(m, hierarchy, report, node.name);
                     check(hierarchy, report, node.name, m);
+                    if (cast != null) {
+                        insns.insert(m, cast);
+                        insn = cast;
+                    }
                 } else if (insn instanceof TypeInsnNode t) {
                     String type = t.desc.startsWith("[") ? Type.getType(t.desc).getElementType().getInternalName() : t.desc;
                     if (isShimNamespace(type) && !hierarchy.isShim(type)) report.missingClass(type, node.name);
@@ -272,6 +277,44 @@ public final class ShimLinker {
             return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + f.desc, false);
         }
         return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V", false);
+    }
+
+    /**
+     * A library method a mod calls with a return type the installed version of the library no longer (or not yet)
+     * declares ({@code IMutation.getAllele0()} returning {@code IAllele} became {@code IAlleleSpecies}): call the
+     * one with the same name and arguments, narrowing the result back to the type the caller expects.
+     */
+    private static AbstractInsnNode relinkReturnType(MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
+        if (m.owner.startsWith("[") || isShimNamespace(m.owner) || h.isLocal(m.owner) || h.isSynth(m.owner)) return null;
+        if (h.resolveMethod(m.owner, m.name, m.desc) != Hierarchy.Lookup.MISSING_MEMBER) return null;
+        String args = m.desc.substring(0, m.desc.indexOf(')') + 1);
+        Type wanted = Type.getReturnType(m.desc);
+        if (wanted.getSort() != Type.OBJECT) return null;
+        String found = null;
+        java.util.ArrayDeque<String> todo = new java.util.ArrayDeque<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        todo.add(m.owner);
+        while (!todo.isEmpty()) {
+            String c = todo.poll();
+            if (c == null || !seen.add(c)) continue;
+            var info = h.find(c);
+            if (info == null) continue;
+            for (String key : info.methods.keySet()) {
+                if (key.startsWith(m.name + args) && !key.equals(m.name + m.desc)) {
+                    String ret = key.substring(m.name.length() + args.length());
+                    if (ret.startsWith("L")) {
+                        if (found != null && !found.equals(ret)) return null;
+                        found = ret;
+                    }
+                }
+            }
+            if (info.superName != null) todo.add(info.superName);
+            todo.addAll(info.interfaces);
+        }
+        if (found == null) return null;
+        report.stubbed(m.owner, m.name + m.desc + " -> " + found, from);
+        m.desc = args + found;
+        return new TypeInsnNode(Opcodes.CHECKCAST, wanted.getInternalName());
     }
 
     private static void check(Hierarchy hierarchy, LinkReport report, String from, MethodInsnNode m) {
