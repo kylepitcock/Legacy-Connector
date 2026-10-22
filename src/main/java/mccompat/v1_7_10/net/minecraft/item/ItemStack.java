@@ -239,11 +239,31 @@ public final class ItemStack {
     }
 
     public NBTTagList getEnchantmentTagList() {
+        NBTTagCompound tag = getTagCompound();
+        if (tag != null && tag.hasKey("ench", 9)) return tag.getTagList("ench", 10);
         return ItemBridge.legacyEnchantments(mcc$stack);
     }
 
+    /** Legacy {@code ench} tag entry; custom enchantments have no modern equivalent, so the tag is the source of truth. */
+    public void addEnchantment(mccompat.v1_7_10.net.minecraft.enchantment.Enchantment enchantment, int level) {
+        NBTTagCompound tag = getTagCompound();
+        if (tag == null) {
+            tag = new NBTTagCompound();
+            setTagCompound(tag);
+        }
+        if (!tag.hasKey("ench", 9)) tag.setTag("ench", new NBTTagList());
+        NBTTagList list = tag.getTagList("ench", 10);
+        NBTTagCompound entry = new NBTTagCompound();
+        entry.setShort("id", (short) enchantment.effectId);
+        entry.setShort("lvl", (short) level);
+        list.appendTag(entry);
+        tag.setTag("ench", list);
+        setTagCompound(tag);
+    }
+
     public boolean isItemEnchanted() {
-        return mcc$stack.isEnchanted();
+        NBTTagList list = getEnchantmentTagList();
+        return mcc$stack.isEnchanted() || (list != null && list.tagCount() > 0);
     }
 
     public boolean isItemEnchantable() {

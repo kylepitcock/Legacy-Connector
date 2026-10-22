@@ -658,7 +658,9 @@ public final class ItemBridge {
             return existing;
         }
         BlockStateHolder probe = new BlockStateHolder(block);
-        if (probe.modernItem() == Items.AIR) return null;
+        // 1.7.10 has an ItemBlock for every block but air, including the ones modern Minecraft has no item for
+        // (water, lava, fire, portals); mods enumerate them and reject a null item.
+        if (probe.modernItem() == Items.AIR && name.equals("minecraft:air")) return null;
         ItemBlock wrapper = new ItemBlock(new VanillaInfo(name, block.mcc$vanilla.legacyId(),
                 block.mcc$vanilla.legacyId() < 0 ? probe.modernItem() : null), block);
         BLOCK_ITEMS.put(block, wrapper);
