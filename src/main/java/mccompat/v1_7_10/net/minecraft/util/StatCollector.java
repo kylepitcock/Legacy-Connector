@@ -3,6 +3,10 @@ package mccompat.v1_7_10.net.minecraft.util;
 import net.minecraft.locale.Language;
 
 public class StatCollector {
+    /** Mods reach the live translation table through these (reflection on localizedName.languageList). */
+    private static StringTranslate localizedName = StringTranslate.getInstance();
+    private static StringTranslate fallbackTranslator = StringTranslate.getInstance();
+
     public static String translateToLocal(String key) {
         Language lang = Language.getInstance();
         if (key == null || lang.has(key)) return lang.getOrDefault(key);
