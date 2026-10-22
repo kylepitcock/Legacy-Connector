@@ -33,8 +33,19 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return mcc$server;
     }
 
+    /** Stand-in while mods load: 1.7.10 mods see a server object in init and register commands on it. */
+    private static final MinecraftServer PRESTART = new MinecraftServer(null);
+
     public static MinecraftServer getServer() {
-        return mcc$wrap(ServerLifecycleHooks.getCurrentServer());
+        MinecraftServer running = mcc$wrap(ServerLifecycleHooks.getCurrentServer());
+        return running != null ? running : mccompat.v1_7_10.cpw.mods.fml.common.Loader.mcc$isLoading() ? PRESTART : null;
+    }
+
+    private mccompat.v1_7_10.net.minecraft.command.ServerCommandManager commandManager;
+
+    public synchronized mccompat.v1_7_10.net.minecraft.command.ICommandManager getCommandManager() {
+        if (commandManager == null) commandManager = new mccompat.v1_7_10.net.minecraft.command.ServerCommandManager(mcc$server);
+        return commandManager;
     }
 
     public ServerConfigurationManager getConfigurationManager() {

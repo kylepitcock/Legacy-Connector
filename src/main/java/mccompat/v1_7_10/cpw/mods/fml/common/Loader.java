@@ -32,6 +32,10 @@ public class Loader {
         if (container != null && container.getModId() != null) MCC$CORE_CONTAINERS.add(container);
     }
 
+    public static boolean mcc$isLoading() {
+        return mcc$state.ordinal() >= LoaderState.CONSTRUCTING.ordinal() && mcc$state.ordinal() <= LoaderState.POSTINITIALIZATION.ordinal();
+    }
+
     public static void mcc$setState(LoaderState state) {
         mcc$state = state;
     }

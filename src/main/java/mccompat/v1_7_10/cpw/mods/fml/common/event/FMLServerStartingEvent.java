@@ -10,6 +10,7 @@ public class FMLServerStartingEvent extends FMLStateEvent {
 
     public FMLServerStartingEvent(MinecraftServer server) {
         this.server = server;
+        mccompat.v1_7_10.net.minecraft.command.CommandHandler.mcc$flushPending(server.mcc$modern());
     }
 
     public MinecraftServer getServer() {
