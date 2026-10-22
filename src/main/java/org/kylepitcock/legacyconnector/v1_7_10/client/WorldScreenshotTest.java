@@ -221,6 +221,49 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("tabs".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            add(waitForWorld(), wait(60), run(mc -> {
+                net.minecraft.world.item.CreativeModeTabs.tryRebuildTabContents(mc.player.connection.enabledFeatures(), true, mc.level.registryAccess());
+                for (var tab : net.minecraft.world.item.CreativeModeTabs.allTabs()) {
+                    Map<String, Integer> perNamespace = new java.util.TreeMap<>();
+                    for (var stack : tab.getDisplayItems()) perNamespace.merge(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace(), 1, Integer::sum);
+                    LOG.info("TAB {}: {} item(s) {}", tab.getDisplayName().getString(), tab.getDisplayItems().size(), perNamespace);
+                }
+                // items of the mods that no tab lists
+                Map<String, Integer> missing = new java.util.TreeMap<>();
+                var listed = new java.util.HashSet<net.minecraft.world.item.Item>();
+                for (var tab : net.minecraft.world.item.CreativeModeTabs.allTabs()) for (var stack : tab.getDisplayItems()) listed.add(stack.getItem());
+                for (var e : BuiltInRegistries.ITEM.entrySet()) if (!e.getKey().location().getNamespace().equals("minecraft") && !listed.contains(e.getValue())) missing.merge(e.getKey().location().getNamespace(), 1, Integer::sum);
+                LOG.info("TAB TEST: items in no creative tab: {}", missing);
+            }), command("gamemode creative"), wait(10));
+            String wanted = System.getProperty("legacyconnector.shotMods", "appliedenergistics2");
+            int page = 0;
+            for (String modWanted : wanted.split(",")) {
+                add(run(mc -> {
+                    var screen = new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), true);
+                    mc.setScreen(screen);
+                    for (var tab : net.minecraft.world.item.CreativeModeTabs.allTabs()) {
+                        boolean mine = false;
+                        for (var stack : tab.getDisplayItems()) if (BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals(modWanted)) { mine = true; break; }
+                        if (!mine || tab.getType() == net.minecraft.world.item.CreativeModeTab.Type.SEARCH) continue;
+                        try {
+                            var m = net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen.class.getDeclaredMethod("selectTab", net.minecraft.world.item.CreativeModeTab.class);
+                            m.setAccessible(true);
+                            m.invoke(screen, tab);
+                            LOG.info("Creative tab shown: {}", tab.getDisplayName().getString());
+                        } catch (ReflectiveOperationException e) {
+                            LOG.warn("Cannot select the tab: {}", e.toString());
+                        }
+                        break;
+                    }
+                }), wait(30), shot("creative_" + modWanted), run(mc -> mc.setScreen(null)));
+            }
+            add(run(mc -> {
+                LOG.info("Screenshot test finished");
+                mc.stop();
+            }));
+            return;
+        }
         if ("gallery".equals(System.getProperty("legacyconnector.shotScenario"))) {
             queueGalleryScenario();
             return;

@@ -82,6 +82,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderer.renderItem(type, view, data);
         } catch (RuntimeException | LinkageError e) {
             // a broken legacy renderer must not take the inventory down
+            logOnce(renderer.getClass().getName(), e);
         } finally {
             RenderContext.end();
             pose.popPose();
@@ -111,14 +112,23 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.mulPose(Axis.XP.rotationDegrees(30));
                 pose.mulPose(Axis.YP.rotationDegrees(225));
             }
+            long before = RenderContext.quadCount;
             handler.renderInventoryBlock(block, view.getItem().getMetadata(view.getItemDamage()), renderId, renderBlocks);
-            return true;
+            // AE2: renderInventoryBlock does nothing, its block items are drawn by an IItemRenderer instead.
+            return RenderContext.quadCount != before;
         } catch (RuntimeException | LinkageError e) {
+            logOnce(handler.getClass().getName(), e);
             return true; // a broken legacy renderer must not take the inventory down
         } finally {
             RenderContext.end();
             pose.popPose();
         }
+    }
+
+    private static final java.util.Set<String> LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private static void logOnce(String renderer, Throwable e) {
+        if (LOGGED.add(renderer)) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy item renderer {} failed (logged once)", renderer, e);
     }
 
     private static boolean helper(IItemRenderer r, ItemRenderType type, ItemStack stack, ItemRendererHelper helper) {

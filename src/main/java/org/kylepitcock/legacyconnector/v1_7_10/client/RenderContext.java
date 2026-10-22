@@ -216,7 +216,11 @@ public final class RenderContext {
      * Emits one quad of legacy geometry (positions in the current matrix space). Vertices are x, y, z, u, v, argb,
      * light; normal is the face normal.
      */
+    /** Quads handed to quad() so far (diagnostics: did a legacy renderer draw anything). */
+    public static long quadCount;
+
     public static void quad(double[][] v, float nx, float ny, float nz) {
+        quadCount++;
         PoseStack p = pose();
         if (p == null) return;
         if (capture != null) {
