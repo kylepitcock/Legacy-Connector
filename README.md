@@ -85,6 +85,49 @@ ID extenders, LWJGL 3 ports) and client mods with modern versions (JourneyMap, I
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
 
+### Bridges at a glance
+
+Two kinds of bridge exist. *Library bridges* replace an outdated legacy library by its modern equivalent (the table
+above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to. Status for 1.7.10:
+
+**Implemented**
+
+| Bridge | Legacy side | Modern side |
+|---|---|---|
+| Baubles → Curios | `baubles.api` | Curios slots |
+| NEI → JEI | `codechicken.nei` | JEI categories and hidden items |
+| Waila → Jade | `mcp.mobius.waila.api` | Jade tooltips |
+| CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
+| Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block |
+| Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
+| Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary` | data-pack recipes, tags |
+| Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
+| Fluids | Forge `Fluid` / containers | fluid types |
+| GUIs and containers | `GuiHandler`, `Container` | menus and screens |
+| Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
+| Commands | `ICommand`, server command manager | Brigadier |
+| Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes, `retrofit:dim_<id>` |
+| World generation | `IWorldGenerator`, decorators | chunk generation hooks |
+| Events | Forge/FML event buses | NeoForge event bus |
+| Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events, effects, tabs |
+| Stats and achievements | `StatList`, `AchievementList` | local bookkeeping (counts not tracked yet) |
+| Coremods that patch mods | `IClassTransformer` plugins | applied to mod classes before translation |
+| Java 8 → 21 | reflection hacks, removed JDK classes | `ReflectionCompat`, `ResourceCompat`, JDK stand-ins |
+| API drift between mods | a library method whose return type changed | relinked to the installed signature |
+
+**In progress / partial**
+
+| Bridge | State |
+|---|---|
+| Entity rendering, armour and held items | bridged, not verified in game for every mod |
+| Block rendering (`ISimpleBlockRenderingHandler`) | 3D inventory renders work; per-vertex colour and ambient occlusion of handler-drawn blocks missing |
+| Dimension sky/fog rendering and portal placement | not done |
+| Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
+| Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
+| Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
+| Redstone-flux style mod-to-mod energy beyond RF | planned |
+| 1.8 - 1.12.2, 1.16.5, 1.20.1 (+ Sinytra) bridges | planned, in that order |
+
 ### World generation
 
 Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generated as data: climate, colours, and the
@@ -158,7 +201,7 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 11 of the ~140 test mods still fail to finish loading, mostly API-version mismatches between mods of the test pack (Binnie/Forestry, DragonAPI family) and mods that patch vanilla classes with coremods). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
+| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 6 of the ~140 test mods still fail to finish loading, mostly API-version mismatches between mods of the test pack (Binnie/Forestry, DragonAPI family) and mods that patch vanilla classes with coremods). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
