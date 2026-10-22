@@ -12,6 +12,9 @@ public class ShapelessOreRecipe implements IRecipe {
     private final ItemStack output;
     public final Object[] mcc$args;
 
+    // Forge's private field, read reflectively by recipe viewers.
+    private final java.util.ArrayList<Object> input = new java.util.ArrayList<>();
+
     public ShapelessOreRecipe(Block result, Object... recipe) {
         this(new ItemStack(result), recipe);
     }
@@ -23,6 +26,11 @@ public class ShapelessOreRecipe implements IRecipe {
     public ShapelessOreRecipe(ItemStack result, Object... recipe) {
         this.output = result.copy();
         this.mcc$args = recipe;
+        for (Object o : recipe) {
+            if (o instanceof mccompat.v1_7_10.net.minecraft.block.Block b) input.add(new ItemStack(b, 1, 32767));
+            else if (o instanceof Item it) input.add(new ItemStack(it, 1, 32767));
+            else input.add(o);
+        }
     }
 
     @Override
