@@ -20,6 +20,7 @@ public class RenderManager {
 
     public legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase livingPlayer;
     public legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings options;
+    public legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer itemRenderer = new legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer();
     /** Legacy entity class -> renderer (RenderingRegistry.registerEntityRenderingHandler). */
     public final java.util.Map<Class<?>, Render> entityRenderMap = new java.util.concurrent.ConcurrentHashMap<>();
 
