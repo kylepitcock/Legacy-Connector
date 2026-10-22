@@ -7,4 +7,16 @@ public abstract class AbstractClientPlayer extends EntityPlayer {
     protected AbstractClientPlayer(Player modern) {
         super(modern);
     }
+
+    /** Legacy mods created stand-in players (mannequins drawn by tile entity renderers): a modern remote player is the host. */
+    public AbstractClientPlayer(legacyconnector.v1_7_10.net.minecraft.world.World world, com.mojang.authlib.GameProfile profile) {
+        this(Remote.create(profile));
+    }
+
+    private static final class Remote {
+        static Player create(com.mojang.authlib.GameProfile profile) {
+            var level = net.minecraft.client.Minecraft.getInstance().level;
+            return new net.minecraft.client.player.RemotePlayer(level, profile);
+        }
+    }
 }
