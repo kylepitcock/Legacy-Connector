@@ -422,6 +422,17 @@ public final class ItemBridge {
     }
 
     /** Asks the legacy item which subtypes exist ({@code getSubItems}); always includes 0. */
+    private static void registerIconsForDiscovery(Item item) {
+        try {
+            if (item instanceof ItemBlock ib && ib.mcc$block() != null) {
+                ib.mcc$block().registerBlockIcons(new mccompat.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks"));
+            }
+            item.registerIcons(new mccompat.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items"));
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("Icon registration for subtype discovery failed for {}", item, e);
+        }
+    }
+
     private static List<Integer> discoverMetas(Item item) {
         TreeSet<Integer> metas = new TreeSet<>();
         metas.add(0);
@@ -433,7 +444,15 @@ public final class ItemBridge {
             List<Object> list = new ArrayList<>();
             discovering = item;
             try {
-                item.getSubItems(item, item.getCreativeTab(), list);
+                try {
+                    item.getSubItems(item, item.getCreativeTab(), list);
+                } catch (RuntimeException firstFailure) {
+                    // Many getSubItems read arrays that registerIcons fills (icons.length), which only runs on the client in
+                    // 1.7.10; run it against a detached register and ask again.
+                    list.clear();
+                    registerIconsForDiscovery(item);
+                    item.getSubItems(item, item.getCreativeTab(), list);
+                }
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("getSubItems failed for {} while discovering subtypes; registering metadata 0 only", item, e);
                 discoveryFailed = true;

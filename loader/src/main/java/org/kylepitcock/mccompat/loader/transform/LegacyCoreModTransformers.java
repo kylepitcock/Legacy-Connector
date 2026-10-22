@@ -142,6 +142,16 @@ public final class LegacyCoreModTransformers {
                     data.put("runtimeDeobfuscationEnabled", Boolean.TRUE);
                     data.put("coremodLocation", jar.path.toFile());
                     pluginType.getMethod("injectData", Map.class).invoke(p.instance(), data);
+                    // FML constructed the plugin's mod container before any class was transformed; transformers rely on
+                    // what its constructor sets up (loggers, shared state).
+                    try {
+                        String containerClass = (String) pluginType.getMethod("getModContainerClass").invoke(p.instance());
+                        if (containerClass != null && !containerClass.isBlank()) {
+                            Class.forName(containerClass.trim(), true, lcl).getDeclaredConstructor().newInstance();
+                        }
+                    } catch (Throwable e) {
+                        LOG.warn("Retrofit: mod container of {} could not be created: {}", jar.fileName(), cause(e).toString());
+                    }
                     return new Loaded(jar.fileName(), created);
                 });
                 if (l != null) loaded.add(l);
@@ -213,6 +223,7 @@ public final class LegacyCoreModTransformers {
                 Throwable cause = e instanceof java.lang.reflect.InvocationTargetException ite && ite.getCause() != null ? ite.getCause() : e;
                 int n = failures.merge(t.name, 1, Integer::sum);
                 if (n <= 3) LOG.warn("Retrofit: class transformer {} failed on {} (class left as it was): {}", t.name, name, cause.toString());
+                if (n == 1) LOG.warn("Retrofit: class transformer {} failure detail", t.name, cause);
             }
         }
         return current;
@@ -302,6 +313,7 @@ public final class LegacyCoreModTransformers {
         for (var e : LegacyRemapper.JDK_RELOCATIONS.entrySet()) {
             if (e.getKey().startsWith("org/objectweb/asm/")) renames.put(e.getKey(), e.getValue());
         }
+        renames.put("org/objectweb/asm/ClassWriter", "org/kylepitcock/mccompat/loader/transform/CompatClassWriter");
         boolean mentions = false;
         String text = new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1);
         for (String k : renames.keySet()) if (text.contains(k)) mentions = true;
