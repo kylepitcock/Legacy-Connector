@@ -53,6 +53,10 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (handler == null || FAILED.contains(block.getClass().getName())) return base;
         RenderContext.Capture capture = RenderContext.beginCapture();
         boolean drew;
+        // 1.7.10's chunk renderer had the Tessellator drawing already when it called the handlers.
+        var tessellator = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
+        boolean started = !tessellator.isDrawing;
+        if (started) tessellator.startDrawingQuads();
         try {
             RenderBlocks renderer = new RenderBlocks(BlockAccessView.of(level));
             var access = BlockAccessView.of(level);
@@ -63,9 +67,21 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             }
             return base;
         } finally {
-            RenderContext.endCapture();
+            try {
+                if (started && tessellator.isDrawing) tessellator.draw();
+            } finally {
+                RenderContext.endCapture();
+            }
         }
-        if (!drew && capture.quads.isEmpty()) return base.derive().with(QUADS, List.of()).build();
+        if (!drew && capture.quads.isEmpty()) {
+            if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
+                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {})", handler.getClass().getName(), block.getClass().getName(), renderId);
+            }
+            return base.derive().with(QUADS, List.of()).build();
+        }
+        if (FAILED.add("count:" + block.getClass().getName())) {
+            LOG.info("Legacy block renderer {} drew {} quad(s) for {} (handler returned {})", handler.getClass().getSimpleName(), capture.quads.size(), block.getClass().getSimpleName(), drew);
+        }
         List<BakedQuad> quads = IsbrhQuads.bake(capture, pos.getX(), pos.getY(), pos.getZ(), getParticleIcon(ModelData.EMPTY));
         return base.derive().with(QUADS, quads).build();
     }

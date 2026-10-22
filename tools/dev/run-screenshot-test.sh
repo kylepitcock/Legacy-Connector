@@ -27,6 +27,7 @@ args=()
 [[ -n $TOUR ]] && args+=(-PshotTour=$TOUR)
 [[ -n $SCENARIO ]] && args+=(-PshotScenario=$SCENARIO)
 [[ -n $RENDER ]] && args+=(-PshotRenderDistance=$RENDER)
+[[ -n $SHOW ]] && args+=(-PshotBlocks=$SHOW)   # SHOW=ns:block,ns:block: only these blocks in the showcase
 : > run-screenshots/logs/latest.log
 ./gradlew runScreenshotTest $args > build/devtools/screenshottest.log 2>&1 &
 for i in $(seq 1 360); do

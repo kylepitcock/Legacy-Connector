@@ -243,12 +243,15 @@ public final class WorldScreenshotTest {
         }
         // block showcases
         String modsProp = System.getProperty("legacyconnector.shotMods", "");
+        List<String> onlyBlocks = java.util.Arrays.asList(System.getProperty("legacyconnector.shotBlocks", "").split(","));
+        if (onlyBlocks.size() == 1 && onlyBlocks.get(0).isEmpty()) onlyBlocks = List.of();
         List<String> mods = new ArrayList<>();
         Map<String, List<ResourceLocation>> blocks = new LinkedHashMap<>();
         for (var e : BuiltInRegistries.BLOCK.entrySet()) {
             if (!(e.getValue() instanceof LegacyBlockAdapter)) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
+            if (!onlyBlocks.isEmpty() && !onlyBlocks.contains(id.toString())) continue;
             blocks.computeIfAbsent(id.getNamespace(), k -> new ArrayList<>()).add(id);
         }
         add(command("gamemode creative"), command("tp @s 0 200 0"), wait(60), look(0f, 20f), wait(10), shot("hud_creative"));
@@ -428,6 +431,22 @@ public final class WorldScreenshotTest {
         int z0 = base.getZ() + 8;
         var conn = mc.player.connection;
         LOG.info("Showcase blocks (rows of six, front row first): {}", ids);
+        for (ResourceLocation id : ids) {
+            try {
+                var b = BuiltInRegistries.BLOCK.get(id);
+                if (b instanceof LegacyBlockAdapter adapter && adapter.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.block.Block lb) {
+                    int rt = lb.getRenderType();
+                    for (int side = 0; side < 6; side += 5) {
+                        var icon = lb.getIcon(side, 0);
+                        LOG.info("Showcase {}: icon(side {}, meta 0) = {}", id, side, icon == null ? "null" : icon.getIconName());
+                    }
+                    LOG.info("Showcase {}: render type {}, handler {}, shape {}", id, rt,
+                            legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(rt), b.defaultBlockState().getRenderShape());
+                }
+            } catch (RuntimeException | LinkageError e) {
+                LOG.info("Showcase {}: {}", id, e.toString());
+            }
+        }
         conn.sendCommand("fill " + (x0 - 2) + " " + (y - 1) + " " + (z0 - 2) + " " + (x0 + 14) + " " + (y + 5) + " " + (z0 + 6) + " minecraft:air");
         conn.sendCommand("fill " + (x0 - 2) + " " + (y - 1) + " " + (z0 - 2) + " " + (x0 + 14) + " " + (y - 1) + " " + (z0 + 6) + " minecraft:smooth_stone");
         for (int i = 0; i < ids.size(); i++) {
