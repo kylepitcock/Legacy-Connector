@@ -669,7 +669,7 @@ public final class ItemBridge {
         ensureVanilla();
         Item i = BY_ID.get(id);
         if (i != null) return i;
-        Block b = BlockBridge.byId(id);
+        Block b = BlockBridge.registeredById(id);
         return b == null ? null : fromBlock(b);
     }
 

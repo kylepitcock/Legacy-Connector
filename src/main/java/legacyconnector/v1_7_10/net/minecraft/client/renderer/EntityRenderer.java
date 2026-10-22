@@ -2,6 +2,7 @@ package legacyconnector.v1_7_10.net.minecraft.client.renderer;
 
 /** 1.7.10's world renderer object: mods set a couple of its debug fields; rendering itself is the modern game's. */
 public class EntityRenderer {
+    public final ItemRenderer itemRenderer = new ItemRenderer();
     public int debugViewDirection;
     public boolean debugView;
     public float farPlaneDistance;

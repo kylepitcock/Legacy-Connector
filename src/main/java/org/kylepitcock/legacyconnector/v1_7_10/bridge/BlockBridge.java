@@ -298,6 +298,12 @@ public final class BlockBridge {
         return id == null ? -1 : id;
     }
 
+    /** The block registered under a numeric id, without resolving item ids (ItemBridge.byId uses it: the two must not call each other). */
+    public static synchronized Block registeredById(int id) {
+        ensureVanilla();
+        return BY_ID.get(id);
+    }
+
     public static synchronized Block byId(int id) {
         ensureVanilla();
         Block b = BY_ID.get(id);

@@ -12,6 +12,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
  * model offset), feeds the model the interpolated animation values and renders it plus its render passes.
  */
 public abstract class RendererLivingEntity extends Render {
+    private static final java.util.Set<String> WARNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     protected ModelBase mainModel;
     protected ModelBase renderPassModel;
 
@@ -32,6 +33,11 @@ public abstract class RendererLivingEntity extends Render {
     public void doRender(EntityLivingBase entity, double x, double y, double z, float yaw, float partialTicks) {
         LivingEntity m = entity.mcc$entity instanceof LivingEntity l ? l : null;
         if (m == null) return;
+        if (mainModel == null) {
+            // A vanilla renderer the shim has no model for (a mod extends it): nothing can be drawn, but the game goes on.
+            if (WARNED.add(getClass().getName())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").warn("The entity renderer {} has no model (its vanilla base class is not ported)", getClass().getName());
+            return;
+        }
         RenderContext.push();
         try {
             mainModel.onGround = renderSwingProgress(entity, partialTicks);

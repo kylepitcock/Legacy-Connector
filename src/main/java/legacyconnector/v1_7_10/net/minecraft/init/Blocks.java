@@ -13,7 +13,7 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block dirt = BlockBridge.vanilla("dirt", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block cobblestone = BlockBridge.vanilla("cobblestone", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block planks = BlockBridge.vanilla("planks", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockSapling sapling = BlockBridge.vanilla("sapling", legacyconnector.v1_7_10.net.minecraft.block.BlockSapling.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block sapling = BlockBridge.vanilla("sapling", legacyconnector.v1_7_10.net.minecraft.block.BlockSapling.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block bedrock = BlockBridge.vanilla("bedrock", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid flowing_water = BlockBridge.vanilla("flowing_water", legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block water = BlockBridge.vanilla("water", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
@@ -48,8 +48,8 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockPistonMoving piston_extension = BlockBridge.vanilla("piston_extension", legacyconnector.v1_7_10.net.minecraft.block.BlockPistonMoving.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockFlower yellow_flower = BlockBridge.vanilla("yellow_flower", legacyconnector.v1_7_10.net.minecraft.block.BlockFlower.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockFlower red_flower = BlockBridge.vanilla("red_flower", legacyconnector.v1_7_10.net.minecraft.block.BlockFlower.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom brown_mushroom = BlockBridge.vanilla("brown_mushroom", legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom red_mushroom = BlockBridge.vanilla("red_mushroom", legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockBush brown_mushroom = BlockBridge.vanilla("brown_mushroom", legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockBush red_mushroom = BlockBridge.vanilla("red_mushroom", legacyconnector.v1_7_10.net.minecraft.block.BlockMushroom.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block gold_block = BlockBridge.vanilla("gold_block", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block iron_block = BlockBridge.vanilla("iron_block", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockSlab double_stone_slab = BlockBridge.vanilla("double_stone_slab", legacyconnector.v1_7_10.net.minecraft.block.BlockSlab.class);
@@ -112,8 +112,8 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block iron_bars = BlockBridge.vanilla("iron_bars", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block glass_pane = BlockBridge.vanilla("glass_pane", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block melon_block = BlockBridge.vanilla("melon_block", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockStem pumpkin_stem = BlockBridge.vanilla("pumpkin_stem", legacyconnector.v1_7_10.net.minecraft.block.BlockStem.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.BlockStem melon_stem = BlockBridge.vanilla("melon_stem", legacyconnector.v1_7_10.net.minecraft.block.BlockStem.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block pumpkin_stem = BlockBridge.vanilla("pumpkin_stem", legacyconnector.v1_7_10.net.minecraft.block.BlockStem.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block melon_stem = BlockBridge.vanilla("melon_stem", legacyconnector.v1_7_10.net.minecraft.block.BlockStem.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block vine = BlockBridge.vanilla("vine", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block fence_gate = BlockBridge.vanilla("fence_gate", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block brick_stairs = BlockBridge.vanilla("brick_stairs", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
