@@ -185,7 +185,8 @@ public final class WorldScreenshotTest {
     private static Action shot(String name) {
         int[] t = {0};
         return mc -> {
-            if (++t[0] < 12) return false;
+            if (++t[0] == 8) mc.gui.getChat().clearMessages(false);
+            if (t[0] < 12) return false;
             try (NativeImage image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
                 File file = new File(dir, name + ".png");
                 image.writeToFile(file);
@@ -464,6 +465,7 @@ public final class WorldScreenshotTest {
     private static int warned;
 
     private static void shotNow(Minecraft mc, String name) {
+        mc.gui.getChat().clearMessages(false);
         try (NativeImage image = Screenshot.takeScreenshot(mc.getMainRenderTarget())) {
             image.writeToFile(new File(dir, name + ".png"));
         } catch (Exception e) {

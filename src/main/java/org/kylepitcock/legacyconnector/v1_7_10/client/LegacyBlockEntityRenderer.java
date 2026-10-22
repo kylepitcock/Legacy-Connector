@@ -32,6 +32,7 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         dispatcher.mcc$setCamera(cam.x, cam.y, cam.z);
         if (be.getLevel() != null) dispatcher.worldObj = World.mcc$wrap(be.getLevel());
+        refreshEnvironment(dispatcher, Minecraft.getInstance());
         double x = be.getBlockPos().getX() - cam.x, y = be.getBlockPos().getY() - cam.y, z = be.getBlockPos().getZ() - cam.z;
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
@@ -48,6 +49,26 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         } finally {
             RenderContext.end();
         }
+    }
+
+    /** The viewer and settings legacy renderers read from the dispatchers (rotationYaw of the camera entity, fancyGraphics). */
+    private static void refreshEnvironment(TileEntityRendererDispatcher dispatcher, Minecraft mc) {
+        var camera = mc.getCameraEntity();
+        if (camera instanceof net.minecraft.world.entity.LivingEntity living) {
+            var view = (legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(living);
+            dispatcher.field_147551_g = view;
+            dispatcher.field_147562_h = camera.getYRot();
+            dispatcher.field_147563_i = camera.getXRot();
+            var manager = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.instance;
+            manager.livingPlayer = view;
+            manager.playerViewY = camera.getYRot();
+            manager.playerViewX = camera.getXRot();
+            manager.viewerPosX = dispatcher.field_147560_j;
+            manager.viewerPosY = dispatcher.field_147561_k;
+            manager.viewerPosZ = dispatcher.field_147558_l;
+        }
+        var manager = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.instance;
+        if (manager.options == null) manager.options = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft());
     }
 
     @Override

@@ -23,7 +23,17 @@ public final class TextureLocations {
     public static ResourceLocation modern(String domain, String path) {
         String ns = Ids.namespace(domain);
         String p = Ids.normalizePath(path);
-        if (ns.equals("minecraft")) p = RENAMES.getOrDefault(p, p);
+        if (ns.equals("minecraft")) {
+            p = RENAMES.getOrDefault(p, p);
+            // 1.7.10 block and item textures under their old names (textures/blocks/planks_oak.png) live under other names now
+            boolean block = p.startsWith("textures/blocks/");
+            if ((block || p.startsWith("textures/items/")) && p.endsWith(".png")) {
+                String name = p.substring(p.indexOf('/', "textures/".length()) + 1, p.length() - 4);
+                String modern = org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture((block ? "blocks/" : "items/") + name, block);
+                int colon = modern.indexOf(':');
+                if (colon > 0) return ResourceLocation.fromNamespaceAndPath(modern.substring(0, colon), "textures/" + modern.substring(colon + 1) + ".png");
+            }
+        }
         return ResourceLocation.fromNamespaceAndPath(ns, p);
     }
 }

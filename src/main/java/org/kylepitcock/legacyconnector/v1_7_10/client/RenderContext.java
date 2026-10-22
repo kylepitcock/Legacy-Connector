@@ -125,7 +125,23 @@ public final class RenderContext {
 
     // ------------------------------------------------------------------ texture and color
 
+    private static final java.util.Set<ResourceLocation> CHECKED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Logs (once) a texture a legacy renderer binds that no resource pack has: it draws as the missing texture. */
+    private static void checkExists(ResourceLocation rl) {
+        if (!CHECKED.add(rl) || rl.getPath().startsWith("textures/atlas/") || rl.getPath().startsWith("dynamic/")) return;
+        try {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.getResourceManager().getResource(rl).isEmpty() && mc.getTextureManager().getTexture(rl, null) == null) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Textures").warn("A legacy renderer binds the texture {}, which does not exist", rl);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // not checkable now
+        }
+    }
+
     public static void bindTexture(ResourceLocation rl) {
+        checkExists(rl);
         texture = rl;
         RenderSystem.setShaderTexture(0, rl);
     }
