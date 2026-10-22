@@ -223,7 +223,7 @@ public final class LegacyCoreModTransformers {
                 Throwable cause = e instanceof java.lang.reflect.InvocationTargetException ite && ite.getCause() != null ? ite.getCause() : e;
                 int n = failures.merge(t.name, 1, Integer::sum);
                 if (n <= 3) LOG.warn("Retrofit: class transformer {} failed on {} (class left as it was): {}", t.name, name, cause.toString());
-                if (n == 1) LOG.warn("Retrofit: class transformer {} failure detail", t.name, cause);
+                if (n == 1) LOG.debug("Retrofit: class transformer {} failure detail", t.name, cause);
             }
         }
         return current;

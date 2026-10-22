@@ -200,13 +200,33 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 6 of the ~140 test mods still fail to finish loading, mostly API-version mismatches between mods of the test pack (Binnie/Forestry, DragonAPI family) and mods that patch vanilla classes with coremods). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
+| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 1 of the ~140 test mods still fails to finish loading, see [Known compatibility issues](#known-compatibility-issues)). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
 
 Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
 LaunchWrapper tweakers. They are reported, and the rest of the mod still loads.
+
+### Known compatibility issues
+
+Found by loading a ~140-mod 1.7.10 test pack (`test-mods/`) together. Everything not listed here loaded in the last
+full run; "loads" does not mean every feature was played through.
+
+| Mod / combination | Issue | What to do |
+|---|---|---|
+| RotaryCraft (with DragonAPI and Tinkers' Construct 1.8.8) | DragonAPI's Tinkers integration asks for `TConstruct:slime.grass`, which Tinkers did not register here (one of its pulses throws during setup; Pulsar hides the cause). RotaryCraft is disabled at post-init. | Remove Tinkers' Construct, or help find the failing Tinkers pulse. DragonAPI and ReactorCraft load. |
+| Binnie's Mods 2.0-pre14 with Forestry 4.2.16 | Binnie was built for an older Forestry API (`getProducts`, `getLogStacks`, `planks2` do not exist in 4.2.16); ExtraBees, Botany, BinnieCore and ExtraTrees fail, and anything that runs their recipes (ThermalExpansion) with them. | Use Binnie's Mods 2.0.22.7 (loads); Binnie Patcher is then not needed. |
+| Witchery + RotaryCraft | Both default to potion id 35; DragonAPI refuses to start. | Change `Freeze Potion ID` in `config/Reika/RotaryCraft.cfg` (or Witchery's id). |
+| ProjectRed Expansion + Runic Dungeons | Both use enchantment id 80. 1.7.10 crashed; here one enchantment is moved to a free id and a warning is logged. | Change an id in the mods' configs to keep ids stable. |
+| Mystcraft + NetherOres | NetherOres swaps the vanilla quartz ore block through CoFH registry reflection. Works, because replaced vanilla blocks keep the vanilla identity. | None. |
+| Mods that patch Minecraft's own classes with coremods | The patches cannot run on the shim classes. Only DragonAPI's crafting-list and smelting hooks are provided (`CoremodHooks`); other such patches do nothing. | Report the mod. |
+| Railcraft and EnderIO anvils | They read vanilla `ContainerRepair` fields by position (`ObfuscationReflectionHelper`), which the shim does not match; the anvil GUI fails to open. | Not fixed. |
+| HBM's pylons/substations, RFTools screens, Thermal Expansion tanks and caches, Runic Dungeons portal | Fail in the automated block self test, which uses a fake player and no tile state; not confirmed in real play. | Test in game. |
+| Decocraft | Loads through a stand-in for the JDK-internal PNG reader; models not checked in game. | Test in game. |
+| Tinkers' Construct and other mods whose `getSubItems` reads client-only icon arrays | Subtype discovery registers icons against a detached register; blocks whose arrays still stay empty get metadata 0 only until used. | None. |
+| Villager trades, potion brewing tables, fishing loot, achievement pages, `displayGUIChest` | Not implemented; the calls do nothing and are logged as `Legacy API ... is not implemented yet` in the log. | Not fixed. |
+| FastCraft, Hodgepodge and other engine/launcher patches; JourneyMap, Inventory Tweaks | Intentionally not loaded (see above). | Use their modern equivalents. |
 
 ### What happens to a mod
 
