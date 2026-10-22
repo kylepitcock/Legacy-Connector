@@ -208,7 +208,7 @@ public final class LegacyCoreModTransformers {
         for (Transformer t : transformers) {
             try {
                 byte[] next = (byte[]) transform.invoke(t.instance, name, name, current);
-                if (next != null) current = next;
+                if (next != null && next != current) current = recomputeMaxs(next);
             } catch (Throwable e) {
                 Throwable cause = e instanceof java.lang.reflect.InvocationTargetException ite && ite.getCause() != null ? ite.getCause() : e;
                 int n = failures.merge(t.name, 1, Integer::sum);
@@ -268,6 +268,18 @@ public final class LegacyCoreModTransformers {
             }), 0);
             byte[] out = writer.toByteArray();
             return defineClass(name, out, 0, out.length);
+        }
+    }
+
+    /** Patched methods may need a deeper operand stack than they declare; FML's writers computed it, so do the same. */
+    private static byte[] recomputeMaxs(byte[] bytes) {
+        try {
+            ClassReader reader = new ClassReader(bytes);
+            ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            reader.accept(writer, 0);
+            return writer.toByteArray();
+        } catch (RuntimeException e) {
+            return bytes;
         }
     }
 

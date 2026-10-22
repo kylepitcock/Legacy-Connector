@@ -96,7 +96,7 @@ public class RenderBiped extends RenderLiving {
             RenderContext.rotate(180.0F, 0.0F, 1.0F, 0.0F);
             RenderContext.translate(1.0F / 16.0F, 0.125F, -0.625F);
             mc.getItemRenderer().renderStatic(modern, net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND,
-                    RenderContext.light(), RenderContext.overlay(), pose, RenderContext.buffers(), mc.level, 0);
+                    RenderContext.light(), RenderContext.overlay(), pose, RenderContext.buffers(), (net.minecraft.world.level.Level) (Object) mc.level, 0);
         } finally {
             RenderContext.pop();
         }

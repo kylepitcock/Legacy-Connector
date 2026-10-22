@@ -31,7 +31,7 @@ public class RenderItem extends Render {
         pose.scale(0.5F, 0.5F, 0.5F);
         var mc = Minecraft.getInstance();
         mc.getItemRenderer().renderStatic(stack.mcc$modern(), ItemDisplayContext.GROUND, RenderContext.light(), RenderContext.overlay(), pose,
-                RenderContext.buffers(), mc.level, 0);
+                RenderContext.buffers(), (net.minecraft.world.level.Level) (Object) mc.level, 0);
         pose.popPose();
     }
 
