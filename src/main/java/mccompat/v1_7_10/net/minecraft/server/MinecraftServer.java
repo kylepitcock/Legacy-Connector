@@ -57,6 +57,31 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return level == null ? null : (WorldServer) WorldServer.mcc$wrap(level);
     }
 
+    public java.io.File getFile(String name) {
+        return new java.io.File(mcc$server.getServerDirectory().toFile(), name);
+    }
+
+    public String getFolderName() {
+        return mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile().getParentFile() == null ? "world"
+                : mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().getParent().getFileName().toString();
+    }
+
+    public boolean isServerInOnlineMode() {
+        return mcc$server.usesAuthentication();
+    }
+
+    public static long getSystemTimeMillis() {
+        return System.nanoTime() / 1000000L;
+    }
+
+    public boolean isCommandBlockEnabled() {
+        return mcc$server.isCommandBlockEnabled();
+    }
+
+    public com.mojang.authlib.minecraft.MinecraftSessionService getMinecraftSessionService() {
+        return mcc$server.getSessionService();
+    }
+
     public int getTickCounter() {
         return mcc$server.getTickCount();
     }

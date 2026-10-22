@@ -14,6 +14,10 @@ public class WorldServer extends World {
         return mcc$fullLevel() instanceof ServerLevel s ? MinecraftServer.mcc$wrap(s.getServer()) : null;
     }
 
+    public java.io.File getChunkSaveLocation() {
+        return getSaveHandler().getWorldDirectory();
+    }
+
     public boolean areAllPlayersAsleep() {
         return mcc$fullLevel() instanceof ServerLevel s && s.players().stream().allMatch(net.minecraft.world.entity.player.Player::isSleeping);
     }

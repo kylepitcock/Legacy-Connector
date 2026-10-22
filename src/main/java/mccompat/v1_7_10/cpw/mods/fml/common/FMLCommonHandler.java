@@ -51,6 +51,14 @@ public class FMLCommonHandler {
         if (stopGame) throw new RuntimeException(message, exception);
     }
 
+    public java.io.File getSavesDirectory() {
+        return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve("saves").toFile();
+    }
+
+    /** Crash report sections of mods are not part of the modern crash report: only logged when asked for. */
+    public void registerCrashCallable(Object callable) {
+    }
+
     public String getModName() {
         return "fml,forge,mccompat";
     }

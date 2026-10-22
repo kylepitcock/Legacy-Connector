@@ -330,6 +330,29 @@ public class World implements IBlockAccess {
         return lvl().getMaxLocalRawBrightness(pos(x, y, z));
     }
 
+    public int getSavedLightValue(EnumSkyBlock type, int x, int y, int z) {
+        return lvl().getBrightness(type == EnumSkyBlock.Sky ? net.minecraft.world.level.LightLayer.SKY : net.minecraft.world.level.LightLayer.BLOCK, pos(x, y, z));
+    }
+
+    public boolean updateAllLightTypes(int x, int y, int z) {
+        return false;
+    }
+
+    public mccompat.v1_7_10.net.minecraft.world.storage.ISaveHandler getSaveHandler() {
+        Level level = mcc$fullLevel();
+        java.io.File dir = level instanceof ServerLevel s ? s.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile() : new java.io.File(".");
+        return new mccompat.v1_7_10.net.minecraft.world.storage.SaveHandler(dir, dir.getName());
+    }
+
+    public boolean canMineBlock(EntityPlayer player, int x, int y, int z) {
+        return true;
+    }
+
+    public float getWeightedThunderStrength(float partialTicks) {
+        Level level = mcc$liveLevel();
+        return level == null ? 0.0F : level.getThunderLevel(partialTicks);
+    }
+
     public int getFullBlockLightValue(int x, int y, int z) {
         return getBlockLightValue(x, y, z);
     }
@@ -618,6 +641,38 @@ public class World implements IBlockAccess {
         if (level == null) return null;
         var e = level.getEntity(id);
         return e == null ? null : EntityBridge.wrap(e);
+    }
+
+    public mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition rayTraceBlocks(mccompat.v1_7_10.net.minecraft.util.Vec3 start, mccompat.v1_7_10.net.minecraft.util.Vec3 end) {
+        return rayTraceBlocks(start, end, false, false, false);
+    }
+
+    public mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition rayTraceBlocks(mccompat.v1_7_10.net.minecraft.util.Vec3 start, mccompat.v1_7_10.net.minecraft.util.Vec3 end, boolean liquids) {
+        return rayTraceBlocks(start, end, liquids, false, false);
+    }
+
+    /** Null on a miss, as in 1.7.10. The modern clip stands in for the block-by-block walk over each block's collisionRayTrace. */
+    public mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition rayTraceBlocks(mccompat.v1_7_10.net.minecraft.util.Vec3 start,
+            mccompat.v1_7_10.net.minecraft.util.Vec3 end, boolean liquids, boolean ignoreNoBoundingBox, boolean returnLastUncollidable) {
+        var hit = lvl().clip(new net.minecraft.world.level.ClipContext(start.mcc$modern(), end.mcc$modern(),
+                ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.OUTLINE : net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                liquids ? net.minecraft.world.level.ClipContext.Fluid.ANY : net.minecraft.world.level.ClipContext.Fluid.NONE,
+                net.minecraft.world.phys.shapes.CollisionContext.empty()));
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
+        var pos = hit.getBlockPos();
+        var at = hit.getLocation();
+        return new mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition(pos.getX(), pos.getY(), pos.getZ(), hit.getDirection().get3DDataValue(),
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x, at.y, at.z));
+    }
+
+    /** Boxes of the blocks colliding with {@code box} (entity colliders such as boats are not included). */
+    public List getCollidingBoundingBoxes(Entity entity, AxisAlignedBB box) {
+        List<AxisAlignedBB> out = new ArrayList<>();
+        var modernEntity = entity == null ? null : entity.mcc$entity();
+        for (var shape : lvl().getBlockCollisions(modernEntity, box.mcc$modern())) {
+            for (AABB part : shape.toAabbs()) out.add(AxisAlignedBB.mcc$of(part));
+        }
+        return out;
     }
 
     public List getEntitiesWithinAABB(Class type, AxisAlignedBB box) {

@@ -360,6 +360,25 @@ public class Configuration {
         return cat != null && cat.containsKey(key);
     }
 
+    public boolean renameProperty(String category, String oldName, String newName) {
+        if (!hasCategory(category)) return false;
+        ConfigCategory cat = getCategory(category);
+        if (!cat.containsKey(oldName) || cat.containsKey(newName)) return false;
+        Property prop = cat.remove(oldName);
+        prop.setName(newName);
+        cat.put(newName, prop);
+        return true;
+    }
+
+    public boolean moveProperty(String oldCategory, String propName, String newCategory) {
+        if (!hasCategory(oldCategory)) return false;
+        ConfigCategory from = getCategory(oldCategory);
+        ConfigCategory to = getCategory(newCategory);
+        if (!from.containsKey(propName) || to.containsKey(propName)) return false;
+        to.put(propName, from.remove(propName));
+        return true;
+    }
+
     public Set<String> getCategoryNames() {
         return new LinkedHashSet<>(categories.keySet());
     }

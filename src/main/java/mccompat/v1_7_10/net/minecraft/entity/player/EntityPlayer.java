@@ -232,10 +232,23 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return mcc$player().isSpectator();
     }
 
-    public void triggerAchievement(Object stat) {
+    public void triggerAchievement(mccompat.v1_7_10.net.minecraft.stats.StatBase stat) {
+        addStat(stat, 1);
     }
 
-    public void addStat(Object stat, int amount) {
+    /** Counts are not tracked yet (modern statistics are not driven by legacy stats). */
+    public void addStat(mccompat.v1_7_10.net.minecraft.stats.StatBase stat, int amount) {
+    }
+
+    public float getDefaultEyeHeight() {
+        return 0.12F;
+    }
+
+    public void setSpawnChunk(ChunkCoordinates coordinates, boolean forced, int dimension) {
+        if (coordinates == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        var target = org.kylepitcock.mccompat.v1_7_10.bridge.DimensionBridge.level(sp.server, dimension);
+        var key = target == null ? sp.level().dimension() : target.dimension();
+        if (key != null) sp.setRespawnPosition(key, new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ), 0.0F, forced, false);
     }
 
     public void mcc$addStat(String name) {

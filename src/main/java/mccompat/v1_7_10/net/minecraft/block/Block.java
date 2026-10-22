@@ -678,6 +678,37 @@ public class Block {
         return AxisAlignedBB.getBoundingBox(x + minX, y + minY, z + minZ, x + maxX, y + maxY, z + maxZ);
     }
 
+    /** Ray against the block's bounds; the hit is in world coordinates, null when the ray misses. */
+    public mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition collisionRayTrace(World world, int x, int y, int z,
+            mccompat.v1_7_10.net.minecraft.util.Vec3 start, mccompat.v1_7_10.net.minecraft.util.Vec3 end) {
+        setBlockBoundsBasedOnState(world, x, y, z);
+        net.minecraft.world.phys.AABB box = new net.minecraft.world.phys.AABB(minX, minY, minZ, maxX, maxY, maxZ);
+        var from = new net.minecraft.world.phys.Vec3(start.xCoord - x, start.yCoord - y, start.zCoord - z);
+        var to = new net.minecraft.world.phys.Vec3(end.xCoord - x, end.yCoord - y, end.zCoord - z);
+        var hit = net.minecraft.world.phys.AABB.clip(java.util.List.of(box), from, to, net.minecraft.core.BlockPos.ZERO);
+        if (hit == null) return null;
+        var at = hit.getLocation();
+        return new mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition(x, y, z, hit.getDirection().get3DDataValue(),
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x + x, at.y + y, at.z + z));
+    }
+
+    public boolean canPlaceTorchOnTop(World world, int x, int y, int z) {
+        if (isSideSolid(world, x, y, z, ForgeDirection.UP)) return true;
+        for (Class<?> c = getClass(); c != null; c = c.getSuperclass()) if (c.getSimpleName().equals("BlockFence")) return true;
+        return this == mccompat.v1_7_10.net.minecraft.init.Blocks.glass || this == mccompat.v1_7_10.net.minecraft.init.Blocks.cobblestone_wall;
+    }
+
+    public boolean canReplace(World world, int x, int y, int z, int side, ItemStack stack) {
+        return blockMaterial.isReplaceable();
+    }
+
+    /** Forge: called after a plant on this block grows. */
+    public void onPlantGrow(World world, int x, int y, int z, int sourceX, int sourceY, int sourceZ) {
+    }
+
+    public void addInformation(ItemStack stack, EntityPlayer player, List tooltip, boolean advanced) {
+    }
+
     public AxisAlignedBB getSelectedBoundingBoxFromPool(World world, int x, int y, int z) {
         return AxisAlignedBB.getBoundingBox(x + minX, y + minY, z + minZ, x + maxX, y + maxY, z + maxZ);
     }

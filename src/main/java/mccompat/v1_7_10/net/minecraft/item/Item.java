@@ -67,6 +67,18 @@ public class Item {
 
     // ------------------------------------------------------------------ static lookups
 
+    /** The block face the player is looking at (reach 4.5 survival / 5 creative), or null. */
+    protected mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition getMovingObjectPositionFromPlayer(
+            mccompat.v1_7_10.net.minecraft.world.World world, mccompat.v1_7_10.net.minecraft.entity.player.EntityPlayer player, boolean liquids) {
+        double reach = player.mcc$player().isCreative() ? 5.0D : 4.5D;
+        var eye = player.mcc$player().getEyePosition(1.0F);
+        var look = player.mcc$player().getViewVector(1.0F);
+        return world.rayTraceBlocks(
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x, eye.y, eye.z),
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x + look.x * reach, eye.y + look.y * reach, eye.z + look.z * reach),
+                liquids, !liquids, false);
+    }
+
     public static int getIdFromItem(Item item) {
         return ItemBridge.idOf(item);
     }

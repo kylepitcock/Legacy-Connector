@@ -255,9 +255,22 @@ public final class LegacyCoreModTransformers {
             byte[] bytes;
             try {
                 bytes = read(entry);
-                if (bytes == null) throw new ClassNotFoundException(name);
             } catch (java.io.IOException ex) {
                 throw new ClassNotFoundException(name, ex);
+            }
+            if (bytes == null) {
+                // A vanilla class the shim has no hand-written version of: coremods still name it (ClassWriter's
+                // frame computation asks for common superclasses), so serve an empty class with its real supertypes.
+                var entryData = org.kylepitcock.mccompat.loader.synth.LegacyHierarchyData.forVersion(LegacyVersion.V1_7_10).get(internal);
+                if (entryData == null) throw new ClassNotFoundException(name);
+                ClassWriter bare = new ClassWriter(0);
+                boolean iface = (entryData.access() & org.objectweb.asm.Opcodes.ACC_INTERFACE) != 0;
+                bare.visit(org.objectweb.asm.Opcodes.V17, entryData.access() | org.objectweb.asm.Opcodes.ACC_PUBLIC, internal, null,
+                        iface || entryData.superName() == null ? "java/lang/Object" : entryData.superName(),
+                        entryData.interfaces().toArray(new String[0]));
+                bare.visitEnd();
+                byte[] out = bare.toByteArray();
+                return defineClass(name, out, 0, out.length);
             }
             ClassWriter writer = new ClassWriter(0);
             new ClassReader(bytes).accept(new ClassRemapper(writer, new Remapper() {

@@ -157,6 +157,15 @@ public abstract class EntityLivingBase extends Entity {
         return mcc$entity == null ? 0 : mcc$living().getArmorValue();
     }
 
+    /** Ray from the eyes along the look direction, against blocks (null on a miss). */
+    public mccompat.v1_7_10.net.minecraft.util.MovingObjectPosition rayTrace(double distance, float partialTicks) {
+        var eye = mcc$entity.getEyePosition(partialTicks);
+        var look = mcc$entity.getViewVector(partialTicks);
+        return ((mccompat.v1_7_10.net.minecraft.world.World) mccompat.v1_7_10.net.minecraft.world.World.mcc$wrap(mcc$entity.level())).rayTraceBlocks(
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x, eye.y, eye.z),
+                mccompat.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(eye.x + look.x * distance, eye.y + look.y * distance, eye.z + look.z * distance));
+    }
+
     public ItemStack getHeldItem() {
         return mcc$entity == null ? null : ItemStack.mcc$wrap(mcc$living().getMainHandItem());
     }
