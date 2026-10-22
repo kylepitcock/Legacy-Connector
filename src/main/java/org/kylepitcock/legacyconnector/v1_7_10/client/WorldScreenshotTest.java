@@ -365,7 +365,7 @@ public final class WorldScreenshotTest {
                 int x = at.getX() + 2, y = at.getY(), z = at.getZ();
                 c.sendCommand("setblock " + x + " " + y + " " + z + " minecraft:air");
                 c.sendCommand("setblock " + x + " " + y + " " + z + " " + id);
-            }), wait(6), run(mc -> {
+            }), wait(20), run(mc -> {
                 BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
                 var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
                 mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
@@ -427,6 +427,7 @@ public final class WorldScreenshotTest {
         int y = 150;
         int z0 = base.getZ() + 8;
         var conn = mc.player.connection;
+        LOG.info("Showcase blocks (rows of six, front row first): {}", ids);
         conn.sendCommand("fill " + (x0 - 2) + " " + (y - 1) + " " + (z0 - 2) + " " + (x0 + 14) + " " + (y + 5) + " " + (z0 + 6) + " minecraft:air");
         conn.sendCommand("fill " + (x0 - 2) + " " + (y - 1) + " " + (z0 - 2) + " " + (x0 + 14) + " " + (y - 1) + " " + (z0 + 6) + " minecraft:smooth_stone");
         for (int i = 0; i < ids.size(); i++) {

@@ -256,6 +256,8 @@ tools/dev/run-subset.sh hbm thaumcraft     # server test over a few mods only, w
                                 # which models show the missing texture, then quits
 tools/dev/run-screenshot-test.sh agricraft appliedenergistics   # graphical test: creates a world (WORLDTYPE=biomesoplenty:biomesop
                                 # for BoP), builds block/item showcases, writes screenshots to run-screenshots/shots
+SCENARIO=gui MODS=rftools tools/dev/run-screenshot-test.sh rftools mcjtylib   # right-clicks each block of the mods and
+                                # screenshots the screens that open (custom GUIs); SCENARIO=portal tests a Twilight Forest portal
 tools/dev/docker-headless.sh run-screenshot-test.sh ...        # same, inside a Linux container with a virtual display
                                 # (Xvfb + Mesa; needs `colima start`), so no window opens on the desktop;
                                 # also works for run-client-test.sh

@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 /** Hosts a legacy {@link GuiScreen} that has no container (config screens, books, client-only GUIs). */
 public class LegacyScreen extends Screen {
     private final GuiScreen legacy;
+    private boolean failed;
 
     public LegacyScreen(GuiScreen legacy) {
         super(Component.empty());
@@ -21,14 +22,15 @@ public class LegacyScreen extends Screen {
 
     @Override
     protected void init() {
-        legacy.setWorldAndResolution(Minecraft.getMinecraft(), width, height);
+        failed = !ScreenGuard.run(this, () -> legacy.setWorldAndResolution(Minecraft.getMinecraft(), width, height));
     }
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (failed) return;
         RenderContext.beginGui(graphics);
         try {
-            legacy.drawScreen(mouseX, mouseY, partialTick);
+            failed = !ScreenGuard.run(this, () -> legacy.drawScreen(mouseX, mouseY, partialTick));
         } finally {
             RenderContext.end();
         }
