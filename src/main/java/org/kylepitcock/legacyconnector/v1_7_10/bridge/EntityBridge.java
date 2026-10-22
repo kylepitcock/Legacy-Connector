@@ -92,6 +92,7 @@ public final class EntityBridge {
                     : new legacyconnector.v1_7_10.net.minecraft.client.entity.EntityOtherPlayerMP(p);
         }
         if (modern instanceof ItemEntity item) return new EntityItem(item);
+        if (modern instanceof net.minecraft.world.entity.npc.Villager villager) return new VillagerView(villager);
         if (modern instanceof LivingEntity living) return new LivingView(living);
         return new View(modern);
     }
@@ -159,6 +160,13 @@ public final class EntityBridge {
     /** View for modern living entities without a dedicated legacy class. */
     public static final class LivingView extends EntityLivingBase {
         LivingView(LivingEntity modern) {
+            super(modern);
+        }
+    }
+
+    /** View for modern villagers. */
+    public static final class VillagerView extends legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager {
+        VillagerView(net.minecraft.world.entity.npc.Villager modern) {
             super(modern);
         }
     }

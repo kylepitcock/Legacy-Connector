@@ -246,6 +246,8 @@ idea {
 // classes and members public and non-final after compilation (see ShimAccessWidener).
 tasks.named('compileJava', JavaCompile) {
     dependsOn ':loader:classes'
+    // The widener rewrites the compiled classes in place; an incremental compile would read them back (widened) as sources' dependencies.
+    options.incremental = false
     def loaderClasspath = project(':loader').sourceSets.main.runtimeClasspath
     doLast {
         project.javaexec {

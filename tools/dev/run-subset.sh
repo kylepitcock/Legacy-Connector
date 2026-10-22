@@ -20,6 +20,9 @@ for src in run-servertest/mods run-servertest/mods/1.7.10; do
 done
 echo "mods: $(ls $D/mods | wc -l)"; ls $D/mods | sed 's/^/  /'
 rm -rf $D/world
+# LEVELTYPE=biomesoplenty:biomesop generates the world with a mod's world type
+[[ -n $LEVELTYPE ]] && sed -i '' "s#^level-type=.*#level-type=${LEVELTYPE//:/\\\\:}#" $D/server.properties
+[[ -z $LEVELTYPE ]] && sed -i '' 's#^level-type=.*#level-type=minecraft\\:normal#' $D/server.properties
 ./gradlew runServerSubTest > build/devtools/subtest.log 2>&1 &
 for i in $(seq 1 144); do
   sleep 5
