@@ -457,7 +457,7 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
-        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaIcon(textureName);
+        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaIcon(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaIcons.name(textureName, side, meta));
         return this.blockIcon;
     }
 
