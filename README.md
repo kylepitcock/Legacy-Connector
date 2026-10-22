@@ -125,7 +125,6 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
-| Redstone-flux style mod-to-mod energy beyond RF | planned |
 | 1.8 - 1.12.2, 1.16.5, 1.20.1 (+ Sinytra) bridges | planned, in that order |
 
 ### World generation
