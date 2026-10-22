@@ -152,7 +152,22 @@ public class DimensionManager {
 
     public static WorldProvider createProviderFor(int dim) {
         WorldServer w = getWorld(dim);
-        return w == null ? null : World.mcc$get$provider(w);
+        if (w != null) return World.mcc$get$provider(w);
+        // Not loaded (mods ask during init): a fresh provider of the registered type, as FML builds it.
+        Integer type;
+        synchronized (DIMENSIONS) {
+            type = DIMENSIONS.get(dim);
+        }
+        Class<?> cls = type == null ? null : PROVIDERS.get(type);
+        if (cls == null) return null;
+        try {
+            WorldProvider provider = (WorldProvider) cls.getDeclaredConstructor().newInstance();
+            provider.setDimension(dim);
+            return provider;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Dimensions").warn("Could not create the provider {} for dimension {}", cls.getName(), dim, e);
+            return null;
+        }
     }
 
     public static File getCurrentSaveRootDirectory() {
