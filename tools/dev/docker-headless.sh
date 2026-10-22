@@ -19,7 +19,7 @@ for d in run-screenshots run-clienttest; do [ -d $d/config ] && rsync -a $d/conf
 envs=()
 for v in MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO; do [[ -n ${(P)v} ]] && envs+=(-e "$v=${(P)v}"); done
 docker run --rm --shm-size=1g -v "$STAGE:/work" -v legacyconnector-gradle:/root/.gradle -w /work $envs $IMAGE \
-  xvfb-run -a -s "-screen 0 1280x720x24 +extension GLX" tools/dev/"$@"
+  bash -c 'Xvfb :99 -screen 0 1280x720x24 +extension GLX -nolisten tcp >/dev/null 2>&1 & sleep 2; export DISPLAY=:99; exec tools/dev/"$0" "$@"' "$@"
 status=$?
 for d in run-screenshots run-clienttest; do
   mkdir -p $d/logs
