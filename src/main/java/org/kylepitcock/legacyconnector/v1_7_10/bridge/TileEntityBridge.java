@@ -93,7 +93,7 @@ public final class TileEntityBridge {
         var be = world.mcc$level().getBlockEntity(pos);
         if (be == null) return null;
         if (be instanceof LegacyBlockEntity l) {
-            TileEntity te = l.legacy();
+            TileEntity te = l.legacy(world);
             // A tile entity placed while a chunk is generated has no level yet: it lives in the world it was asked through.
             if (te != null && te.worldObj == null) {
                 te.worldObj = world;

@@ -34,15 +34,20 @@ public class LegacyBlockEntity extends BlockEntity {
 
     /** The legacy tile entity, created on first use (legacy createTileEntity may need the world). */
     public TileEntity legacy() {
+        return legacy(null);
+    }
+
+    /** As {@link #legacy()}; {@code fallback} is the world to create the tile entity in while this block entity has no level yet (world generation). */
+    public TileEntity legacy(World fallback) {
         if (legacy == null && !createFailed) {
             try {
                 if (pending != null) {
                     legacy = TileEntityBridge.createAndLoad(new NBTTagCompound(pending));
                     pending = null;
                 }
-                if (legacy == null && level != null) {
+                if (legacy == null && (level != null || fallback != null)) {
                     Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
-                    legacy = block.createTileEntity(World.mcc$wrap(level), getBlockState().getValue(LegacyBlockAdapter.META));
+                    legacy = block.createTileEntity(level != null ? World.mcc$wrap(level) : fallback, getBlockState().getValue(LegacyBlockAdapter.META));
                 }
             } catch (RuntimeException | LinkageError e) {
                 // A tile entity that cannot be created must not take the server down (this runs while chunks are sent

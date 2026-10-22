@@ -213,6 +213,8 @@ public class StructureVillagePieces {
     public static class Start extends Well {
         public WorldChunkManager worldChunkMngr;
         public boolean inDesert;
+        /** Forge: the biome the village is in. */
+        public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome;
         public int terrainType;
         public PieceWeight structVillagePieceWeight;
         public List structureVillageWeightedPieceList;

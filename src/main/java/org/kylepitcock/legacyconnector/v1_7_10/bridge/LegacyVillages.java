@@ -38,7 +38,7 @@ public final class LegacyVillages {
     }
 
     /** A piece that is already there (a modern village piece): occupies space, builds nothing. */
-    private static final class Occupied extends StructureComponent {
+    private static final class Occupied extends StructureVillagePieces.Village {
         Occupied(StructureBoundingBox box) {
             this.boundingBox = box;
         }
@@ -76,7 +76,7 @@ public final class LegacyVillages {
             var key = registry.getKey(start.getStructure());
             boolean desert = key != null && key.getPath().contains("desert");
             Random rand = new Random(seed ^ (origin.x * 341873128712L + origin.z * 132897987541L));
-            List<StructureComponent> planned = plan(start, box, rand, desert, handlers);
+            List<StructureComponent> planned = plan(start, box, rand, desert, world.getBiomeGenForCoords((box.minX() + box.maxX()) / 2, (box.minZ() + box.maxZ()) / 2), handlers);
             Random buildRand = new Random(seed ^ ((long) chunkX * 3418731287L + (long) chunkZ * 1328979875L));
             for (StructureComponent component : planned) {
                 if (!component.getBoundingBox().intersectsWith(chunkBox)) continue;
@@ -89,16 +89,20 @@ public final class LegacyVillages {
         }
     }
 
-    private static List<StructureComponent> plan(StructureStart start, BoundingBox box, Random rand, boolean desert,
+    private static List<StructureComponent> plan(StructureStart start, BoundingBox box, Random rand, boolean desert, legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome,
             List<legacyconnector.v1_7_10.cpw.mods.fml.common.registry.VillagerRegistry.IVillageCreationHandler> handlers) {
         List<Object> pieces = new ArrayList<>();
         for (var piece : start.getPieces()) {
             BoundingBox b = piece.getBoundingBox();
-            pieces.add(new Occupied(new StructureBoundingBox(b.minX(), b.minY(), b.minZ(), b.maxX(), b.maxY(), b.maxZ())));
+            StructureBoundingBox box1710 = new StructureBoundingBox(b.minX(), b.minY(), b.minZ(), b.maxX(), b.maxY(), b.maxZ());
+            // The village paths are what legacy components follow (Witchery's walls run along them).
+            boolean street = piece instanceof net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece pool && pool.getElement().toString().contains("street");
+            pieces.add(street ? new StructureVillagePieces.Path(null, 0, rand, box1710, 0) : new Occupied(box1710));
         }
         int existing = pieces.size();
         StructureVillagePieces.Start startPiece = new StructureVillagePieces.Start(null, 0, rand, box.minX(), box.minZ(), new ArrayList(), 0);
         startPiece.inDesert = desert;
+        startPiece.biome = biome;
         for (var handler : handlers) {
             try {
                 StructureVillagePieces.PieceWeight weight = handler.getVillagePieceWeight(rand, 0);

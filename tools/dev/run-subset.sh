@@ -26,7 +26,7 @@ rm -rf $D/world
 ./gradlew runServerSubTest > build/devtools/subtest.log 2>&1 &
 for i in $(seq 1 144); do
   sleep 5
-  grep -q -E "BLOCK SELF TEST|Exception generating new chunk" $D/logs/latest.log 2>/dev/null && { sleep 10; break; }
+  grep -q -E "BLOCK SELF TEST|Exception generating new chunk" $D/logs/latest.log 2>/dev/null && { sleep ${AFTER:-10}; break; }
   grep -q -E "BUILD (SUCCESSFUL|FAILED)" build/devtools/subtest.log && break
 done
 pkill -f serverSubTestRunProgramArgs; sleep 3; pkill -9 -f serverSubTestRunProgramArgs
