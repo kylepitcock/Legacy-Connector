@@ -221,6 +221,10 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("village".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            queueVillageScenario();
+            return;
+        }
         if ("gui".equals(System.getProperty("legacyconnector.shotScenario"))) {
             queueGuiScenario();
             return;
@@ -345,6 +349,31 @@ public final class WorldScreenshotTest {
                 LOG.error("PORTAL PROBE failed", t);
             }
         });
+    }
+
+    /** Flies over the nearest village and takes pictures of it (legacy village components). */
+    private static void queueVillageScenario() {
+        add(waitForWorld(), wait(40), command("gamemode spectator"), command("time set noon"));
+        int[] at = new int[2];
+        add(run(mc -> {
+            var server = mc.getSingleplayerServer();
+            if (server == null) return;
+            var level = server.overworld();
+            var found = level.findNearestMapStructure(net.minecraft.tags.StructureTags.VILLAGE, level.getSharedSpawnPos(), 100, false);
+            if (found != null) {
+                at[0] = found.getX();
+                at[1] = found.getZ();
+                LOG.info("VILLAGE SHOT: village near {} {}", at[0], at[1]);
+            }
+        }), wait(20));
+        add(run(mc -> mc.player.connection.sendCommand("tp @s " + at[0] + " 130 " + at[1])), wait(200), waitForTerrain(200),
+                look(0f, 90f), wait(8), shot("village_down"),
+                run(mc -> mc.player.connection.sendCommand("tp @s " + (at[0] - 40) + " 95 " + (at[1] - 40))), wait(120), waitForTerrain(100),
+                look(-45f, 25f), wait(8), shot("village_oblique"),
+                run(mc -> {
+                    LOG.info("Screenshot test finished");
+                    mc.stop();
+                }));
     }
 
     /** Right-clicks each legacy block of the selected mods and records which screen opens (custom GUIs). */
