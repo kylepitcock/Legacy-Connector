@@ -29,6 +29,8 @@ public final class ResourceCompat {
             String lower = lowerAssets(name);
             if (lower != null) url = cls.getResource(lower);
         }
+        // Legacy mods shared one class loader: a library class could read a resource of any other mod's jar.
+        if (url == null && cls.getClassLoader() != null) url = fromLoader(cls, name, false);
         return legacy(url);
     }
 
@@ -47,7 +49,35 @@ public final class ResourceCompat {
             String lower = lowerAssets(name);
             if (lower != null) in = cls.getResourceAsStream(lower);
         }
+        if (in == null && cls.getClassLoader() != null) in = fromLoader(cls, name);
         return in;
+    }
+
+    /** Class-relative names resolve against the package, absolute ones against the root, then through the whole loader. */
+    private static String loaderPath(Class<?> cls, String name) {
+        if (name.startsWith("/")) return name.substring(1);
+        String pkg = cls.getPackageName();
+        return pkg.isEmpty() ? name : pkg.replace('.', '/') + "/" + name;
+    }
+
+    private static java.io.InputStream fromLoader(Class<?> cls, String name) {
+        String path = loaderPath(cls, name);
+        java.io.InputStream in = cls.getClassLoader().getResourceAsStream(path);
+        if (in == null) {
+            String lower = lowerAssets(path);
+            if (lower != null) in = cls.getClassLoader().getResourceAsStream(lower);
+        }
+        return in;
+    }
+
+    private static URL fromLoader(Class<?> cls, String name, boolean unused) {
+        String path = loaderPath(cls, name);
+        URL url = cls.getClassLoader().getResource(path);
+        if (url == null) {
+            String lower = lowerAssets(path);
+            if (lower != null) url = cls.getClassLoader().getResource(lower);
+        }
+        return url;
     }
 
     public static java.io.InputStream getResourceAsStream(ClassLoader loader, String name) {
