@@ -73,6 +73,13 @@ public final class AbsentDependencyStubber {
             m.invisibleLocalVariableAnnotations = null;
             // The throw is built on top of whatever the operand stack held at that point.
             m.maxStack += 3;
+            // A try range whose code was removed is empty, which the class file format rejects.
+            m.tryCatchBlocks.removeIf(t -> {
+                for (AbstractInsnNode n = t.start; n != null && n != t.end; n = n.getNext()) {
+                    if (n.getOpcode() >= 0) return false;
+                }
+                return true;
+            });
             // Line entries of a removed tail can point at the end of the code, which the class file format rejects.
             for (AbstractInsnNode n = m.instructions.getFirst(); n != null; ) {
                 AbstractInsnNode after = n.getNext();
