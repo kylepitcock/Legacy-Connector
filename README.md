@@ -215,7 +215,7 @@ full run; "loads" does not mean every feature was played through.
 
 | Mod / combination | Issue | What to do |
 |---|---|---|
-| RotaryCraft (with DragonAPI) | Disabled at post-init: DragonAPI's wood list (`ModWoodList`) finds a wood type whose leaf block is null and refuses to start its handlers. Which mod's leaves is not identified. Tinkers' Construct (which used to be the suspect) now registers fully. DragonAPI and ReactorCraft load. | Remove mods that add wood types RotaryCraft does not know, or help find the null block. |
+| RotaryCraft (with DragonAPI) and Forestry 4.2.16 | DragonAPI's wood list asks Forestry for blocks named `planks2` and `slabs1`-`slabs4`, which Forestry 4.2.16 does not register (it has `planks` and `slabs`); the list then holds a null block and RotaryCraft is disabled at post-init. The same names broke Binnie's pre14. DragonAPI and ReactorCraft load. | Use a Forestry/DragonAPI pair built for each other (no matching 1.7.10 Forestry build was found on Modrinth). |
 | Binnie's Mods 2.0-pre14 with Forestry 4.2.16 | Binnie was built for an older Forestry API (`getProducts`, `getLogStacks`, `planks2` do not exist in 4.2.16); ExtraBees, Botany, BinnieCore and ExtraTrees fail, and anything that runs their recipes (ThermalExpansion) with them. | Use Binnie's Mods 2.0.22.7 (loads); Binnie Patcher is then not needed. |
 | Witchery + RotaryCraft | Both default to potion id 35; DragonAPI refuses to start. | Change `Freeze Potion ID` in `config/Reika/RotaryCraft.cfg` (or Witchery's id). |
 | ProjectRed Expansion + Runic Dungeons | Both use enchantment id 80. 1.7.10 crashed; here one enchantment is moved to a free id and a warning is logged. | Change an id in the mods' configs to keep ids stable. |
