@@ -436,6 +436,9 @@ public final class WorldScreenshotTest {
                 var b = BuiltInRegistries.BLOCK.get(id);
                 if (b instanceof LegacyBlockAdapter adapter && adapter.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.block.Block lb) {
                     int rt = lb.getRenderType();
+                    var access = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(mc.level);
+                    LOG.info("Showcase {}: tinted={} colorMultiplier={} renderColor={}", id, org.kylepitcock.legacyconnector.v1_7_10.Assets1710.tinted(lb),
+                            Integer.toHexString(lb.colorMultiplier(access, 0, 150, 0)), Integer.toHexString(lb.getRenderColor(0)));
                     for (int side = 0; side < 6; side += 5) {
                         var icon = lb.getIcon(side, 0);
                         LOG.info("Showcase {}: icon(side {}, meta 0) = {}", id, side, icon == null ? "null" : icon.getIconName());

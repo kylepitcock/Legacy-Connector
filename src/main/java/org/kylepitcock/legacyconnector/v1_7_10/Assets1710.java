@@ -199,6 +199,22 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return renderType > 41 && b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBush;
     }
 
+    /** Whether a legacy block colours itself (its model then marks its faces as tinted). */
+    public static boolean tinted(Block b) {
+        if (b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockLeaves || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockGrass
+                || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockTallGrass) {
+            return true;
+        }
+        try {
+            return org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(b, "colorMultiplier",
+                    legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class)
+                    || org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(b, "getRenderColor", int.class)
+                    || org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(b, "getBlockColor");
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     private static JsonObject model(Block b, String[] faces) {
         JsonObject model = new JsonObject();
         JsonObject tex = new JsonObject();
@@ -216,7 +232,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             tex.addProperty("crop", faces[0]);
             model.addProperty("render_type", "minecraft:cutout");
         } else if (rt == 1 || rt == 40 || plantLike(b, rt)) {
-            model.addProperty("parent", "minecraft:block/cross");
+            model.addProperty("parent", tinted(b) ? "minecraft:block/tinted_cross" : "minecraft:block/cross");
             tex.addProperty("cross", faces[0]);
             model.addProperty("render_type", "minecraft:cutout");
         } else {
@@ -225,7 +241,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             double x1 = b.getBlockBoundsMinX(), y1 = b.getBlockBoundsMinY(), z1 = b.getBlockBoundsMinZ();
             double x2 = b.getBlockBoundsMaxX(), y2 = b.getBlockBoundsMaxY(), z2 = b.getBlockBoundsMaxZ();
             boolean full = x1 <= 0 && y1 <= 0 && z1 <= 0 && x2 >= 1 && y2 >= 1 && z2 >= 1;
-            if (full) {
+            if (full && !tinted(b)) {
                 model.addProperty("parent", "minecraft:block/cube");
             } else {
                 model.addProperty("parent", "minecraft:block/block");
@@ -233,9 +249,11 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 el.add("from", vec(x1, y1, z1));
                 el.add("to", vec(x2, y2, z2));
                 JsonObject f = new JsonObject();
+                boolean tint = tinted(b);
                 for (String n : names) {
                     JsonObject face = new JsonObject();
                     face.addProperty("texture", "#" + n);
+                    if (tint) face.addProperty("tintindex", 0);
                     f.add(n, face);
                 }
                 el.add("faces", f);

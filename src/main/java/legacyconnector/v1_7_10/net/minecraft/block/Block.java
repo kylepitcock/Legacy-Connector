@@ -456,7 +456,16 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
+        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaIcon(textureName);
         return this.blockIcon;
+    }
+
+    private static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap VANILLA_ICONS =
+            new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
+
+    /** The icon of a vanilla texture under its 1.7.10 name (mods ask vanilla blocks for their icons). */
+    protected static IIcon mcc$vanillaIcon(String name) {
+        return name == null ? null : VANILLA_ICONS.registerIcon("minecraft:" + name);
     }
 
     public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {

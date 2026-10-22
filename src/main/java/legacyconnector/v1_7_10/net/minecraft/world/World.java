@@ -1,6 +1,7 @@
 package legacyconnector.v1_7_10.net.minecraft.world;
 
 import java.util.ArrayList;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockAccessView;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -673,6 +674,11 @@ public class World implements IBlockAccess {
             for (AABB part : shape.toAabbs()) out.add(AxisAlignedBB.mcc$of(part));
         }
         return out;
+    }
+
+    @Override
+    public int mcc$blockTint(int x, int y, int z, int kind) {
+        return BlockAccessView.tint(lvl(), x, y, z, kind);
     }
 
     public List getEntitiesWithinAABB(Class type, AxisAlignedBB box) {

@@ -19,7 +19,14 @@ public interface IBlockAccess {
 
     int getHeight();
 
+    legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z);
+
     boolean extendedLevelsInChunkCache();
 
     boolean isSideSolid(int x, int y, int z, ForgeDirection side, boolean defaultValue);
+
+    /** The biome-blended tint of the modern world at a position: kind 0 grass, 1 foliage; white where unknown. */
+    default int mcc$blockTint(int x, int y, int z, int kind) {
+        return 0xFFFFFF;
+    }
 }

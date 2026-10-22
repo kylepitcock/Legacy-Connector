@@ -32,6 +32,7 @@ public final class Client1710 {
         WorldScreenshotTest.register();
         modBus.addListener(Client1710::onRegisterExtensions);
         modBus.addListener(Client1710::onRegisterItemColors);
+        modBus.addListener(Client1710::onRegisterBlockColors);
         modBus.addListener(Client1710::onModifyBaking);
     }
 
@@ -66,6 +67,23 @@ public final class Client1710 {
             }
         }
         if (replaced > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/ISBRH").info("{} block states are drawn by legacy block renderers", replaced);
+    }
+
+    /** Blocks that colour themselves (leaves, grass, anything overriding colorMultiplier/getRenderColor) tint index 0 of their model. */
+    private static void onRegisterBlockColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block event) {
+        for (legacyconnector.v1_7_10.net.minecraft.block.Block block : org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modBlocks()) {
+            if (block.mcc$modern == null || !org.kylepitcock.legacyconnector.v1_7_10.Assets1710.tinted(block)) continue;
+            event.register((state, level, pos, tint) -> {
+                try {
+                    if (level != null && pos != null) {
+                        return 0xFF000000 | block.colorMultiplier(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ());
+                    }
+                    return 0xFF000000 | block.getRenderColor(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state));
+                } catch (RuntimeException | LinkageError e) {
+                    return 0xFFFFFFFF;
+                }
+            }, block.mcc$modern);
+        }
     }
 
     /** Legacy items tinted per render pass (spawn eggs, dyed items): layer N of the item model is pass N. */

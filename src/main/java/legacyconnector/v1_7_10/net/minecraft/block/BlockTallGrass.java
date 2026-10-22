@@ -32,4 +32,14 @@ public class BlockTallGrass extends legacyconnector.v1_7_10.net.minecraft.block.
     public void fertilize(legacyconnector.v1_7_10.net.minecraft.world.World world, java.util.Random random, int x, int y, int z) {
         // the vanilla block's own bone meal handling runs on the modern block
     }
+
+    @Override
+    public int getRenderColor(int meta) {
+        return 0x7CBD6B;
+    }
+
+    @Override
+    public int colorMultiplier(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return world.mcc$blockTint(x, y, z, 0);
+    }
 }

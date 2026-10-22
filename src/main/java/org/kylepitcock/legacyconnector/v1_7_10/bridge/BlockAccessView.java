@@ -25,6 +25,37 @@ public final class BlockAccessView implements IBlockAccess {
         return getter instanceof LevelAccessor level ? World.mcc$wrap(level) : new BlockAccessView(getter);
     }
 
+    public static int tint(BlockGetter getter, int x, int y, int z, int kind) {
+        if (!(getter instanceof net.minecraft.world.level.BlockAndTintGetter tinted)) return 0xFFFFFF;
+        net.minecraft.world.level.ColorResolver resolver = kind == 0 ? (biome, bx, bz) -> biome.getGrassColor(bx, bz) : (biome, bx, bz) -> biome.getFoliageColor();
+        return tinted.getBlockTint(new BlockPos(x, y, z), resolver) & 0xFFFFFF;
+    }
+
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
+        net.minecraft.world.level.LevelReader reader = getter instanceof net.minecraft.world.level.LevelReader r ? r : ClientAccess.level();
+        if (reader == null) return legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+        try {
+            var key = reader.getBiome(new BlockPos(x, reader.getSeaLevel(), z)).unwrapKey().map(k -> k.location()).orElse(null);
+            var legacy = LegacyEntitySpawns.legacyBiome(key);
+            return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+        } catch (RuntimeException e) {
+            return legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+        }
+    }
+
+    /** Isolated so the dedicated server never loads client classes. */
+    private static final class ClientAccess {
+        static net.minecraft.world.level.LevelReader level() {
+            return net.neoforged.fml.loading.FMLEnvironment.dist.isClient() ? net.minecraft.client.Minecraft.getInstance().level : null;
+        }
+    }
+
+    @Override
+    public int mcc$blockTint(int x, int y, int z, int kind) {
+        return tint(getter, x, y, z, kind);
+    }
+
     @Override
     public Block getBlock(int x, int y, int z) {
         return BlockBridge.legacyBlock(getter.getBlockState(new BlockPos(x, y, z)));
