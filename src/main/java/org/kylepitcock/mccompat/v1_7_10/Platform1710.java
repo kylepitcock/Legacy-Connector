@@ -67,6 +67,7 @@ public final class Platform1710 implements LegacyPlatform {
         } finally {
             LegacyModContainer1710.setActive(null);
         }
+        dispatch(mod, new mccompat.v1_7_10.cpw.mods.fml.common.event.FMLConstructionEvent());
     }
 
     private static void injectInstanceAndMetadata(LegacyModRecord mod, LegacyModContainer1710 container) throws IllegalAccessException {
