@@ -84,9 +84,10 @@ public final class Platform1710 implements LegacyPlatform {
                     LegacyModRecord other = LegacyMods.byLegacyId(inst.value());
                     value = other == null ? null : other.instance;
                 }
-                if (value != null && f.getType().isInstance(value)) f.set(target, value);
+                // FML wrote static finals too (AE2's INSTANCE): ReflectionCompat falls back to Unsafe where the JVM refuses.
+                if (value != null && f.getType().isInstance(value)) org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.set(f, target, value);
             }
-            if (meta != null) f.set(target, container.getMetadata());
+            if (meta != null) org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.set(f, target, container.getMetadata());
         }
     }
 

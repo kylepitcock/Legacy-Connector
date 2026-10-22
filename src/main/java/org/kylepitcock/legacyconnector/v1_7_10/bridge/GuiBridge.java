@@ -59,19 +59,26 @@ public final class GuiBridge {
     }
 
     private static synchronized IGuiHandler handler(Object mod) {
-        return HANDLERS.get(mod);
+        IGuiHandler h = HANDLERS.get(mod);
+        if (h != null) return h;
+        // Mods hand openGui a different object of the mod's class than the one they registered with (AE2's static INSTANCE
+        // against the instance FML built): FML resolved both to the same container.
+        for (var e : HANDLERS.entrySet()) if (e.getKey() != null && mod != null && e.getKey().getClass() == mod.getClass()) return e.getValue();
+        return null;
     }
 
     private static LegacyModRecord recordOf(Object mod) {
         for (LegacyModRecord r : LegacyMods.all()) if (r.instance == mod) return r;
+        for (LegacyModRecord r : LegacyMods.all()) if (r.instance != null && mod != null && r.instance.getClass() == mod.getClass()) return r;
         return null;
     }
 
     public static void openGui(EntityPlayer player, Object mod, int id, World world, int x, int y, int z) {
         IGuiHandler handler = handler(mod);
         LegacyModRecord record = recordOf(mod);
+        LOG.debug("openGui id {} of {} at {} {} {} (remote: {})", id, mod, x, y, z, world.isRemote);
         if (handler == null || record == null) {
-            LOG.warn("openGui({}) for {} without a registered IGuiHandler", id, mod);
+            LOG.warn("openGui({}) for {} without a registered IGuiHandler (handler {}, mod record {}, handlers registered for {})", id, mod, handler, record, HANDLERS.keySet().stream().map(k -> k + "@" + k.getClass().getClassLoader()).toList() + " asked by loader " + mod.getClass().getClassLoader());
             return;
         }
         if (world.isRemote) {

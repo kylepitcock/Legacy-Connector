@@ -570,6 +570,8 @@ public final class WorldScreenshotTest {
             if (!(e.getValue() instanceof LegacyBlockAdapter)) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
+            var only = idList("legacyconnector.shotBlocks");
+            if (!only.isEmpty() && !only.contains(id)) continue;
             if (perMod.merge(id.getNamespace(), 1, Integer::sum) > cap) continue;
             ids.add(id);
         }
@@ -585,7 +587,8 @@ public final class WorldScreenshotTest {
                 BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
                 LOG.info("GUI TEST: {} client state {} block entity {}", id, mc.level.getBlockState(at), mc.level.getBlockEntity(at));
                 var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
-                mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                var result = mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+                LOG.info("GUI TEST: {} use result {}", id, result);
             }), wait(12), run(mc -> {
                 var screen = mc.screen;
                 if (screen != null) {
