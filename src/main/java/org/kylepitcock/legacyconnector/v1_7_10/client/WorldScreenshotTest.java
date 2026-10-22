@@ -457,6 +457,12 @@ public final class WorldScreenshotTest {
 
     /** Summons the legacy entity types of the selected mods in rows on a platform, twelve per picture. */
     private static void queueEntityScenario() {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.EntityLeaveLevelEvent e) -> {
+            if (e.getLevel().isClientSide() || e.getEntity() instanceof net.minecraft.world.entity.player.Player) return;
+            var key = BuiltInRegistries.ENTITY_TYPE.getKey(e.getEntity().getType());
+            if (!key.getNamespace().equals("minecraft")) LOG.info("Entity left the level: {} reason {} health {}", key, e.getEntity().getRemovalReason(),
+                    e.getEntity() instanceof net.minecraft.world.entity.LivingEntity l ? l.getHealth() : -1);
+        });
         String modsProp = System.getProperty("legacyconnector.shotMods", "");
         int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
         Map<String, List<ResourceLocation>> byMod = new LinkedHashMap<>();
@@ -467,27 +473,60 @@ public final class WorldScreenshotTest {
             var list = byMod.computeIfAbsent(id.getNamespace(), k -> new ArrayList<>());
             if (list.size() < cap) list.add(id);
         }
-        add(waitForWorld(), wait(40), command("gamemode creative"), command("time set noon"), command("gamerule doMobSpawning false"), command("tp @s 0 200 0"), waitForTerrain(100));
+        add(waitForWorld(), wait(40), command("gamemode creative"), command("difficulty normal"), command("time set noon"), command("gamerule doMobSpawning false"), command("tp @s 0 200 0"), waitForTerrain(100));
         for (var entry : byMod.entrySet()) {
             List<ResourceLocation> ids = entry.getValue();
             for (int start = 0, part = 0; start < ids.size(); start += 12, part++) {
                 List<ResourceLocation> batch = ids.subList(start, Math.min(ids.size(), start + 12));
                 String name = "entities_" + entry.getKey() + "_" + part;
-                add(run(mc -> {
+                add(command("kill @e[type=!player]"), wait(10), run(mc -> {
                     var c = mc.player.connection;
                     BlockPos base = mc.player.blockPosition();
                     int x0 = base.getX() - 10, y = 150, z0 = base.getZ() + 10;
                     LOG.info("Entity showcase (rows of six, front row first): {}", batch);
-                    c.sendCommand("kill @e[type=!player,distance=..60]");
                     c.sendCommand("fill " + (x0 - 3) + " " + (y - 1) + " " + (z0 - 3) + " " + (x0 + 26) + " " + (y + 8) + " " + (z0 + 12) + " minecraft:air");
                     c.sendCommand("fill " + (x0 - 3) + " " + (y - 1) + " " + (z0 - 3) + " " + (x0 + 26) + " " + (y - 1) + " " + (z0 + 12) + " minecraft:smooth_stone");
-                    for (int i = 0; i < batch.size(); i++) {
-                        int x = x0 + (i % 6) * 4;
-                        int z = z0 + (i / 6) * 5;
-                        c.sendCommand("summon " + batch.get(i) + " " + x + " " + y + " " + z + " {NoAI:1b,PersistenceRequired:1b}");
+                    var server = mc.getSingleplayerServer();
+                    if (server != null) {
+                        final int fx0 = x0, fz0 = z0;
+                        server.execute(() -> {
+                            var level = server.overworld();
+                            for (int i = 0; i < batch.size(); i++) {
+                                double x = fx0 + (i % 6) * 4 + 0.5, z = fz0 + (i / 6) * 5 + 0.5;
+                                try {
+                                    var type = BuiltInRegistries.ENTITY_TYPE.get(batch.get(i));
+                                    var e = type.create(level);
+                                    if (e == null) {
+                                        LOG.warn("Entity {} could not be created (null)", batch.get(i));
+                                        continue;
+                                    }
+                                    e.moveTo(x, y, z, 0f, 0f);
+                                    if (e instanceof net.minecraft.world.entity.Mob mob) {
+                                        mob.setNoAi(true);
+                                        mob.setPersistenceRequired();
+                                    }
+                                    if (!level.addFreshEntity(e)) LOG.warn("Entity {} was not added to the world", batch.get(i));
+                                } catch (Throwable t) {
+                                    LOG.warn("Entity {} failed to spawn: {}", batch.get(i), t.toString(), t);
+                                }
+                            }
+                        });
                     }
                     c.sendCommand("tp @s " + (x0 + 10) + " " + (y + 4) + " " + (z0 - 9));
-                }), wait(40), look(0f, 15f), wait(10), shot(name));
+                }), wait(40), look(0f, 15f), run(mc -> {
+                    var server = mc.getSingleplayerServer();
+                    if (server == null) return;
+                    server.execute(() -> {
+                        var found = new java.util.TreeMap<String, String>();
+                        for (var e : server.overworld().getAllEntities()) {
+                            if (e instanceof net.minecraft.world.entity.player.Player) continue;
+                            var key = BuiltInRegistries.ENTITY_TYPE.getKey(e.getType());
+                            if (key.getNamespace().equals("minecraft")) continue;
+                            found.put(key.toString(), String.format("%.0f,%.0f,%.0f%s", e.getX(), e.getY(), e.getZ(), e.isInvisible() ? " invisible" : ""));
+                        }
+                        LOG.info("Entity showcase alive: {}", found);
+                    });
+                }), wait(10), shot(name));
             }
         }
         add(run(mc -> {

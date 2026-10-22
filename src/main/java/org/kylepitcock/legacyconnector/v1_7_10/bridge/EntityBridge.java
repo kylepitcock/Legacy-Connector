@@ -119,6 +119,9 @@ public final class EntityBridge {
             entity.mcc$entity = host.mcc$self();
         }
         VIEWS.put(entity.mcc$entity, entity);
+        // 1.7.10 added a dead entity and dropped it on the next tick; the modern level refuses it (and logs every attempt).
+        if (entity.mcc$entity.isRemoved()) return false;
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && sl.getEntity(entity.mcc$entity.getUUID()) == entity.mcc$entity) return true;
         if (entity.mcc$hosted() && !level.isClientSide()) {
             ((org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHost) entity.mcc$entity).mcc$syncWatcher(entity.mcc$dataWatcher().mcc$toTag());
         }
