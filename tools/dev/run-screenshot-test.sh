@@ -27,6 +27,9 @@ args=()
 [[ -n $TOUR ]] && args+=(-PshotTour=$TOUR)
 [[ -n $SCENARIO ]] && args+=(-PshotScenario=$SCENARIO)
 [[ -n $RENDER ]] && args+=(-PshotRenderDistance=$RENDER)
+[[ -n $SHOWITEMS ]] && args+=(-PshotItems=$SHOWITEMS)   # gallery scenario: ordered ids of items / entities to show
+[[ -n $SHOWENT ]] && args+=(-PshotEntities=$SHOWENT)
+[[ -n $WIDTH && -n $HEIGHT ]] && args+=(-PshotWidth=$WIDTH -PshotHeight=$HEIGHT)
 [[ -n $SHOW ]] && args+=(-PshotBlocks=$SHOW)   # SHOW=ns:block,ns:block: only these blocks in the showcase
 : > run-screenshots/logs/latest.log
 ./gradlew runScreenshotTest $args > build/devtools/screenshottest.log 2>&1 &

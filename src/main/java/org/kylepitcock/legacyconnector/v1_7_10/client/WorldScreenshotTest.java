@@ -221,6 +221,14 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("gallery".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            queueGalleryScenario();
+            return;
+        }
+        if ("entities".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            queueEntityScenario();
+            return;
+        }
         if ("village".equals(System.getProperty("legacyconnector.shotScenario"))) {
             queueVillageScenario();
             return;
@@ -349,6 +357,119 @@ public final class WorldScreenshotTest {
                 LOG.error("PORTAL PROBE failed", t);
             }
         });
+    }
+
+    private static List<ResourceLocation> idList(String property) {
+        List<ResourceLocation> out = new ArrayList<>();
+        for (String part : System.getProperty(property, "").split(",")) {
+            if (part.isEmpty()) continue;
+            ResourceLocation id = ResourceLocation.tryParse(part);
+            if (id != null) out.add(id);
+        }
+        return out;
+    }
+
+    /**
+     * Pictures for the README: legacy blocks next to modern ones in a small scene, the same blocks seen through Jade's tooltip,
+     * legacy items in the inventory beside JEI, and legacy entities beside vanilla ones. SHOW / SHOWITEMS / SHOWENT give the ids.
+     */
+    private static void queueGalleryScenario() {
+        List<ResourceLocation> blocks = new ArrayList<>();
+        for (ResourceLocation id : idList("legacyconnector.shotBlocks")) if (BuiltInRegistries.BLOCK.containsKey(id)) blocks.add(id);
+        List<ResourceLocation> items = new ArrayList<>();
+        for (ResourceLocation id : idList("legacyconnector.shotItems")) if (BuiltInRegistries.ITEM.containsKey(id)) items.add(id);
+        List<ResourceLocation> entities = new ArrayList<>();
+        for (ResourceLocation id : idList("legacyconnector.shotEntities")) if (BuiltInRegistries.ENTITY_TYPE.containsKey(id)) entities.add(id);
+        String[] modern = {"minecraft:diamond_block", "minecraft:crafting_table", "minecraft:furnace", "minecraft:enchanting_table", "minecraft:bookshelf",
+                "minecraft:beacon", "minecraft:lantern", "minecraft:oak_log", "minecraft:copper_block", "minecraft:amethyst_block", "minecraft:target", "minecraft:honey_block"};
+        int y = 150;
+        add(waitForWorld(), wait(40), command("gamemode creative"), command("time set 3000"), command("weather clear"), command("gamerule doDaylightCycle false"),
+                command("gamerule doMobSpawning false"), command("tp @s 0 170 0"), waitForTerrain(150));
+        add(run(mc -> {
+            var c = mc.player.connection;
+            c.sendCommand("fill -16 " + (y - 3) + " -4 16 " + (y + 8) + " 14 minecraft:air");
+            c.sendCommand("fill -16 " + (y - 3) + " -4 16 " + (y - 2) + " 14 minecraft:dirt");
+            c.sendCommand("fill -16 " + (y - 1) + " -4 16 " + (y - 1) + " 14 minecraft:grass_block");
+            c.sendCommand("fill -16 " + (y - 1) + " 0 16 " + (y - 1) + " 2 minecraft:dirt_path");
+            c.sendCommand("fill -16 " + (y - 1) + " 5 16 " + (y - 1) + " 7 minecraft:dirt_path");
+            for (int i = 0; i < blocks.size() && i < 14; i++) {
+                int x = -14 + i * 2;
+                c.sendCommand("setblock " + x + " " + y + " 1 " + blocks.get(i));
+            }
+            for (int i = 0; i < modern.length; i++) c.sendCommand("setblock " + (-11 + i * 2) + " " + y + " 6 " + modern[i]);
+            c.sendCommand("setblock -12 " + y + " 10 minecraft:oak_leaves");
+            c.sendCommand("fill -16 " + y + " 12 16 " + (y + 2) + " 12 minecraft:stone_bricks");
+        }), wait(60));
+        add(run(mc -> mc.player.connection.sendCommand("tp @s 0 " + (y + 4) + " -9")), wait(30), look(0f, 22f), hideGui(true), wait(40), shot("gallery_blocks"));
+        // a close view of the first legacy blocks with Jade's tooltip: the crosshair on one of them
+        if (!blocks.isEmpty()) {
+            for (int k = 0; k < Math.min(3, blocks.size()); k++) {
+                int idx = k * Math.max(1, blocks.size() / 3);
+                int bx = -14 + idx * 2;
+                String name = "gallery_jade_" + k;
+                add(hideGui(false), run(mc -> mc.player.connection.sendCommand("tp @s " + bx + " " + (y + 1) + " -2")), wait(20), look(0f, 20f), wait(60), shot(name));
+            }
+        }
+        if (!items.isEmpty()) {
+            add(command("gamemode survival"), command("clear @s"));
+            for (ResourceLocation id : items) add(command("give @s " + id + " 1"));
+            add(hideGui(false), wait(20), run(mc -> mc.setScreen(new InventoryScreen(mc.player))), wait(30), shot("gallery_inventory"), run(mc -> mc.setScreen(null)));
+        }
+        if (!entities.isEmpty()) {
+            add(command("gamemode creative"), run(mc -> {
+                var c = mc.player.connection;
+                c.sendCommand("kill @e[type=!player,distance=..40]");
+                for (int i = 0; i < entities.size() && i < 8; i++) c.sendCommand("summon " + entities.get(i) + " " + (-12 + i * 3) + " " + y + " 6 {NoAI:1b,PersistenceRequired:1b}");
+                c.sendCommand("summon minecraft:cow 12 " + y + " 6 {NoAI:1b}");
+                c.sendCommand("summon minecraft:villager 14 " + y + " 6 {NoAI:1b}");
+                c.sendCommand("tp @s 0 " + (y + 3) + " -4");
+            }), wait(60), look(0f, 12f), hideGui(true), wait(40), shot("gallery_entities"));
+        }
+        add(run(mc -> {
+            LOG.info("Screenshot test finished");
+            mc.stop();
+        }));
+    }
+
+    /** Summons the legacy entity types of the selected mods in rows on a platform, twelve per picture. */
+    private static void queueEntityScenario() {
+        String modsProp = System.getProperty("legacyconnector.shotMods", "");
+        int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
+        Map<String, List<ResourceLocation>> byMod = new LinkedHashMap<>();
+        for (var e : BuiltInRegistries.ENTITY_TYPE.entrySet()) {
+            ResourceLocation id = e.getKey().location();
+            if (id.getNamespace().equals("minecraft")) continue;
+            if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
+            var list = byMod.computeIfAbsent(id.getNamespace(), k -> new ArrayList<>());
+            if (list.size() < cap) list.add(id);
+        }
+        add(waitForWorld(), wait(40), command("gamemode creative"), command("time set noon"), command("gamerule doMobSpawning false"), command("tp @s 0 200 0"), waitForTerrain(100));
+        for (var entry : byMod.entrySet()) {
+            List<ResourceLocation> ids = entry.getValue();
+            for (int start = 0, part = 0; start < ids.size(); start += 12, part++) {
+                List<ResourceLocation> batch = ids.subList(start, Math.min(ids.size(), start + 12));
+                String name = "entities_" + entry.getKey() + "_" + part;
+                add(run(mc -> {
+                    var c = mc.player.connection;
+                    BlockPos base = mc.player.blockPosition();
+                    int x0 = base.getX() - 10, y = 150, z0 = base.getZ() + 10;
+                    LOG.info("Entity showcase (rows of six, front row first): {}", batch);
+                    c.sendCommand("kill @e[type=!player,distance=..60]");
+                    c.sendCommand("fill " + (x0 - 3) + " " + (y - 1) + " " + (z0 - 3) + " " + (x0 + 26) + " " + (y + 8) + " " + (z0 + 12) + " minecraft:air");
+                    c.sendCommand("fill " + (x0 - 3) + " " + (y - 1) + " " + (z0 - 3) + " " + (x0 + 26) + " " + (y - 1) + " " + (z0 + 12) + " minecraft:smooth_stone");
+                    for (int i = 0; i < batch.size(); i++) {
+                        int x = x0 + (i % 6) * 4;
+                        int z = z0 + (i / 6) * 5;
+                        c.sendCommand("summon " + batch.get(i) + " " + x + " " + y + " " + z + " {NoAI:1b,PersistenceRequired:1b}");
+                    }
+                    c.sendCommand("tp @s " + (x0 + 10) + " " + (y + 4) + " " + (z0 - 9));
+                }), wait(40), look(0f, 15f), wait(10), shot(name));
+            }
+        }
+        add(run(mc -> {
+            LOG.info("Screenshot test finished");
+            mc.stop();
+        }));
     }
 
     /** Flies over the nearest village and takes pictures of it (legacy village components). */
