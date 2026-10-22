@@ -226,7 +226,11 @@ full run; "loads" does not mean every feature was played through.
 | HBM's pylons/substations, RFTools screens, Thermal Expansion tanks and caches, Runic Dungeons portal | Fail in the automated block self test, which uses a fake player and no tile state; not confirmed in real play. | Test in game. |
 | Decocraft | Loads through a stand-in for the JDK-internal PNG reader; models not checked in game. | Test in game. |
 | Tinkers' Construct and other mods whose `getSubItems` reads client-only icon arrays | Subtype discovery registers icons against a detached register; blocks whose arrays still stay empty get metadata 0 only until used. | None. |
-| Villager trades, potion brewing tables, fishing loot, achievement pages, `displayGUIChest` | Not implemented; the calls do nothing and are logged as `Legacy API ... is not implemented yet` in the log. | Not fixed. |
+| Villager professions and trades (`VillagerRegistry`) | Implemented: modded professions with skins and trade handlers appear on some new unemployed villagers (they have no job site). Legacy village components (Witchery's walls, shops) are recorded but not built: modern villages are jigsaw-based. | Not fixed. |
+| Potion brewing tables, fishing loot, achievement pages, `displayGUIChest` | Not implemented; the calls do nothing and are logged as `Legacy API ... is not implemented yet` in the log. | Not fixed. |
+| `/locate structure` | Vanilla structures are found in legacy biomes (they join the vanilla biome tags). Structures drawn by legacy generators are found with `/locate structure legacyconnector:<name>` (the generator's name, lower case), among visited chunks only. | Not fixed. |
+| Tinkers' Construct materials on modern Tinkers | Not bridged: the real modern Tinkers' Construct exists only for 1.20.1, not NeoForge 1.21.1 (planned with the 1.20.1 target). | None. |
+| JourneyMap / Custom Main Menu APIs | Not bridged to the modern JourneyMap / FancyMenu; mods that call them link, and the calls do nothing. | Not fixed. |
 | FastCraft, Hodgepodge and other engine/launcher patches; JourneyMap, Inventory Tweaks | Intentionally not loaded (see above). | Use their modern equivalents. |
 
 ### What happens to a mod
