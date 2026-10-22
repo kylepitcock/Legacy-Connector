@@ -1,0 +1,51 @@
+package mccompat.v1_12_2.net.minecraftforge.fml.common.event;
+
+import java.io.File;
+import java.util.Properties;
+import mccompat.v1_12_2.net.minecraftforge.fml.common.Loader;
+import mccompat.v1_12_2.net.minecraftforge.fml.common.ModMetadata;
+import org.apache.logging.log4j.Logger;
+import org.kylepitcock.mccompat.core.LegacyModRecord;
+import org.kylepitcock.mccompat.v1_12_2.LegacyModContainer1122;
+
+public class FMLPreInitializationEvent extends FMLStateEvent {
+    private final LegacyModRecord mcc$mod;
+
+    public FMLPreInitializationEvent(LegacyModRecord mod) {
+        this.mcc$mod = mod;
+    }
+
+    @Override
+    public mccompat.v1_12_2.net.minecraftforge.fml.common.LoaderState.ModState getModState() {
+        return mccompat.v1_12_2.net.minecraftforge.fml.common.LoaderState.ModState.PREINITIALIZED;
+    }
+
+    public mccompat.v1_12_2.net.minecraftforge.fml.common.discovery.ASMDataTable getAsmData() {
+        return mccompat.v1_12_2.net.minecraftforge.fml.common.discovery.ASMDataTable.mcc$get();
+    }
+
+    public File getModConfigurationDirectory() {
+        return Loader.instance().getConfigDir();
+    }
+
+    /** Legacy convention: config/&lt;modid&gt;.cfg (the legacy id, case preserved). */
+    public File getSuggestedConfigurationFile() {
+        return new File(getModConfigurationDirectory(), mcc$mod.legacyId + ".cfg");
+    }
+
+    public ModMetadata getModMetadata() {
+        return ((LegacyModContainer1122) mcc$mod.platformData).getMetadata();
+    }
+
+    public Logger getModLog() {
+        return mcc$mod.logger;
+    }
+
+    public File getSourceFile() {
+        return mcc$mod.sourceFile().toFile();
+    }
+
+    public Properties getVersionProperties() {
+        return new Properties();
+    }
+}

@@ -14,7 +14,22 @@ import io, os, re, sys, zipfile
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DEV = os.path.join(ROOT, "build", "devtools")
 ver = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
-USERDEV = {"1.7.10": os.path.join(DEV, "mcp", "forge1710-userdev.jar")}[ver]
+USERDEV = {"1.7.10": os.path.join(DEV, "mcp", "forge1710-userdev.jar"),
+           "1.12.2": os.path.join(DEV, "mcp", "forge1122-sources.jar")}[ver]
+# Forge 1.12.2 patches these vanilla types to be registry entries (binary patches only, so listed here).
+EXTRA_1122 = {
+    "net/minecraft/block/Block": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/item/Item": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/enchantment/Enchantment": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/potion/Potion": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/potion/PotionType": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/util/SoundEvent": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+    "net/minecraft/world/biome/Biome": ("net/minecraftforge/registries/IForgeRegistryEntry$Impl", []),
+}
+EXTRA_1122_IFACES = {
+    "net/minecraft/item/crafting/IRecipe": ["net/minecraftforge/registries/IForgeRegistryEntry"],
+}
+SRC_PREFIX = "src/main/java/" if ver == "1.7.10" else ""
 
 ACC_PUBLIC, ACC_FINAL, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION, ACC_ENUM = 0x1, 0x10, 0x200, 0x400, 0x2000, 0x4000
 
@@ -107,7 +122,7 @@ def parse(path, src):
 parsed = []
 with zipfile.ZipFile(USERDEV) as z:
     for n in z.namelist():
-        if n.startswith("src/main/java/") and n.endswith(".java"):
+        if n.startswith(SRC_PREFIX) and n.endswith(".java") and not n.startswith("META-INF"):
             parsed += parse(n, z.read(n).decode("utf-8", "replace"))
     patch_sets = [z.read(n) for n in ("forgepatches.zip", "fmlpatches.zip") if n in z.namelist()]
 
@@ -186,6 +201,14 @@ for blob in patch_sets:
                     r = resolve(f, owner.rsplit("/", 1)[0], imports, [owner])
                     if r and r not in classes[target][1]:
                         classes[target][1].append(r); added += 1
+
+if ver == "1.12.2":
+    for owner, (sup, ifs) in EXTRA_1122.items():
+        if owner in classes: classes[owner][0] = sup
+    for owner, ifs in EXTRA_1122_IFACES.items():
+        if owner in classes:
+            for i in ifs:
+                if i not in classes[owner][1]: classes[owner][1].append(i)
 
 out_dir = os.path.join(ROOT, "loader", "src", "main", "resources", "mccompat", "legacy", ver)
 os.makedirs(out_dir, exist_ok=True)

@@ -59,6 +59,7 @@ public final class MCCompat {
 
     public MCCompat(IEventBus modBus, ModContainer container) {
         LegacyMods.registerPlatform(new Platform1710());
+        LegacyMods.registerPlatform(new org.kylepitcock.mccompat.v1_12_2.Platform1122());
 
         CompatComponents.REGISTER.register(modBus);
         FEATURES.register(modBus);
