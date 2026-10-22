@@ -74,7 +74,7 @@ public class BiomeDictionary {
     }
 
     public static boolean isBiomeRegistered(int id) {
-        return isBiomeRegistered(BiomeGenBase.getBiome(id));
+        return isBiomeRegistered(BiomeGenBase.mcc$biomeOrOcean(id));
     }
 
     public static void registerAllBiomes() {

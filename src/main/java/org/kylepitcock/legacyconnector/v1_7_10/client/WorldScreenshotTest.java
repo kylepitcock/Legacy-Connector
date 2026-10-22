@@ -286,6 +286,63 @@ public final class WorldScreenshotTest {
         }));
     }
 
+    /** Reflective probe of Twilight Forest's portal conditions on the server thread (development diagnostics). */
+    private static void probePortal(Minecraft mc) {
+        var server = mc.getSingleplayerServer();
+        if (server == null) return;
+        server.execute(() -> {
+            try {
+                var level = server.overworld();
+                var world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+                int x = 40, y = 148, z = 40;
+                Class<?> mod = Class.forName("twilightforest.TwilightForestMod");
+                Object handler = mod.getField("tickHandler").get(null);
+                Object portalItem = handler.getClass().getField("portalItem").get(handler);
+                LOG.info("PORTAL PROBE: portalItem={}, allowOther={}", portalItem, mod.getField("allowPortalsInOtherDimensions").get(null));
+                Object portal = Class.forName("twilightforest.block.TFBlocks").getField("portal").get(null);
+                LOG.info("PORTAL PROBE: portal block {}", portal);
+                var list = world.getEntitiesWithinAABB(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem.class,
+                        legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(x - 5, y - 5, z - 5, x + 5, y + 5, z + 5));
+                LOG.info("PORTAL PROBE: {} item entities near the pool", list.size());
+                for (Object o : list) {
+                    var item = (legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem) o;
+                    var stack = item.getEntityItem();
+                    LOG.info("PORTAL PROBE: item {} == portalItem: {}, in water: {}", stack.getItem(), stack.getItem() == portalItem,
+                            world.isMaterialInBB(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$boundingBox(item), legacyconnector.v1_7_10.net.minecraft.block.material.Material.water));
+                }
+                var m = portal.getClass().getMethod("isGoodPortalPool", legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class);
+                LOG.info("PORTAL PROBE: isGoodPortalPool={}", m.invoke(portal, world, x, y, z));
+                var strict = portal.getClass().getMethod("isGoodPortalPoolStrict", legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class);
+                LOG.info("PORTAL PROBE: strict={}", strict.invoke(portal, world, x, y, z));
+                var sp = server.getPlayerList().getPlayers().get(0);
+                var legacyPlayer = org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(sp);
+                var check = handler.getClass().getDeclaredMethod("checkForPortalCreation", legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class,
+                        legacyconnector.v1_7_10.net.minecraft.world.World.class, float.class);
+                check.setAccessible(true);
+                check.invoke(handler, legacyPlayer, world, 32.0F);
+                LOG.info("PORTAL PROBE: after checkForPortalCreation the pool block is {} (player at {} {} {})", world.getBlock(x, y, z).getUnlocalizedName(), sp.getX(), sp.getY(), sp.getZ());
+                var gb = world.getBlock(x - 1, y, z - 1);
+                LOG.info("PORTAL PROBE: ring block {} class {} material {} grass? {} ground? {} sameAsBlocksGrass {}", gb.getUnlocalizedName(), gb.getClass().getName(), gb.getMaterial(),
+                        gb.getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.grass,
+                        gb.getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.ground, gb == legacyconnector.v1_7_10.net.minecraft.init.Blocks.grass);
+                var grassOrDirt = portal.getClass().getDeclaredMethod("isGrassOrDirt", legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class);
+                var nature = portal.getClass().getDeclaredMethod("isNatureBlock", legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class, int.class);
+                grassOrDirt.setAccessible(true);
+                nature.setAccessible(true);
+                for (int dx = -1; dx <= 2; dx++) for (int dz = -1; dz <= 2; dz++) {
+                    LOG.info("PORTAL PROBE: ({},{}) grassOrDirt={} nature(y+1)={} solid(y-1)={} mat(y+1)={}", dx, dz, grassOrDirt.invoke(portal, world, x + dx, y, z + dz),
+                            nature.invoke(portal, world, x + dx, y + 1, z + dz), world.getBlock(x + dx, y - 1, z + dz).getMaterial().isSolid(),
+                            world.getBlock(x + dx, y + 1, z + dz).getUnlocalizedName());
+                    var below = world.getBlock(x + dx, y - 1, z + dz);
+                    var at = world.getBlock(x + dx, y, z + dz);
+                    LOG.info("PORTAL PROBE: ({},{}) below={} at={} water={}", dx, dz, below.getUnlocalizedName(), at.getUnlocalizedName(), at.getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water);
+                }
+            } catch (Throwable t) {
+                LOG.error("PORTAL PROBE failed", t);
+            }
+        });
+    }
+
     /** Right-clicks each legacy block of the selected mods and records which screen opens (custom GUIs). */
     private static void queueGuiScenario() {
         String modsProp = System.getProperty("legacyconnector.shotMods", "");
@@ -338,19 +395,23 @@ public final class WorldScreenshotTest {
             int x = 40, y = 150, z = 40;
             c.sendCommand("gamemode survival");
             c.sendCommand("forceload add " + (x - 8) + " " + (z - 8) + " " + (x + 8) + " " + (z + 8));
-            c.sendCommand("fill " + (x - 6) + " " + (y - 2) + " " + (z - 6) + " " + (x + 8) + " " + (y + 6) + " " + (z + 8) + " minecraft:air");
-            c.sendCommand("fill " + (x - 6) + " " + (y - 2) + " " + (z - 6) + " " + (x + 8) + " " + (y - 1) + " " + (z + 8) + " minecraft:dirt");
-            c.sendCommand("fill " + (x - 6) + " " + (y - 1) + " " + (z - 6) + " " + (x + 8) + " " + (y - 1) + " " + (z + 8) + " minecraft:grass_block");
-            c.sendCommand("fill " + x + " " + (y - 1) + " " + z + " " + (x + 1) + " " + (y - 1) + " " + (z + 1) + " minecraft:water");
-            c.sendCommand("tp @s " + (x - 3) + " " + y + " " + (z + 1));
+            // ground: grass over dirt; the pool is a 2x2 of water sunk into the grass (dirt below, grass all around)
+            c.sendCommand("fill " + (x - 6) + " " + (y - 4) + " " + (z - 6) + " " + (x + 8) + " " + (y + 6) + " " + (z + 8) + " minecraft:air");
+            c.sendCommand("fill " + (x - 6) + " " + (y - 4) + " " + (z - 6) + " " + (x + 8) + " " + (y - 3) + " " + (z + 8) + " minecraft:dirt");
+            c.sendCommand("fill " + (x - 6) + " " + (y - 2) + " " + (z - 6) + " " + (x + 8) + " " + (y - 2) + " " + (z + 8) + " minecraft:grass_block");
+            c.sendCommand("fill " + x + " " + (y - 2) + " " + z + " " + (x + 1) + " " + (y - 2) + " " + (z + 1) + " minecraft:water");
+            // the shore plants on top of the ring
+            c.sendCommand("fill " + (x - 1) + " " + (y - 1) + " " + (z - 1) + " " + (x + 2) + " " + (y - 1) + " " + (z + 2) + " minecraft:poppy");
+            c.sendCommand("fill " + x + " " + (y - 1) + " " + z + " " + (x + 1) + " " + (y - 1) + " " + (z + 1) + " minecraft:air");
+            c.sendCommand("tp @s " + (x - 4) + " " + y + " " + (z + 1));
         }), wait(60), run(mc -> {
             int x = 40, y = 150, z = 40;
-            mc.player.connection.sendCommand("summon minecraft:item " + (x + 1) + " " + (y + 1) + " " + (z + 1) + " {Item:{id:\"minecraft:diamond\",count:1}}");
-        }), wait(120), shot("portal_created"), run(mc -> {
+            mc.player.connection.sendCommand("summon minecraft:item " + (x + 1) + " " + (y + 1) + " " + (z + 1) + " {PickupDelay:32767,Item:{id:\"minecraft:diamond\",count:1}}");
+        }), wait(120), shot("portal_created"), run(WorldScreenshotTest::probePortal), wait(30), run(mc -> {
             int x = 40, y = 150, z = 40;
             for (int dx = 0; dx < 2; dx++) for (int dz = 0; dz < 2; dz++)
-                LOG.info("PORTAL TEST: pool block {} is {}", dx + "," + dz, mc.level.getBlockState(new BlockPos(x + dx, y - 1, z + dz)).getBlock());
-            mc.player.connection.sendCommand("tp @s " + x + " " + (y - 1) + " " + z);
+                LOG.info("PORTAL TEST: pool block {} is {}", dx + "," + dz, mc.level.getBlockState(new BlockPos(x + dx, y - 2, z + dz)).getBlock());
+            mc.player.connection.sendCommand("tp @s " + x + " " + (y - 2) + " " + z);
         }), wait(100), shot("portal_enter"), run(mc -> {
             LOG.info("PORTAL TEST: player dimension {}", mc.level.dimension().location());
             LOG.info("Screenshot test finished");

@@ -38,14 +38,14 @@ public class WorldChunkManager {
 
     public BiomeGenBase getBiomeGenAt(int x, int z) {
         int[] ids = biomeIndexLayer.getInts(x, z, 1, 1);
-        return BiomeGenBase.getBiome(ids[0]);
+        return BiomeGenBase.mcc$biomeOrOcean(ids[0]);
     }
 
     public BiomeGenBase[] getBiomesForGeneration(BiomeGenBase[] out, int x, int z, int w, int h) {
         IntCache.resetIntCache();
         if (out == null || out.length < w * h) out = new BiomeGenBase[w * h];
         int[] ids = genBiomes.getInts(x, z, w, h);
-        for (int i = 0; i < w * h; i++) out[i] = BiomeGenBase.getBiome(ids[i]);
+        for (int i = 0; i < w * h; i++) out[i] = BiomeGenBase.mcc$biomeOrOcean(ids[i]);
         return out;
     }
 
@@ -56,14 +56,14 @@ public class WorldChunkManager {
     public BiomeGenBase[] getBiomeGenAt(BiomeGenBase[] out, int x, int z, int w, int h, boolean cache) {
         if (out == null || out.length < w * h) out = new BiomeGenBase[w * h];
         int[] ids = biomeIndexLayer.getInts(x, z, w, h);
-        for (int i = 0; i < w * h; i++) out[i] = BiomeGenBase.getBiome(ids[i]);
+        for (int i = 0; i < w * h; i++) out[i] = BiomeGenBase.mcc$biomeOrOcean(ids[i]);
         return out;
     }
 
     public float[] getRainfall(float[] out, int x, int z, int w, int h) {
         if (out == null || out.length < w * h) out = new float[w * h];
         int[] ids = biomeIndexLayer.getInts(x, z, w, h);
-        for (int i = 0; i < w * h; i++) out[i] = Math.min(1.0F, BiomeGenBase.getBiome(ids[i]).getIntRainfall() / 65536.0F);
+        for (int i = 0; i < w * h; i++) out[i] = Math.min(1.0F, BiomeGenBase.mcc$biomeOrOcean(ids[i]).getIntRainfall() / 65536.0F);
         return out;
     }
 
@@ -77,7 +77,7 @@ public class WorldChunkManager {
         int x1 = x + radius >> 2;
         int z1 = z + radius >> 2;
         int[] ids = genBiomes.getInts(x0, z0, x1 - x0 + 1, z1 - z0 + 1);
-        for (int id : ids) if (!allowed.contains(BiomeGenBase.getBiome(id))) return false;
+        for (int id : ids) if (!allowed.contains(BiomeGenBase.mcc$biomeOrOcean(id))) return false;
         return true;
     }
 

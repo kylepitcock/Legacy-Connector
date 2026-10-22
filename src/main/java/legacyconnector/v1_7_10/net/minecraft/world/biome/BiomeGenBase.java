@@ -233,7 +233,13 @@ public class BiomeGenBase {
         return biomeList;
     }
 
+    /** As in 1.7.10: null for an unused id (mods check it to find free biome ids). */
     public static BiomeGenBase getBiome(int id) {
+        return id >= 0 && id < biomeList.length ? biomeList[id] : ocean;
+    }
+
+    /** The biome of an id as the world generator uses it: unused ids are oceans. */
+    public static BiomeGenBase mcc$biomeOrOcean(int id) {
         return id >= 0 && id < biomeList.length && biomeList[id] != null ? biomeList[id] : ocean;
     }
 

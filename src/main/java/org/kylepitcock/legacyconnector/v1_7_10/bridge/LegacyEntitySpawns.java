@@ -69,7 +69,7 @@ public final class LegacyEntitySpawns {
             String path = modern.getPath();
             id = path.contains("ocean") ? 0 : path.contains("end") ? 9 : 1;
         }
-        return BiomeGenBase.getBiome(id);
+        return BiomeGenBase.mcc$biomeOrOcean(id);
     }
 
     /** The modern biome a legacy biome generates as, or null. */

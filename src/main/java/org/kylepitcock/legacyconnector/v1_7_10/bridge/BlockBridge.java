@@ -181,11 +181,21 @@ public final class BlockBridge {
         BlockState s = stateOfVanilla(info, 0);
         if (s.isAir()) return Material.air;
         if (s.liquid()) return s.getFluidState().is(net.minecraft.tags.FluidTags.LAVA) ? Material.lava : Material.water;
-        if (s.is(net.minecraft.tags.BlockTags.LEAVES)) return Material.leaves;
-        if (s.is(net.minecraft.tags.BlockTags.LOGS) || s.is(net.minecraft.tags.BlockTags.PLANKS)) return Material.wood;
-        if (s.is(net.minecraft.tags.BlockTags.SAND)) return Material.sand;
-        if (s.is(net.minecraft.tags.BlockTags.WOOL)) return Material.cloth;
-        if (s.is(net.minecraft.tags.BlockTags.DIRT)) return s.is(Blocks.GRASS_BLOCK) ? Material.grass : Material.ground;
+        // Block tags are not bound while mods load, so the material comes from the block's class, sound and name.
+        var block = s.getBlock();
+        String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+        var sound = s.getSoundType();
+        if (block instanceof net.minecraft.world.level.block.LeavesBlock) return Material.leaves;
+        if (block instanceof net.minecraft.world.level.block.SpreadingSnowyDirtBlock) return Material.grass;
+        if (block instanceof net.minecraft.world.level.block.ColoredFallingBlock || path.endsWith("sand") && !path.contains("stone")) return Material.sand;
+        if (sound == net.minecraft.world.level.block.SoundType.WOOL) return Material.cloth;
+        if (path.equals("dirt") || path.equals("coarse_dirt") || path.equals("podzol") || path.equals("farmland") || path.equals("dirt_path")
+                || path.equals("rooted_dirt")) {
+            return Material.ground;
+        }
+        if (path.equals("clay")) return Material.clay;
+        if (path.equals("gravel")) return Material.sand;
+        if (sound == net.minecraft.world.level.block.SoundType.WOOD && block.defaultBlockState().blocksMotion()) return Material.wood;
         if (s.canBeReplaced() && !s.blocksMotion()) return Material.vine;
         if (!s.blocksMotion()) return Material.plants;
         if (s.getSoundType() == net.minecraft.world.level.block.SoundType.GLASS) return Material.glass;
