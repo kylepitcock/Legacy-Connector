@@ -17,7 +17,7 @@ import org.kylepitcock.mccompat.v1_7_10.bridge.RecipeBridge;
 public class CraftingManager {
     private static final CraftingManager instance = new CraftingManager();
     @SuppressWarnings("rawtypes")
-    private final List recipes = new RecipeList();
+    private List recipes = new RecipeList();
 
     public static CraftingManager getInstance() {
         return instance;
@@ -84,7 +84,9 @@ public class CraftingManager {
 
     /** Lists a recipe the bridge already translated (GameRegistry paths), without translating it again. */
     public void mcc$track(IRecipe recipe) {
-        ((RecipeList) recipes).addUntracked(recipe);
+        // A mod may have swapped the list for its own (DragonAPI's EventRecipeList): then the recipe is only listed.
+        if (recipes instanceof RecipeList list) list.addUntracked(recipe);
+        else recipes.add(recipe);
     }
 
     /** Forwards additions to the recipe bridge (mods often append to the list directly). */
