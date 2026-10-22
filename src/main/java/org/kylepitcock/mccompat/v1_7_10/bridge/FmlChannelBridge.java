@@ -94,7 +94,7 @@ public final class FmlChannelBridge {
     public static void deliver(String channelName, byte[] data, Side side, Object netHandler) {
         var eventChannel = EVENT_CHANNELS.get(channelName);
         if (eventChannel != null) {
-            FMLProxyPacket packet = new FMLProxyPacket(Unpooled.wrappedBuffer(data), channelName);
+            FMLProxyPacket packet = new FMLProxyPacket(org.kylepitcock.mccompat.core.network.LegacyBuffers.wrap(data), channelName);
             var event = side == Side.SERVER
                     ? new mccompat.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent(null, packet,
                             (mccompat.v1_7_10.net.minecraft.network.INetHandler) netHandler)
@@ -118,7 +118,7 @@ public final class FmlChannelBridge {
         FMLEmbeddedChannel channel = channels.get(side);
         try {
             channel.attr(NetworkRegistry.NET_HANDLER).set(netHandler);
-            channel.writeInbound(new FMLProxyPacket(Unpooled.wrappedBuffer(data), channelName));
+            channel.writeInbound(new FMLProxyPacket(org.kylepitcock.mccompat.core.network.LegacyBuffers.wrap(data), channelName));
             // Messages nobody consumed would accumulate in the embedded channel.
             while (channel.readInbound() != null) {
                 // drop

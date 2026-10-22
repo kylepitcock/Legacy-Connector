@@ -44,7 +44,7 @@ public abstract class FMLIndexedMessageToMessageCodec<A> extends MessageToMessag
         String channel = ctx.channel().attr(NetworkRegistry.FML_CHANNEL).get();
         Class<? extends A> clazz = (Class<? extends A>) msg.getClass();
         if (!types.containsKey(clazz)) throw new RuntimeException("Undefined discriminator for message type " + clazz.getSimpleName() + " in channel " + channel);
-        ByteBuf buffer = Unpooled.buffer();
+        ByteBuf buffer = org.kylepitcock.mccompat.core.network.LegacyBuffers.buffer();
         buffer.writeByte(types.getByte(clazz));
         encodeInto(ctx, msg, buffer);
         out.add(new FMLProxyPacket(buffer.copy(), channel));

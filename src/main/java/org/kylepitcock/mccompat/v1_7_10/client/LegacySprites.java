@@ -123,12 +123,18 @@ public final class LegacySprites {
             throw new java.io.FileNotFoundException(location.getResourceDomain() + ":" + location.getResourcePath());
         }
 
-        /** Assets of the running game (vanilla textures and the like); 1.7.10's glyph widths, which 1.21 no longer ships. */
-        private static byte[] modernResource(String ns, String path) {
+        private static byte[] readModern(String ns, String path) {
             try {
                 var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(ns, path);
-                var manager = net.minecraft.client.Minecraft.getInstance().getResourceManager();
-                var found = manager.getResource(id);
+                var mc = net.minecraft.client.Minecraft.getInstance();
+                // The vanilla pack is readable from the start of mod loading; the resource manager only after the first reload.
+                var vanilla = mc.getVanillaPackResources().getResource(net.minecraft.server.packs.PackType.CLIENT_RESOURCES, id);
+                if (vanilla != null) {
+                    try (InputStream in = vanilla.get()) {
+                        return in.readAllBytes();
+                    }
+                }
+                var found = mc.getResourceManager().getResource(id);
                 if (found.isPresent()) {
                     try (InputStream in = found.get().open()) {
                         return in.readAllBytes();
@@ -136,6 +142,24 @@ public final class LegacySprites {
                 }
             } catch (Exception | LinkageError e) {
                 // not available this early, or not a valid location
+            }
+            return null;
+        }
+
+        /** Assets of the running game (vanilla textures and the like); 1.7.10's glyph widths, which 1.21 no longer ships. */
+        private static byte[] modernResource(String ns, String path) {
+            byte[] direct = readModern(ns, path);
+            if (direct != null) return direct;
+            // Vanilla textures under their 1.7.10 names (textures/blocks/planks_oak.png) live under other names now.
+            if (ns.equals("minecraft") && path.endsWith(".png")) {
+                boolean block = path.startsWith("textures/blocks/");
+                if (block || path.startsWith("textures/items/")) {
+                    String legacyName = path.substring(path.indexOf('/', "textures/".length()) + 1, path.length() - 4);
+                    String modern = org.kylepitcock.mccompat.v1_7_10.Assets1710.texture((block ? "blocks/" : "items/") + legacyName, block);
+                    int colon = modern.indexOf(':');
+                    byte[] renamed = readModern(modern.substring(0, colon), "textures/" + modern.substring(colon + 1) + ".png");
+                    if (renamed != null) return renamed;
+                }
             }
             if (ns.equals("minecraft") && path.equals("font/glyph_sizes.bin")) {
                 byte[] sizes = new byte[65536];

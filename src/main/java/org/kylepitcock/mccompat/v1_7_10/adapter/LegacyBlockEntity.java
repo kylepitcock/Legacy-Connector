@@ -188,6 +188,8 @@ public class LegacyBlockEntity extends BlockEntity {
         if (!tag.isEmpty()) deliver(tag);
     }
 
+    private static final java.util.concurrent.atomic.AtomicInteger DELIVERY_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
     private void deliver(CompoundTag tag) {
         if (tag.contains("mcc$fml")) {
             org.kylepitcock.mccompat.v1_7_10.bridge.FmlChannelBridge.deliver(tag.getString("mcc$channel"), tag.getByteArray("mcc$fml"),
@@ -199,7 +201,14 @@ public class LegacyBlockEntity extends BlockEntity {
         int type = tag.getInt("mcc$type");
         CompoundTag copy = tag.copy();
         copy.remove("mcc$type");
-        te.onDataPacket(NetworkManager.MCC_DUMMY, new S35PacketUpdateTileEntity(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), type,
-                new NBTTagCompound(copy)));
+        try {
+            te.onDataPacket(NetworkManager.MCC_DUMMY, new S35PacketUpdateTileEntity(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), type,
+                    new NBTTagCompound(copy)));
+        } catch (RuntimeException | LinkageError e) {
+            // A mod's packet handler throwing must not disconnect the player ("Network Protocol Error").
+            if (DELIVERY_FAILURES.incrementAndGet() <= 10) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/TileEntities").warn("{} failed to handle its update packet", te.getClass().getName(), e);
+            }
+        }
     }
 }

@@ -69,7 +69,7 @@ public final class NetworkBridge {
         private LegacyPayload encode(IMessage message) {
             Integer d = discriminators.get(message.getClass());
             if (d == null) throw new IllegalArgumentException("Message " + message.getClass().getName() + " is not registered on channel " + name);
-            ByteBuf buf = Unpooled.buffer();
+            ByteBuf buf = org.kylepitcock.mccompat.core.network.LegacyBuffers.buffer();
             message.toBytes(buf);
             byte[] data = new byte[buf.readableBytes()];
             buf.readBytes(data);
@@ -85,7 +85,7 @@ public final class NetworkBridge {
                 var ctor = type.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 IMessage message = ctor.newInstance();
-                message.fromBytes(Unpooled.wrappedBuffer(payload.data()));
+                message.fromBytes(org.kylepitcock.mccompat.core.network.LegacyBuffers.wrap(payload.data()));
                 MessageContext ctx = toServer
                         ? new MessageContext(Side.SERVER, new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())))
                         : new MessageContext(Side.CLIENT, null);

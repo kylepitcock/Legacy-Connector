@@ -18,7 +18,7 @@ final class LegacySpawnData {
         buf.writeBoolean(fallback);
         if (fallback) buf.writeUtf(legacy == null ? "" : legacy.getClass().getName());
         if (legacy instanceof IEntityAdditionalSpawnData data) {
-            var payload = io.netty.buffer.Unpooled.buffer();
+            var payload = org.kylepitcock.mccompat.core.network.LegacyBuffers.buffer();
             try {
                 data.writeSpawnData(payload);
             } catch (RuntimeException | LinkageError e) {

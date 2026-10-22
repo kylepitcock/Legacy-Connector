@@ -24,6 +24,7 @@ public class Minecraft {
     @Deprecated
     public int displayHeight;
     public TextureManager renderEngine = TextureManager.INSTANCE;
+    public mccompat.v1_7_10.net.minecraft.client.renderer.RenderGlobal renderGlobal = new mccompat.v1_7_10.net.minecraft.client.renderer.RenderGlobal();
     public FontRenderer fontRenderer = FontRenderer.INSTANCE;
     public FontRenderer standardGalacticFontRenderer = FontRenderer.INSTANCE;
     public final mccompat.v1_7_10.net.minecraft.client.particle.EffectRenderer effectRenderer =

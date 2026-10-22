@@ -53,6 +53,8 @@ public final class LegacyRemapper extends Remapper {
     private final Map<String, String> overrides = new HashMap<>();
     /** {@code owner.srgName(.desc)} members left unrenamed because the readable name would collide in that class. */
     private final java.util.Set<String> keep = new java.util.HashSet<>();
+    /** {@code owner.readableName+desc} of a mod's own method that shares its name with a mapped vanilla one. */
+    private final java.util.Set<String> renameLocal = new java.util.HashSet<>();
 
     private final ShimIndex shim;
     private final SynthDemand demand;
@@ -75,6 +77,7 @@ public final class LegacyRemapper extends Remapper {
      * the SRG member would produce a duplicate (ClassFormatError). Such members keep their SRG name in that class.
      */
     public void preventCollisions(org.objectweb.asm.tree.ClassNode original) {
+        preventInheritedCallCollisions(original);
         java.util.Map<String, java.util.List<String>> fields = new HashMap<>();
         for (var f : original.fields) fields.computeIfAbsent(mcp.field(f.name) + ":" + f.desc, k -> new java.util.ArrayList<>()).add(f.name);
         fields.values().forEach(names -> {
@@ -85,6 +88,29 @@ public final class LegacyRemapper extends Remapper {
         methods.forEach((key, names) -> {
             if (names.size() > 1) for (String n : names) if (!mcp.method(n).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
         });
+    }
+
+    /**
+     * A class that declares {@code getMaximumHomeDistance()} under its readable name (a mod compiled partly with MCP
+     * names) and calls the inherited vanilla method through its SRG name {@code func_110174_bM} means two different
+     * methods; renaming the SRG call would make it call itself. The class's own method is renamed instead (declaration
+     * and the references the jar makes to it), so the SRG call still reaches the vanilla method.
+     */
+    private void preventInheritedCallCollisions(org.objectweb.asm.tree.ClassNode original) {
+        java.util.Set<String> declared = new java.util.HashSet<>();
+        for (var m : original.methods) if (mcp.method(m.name).equals(m.name)) declared.add(m.name + m.desc);
+        if (declared.isEmpty()) return;
+        for (var m : original.methods) {
+            if (m.instructions == null) continue;
+            for (var insn = m.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+                if (insn instanceof org.objectweb.asm.tree.MethodInsnNode call && call.owner.equals(original.name) && call.name.startsWith("func_")) {
+                    String readable = mcp.method(call.name);
+                    if (!readable.equals(call.name) && declared.contains(readable + call.desc)) {
+                        renameLocal.add(original.name + "." + readable + call.desc);
+                    }
+                }
+            }
+        }
     }
 
     public LegacyVersion version() {
@@ -115,6 +141,7 @@ public final class LegacyRemapper extends Remapper {
     @Override
     public String mapMethodName(String owner, String name, String descriptor) {
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
+        if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
         return mcp.method(name);
     }
 

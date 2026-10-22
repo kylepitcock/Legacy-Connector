@@ -102,12 +102,22 @@ final class ItemCallbacks {
                 ? InteractionResult.sidedSuccess(player.level().isClientSide) : InteractionResult.PASS;
     }
 
+    private static final java.util.concurrent.atomic.AtomicInteger TOOLTIP_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
     @SuppressWarnings({"unchecked", "rawtypes"})
     static void tooltip(Item legacy, net.minecraft.world.item.ItemStack stack, List<Component> out, TooltipFlag flag) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null) return;
         List lines = new ArrayList();
-        legacy.addInformation(view, ClientPlayer.get(), lines, flag.isAdvanced());
+        try {
+            legacy.addInformation(view, ClientPlayer.get(), lines, flag.isAdvanced());
+        } catch (RuntimeException | LinkageError e) {
+            // The creative search builds every tooltip before a world (and a player) exists, and mods dereference
+            // both; a broken tooltip must never take the game down.
+            if (TOOLTIP_FAILURES.incrementAndGet() <= 5) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Items").warn("Tooltip of {} failed: {}", legacy, e.toString());
+            }
+        }
         for (Object o : lines) out.add(Component.literal(String.valueOf(o)));
     }
 

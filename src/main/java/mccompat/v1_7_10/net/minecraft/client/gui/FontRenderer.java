@@ -11,6 +11,26 @@ import org.kylepitcock.mccompat.v1_7_10.client.RenderContext;
 public class FontRenderer {
     public static final FontRenderer INSTANCE = new FontRenderer();
     public int FONT_HEIGHT = 9;
+    /** The 32 legacy chat colours (16 and their shadows); mods read them, e.g. to colour their own text. */
+    public int[] colorCode = legacyColors();
+
+    private static int[] legacyColors() {
+        int[] out = new int[32];
+        for (int i = 0; i < 32; i++) {
+            int j = (i >> 3 & 1) * 85;
+            int r = (i >> 2 & 1) * 170 + j;
+            int g = (i >> 1 & 1) * 170 + j;
+            int b = (i & 1) * 170 + j;
+            if (i == 6) r += 85;
+            if (i >= 16) {
+                r /= 4;
+                g /= 4;
+                b /= 4;
+            }
+            out[i] = (r & 255) << 16 | (g & 255) << 8 | b & 255;
+        }
+        return out;
+    }
 
     private static Font font() {
         return Minecraft.getInstance().font;

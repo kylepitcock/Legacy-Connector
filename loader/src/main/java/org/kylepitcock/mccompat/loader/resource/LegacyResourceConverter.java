@@ -69,6 +69,8 @@ public final class LegacyResourceConverter {
         }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
+        } else if (modern.endsWith(".mcmeta")) {
+            data = sanitizeMcmeta(data);
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
         }
@@ -101,6 +103,34 @@ public final class LegacyResourceConverter {
             sb.append((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '/' || c == '.' || c == '_' || c == '-' ? c : '_');
         }
         return sb.toString();
+    }
+
+    /**
+     * 1.7.10 read .mcmeta leniently; mods shipped trailing commas and comments, which the strict 1.21 reader rejects (and
+     * then drops the whole sprite). Parse leniently, drop the null an extra comma leaves in an array, write strict JSON.
+     */
+    static byte[] sanitizeMcmeta(byte[] data) {
+        try {
+            String text = new String(data, StandardCharsets.UTF_8);
+            if (text.startsWith("\uFEFF")) text = text.substring(1);
+            JsonElement root = JsonParser.parseString(text);
+            dropNullElements(root);
+            return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
+        } catch (RuntimeException e) {
+            return data;
+        }
+    }
+
+    private static void dropNullElements(JsonElement e) {
+        if (e.isJsonArray()) {
+            JsonArray array = e.getAsJsonArray();
+            for (int i = array.size() - 1; i >= 0; i--) {
+                if (array.get(i).isJsonNull()) array.remove(i);
+                else dropNullElements(array.get(i));
+            }
+        } else if (e.isJsonObject()) {
+            for (var entry : e.getAsJsonObject().entrySet()) dropNullElements(entry.getValue());
+        }
     }
 
     static void parseLang(String text, Map<String, String> out) {

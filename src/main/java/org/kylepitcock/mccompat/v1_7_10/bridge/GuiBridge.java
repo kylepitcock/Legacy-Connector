@@ -91,7 +91,7 @@ public final class GuiBridge {
                         buf.writeInt(z);
                     });
         } else {
-            ByteBuf buf = Unpooled.buffer();
+            ByteBuf buf = org.kylepitcock.mccompat.core.network.LegacyBuffers.buffer();
             byte[] modId = record.legacyId.getBytes(StandardCharsets.UTF_8);
             buf.writeInt(modId.length).writeBytes(modId).writeInt(x).writeInt(y).writeInt(z);
             byte[] data = new byte[buf.readableBytes()];
@@ -109,7 +109,7 @@ public final class GuiBridge {
     }
 
     public static void sendProgressBar(ServerPlayer player, int windowId, int id, int value) {
-        ByteBuf buf = Unpooled.buffer().writeInt(windowId).writeInt(id).writeInt(value);
+        ByteBuf buf = org.kylepitcock.mccompat.core.network.LegacyBuffers.buffer().writeInt(windowId).writeInt(id).writeInt(value);
         byte[] data = new byte[buf.readableBytes()];
         buf.readBytes(data);
         PacketDistributor.sendToPlayer(player, new LegacyPayload(FAMILY, "bar", 0, data));
@@ -117,7 +117,7 @@ public final class GuiBridge {
 
     private static void receive(LegacyPayload payload, IPayloadContext context) {
         if (!FMLEnvironment.dist.isClient()) return;
-        ByteBuf buf = Unpooled.wrappedBuffer(payload.data());
+        ByteBuf buf = org.kylepitcock.mccompat.core.network.LegacyBuffers.wrap(payload.data());
         context.enqueueWork(() -> {
             switch (payload.channel()) {
                 case "bar" -> Client.progressBar(buf.readInt(), buf.readInt(), buf.readInt());

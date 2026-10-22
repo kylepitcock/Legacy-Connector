@@ -78,6 +78,17 @@ neoForge {
             systemProperty 'retrofit.clientSelfTest', 'true'
         }
 
+        // Graphical test: creates a world, builds showcases of legacy blocks/items and writes screenshots to
+        // run-screenshots/shots (see tools/dev/run-screenshot-test.sh).
+        screenshotTest {
+            client()
+            gameDirectory = project.file('run-screenshots')
+            systemProperty 'retrofit.screenshotTest', 'true'
+            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed'].each { p ->
+                if (project.hasProperty(p)) systemProperty 'retrofit.' + p, project.property(p)
+            }
+        }
+
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             // In production the loader reads the index from the embedded runtime jar.

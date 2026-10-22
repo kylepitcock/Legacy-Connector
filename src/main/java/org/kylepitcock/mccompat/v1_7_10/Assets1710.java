@@ -57,7 +57,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 blockModels(b, out);
             } catch (RuntimeException | LinkageError e) {
                 // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
-                LOG.warn("Model generation failed for {}: {}", b, e.toString());
+                LOG.warn("Model generation failed for {}: {}", b, e.toString(), e);
             }
         }
         for (Item i : ItemBridge.modItems()) {
@@ -69,7 +69,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             try {
                 itemModels(i, out);
             } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Model generation failed for {}: {}", i, e.toString());
+                LOG.warn("Model generation failed for {}: {}", i, e.toString(), e);
             }
         }
         bakeSprites(blocks, true, out);
@@ -169,10 +169,21 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
     }
 
+    /** An icon's sprite name; mods' own icon classes can be half-initialised (wrapping a sprite that never registered). */
+    private static String nameOf(IIcon icon) {
+        try {
+            String name = icon == null ? null : icon.getIconName();
+            if (name != null) return name;
+        } catch (RuntimeException | LinkageError e) {
+            // falls through
+        }
+        return "minecraft:missingno";
+    }
+
     private static String iconName(Block b, int side, int meta) {
         try {
             IIcon icon = b.getIcon(side, meta);
-            if (icon != null) return icon.getIconName();
+            if (icon != null) return nameOf(icon);
         } catch (RuntimeException e) {
             // invalid metadata for this block (array index etc.): fall back to metadata 0
         }
@@ -262,7 +273,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.addProperty("parent", "minecraft:builtin/entity");
                 model.add("display", GENERATED_DISPLAY.deepCopy());
                 JsonObject tex = new JsonObject();
-                tex.addProperty("particle", icon == null ? "minecraft:missingno" : icon.getIconName());
+                tex.addProperty("particle", nameOf(icon));
                 model.add("textures", tex);
             } else if (item instanceof ItemBlock ib && isbrhIn3d(ib.mcc$block())) {
                 // Drawn by the block's ISimpleBlockRenderingHandler (LegacyItemRenderer).
@@ -275,7 +286,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 // 1.7.10 drew blocks without a block model as their 2D icon.
                 model.addProperty("parent", "minecraft:item/generated");
                 JsonObject tex = new JsonObject();
-                tex.addProperty("layer0", icon != null ? icon.getIconName() : iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
+                tex.addProperty("layer0", icon != null ? nameOf(icon) : iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
                 model.add("textures", tex);
             } else if (item instanceof ItemBlock ib && ib.mcc$block().getRenderType() == 22) {
                 // builtin/entity + chest display transforms; the BEWLR registered in Client1710 draws the legacy model.
@@ -291,7 +302,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } else {
                 model.addProperty("parent", item.isFull3D() ? "minecraft:item/handheld" : "minecraft:item/generated");
                 JsonObject tex = new JsonObject();
-                tex.addProperty("layer0", icon == null ? "minecraft:missingno" : icon.getIconName());
+                tex.addProperty("layer0", nameOf(icon));
                 if (item.requiresMultipleRenderPasses()) {
                     // One layer per render pass; item/generated tints layer N with tint index N (the legacy pass).
                     int passes = 2;
@@ -302,7 +313,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                     for (int pass = 0; pass < passes; pass++) {
                         try {
                             IIcon layer = item.getIconFromDamageForRenderPass(meta, pass);
-                            if (layer != null) tex.addProperty("layer" + pass, layer.getIconName());
+                            if (layer != null) tex.addProperty("layer" + pass, nameOf(layer));
                         } catch (RuntimeException ignored) {
                         }
                     }

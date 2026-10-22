@@ -10,7 +10,8 @@ if [ $# -eq 0 ]; then
 else
   mkdir -p run-clienttest/mods
   patterns=("$@" ${=EXTRA} codechicken baubles legacytest jade jei curios neoforge)
-  for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N); do
+  # MODSRC=test-mods also looks for the fragments in another directory (e.g. the test corpus)
+  for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N) ${=MODSRC:+${MODSRC}/*.jar}(N); do
     name=${jar:t:l}
     for p in $patterns; do
       if [[ $name == *${p:l}* ]]; then ln -sf "$PWD/$jar" "run-clienttest/mods/${jar:t}"; break; fi
