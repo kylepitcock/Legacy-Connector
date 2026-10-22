@@ -202,8 +202,9 @@ public final class ShimAccessWidener {
         for (FieldNode f : node.fields) {
             // Static fields too: mods replaced vanilla singletons (Blocks.quartz_ore = ...) through ATs. Constants
             // keep their ConstantValue attribute, so compiled-in values are unaffected.
-            boolean isStatic = (f.access & Opcodes.ACC_STATIC) != 0 && (node.access & Opcodes.ACC_INTERFACE) == 0
-                    && (f.access & Opcodes.ACC_ENUM) == 0 && f.value == null;
+            // Instance fields too: 1.7.10's were mostly non-final, and mod subclasses assign them in their constructors
+            // (blockMaterial, blockHardness, ...), which the JVM rejects for a final field of another class.
+            boolean isStatic = (node.access & Opcodes.ACC_INTERFACE) == 0 && (f.access & Opcodes.ACC_ENUM) == 0 && f.value == null;
             // Private fields too: legacy fields mods reached through access transformers (Block.unlocalizedName, ...).
             // Unlike methods, a widened field cannot change dispatch; subclasses can only shadow it.
             int fa = (f.access & Opcodes.ACC_SYNTHETIC) == 0 ? f.access & ~Opcodes.ACC_PRIVATE : f.access;

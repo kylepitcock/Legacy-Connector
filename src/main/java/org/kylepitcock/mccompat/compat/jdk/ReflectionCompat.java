@@ -37,6 +37,21 @@ public final class ReflectionCompat {
 
     private ReflectionCompat() {}
 
+    private static final java.util.concurrent.atomic.AtomicInteger INVOCATION_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Method.invoke that records what an InvocationTargetException wraps (callers often log only the wrapper). */
+    public static Object invoke(java.lang.reflect.Method method, Object target, Object... args)
+            throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        try {
+            return method.invoke(target, args);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() != null && INVOCATION_FAILURES.incrementAndGet() <= 40) {
+                org.slf4j.LoggerFactory.getLogger("Retrofit/Reflection").info("{}.{} threw {}", method.getDeclaringClass().getName(), method.getName(), e.getCause().toString());
+            }
+            throw e;
+        }
+    }
+
     public static Field getDeclaredField(Class<?> owner, String name) throws NoSuchFieldException {
         if (owner == Field.class && name.equals("modifiers")) return MODIFIERS_PLACEHOLDER;
         return owner.getDeclaredField(name);
