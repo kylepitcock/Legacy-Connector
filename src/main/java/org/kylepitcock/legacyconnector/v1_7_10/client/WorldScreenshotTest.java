@@ -438,7 +438,7 @@ public final class WorldScreenshotTest {
             add(hideGui(false), wait(20), run(mc -> mc.setScreen(new InventoryScreen(mc.player))), wait(30), shot("gallery_inventory"), run(mc -> mc.setScreen(null)));
         }
         if (!entities.isEmpty()) {
-            add(command("gamemode creative"), run(mc -> {
+            add(command("gamemode spectator"), command("difficulty normal"), run(mc -> {
                 var c = mc.player.connection;
                 c.sendCommand("kill @e[type=!player,distance=..40]");
                 c.sendCommand("fill -40 " + y + " 2 40 " + (y + 4) + " 4 minecraft:air");
