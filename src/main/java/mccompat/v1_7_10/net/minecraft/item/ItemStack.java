@@ -36,6 +36,9 @@ public final class ItemStack {
     /** Phantom: accesses are redirected to {@link #mcc$get$stackTagCompound}. */
     @Deprecated
     public NBTTagCompound stackTagCompound;
+    /** Phantom: accesses are redirected to {@link #mcc$get$itemDamage}. */
+    @Deprecated
+    public int itemDamage;
     public int animationsToGo;
 
     private net.minecraft.world.item.ItemStack mcc$stack;
@@ -96,6 +99,14 @@ public final class ItemStack {
 
     public static void mcc$set$stackSize(ItemStack s, int value) {
         s.mcc$setCount(value);
+    }
+
+    public static int mcc$get$itemDamage(ItemStack s) {
+        return s.getItemDamage();
+    }
+
+    public static void mcc$set$itemDamage(ItemStack s, int value) {
+        s.setItemDamage(value);
     }
 
     public static NBTTagCompound mcc$get$stackTagCompound(ItemStack s) {

@@ -165,7 +165,8 @@ public class Item {
     }
 
     public int getDamage(ItemStack stack) {
-        return stack.mcc$rawDamage();
+        // 1.7.10: the stack's itemDamage, which is the metadata for items that are not damageable.
+        return stack.getItemDamage();
     }
 
     public void setDamage(ItemStack stack, int damage) {
