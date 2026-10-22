@@ -297,6 +297,14 @@ public final class ItemBridge {
         String namespace = owner != null && modId == null ? owner.record().modernId : Ids.modernModId(domain);
         ResourceLocation base = ResourceLocation.fromNamespaceAndPath(namespace, Ids.normalizePath(name).replace('/', '_'));
         String legacyName = domain + ":" + name;
+        // An ItemBlock registered under its block's name is that block's item (FML linked them by name): AE2 builds
+        // its item blocks itself and registers them with registerItem.
+        if (item instanceof ItemBlock ib && ib.mcc$block() != null && ib.mcc$block().mcc$modern != null
+                && !BLOCK_ITEMS.containsKey(ib.mcc$block()) && legacyName.equalsIgnoreCase(String.valueOf(BlockBridge.nameOf(ib.mcc$block())))) {
+            ResourceLocation blockId = BuiltInRegistries.BLOCK.getKey((net.minecraft.world.level.block.Block) ib.mcc$block().mcc$modern);
+            registerBlockItem(ib, ib.mcc$block(), blockId, legacyName);
+            return;
+        }
         index(legacyName, nextId++, item);
         MOD_ITEMS.add(item);
         for (int meta : discoverMetas(item)) {
