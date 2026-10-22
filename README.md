@@ -103,6 +103,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary` | data-pack recipes, tags |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
 | Fluids | Forge `Fluid` / containers | fluid types |
+| Villagers | `VillagerRegistry` ids, skins, trade handlers | `legacyconnector:villager_<id>` professions, trades, clothes layer; some new unemployed villagers take them |
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
 | Commands | `ICommand`, server command manager | Brigadier |
@@ -129,7 +130,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 
 ### World generation
 
-Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generated as data: climate, colours, and the
+Legacy biomes (for example Biomes O' Plenty's) become real 1.21 biomes, generated as data (they also join the vanilla biome tags of the vanilla biome they are modelled on, so vanilla structures, mob spawns and biome modifiers apply to them): climate, colours, and the
 ores, caves and small plants of the closest vanilla biome. Trees and grass come from the legacy biome itself: its
 decorator runs the legacy passes (the biome's own tree and plant generators) and its extra features, gated by Forge's
 terrain-gen events as on 1.7.10. Where legacy biomes appear is decided by the 1.7.10 biome layer system (`GenLayer`,
@@ -244,6 +245,7 @@ Requires JDK 21.
 ./gradlew bundleJar             # single distributable jar
 ./gradlew runClient             # dev client, mods from run/mods
 ./gradlew runServerTest         # headless smoke test with run-servertest/mods; the fixture mod self-tests and stops
+LEVELTYPE=biomesoplenty:biomesop tools/dev/run-subset.sh biomesoplenty   # same, in a mod's world type
 tools/dev/run-subset.sh hbm thaumcraft     # server test over a few mods only, with the
                                 # block/item/entity self tests; the whole corpus takes minutes
 ./gradlew runClientTest         # client smoke test (run-clienttest, mods linked from run/mods): reports per mod

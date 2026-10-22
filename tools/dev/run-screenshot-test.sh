@@ -2,7 +2,7 @@
 # Graphical test: boots the client, creates a world, builds showcases of legacy blocks and items and writes screenshots
 # to run-screenshots/shots (look at them with the image viewer). It quits by itself when the script is done.
 # usage: run-screenshot-test.sh [name-fragment...]   -- mods are linked from run/mods (and $MODSRC); fragments select jars
-# env:   WORLDTYPE=biomesoplenty:biomesop  MODS=agricraft,appliedenergistics2  BLOCKS=24  ITEMS=36  TOUR=6  SCENARIO=portal (Twilight Forest style portal test instead of the tour)
+# env:   WORLDTYPE=biomesoplenty:biomesop  MODS=agricraft,appliedenergistics2  BLOCKS=24  ITEMS=36  TOUR=6  RENDER=16  SCENARIO=portal (Twilight Forest style portal test instead of the tour)
 cd "$(dirname "$0")/../.."
 export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home -v 21 2>/dev/null)}"
 rm -rf run-screenshots/mods run-screenshots/shots
@@ -14,6 +14,10 @@ for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N) ${=MODSRC:+${MODSRC}/*.jar
     if [[ $name == *${p:l}* ]]; then ln -sf "$PWD/$jar" "run-screenshots/mods/${jar:t}"; break; fi
   done
 done
+# HEADLESS=1 (software rendering, see docker-headless.sh): cheap graphics settings
+if [[ -n $HEADLESS ]]; then
+  printf 'menuBackgroundBlurriness:0\nrenderDistance:%s\ngraphicsMode:0\nparticles:2\nentityShadows:false\nenableVsync:false\nmaxFps:260\nsoundCategory_master:0.0\n' "${RENDER:-8}" > run-screenshots/options.txt
+fi
 echo "mods: $(ls run-screenshots/mods | wc -l)"
 args=()
 [[ -n $WORLDTYPE ]] && args+=(-PshotWorldType=$WORLDTYPE)
@@ -22,6 +26,7 @@ args=()
 [[ -n $ITEMS ]] && args+=(-PshotItemsPerMod=$ITEMS)
 [[ -n $TOUR ]] && args+=(-PshotTour=$TOUR)
 [[ -n $SCENARIO ]] && args+=(-PshotScenario=$SCENARIO)
+[[ -n $RENDER ]] && args+=(-PshotRenderDistance=$RENDER)
 : > run-screenshots/logs/latest.log
 ./gradlew runScreenshotTest $args > build/devtools/screenshottest.log 2>&1 &
 for i in $(seq 1 360); do

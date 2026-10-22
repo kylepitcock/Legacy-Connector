@@ -18,6 +18,10 @@ import legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase;
 public abstract class MapGenStructure extends MapGenBase {
     protected Map structureMap = new HashMap();
 
+    {
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyStructures.track(this);
+    }
+
     public abstract String getStructureName();
 
     @Override

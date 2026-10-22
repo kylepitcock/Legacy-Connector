@@ -220,6 +220,10 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("gui".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            queueGuiScenario();
+            return;
+        }
         // terrain tour: spectator camera above the surface at spread-out places, four headings and a straight-down shot
         for (int i = 0; i < tour; i++) {
             int x = (int) (Math.cos(i * 1.1) * 220 * (i + 1) / 2);
@@ -275,6 +279,48 @@ public final class WorldScreenshotTest {
                 for (int i = from; i < to; i++) add(command("give @s " + ids.get(i) + " 1"));
                 add(wait(10), run(mc -> mc.setScreen(new InventoryScreen(mc.player))), wait(10), shot("items_" + entry.getKey() + "_" + part), run(mc -> mc.setScreen(null)));
             }
+        }
+        add(run(mc -> {
+            LOG.info("Screenshot test finished");
+            mc.stop();
+        }));
+    }
+
+    /** Right-clicks each legacy block of the selected mods and records which screen opens (custom GUIs). */
+    private static void queueGuiScenario() {
+        String modsProp = System.getProperty("legacyconnector.shotMods", "");
+        int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
+        Map<String, Integer> perMod = new LinkedHashMap<>();
+        List<ResourceLocation> ids = new ArrayList<>();
+        for (var e : BuiltInRegistries.BLOCK.entrySet()) {
+            if (!(e.getValue() instanceof LegacyBlockAdapter)) continue;
+            ResourceLocation id = e.getKey().location();
+            if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
+            if (perMod.merge(id.getNamespace(), 1, Integer::sum) > cap) continue;
+            ids.add(id);
+        }
+        add(waitForWorld(), wait(40), command("gamemode creative"), command("time set noon"), command("tp @s 0 150 0"), waitForTerrain(100));
+        for (ResourceLocation id : ids) {
+            add(run(mc -> {
+                var c = mc.player.connection;
+                BlockPos at = mc.player.blockPosition();
+                int x = at.getX() + 2, y = at.getY(), z = at.getZ();
+                c.sendCommand("setblock " + x + " " + y + " " + z + " minecraft:air");
+                c.sendCommand("setblock " + x + " " + y + " " + z + " " + id);
+            }), wait(6), run(mc -> {
+                BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
+                var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
+                mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
+            }), wait(12), run(mc -> {
+                var screen = mc.screen;
+                if (screen != null) {
+                    LOG.info("GUI TEST: {} opened {}", id, screen.getClass().getName());
+                    shotNow(mc, "gui_" + id.getNamespace() + "_" + id.getPath().replace('/', '_'));
+                    mc.setScreen(null);
+                } else {
+                    LOG.info("GUI TEST: {} opened no screen", id);
+                }
+            }), wait(2));
         }
         add(run(mc -> {
             LOG.info("Screenshot test finished");
