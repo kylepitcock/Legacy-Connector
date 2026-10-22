@@ -366,7 +366,8 @@ public class Block {
     }
 
     public boolean hasTileEntity() {
-        return this.isBlockContainer;
+        // Forge: isTileProvider, set from "this instanceof ITileEntityProvider"; BlockContainer also sets isBlockContainer.
+        return this.isBlockContainer || this instanceof ITileEntityProvider;
     }
 
     public boolean hasTileEntity(int metadata) {

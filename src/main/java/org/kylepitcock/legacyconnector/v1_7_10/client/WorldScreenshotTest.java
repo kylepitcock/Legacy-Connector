@@ -370,6 +370,7 @@ public final class WorldScreenshotTest {
                 c.sendCommand("setblock " + x + " " + y + " " + z + " " + id);
             }), wait(20), run(mc -> {
                 BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
+                LOG.info("GUI TEST: {} client state {} block entity {}", id, mc.level.getBlockState(at), mc.level.getBlockEntity(at));
                 var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
                 mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
             }), wait(12), run(mc -> {
