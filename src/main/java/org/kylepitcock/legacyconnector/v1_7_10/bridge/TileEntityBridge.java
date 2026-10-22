@@ -92,7 +92,17 @@ public final class TileEntityBridge {
     public static TileEntity legacyAt(World world, BlockPos pos) {
         var be = world.mcc$level().getBlockEntity(pos);
         if (be == null) return null;
-        if (be instanceof LegacyBlockEntity l) return l.legacy();
+        if (be instanceof LegacyBlockEntity l) {
+            TileEntity te = l.legacy();
+            // A tile entity placed while a chunk is generated has no level yet: it lives in the world it was asked through.
+            if (te != null && te.worldObj == null) {
+                te.worldObj = world;
+                te.xCoord = pos.getX();
+                te.yCoord = pos.getY();
+                te.zCoord = pos.getZ();
+            }
+            return te;
+        }
         TileEntity view = VIEWS.computeIfAbsent(be, TileEntityBridge::view);
         if (view != null) {
             view.worldObj = world;
@@ -130,6 +140,7 @@ public final class TileEntityBridge {
         var be = world.mcc$level().getBlockEntity(pos);
         if (be instanceof LegacyBlockEntity l) {
             l.replaceLegacy(te);
+            if (te != null && te.worldObj == null) te.worldObj = world;
         } else if (te != null) {
             LOG.debug("Legacy setTileEntity at {} ignored: block there does not host legacy tile entities", pos);
         }

@@ -294,6 +294,7 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.entity.DimensionSelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.entity.WorldGenSelfTest.register();
+        org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.registerSaving();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyContentSummary.register();

@@ -41,7 +41,7 @@ public final class VillagerBridge {
     private static final Map<Integer, VillagerProfession> CUSTOM = new ConcurrentHashMap<>();
     private static final Map<Integer, ResourceLocation> SKINS = new ConcurrentHashMap<>();
     private static final Map<Integer, List<VillagerRegistry.IVillageTradeHandler>> HANDLERS = new ConcurrentHashMap<>();
-    private static final List<Object> CREATION_HANDLERS = new ArrayList<>();
+    private static final List<VillagerRegistry.IVillageCreationHandler> CREATION_HANDLERS = new java.util.concurrent.CopyOnWriteArrayList<>();
     /** A share of unemployed villagers become a modded profession when they first appear. */
     private static final float ADOPTION_CHANCE = 0.3F;
     private static boolean registered;
@@ -93,9 +93,13 @@ public final class VillagerBridge {
         register();
     }
 
-    public static void registerCreationHandler(Object handler) {
+    public static void registerCreationHandler(VillagerRegistry.IVillageCreationHandler handler) {
         CREATION_HANDLERS.add(handler);
-        LOG.debug("Village creation handler {} recorded; modern villages do not build legacy components", handler.getClass().getName());
+        LegacyVillages.register();
+    }
+
+    public static List<VillagerRegistry.IVillageCreationHandler> creationHandlers() {
+        return CREATION_HANDLERS;
     }
 
     // ------------------------------------------------------------------ profession ids
@@ -122,6 +126,22 @@ public final class VillagerBridge {
         if (profession == VillagerProfession.BUTCHER || profession == VillagerProfession.FISHERMAN || profession == VillagerProfession.SHEPHERD) return 4;
         for (var e : CUSTOM.entrySet()) if (e.getValue() == profession) return e.getKey();
         return 0;
+    }
+
+    /** A villager of a legacy profession standing at a position of a (generating) world, e.g. in a village component. */
+    public static void spawn(legacyconnector.v1_7_10.net.minecraft.world.World world, int profession, double x, double y, double z) {
+        var level = world.mcc$level();
+        if (!(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return;
+        Villager villager = net.minecraft.world.entity.EntityType.VILLAGER.create(accessor.getLevel());
+        if (villager == null) return;
+        villager.moveTo(x, y, z, 0.0F, 0.0F);
+        villager.finalizeSpawn(accessor, accessor.getCurrentDifficultyAt(villager.blockPosition()), net.minecraft.world.entity.MobSpawnType.STRUCTURE, null);
+        var p = professionOf(profession);
+        if (p != null) {
+            villager.setVillagerData(villager.getVillagerData().setProfession(p));
+            villager.setVillagerXp(1);
+        }
+        accessor.addFreshEntityWithPassengers(villager);
     }
 
     // ------------------------------------------------------------------ trades

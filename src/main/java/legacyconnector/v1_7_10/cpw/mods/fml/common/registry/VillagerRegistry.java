@@ -17,6 +17,13 @@ public class VillagerRegistry {
     private static final VillagerRegistry INSTANCE = new VillagerRegistry();
 
     public interface IVillageCreationHandler {
+        legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight getVillagePieceWeight(Random random, int size);
+
+        Class<?> getComponentClass();
+
+        Object buildComponent(legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.PieceWeight villagePiece,
+                legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.Start startPiece, java.util.List pieces, Random random,
+                int p1, int p2, int p3, int p4, int p5);
     }
 
     public interface IVillageTradeHandler {
