@@ -121,7 +121,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Bridge | State |
 |---|---|
 | Entity rendering, armour and held items | bridged, not verified in game for every mod |
-| Block rendering (`ISimpleBlockRenderingHandler`) | 3D inventory renders work; per-vertex colour and ambient occlusion of handler-drawn blocks missing |
+| Block rendering (`ISimpleBlockRenderingHandler`, TESRs) | Handlers draw in the world (Tinkers' tables, AE2, AgriCraft crops), renderers can bind vanilla textures by their 1.7.10 names, blocks that colour themselves (leaves, grass, `colorMultiplier`) are biome tinted; per-vertex colour and ambient occlusion of handler-drawn blocks missing, some handlers (Tinkers' drying rack, barricades) still draw nothing |
 | Dimension sky/fog rendering and portal placement | not done |
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
