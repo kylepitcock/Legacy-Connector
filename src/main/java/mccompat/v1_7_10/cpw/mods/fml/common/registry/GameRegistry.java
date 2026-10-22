@@ -118,6 +118,8 @@ public class GameRegistry {
     }
 
     public static ItemStack findItemStack(String modId, String name, int stackSize) {
+        ItemStack custom = ItemBridge.customStack(modId, name, stackSize);
+        if (custom != null) return custom;
         Item item = findItem(modId, name);
         return item == null ? null : new ItemStack(item, stackSize, 0);
     }

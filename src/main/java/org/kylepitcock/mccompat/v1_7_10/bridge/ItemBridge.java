@@ -679,8 +679,27 @@ public final class ItemBridge {
         return ITEM_BLOCKS.get(item);
     }
 
+    /** Stacks mods publish by name (FML's customItemStacks table), keyed "modid:name". */
     public static synchronized void registerCustomStack(String name, ItemStack stack) {
-        CUSTOM_STACKS.put(name, stack);
+        var owner = org.kylepitcock.mccompat.v1_7_10.LegacyModContainer1710.active();
+        CUSTOM_STACKS.put((owner != null ? owner.getModId() : "minecraft") + ":" + name, stack);
+    }
+
+    public static synchronized ItemStack customStack(String modId, String name, int size) {
+        ItemStack found = CUSTOM_STACKS.get(modId + ":" + name);
+        if (found == null) {
+            String wanted = (modId + ":" + name).toLowerCase(java.util.Locale.ROOT);
+            for (var e : CUSTOM_STACKS.entrySet()) {
+                if (e.getKey().toLowerCase(java.util.Locale.ROOT).equals(wanted)) {
+                    found = e.getValue();
+                    break;
+                }
+            }
+        }
+        if (found == null) return null;
+        ItemStack copy = found.copy();
+        copy.mcc$setCount(size);
+        return copy;
     }
 
     /** Ensures custom data components exist before stacks are serialized with the legacy tag. */
