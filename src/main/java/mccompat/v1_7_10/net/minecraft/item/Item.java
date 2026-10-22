@@ -44,7 +44,7 @@ public class Item {
     public final java.util.Map<Integer, net.minecraft.world.item.Item> mcc$variants = new java.util.TreeMap<>();
 
     /** Non-null for wrappers of vanilla (or modern-only) items. */
-    public final org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo mcc$vanilla;
+    public org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo mcc$vanilla;
 
     public Item() {
         this.mcc$vanilla = null;

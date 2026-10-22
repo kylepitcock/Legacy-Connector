@@ -54,11 +54,23 @@ public class Enchantment {
     protected String name;
 
     protected Enchantment(int id, int weight, EnumEnchantmentType type) {
+        if (id < 0 || id >= enchantmentsList.length) throw new IllegalArgumentException("Invalid enchantment id " + id);
+        if (enchantmentsList[id] != null) {
+            // 1.7.10 crashed here; two mods configured with the same id still work when one of them moves.
+            int free = -1;
+            for (int i = 1; i < enchantmentsList.length && free < 0; i++) {
+                int candidate = (id + i) % enchantmentsList.length;
+                if (enchantmentsList[candidate] == null) free = candidate;
+            }
+            if (free < 0) throw new IllegalArgumentException("No free enchantment id for " + getClass());
+            org.slf4j.LoggerFactory.getLogger("Retrofit/Enchantments").warn(
+                    "Enchantment id {} of {} is already used by {}; using {} instead (change one of the ids in the mods' configs)",
+                    id, getClass().getName(), enchantmentsList[id].getClass().getName(), free);
+            id = free;
+        }
         this.effectId = id;
         this.weight = weight;
         this.type = type;
-        if (id < 0 || id >= enchantmentsList.length) throw new IllegalArgumentException("Invalid enchantment id " + id);
-        if (enchantmentsList[id] != null) throw new IllegalArgumentException("Duplicate enchantment id! " + getClass() + " and " + enchantmentsList[id].getClass() + " Enchantment ID:" + id);
         enchantmentsList[id] = this;
     }
 

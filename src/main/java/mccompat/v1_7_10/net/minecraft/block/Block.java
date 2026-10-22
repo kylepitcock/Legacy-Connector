@@ -109,7 +109,7 @@ public class Block {
     /** Modern block registered for this legacy block; null until registration (or for unregistered blocks). */
     public net.minecraft.world.level.block.Block mcc$modern;
     /** Non-null for wrappers of vanilla (or modern-only) blocks. */
-    public final org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo mcc$vanilla;
+    public org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo mcc$vanilla;
 
     /** Wrapper constructor for vanilla blocks; properties come from the modern default state. */
     public Block(org.kylepitcock.mccompat.v1_7_10.bridge.VanillaInfo info) {

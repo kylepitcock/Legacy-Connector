@@ -156,6 +156,18 @@ public final class BlockBridge {
         }
     }
 
+    /** A mod-made block that replaced a vanilla singleton takes over the vanilla block's identity. */
+    public static synchronized void adoptVanilla(Block replacement, Block original) {
+        VanillaInfo info = original.mcc$vanilla;
+        replacement.mcc$vanilla = info;
+        BY_NAME.put(info.legacyName(), replacement);
+        NAMES.put(replacement, info.legacyName());
+        if (info.legacyId() >= 0) {
+            BY_ID.put(info.legacyId(), replacement);
+            IDS.put(replacement, info.legacyId());
+        }
+    }
+
     /** Called from the wrapper constructor: copies modern properties into the legacy fields. */
     public static void initVanilla(Block block, VanillaInfo info) {
         BlockState state = stateOfVanilla(info, 0);

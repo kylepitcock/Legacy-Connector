@@ -52,7 +52,17 @@ public final class ShimLinker {
         for (MethodNode method : node.methods) {
             InsnList insns = method.instructions;
             for (AbstractInsnNode insn = insns.getFirst(); insn != null; insn = insn.getNext()) {
-                if (insn instanceof FieldInsnNode f) {
+                if (insn instanceof FieldInsnNode f && f.getOpcode() == Opcodes.PUTSTATIC && isVanillaSingletonHolder(f.owner)
+                        && f.desc.startsWith("L")) {
+                    // dup; getstatic <the same field>; invokestatic adopt(Object, Object); putstatic
+                    InsnList hook = new InsnList();
+                    hook.add(new InsnNode(Opcodes.DUP));
+                    hook.add(new FieldInsnNode(Opcodes.GETSTATIC, f.owner, f.name, f.desc));
+                    hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/mccompat/v1_7_10/bridge/VanillaReplacement", "adopt",
+                            "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
+                    insns.insertBefore(f, hook);
+                    method.maxStack += 3;
+                } else if (insn instanceof FieldInsnNode f) {
                     AbstractInsnNode replacement = virtualField(f, hierarchy);
                     if (replacement != null) {
                         insns.set(f, replacement);
@@ -342,6 +352,10 @@ public final class ShimLinker {
             case MISSING_MEMBER -> report.missingMember(owner, member, from, shim);
             default -> { }
         }
+    }
+
+    private static boolean isVanillaSingletonHolder(String owner) {
+        return isShimNamespace(owner) && (owner.endsWith("/net/minecraft/init/Blocks") || owner.endsWith("/net/minecraft/init/Items"));
     }
 
     static boolean isShimNamespace(String internalName) {
