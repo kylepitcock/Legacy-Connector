@@ -172,6 +172,17 @@ public class Item {
         return maxDamage > 0 && !hasSubtypes;
     }
 
+    /** Forge: whether the damage bar shows (1.7.10 default: damageable and damaged). */
+    public boolean showDurabilityBar(ItemStack stack) {
+        return isDamageable() && isDamaged(stack);
+    }
+
+    /** Forge: 0 (full) to 1 (broken) fraction for the bar. */
+    public double getDurabilityForDisplay(ItemStack stack) {
+        int max = getMaxDamage(stack);
+        return max <= 0 ? 0 : (double) getDamage(stack) / max;
+    }
+
     public boolean isDamaged(ItemStack stack) {
         return stack.getItemDamage() > 0;
     }

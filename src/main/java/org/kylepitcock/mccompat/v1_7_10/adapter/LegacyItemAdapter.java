@@ -109,6 +109,26 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
     }
 
     @Override
+    public boolean isBarVisible(ItemStack stack) {
+        var view = mccompat.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack);
+        return view != null && legacy.showDurabilityBar(view);
+    }
+
+    @Override
+    public int getBarWidth(ItemStack stack) {
+        var view = mccompat.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack);
+        double d = view == null ? 0 : legacy.getDurabilityForDisplay(view);
+        return Math.round(13.0F - (float) Math.max(0, Math.min(1, d)) * 13.0F);
+    }
+
+    @Override
+    public int getBarColor(ItemStack stack) {
+        var view = mccompat.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack);
+        double d = view == null ? 0 : Math.max(0, Math.min(1, legacy.getDurabilityForDisplay(view)));
+        return net.minecraft.util.Mth.hsvToRgb((float) (1.0 - d) / 3.0F, 1.0F, 1.0F);
+    }
+
+    @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
         return ItemCallbacks.destroySpeed(legacy, stack, state);
     }
