@@ -359,6 +359,30 @@ public final class WorldScreenshotTest {
         });
     }
 
+    /** Ids from a property; "namespace:all" stands for up to {@code perMod} of that mod's entries spread over its registry. */
+    private static <T> List<ResourceLocation> expand(String property, net.minecraft.core.Registry<T> registry, int perMod, boolean legacyBlocksOnly) {
+        List<ResourceLocation> out = new ArrayList<>();
+        for (String part : System.getProperty(property, "").split(",")) {
+            if (part.isEmpty()) continue;
+            if (part.endsWith(":all")) {
+                String ns = part.substring(0, part.length() - 4);
+                List<ResourceLocation> all = new ArrayList<>();
+                for (var e : registry.entrySet()) {
+                    if (!e.getKey().location().getNamespace().equals(ns)) continue;
+                    if (legacyBlocksOnly && !(e.getValue() instanceof LegacyBlockAdapter)) continue;
+                    all.add(e.getKey().location());
+                }
+                int step = Math.max(1, all.size() / perMod);
+                for (int i = 0, n = 0; i < all.size() && n < perMod; i += step, n++) out.add(all.get(i));
+                LOG.info("Gallery entries of {}: {}", ns, all);
+            } else {
+                ResourceLocation id = ResourceLocation.tryParse(part);
+                if (id != null && registry.containsKey(id)) out.add(id);
+            }
+        }
+        return out;
+    }
+
     private static List<ResourceLocation> idList(String property) {
         List<ResourceLocation> out = new ArrayList<>();
         for (String part : System.getProperty(property, "").split(",")) {
@@ -374,12 +398,9 @@ public final class WorldScreenshotTest {
      * legacy items in the inventory beside JEI, and legacy entities beside vanilla ones. SHOW / SHOWITEMS / SHOWENT give the ids.
      */
     private static void queueGalleryScenario() {
-        List<ResourceLocation> blocks = new ArrayList<>();
-        for (ResourceLocation id : idList("legacyconnector.shotBlocks")) if (BuiltInRegistries.BLOCK.containsKey(id)) blocks.add(id);
-        List<ResourceLocation> items = new ArrayList<>();
-        for (ResourceLocation id : idList("legacyconnector.shotItems")) if (BuiltInRegistries.ITEM.containsKey(id)) items.add(id);
-        List<ResourceLocation> entities = new ArrayList<>();
-        for (ResourceLocation id : idList("legacyconnector.shotEntities")) if (BuiltInRegistries.ENTITY_TYPE.containsKey(id)) entities.add(id);
+        List<ResourceLocation> blocks = expand("legacyconnector.shotBlocks", BuiltInRegistries.BLOCK, 4, true);
+        List<ResourceLocation> items = expand("legacyconnector.shotItems", BuiltInRegistries.ITEM, 6, false);
+        List<ResourceLocation> entities = expand("legacyconnector.shotEntities", BuiltInRegistries.ENTITY_TYPE, 8, false);
         String[] modern = {"minecraft:diamond_block", "minecraft:crafting_table", "minecraft:furnace", "minecraft:enchanting_table", "minecraft:bookshelf",
                 "minecraft:beacon", "minecraft:lantern", "minecraft:oak_log", "minecraft:copper_block", "minecraft:amethyst_block", "minecraft:target", "minecraft:honey_block"};
         int y = 150;
@@ -387,27 +408,28 @@ public final class WorldScreenshotTest {
                 command("gamerule doMobSpawning false"), command("tp @s 0 170 0"), waitForTerrain(150));
         add(run(mc -> {
             var c = mc.player.connection;
-            c.sendCommand("fill -16 " + (y - 3) + " -4 16 " + (y + 8) + " 14 minecraft:air");
-            c.sendCommand("fill -16 " + (y - 3) + " -4 16 " + (y - 2) + " 14 minecraft:dirt");
-            c.sendCommand("fill -16 " + (y - 1) + " -4 16 " + (y - 1) + " 14 minecraft:grass_block");
+            c.sendCommand("fill -40 " + (y - 3) + " -14 40 " + (y + 8) + " 24 minecraft:air");
+            c.sendCommand("fill -40 " + (y - 3) + " -14 40 " + (y - 2) + " 24 minecraft:dirt");
+            c.sendCommand("fill -40 " + (y - 1) + " -14 40 " + (y - 1) + " 24 minecraft:grass_block");
             c.sendCommand("fill -16 " + (y - 1) + " 0 16 " + (y - 1) + " 2 minecraft:dirt_path");
             c.sendCommand("fill -16 " + (y - 1) + " 5 16 " + (y - 1) + " 7 minecraft:dirt_path");
-            for (int i = 0; i < blocks.size() && i < 14; i++) {
-                int x = -14 + i * 2;
-                c.sendCommand("setblock " + x + " " + y + " 1 " + blocks.get(i));
+            for (int i = 0; i < blocks.size() && i < 24; i++) {
+                int x = -23 + (i % 12) * 4;
+                c.sendCommand("setblock " + x + " " + y + " " + (i < 12 ? 1 : -1) + " " + blocks.get(i));
             }
-            for (int i = 0; i < modern.length; i++) c.sendCommand("setblock " + (-11 + i * 2) + " " + y + " 6 " + modern[i]);
+            for (int i = 0; i < modern.length; i++) c.sendCommand("setblock " + (-22 + i * 4) + " " + y + " 6 " + modern[i]);
             c.sendCommand("setblock -12 " + y + " 10 minecraft:oak_leaves");
-            c.sendCommand("fill -16 " + y + " 12 16 " + (y + 2) + " 12 minecraft:stone_bricks");
+            c.sendCommand("fill -40 " + y + " 12 40 " + (y + 2) + " 12 minecraft:stone_bricks");
         }), wait(60));
-        add(run(mc -> mc.player.connection.sendCommand("tp @s 0 " + (y + 4) + " -9")), wait(30), look(0f, 22f), hideGui(true), wait(40), shot("gallery_blocks"));
+        add(run(mc -> mc.player.connection.sendCommand("tp @s 0 " + (y + 7) + " -12")), wait(30), look(0f, 28f), hideGui(true), wait(40), shot("gallery_blocks"));
         // a close view of the first legacy blocks with Jade's tooltip: the crosshair on one of them
         if (!blocks.isEmpty()) {
             for (int k = 0; k < Math.min(3, blocks.size()); k++) {
                 int idx = k * Math.max(1, blocks.size() / 3);
-                int bx = -14 + idx * 2;
+                int bx = -23 + (idx % 12) * 4;
                 String name = "gallery_jade_" + k;
-                add(hideGui(false), run(mc -> mc.player.connection.sendCommand("tp @s " + bx + " " + (y + 1) + " -2")), wait(20), look(0f, 20f), wait(60), shot(name));
+                add(hideGui(false), command("gamemode spectator"), run(mc -> mc.player.connection.sendCommand("tp @s " + bx + ".5 " + (y + 0.0) + " -2.5")), wait(40), look(0f, 15.6f), wait(60),
+                        run(mc -> LOG.info("Gallery target of {}: {} (player at {})", name, mc.hitResult, mc.player.position())), wait(100), shot(name));
             }
         }
         if (!items.isEmpty()) {
@@ -419,11 +441,13 @@ public final class WorldScreenshotTest {
             add(command("gamemode creative"), run(mc -> {
                 var c = mc.player.connection;
                 c.sendCommand("kill @e[type=!player,distance=..40]");
-                for (int i = 0; i < entities.size() && i < 8; i++) c.sendCommand("summon " + entities.get(i) + " " + (-12 + i * 3) + " " + y + " 6 {NoAI:1b,PersistenceRequired:1b}");
-                c.sendCommand("summon minecraft:cow 12 " + y + " 6 {NoAI:1b}");
-                c.sendCommand("summon minecraft:villager 14 " + y + " 6 {NoAI:1b}");
-                c.sendCommand("tp @s 0 " + (y + 3) + " -4");
-            }), wait(60), look(0f, 12f), hideGui(true), wait(40), shot("gallery_entities"));
+                c.sendCommand("fill -40 " + y + " 2 40 " + (y + 4) + " 4 minecraft:air");
+                LOG.info("Gallery entities: {}", entities);
+                for (int i = 0; i < entities.size() && i < 10; i++) c.sendCommand("summon " + entities.get(i) + " " + (-14 + i * 3) + " " + y + " 3 {NoAI:1b,PersistenceRequired:1b}");
+                c.sendCommand("summon minecraft:cow 16 " + y + " 3 {NoAI:1b}");
+                c.sendCommand("summon minecraft:villager 19 " + y + " 3 {NoAI:1b}");
+                c.sendCommand("tp @s 2 " + (y + 4) + " -10");
+            }), wait(60), look(0f, 14f), hideGui(true), wait(40), shot("gallery_entities"));
         }
         add(run(mc -> {
             LOG.info("Screenshot test finished");

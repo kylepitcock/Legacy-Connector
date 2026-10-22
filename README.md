@@ -7,6 +7,26 @@ runs Fabric mods on NeoForge. The original jar is never modified.
 > **Status: early development.** 1.7.10 is the active target. Expect simple content mods to partly work and large
 > mods to load with many features missing. See [Compatibility status](#compatibility-status).
 
+## Screenshots
+
+All taken in the game (NeoForge 1.21.1, headless), with legacy 1.7.10 mods next to modern content.
+
+Blocks of Applied Energistics 2, Twilight Forest, Tinkers' Construct and BiblioCraft (front row) beside vanilla 1.21 blocks (back row):
+
+![Legacy and modern blocks side by side](docs/images/legacy-and-modern-blocks.png)
+
+Legacy items in the survival inventory next to JEI, with a legacy tooltip:
+
+![Legacy items in the inventory with JEI](docs/images/legacy-items-with-jei.png)
+
+Twilight Forest and Witchery entities beside a vanilla cow and villager:
+
+![Legacy and modern entities](docs/images/legacy-and-modern-entities.png)
+
+A modern village with Witchery's watchtowers and AgriCraft's greenhouse built by their legacy code:
+
+![Legacy village components in a modern village](docs/images/legacy-village-components.png)
+
 ## How it works
 
 ```
