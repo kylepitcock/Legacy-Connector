@@ -165,6 +165,27 @@ public final class JavaCompatRedirects {
         staticToStatic(arb, "glUseProgramObjectARB", "(I)V", gl, "glUseProgramObjectARB");
         staticToStatic(arb, "glDeleteObjectARB", "(I)V", gl, "glDeleteObjectARB");
         staticToStatic(arb, "glGetUniformLocationARB", "(ILjava/lang/CharSequence;)I", gl, "glGetUniformLocationARB");
+        String vsh = "org/lwjgl/opengl/ARBVertexShader";
+        staticToStatic(gl20, "glDetachShader", "(II)V", gl, "glDetachShader");
+        staticToStatic(arb, "glDetachObjectARB", "(II)V", gl, "glDetachObjectARB");
+        staticToStatic(gl20, "glEnableVertexAttribArray", "(I)V", gl, "glEnableVertexAttribArray");
+        staticToStatic(gl20, "glDisableVertexAttribArray", "(I)V", gl, "glDisableVertexAttribArray");
+        staticToStatic(vsh, "glEnableVertexAttribArrayARB", "(I)V", gl, "glEnableVertexAttribArrayARB");
+        staticToStatic(vsh, "glDisableVertexAttribArrayARB", "(I)V", gl, "glDisableVertexAttribArrayARB");
+        staticToStatic(gl20, "glGetAttribLocation", "(ILjava/lang/CharSequence;)I", gl, "glGetAttribLocation");
+        staticToStatic(vsh, "glGetAttribLocationARB", "(ILjava/lang/CharSequence;)I", gl, "glGetAttribLocationARB");
+        staticToStatic(gl20, "glVertexAttribPointer", "(IIIZIJ)V", gl, "glVertexAttribPointer");
+        staticToStatic(vsh, "glVertexAttribPointerARB", "(IIIZIJ)V", gl, "glVertexAttribPointerARB");
+        staticToStatic(vsh, "glVertexAttrib4fARB", "(IFFFF)V", gl, "glVertexAttrib4fARB");
+        staticToStatic("org/lwjgl/opengl/GL33", "glVertexAttribDivisor", "(II)V", gl, "glVertexAttribDivisor");
+        staticToStatic("org/lwjgl/opengl/ARBInstancedArrays", "glVertexAttribDivisorARB", "(II)V", gl, "glVertexAttribDivisor");
+        staticToStatic("org/lwjgl/opengl/GL31", "glDrawArraysInstanced", "(IIII)V", gl, "glDrawArraysInstanced");
+        staticToStatic("org/lwjgl/opengl/ARBDrawInstanced", "glDrawArraysInstancedARB", "(IIII)V", gl, "glDrawArraysInstanced");
+        staticToStatic("org/lwjgl/opengl/EXTFramebufferObject", "glCheckFramebufferStatusEXT", "(I)I", gl, "glCheckFramebufferStatusEXT");
+        staticToStatic("org/lwjgl/opengl/ARBVertexArrayObject", "glGenVertexArrays", "()I", gl, "glGenVertexArraysARB");
+        staticToStatic("org/lwjgl/opengl/ARBVertexArrayObject", "glBindVertexArray", "(I)V", gl, "glBindVertexArrayARB");
+        staticToStatic("org/lwjgl/opengl/ARBOcclusionQuery", "glGenQueriesARB", "(Ljava/nio/IntBuffer;)V", gl, "glGenQueriesARB");
+        staticToStatic("org/lwjgl/opengl/ARBOcclusionQuery", "glDeleteQueriesARB", "(Ljava/nio/IntBuffer;)V", gl, "glDeleteQueriesARB");
         // Guava 17 -> 32: TypeToken.isAssignableFrom was renamed isSupertypeOf.
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Lcom/google/common/reflect/TypeToken;)Z", "isSupertypeOf");
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Ljava/lang/reflect/Type;)Z", "isSupertypeOf");

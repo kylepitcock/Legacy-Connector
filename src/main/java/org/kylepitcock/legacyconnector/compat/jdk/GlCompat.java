@@ -134,6 +134,67 @@ public final class GlCompat {
         return -1;
     }
 
+    // The rest of what mods call around shaders (OpenMods, CoFH, Mystcraft): virtual too, and never a driver call from a loading thread.
+    public static void glDetachShader(int program, int shader) {
+    }
+
+    public static void glDetachObjectARB(int program, int shader) {
+    }
+
+    public static void glEnableVertexAttribArray(int index) {
+    }
+
+    public static void glDisableVertexAttribArray(int index) {
+    }
+
+    public static void glEnableVertexAttribArrayARB(int index) {
+    }
+
+    public static void glDisableVertexAttribArrayARB(int index) {
+    }
+
+    public static int glGetAttribLocation(int program, CharSequence name) {
+        return -1;
+    }
+
+    public static int glGetAttribLocationARB(int program, CharSequence name) {
+        return -1;
+    }
+
+    public static void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride, long offset) {
+    }
+
+    public static void glVertexAttribPointerARB(int index, int size, int type, boolean normalized, int stride, long offset) {
+    }
+
+    public static void glVertexAttrib4fARB(int index, float x, float y, float z, float w) {
+    }
+
+    public static void glVertexAttribDivisor(int index, int divisor) {
+    }
+
+    public static void glDrawArraysInstanced(int mode, int first, int count, int primcount) {
+    }
+
+    /** EXT_framebuffer_object: the status check of a framebuffer that was never created reads as complete. */
+    public static int glCheckFramebufferStatusEXT(int target) {
+        return 36053;
+    }
+
+    public static int glGenVertexArraysARB() {
+        return NEXT.getAndIncrement();
+    }
+
+    public static void glBindVertexArrayARB(int array) {
+    }
+
+    public static void glGenQueriesARB(java.nio.IntBuffer ids) {
+        for (int i = ids.position(); i < ids.limit(); i++) ids.put(i, NEXT.getAndIncrement());
+    }
+
+    public static void glDeleteQueriesARB(java.nio.IntBuffer ids) {
+    }
+
     // Uniform uploads: shaders are virtual, so there is nothing to set them on.
     public static void glUniform1fARB(int a0, float a1) {
     }
