@@ -42,8 +42,17 @@ public final class LegacyModDecl {
         if (sb.isEmpty() || !(sb.charAt(0) >= 'a' && sb.charAt(0) <= 'z')) sb.insert(0, "mod_");
         while (sb.length() < 2) sb.append('_');
         if (sb.length() > 64) sb.setLength(64);
-        return sb.toString();
+        String id = sb.toString();
+        return RESERVED.contains(id) ? id + "_legacy" : id;
     }
+
+    /**
+     * Ids of well-known modern mods that other modern mods probe with {@code ModList.isLoaded} and then call into
+     * (Create's ComputerCraft integration needs CC: Tweaked's classes). A legacy mod with the same id would make that
+     * probe succeed and the integration crash, so such legacy mods get a distinct modern id. Keep this list short:
+     * a renamed mod's namespace changes (computercraft_legacy:...).
+     */
+    public static final java.util.Set<String> RESERVED = java.util.Set.of("computercraft");
 
     /** Legacy ids of mods this one must load after ({@code required-after}, {@code after}). */
     public List<Dependency> parsedDependencies() {

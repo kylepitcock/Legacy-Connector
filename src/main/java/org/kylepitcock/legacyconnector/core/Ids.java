@@ -19,7 +19,8 @@ public final class Ids {
         if (sb.isEmpty() || !(sb.charAt(0) >= 'a' && sb.charAt(0) <= 'z')) sb.insert(0, "mod_");
         while (sb.length() < 2) sb.append('_');
         if (sb.length() > 64) sb.setLength(64);
-        return sb.toString();
+        String id = sb.toString();
+        return java.util.Set.of("computercraft").contains(id) ? id + "_legacy" : id;
     }
 
     public static String normalizePath(String path) {
