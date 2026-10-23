@@ -124,7 +124,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
 
     @Override
     public void removed() {
-        if (legacy != null && !failed) ScreenGuard.run(this, legacy::onGuiClosed);
+        if (legacy != null && !failed) failed = !ScreenGuard.runQuiet(this, legacy::onGuiClosed);
         super.removed();
     }
 }

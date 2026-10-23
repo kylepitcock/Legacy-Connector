@@ -10,6 +10,10 @@ public class WorldServer extends World {
         super(level);
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager getPlayerManager() {
+        return mcc$fullLevel() instanceof ServerLevel s ? new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager(s) : null;
+    }
+
     public MinecraftServer func_73046_m() {
         return mcc$fullLevel() instanceof ServerLevel s ? MinecraftServer.mcc$wrap(s.getServer()) : null;
     }

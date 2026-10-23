@@ -11,6 +11,17 @@ public final class ScreenGuard {
 
     private ScreenGuard() {}
 
+    /** Like {@link #run} without closing the screen: for code that runs while the screen is being closed already. */
+    public static boolean runQuiet(Object screen, Runnable code) {
+        try {
+            code.run();
+            return true;
+        } catch (RuntimeException | LinkageError e) {
+            LOG.error("The legacy GUI {} failed while closing", screen.getClass().getName(), e);
+            return false;
+        }
+    }
+
     /** Runs legacy GUI code; on failure logs it, closes the screen and tells the player. Returns false then. */
     public static boolean run(Object screen, Runnable code) {
         try {

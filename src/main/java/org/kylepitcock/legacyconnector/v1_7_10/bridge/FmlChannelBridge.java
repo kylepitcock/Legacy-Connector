@@ -84,6 +84,11 @@ public final class FmlChannelBridge {
         }
     }
 
+    /** A packet to every player who has the chunk loaded. */
+    public static void sendToChunkWatchers(FMLProxyPacket packet, ServerLevel level, net.minecraft.world.level.ChunkPos chunk) {
+        PacketDistributor.sendToPlayersTrackingChunk(level, chunk, payload(packet));
+    }
+
     private static void receive(LegacyPayload payload, IPayloadContext context) {
         boolean server = context.player() instanceof ServerPlayer;
         context.enqueueWork(() -> deliver(payload.channel(), payload.data(), server ? Side.SERVER : Side.CLIENT,
