@@ -14,6 +14,11 @@ public final class AtlasUV {
 
     private AtlasUV() {}
 
+    /** The atlas was (re)stitched: sprite positions changed. */
+    public static void invalidate() {
+        CACHE.clear();
+    }
+
     public static float[] of(String spriteId) {
         if (spriteId == null) return null;
         TextureAtlas atlas;

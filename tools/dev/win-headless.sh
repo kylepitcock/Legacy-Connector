@@ -11,12 +11,13 @@ if [ "$1" = "--stage-mods" ]; then
   MSYS_NO_PATHCONV=0 docker run --rm -v lc-mods:/mods -v "$(cygpath -w "$2"):/src:ro" $IMAGE bash -c 'rm -rf /mods/* && cp -rL /src/. /mods/ && ls /mods | wc -l'
   exit $?
 fi
-[ $# -eq 0 ] && { echo "usage: $0 <script in tools/dev> [args]"; exit 1; }
+[ $# -eq 0 ] && { echo "usage: $0 <script in tools/dev> [args] | --stage | --stage-mods <dir>"; exit 1; }
 docker image inspect $IMAGE >/dev/null 2>&1 || docker build -q -t $IMAGE tools/docker || exit 1
 docker volume create lc-work >/dev/null
 # stage the project (the container has its own build/ and Gradle caches)
 tar --exclude=./build --exclude=./.gradle --exclude='./run*' --exclude=./.git --exclude=./testmods --exclude=./docs --exclude='./legacyconnector-*.jar' --exclude='*.log' -cf - . \
   | docker run --rm -i -v lc-work:/work $IMAGE bash -c 'cd /work && find . -mindepth 1 -maxdepth 1 ! -name build ! -name .gradle ! -name "run*" -exec rm -rf {} + ; tar xf - && sed -i "s/\\r\$//" tools/dev/*.sh gradlew && mkdir -p run-screenshots run-clienttest build && ln -sfn /mods run/mods 2>/dev/null || (mkdir -p run && ln -sfn /mods run/mods)'
+[ "$1" = "--stage" ] && exit 0
 envs=()
 for v in MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS COMMANDS LOOPS LC_DEBUG WIDTH HEIGHT; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
 docker run --rm --shm-size=1g -v lc-work:/work -v lc-mods:/mods:ro -v legacyconnector-gradle:/root/.gradle -v legacyconnector-cache:/work/run-screenshots/.legacyconnector \

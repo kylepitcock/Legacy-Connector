@@ -31,6 +31,11 @@ public final class Client1710 {
         ClientSelfTest.register();
         WorldScreenshotTest.register();
         ScreenEvents1710.register();
+        modBus.addListener((net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent e) -> {
+            if (!e.getAtlas().location().equals(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)) return;
+            AtlasUV.invalidate();
+            org.kylepitcock.legacyconnector.v1_7_10.Assets1710.postStitched();
+        });
         modBus.addListener(Client1710::onRegisterExtensions);
         modBus.addListener(Client1710::onRegisterItemColors);
         modBus.addListener(Client1710::onRegisterBlockColors);

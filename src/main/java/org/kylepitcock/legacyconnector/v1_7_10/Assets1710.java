@@ -98,6 +98,16 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         bakeSprites(items, false, out);
     }
 
+    /**
+     * The real TextureStitchEvent.Post, fired when the modern block atlas has been stitched: only now do icons have their
+     * atlas UVs, and mods that derive sub-icons from them (Chisel's connected textures) read them in this event. (The
+     * Post fired while the pack is generated, above, runs before any atlas exists.)
+     */
+    public static void postStitched() {
+        if (blockAtlas != null) postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(blockAtlas));
+        if (itemAtlas != null) postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(itemAtlas));
+    }
+
     private static void postStitch(legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent event) {
         try {
             legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);

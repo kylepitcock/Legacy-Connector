@@ -10,7 +10,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.Assets1710;
  * The icon register mods see while registering block (type 0) and item (type 1) icons. Names become modern sprite ids
  * (see Assets1710.texture); sprites mods create themselves ({@link #setTextureEntry}) are kept for pack generation.
  */
-public class TextureMap implements IIconRegister {
+public class TextureMap implements IIconRegister, ITextureObject {
     public static final ResourceLocation locationBlocksTexture = new ResourceLocation("textures/atlas/blocks.png");
     public static final ResourceLocation locationItemsTexture = new ResourceLocation("textures/atlas/items.png");
 
@@ -53,11 +53,26 @@ public class TextureMap implements IIconRegister {
 
     public TextureAtlasSprite getAtlasSprite(String name) {
         TextureAtlasSprite sprite = (TextureAtlasSprite) mapRegisteredSprites.get(name);
-        return sprite != null ? sprite : TextureAtlasSprite.makeAtlasSprite("minecraft:missingno");
+        if (sprite != null) return sprite;
+        // an icon some other code registered (or a vanilla one): name it the way registerIcon would
+        try {
+            return TextureAtlasSprite.makeAtlasSprite(id(name));
+        } catch (RuntimeException e) {
+            return TextureAtlasSprite.makeAtlasSprite("minecraft:missingno");
+        }
     }
 
     public TextureAtlasSprite getTextureExtry(String name) {
         return (TextureAtlasSprite) mapRegisteredSprites.get(name);
+    }
+
+    @Override
+    public void loadTexture(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManager manager) {
+    }
+
+    @Override
+    public int getGlTextureId() {
+        return 0;
     }
 
     public int getTextureType() {

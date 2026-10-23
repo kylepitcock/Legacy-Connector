@@ -222,6 +222,8 @@ public final class EventBridge1710 {
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {
+            var local = net.minecraft.client.Minecraft.getInstance().player;
+            if (local != null && EntityBridge.wrap(local) instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.EntityPlayerSP sp) sp.mcc$syncInput();
             if (wants(fml(), TickEvent.ClientTickEvent.class)) fml().post(new TickEvent.ClientTickEvent(TickEvent.Phase.START));
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> {

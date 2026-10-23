@@ -295,6 +295,24 @@ public final class LegacyCoreModTransformers {
         }
     }
 
+    /**
+     * Coremod classes run before (and outside) the jar translation: calls to Guava methods that newer Guava moved
+     * (Objects.firstNonNull, used by OpenMods' transformer helpers) are redirected the way translated mods' are.
+     */
+    private static byte[] guavaCalls(byte[] bytes) {
+        try {
+            if (!new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1).contains("com/google/common/base/Objects")) return bytes;
+            org.objectweb.asm.tree.ClassNode node = new org.objectweb.asm.tree.ClassNode();
+            new ClassReader(bytes).accept(node, 0);
+            if (JavaCompatRedirects.apply(node) == 0) return bytes;
+            ClassWriter writer = new ClassWriter(0);
+            node.accept(writer);
+            return writer.toByteArray();
+        } catch (RuntimeException e) {
+            return bytes;
+        }
+    }
+
     /** Patched methods may need a deeper operand stack than they declare; FML's writers computed it, so do the same. */
     private static byte[] recomputeMaxs(byte[] bytes) {
         try {
@@ -309,6 +327,7 @@ public final class LegacyCoreModTransformers {
 
     /** Classes of coremods compiled against ASM 5 use names ASM 9 replaced (see {@link LegacyRemapper#JDK_RELOCATIONS}). */
     private static byte[] modernizeApi(byte[] bytes) {
+        bytes = guavaCalls(bytes);
         Map<String, String> renames = new HashMap<>();
         for (var e : LegacyRemapper.JDK_RELOCATIONS.entrySet()) {
             if (e.getKey().startsWith("org/objectweb/asm/")) renames.put(e.getKey(), e.getValue());

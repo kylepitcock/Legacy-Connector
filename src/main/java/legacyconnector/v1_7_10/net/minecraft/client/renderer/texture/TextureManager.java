@@ -13,6 +13,15 @@ public class TextureManager {
         RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 
+    /** The block and item atlases (mods look sprites up by name through them); other textures are not tracked. */
+    public ITextureObject getTexture(ResourceLocation location) {
+        if (location == null) return null;
+        String path = location.getResourcePath();
+        if (path.equals("textures/atlas/blocks.png")) return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.blockAtlas();
+        if (path.equals("textures/atlas/items.png")) return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.itemAtlas();
+        return null;
+    }
+
     public ResourceLocation getResourceLocation(int spriteIndex) {
         return new ResourceLocation(spriteIndex == 0 ? "textures/atlas/blocks.png" : "textures/atlas/items.png");
     }
