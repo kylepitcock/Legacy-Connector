@@ -20,6 +20,11 @@ public class WorldType {
     public static final WorldType AMPLIFIED = new WorldType(3, "amplified").setNotificationData();
     public static final WorldType DEFAULT_1_1 = new WorldType(8, "default_1_1", 0).setCanBeCreated(false);
 
+    /** The terrain generator of worlds of this type (Forge: vanilla's overworld generator unless a mod type overrides it). */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider getChunkGenerator(World world, String generatorOptions) {
+        return new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderDefault(world, world.getSeed());
+    }
+
     /** Modern id of the legacy mod that registered this world type (null for vanilla types). */
     public final String mcc$owner;
     private final int worldTypeId;

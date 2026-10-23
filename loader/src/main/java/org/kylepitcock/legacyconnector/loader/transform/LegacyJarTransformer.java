@@ -157,10 +157,19 @@ public final class LegacyJarTransformer {
         }
     }
 
+    private static final List<String> PROVIDED_LIBRARIES = List.of("it/unimi/dsi/fastutil/", "com/google/common/", "com/google/gson/",
+            "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/");
+
     private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
         int dropped = 0;
         for (String name : List.copyOf(classes.keySet())) {
+            // Libraries the game already ships: a second copy would split the package between two modules.
+            if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith)) {
+                classes.remove(name);
+                dropped++;
+                continue;
+            }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
             if (shim.contains(jar.version.shimPrefix() + name)) {
                 classes.remove(name);

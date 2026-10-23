@@ -219,8 +219,19 @@ public final class RenderContext {
     /** Quads handed to quad() so far (diagnostics: did a legacy renderer draw anything). */
     public static long quadCount;
 
+    /** Diagnostics: min x,y,z / max x,y,z of the quads drawn while non-null. */
+    public static double[] bounds;
+
     public static void quad(double[][] v, float nx, float ny, float nz) {
         quadCount++;
+        if (bounds != null) {
+            for (double[] p : v) {
+                for (int i = 0; i < 3; i++) {
+                    bounds[i] = Math.min(bounds[i], p[i]);
+                    bounds[3 + i] = Math.max(bounds[3 + i], p[i]);
+                }
+            }
+        }
         PoseStack p = pose();
         if (p == null) return;
         if (capture != null) {

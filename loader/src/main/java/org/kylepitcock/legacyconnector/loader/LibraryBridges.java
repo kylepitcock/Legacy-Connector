@@ -79,6 +79,15 @@ public final class LibraryBridges {
             java.util.Map.entry("betterachievements", "1.21 replaced achievements with advancements"),
             java.util.Map.entry("craftpresence", "client mod with a modern version (CraftPresence)"),
             java.util.Map.entry("ingameinfoxml", "client mod with modern equivalents"),
+            java.util.Map.entry("unimixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("gtnhmixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("spongemixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("mixinbooterlegacy", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("unimixins-mixin", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("unimixins-compat", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("mixingasm", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("gasstation", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("mixinextras", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("opis", "1.7.10 profiler; use Spark"));
 
     /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list), or null. */

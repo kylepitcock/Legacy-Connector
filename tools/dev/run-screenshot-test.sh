@@ -35,7 +35,7 @@ args=()
 [[ -n $SHOW ]] && args+=(-PshotBlocks=$SHOW)   # SHOW=ns:block,ns:block: only these blocks in the showcase
 : > run-screenshots/logs/latest.log
 ./gradlew runScreenshotTest $args > build/devtools/screenshottest.log 2>&1 &
-for i in $(seq 1 360); do
+for i in $(seq 1 ${LOOPS:-360}); do
   sleep 5
   grep -q "Screenshot test finished\|Screenshot test timed out" run-screenshots/logs/latest.log 2>/dev/null && { sleep 5; break; }
   grep -q -E "BUILD (SUCCESSFUL|FAILED)" build/devtools/screenshottest.log && break

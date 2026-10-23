@@ -5,7 +5,7 @@ import legacyconnector.v1_7_10.net.minecraft.util.IChatComponent;
 import legacyconnector.v1_7_10.net.minecraft.world.WorldServer;
 import net.minecraft.server.level.ServerPlayer;
 
-public class EntityPlayerMP extends EntityPlayer {
+public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7_10.net.minecraft.inventory.ICrafting {
     public final MinecraftServer mcServer;
     public int ping;
     private legacyconnector.v1_7_10.net.minecraft.server.management.ItemInWorldManager mcc$manager;
@@ -66,5 +66,21 @@ public class EntityPlayerMP extends EntityPlayer {
 
     public void sendContainerToPlayer(Object container) {
         mcc$serverPlayer().containerMenu.broadcastChanges();
+    }
+
+    // ICrafting: mods cast the entries of Container.crafters to EntityPlayerMP, so the player is its own container listener.
+    @Override
+    public void sendContainerAndContentsToPlayer(legacyconnector.v1_7_10.net.minecraft.inventory.Container container, java.util.List items) {
+    }
+
+    @Override
+    public void sendSlotContents(legacyconnector.v1_7_10.net.minecraft.inventory.Container container, int slot, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+    }
+
+    @Override
+    public void sendProgressBarUpdate(legacyconnector.v1_7_10.net.minecraft.inventory.Container container, int id, int value) {
+        if (mcc$entity() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.sendProgressBar(sp, container.windowId, id, value);
+        }
     }
 }

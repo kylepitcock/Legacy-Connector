@@ -221,10 +221,27 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("control".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            // an interactive session: RemoteControl executes command files until it is told to quit
+            var control = new RemoteControl(new File(dir.getParentFile(), "control"));
+            add(command("gamemode creative"), command("time set noon"), command("weather clear"), command("gamerule doDaylightCycle false"),
+                    command("gamerule doMobSpawning false"), command("tp @s 0 150 0"), waitForTerrain(100));
+            add(mc -> {
+                control.tick(mc);
+                return false;
+            });
+            return;
+        }
         if ("commands".equals(System.getProperty("legacyconnector.shotScenario"))) {
             // runs the commands of -Dlegacyconnector.shotCommands (separated by ';') and logs the chat
             add(waitForWorld(), wait(40), command("gamemode creative"), command("tp @s 0 150 0"), waitForTerrain(60));
-            for (String c : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) add(command(c.trim()), wait(30));
+            for (String c : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) {
+                c = c.trim();
+                // "shot:<name>" takes a screenshot (after the world around has had time to render), "wait:<ticks>" waits
+                if (c.startsWith("shot:")) add(wait(100), shot(c.substring(5)));
+                else if (c.startsWith("wait:")) add(wait(Integer.parseInt(c.substring(5))));
+                else add(command(c), wait(30));
+            }
             add(run(mc -> {
                 LOG.info("Screenshot test finished");
                 mc.stop();
@@ -807,7 +824,7 @@ public final class WorldScreenshotTest {
             mc.stop();
             return;
         }
-        if (++ticks > WATCHDOG_TICKS) {
+        if (++ticks > WATCHDOG_TICKS && !"control".equals(System.getProperty("legacyconnector.shotScenario"))) {
             LOG.error("Screenshot test timed out");
             mc.stop();
             return;

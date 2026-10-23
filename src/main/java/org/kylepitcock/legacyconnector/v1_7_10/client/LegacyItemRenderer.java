@@ -63,7 +63,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                         pose.translate(0.5, 0.5, 0.5);
                         pose.scale(0.625F, 0.625F, 0.625F);
                         pose.mulPose(Axis.XP.rotationDegrees(30));
-                        pose.mulPose(Axis.YP.rotationDegrees(225));
+                        pose.mulPose(Axis.YP.rotationDegrees(-45)); // 1.7.10: rotate(45) then rotate(-90) about Y
                     } else {
                         pose.translate(0, 1, 0);
                         pose.scale(1 / 16F, -1 / 16F, 1 / 16F);
@@ -110,10 +110,18 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             if (context == ItemDisplayContext.GUI) {
                 pose.scale(0.625F, 0.625F, 0.625F);
                 pose.mulPose(Axis.XP.rotationDegrees(30));
-                pose.mulPose(Axis.YP.rotationDegrees(225));
+                pose.mulPose(Axis.YP.rotationDegrees(-45)); // 1.7.10: rotate(45) then rotate(-90) about Y
             }
             long before = RenderContext.quadCount;
+            boolean debug = context == ItemDisplayContext.GUI && (Boolean.getBoolean("legacyconnector.debugItemBounds") || System.getenv("LC_DEBUG") != null);
+            if (debug) RenderContext.bounds = new double[] {1e9, 1e9, 1e9, -1e9, -1e9, -1e9};
             handler.renderInventoryBlock(block, view.getItem().getMetadata(view.getItemDamage()), renderId, renderBlocks);
+            if (debug) {
+                var b = RenderContext.bounds;
+                RenderContext.bounds = null;
+                if (LOGGED.add("bounds:" + block.getClass().getName())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").info(
+                        "Inventory bounds of {}: x {}..{} y {}..{} z {}..{}", block.getClass().getName(), b[0], b[3], b[1], b[4], b[2], b[5]);
+            }
             // AE2: renderInventoryBlock does nothing, its block items are drawn by an IItemRenderer instead.
             return RenderContext.quadCount != before;
         } catch (RuntimeException | LinkageError e) {

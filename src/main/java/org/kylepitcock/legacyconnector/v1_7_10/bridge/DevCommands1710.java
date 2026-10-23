@@ -82,6 +82,10 @@ public final class DevCommands1710 {
                         c.getSource().getServer().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME).keySet().stream()
                                 .filter(k -> !k.getNamespace().equals("minecraft")), b))
                         .executes(ctx -> biome(ctx.getSource(), ResourceLocationArgument.getId(ctx, "biome")))));
+        root.then(Commands.literal("list")
+                .then(Commands.argument("kind", StringArgumentType.word()).suggests((c, b) -> SharedSuggestionProvider.suggest(List.of("blocks", "items", "entities"), b))
+                        .then(Commands.argument("namespace", StringArgumentType.word()).executes(ctx -> list(ctx.getSource(),
+                                StringArgumentType.getString(ctx, "kind"), StringArgumentType.getString(ctx, "namespace"))))));
         root.then(Commands.literal("inspect").executes(ctx -> inspect(ctx.getSource())));
         event.getDispatcher().register(root);
     }
@@ -107,6 +111,17 @@ public final class DevCommands1710 {
     }
 
     // ------------------------------------------------------------------ commands
+
+    private static int list(CommandSourceStack source, String kind, String namespace) {
+        List<ResourceLocation> ids = switch (kind) {
+            case "blocks" -> legacyBlockIds();
+            case "entities" -> legacyEntityIds();
+            default -> legacyItemIds();
+        };
+        var names = ids.stream().filter(i -> i.getNamespace().equals(namespace)).map(ResourceLocation::getPath).sorted().toList();
+        source.sendSuccess(() -> Component.literal(names.size() + " " + kind + " of " + namespace + ": " + String.join(" ", names)), false);
+        return names.size();
+    }
 
     private static int mods(CommandSourceStack source) {
         var all = LegacyMods.ordered();

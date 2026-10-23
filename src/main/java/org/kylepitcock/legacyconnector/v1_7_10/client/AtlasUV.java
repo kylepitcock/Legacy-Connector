@@ -30,7 +30,12 @@ public final class AtlasUV {
         return CACHE.computeIfAbsent(spriteId, id -> {
             ResourceLocation rl = ResourceLocation.tryParse(id);
             if (rl == null) return null;
-            var sprite = atlas.getSprite(rl);
+            net.minecraft.client.renderer.texture.TextureAtlasSprite sprite;
+            try {
+                sprite = atlas.getSprite(rl);
+            } catch (IllegalStateException e) {
+                return null; // the atlas is still being stitched (TextureStitchEvent.Post runs before it is ready)
+            }
             var c = sprite.contents();
             return new float[] {sprite.getU0(), sprite.getU1(), sprite.getV0(), sprite.getV1(), c.width(), c.height()};
         });

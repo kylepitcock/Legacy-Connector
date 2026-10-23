@@ -50,9 +50,8 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         if (legacy == null || failed) return;
         RenderContext.beginGui(graphics);
         try {
-            failed = !ScreenGuard.run(this, () -> {
-                for (Object b : legacy.mcc$buttons()) ((GuiButton) b).drawButton(Minecraft.getMinecraft(), mouseX, mouseY);
-            });
+            // Runs the mod's own drawScreen override (CoFH draws its tooltips and gauge hovers there); the base draws the buttons.
+            failed = !ScreenGuard.run(this, () -> legacy.drawScreen(mouseX, mouseY, partialTick));
         } finally {
             RenderContext.end();
         }

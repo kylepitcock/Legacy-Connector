@@ -205,9 +205,22 @@ public class World implements IBlockAccess {
         return BlockBridge.legacyMeta(lvl().getBlockState(pos(x, y, z)));
     }
 
+    /**
+     * Legacy generators spill structures and trees past the chunk being populated; a generation region only accepts writes
+     * within one chunk of its centre (and logs an error with a stack trace for each refused one, which is slow and noisy).
+     */
+    private boolean outsideRegion(BlockPos p) {
+        if (lvl() instanceof net.minecraft.server.level.WorldGenRegion r) {
+            var c = r.getCenter();
+            return Math.abs((p.getX() >> 4) - c.x) > 1 || Math.abs((p.getZ() >> 4) - c.z) > 1;
+        }
+        return false;
+    }
+
     public boolean setBlock(int x, int y, int z, Block block, int meta, int flags) {
         BlockState state = BlockBridge.toModern(block, meta);
         BlockPos p = pos(x, y, z);
+        if (outsideRegion(p)) return false;
         TileEntityBridge.beforeBlockChange(this, p);
         return lvl().setBlock(p, state, flags);
     }
@@ -218,6 +231,7 @@ public class World implements IBlockAccess {
 
     public boolean setBlockMetadataWithNotify(int x, int y, int z, int meta, int flags) {
         BlockPos p = pos(x, y, z);
+        if (outsideRegion(p)) return false;
         BlockState current = lvl().getBlockState(p);
         BlockState next = BlockBridge.withMeta(current, meta);
         if (next == current) return false;
@@ -225,6 +239,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean setBlockToAir(int x, int y, int z) {
+        if (outsideRegion(pos(x, y, z))) return false;
         TileEntityBridge.beforeBlockChange(this, pos(x, y, z));
         return lvl().setBlock(pos(x, y, z), Blocks.AIR.defaultBlockState(), 3);
     }
@@ -478,6 +493,7 @@ public class World implements IBlockAccess {
 
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
+        if (outsideRegion(pos(x, y, z))) return null;
         return TileEntityBridge.legacyAt(this, pos(x, y, z));
     }
 

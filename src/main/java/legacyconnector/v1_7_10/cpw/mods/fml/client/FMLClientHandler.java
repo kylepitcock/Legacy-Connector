@@ -41,6 +41,11 @@ public class FMLClientHandler {
         if (screen instanceof GuiScreen s || screen == null) getClient().displayGuiScreen((GuiScreen) screen);
     }
 
+    /** Opens a client-only screen (books, manuals) for the player. */
+    public void displayGuiScreen(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, GuiScreen screen) {
+        getClient().displayGuiScreen(screen);
+    }
+
     public boolean isGUIOpen(Class<? extends GuiScreen> type) {
         GuiScreen current = Minecraft.mcc$get$currentScreen(getClient());
         return current != null && type.isInstance(current);
