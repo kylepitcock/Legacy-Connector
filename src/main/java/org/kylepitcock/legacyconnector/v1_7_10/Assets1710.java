@@ -227,12 +227,20 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return "minecraft:missingno";
     }
 
+    private static final java.util.Set<String> ICON_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static String iconName(Block b, int side, int meta) {
         try {
             IIcon icon = b.getIcon(side, meta);
             if (icon != null) return nameOf(icon);
+            if (meta == 0 && ICON_FAILURES.add(b.getClass().getName())) {
+                LOG.warn("getIcon({}, 0) of {} returned null; its model uses the missing texture", side, b.getClass().getName());
+            }
         } catch (RuntimeException e) {
             // invalid metadata for this block (array index etc.): fall back to metadata 0
+            if (meta == 0 && ICON_FAILURES.add(b.getClass().getName())) {
+                LOG.warn("getIcon({}, 0) of {} failed; its model uses the missing texture: {}", side, b.getClass().getName(), e.toString());
+            }
         }
         if (meta != 0) return iconName(b, side, 0);
         return "minecraft:missingno";

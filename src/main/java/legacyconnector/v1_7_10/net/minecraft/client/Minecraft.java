@@ -64,6 +64,15 @@ public class Minecraft {
         return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.blockAtlas();
     }
 
+    private static final legacyconnector.v1_7_10.net.minecraft.client.shader.Framebuffer FRAMEBUFFER = new legacyconnector.v1_7_10.net.minecraft.client.shader.Framebuffer();
+
+    public legacyconnector.v1_7_10.net.minecraft.client.shader.Framebuffer getFramebuffer() {
+        var target = mc().getMainRenderTarget();
+        FRAMEBUFFER.framebufferWidth = FRAMEBUFFER.framebufferTextureWidth = target.width;
+        FRAMEBUFFER.framebufferHeight = FRAMEBUFFER.framebufferTextureHeight = target.height;
+        return FRAMEBUFFER;
+    }
+
     public static Minecraft getMinecraft() {
         return INSTANCE;
     }
