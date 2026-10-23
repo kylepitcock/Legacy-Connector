@@ -16,7 +16,7 @@ groups=(
   "enderio:EnderIO EnderCore"
   "railcraft:Railcraft"
   "thaumcraft:Thaumcraft"
-  "botania:Botania"
+  "botania:Botania Baubles"
   "bloodmagic:BloodMagic"
   "projectred:ProjectRed"
   "ie:ImmersiveEngineering"
@@ -32,7 +32,7 @@ groups=(
 for g in $groups; do
   name=${g%%:*}; frags=${g#*:}
   echo "=== $name" | tee -a $OUT
-  EXTRA="codechickenlib codechickencore forgemultipart cofh" SCENARIO=gui BLOCKS=${BLOCKS:-120} RENDER=4 MODSRC=test-mods \
+  EXTRA="codechickenlib codechickencore forgemultipart cofh" SCENARIO=gui METAS=${METAS:-variants} BLOCKS=${BLOCKS:-120} RENDER=4 MODSRC=test-mods \
     tools/dev/docker-headless.sh run-screenshot-test.sh ${=frags} > build/devtools/gui-sweep-$name.log 2>&1
   L=run-screenshots/logs/latest.log
   echo "opened: $(grep -c 'GUI TEST.*opened .*Screen' $L)  no screen: $(grep -c 'GUI TEST.*opened no screen' $L)  failed: $(grep -c 'legacy GUI.*failed' $L)" | tee -a $OUT

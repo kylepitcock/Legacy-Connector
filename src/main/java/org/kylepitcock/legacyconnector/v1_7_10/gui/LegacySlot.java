@@ -25,7 +25,22 @@ public final class LegacySlot extends Slot {
 
     @Override
     public net.minecraft.world.item.ItemStack getItem() {
-        return ItemStack.mcc$toModern(legacy.getStack());
+        try {
+            return ItemStack.mcc$toModern(legacy.getStack());
+        } catch (RuntimeException | LinkageError e) {
+            // a slot whose inventory is smaller than the container assumed (client/server mismatch) shows as empty
+            logOnce(e);
+            return net.minecraft.world.item.ItemStack.EMPTY;
+        }
+    }
+
+    private boolean logged;
+
+    private void logOnce(Throwable e) {
+        if (!logged) {
+            logged = true;
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Gui").warn("Legacy slot {} of {} cannot be read: {}", legacy.slotNumber, legacy.getClass().getName(), e.toString());
+        }
     }
 
     @Override

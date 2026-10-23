@@ -9,6 +9,11 @@ public class MinecraftForge {
     public static final EventBus ORE_GEN_BUS = new EventBus("1.7.10-oregen");
     public static final String MC_VERSION = "1.7.10";
 
+    /** Weighted seed drops from tall grass (not modelled: modern grass drops are data driven). */
+    public static void addGrassSeed(legacyconnector.v1_7_10.net.minecraft.item.ItemStack seed, int weight) {
+        ForgeHooks.seedList.add(new ForgeHooks.SeedEntry(seed, weight));
+    }
+
     public static void initialize() {
     }
 

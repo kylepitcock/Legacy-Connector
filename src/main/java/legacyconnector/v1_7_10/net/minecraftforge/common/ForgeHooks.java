@@ -25,4 +25,9 @@ public class ForgeHooks {
             return seed.copy();
         }
     }
+
+    public static boolean canToolHarvestBlock(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, ItemStack stack) {
+        if (block.getMaterial().isToolNotRequired()) return true;
+        return stack != null && stack.getItem() != null && stack.getItem().canHarvestBlock(block, stack);
+    }
 }

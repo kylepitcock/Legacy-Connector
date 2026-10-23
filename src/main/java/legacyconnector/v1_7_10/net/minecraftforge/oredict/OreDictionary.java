@@ -94,6 +94,14 @@ public class OreDictionary {
         }
     }
 
+    /** 1.7.10.2+: {@code alwaysCreateEntry} registers the name when it is unknown. */
+    public static ArrayList<ItemStack> getOres(String name, boolean alwaysCreateEntry) {
+        return alwaysCreateEntry ? getOres(name) : getOres(name);
+    }
+
+    public static void rebakeMap() {
+    }
+
     public static ArrayList<ItemStack> getOres(Integer id) {
         return getOres(getOreName(id));
     }

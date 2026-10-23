@@ -124,6 +124,8 @@ public final class SynthJarBuilder {
             set.add("()V"); // reflection (newInstance) and subclasses that never call a specific one
             if (isEnum(c)) set.add("(Ljava/lang/String;I)V");
             set.addAll(runtimeConstructors(c));
+            // Entities are created by the runtime as (World) when they arrive from the server or a save.
+            if (extendsEntity(c)) set.add("(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V");
         }
         boolean changed = true;
         while (changed) {
@@ -141,6 +143,14 @@ public final class SynthJarBuilder {
      * constructors, e.g. {@code Block(VanillaInfo)}): mirrored so the runtime can create vanilla objects as their
      * legacy runtime class (a synthesized {@code BlockSapling} for the vanilla sapling).
      */
+    private boolean extendsEntity(String c) {
+        Set<String> seen = new HashSet<>();
+        for (String a = superOf(c); a != null && !a.equals("java/lang/Object") && seen.add(a); a = superOf(a)) {
+            if (a.equals("legacyconnector/v1_7_10/net/minecraft/entity/Entity")) return true;
+        }
+        return false;
+    }
+
     private Set<String> runtimeConstructors(String c) {
         Set<String> out = new TreeSet<>();
         Set<String> seen = new HashSet<>();
@@ -212,7 +222,10 @@ public final class SynthJarBuilder {
 
         // Constructors.
         if (!itf) {
-            for (String desc : ctors.getOrDefault(name, Set.of("()V"))) {
+            Set<String> descs = new java.util.LinkedHashSet<>(ctors.getOrDefault(name, Set.of("()V")));
+            // the enum constants are created by the generated static initializer through (String, int)
+            if (enumType && !enumConstants.isEmpty()) descs.add("(Ljava/lang/String;I)V");
+            for (String desc : descs) {
                 constructor(cw, name, sup, desc, enumType, instanceInits);
             }
         }

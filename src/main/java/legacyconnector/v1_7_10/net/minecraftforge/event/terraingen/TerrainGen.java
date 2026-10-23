@@ -20,6 +20,13 @@ public abstract class TerrainGen {
         return event.getResult() != Event.Result.DENY;
     }
 
+    public static boolean populate(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, World world, Random rand, int chunkX,
+            int chunkZ, boolean hasVillageGenerated, PopulateChunkEvent.Populate.EventType type) {
+        PopulateChunkEvent.Populate event = new PopulateChunkEvent.Populate(provider, world, rand, chunkX, chunkZ, hasVillageGenerated, type);
+        MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        return event.getResult() != Event.Result.DENY;
+    }
+
     public static boolean generateOre(World world, Random rand, WorldGenerator generator, int worldX, int worldZ,
             OreGenEvent.GenerateMinable.EventType type) {
         OreGenEvent.GenerateMinable event = new OreGenEvent.GenerateMinable(world, rand, generator, worldX, worldZ, type);

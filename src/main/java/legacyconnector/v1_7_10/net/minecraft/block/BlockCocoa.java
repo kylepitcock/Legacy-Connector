@@ -2,6 +2,10 @@ package legacyconnector.v1_7_10.net.minecraft.block;
 
 /** The 1.7.10 class {@code net.minecraft.block.BlockCocoa}: type hierarchy for casts and instanceof checks (bone meal is handled by the modern block). */
 public class BlockCocoa extends BlockDirectional implements IGrowable {
+    public BlockCocoa() {
+        super(legacyconnector.v1_7_10.net.minecraft.block.material.Material.plants);
+    }
+
     public BlockCocoa(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
