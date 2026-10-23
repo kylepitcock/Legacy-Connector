@@ -53,7 +53,8 @@ public abstract class EntityPlayer extends EntityLivingBase {
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
-        return p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m ? m.legacy() : null;
+        // As 1.7.10: with nothing open (or a menu legacy code knows nothing about) it is the player's own container, never null.
+        return p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m ? m.legacy() : mcc$get$inventoryContainer(p);
     }
 
     public static void mcc$set$openContainer(EntityPlayer p, legacyconnector.v1_7_10.net.minecraft.inventory.Container c) {

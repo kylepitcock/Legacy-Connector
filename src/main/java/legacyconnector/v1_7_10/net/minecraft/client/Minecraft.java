@@ -73,6 +73,10 @@ public class Minecraft {
         return FRAMEBUFFER;
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository getResourcePackRepository() {
+        return legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository.INSTANCE;
+    }
+
     public static Minecraft getMinecraft() {
         return INSTANCE;
     }

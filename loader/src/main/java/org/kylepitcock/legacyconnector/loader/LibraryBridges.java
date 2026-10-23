@@ -32,6 +32,8 @@ public final class LibraryBridges {
 
     public static final List<Bridge> KNOWN = List.of(
             new Bridge("Baubles", "baubles/api/", "curios"),
+            // Mods also call Baubles' PlayerHandler / InventoryBaubles directly (Botania's Flight Tiara and Travel Belt).
+            new Bridge("Baubles", "baubles/common/", "curios"),
             // Waila tooltip providers are shown through Jade.
             new Bridge("Waila", "mcp/mobius/waila/api/", "jade"),
             // NEI recipe handlers and hidden items are shown through JEI.
