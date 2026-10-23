@@ -175,10 +175,15 @@ public final class LegacySprites {
         }
     }
 
+    private static final java.util.Set<String> FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private record Built(byte[] png, byte[] meta) {}
+
     public static void bake(TextureMap map, boolean block, Map<String, Supplier<byte[]>> out) {
         ModResources resources = new ModResources();
         String folder = block ? "blocks" : "items";
         int[] built = {0, 0};
+        Map<TextureAtlasSprite, Built> done = new java.util.IdentityHashMap<>();
         for (var entry : map.mcc$sprites().entrySet()) {
             String name = entry.getKey();
             TextureAtlasSprite sprite = entry.getValue();
@@ -191,7 +196,20 @@ public final class LegacySprites {
                 if (!sprite.hasCustomLoader(resources, location)) continue;
                 built[1]++;
                 // Forge: load() returning false means "loaded, stitch it"; true means the loader skipped the sprite.
-                if (sprite.load(resources, location)) continue;
+                if (sprite.load(resources, location)) {
+                    // The loader found the same texture already loaded and aliased it (IC2 does for repeated sides): the model
+                    // names this sprite, so it gets the same picture.
+                    Built source = sprite.mcc$copySource == null ? null : done.get(sprite.mcc$copySource);
+                    if (source != null) {
+                        String aliasId = sprite.getIconName();
+                        int c = aliasId.indexOf(':');
+                        String aliasFile = "assets/" + aliasId.substring(0, c) + "/textures/" + aliasId.substring(c + 1) + ".png";
+                        out.putIfAbsent(aliasFile, () -> source.png());
+                        if (source.meta() != null) out.putIfAbsent(aliasFile + ".mcmeta", () -> source.meta());
+                        built[0]++;
+                    }
+                    continue;
+                }
                 if (sprite.getFrameCount() == 0) {
                     LOG.warn("Custom loader of sprite {} produced no frames", name);
                     continue;
@@ -212,12 +230,16 @@ public final class LegacySprites {
                 String file = "assets/" + id.substring(0, idColon) + "/textures/" + id.substring(idColon + 1) + ".png";
                 built[0]++;
                 out.putIfAbsent(file, () -> bytes);
-                if (frames > 1) {
-                    byte[] meta = "{\"animation\":{\"frametime\":2}}".getBytes(java.nio.charset.StandardCharsets.UTF_8);
-                    out.putIfAbsent(file + ".mcmeta", () -> meta);
-                }
+                byte[] meta = frames > 1 ? "{\"animation\":{\"frametime\":2}}".getBytes(java.nio.charset.StandardCharsets.UTF_8) : null;
+                if (meta != null) out.putIfAbsent(file + ".mcmeta", () -> meta);
+                done.put(sprite, new Built(bytes, meta));
             } catch (IOException | RuntimeException | LinkageError e) {
-                LOG.warn("Could not build sprite {} ({}): {}", name, folder, e.toString());
+                // The first failure of each kind comes with its stack: the exception alone ("NullPointerException") hides the cause.
+                if (FAILURES.add(e.getClass().getName() + ":" + String.valueOf(e.getCause()) + ":" + (e.getStackTrace().length > 0 ? e.getStackTrace()[0] : ""))) {
+                    LOG.warn("Could not build sprite {} ({})", name, folder, e);
+                } else {
+                    LOG.warn("Could not build sprite {} ({}): {}", name, folder, e.toString());
+                }
             }
         }
         if (built[1] > 0) LOG.info("Built {} of {} custom-loaded {} sprites", built[0], built[1], folder);

@@ -41,7 +41,8 @@ public final class LibraryBridges {
 
     /**
      * Mods that only make sense on the 1.7.10 engine or launcher (performance/bug-fix patches, ID extenders, mixin
-     * loaders) or are client conveniences with established modern equivalents. They are not translated; the report says why.
+     * loaders, profilers). They are not translated; the report says why. Client-side conveniences (Inventory Tweaks,
+     * JourneyMap, Custom Main Menu, ...) are loaded like any other legacy mod.
      * Keys are lower-case legacy mod ids.
      */
     private static final java.util.Map<String, String> OBSOLETE = java.util.Map.ofEntries(
@@ -62,23 +63,7 @@ public final class LibraryBridges {
             java.util.Map.entry("netherportalfix", "1.7.10 portal fix; use a modern equivalent if wanted"),
             java.util.Map.entry("resourceloader", "1.7.10 resource pack loader; 1.21.1 loads resource packs natively"),
             java.util.Map.entry("oauth", "1.7.10 Microsoft login helper; not needed"),
-            java.util.Map.entry("inventorytweaks", "client mod with modern equivalents (Inventory Profiles Next, Mouse Tweaks)"),
-            java.util.Map.entry("bogosorter", "client mod with modern equivalents (Inventory Profiles Next)"),
-            java.util.Map.entry("craftingtweaks", "client mod with a modern version (Crafting Tweaks)"),
-            java.util.Map.entry("journeymap", "client mod with a modern version (JourneyMap for 1.21.1)"),
-            java.util.Map.entry("navigator", "JourneyMap add-on; use the modern JourneyMap"),
-            java.util.Map.entry("custommainmenu", "client mod with modern equivalents (FancyMenu)"),
-            java.util.Map.entry("controlling", "client mod with a modern version (Controlling for 1.21.1)"),
-            java.util.Map.entry("defaultkeys", "client mod with modern equivalents (Default Options)"),
-            java.util.Map.entry("defaultserverlist", "client mod with modern equivalents"),
-            java.util.Map.entry("duradisplay", "client mod with modern equivalents"),
-            java.util.Map.entry("overloadedarmorbar", "client mod with modern equivalents"),
-            java.util.Map.entry("torohealthmod", "client mod with modern equivalents (ToroHealth)"),
-            java.util.Map.entry("findit", "client mod with modern equivalents"),
-            java.util.Map.entry("darkerer", "client mod with modern equivalents"),
             java.util.Map.entry("betterachievements", "1.21 replaced achievements with advancements"),
-            java.util.Map.entry("craftpresence", "client mod with a modern version (CraftPresence)"),
-            java.util.Map.entry("ingameinfoxml", "client mod with modern equivalents"),
             java.util.Map.entry("unimixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("gtnhmixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("spongemixins", "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"),

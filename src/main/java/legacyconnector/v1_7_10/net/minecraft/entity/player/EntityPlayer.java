@@ -216,6 +216,34 @@ public abstract class EntityPlayer extends EntityLivingBase {
         GuiBridge.openGui(this, mod, id, world, x, y, z);
     }
 
+    /**
+     * Shows a chest-style window over {@code inventory} (what a vanilla chest or a mod's storage calls on a player).
+     * The window is the modern generic chest menu, so only sizes that are a multiple of nine up to 54 can be shown.
+     */
+    public void displayGUIChest(legacyconnector.v1_7_10.net.minecraft.inventory.IInventory inventory) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || inventory == null) return;
+        int size = inventory.getSizeInventory();
+        if (size < 9 || size > 54 || size % 9 != 0) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Gui").warn("displayGUIChest: cannot show an inventory of {} slots", size);
+            return;
+        }
+        int rows = size / 9;
+        var view = org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyInventoryContainer.of(inventory);
+        var type = switch (rows) {
+            case 1 -> net.minecraft.world.inventory.MenuType.GENERIC_9x1;
+            case 2 -> net.minecraft.world.inventory.MenuType.GENERIC_9x2;
+            case 3 -> net.minecraft.world.inventory.MenuType.GENERIC_9x3;
+            case 4 -> net.minecraft.world.inventory.MenuType.GENERIC_9x4;
+            case 5 -> net.minecraft.world.inventory.MenuType.GENERIC_9x5;
+            default -> net.minecraft.world.inventory.MenuType.GENERIC_9x6;
+        };
+        String name = inventory.getInventoryName();
+        net.minecraft.network.chat.Component title = name == null ? net.minecraft.network.chat.Component.empty()
+                : net.minecraft.network.chat.Component.translatableWithFallback(name, name);
+        sp.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                (windowId, inv, p) -> new net.minecraft.world.inventory.ChestMenu(type, windowId, inv, view, rows), title));
+    }
+
     public void closeScreen() {
         mcc$player().closeContainer();
     }

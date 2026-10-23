@@ -2,11 +2,137 @@
  "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml.",
  "mods": [
   {
+   "name": "Advanced Solar Panels",
+   "version": "1.7.10-3.5.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Adventure Backpack",
+   "version": "1.3.13-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AE2 Fluid Crafting",
+   "version": "1.4.120-gtnh",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
+  },
+  {
+   "name": "AE2 Stuff",
+   "version": "0.9.9-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AE2 Wireless Crafting Terminal",
+   "version": "1.12.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AE2NoUltimatePattern",
+   "version": "1.0.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AFSU Mod",
+   "version": "1.3.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "AgriCraft",
    "version": "1.5.0",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Crops, greenhouses in modern villages and rendering verified."
+  },
+  {
+   "name": "Akashic Tome",
+   "version": "1.2.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Alchemical Grate",
+   "version": "1.3.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Amazing Trophies",
+   "version": "1.3.8",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Amun-Ra",
+   "version": "0.8.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: Could not register provider mothership provider ID. Please change I:mothershipProviderID in the config."
+  },
+  {
+   "name": "Angelica",
+   "version": "1.0.0-beta66b",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "AngerMod. Makes your Mobs angry!",
+   "version": "0.9.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AppleCore",
+   "version": "3.3.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Applied Energistics 2",
@@ -16,11 +142,335 @@
    "notes": "Loads, 16 GUIs open, blocks and items render. Some cable/part inventory icons are blank."
   },
   {
+   "name": "ArchaicFix",
+   "version": "0.7.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ArchitectureCraft",
+   "version": "1.11.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "AsieLib",
+   "version": "0.7.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Automagy",
+   "version": "0.28.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Avaritia",
+   "version": "1.77",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Avaritiaddons",
+   "version": "1.9.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Backhand",
+   "version": "1.7.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Backpack Edited for ModdedNetwork",
+   "version": "2.5.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BartWorks",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+  },
+  {
+   "name": "BartWorks Mod Additions",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.item.ItemStack.copy()\" because \"bartworks.common.loaders.ItemRegistry.voidm"
+  },
+  {
+   "name": "BartWorks Mod Additions - TGregworks Container",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot read field \"mMetaItemSubID\" because \"x\" is null"
+  },
+  {
+   "name": "Baubles",
+   "version": "2.1.19-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Baubles Expanded",
+   "version": "2.1.19-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Builders",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Energy",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Factory",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Robotics",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Silicon",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BC Transport",
+   "version": "7.1.44",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BD lib",
+   "version": "1.11.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BeeBetterAtBees",
+   "version": "0.4.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Better Achievements",
+   "version": "0.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Better Loading Screen GTNH",
+   "version": "1.7.2-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BetterBuildersWands",
+   "version": "0.13.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BetterCrashes",
+   "version": "1.4.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BetterP2P",
+   "version": "1.3.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BetterQuesting",
+   "version": "3.7.15-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "BiblioCraft",
    "version": "1.11.7",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Tile-entity rendered furniture, inventory icons and GUIs verified."
+  },
+  {
+   "name": "BiblioWoods Biomes O'Plenty Edition",
+   "version": "1.9",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BiblioWoods Forestry Edition",
+   "version": "1.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BiblioWoods Natura Edition",
+   "version": "1.5",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Binnie Core",
+   "version": "2.5.24",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot(String)\" because \"forestry.api.genetics.AlleleManager.allele"
+  },
+  {
+   "name": "Biomes O' Plenty",
+   "version": "2.1.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BlockLimiter. Restrict your Blocks",
+   "version": "0.7.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BlockRenderer6343",
+   "version": "1.3.17",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Blood Arsenal",
+   "version": "1.4.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Blood Magic: Alchemical Wizardry",
+   "version": "1.7.52",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Botania",
@@ -30,11 +480,299 @@
    "notes": "Loads with the Baubles bridge (Curios installed): 771 items, 307 blocks and 19 entity types register and self-test. GUIs and gameplay not verified yet."
   },
   {
+   "name": "botanichorizons",
+   "version": "1.11.27-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.IllegalAccessError: The Enum 'Field_Generator_IV' has not been set to an Item at this time!"
+  },
+  {
+   "name": "Botany",
+   "version": "2.5.24",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.registerSpeciesRoot(forestry.api.genetics.ISpeciesRoot)\" because \"forestry."
+  },
+  {
+   "name": "Brandon's Core",
+   "version": "1.2.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "BugTorch",
+   "version": "1.2.14",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "BuildCraft",
    "version": "7.1.23",
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads, 6 GUIs open; some GUIs depended on icon providers that were fixed after the last full sweep."
+  },
+  {
+   "name": "BuildCraft Compat",
+   "version": "7.1.18",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot(String)\" because \"forestry.api.genetics.AlleleManager.allele"
+  },
+  {
+   "name": "BuildCraft Oil Tweak",
+   "version": "1.1.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Carpenter's Blocks",
+   "version": "3.7.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Catwalks Mod",
+   "version": "2.0.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Chisel",
+   "version": "2.16.15-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Chisel Tones",
+   "version": "1.2.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "CoFH Core",
+   "version": "1.7.10R3.1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Command Blocks for Better Questing",
+   "version": "3.7.15-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Compact Kinetic Wind and Water Generators",
+   "version": "1.7.10-1.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Computronics",
+   "version": "1.9.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'void li.cil.oc.api.prefab.ResourceContentProvider.<init>(java.lang.String, java.lang.String)'"
+  },
+  {
+   "name": "Controlling",
+   "version": "2.1.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Cooking For Blockheads",
+   "version": "1.4.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during loadComplete: java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0"
+  },
+  {
+   "name": "CoreTweaks",
+   "version": "0.3.3.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "CraftPresence",
+   "version": "2.6.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "CreativeCore",
+   "version": "1.5.14-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "CropLoadCore",
+   "version": "0.2.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Crops++",
+   "version": "1.8.11",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.IllegalAccessError: This Constructor has to be called in the load Phase"
+  },
+  {
+   "name": "Custom Main Menu",
+   "version": "1.12.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Darkerer",
+   "version": "1.0.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Default Configs",
+   "version": "1.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Default World Generator",
+   "version": "0.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Draconic Evolution",
+   "version": "1.4.27-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "DummyCore",
+   "version": "1.20.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "DuraDisplay",
+   "version": "1.3.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Electro-Magic Tools",
+   "version": "1.6.18",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+  },
+  {
+   "name": "Embeddium",
+   "version": "1.0.0-beta66b",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Ender Zoo",
+   "version": "1.3.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "EnderCore",
+   "version": "0.4.8",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "EnderIO",
@@ -44,11 +782,362 @@
    "notes": "Fails during init: EnderCore's Techne model loader (TechneModel) is not implemented yet."
   },
   {
+   "name": "EnderStorage",
+   "version": "1.7.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Enhanced LootBags",
+   "version": "1.2.8",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext"
+  },
+  {
+   "name": "Et Futurum Requiem",
+   "version": "2.6.2.25-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read the array length because \"<local1>\" is null"
+  },
+  {
+   "name": "Eternal Singularity",
+   "version": "1.2.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Extra Bees",
+   "version": "2.5.24",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Extra Trees",
+   "version": "2.5.24",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Extra Utilities",
+   "version": "1.2.12",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "FindIt",
+   "version": "1.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Flood Lights",
+   "version": "1.5.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'void de.keridos.floodlights.compatability.ModCompatibility.hideNEIItems()'"
+  },
+  {
+   "name": "Forbidden Magic",
+   "version": "0.8.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Forestry",
    "version": "4.2.16.64",
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads after the BlockCocoa constructor fix; 45 blocks and 533 items register. GUIs and genetics gameplay not verified yet."
+  },
+  {
+   "name": "Forge Microblocks",
+   "version": "1.7.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Forge Multipart",
+   "version": "1.7.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Forgelin",
+   "version": "2.0.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ForgeRelocation",
+   "version": "0.3.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Gadomancy",
+   "version": "1.4.8",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoSuchMethodException: thaumcraft.common.entities.golems.EnumGolemType.gadomancyRawCreate(java.lang.String,int,int,int,float,boolean,int,int,int,int)"
+  },
+  {
+   "name": "Galactic Greg",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Galacticraft Core",
+   "version": "3.3.13-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: "
+  },
+  {
+   "name": "Galacticraft Planets",
+   "version": "3.3.13-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"micdoodle8.mods.galacticraft.core.network.GalacticraftChannelHandler.addDiscriminator(int, java.lang.Class)\" beca"
+  },
+  {
+   "name": "GalaxySpace",
+   "version": "1.1.121-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: Registering satellite without a parent!!!"
+  },
+  {
+   "name": "Gendustry",
+   "version": "1.9.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot()\" because \"forestry.api.genetics.AlleleManager.alleleRegist"
+  },
+  {
+   "name": "Genetics",
+   "version": "2.5.24",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: Item not found: Forestry:sturdyMachine"
+  },
+  {
+   "name": "GigaGramFab",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Good Generator",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+  },
+  {
+   "name": "Graviation Suite",
+   "version": "1.7.10-2.0.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Gravitation Suite Neo",
+   "version": "1.3.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Gregory Tweaks For Crafting",
+   "version": "1.2.68-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "GregTech GTNH",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "GregTech MC1710",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoSuchMethodError: 'void legacyconnector.v1_7_10.net.minecraft.world.World.<init>(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler, ja"
+  },
+  {
+   "name": "GregTech ToxicEverglades",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: com/gtnewhorizon/gtnhmixins/IEarlyMixinLoader"
+  },
+  {
+   "name": "GT NEI Ore Plugin GT:NH Mod",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"mUndergroundOil\" because \"gregtech.GTMod.proxy\" is null"
+  },
+  {
+   "name": "GT Scanner Mod",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "GT++",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+  },
+  {
+   "name": "GT: New Horizons",
+   "version": "2.7.268",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+  },
+  {
+   "name": "GTNH Lib",
+   "version": "0.7.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "GTNH-Intergalactic",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+  },
+  {
+   "name": "GTNH-TC-Wands",
+   "version": "1.4.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: Invalid shaped ore recipe: MSC, SRS, CSM, R, 1xitem.minecraft:stick@0, M, null, S, screwAluminium, C, 1xitem.WandCap@0, 1xitem.WandCasting@0"
+  },
+  {
+   "name": "GTNH: Lanthanides",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+  },
+  {
+   "name": "GTTweaker",
+   "version": "2.3.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Hardcore Ender Expansion",
+   "version": "1.12.16-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.IllegalStateException: Error replacing entity with ID 58, entity entry missing!"
   },
   {
    "name": "HBM's Nuclear Tech Mod",
@@ -58,11 +1147,380 @@
    "notes": "Machines, GUIs and entities verified."
   },
   {
+   "name": "HelpFixer",
+   "version": "1.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Hodgepodge",
+   "version": "2.6.112",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Holo Inventory",
+   "version": "2.5.5-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Hunger Overhaul",
+   "version": "1.7.10-1.0.0.jenkins104",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "HydroEnergy",
+   "version": "1.4.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "I Will Find You",
+   "version": "1.11.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "IC2 Crop Plugin",
+   "version": "1.2.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Iguana Tinker Tweaks",
+   "version": "2.6.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "IndustrialCraft",
+   "version": "2 2.2.828-experimental",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "IndustrialCraft 2",
    "version": "2.2.827-experimental",
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads, 72 screens open. Long-running machine behaviour not verified."
+  },
+  {
+   "name": "Infernal Mobs",
+   "version": "1.10.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "InGame Info XML",
+   "version": "2.8.30",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Inventory Bogo Sorter",
+   "version": "1.2.68-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Iron Chest Minecarts",
+   "version": "1.2.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Iron Chests",
+   "version": "6.1.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Iron Tank Minecarts",
+   "version": "1.0.12",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Iron Tanks",
+   "version": "1.4.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "JABBA",
+   "version": "1.5.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "JourneyMap",
+   "version": "5.2.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "KekzTech",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "KubaTech",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "LittleTiles",
+   "version": "1.5.14-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Logistics Pipes",
+   "version": "1.4.24-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during construction: LogisticsPipes FMLLoadingPlugin wasn't loaded. Your download seems to be corrupt/modified. Please redownload LP from our Jenkins [http://ci.thezorro266.com/] an"
+  },
+  {
+   "name": "LootGames",
+   "version": "2.2.0.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "LunatriusCore",
+   "version": "1.2.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "lwjgl3ify",
+   "version": "2.1.16",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Magic Bees",
+   "version": "2.9.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "Malisis Core",
+   "version": "1.18.2-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "Malisis' Doors",
+   "version": "1.18.2-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: Could not initialize class net.malisis.core.util.replacement.ReplacementTool"
+  },
+  {
+   "name": "Mantle",
+   "version": "0.5.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Matter Manipulator",
+   "version": "0.0.51-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoClassDefFoundError: com/gtnewhorizon/gtnhmixins/builders/ITargetMod"
+  },
+  {
+   "name": "MCFrames",
+   "version": "0.3.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "MCPatcherForge",
+   "version": "1.0.0-alpha",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Mine & Blade Battlegear",
+   "version": "2 1.5.9-backhand",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Minecraft Multipart Plugin",
+   "version": "1.7.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "MineTweaker",
+   "version": "3 3.4.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "MobsInfo",
+   "version": "0.5.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Mod Tweaker",
+   "version": "2 0.12.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ModernMarkings",
+   "version": "0.3.12-1.7.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ModularUI",
+   "version": "1.2.20",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Mouse Tweaks Unofficial",
+   "version": "1.2.68-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "MrTJPCore",
+   "version": "1.3.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Mystcraft",
@@ -72,11 +1530,434 @@
    "notes": "Loads, 6 GUIs open. Writing desk screen draws incorrectly."
   },
   {
+   "name": "Natura",
+   "version": "2.8.9",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Nature's Compass",
+   "version": "1.5.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Navigator",
+   "version": "1.0.17",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Applied Energistics",
+   "version": "2 1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Botany",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Crafting Tables",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Developer Tools",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Ex Nihilo",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Addons: Forestry",
+   "version": "1.17.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEI Custom Diagram",
+   "version": "1.7.5",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NEIIntegration",
+   "version": "1.5.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Nether Portal Fix",
+   "version": "1.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NodalMechanics",
+   "version": "1.3.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NotEnoughEnergistics",
+   "version": "1.7.14",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NotEnoughIDs",
+   "version": "2.1.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "NotFine",
+   "version": "1.0.0-beta66b",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Nuclear Control",
+   "version": "2 2.6.20",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Nutrition",
+   "version": "0.1.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OAuth",
+   "version": "1.3.3-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OC Glasses",
+   "version": "1.6.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
+  },
+  {
+   "name": "Open Modular Turrets",
+   "version": "2.4.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "OpenBlocks",
    "version": "1.6",
    "mc": "1.7.10",
    "status": "works",
    "notes": "11 GUIs open."
+  },
+  {
+   "name": "OpenComputers",
+   "version": "1.11.20-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OpenMods",
+   "version": "0.10.11",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OpenPrinter",
+   "version": "0.3.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
+  },
+  {
+   "name": "OpenSecurity",
+   "version": "1.2.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'legacyconnector.v1_7_10.net.minecraft.item.ItemStack li.cil.oc.api.Items.registerFloppy(java.lang.String, int, java.util.concurren"
+  },
+  {
+   "name": "Opis",
+   "version": "1.4.6-mapless",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Overloaded Armor Bar",
+   "version": "1.1.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Pam's Harvest the Nether",
+   "version": "1.7.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Pam's HarvestCraft",
+   "version": "1.3.2-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "PersonalSpace",
+   "version": "1.0.33",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'void me.eigenraven.personalspace.PersonalSpaceMod.removeAe2Meteors()'"
+  },
+  {
+   "name": "Postea",
+   "version": "1.1.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Project Blue",
+   "version": "1.2.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Compatibility",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Core",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Expansion",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Exploration",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Fabrication",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Illumination",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Integration",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Transmission",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ProjectRed Transportation",
+   "version": "4.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Railcraft",
+   "version": "9.16.33",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "RandomThings",
+   "version": "2.6.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Realistic World Gen Alpha alpha-1.5.0",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "RelocationFMP",
+   "version": "0.2.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "RemoteIO",
+   "version": "2.7.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "RFTools",
@@ -86,11 +1967,362 @@
    "notes": "42 GUIs open, including logic and monitor blocks."
   },
   {
+   "name": "Roguelike Dungeons",
+   "version": "1.6.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Salis Arcana",
+   "version": "1.1.33-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: Could not initialize class dev.rndmorris.salisarcana.config.SalisConfig"
+  },
+  {
+   "name": "Schematica",
+   "version": "1.12.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "ServerUtilities",
+   "version": "2.2.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "SG Craft",
+   "version": "1.4.5-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
+  },
+  {
+   "name": "Share Where I am",
+   "version": "2.1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Sleeping Bag",
+   "version": "0.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Special Mobs",
+   "version": "3.6.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "Standard Expansion",
+   "version": "3.7.15-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Steve's Addons",
+   "version": "0.14.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Steve's Carts",
+   "version": "2 2.3.12",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Steve's Factory Manager",
+   "version": "1.3.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers: Biomes O' Plenty Pack",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers: Erebus Pack Pack",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers: Forestry Pack",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers: Misc Pack",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Storage Drawers: Natura Pack",
+   "version": "2.1.10-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "StructureCompat",
+   "version": "0.7.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "StructureLib",
+   "version": "1.4.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Super Solar Panel",
+   "version": "1.1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "SuperTic",
+   "version": "1.5.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Tainted Magic r7.6",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "TC Node Tracker",
+   "version": "1.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "TC4 Tweak",
+   "version": "1.5.39",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.IncompatibleClassChangeError: Inconsistent constant pool data in classfile for class net/glease/tc4tweak/api/InfusionExtAPI$RecipeNBTBehavior. Method "
+  },
+  {
+   "name": "TecTech - Tec Technology!",
+   "version": "5.09.51.482",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector_synth.v1_7_10.cpw.mods.fml.common.ProgressManager$ProgressBar.step(String)\" because \"progressBarP"
+  },
+  {
    "name": "Thaumcraft",
    "version": "4.2.3.5",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Arcane Workbench, Arcane Bore and other GUIs, Outer Lands dimension and world generation verified."
+  },
+  {
+   "name": "Thaumcraft Mob Aspects",
+   "version": "1.2.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumcraft NEI Additions",
+   "version": "1.5.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumcraft NEI Plugin @VERSION@",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumcraft Research Tweaks",
+   "version": "1.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumic Bases",
+   "version": "1.8.13",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.IllegalAccessError: The Enum 'Color_00' has not been set to an Item at this time!"
+  },
+  {
+   "name": "Thaumic Boots",
+   "version": "1.4.14",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumic Energistics",
+   "version": "1.7.14-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumic Exploration",
+   "version": "1.4.8-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumic Insurgence",
+   "version": "0.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Thaumic Machina",
+   "version": "0.2.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"thaumcraft.api.crafting.InfusionRecipe.getRecipeOutput()\" because \"recipe\" is null"
+  },
+  {
+   "name": "Thaumic Tinkerer",
+   "version": "2.11.27",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ThaumicHorizons",
+   "version": "1.7.9",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "The Spice of Life - Carrot Edition",
+   "version": "2.2.3-carrot",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
   {
    "name": "Thermal Expansion",
@@ -100,11 +2332,74 @@
    "notes": "Machine GUIs open, RF gauge hover tooltips work."
   },
   {
+   "name": "TiC Tooltips",
+   "version": "1.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Tinkers Defense",
+   "version": "1.3.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Tinkers Mechworks",
+   "version": "0.4.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Tinkers' Construct",
    "version": "1.8.8",
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads, tables and smeltery render, the manual opens. No bridge to a modern Tinkers' Construct yet; manual item icons draw black."
+  },
+  {
+   "name": "Tinkers' Gregworks",
+   "version": "1.7.10-GTNH-1.0.28",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+  },
+  {
+   "name": "TooMuchLoot",
+   "version": "4.3.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ToroHealth Damage Indicators",
+   "version": "1.2.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Translocator",
+   "version": "1.3.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Twilight Forest",
@@ -114,11 +2409,227 @@
    "notes": "Portal, dimension generation, entities and loot verified."
   },
   {
+   "name": "UniLib",
+   "version": "1.1.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins",
+   "version": "0.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: Compatibility",
+   "version": "0.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: GasStation",
+   "version": "0.5.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: GTNHMixins",
+   "version": "2.2.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: Mixin (UniMix)",
+   "version": "0.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: MixinBooterLegacy",
+   "version": "1.2.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: MixinExtras",
+   "version": "0.1.23",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: Mixingasm",
+   "version": "0.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniMixins: SpongeMixins",
+   "version": "2.0.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "UniversalSingularities",
+   "version": "8.10.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "VisualProspecting",
+   "version": "1.4.8",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"mRGBa\" because \"material\" is null"
+  },
+  {
+   "name": "Waila",
+   "version": "1.8.15",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Waila Harvestability",
+   "version": "1.3.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "WAILA Plugins",
+   "version": "0.6.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "WanionLib",
+   "version": "1.10.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "WarpTheory",
+   "version": "1.5.0-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "What Are We Looking At",
+   "version": "1.3.1-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Witchery",
    "version": "0.24.1",
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads, village walls and towers generate. The Dream World teleport returns the player to the overworld."
+  },
+  {
+   "name": "Witching Gadgets",
+   "version": "1.7.25-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during postInit: java.lang.IllegalArgumentException: ROSEVINE.1: Catalyst cannot be null"
+  },
+  {
+   "name": "WR-CBE Addons",
+   "version": "1.7.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "WR-CBE Core",
+   "version": "1.7.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "WR-CBE Logic",
+   "version": "1.7.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "YAMCore",
+   "version": "0.7.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Ztones",
+   "version": "1.7.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   }
  ]
 }

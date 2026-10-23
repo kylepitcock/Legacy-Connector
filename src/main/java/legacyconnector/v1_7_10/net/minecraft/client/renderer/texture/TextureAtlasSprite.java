@@ -46,7 +46,11 @@ public class TextureAtlasSprite implements IIcon {
         this.rotated = rotated;
     }
 
+    /** The sprite this one was copied from (a custom loader that finds a texture already loaded aliases it instead of loading it again). */
+    public TextureAtlasSprite mcc$copySource;
+
     public void copyFrom(TextureAtlasSprite other) {
+        this.mcc$copySource = other;
         this.originX = other.originX;
         this.originY = other.originY;
         this.width = other.width;
@@ -73,6 +77,32 @@ public class TextureAtlasSprite implements IIcon {
     }
 
     /** Takes the frames of an already read texture (vanilla's loader hands every frame/mipmap image here). */
+    /** Gives fully transparent pixels the average colour of the opaque ones, so filtering does not bleed black into edges. */
+    private void fixTransparentPixels(int[][] data) {
+        int[] pixels = data[0];
+        float r = 0, g = 0, b = 0;
+        int count = 0;
+        for (int px : pixels) {
+            int alpha = px >> 24 & 255;
+            if (alpha > 0) {
+                r += (px >> 16 & 255) * (float) alpha;
+                g += (px >> 8 & 255) * (float) alpha;
+                b += (px & 255) * (float) alpha;
+                count += alpha;
+            }
+        }
+        if (count == 0) return;
+        int avg = (int) (r / count) << 16 | (int) (g / count) << 8 | (int) (b / count);
+        for (int i = 0; i < pixels.length; i++) {
+            if ((pixels[i] >> 24 & 255) == 0) pixels[i] = avg;
+        }
+    }
+
+    /** Vanilla pads each frame for anisotropic filtering; the modern atlas does its own, so the data is returned as it is. */
+    private int[][] prepareAnisotropicFiltering(int[][] data) {
+        return data;
+    }
+
     public void loadSprite(BufferedImage[] images, AnimationMetadataSection animation, boolean anisotropic) {
         resetSprite();
         if (images == null || images.length == 0 || images[0] == null) return;

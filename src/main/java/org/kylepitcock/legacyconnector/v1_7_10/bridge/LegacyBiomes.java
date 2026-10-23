@@ -45,6 +45,8 @@ public final class LegacyBiomes {
     /** Chunks the legacy biome decoration ran in (diagnostics). */
     public static final java.util.concurrent.atomic.AtomicInteger DECORATED = new java.util.concurrent.atomic.AtomicInteger();
 
+    private static final java.util.concurrent.atomic.AtomicInteger SKIPPED_LOGGED = new java.util.concurrent.atomic.AtomicInteger();
+
     private LegacyBiomes() {}
 
     /** Mod biomes with a modern id, refreshed when data is generated. */
@@ -245,8 +247,13 @@ public final class LegacyBiomes {
         int chunkZ = origin.getZ() >> 4;
         BlockPos center = new BlockPos((chunkX << 4) + 8, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, (chunkX << 4) + 8, (chunkZ << 4) + 8), (chunkZ << 4) + 8);
         BiomeGenBase legacy = level.getBiome(center).unwrapKey().map(k -> byModernId(k.location())).orElse(null);
-        if (legacy == null) return false;
-        DECORATED.incrementAndGet();
+        if (legacy == null) {
+            if (SKIPPED_LOGGED.incrementAndGet() <= 5) {
+                LOG.info("Legacy decoration skipped at chunk {} {}: biome at {} is {}", chunkX, chunkZ, center, level.getBiome(center).unwrapKey().orElse(null));
+            }
+            return false;
+        }
+        if (DECORATED.incrementAndGet() <= 5) LOG.info("Legacy decoration of chunk {} {} in {}", chunkX, chunkZ, legacy.mcc$modernId());
         applySurface(level, chunkX, chunkZ, legacy);
         // 1.7.10 seeded each chunk's decoration from the world seed and chunk position.
         Random rand = new Random(level.getSeed());

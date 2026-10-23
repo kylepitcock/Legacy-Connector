@@ -41,6 +41,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             Map.entry("quartz_block_side", "quartz_block_side"), Map.entry("red_sand", "red_sand"), Map.entry("hardened_clay", "terracotta"),
             Map.entry("leaves_oak", "oak_leaves"), Map.entry("sapling_oak", "oak_sapling"), Map.entry("snow", "snow"), Map.entry("ice", "ice"));
 
+    private static volatile legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blockAtlas;
+    private static volatile legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap itemAtlas;
+
+    /** The blocks atlas legacy code registers into (what {@code Minecraft.getTextureMapBlocks()} returned); null before the first pack build. */
+    public static legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blockAtlas() {
+        return blockAtlas;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap itemAtlas() {
+        return itemAtlas;
+    }
+
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.CLIENT_RESOURCES) return;
@@ -48,6 +60,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFontPages.contribute(out);
         var blocks = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
         var items = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+        blockAtlas = blocks;
+        itemAtlas = items;
         // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));

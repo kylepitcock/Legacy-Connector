@@ -59,6 +59,10 @@ public class Minecraft {
         return true;
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap getTextureMapBlocks() {
+        return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.blockAtlas();
+    }
+
     public static Minecraft getMinecraft() {
         return INSTANCE;
     }

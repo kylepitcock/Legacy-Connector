@@ -114,7 +114,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 Without the modern mod, the legacy library is translated and loaded as usual (except the RF API, which needs none).
 
 Mods that only make sense on 1.7.10's engine or launcher (performance/bug-fix patches such as FastCraft or Hodgepodge,
-ID extenders, LWJGL 3 ports) and client mods with modern versions (JourneyMap, Inventory Tweaks, ...) are not loaded;
+ID extenders, LWJGL 3 ports) are not loaded; client mods (JourneyMap, Inventory Tweaks, ...) are;
 `legacyconnector-report.txt` says why.
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
@@ -256,16 +256,16 @@ full run; "loads" does not mean every feature was played through.
 | ProjectRed Expansion + Runic Dungeons | Both use enchantment id 80. 1.7.10 crashed; here one enchantment is moved to a free id and a warning is logged. | Change an id in the mods' configs to keep ids stable. |
 | Mystcraft + NetherOres | NetherOres swaps the vanilla quartz ore block through CoFH registry reflection. Works, because replaced vanilla blocks keep the vanilla identity. | None. |
 | Mods that patch Minecraft's own classes with coremods | The patches cannot run on the shim classes. Only DragonAPI's crafting-list and smelting hooks are provided (`CoremodHooks`); other such patches do nothing. | Report the mod. |
-| Railcraft and EnderIO anvils | They read vanilla `ContainerRepair` fields by position (`ObfuscationReflectionHelper`), which the shim does not match; the anvil GUI fails to open. | Not fixed. |
+| Railcraft and EnderIO anvils | `ContainerRepair` is implemented with the vanilla field names and rules; not yet checked in game. | Test in game. |
 | HBM's pylons/substations, RFTools screens, Thermal Expansion tanks and caches, Runic Dungeons portal | Fail in the automated block self test, which uses a fake player and no tile state; not confirmed in real play. | Test in game. |
 | Decocraft | Loads through a stand-in for the JDK-internal PNG reader; models not checked in game. | Test in game. |
 | Tinkers' Construct and other mods whose `getSubItems` reads client-only icon arrays | Subtype discovery registers icons against a detached register; blocks whose arrays still stay empty get metadata 0 only until used. | None. |
 | Villager professions, trades and village components (`VillagerRegistry`) | Modded professions with skins and trade handlers appear on some new unemployed villagers (they have no job site). Village creation handlers (Witchery's shops, walls, towers; AgriCraft's greenhouses) build their components inside modern villages: each chunk plans them from the seed in the village's bounding box, free of the jigsaw pieces. They do not connect to the village paths, and the vanilla piece factories mods call (`House1.func_74898_a` ...) return nothing. | Not fixed. |
-| Potion brewing tables, fishing loot, achievement pages, `displayGUIChest` | Not implemented; the calls do nothing and are logged as `Legacy API ... is not implemented yet` in the log. | Not fixed. |
+| Brewing stand, fishing loot | `PotionHelper` and `FishingHooks` exist for legacy code that calls them, but modern brewing and fishing loot tables do not use them, so mod potions and mod catches are not added. Achievement pages are recorded but not shown (1.21 has advancements). | Not fixed. |
 | `/locate structure` | Vanilla structures are found in legacy biomes (they join the vanilla biome tags). Structures drawn by legacy generators are found with `/locate structure legacyconnector:<name>` (the generator's name, lower case), among visited chunks only. | Not fixed. |
 | Tinkers' Construct materials on modern Tinkers | Not bridged: the real modern Tinkers' Construct exists only for 1.20.1, not NeoForge 1.21.1 (planned with the 1.20.1 target). | None. |
-| JourneyMap / Custom Main Menu APIs | Not bridged to the modern JourneyMap / FancyMenu; mods that call them link, and the calls do nothing. | Not fixed. |
-| FastCraft, Hodgepodge and other engine/launcher patches; JourneyMap, Inventory Tweaks | Intentionally not loaded (see above). | Use their modern equivalents. |
+| JourneyMap / Custom Main Menu / Inventory Tweaks (1.7.10 versions) | Loaded like any other legacy mod since 0.0.2, but their client-side behaviour is not verified. | Report what you see. |
+| FastCraft, Hodgepodge, NEID and other engine/launcher patches | Intentionally not loaded (see above). | Use their modern equivalents. |
 
 ### What happens to a mod
 
@@ -336,6 +336,8 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 ```
 
 ## Legal
+
+Legacy Connector is released under the [MIT License](LICENSE).
 
 This project contains no Minecraft, Forge or third-party mod code. Do not commit or redistribute legacy mod jars;
 users supply their own.
