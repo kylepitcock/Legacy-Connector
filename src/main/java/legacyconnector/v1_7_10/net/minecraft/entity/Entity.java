@@ -935,6 +935,14 @@ public abstract class Entity implements ICommandSender {
         return Math.sqrt(getDistanceSq(x, y, z));
     }
 
+    /** The position interpolated between the previous and the current tick ({@code 1.0F}: the current one). */
+    public Vec3 getPosition(float partialTicks) {
+        if (partialTicks == 1.0F) return Vec3.createVectorHelper(mcc$get$posX(this), mcc$get$posY(this), mcc$get$posZ(this));
+        double px = mcc$get$prevPosX(this), py = mcc$get$prevPosY(this), pz = mcc$get$prevPosZ(this);
+        return Vec3.createVectorHelper(px + (mcc$get$posX(this) - px) * partialTicks, py + (mcc$get$posY(this) - py) * partialTicks,
+                pz + (mcc$get$posZ(this) - pz) * partialTicks);
+    }
+
     public Vec3 getLookVec() {
         if (mcc$entity == null) return Vec3.createVectorHelper(0, 0, 1);
         var v = mcc$entity.getLookAngle();
