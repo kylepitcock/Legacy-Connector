@@ -7,6 +7,8 @@ runs Fabric mods on NeoForge. The original jar is never modified.
 > **Status: early development.** 1.7.10 is the active target. Expect simple content mods to partly work and large
 > mods to load with many features missing. See [Compatibility status](#compatibility-status).
 
+**Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
+
 ## Screenshots
 
 All taken in the game (NeoForge 1.21.1, headless), with legacy 1.7.10 mods next to modern content.
