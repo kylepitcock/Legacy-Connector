@@ -15,7 +15,7 @@ Blocks of Applied Energistics 2, Twilight Forest, Tinkers' Construct and BiblioC
 
 ![Legacy and modern blocks side by side](docs/images/legacy-and-modern-blocks.png)
 
-The Diesel Generator screen of HBM's Nuclear Tech Mod, a block's own 1.7.10 GUI code drawn in 1.21 next to JEI:
+Thaumcraft's Arcane Workbench, a block's own 1.7.10 GUI code drawn in 1.21 next to JEI:
 
 ![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
 
