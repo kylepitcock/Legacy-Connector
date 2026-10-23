@@ -32,7 +32,7 @@ public final class LegacyFontPages {
                     for (int dy = 0; dy < 2; dy++) for (int dx = 0; dx < 2; dx++) page.setRGB(cx * 16 + x * 2 + dx, cy * 16 + y * 2 + dy, argb);
                 }
             }
-            if (max >= 0) sizes[index] = (byte) ((min * 2) << 4 | Math.min(15, max * 2 + 2));
+            if (max >= 0) sizes[index] = (byte) ((min * 2) << 4 | Math.min(15, max * 2 + 1));
         }
         byte[] png = encode(page);
         if (png == null) return;
