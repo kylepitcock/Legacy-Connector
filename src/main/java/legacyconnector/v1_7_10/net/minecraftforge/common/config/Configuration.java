@@ -215,6 +215,13 @@ public class Configuration {
         return get(category, key, defaultValues, comment, Property.Type.STRING);
     }
 
+    /** Forge for 1.8+ (and GTNH's 1.7.10 fork): a string list with a fixed or limited length and a validation pattern. */
+    public Property get(String category, String key, String[] defaultValues, String comment, boolean isListLengthFixed, int maxListLength,
+            java.util.regex.Pattern validationPattern) {
+        Property prop = get(category, key, defaultValues, comment, Property.Type.STRING);
+        return prop;
+    }
+
     public Property get(String category, String key, String defaultValue, String comment, Property.Type type) {
         ConfigCategory cat = getCategory(category);
         if (cat.containsKey(key)) {

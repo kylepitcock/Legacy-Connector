@@ -282,6 +282,10 @@ SCENARIO=gui MODS=rftools tools/dev/run-screenshot-test.sh rftools mcjtylib   # 
 tools/dev/docker-headless.sh run-screenshot-test.sh ...        # same, inside a Linux container with a virtual display
                                 # (Xvfb + Mesa; needs `colima start`), so no window opens on the desktop;
                                 # also works for run-client-test.sh
+tools/dev/session.sh start <jar fragments>   # one long-lived headless client you drive without restarting it:
+tools/dev/session.sh send cmd "legacyconnector dim 7"   # run a command / open GUIs / `mouse x y` / `click x y` / `useitem` / `inv` / `info` ...
+tools/dev/session.sh shot name                 # screenshot -> ~/.cache/legacyconnector-docker/work/run-screenshots/control/out/name.png
+tools/dev/survey.sh <namespace> <name>         # places every block of a mod on a sky platform and screenshots it
 ./gradlew checkLegacyMod -PlegacyJar=/path/a.jar,/path/b.jar   # e.g. every jar in test-mods/
                                 # translate offline as one modset, list unlinkable references,
                                 # generate + JVM-verify the synthesized API (no game launch)
@@ -290,7 +294,7 @@ tools/dev/docker-headless.sh run-screenshot-test.sh ...        # same, inside a 
 Development commands (operator, any world): `/legacyconnector mods` lists the loaded legacy mods;
 `/legacyconnector dim list|<id> [pos]` switches to a legacy dimension; `/legacyconnector gui <mod> <id> [pos]` opens a mod
 GUI by its `IGuiHandler` id; `/legacyconnector place <block> [meta]`, `give <item> [meta] [count]` and `spawn <entity> [count]`
-create legacy content with metadata; `/legacyconnector biome <id>` jumps to a legacy biome; `/legacyconnector inspect`
+create legacy content with metadata; `/legacyconnector list <blocks|items|entities> <mod>` prints a mod's ids; `/legacyconnector biome <id>` jumps to a legacy biome; `/legacyconnector inspect`
 describes the block or entity you look at (legacy class, metadata, tile entity, render type). Ids tab-complete.
 
 Project layout:
