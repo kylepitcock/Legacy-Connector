@@ -47,6 +47,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs.contributeModels(out);
         var blocks = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
         var items = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+        // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));
         for (Block b : BlockBridge.modBlocks()) {
             try {
                 b.registerBlockIcons(blocks);
@@ -72,8 +75,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 LOG.warn("Model generation failed for {}: {}", i, e.toString(), e);
             }
         }
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(blocks));
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(items));
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
+    }
+
+    private static void postStitch(legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent event) {
+        try {
+            legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("A TextureStitchEvent handler failed: {}", e.toString());
+        }
     }
 
     /** (called after all registerIcons) writes the textures of sprites mods built themselves, e.g. unstitched sheets. */
