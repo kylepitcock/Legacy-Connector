@@ -109,6 +109,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 Method m = c.getDeclaredMethod(name, params);
                 return m != null;
             } catch (NoSuchMethodException ignored) {
+            } catch (LinkageError e) {
+                // A declared method mentions a class that does not exist (an API the modset never provided): look in the superclass.
             }
         }
         return false;
