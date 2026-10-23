@@ -41,6 +41,7 @@ public class World implements IBlockAccess {
 
     public final boolean isRemote;
     public Random rand = new Random();
+    public final legacyconnector.v1_7_10.net.minecraft.profiler.Profiler theProfiler = legacyconnector.v1_7_10.net.minecraft.profiler.Profiler.INSTANCE;
     /** Phantom: redirected to {@link #mcc$get$provider} (created on first use: mod providers need a usable world). */
     @Deprecated
     public WorldProvider provider;
@@ -222,7 +223,27 @@ public class World implements IBlockAccess {
         BlockPos p = pos(x, y, z);
         if (outsideRegion(p)) return false;
         TileEntityBridge.beforeBlockChange(this, p);
+        if (connectsToNeighbours(state)) {
+            if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) {
+                // Neighbours may still be missing; the game fixes the shape when the chunk is finished, as for structures.
+                boolean placed = region.setBlock(p, state, flags);
+                if (placed) region.getChunk(p).markPosForPostprocessing(p);
+                return placed;
+            }
+            state = net.minecraft.world.level.block.Block.updateFromNeighbourShapes(state, lvl(), p);
+        }
         return lvl().setBlock(p, state, flags);
+    }
+
+    /**
+     * Glass panes, iron bars, fences, walls and stairs keep their connections in the modern block state; 1.7.10 worked
+     * them out while drawing, so legacy code (structure generators) only places the block and it would stand alone.
+     * Doors are left out: their shape update removes a half placed before its partner.
+     */
+    private static boolean connectsToNeighbours(BlockState state) {
+        var b = state.getBlock();
+        return b instanceof net.minecraft.world.level.block.CrossCollisionBlock || b instanceof net.minecraft.world.level.block.WallBlock
+                || b instanceof net.minecraft.world.level.block.StairBlock;
     }
 
     public boolean setBlock(int x, int y, int z, Block block) {

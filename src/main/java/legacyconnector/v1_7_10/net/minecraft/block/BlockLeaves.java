@@ -1,10 +1,6 @@
 package legacyconnector.v1_7_10.net.minecraft.block;
 
-/**
- * Generated shell of the 1.7.10 class {@code net.minecraft.block.BlockLeaves}: correct type hierarchy for {@code instanceof} checks and
- * subclassing, legacy constructors, inherited default behaviour. Vanilla-specific logic is not ported yet.
- * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
- */
+/** 1.7.10 {@code BlockLeaves}: vanilla leaf icons and tints, and the fast/fancy graphics switch mods call. */
 public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.BlockLeavesBase {
     public BlockLeaves(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
@@ -16,6 +12,20 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
 
     public BlockLeaves() {
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.leaves);
+    }
+
+    /** Icon set in use: 0 fancy (cut out), 1 fast (opaque). */
+    protected int field_150127_b;
+
+    /** As 1.7.10: opaque only with fast graphics. */
+    @Override
+    public boolean isOpaqueCube() {
+        return !field_150121_P;
+    }
+
+    public void setGraphicsLevel(boolean fancy) {
+        this.field_150121_P = fancy;
+        this.field_150127_b = fancy ? 0 : 1;
     }
 
     private static final String[] LEAVES = {"leaves_oak", "leaves_spruce", "leaves_birch", "leaves_jungle"};

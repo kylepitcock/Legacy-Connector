@@ -48,11 +48,12 @@ public final class LegacyModDecl {
 
     /**
      * Ids of well-known modern mods that other modern mods probe with {@code ModList.isLoaded} and then call into
-     * (Create's ComputerCraft integration needs CC: Tweaked's classes). A legacy mod with the same id would make that
+     * (Create's ComputerCraft integration needs CC: Tweaked's classes, its train map the modern JourneyMap API). A
+     * legacy mod with the same id would make that
      * probe succeed and the integration crash, so such legacy mods get a distinct modern id. Keep this list short:
-     * a renamed mod's namespace changes (computercraft_legacy:...).
+     * a renamed mod's namespace changes (computercraft_legacy:...). Must match {@code Ids.RESERVED} in the runtime.
      */
-    public static final java.util.Set<String> RESERVED = java.util.Set.of("computercraft");
+    public static final java.util.Set<String> RESERVED = java.util.Set.of("computercraft", "journeymap");
 
     /** Legacy ids of mods this one must load after ({@code required-after}, {@code after}). */
     public List<Dependency> parsedDependencies() {

@@ -28,75 +28,100 @@ import org.slf4j.LoggerFactory;
 public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/ISBRH");
     private static final ModelProperty<List<BakedQuad>> QUADS = new ModelProperty<>();
+    private static final ModelProperty<List<BakedQuad>> TRANSLUCENT_QUADS = new ModelProperty<>();
     private static final java.util.Set<String> FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final Block block;
     private final int renderId;
-    private final boolean translucent;
+    /** Forge world passes the block is drawn in: 0 cut out, 1 translucent (pipes draw in both). */
+    private final boolean pass0, pass1;
+    private final ChunkRenderTypeSet renderTypes;
 
     public IsbrhBlockModel(BakedModel original, Block block, int renderId) {
         super(original);
         this.block = block;
         this.renderId = renderId;
-        boolean t = false;
+        boolean p0 = true, p1 = false;
         try {
-            t = block.getRenderBlockPass() == 1;
+            p0 = block.canRenderInPass(0);
+            p1 = block.canRenderInPass(1);
         } catch (RuntimeException | LinkageError e) {
             // keep cutout
         }
-        this.translucent = t;
+        if (!p0 && !p1) p0 = true;
+        this.pass0 = p0;
+        this.pass1 = p1;
+        var cutout = net.minecraft.client.renderer.RenderType.cutout();
+        var translucent = net.minecraft.client.renderer.RenderType.translucent();
+        this.renderTypes = p0 && p1 ? ChunkRenderTypeSet.of(cutout, translucent) : ChunkRenderTypeSet.of(p1 ? translucent : cutout);
     }
 
     @Override
     public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData base) {
         ISimpleBlockRenderingHandler handler = RenderingRegistry.mcc$blockHandler(renderId);
         if (handler == null || FAILED.contains(block.getClass().getName())) return base;
+        List<BakedQuad> solid = pass0 ? capture(handler, level, pos, 0) : List.of();
+        if (solid == null) return base;
+        List<BakedQuad> translucent = pass1 ? capture(handler, level, pos, 1) : List.of();
+        if (translucent == null) return base;
+        if (solid.isEmpty() && translucent.isEmpty()) {
+            if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
+                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {})", handler.getClass().getName(), block.getClass().getName(), renderId);
+            }
+        } else if (FAILED.add("count:" + block.getClass().getName())) {
+            LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}", handler.getClass().getSimpleName(),
+                    solid.size(), translucent.size(), block.getClass().getSimpleName());
+        }
+        return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
+    }
+
+    /** One Forge world pass of the handler, as 1.7.10's chunk renderer ran it; null when the handler failed. */
+    private List<BakedQuad> capture(ISimpleBlockRenderingHandler handler, BlockAndTintGetter level, BlockPos pos, int pass) {
         RenderContext.Capture capture = RenderContext.beginCapture();
-        boolean drew;
         // 1.7.10's chunk renderer had the Tessellator drawing already when it called the handlers.
         var tessellator = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
         boolean started = !tessellator.isDrawing;
         if (started) tessellator.startDrawingQuads();
         try {
-            RenderBlocks renderer = new RenderBlocks(BlockAccessView.of(level));
+            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = pass;
+            // Called right before drawing, as the chunk renderer did: some blocks note the pass here (BuildCraft pipes).
+            block.canRenderInPass(pass);
             var access = BlockAccessView.of(level);
-            drew = handler.renderWorldBlock(access, pos.getX(), pos.getY(), pos.getZ(), block, renderId, renderer);
+            handler.renderWorldBlock(access, pos.getX(), pos.getY(), pos.getZ(), block, renderId, new RenderBlocks(access));
         } catch (RuntimeException | LinkageError e) {
             if (FAILED.add(block.getClass().getName())) {
                 LOG.error("Legacy block renderer for {} failed; the block keeps its generated model", block.getClass().getName(), e);
             }
-            return base;
+            return null;
         } finally {
+            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = -1;
             try {
                 if (started && tessellator.isDrawing) tessellator.draw();
             } finally {
                 RenderContext.endCapture();
             }
         }
-        if (!drew && capture.quads.isEmpty()) {
-            if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
-                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {})", handler.getClass().getName(), block.getClass().getName(), renderId);
-            }
-            return base.derive().with(QUADS, List.of()).build();
-        }
-        if (FAILED.add("count:" + block.getClass().getName())) {
-            LOG.info("Legacy block renderer {} drew {} quad(s) for {} (handler returned {})", handler.getClass().getSimpleName(), capture.quads.size(), block.getClass().getSimpleName(), drew);
-        }
-        List<BakedQuad> quads = IsbrhQuads.bake(capture, pos.getX(), pos.getY(), pos.getZ(), getParticleIcon(ModelData.EMPTY));
-        return base.derive().with(QUADS, quads).build();
+        return IsbrhQuads.bake(capture, pos.getX(), pos.getY(), pos.getZ(), getParticleIcon(ModelData.EMPTY));
     }
 
     @Override
     public List<BakedQuad> getQuads(BlockState state, Direction side, RandomSource rand, ModelData data, net.minecraft.client.renderer.RenderType renderType) {
         List<BakedQuad> quads = data.get(QUADS);
         if (quads == null) return super.getQuads(state, side, rand, data, renderType);
-        return side == null ? quads : List.of();
+        if (side != null) return List.of();
+        if (renderType == null) {
+            List<BakedQuad> translucent = data.get(TRANSLUCENT_QUADS);
+            if (translucent == null || translucent.isEmpty()) return quads;
+            List<BakedQuad> all = new java.util.ArrayList<>(quads);
+            all.addAll(translucent);
+            return all;
+        }
+        return renderType == net.minecraft.client.renderer.RenderType.translucent() ? data.get(TRANSLUCENT_QUADS) : quads;
     }
 
     @Override
     public net.neoforged.neoforge.client.ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand, ModelData data) {
-        return net.neoforged.neoforge.client.ChunkRenderTypeSet.of(translucent ? net.minecraft.client.renderer.RenderType.translucent()
-                : net.minecraft.client.renderer.RenderType.cutout());
+        return renderTypes;
     }
 
     @Override

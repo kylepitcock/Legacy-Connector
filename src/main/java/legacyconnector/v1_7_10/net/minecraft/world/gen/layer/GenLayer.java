@@ -46,7 +46,7 @@ public abstract class GenLayer {
         layer = new GenLayerDeepOcean(4L, layer);
         GenLayer land = GenLayerZoom.magnify(1000L, layer, 0);
         int size = worldType == WorldType.LARGE_BIOMES ? 6 : 4;
-        size = getModdedBiomeSize(worldType, size);
+        size = getModdedBiomeSize(worldType, (byte) size);
         GenLayer riverInit = new GenLayerRiverInit(100L, GenLayerZoom.magnify(1000L, land, 0));
         GenLayer biomes = worldType.getBiomeLayer(seed, land);
         GenLayer hills = new GenLayerHills(1000L, biomes, GenLayerZoom.magnify(1000L, riverInit, 2));
@@ -65,9 +65,15 @@ public abstract class GenLayer {
         return new GenLayer[] {mix, voronoi, mix};
     }
 
-    /** Forge's WorldTypeEvent.BiomeSize hook; legacy handlers are not consulted. */
-    public static int getModdedBiomeSize(WorldType worldType, int original) {
-        return original;
+    /**
+     * Forge's WorldTypeEvent.BiomeSize hook. Mods' own layer stacks call it too (Biomes O' Plenty): the byte signature
+     * must match 1.7.10, or their call links to a stub returning 0 and the biome map is never zoomed (tiny biomes).
+     */
+    public static byte getModdedBiomeSize(WorldType worldType, byte original) {
+        legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.WorldTypeEvent.BiomeSize event =
+                new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.WorldTypeEvent.BiomeSize(worldType, original);
+        legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        return event.newSize;
     }
 
     public void initWorldGenSeed(long seed) {

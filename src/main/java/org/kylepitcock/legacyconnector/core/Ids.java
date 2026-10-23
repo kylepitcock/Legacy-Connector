@@ -20,8 +20,11 @@ public final class Ids {
         while (sb.length() < 2) sb.append('_');
         if (sb.length() > 64) sb.setLength(64);
         String id = sb.toString();
-        return java.util.Set.of("computercraft").contains(id) ? id + "_legacy" : id;
+        return RESERVED.contains(id) ? id + "_legacy" : id;
     }
+
+    /** Ids of modern mods that legacy mods must not take; see the loader's {@code LegacyModDecl.RESERVED}. */
+    private static final java.util.Set<String> RESERVED = java.util.Set.of("computercraft", "journeymap");
 
     public static String normalizePath(String path) {
         StringBuilder sb = new StringBuilder(path.length());

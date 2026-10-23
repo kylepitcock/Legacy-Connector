@@ -47,21 +47,32 @@ public final class LegacySprites {
         @Override
         public void registerReloadListener(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener listener) {
             listeners.add(listener);
-            try {
-                listener.onResourceManagerReload(this);
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("A legacy resource reload listener failed", e);
-            }
+            notify(listener);
         }
 
         @Override
         public void reloadResources(List resourcePacks) {
-            for (var l : listeners) {
-                try {
-                    l.onResourceManagerReload(this);
-                } catch (RuntimeException | LinkageError e) {
-                    LOG.warn("A legacy resource reload listener failed", e);
-                }
+            for (var l : listeners) notify(l);
+        }
+
+        /**
+         * 1.7.10 loaded mods on the GL thread, so listeners upload textures with raw GL calls (Decocraft); here mods
+         * register them from NeoForge's loading threads, which have no GL context (a driver call aborts the JVM). Off
+         * the render thread the call is queued for it.
+         */
+        private void notify(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener listener) {
+            if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+                notifyNow(listener);
+            } else {
+                com.mojang.blaze3d.systems.RenderSystem.recordRenderCall(() -> notifyNow(listener));
+            }
+        }
+
+        private void notifyNow(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener listener) {
+            try {
+                listener.onResourceManagerReload(this);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("A legacy resource reload listener failed", e);
             }
         }
 

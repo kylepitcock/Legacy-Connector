@@ -386,6 +386,11 @@ public class Block {
         return org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149701_w", 0);
     }
 
+    /** Forge: whether the block is drawn in world render pass 0 (cut out) or 1 (translucent); some draw in both. */
+    public boolean canRenderInPass(int pass) {
+        return pass == getRenderBlockPass();
+    }
+
     public int getMobilityFlag() {
         return this.blockMaterial.getMaterialMobility();
     }

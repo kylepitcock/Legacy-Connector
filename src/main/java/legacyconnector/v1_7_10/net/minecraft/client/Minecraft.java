@@ -27,6 +27,7 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal renderGlobal = new legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal();
     public FontRenderer fontRenderer = FontRenderer.INSTANCE;
     public FontRenderer standardGalacticFontRenderer = FontRenderer.INSTANCE;
+    public final legacyconnector.v1_7_10.net.minecraft.profiler.Profiler mcProfiler = legacyconnector.v1_7_10.net.minecraft.profiler.Profiler.INSTANCE;
     public final legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effectRenderer =
             new legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer(null, TextureManager.INSTANCE);
 
