@@ -135,7 +135,7 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block lit_redstone_lamp = BlockBridge.vanilla("lit_redstone_lamp", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockSlab double_wooden_slab = BlockBridge.vanilla("double_wooden_slab", legacyconnector.v1_7_10.net.minecraft.block.BlockSlab.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockSlab wooden_slab = BlockBridge.vanilla("wooden_slab", legacyconnector.v1_7_10.net.minecraft.block.BlockSlab.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.Block cocoa = BlockBridge.vanilla("cocoa", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block cocoa = BlockBridge.vanilla("cocoa", legacyconnector.v1_7_10.net.minecraft.block.BlockCocoa.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block sandstone_stairs = BlockBridge.vanilla("sandstone_stairs", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block emerald_ore = BlockBridge.vanilla("emerald_ore", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block ender_chest = BlockBridge.vanilla("ender_chest", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
