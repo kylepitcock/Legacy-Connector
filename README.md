@@ -125,7 +125,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
 | Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block |
 | Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
-| Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary` | data-pack recipes, tags |
+| Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary`, custom `IRecipe` classes (IC2, AE2, Blood Magic, Witchery ...) | data-pack recipes, tags; a custom recipe is a `legacyconnector:legacy_recipe` that matches and crafts through the legacy object |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
 | Fluids | Forge `Fluid` / containers | fluid types |
 | Villagers | `VillagerRegistry` ids, skins, trade handlers | `legacyconnector:villager_<id>` professions, trades, clothes layer; some new unemployed villagers take them |
@@ -147,7 +147,8 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 |---|---|
 | Entity rendering, armour and held items | bridged, not verified in game for every mod |
 | Block rendering (`ISimpleBlockRenderingHandler`, TESRs) | Handlers draw in the world (Tinkers' tables, AE2, AgriCraft crops), renderers can bind vanilla textures by their 1.7.10 names, blocks that colour themselves (leaves, grass, `colorMultiplier`) are biome tinted; per-vertex colour and ambient occlusion of handler-drawn blocks missing, some handlers (Tinkers' drying rack, barricades) still draw nothing |
-| Dimension sky/fog rendering and portal placement | not done |
+| Dimension sky/fog/clouds | A mod dimension takes its fog colour, cloud height and sky/cloud/weather renderers from its legacy `WorldProvider` (Twilight Forest's fog works; legacy sky renderers that draw with unsupported GL fall back to the vanilla sky) |
+| Portal placement | Twilight Forest's portal works; other mods' portals are not verified |
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
@@ -255,7 +256,7 @@ full run; "loads" does not mean every feature was played through.
 | Brewing stand, fishing loot | `PotionHelper` and `FishingHooks` exist for legacy code that calls them, but modern brewing and fishing loot tables do not use them, so mod potions and mod catches are not added. Achievement pages are recorded but not shown (1.21 has advancements). | Not fixed. |
 | `/locate structure` | Vanilla structures are found in legacy biomes (they join the vanilla biome tags). Structures drawn by legacy generators are found with `/locate structure legacyconnector:<name>` (the generator's name, lower case), among visited chunks only. | Not fixed. |
 | Tinkers' Construct materials on modern Tinkers | Not bridged: the real modern Tinkers' Construct exists only for 1.20.1, not NeoForge 1.21.1 (planned with the 1.20.1 target). | None. |
-| JourneyMap / Custom Main Menu / Inventory Tweaks (1.7.10 versions) | Loaded like any other legacy mod since 0.0.2, but their client-side behaviour is not verified. | Report what you see. |
+| JourneyMap / Custom Main Menu / Inventory Tweaks (1.7.10 versions) | Loaded like any other legacy mod. Custom Main Menu replaces the title screen (`GuiOpenEvent`/`GuiScreenEvent` are bridged; its panorama, logo and splash draw, buttons are being verified). The other two are not verified. | Report what you see. |
 | FastCraft, Hodgepodge, NEID and other engine/launcher patches | Intentionally not loaded (see above). | Use their modern equivalents. |
 
 ### What happens to a mod

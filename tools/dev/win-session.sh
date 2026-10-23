@@ -1,6 +1,7 @@
 #!/bin/bash
 # Windows counterpart of session.sh: one long-lived headless client in a Docker container that you drive without restarting it.
 #   tools/dev/win-session.sh start [jar-name-fragments...]   stage the project and boot the game (background container lc-session)
+#       HEAP=8g sets the heap; the fragment "jar" selects every mod in the lc-mods volume
 #   tools/dev/win-session.sh send <verb> [args]              run one control command and print its answer
 #   tools/dev/win-session.sh shot <name>                     screenshot -> prints the png path on this machine
 #   tools/dev/win-session.sh logs [n]                        last n lines of the game log
@@ -22,7 +23,7 @@ case $1 in
     envs=()
     for v in WORLDTYPE EXTRA MODSRC WIDTH HEIGHT RENDER LC_DEBUG; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
     docker run -d --name $NAME --shm-size=1g -v lc-work:/work -v lc-mods:/mods:ro -v legacyconnector-gradle:/root/.gradle -v legacyconnector-cache:/work/run-screenshots/.legacyconnector \
-      -w /work -e HEADLESS=1 -e SCENARIO=control -e LOOPS=${LOOPS:-4000} -e WIDTH=${WIDTH:-1280} -e HEIGHT=${HEIGHT:-720} -e RENDER=${RENDER:-6} "${envs[@]}" $IMAGE \
+      -w /work -e HEADLESS=1 -e JAVA_TOOL_OPTIONS="-Dorg.lwjgl.librarypath=/opt/lwjgl -Xmx${HEAP:-4g}" -e SCENARIO=control -e LOOPS=${LOOPS:-4000} -e WIDTH=${WIDTH:-1280} -e HEIGHT=${HEIGHT:-720} -e RENDER=${RENDER:-6} "${envs[@]}" $IMAGE \
       bash -c 'Xvfb :99 -screen 0 ${WIDTH}x${HEIGHT}x24 +extension GLX -nolisten tcp >/dev/null 2>&1 & sleep 2; export DISPLAY=:99; mkdir -p run; [ -e run/mods ] || ln -sfn /mods run/mods; exec zsh tools/dev/run-screenshot-test.sh "$@"' x "$@" >/dev/null
     echo "starting; wait for it with: tools/dev/win-session.sh send info"
     ;;
@@ -44,6 +45,6 @@ case $1 in
     echo "timeout (is the session running? tools/dev/win-session.sh start)"; exit 1
     ;;
   logs) docker exec $NAME tail -n ${2:-60} /work/run-screenshots/logs/latest.log ;;
-  stop) "$0" send quit; sleep 5; docker rm -f $NAME >/dev/null 2>&1 ;;
+  stop) TIMEOUT=8 "$0" send quit >/dev/null; sleep 3; docker rm -f $NAME >/dev/null 2>&1 ;;
   *) sed -n 2,9p "$0" ;;
 esac
