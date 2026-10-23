@@ -14,6 +14,9 @@ public class TextureMap implements IIconRegister, ITextureObject {
     public static final ResourceLocation locationBlocksTexture = new ResourceLocation("textures/atlas/blocks.png");
     public static final ResourceLocation locationItemsTexture = new ResourceLocation("textures/atlas/items.png");
 
+    /** Mods attach log filters to it (INpureCore silences the stitching messages). */
+    public static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger("TextureMap");
+
     protected final int textureType;
     protected final String basePath;
     protected Map mapRegisteredSprites = new LinkedHashMap();

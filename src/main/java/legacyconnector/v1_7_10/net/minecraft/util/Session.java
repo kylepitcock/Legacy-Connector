@@ -24,6 +24,16 @@ public class Session {
         }
     }
 
+    /** The account's game profile (FTBLib reads the id of it while loading). */
+    public GameProfile getProfile() {
+        try {
+            String id = playerId;
+            return new GameProfile(java.util.UUID.fromString(id.substring(0, 8) + "-" + id.substring(8, 12) + "-" + id.substring(12, 16) + "-" + id.substring(16, 20) + "-" + id.substring(20)), username);
+        } catch (RuntimeException e) {
+            return new GameProfile(java.util.UUID.nameUUIDFromBytes(("OfflinePlayer:" + username).getBytes()), username);
+        }
+    }
+
     public String getUsername() {
         return username;
     }
@@ -42,7 +52,8 @@ public class Session {
 
     public GameProfile func_148256_e() {
         try {
-            return new GameProfile(UUID.fromString(playerId.replaceFirst("(\\w{8})(\\w{4})(\\w{4})(\\w{4})(\\w{12})", "$1-$2-$3-$4-$5")), username);
+            String id = playerId;
+            return new GameProfile(java.util.UUID.fromString(id.substring(0, 8) + "-" + id.substring(8, 12) + "-" + id.substring(12, 16) + "-" + id.substring(16, 20) + "-" + id.substring(20)), username);
         } catch (IllegalArgumentException e) {
             return new GameProfile(UUID.nameUUIDFromBytes(username.getBytes()), username);
         }
