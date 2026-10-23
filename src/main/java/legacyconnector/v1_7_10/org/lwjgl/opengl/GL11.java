@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
  * stack, current color, lighting, alpha test, immediate mode) are re-implemented here on top of
  * {@link RenderContext} instead of crashing the game.
  */
-public class GL11 extends org.lwjgl.opengl.GL11 {
+public class GL11 extends GL11Guard {
 
     protected GL11() {
     }
