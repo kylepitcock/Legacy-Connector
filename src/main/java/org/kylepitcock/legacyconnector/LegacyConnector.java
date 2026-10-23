@@ -62,6 +62,7 @@ public final class LegacyConnector {
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
 
         CompatComponents.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
         FEATURES.register(modBus);
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);

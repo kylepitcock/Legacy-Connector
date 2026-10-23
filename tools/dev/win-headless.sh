@@ -15,7 +15,7 @@ fi
 docker image inspect $IMAGE >/dev/null 2>&1 || docker build -q -t $IMAGE tools/docker || exit 1
 docker volume create lc-work >/dev/null
 # stage the project (the container has its own build/ and Gradle caches)
-tar --exclude=./build --exclude=./.gradle --exclude='./run*' --exclude=./.git --exclude=./testmods --exclude=./docs --exclude='*.jar' --exclude='*.log' -cf - . \
+tar --exclude=./build --exclude=./.gradle --exclude='./run*' --exclude=./.git --exclude=./testmods --exclude=./docs --exclude='./legacyconnector-*.jar' --exclude='*.log' -cf - . \
   | docker run --rm -i -v lc-work:/work $IMAGE bash -c 'cd /work && find . -mindepth 1 -maxdepth 1 ! -name build ! -name .gradle ! -name "run*" -exec rm -rf {} + ; tar xf - && sed -i "s/\\r\$//" tools/dev/*.sh gradlew && mkdir -p run-screenshots run-clienttest build && ln -sfn /mods run/mods 2>/dev/null || (mkdir -p run && ln -sfn /mods run/mods)'
 envs=()
 for v in MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS COMMANDS LOOPS LC_DEBUG WIDTH HEIGHT; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done

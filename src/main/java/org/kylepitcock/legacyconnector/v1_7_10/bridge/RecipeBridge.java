@@ -45,13 +45,18 @@ public final class RecipeBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Recipes");
     private static final Gson GSON = new Gson();
 
-    private sealed interface Spec permits Shaped, Shapeless, Smelting {}
+    private sealed interface Spec permits Shaped, Shapeless, Smelting, Custom {}
 
     private record Shaped(String owner, ItemStack output, List<String> pattern, Map<Character, Object> key) implements Spec {}
 
     private record Shapeless(String owner, ItemStack output, List<Object> inputs) implements Spec {}
 
     private record Smelting(String owner, ItemStack input, ItemStack output, float xp) implements Spec {}
+
+    /** A custom legacy IRecipe, kept as the object itself and named by its index in {@link #CUSTOM}. */
+    private record Custom(String owner, int index) implements Spec {}
+
+    private static final List<IRecipe> CUSTOM = new ArrayList<>();
 
     private static final List<Spec> RECIPES = new ArrayList<>();
     private static final Set<String> TAG_NAMES = new LinkedHashSet<>();
@@ -135,7 +140,10 @@ public final class RecipeBridge {
         } else if (recipe instanceof ShapelessRecipes s) {
             if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
         } else {
-            LOG.warn("Custom legacy IRecipe {} is not supported yet and was skipped", recipe.getClass().getName());
+            // NEI recipe wrappers (Thermal Expansion's NEIRecipeWrapper) are IRecipes only so NEI can list them; they never match
+            if (recipe.getClass().getName().contains(".nei.")) return;
+            RECIPES.add(new Custom(owner(), CUSTOM.size()));
+            CUSTOM.add(recipe);
         }
     }
 
@@ -168,12 +176,14 @@ public final class RecipeBridge {
                     case Shaped s -> shaped(s);
                     case Shapeless s -> shapeless(s);
                     case Smelting s -> smelting(s);
+                    case Custom c -> custom(c);
                 };
                 if (json == null) continue;
                 String ns = switch (spec) {
                     case Shaped s -> s.owner;
                     case Shapeless s -> s.owner;
                     case Smelting s -> s.owner;
+                    case Custom c -> c.owner;
                 };
                 byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
                 out.put("data/" + ns + "/recipe/legacy_" + (n++) + ".json", () -> bytes);
@@ -182,6 +192,17 @@ public final class RecipeBridge {
             }
         }
         generateTags(out);
+    }
+
+    public static synchronized IRecipe custom(int index) {
+        return index >= 0 && index < CUSTOM.size() ? CUSTOM.get(index) : null;
+    }
+
+    private static JsonObject custom(Custom c) {
+        JsonObject o = new JsonObject();
+        o.addProperty("type", "legacyconnector:legacy_recipe");
+        o.addProperty("index", c.index);
+        return o;
     }
 
     private static JsonObject shaped(Shaped s) {
