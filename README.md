@@ -4,22 +4,12 @@ Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar i
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified.
 
-> **Status: early development.** 1.7.10 is the active target. Expect simple content mods to partly work and large
-> mods to load with many features missing. See [Compatibility status](#compatibility-status).
+> **Status: alpha.** 1.7.10 is the active target. Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
+> Plenty, Twilight Forest, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
+> world generation and dimensions, and large tech packs load most of their mods. Some features are still missing or
+> unverified (see [Known compatibility issues](#known-compatibility-issues)), so back up your worlds.
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
-
-## Installation (alpha)
-
-1. Install **Minecraft 1.21.1** with **NeoForge 21.1.x** (Java 21).
-2. Download `legacyconnector-<version>.jar` from the [Releases](https://github.com/kylepitcock/Legacy-Connector/releases) page.
-3. Put it in your `mods` folder together with the **1.7.10** mod jars you own. Nothing else is needed; the jar contains
-   the loader and the runtime. Mods that need a library (CodeChickenLib, CoFH Core, ...) need that library's 1.7.10 jar too.
-4. Start the game. The first start translates each legacy jar (cached under `.legacyconnector/cache`, later starts are fast).
-5. Read `logs/legacyconnector-report.txt` to see what was translated and what could not be linked.
-
-This is an alpha: back up your worlds, expect missing features and report what you find on the
-[compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
 
 ## Screenshots
 
@@ -235,7 +225,7 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **In progress.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 1 of the ~140 test mods still fails to finish loading, see [Known compatibility issues](#known-compatibility-issues)). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
+| 1.7.10 | **Alpha.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 1 of the ~140 test mods still fails to finish loading, see [Known compatibility issues](#known-compatibility-issues)). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |

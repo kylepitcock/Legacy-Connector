@@ -177,6 +177,28 @@ public final class LegacySprites {
 
     private static final java.util.Set<String> FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
+    private static final java.util.concurrent.atomic.AtomicInteger SKIPPED = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * The sprite a custom loader mapped this one onto instead of loading it: through {@code copyFrom}, or, as IC2 does,
+     * a field of the sprite class holding another sprite.
+     */
+    private static TextureAtlasSprite aliasOf(TextureAtlasSprite sprite) {
+        if (sprite.mcc$copySource != null) return sprite.mcc$copySource;
+        for (Class<?> c = sprite.getClass(); c != null && c != TextureAtlasSprite.class; c = c.getSuperclass()) {
+            for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+                if (!TextureAtlasSprite.class.isAssignableFrom(f.getType()) || java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                try {
+                    f.setAccessible(true);
+                    if (f.get(sprite) instanceof TextureAtlasSprite other && other != sprite) return other;
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // not readable; try the next field
+                }
+            }
+        }
+        return null;
+    }
+
     private record Built(byte[] png, byte[] meta) {}
 
     public static void bake(TextureMap map, boolean block, Map<String, Supplier<byte[]>> out) {
@@ -199,7 +221,11 @@ public final class LegacySprites {
                 if (sprite.load(resources, location)) {
                     // The loader found the same texture already loaded and aliased it (IC2 does for repeated sides): the model
                     // names this sprite, so it gets the same picture.
-                    Built source = sprite.mcc$copySource == null ? null : done.get(sprite.mcc$copySource);
+                    if (SKIPPED.incrementAndGet() <= 8) {
+                        LOG.info("Custom loader skipped sprite {} (icon name {}, copied from {}, {} frames, {}x{})", name, sprite.getIconName(),
+                                sprite.mcc$copySource == null ? null : sprite.mcc$copySource.getIconName(), sprite.getFrameCount(), sprite.getIconWidth0(), sprite.getIconHeight0());
+                    }
+                    Built source = done.get(aliasOf(sprite));
                     if (source != null) {
                         String aliasId = sprite.getIconName();
                         int c = aliasId.indexOf(':');
