@@ -37,6 +37,28 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
         return ResourceLocation.fromNamespaceAndPath("legacyconnector", "nei_bridge");
     }
 
+    /**
+     * Legacy items of one kind often differ only in their NBT (a filled bucket, a configured part): without this JEI
+     * collapses them into one ingredient and reports the rest as duplicates. In the ingredient list the NBT tells them
+     * apart; when matching recipes only the legacy metadata does, so changing NBT (charge, damage) cannot break a lookup.
+     */
+    @Override
+    public void registerItemSubtypes(mezz.jei.api.registration.ISubtypeRegistration registration) {
+        for (net.minecraft.world.item.Item item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+            if (!(item instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemHolder)) continue;
+            registration.registerSubtypeInterpreter(item, (stack, context) -> {
+                StringBuilder data = new StringBuilder();
+                Integer meta = stack.get(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta());
+                if (meta != null) data.append('#').append(meta);
+                if (context == mezz.jei.api.ingredients.subtypes.UidContext.Ingredient) {
+                    var custom = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+                    if (custom != null && !custom.isEmpty()) data.append(custom.copyTag());
+                }
+                return data.isEmpty() ? mezz.jei.api.ingredients.subtypes.IIngredientSubtypeInterpreter.NONE : data.toString();
+            });
+        }
+    }
+
     @Override
     public void registerCategories(IRecipeCategoryRegistration registration) {
         NeiBridge.loadConfigs();
