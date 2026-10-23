@@ -10,6 +10,9 @@ import net.minecraft.world.entity.LivingEntity;
 
 /** 1.7.10 EntityTameable: tamed/sitting flags in watcher slot 16, owner UUID string in slot 17. */
 public abstract class EntityTameable extends EntityAnimal implements IEntityOwnable {
+    /** As 1.7.10: created with the entity; mods add it to their task list and stand it up when hurt (Blood Magic demons). */
+    protected legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAISit aiSit = new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAISit(this);
+
     public EntityTameable(World world) {
         super(world);
     }
@@ -75,6 +78,10 @@ public abstract class EntityTameable extends EntityAnimal implements IEntityOwna
 
     public boolean func_152114_e(EntityLivingBase entity) {
         return entity != null && entity == getOwner();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAISit getAISit() {
+        return aiSit;
     }
 
     protected void playTameEffect(boolean success) {

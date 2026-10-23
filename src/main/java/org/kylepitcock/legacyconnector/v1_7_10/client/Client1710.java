@@ -30,6 +30,7 @@ public final class Client1710 {
         LegacyParticles.register();
         ClientSelfTest.register();
         WorldScreenshotTest.register();
+        ScreenEvents1710.register();
         modBus.addListener(Client1710::onRegisterExtensions);
         modBus.addListener(Client1710::onRegisterItemColors);
         modBus.addListener(Client1710::onRegisterBlockColors);

@@ -15,6 +15,13 @@ public class Tessellator {
         return vertices.end();
     }
 
+    /** Leaves a draw that a failed legacy renderer began and never ended, so the next renderer does not hit "Already tesselating!". */
+    public void mcc$reset() {
+        if (!isDrawing) return;
+        isDrawing = false;
+        vertices.cancel();
+    }
+
     public void startDrawingQuads() {
         startDrawing(LegacyVertices.GL_QUADS);
     }

@@ -427,7 +427,8 @@ public final class ItemBridge {
             if (item instanceof ItemBlock ib && ib.mcc$block() != null) {
                 ib.mcc$block().registerBlockIcons(new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks"));
             }
-            item.registerIcons(new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items"));
+            int sprites = item.getSpriteNumber();
+            item.registerIcons(new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(sprites, sprites == 0 ? "textures/blocks" : "textures/items"));
         } catch (RuntimeException | LinkageError e) {
             LOG.debug("Icon registration for subtype discovery failed for {}", item, e);
         }

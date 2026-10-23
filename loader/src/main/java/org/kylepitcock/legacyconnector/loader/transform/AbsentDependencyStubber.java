@@ -44,7 +44,7 @@ public final class AbsentDependencyStubber {
         boolean changed = false;
         AbstractInsnNode insn = m.instructions.getFirst();
         while (insn != null) {
-            String missing = insn.getOpcode() >= 0 ? missingIn(insn, hierarchy) : null;
+            String missing = insn.getOpcode() >= 0 && !untypedFieldUse(m, insn, hierarchy) ? missingIn(insn, hierarchy) : null;
             if (missing == null) {
                 insn = insn.getNext();
                 continue;
@@ -88,6 +88,50 @@ public final class AbsentDependencyStubber {
             }
         }
         return changed;
+    }
+
+    /**
+     * A field of a present class whose type is absent, used in ways the JVM never loads that type for: storing null or a
+     * parameter of the same declared type, null-testing it, or returning it as the same type. ComputerCraft's widgets
+     * keep a field typed with a class of the absent ComputerCraftEdu addon and only ever set it to null.
+     */
+    private static boolean untypedFieldUse(MethodNode m, AbstractInsnNode insn, Hierarchy h) {
+        if (!(insn instanceof FieldInsnNode fi) || absent(h, fi.owner) != null) return false;
+        switch (fi.getOpcode()) {
+            case Opcodes.PUTFIELD, Opcodes.PUTSTATIC -> {
+                AbstractInsnNode prev = realNeighbour(insn, false);
+                if (prev == null) return false;
+                if (prev.getOpcode() == Opcodes.ACONST_NULL) return true;
+                return prev instanceof org.objectweb.asm.tree.VarInsnNode v && v.getOpcode() == Opcodes.ALOAD
+                        && fi.desc.equals(parameterType(m, v.var));
+            }
+            case Opcodes.GETFIELD, Opcodes.GETSTATIC -> {
+                AbstractInsnNode next = realNeighbour(insn, true);
+                if (next == null) return false;
+                int op = next.getOpcode();
+                return op == Opcodes.IFNULL || op == Opcodes.IFNONNULL || op == Opcodes.POP
+                        || op == Opcodes.ARETURN && Type.getReturnType(m.desc).getDescriptor().equals(fi.desc);
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
+
+    private static AbstractInsnNode realNeighbour(AbstractInsnNode insn, boolean forward) {
+        AbstractInsnNode n = forward ? insn.getNext() : insn.getPrevious();
+        while (n != null && n.getOpcode() < 0) n = forward ? n.getNext() : n.getPrevious();
+        return n;
+    }
+
+    /** Descriptor of the parameter in local slot {@code slot}, or null if the slot is not a parameter. */
+    private static String parameterType(MethodNode m, int slot) {
+        int at = (m.access & Opcodes.ACC_STATIC) != 0 ? 0 : 1;
+        for (Type t : Type.getArgumentTypes(m.desc)) {
+            if (at == slot) return t.getDescriptor();
+            at += t.getSize();
+        }
+        return null;
     }
 
     private static boolean guarded(MethodNode m) {

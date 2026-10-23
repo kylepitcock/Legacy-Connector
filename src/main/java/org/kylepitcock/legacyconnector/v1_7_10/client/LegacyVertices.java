@@ -33,6 +33,12 @@ public final class LegacyVertices {
         light = -1;
     }
 
+    /** Drops geometry begun but never ended (a legacy renderer that threw midway). */
+    public void cancel() {
+        drawing = false;
+        vertices.clear();
+    }
+
     public boolean isDrawing() {
         return drawing;
     }

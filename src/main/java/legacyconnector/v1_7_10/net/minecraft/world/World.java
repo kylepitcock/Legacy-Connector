@@ -172,7 +172,39 @@ public class World implements IBlockAccess {
     }
 
     protected static BlockPos pos(int x, int y, int z) {
-        return new BlockPos(x, y, z);
+        return DEEP_PASSES.get() == 0 ? new BlockPos(x, y, z) : new BlockPos(x, y + deepShift(), z);
+    }
+
+    /**
+     * Deep pass: 1.7.10 worlds ended at y=0 with bedrock, modern ones at -64. While a deep pass runs on a thread, legacy
+     * generators see the world shifted up by {@code -shift} (legacy y=0 is modern -64), deepslate reads as stone, and
+     * only writes below y=0 are accepted: ores, bedrock ores and underground structures land in the deep layer too.
+     */
+    private static final ThreadLocal<int[]> DEEP_SHIFT = new ThreadLocal<>();
+    private static final java.util.concurrent.atomic.AtomicInteger DEEP_PASSES = new java.util.concurrent.atomic.AtomicInteger();
+
+    public static void mcc$enterDeepPass(int shift) {
+        DEEP_PASSES.incrementAndGet();
+        DEEP_SHIFT.set(new int[] {shift});
+    }
+
+    public static void mcc$leaveDeepPass() {
+        DEEP_SHIFT.remove();
+        DEEP_PASSES.decrementAndGet();
+    }
+
+    private static int deepShift() {
+        int[] s = DEEP_SHIFT.get();
+        return s == null ? 0 : s[0];
+    }
+
+    private static boolean inDeepPass() {
+        return DEEP_PASSES.get() != 0 && DEEP_SHIFT.get() != null;
+    }
+
+    /** A modern height (surface scans) as the legacy code of this thread sees it. */
+    private static int legacyY(int modernY) {
+        return DEEP_PASSES.get() == 0 ? modernY : modernY - deepShift();
     }
 
     // ------------------------------------------------------------------ virtual fields
@@ -198,7 +230,10 @@ public class World implements IBlockAccess {
 
     @Override
     public Block getBlock(int x, int y, int z) {
-        return BlockBridge.legacyBlock(lvl().getBlockState(pos(x, y, z)));
+        BlockState state = lvl().getBlockState(pos(x, y, z));
+        // Ore generators replace stone; the deep layer is deepslate.
+        if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
+        return BlockBridge.legacyBlock(state);
     }
 
     @Override
@@ -211,6 +246,7 @@ public class World implements IBlockAccess {
      * within one chunk of its centre (and logs an error with a stack trace for each refused one, which is slow and noisy).
      */
     private boolean outsideRegion(BlockPos p) {
+        if (p.getY() >= 0 && inDeepPass()) return true;
         if (lvl() instanceof net.minecraft.server.level.WorldGenRegion r) {
             var c = r.getCenter();
             return Math.abs((p.getX() >> 4) - c.x) > 1 || Math.abs((p.getZ() >> 4) - c.z) > 1;
@@ -267,6 +303,7 @@ public class World implements IBlockAccess {
 
     /** {@code func_147480_a}: break a block, optionally dropping its items. */
     public boolean breakBlock(int x, int y, int z, boolean drop) {
+        if (outsideRegion(pos(x, y, z))) return false;
         TileEntityBridge.beforeBlockChange(this, pos(x, y, z));
         return lvl().destroyBlock(pos(x, y, z), drop);
     }
@@ -326,6 +363,10 @@ public class World implements IBlockAccess {
      * structure code that asks for the surface must be answered from the blocks themselves.
      */
     private int surface(int x, int z, Heightmap.Types type) {
+        return legacyY(modernSurface(x, z, type));
+    }
+
+    private int modernSurface(int x, int z, Heightmap.Types type) {
         LevelAccessor level = lvl();
         if (level instanceof net.minecraft.server.level.WorldGenRegion region) {
             if (!region.hasChunk(x >> 4, z >> 4)) return region.getSeaLevel();
@@ -519,16 +560,19 @@ public class World implements IBlockAccess {
     }
 
     public void setTileEntity(int x, int y, int z, TileEntity te) {
+        if (outsideRegion(pos(x, y, z))) return;
         TileEntityBridge.setAt(this, pos(x, y, z), te);
     }
 
     public void removeTileEntity(int x, int y, int z) {
+        if (outsideRegion(pos(x, y, z))) return;
         lvl().getChunk(pos(x, y, z)).removeBlockEntity(pos(x, y, z));
     }
 
     // ------------------------------------------------------------------ entities
 
     public boolean spawnEntityInWorld(Entity entity) {
+        if (inDeepPass()) return false; // entity positions are not shifted
         return EntityBridge.spawn(this, entity);
     }
 

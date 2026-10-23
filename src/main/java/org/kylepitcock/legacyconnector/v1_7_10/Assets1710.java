@@ -80,7 +80,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
         for (Item i : ItemBridge.modItems()) {
             try {
-                i.registerIcons(items);
+                // 1.7.10 registered an item's icons in the atlas its sprite number names: items drawing with block
+                // textures (AE2 parts and facades, Gendustry covers) find theirs under textures/blocks.
+                i.registerIcons(i.getSpriteNumber() == 0 ? blocks : items);
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerIcons failed for {}", i, e);
             }

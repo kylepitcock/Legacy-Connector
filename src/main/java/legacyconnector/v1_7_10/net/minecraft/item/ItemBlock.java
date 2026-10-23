@@ -32,9 +32,10 @@ public class ItemBlock extends Item {
         return this;
     }
 
+    /** As 1.7.10: the item atlas only when the block names an icon of its own for the item (doors, cakes, beds). */
     @Override
     public int getSpriteNumber() {
-        return 0;
+        return blockInstance != null && blockInstance.getItemIconName() != null ? 1 : 0;
     }
 
     @Override

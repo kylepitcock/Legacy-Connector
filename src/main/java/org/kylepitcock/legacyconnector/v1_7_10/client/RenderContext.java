@@ -51,12 +51,14 @@ public final class RenderContext {
 
     public static void beginGui(GuiGraphics gui) {
         LOCK.lock();
+        if (FRAMES.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
         FRAMES.push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last()));
         resetColor();
     }
 
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         LOCK.lock();
+        if (FRAMES.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
         FRAMES.push(new Frame(null, pose, buffers, light, overlay, pose.last()));
         resetColor();
     }
@@ -64,7 +66,10 @@ public final class RenderContext {
     public static void end() {
         try {
             Frame f = FRAMES.pop();
-            if (FRAMES.isEmpty()) resetState();
+            if (FRAMES.isEmpty()) {
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
+                resetState();
+            }
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
             // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
             for (int guard = 0; !f.pose.clear() && f.pose.last() != f.base && guard < 64; guard++) f.pose.popPose();
