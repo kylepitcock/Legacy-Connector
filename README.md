@@ -52,9 +52,9 @@ mods/SomeMod-1.7.10.jar
                   recipes -> data pack, ore dictionary -> tags, GUIs -> menus/screens, networking, world gen, ...)
 ```
 
-### No per-mod code
+### Generic first, per-mod code only as a last resort
 
-Nothing in the layer is written for a specific mod. Mods are made to work by implementing the **legacy API** they
+The layer is not written for specific mods. Mods are made to work by implementing the **legacy API** they
 were written against:
 
 - **Hand-written shim** (`src/main/java/legacyconnector/v1_7_10/...`): `Block`, `Item`, `ItemStack`, `World`, `Entity`,
@@ -68,7 +68,8 @@ were written against:
   arbitrary mod *load* instead of crashing with `NoClassDefFoundError`; the first call to each stub is logged so the
   most-used gaps can be implemented properly.
 
-Mod-specific code is reserved for rare edge cases (none exist today).
+Mod-specific code is the exception: it is used only when no generic fix works, only for popular mods, and it is kept small
+and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
 
 ### Legacy loader behaviour that is reproduced
 

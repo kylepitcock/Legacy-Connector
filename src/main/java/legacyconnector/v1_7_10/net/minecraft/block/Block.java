@@ -571,10 +571,42 @@ public class Block {
         return false;
     }
 
-    /** Forge: whether the plant can grow on this block from the given side. */
+    /** Forge: whether the plant can grow on this block from the given side (the default rules of 1.7.10 Forge). */
     public boolean canSustainPlant(IBlockAccess world, int x, int y, int z, ForgeDirection direction,
             legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable plantable) {
-        return false;
+        Block plant = plantable.getPlant(world, x, y + direction.offsetY, z);
+        legacyconnector.v1_7_10.net.minecraftforge.common.EnumPlantType type = plantable.getPlantType(world, x, y + direction.offsetY, z);
+        if (plant == legacyconnector.v1_7_10.net.minecraft.init.Blocks.cactus && this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.cactus) return true;
+        if (plant == legacyconnector.v1_7_10.net.minecraft.init.Blocks.reeds && this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.reeds) return true;
+        if (plantable instanceof BlockBush bush && bush.canPlaceBlockOn(this)) return true;
+        if (type == null) return false;
+        switch (type) {
+            case Desert:
+                return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.sand;
+            case Nether:
+                return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.soul_sand;
+            case Crop:
+                return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.farmland;
+            case Cave:
+                return isSideSolid(world, x, y, z, ForgeDirection.UP);
+            case Plains:
+                return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.grass || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.dirt
+                        || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.farmland;
+            case Water:
+                return world.getBlock(x, y, z).getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water
+                        && world.getBlockMetadata(x, y, z) == 0;
+            case Beach: {
+                boolean isBeach = this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.grass || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.dirt
+                        || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.sand;
+                boolean hasWater = world.getBlock(x - 1, y, z).getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water
+                        || world.getBlock(x + 1, y, z).getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water
+                        || world.getBlock(x, y, z - 1).getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water
+                        || world.getBlock(x, y, z + 1).getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water;
+                return isBeach && hasWater;
+            }
+            default:
+                return false;
+        }
     }
 
     /** Forge: whether a creature type can spawn on this block. */
