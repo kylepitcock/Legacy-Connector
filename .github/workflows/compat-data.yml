@@ -1,0 +1,34 @@
+name: Compatibility data
+
+# Rebuilds docs/data/reports.json (shown on the compatibility site) from the issues labelled "compatibility".
+on:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened, deleted]
+  workflow_dispatch:
+  schedule:
+    - cron: "17 4 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compat-data
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build reports.json
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/compat/build_reports.py "${{ github.repository }}"
+      - name: Commit changes
+        run: |
+          if git diff --quiet -- docs/data/reports.json; then echo "no change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/reports.json
+          git commit -m "Update compatibility reports"
+          git push

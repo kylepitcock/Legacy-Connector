@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legacy Connector Compatibility</title>
+<meta name="description" content="Which legacy Minecraft mods work under Legacy Connector on NeoForge 1.21.1, and how to report yours.">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dfe3e8; --accent: #2f6fed;
+    --works: #1f9d55; --partial: #c98a00; --fails: #d9480f; --crashes: #c92a2a; --untested: #6b7280;
+    --chip: #eef1f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
+      --works: #4cc38a; --partial: #e5b13a; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
+    --works: #4cc38a; --partial: #e5b13a; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+  header { padding: 40px 0 16px; }
+  h1 { margin: 0 0 6px; font-size: 1.9rem; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 62ch; }
+  nav { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 0.95rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 600; border: 0; cursor: pointer; font-size: 0.95rem; }
+  .btn:hover { text-decoration: none; filter: brightness(1.08); }
+  .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); font-weight: 500; padding: 5px 10px; font-size: 0.85rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  .stat b { display: block; font-size: 1.5rem; line-height: 1.1; }
+  .stat span { color: var(--muted); font-size: 0.85rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 8px 0 14px; }
+  input[type=search] { flex: 1 1 220px; min-width: 0; padding: 9px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 1rem; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { background: var(--chip); color: var(--text); border: 1px solid transparent; border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 0.88rem; }
+  .chip[aria-pressed=true] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+  .mod { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; }
+  .mod summary { list-style: none; display: flex; gap: 12px; align-items: center; padding: 12px 14px; cursor: pointer; }
+  .mod summary::-webkit-details-marker { display: none; }
+  .badge { flex: none; min-width: 84px; text-align: center; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #fff; }
+  .badge.works { background: var(--works); } .badge.partial { background: var(--partial); } .badge.fails { background: var(--fails); }
+  .badge.crashes { background: var(--crashes); } .badge.untested { background: var(--untested); }
+  .name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .meta { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
+  .body { padding: 0 14px 14px; border-top: 1px solid var(--line); }
+  .entry { padding: 10px 0; border-bottom: 1px dashed var(--line); }
+  .entry:last-of-type { border-bottom: 0; }
+  .entry .top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 0.9rem; }
+  .entry p { margin: 4px 0 0; color: var(--muted); font-size: 0.92rem; overflow-wrap: anywhere; }
+  .empty { text-align: center; color: var(--muted); padding: 28px 0; }
+  .howto { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 22px 0; }
+  .howto h2 { margin: 0 0 6px; font-size: 1.1rem; }
+  .howto ol { margin: 6px 0 0 18px; padding: 0; }
+  footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
+  @media (max-width: 520px) { .meta { display: none; } .badge { min-width: 72px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Legacy Connector compatibility</h1>
+    <p>Legacy Forge mods (1.7.10 first) running unmodified on NeoForge 1.21.1. Check whether a mod works, or tell us how it went for you.</p>
+    <nav>
+      <a class="btn" id="report-top" href="#" target="_blank" rel="noopener">Report a mod</a>
+      <a href="https://github.com/kylepitcock/Legacy-Connector" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a>
+      <a href="https://github.com/kylepitcock/Legacy-Connector/issues?q=label%3Acompatibility" target="_blank" rel="noopener">All reports</a>
+    </nav>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <input type="search" id="q" placeholder="Search mods…" aria-label="Search mods">
+    <div class="chips" id="chips" role="group" aria-label="Filter by result"></div>
+  </div>
+
+  <div id="list"></div>
+
+  <section class="howto">
+    <h2>How to report a mod</h2>
+    <ol>
+      <li>Start the game once with the mod installed; Legacy Connector writes <code>logs/legacyconnector-report.txt</code>.</li>
+      <li>Press <b>Report a mod</b> (or <b>Report</b> on a mod above). It opens a GitHub issue form with the mod name filled in.</li>
+      <li>Pick the result, describe what you tried, attach the report file, and submit. The list above updates within a few minutes of your submission.</li>
+    </ol>
+    <p style="margin:8px 0 0;color:var(--muted);font-size:.9rem">You need a free GitHub account. Please don't attach mod jars, only logs and screenshots.</p>
+  </section>
+
+  <footer>
+    <span id="updated"></span>
+    Maintainer results come from <code>docs/data/mods.json</code>; community results are generated from issues labelled <code>compatibility</code>.
+  </footer>
+</div>
+
+<script>
+(function () {
+  var REPO = "kylepitcock/Legacy-Connector";
+  var LABEL = { works: "Works", partial: "Partial", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
+  var ORDER = ["works", "partial", "fails", "crashes"];
+  var state = { q: "", status: "all", mods: [] };
+
+  function reportUrl(name) {
+    var u = "https://github.com/" + REPO + "/issues/new?template=compatibility_report.yml";
+    if (name) u += "&mod=" + encodeURIComponent(name) + "&title=" + encodeURIComponent("[Compat] " + name);
+    return u;
+  }
+  function norm(s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, ""); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function safeLink(url) { return /^https?:\/\//i.test(url || "") ? url : ""; }
+
+  function merge(maintainer, community) {
+    var byKey = {};
+    function slot(name) {
+      var k = norm(name);
+      if (!byKey[k]) byKey[k] = { name: name, entries: [] };
+      return byKey[k];
+    }
+    maintainer.forEach(function (m) {
+      slot(m.name).entries.push({ source: "maintainer", version: m.version, mc: m.mc, status: m.status, notes: m.notes || "" });
+    });
+    community.forEach(function (r) {
+      slot(r.mod).entries.push({ source: "community", version: "", mc: r.mc, status: r.status, notes: r.details, issue: r.issue,
+        date: r.date, lc: r.lc, link: safeLink(r.link), open: r.open });
+    });
+    return Object.keys(byKey).map(function (k) {
+      var m = byKey[k];
+      var maint = m.entries.filter(function (e) { return e.source === "maintainer"; });
+      var pool = maint.length ? maint : m.entries;
+      var counts = {};
+      pool.forEach(function (e) { counts[e.status] = (counts[e.status] || 0) + 1; });
+      m.status = ORDER.slice().sort(function (a, b) { return (counts[b] || 0) - (counts[a] || 0) || ORDER.indexOf(a) - ORDER.indexOf(b); })[0];
+      if (!counts[m.status]) m.status = "untested";
+      m.mcs = Array.from(new Set(m.entries.map(function (e) { return e.mc; }).filter(Boolean)));
+      return m;
+    }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+  }
+
+  function renderStats() {
+    var box = document.getElementById("stats");
+    box.textContent = "";
+    var counts = { works: 0, partial: 0, fails: 0, crashes: 0 };
+    state.mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
+    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"],
+     ["Fail or crash", counts.fails + counts.crashes, "fails"]].forEach(function (s) {
+      var d = el("div", "stat");
+      var b = el("b", null, String(s[1]));
+      if (s[2]) b.style.color = "var(--" + s[2] + ")";
+      d.appendChild(b);
+      d.appendChild(el("span", null, s[0]));
+      box.appendChild(d);
+    });
+  }
+
+  function renderChips() {
+    var box = document.getElementById("chips");
+    box.textContent = "";
+    [["all", "All"], ["works", "Works"], ["partial", "Partial"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
+      var b = el("button", "chip", c[1]);
+      b.type = "button";
+      b.setAttribute("aria-pressed", String(state.status === c[0]));
+      b.onclick = function () { state.status = c[0]; renderChips(); renderList(); };
+      box.appendChild(b);
+    });
+  }
+
+  function renderList() {
+    var list = document.getElementById("list");
+    list.textContent = "";
+    var q = norm(state.q);
+    var shown = state.mods.filter(function (m) {
+      return (state.status === "all" || m.status === state.status) && (!q || norm(m.name).indexOf(q) >= 0);
+    });
+    if (!shown.length) {
+      var e = el("div", "empty", state.mods.length ? "No mod matches. " : "No data yet. ");
+      var a = el("a", null, "Report it");
+      a.href = reportUrl(state.q.trim()); a.target = "_blank"; a.rel = "noopener";
+      e.appendChild(a);
+      list.appendChild(e);
+      return;
+    }
+    shown.forEach(function (m) {
+      var d = el("details", "mod");
+      var s = el("summary");
+      s.appendChild(el("span", "badge " + m.status, LABEL[m.status]));
+      s.appendChild(el("span", "name", m.name));
+      s.appendChild(el("span", "meta", m.entries.length + (m.entries.length === 1 ? " result" : " results") + (m.mcs.length ? " · " + m.mcs.join(", ") : "")));
+      d.appendChild(s);
+      var body = el("div", "body");
+      m.entries.forEach(function (en) {
+        var row = el("div", "entry");
+        var top = el("div", "top");
+        top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
+        var who = en.source === "maintainer" ? "Maintainer" : "Community";
+        top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "") + (en.mc ? " · MC " + en.mc : "")));
+        if (en.issue) {
+          var a = el("a", null, "#" + en.issue);
+          a.href = "https://github.com/" + REPO + "/issues/" + en.issue; a.target = "_blank"; a.rel = "noopener";
+          top.appendChild(a);
+        }
+        if (en.date) top.appendChild(el("span", "meta", en.date));
+        if (en.link) {
+          var l = el("a", null, "mod page");
+          l.href = en.link; l.target = "_blank"; l.rel = "noopener nofollow";
+          top.appendChild(l);
+        }
+        row.appendChild(top);
+        if (en.notes) row.appendChild(el("p", null, en.notes));
+        body.appendChild(row);
+      });
+      var r = el("a", "btn ghost", "Report this mod");
+      r.href = reportUrl(m.name); r.target = "_blank"; r.rel = "noopener";
+      r.style.marginTop = "10px";
+      body.appendChild(r);
+      d.appendChild(body);
+      list.appendChild(d);
+    });
+  }
+
+  function load(path) {
+    return fetch(path, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
+  }
+
+  document.getElementById("report-top").href = reportUrl("");
+  document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; renderList(); });
+  renderChips();
+  Promise.all([load("data/mods.json"), load("data/reports.json")]).then(function (res) {
+    state.mods = merge(res[0].mods || [], res[1].reports || []);
+    renderStats();
+    renderList();
+  });
+})();
+</script>
+</body>
+</html>
