@@ -80,6 +80,77 @@ public class WorldProvider {
         return hasNoSky ? 128 : 256;
     }
 
+    // ------------------------------------------------------------------ client: sky, fog and clouds (see LegacyDimensionEffects)
+
+    private legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler mcc$skyRenderer;
+    private legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler mcc$cloudRenderer;
+    private legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler mcc$weatherRenderer;
+
+    public legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler getSkyRenderer() {
+        return mcc$skyRenderer;
+    }
+
+    public void setSkyRenderer(legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler renderer) {
+        this.mcc$skyRenderer = renderer;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler getCloudRenderer() {
+        return mcc$cloudRenderer;
+    }
+
+    public void setCloudRenderer(legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler renderer) {
+        this.mcc$cloudRenderer = renderer;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler getWeatherRenderer() {
+        return mcc$weatherRenderer;
+    }
+
+    public void setWeatherRenderer(legacyconnector.v1_7_10.net.minecraftforge.client.IRenderHandler renderer) {
+        this.mcc$weatherRenderer = renderer;
+    }
+
+    /** The time of day as a 0..1 angle (vanilla's curve: the sun lingers near the horizon). */
+    public float calculateCelestialAngle(long worldTime, float partialTicks) {
+        int i = (int) (worldTime % 24000L);
+        float f1 = ((float) i + partialTicks) / 24000.0F - 0.25F;
+        if (f1 < 0.0F) f1 += 1.0F;
+        if (f1 > 1.0F) f1 -= 1.0F;
+        float f2 = f1;
+        f1 = 1.0F - (float) ((Math.cos((double) f1 * Math.PI) + 1.0D) / 2.0D);
+        return f2 + (f1 - f2) / 3.0F;
+    }
+
+    public int getMoonPhase(long worldTime) {
+        return (int) (worldTime / 24000L % 8L + 8L) % 8;
+    }
+
+    /** Vanilla's fog colour for a time of day: pale blue-grey, darker at night. */
+    public legacyconnector.v1_7_10.net.minecraft.util.Vec3 getFogColor(float celestialAngle, float partialTicks) {
+        float f = (float) Math.cos(celestialAngle * (float) Math.PI * 2.0F) * 2.0F + 0.5F;
+        f = Math.max(0.0F, Math.min(1.0F, f));
+        float r = 0.7529412F * (f * 0.94F + 0.06F);
+        float g = 0.84705883F * (f * 0.94F + 0.06F);
+        float b = 1.0F * (f * 0.91F + 0.09F);
+        return legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(r, g, b);
+    }
+
+    public boolean isSkyColored() {
+        return true;
+    }
+
+    public float getCloudHeight() {
+        return 128.0F;
+    }
+
+    public boolean doesXZShowFog(int x, int z) {
+        return false;
+    }
+
+    public double getVoidFogYFactor() {
+        return 0.03125D;
+    }
+
     public String getSaveFolder() {
         return dimensionId == 0 ? null : "DIM" + dimensionId;
     }

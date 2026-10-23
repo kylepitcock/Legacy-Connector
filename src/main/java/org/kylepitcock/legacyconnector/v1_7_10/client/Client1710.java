@@ -31,6 +31,8 @@ public final class Client1710 {
         ClientSelfTest.register();
         WorldScreenshotTest.register();
         ScreenEvents1710.register();
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent e) ->
+                e.register(org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.EFFECTS, new LegacyDimensionEffects()));
         modBus.addListener((net.neoforged.neoforge.client.event.TextureAtlasStitchedEvent e) -> {
             if (!e.getAtlas().location().equals(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)) return;
             AtlasUV.invalidate();

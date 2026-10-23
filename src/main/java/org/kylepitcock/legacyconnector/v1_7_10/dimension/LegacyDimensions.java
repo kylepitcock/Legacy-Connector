@@ -24,6 +24,8 @@ public final class LegacyDimensions {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
     private static final String NAMESPACE = "legacyconnector";
     private static final String PREFIX = "dim_";
+    /** The dimension special effects every mod dimension names (registered on the client). */
+    public static final ResourceLocation EFFECTS = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "legacy_dimension");
 
     private LegacyDimensions() {}
 
@@ -104,7 +106,7 @@ public final class LegacyDimensions {
             type.addProperty("min_y", 0);
             type.addProperty("height", 256);
             type.addProperty("infiniburn", "#minecraft:infiniburn_overworld");
-            type.addProperty("effects", "minecraft:overworld");
+            type.addProperty("effects", EFFECTS.toString()); // client: LegacyDimensionEffects asks the provider
             byte[] typeBytes = type.toString().getBytes(StandardCharsets.UTF_8);
             String name = PREFIX + id;
             out.put("data/" + NAMESPACE + "/dimension_type/" + name + ".json", () -> typeBytes);
