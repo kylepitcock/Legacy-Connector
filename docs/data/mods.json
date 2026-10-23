@@ -126,6 +126,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Another One Bites The Dust",
+   "version": "2.9.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "AppleCore",
    "version": "3.3.7",
    "mc": "1.7.10",
@@ -153,6 +162,24 @@
   {
    "name": "ArchitectureCraft",
    "version": "1.11.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Aroma1997's Dimensional World",
+   "version": "0.0.0-legacy",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Aroma1997Core|Helper",
+   "version": "1.0.2.16",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -419,6 +446,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Big Reactors",
+   "version": "0.4.3A",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Binnie Core",
    "version": "2.5.24",
    "mc": "1.7.10",
@@ -466,6 +502,15 @@
   {
    "name": "Blood Magic: Alchemical Wizardry",
    "version": "1.7.52",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Blood Magic: Alchemical Wizardry v1.3.3",
+   "version": "",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -604,6 +649,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "ComputerCraft",
+   "version": "1.75",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Computronics",
    "version": "1.9.3-GTNH",
    "mc": "1.7.10",
@@ -694,6 +748,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "debug",
+   "version": "0.0.0-legacy",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Default Configs",
    "version": "1.3.0",
    "mc": "1.7.10",
@@ -705,6 +768,15 @@
   {
    "name": "Default World Generator",
    "version": "0.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Dense Ores",
+   "version": "1.0",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -791,6 +863,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "EnderTech",
+   "version": "1.7.10-0.3.2.405",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Enhanced LootBags",
    "version": "1.2.8",
    "mc": "1.7.10",
@@ -827,6 +908,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Extra Cells",
+   "version": "2 2.3.14",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Extra Trees",
    "version": "2.5.24",
    "mc": "1.7.10",
@@ -838,6 +928,33 @@
   {
    "name": "Extra Utilities",
    "version": "1.2.12",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "ExtraTiC",
+   "version": "1.4.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Fast Leaf Decay",
+   "version": "1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "fc-dummy",
+   "version": "0",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -908,6 +1025,42 @@
   {
    "name": "ForgeRelocation",
    "version": "0.3.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "FTB Tweaks",
+   "version": "1.0.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "FTBLib",
+   "version": "1.0.18.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"com.mojang.authlib.GameProfile.getId()\" because the return value of \"legacyconnector_synth.v1_7_10.net.minecraft."
+  },
+  {
+   "name": "FTBUtilities",
+   "version": "1.0.18.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Funky Locomotion",
+   "version": "1.0",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1131,6 +1284,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Guide-API",
+   "version": "1.7.10-1.0.1-20",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Hardcore Ender Expansion",
    "version": "1.12.16-GTNH",
    "mc": "1.7.10",
@@ -1140,11 +1302,47 @@
    "notes": "Fails during preInit: java.lang.IllegalStateException: Error replacing entity with ID 58, entity entry missing!"
   },
   {
+   "name": "Hardcore Questing Mode",
+   "version": "4.4.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Hats",
+   "version": "4.0.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "HatStand",
+   "version": "4.0.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "HBM's Nuclear Tech Mod",
    "version": "1.0.27 BETA",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Machines, GUIs and entities verified."
+  },
+  {
+   "name": "Headcrumbs",
+   "version": "1.7.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "HelpFixer",
@@ -1210,8 +1408,35 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "iChunUtil",
+   "version": "4.2.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Iguana Tinker Tweaks",
    "version": "2.6.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Immersive Engineering",
+   "version": "0.7.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Immersive Integration",
+   "version": "0.6.8",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1253,8 +1478,35 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "INpureCore",
+   "version": "1.7.10R1.0.0B9",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"org.apache.logging.log4j.core.Logger.addFilter(org.apache.logging.log4j.core.Filter)\" because \"legacyconnector.v1"
+  },
+  {
    "name": "Inventory Bogo Sorter",
    "version": "1.2.68-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Inventory Tweaks",
+   "version": "1.59-dev-152-cf6e263",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.VerifyError: Catch type is not a subclass of Throwable in exception handler 32"
+  },
+  {
+   "name": "Iron Chest",
+   "version": "6.0.62.742",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1332,6 +1584,15 @@
    "date": "2026-10-23",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "Let's Encrypt Craft @VERSION@",
+   "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "LittleTiles",
@@ -1442,6 +1703,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "MFR Compat: Vanilla",
+   "version": "1.7.10R2.8.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Mine & Blade Battlegear",
    "version": "2 1.5.9-backhand",
    "mc": "1.7.10",
@@ -1453,6 +1723,15 @@
   {
    "name": "Minecraft Multipart Plugin",
    "version": "1.7.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "MineFactory Reloaded",
+   "version": "1.7.10R2.8.1",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1498,6 +1777,15 @@
   {
    "name": "ModularUI",
    "version": "1.2.20",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Morpheus",
+   "version": "1.7.10-1.6.21",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1638,6 +1926,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Nether Ores",
+   "version": "1.7.10R2.3.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Nether Portal Fix",
    "version": "1.4.0",
    "mc": "1.7.10",
@@ -1654,6 +1951,15 @@
    "date": "2026-10-23",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Not Enough Resources",
+   "version": "0.1.0.ManuallyBuilt",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.VerifyError: Bad type on operand stack"
   },
   {
    "name": "NotEnoughEnergistics",
@@ -1746,6 +2052,33 @@
   {
    "name": "OpenMods",
    "version": "0.10.11",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OpenPeripheralAddons",
+   "version": "0.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OpenPeripheralCore",
+   "version": "1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "OpenPeripheralIntegration",
+   "version": "0.6",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -1942,6 +2275,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Redstone Arsenal",
+   "version": "1.7.10R1.1.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "RelocationFMP",
    "version": "0.2.0",
    "mc": "1.7.10",
@@ -1960,6 +2302,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Resource Loader",
+   "version": "1.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "RFTools",
    "version": "4.23",
    "mc": "1.7.10",
@@ -1969,6 +2320,15 @@
   {
    "name": "Roguelike Dungeons",
    "version": "1.6.6-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Runic Dungeons",
+   "version": "1.1.7b",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -2021,8 +2381,26 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Simply Jetpacks",
+   "version": "1.5.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0"
+  },
+  {
    "name": "Sleeping Bag",
    "version": "0.3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Solar Expansion",
+   "version": "1.6a",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -2037,6 +2415,15 @@
    "date": "2026-10-23",
    "status": "fails",
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "Spring Boards",
+   "version": "0.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Standard Expansion",
@@ -2068,6 +2455,15 @@
   {
    "name": "Steve's Factory Manager",
    "version": "1.3.4-GTNH",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Steve's Workshop",
+   "version": "0.5.1",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -2167,6 +2563,15 @@
   {
    "name": "Tainted Magic r7.6",
    "version": "",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "TC Inventory Scanning",
+   "version": "1.0.11",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
@@ -2325,11 +2730,29 @@
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
   {
+   "name": "Thermal Dynamics",
+   "version": "1.7.10R1.2.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Thermal Expansion",
    "version": "4.1.5",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Machine GUIs open, RF gauge hover tooltips work."
+  },
+  {
+   "name": "Thermal Foundation",
+   "version": "1.7.10R1.2.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "TiC Tooltips",
