@@ -126,6 +126,35 @@ public class Minecraft {
         return mc().getWindow().getHeight();
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler getSoundHandler() {
+        return legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler.INSTANCE;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient getNetHandler() {
+        return mc().getConnection() == null ? null : legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient.INSTANCE;
+    }
+
+    /** Captures the mouse for the game (as closing a screen does). */
+    public void setIngameFocus() {
+        if (mc().screen == null) mc().mouseHandler.grabMouse();
+    }
+
+    public void setIngameNotInFocus() {
+        mc().mouseHandler.releaseMouse();
+    }
+
+    public boolean isIntegratedServerRunning() {
+        return mc().hasSingleplayerServer();
+    }
+
+    public void refreshResources() {
+        mc().reloadResourcePacks();
+    }
+
+    public void shutdown() {
+        mc().stop();
+    }
+
     public TextureManager getTextureManager() {
         return renderEngine;
     }
