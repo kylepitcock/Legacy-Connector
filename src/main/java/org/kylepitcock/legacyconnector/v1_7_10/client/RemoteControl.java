@@ -20,7 +20,7 @@ import net.minecraft.world.phys.HitResult;
  *
  * <pre>
  * cmd &lt;slash command&gt;   shot &lt;name&gt;   wait &lt;ticks&gt;   look &lt;yaw&gt; &lt;pitch&gt;   use   useat &lt;x&gt; &lt;y&gt; &lt;z&gt;   mouse &lt;x&gt; &lt;y&gt;   click &lt;x&gt; &lt;y&gt; [button]
- * key &lt;glfw code&gt;   type &lt;text&gt;   close   info   quit        (x, y are GUI-scaled coordinates)
+ * key &lt;glfw code&gt;   type &lt;text&gt;   close   title   info   quit        (x, y are GUI-scaled coordinates)
  * </pre>
  */
 public final class RemoteControl {
@@ -158,6 +158,13 @@ public final class RemoteControl {
             case "creative" -> {
                 mc.setScreen(new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player, mc.player.connection.enabledFeatures(), true));
                 waitTicks = 8;
+            }
+            case "title" -> {
+                // back to the title screen (a mod that replaces it, Custom Main Menu, gets its GuiOpenEvent)
+                mc.level.disconnect();
+                mc.disconnect(new net.minecraft.client.gui.screens.GenericMessageScreen(net.minecraft.network.chat.Component.empty()));
+                mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen());
+                waitTicks = 40;
             }
             case "close" -> {
                 mc.setScreen(null);

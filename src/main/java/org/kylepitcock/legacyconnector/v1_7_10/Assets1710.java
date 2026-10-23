@@ -71,12 +71,6 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerBlockIcons failed for {}", b, e);
             }
-            try {
-                blockModels(b, out);
-            } catch (RuntimeException | LinkageError e) {
-                // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
-                LOG.warn("Model generation failed for {}: {}", b, e.toString(), e);
-            }
         }
         for (Item i : ItemBridge.modItems()) {
             try {
@@ -86,14 +80,27 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerIcons failed for {}", i, e);
             }
+        }
+        // As 1.7.10: every icon is registered, the atlas is stitched, then TextureStitchEvent.Post lets mods set up icons
+        // that derive from the stitched ones (Chisel's leaves and connected textures); models read the icons after that.
+        // (There is no atlas yet, so UVs are not final; the event fires again once the real atlas exists, see postStitched.)
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(blocks));
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(items));
+        for (Block b : BlockBridge.modBlocks()) {
+            try {
+                blockModels(b, out);
+            } catch (RuntimeException | LinkageError e) {
+                // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
+                LOG.warn("Model generation failed for {}: {}", b, e.toString(), e);
+            }
+        }
+        for (Item i : ItemBridge.modItems()) {
             try {
                 itemModels(i, out);
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Model generation failed for {}: {}", i, e.toString(), e);
             }
         }
-        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(blocks));
-        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(items));
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
     }

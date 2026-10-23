@@ -58,7 +58,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
                     : recipes.get(0).outputs().get(0).stacks().get(0));
             categories.add(new Category(type, Component.literal(title == null ? path : title), background(gui, handler), icon, recipes));
         }
-        registration.addRecipeCategories(categories.toArray(new IRecipeCategory[0]));
+        if (!categories.isEmpty()) registration.addRecipeCategories(categories.toArray(new IRecipeCategory[0])); // JEI rejects an empty list
     }
 
     private static IDrawable background(IGuiHelper gui, TemplateRecipeHandler handler) {
