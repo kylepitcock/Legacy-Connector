@@ -84,7 +84,7 @@ neoForge {
             client()
             gameDirectory = project.file('run-screenshots')
             systemProperty 'legacyconnector.screenshotTest', 'true'
-            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas'].each { p ->
+            ['shotWorldType', 'shotMods', 'shotBlocksPerMod', 'shotItemsPerMod', 'shotTour', 'shotSeed', 'shotScenario', 'shotRenderDistance', 'shotBlocks', 'shotItems', 'shotEntities', 'shotMetas', 'shotCommands'].each { p ->
                 if (project.hasProperty(p)) systemProperty 'legacyconnector.' + p, project.property(p)
             }
             if (project.hasProperty('shotWidth') && project.hasProperty('shotHeight')) {

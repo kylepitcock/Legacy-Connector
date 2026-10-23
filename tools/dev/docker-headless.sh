@@ -17,7 +17,7 @@ rsync -aL --delete run/mods/ "$STAGE/run/mods/"
 # keep each run directory's config and world between runs, but not its mods and logs
 for d in run-screenshots run-clienttest; do [ -d $d/config ] && rsync -a $d/config/ "$STAGE/$d/config/"; done
 envs=()
-for v in MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS WIDTH HEIGHT; do [[ -n ${(P)v} ]] && envs+=(-e "$v=${(P)v}"); done
+for v in MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS COMMANDS WIDTH HEIGHT; do [[ -n ${(P)v} ]] && envs+=(-e "$v=${(P)v}"); done
 docker run --rm --shm-size=1g -v "$STAGE:/work" -v legacyconnector-gradle:/root/.gradle -v legacyconnector-cache:/work/run-screenshots/.legacyconnector -w /work -e HEADLESS=1 $envs $IMAGE \
   bash -c 'Xvfb :99 -screen 0 ${WIDTH:-854}x${HEIGHT:-480}x24 +extension GLX -nolisten tcp >/dev/null 2>&1 & sleep 2; export DISPLAY=:99; exec tools/dev/"$0" "$@"' "$@"
 rc=$?

@@ -298,6 +298,7 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.entity.VillageSelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.registerSaving();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge.register();
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.DevCommands1710.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyContentSummary.register();
         org.kylepitcock.legacyconnector.core.RecipeSyncGuard.register();
         LOG.info("1.7.10: {} block(s), {} item(s), {} recipe(s) translated", adapters.size(),

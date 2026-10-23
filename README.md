@@ -15,9 +15,9 @@ Blocks of Applied Energistics 2, Twilight Forest, Tinkers' Construct and BiblioC
 
 ![Legacy and modern blocks side by side](docs/images/legacy-and-modern-blocks.png)
 
-Legacy items in the survival inventory next to JEI, with a legacy tooltip:
+The Diesel Generator screen of HBM's Nuclear Tech Mod, a block's own 1.7.10 GUI code drawn in 1.21 next to JEI:
 
-![Legacy items in the inventory with JEI](docs/images/legacy-items-with-jei.png)
+![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
 
 Twilight Forest and Witchery entities beside a vanilla cow and villager:
 

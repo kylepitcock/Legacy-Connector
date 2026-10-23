@@ -221,6 +221,16 @@ public final class WorldScreenshotTest {
             queuePortalScenario();
             return;
         }
+        if ("commands".equals(System.getProperty("legacyconnector.shotScenario"))) {
+            // runs the commands of -Dlegacyconnector.shotCommands (separated by ';') and logs the chat
+            add(waitForWorld(), wait(40), command("gamemode creative"), command("tp @s 0 150 0"), waitForTerrain(60));
+            for (String c : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) add(command(c.trim()), wait(30));
+            add(run(mc -> {
+                LOG.info("Screenshot test finished");
+                mc.stop();
+            }));
+            return;
+        }
         if ("tabs".equals(System.getProperty("legacyconnector.shotScenario"))) {
             add(waitForWorld(), wait(60), run(mc -> {
                 net.minecraft.world.item.CreativeModeTabs.tryRebuildTabContents(mc.player.connection.enabledFeatures(), true, mc.level.registryAccess());
@@ -653,10 +663,14 @@ public final class WorldScreenshotTest {
                 if (screen != null) {
                     LOG.info("GUI TEST: {} opened {}", state, screen.getClass().getName());
                     mc.gui.getChat().clearMessages(false);
-                    shotNow(mc, "gui_" + id.getNamespace() + "_" + id.getPath().replace('/', '_') + "_m" + meta);
-                    mc.setScreen(null);
                 } else {
                     LOG.info("GUI TEST: {} opened no screen", state);
+                }
+            }), wait(4), run(mc -> {
+                if (mc.screen != null) {
+                    mc.gui.getChat().clearMessages(false);
+                    shotNow(mc, "gui_" + id.getNamespace() + "_" + id.getPath().replace('/', '_') + "_m" + meta);
+                    mc.setScreen(null);
                 }
             }), wait(2));
         }
