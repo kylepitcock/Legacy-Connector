@@ -45,6 +45,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.CLIENT_RESOURCES) return;
         org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs.contributeModels(out);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFontPages.contribute(out);
         var blocks = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
         var items = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
         // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
@@ -231,7 +232,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static JsonObject model(Block b, String[] faces) {
         JsonObject model = new JsonObject();
         JsonObject tex = new JsonObject();
-        if (b.getRenderType() == 22 || b.getRenderType() == -1) {
+        if (b.getRenderType() == 22 || b.getRenderType() == -1 || org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.drawnByNobody(b.getRenderType())) {
             // 22: chest; -1: not drawn as a block at all (a TileEntitySpecialRenderer draws it, e.g. BiblioCraft).
             // Chest-style: no geometry, the tile entity renderer draws it; keep the particle texture for breaking.
             tex.addProperty("particle", faces[1]);

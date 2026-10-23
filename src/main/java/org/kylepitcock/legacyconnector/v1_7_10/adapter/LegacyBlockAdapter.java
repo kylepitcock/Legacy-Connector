@@ -347,6 +347,19 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     // ------------------------------------------------------------------ shape and rendering
 
+    /**
+     * A render id above the vanilla ones with no ISimpleBlockRenderingHandler behind it draws nothing in 1.7.10 (BiblioCraft
+     * gives its tile-entity-rendered blocks such ids): the block is invisible, not a cube.
+     */
+    public static boolean drawnByNobody(int type) {
+        if (type <= 41) return false;
+        try {
+            return legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(type) == null;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         int type;
@@ -356,7 +369,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             // Called by resource reloading and rendering; a throwing legacy block must not abort either.
             return RenderShape.MODEL;
         }
-        if (type == -1) return RenderShape.INVISIBLE;
+        if (type == -1 || drawnByNobody(type)) return RenderShape.INVISIBLE;
         // 22 = chest: drawn entirely by the tile entity renderer.
         return type == 22 ? RenderShape.ENTITYBLOCK_ANIMATED : RenderShape.MODEL;
     }
