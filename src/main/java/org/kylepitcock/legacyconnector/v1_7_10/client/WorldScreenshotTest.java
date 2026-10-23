@@ -606,40 +606,57 @@ public final class WorldScreenshotTest {
     /** Right-clicks each legacy block of the selected mods and records which screen opens (custom GUIs). */
     private static void queueGuiScenario() {
         String modsProp = System.getProperty("legacyconnector.shotMods", "");
+        String metasProp = System.getProperty("legacyconnector.shotMetas", "0");
         int cap = intProp("legacyconnector.shotBlocksPerMod", 24);
         Map<String, Integer> perMod = new LinkedHashMap<>();
-        List<ResourceLocation> ids = new ArrayList<>();
+        // (block, metadata) pairs: metadata from the property, or "variants" = the block item's registered subtypes
+        List<Object[]> targets = new ArrayList<>();
         for (var e : BuiltInRegistries.BLOCK.entrySet()) {
-            if (!(e.getValue() instanceof LegacyBlockAdapter)) continue;
+            if (!(e.getValue() instanceof LegacyBlockAdapter adapter)) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
             var only = idList("legacyconnector.shotBlocks");
             if (!only.isEmpty() && !only.contains(id)) continue;
             if (perMod.merge(id.getNamespace(), 1, Integer::sum) > cap) continue;
-            ids.add(id);
+            java.util.TreeSet<Integer> metas = new java.util.TreeSet<>();
+            if (metasProp.equals("variants")) {
+                metas.add(0);
+                try {
+                    var item = org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.fromBlock((legacyconnector.v1_7_10.net.minecraft.block.Block) adapter.legacy());
+                    if (item != null) for (int m : item.mcc$variants.keySet()) if (m >= 0 && m < 16) metas.add(m);
+                } catch (RuntimeException | LinkageError ex) {
+                    // metadata 0 only
+                }
+            } else {
+                for (String m : metasProp.split(",")) metas.add(Integer.parseInt(m.trim()));
+            }
+            for (int m : metas) targets.add(new Object[] {id, m});
         }
         add(waitForWorld(), wait(40), command("gamemode creative"), command("time set noon"), command("tp @s 0 150 0"), waitForTerrain(100));
-        for (ResourceLocation id : ids) {
+        for (Object[] target : targets) {
+            ResourceLocation id = (ResourceLocation) target[0];
+            int meta = (Integer) target[1];
+            String state = id + "[meta=" + meta + "]";
             add(run(mc -> {
                 var c = mc.player.connection;
                 BlockPos at = mc.player.blockPosition();
                 int x = at.getX() + 2, y = at.getY(), z = at.getZ();
                 c.sendCommand("setblock " + x + " " + y + " " + z + " minecraft:air");
-                c.sendCommand("setblock " + x + " " + y + " " + z + " " + id);
+                c.sendCommand("setblock " + x + " " + y + " " + z + " " + state);
             }), wait(20), run(mc -> {
                 BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
-                LOG.info("GUI TEST: {} client state {} block entity {}", id, mc.level.getBlockState(at), mc.level.getBlockEntity(at));
                 var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
                 var result = mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
-                LOG.info("GUI TEST: {} use result {}", id, result);
+                LOG.info("GUI TEST: {} use result {}", state, result);
             }), wait(12), run(mc -> {
                 var screen = mc.screen;
                 if (screen != null) {
-                    LOG.info("GUI TEST: {} opened {}", id, screen.getClass().getName());
-                    shotNow(mc, "gui_" + id.getNamespace() + "_" + id.getPath().replace('/', '_'));
+                    LOG.info("GUI TEST: {} opened {}", state, screen.getClass().getName());
+                    mc.gui.getChat().clearMessages(false);
+                    shotNow(mc, "gui_" + id.getNamespace() + "_" + id.getPath().replace('/', '_') + "_m" + meta);
                     mc.setScreen(null);
                 } else {
-                    LOG.info("GUI TEST: {} opened no screen", id);
+                    LOG.info("GUI TEST: {} opened no screen", state);
                 }
             }), wait(2));
         }

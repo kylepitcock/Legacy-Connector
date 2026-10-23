@@ -59,8 +59,7 @@ public final class ModMetadataGenerator {
             if (mod.credits != null) sb.append("credits=").append(q(mod.credits)).append('\n');
             if (mod.url != null) sb.append("displayURL=").append(q(mod.url)).append('\n');
             if (mod.logoFile != null) sb.append("logoFile=").append(q(mod.logoFile.startsWith("/") ? mod.logoFile.substring(1) : mod.logoFile)).append('\n');
-            sb.append("description=").append(q((mod.description == null ? "" : mod.description)
-                    + "\n\nLegacy Forge " + jar.version.id() + " mod running through MC Compatibility (legacy id: " + mod.legacyId + ")")).append("\n\n");
+            sb.append("description=").append(q(mod.description == null ? "" : mod.description)).append("\n\n");
 
             dependency(sb, mod.modernId(), RUNTIME_MOD_ID, true, "AFTER");
             for (LegacyModDecl.Dependency dep : mod.parsedDependencies()) {

@@ -29,6 +29,7 @@ args=()
 [[ -n $RENDER ]] && args+=(-PshotRenderDistance=$RENDER)
 [[ -n $SHOWITEMS ]] && args+=(-PshotItems=$SHOWITEMS)   # gallery scenario: ordered ids of items / entities to show
 [[ -n $SHOWENT ]] && args+=(-PshotEntities=$SHOWENT)
+[[ -n $METAS ]] && args+=(-PshotMetas=$METAS)   # gui scenario: block metadata to try ("0,1,2" or "variants")
 [[ -n $WIDTH && -n $HEIGHT ]] && args+=(-PshotWidth=$WIDTH -PshotHeight=$HEIGHT)
 [[ -n $SHOW ]] && args+=(-PshotBlocks=$SHOW)   # SHOW=ns:block,ns:block: only these blocks in the showcase
 : > run-screenshots/logs/latest.log

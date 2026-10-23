@@ -38,6 +38,22 @@ public class LegacyMenu extends AbstractContainerMenu {
         return legacy;
     }
 
+    /**
+     * The client's legacy container can have other slots than the server's (a tile entity that has not arrived yet when the GUI
+     * was built): the server's content packet then names slots that do not exist here. Modern code throws and disconnects; the
+     * slots that exist are filled and the rest ignored.
+     */
+    @Override
+    public void initializeContents(int stateId, List<net.minecraft.world.item.ItemStack> items, net.minecraft.world.item.ItemStack carried) {
+        for (int i = 0; i < items.size() && i < slots.size(); i++) getSlot(i).set(items.get(i));
+        setCarried(carried);
+    }
+
+    @Override
+    public void setItem(int slot, int stateId, net.minecraft.world.item.ItemStack stack) {
+        if (slot >= 0 && slot < slots.size()) super.setItem(slot, stateId, stack);
+    }
+
     public Object clientGui() {
         return clientGui;
     }
