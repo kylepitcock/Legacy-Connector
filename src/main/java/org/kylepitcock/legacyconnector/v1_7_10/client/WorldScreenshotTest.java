@@ -655,6 +655,10 @@ public final class WorldScreenshotTest {
                 c.sendCommand("setblock " + x + " " + y + " " + z + " " + state);
             }), wait(20), run(mc -> {
                 BlockPos at = mc.player.blockPosition().offset(2, 0, 0);
+                if (mc.level.getBlockEntity(at) instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity lbe) {
+                    var te = lbe.legacy();
+                    LOG.info("GUI TEST: {} client state {} tile entity {}", state, mc.level.getBlockState(at), te == null ? null : te.getClass().getName());
+                }
                 var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(at), net.minecraft.core.Direction.UP, at, false);
                 var result = mc.gameMode.useItemOn(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND, hit);
                 LOG.info("GUI TEST: {} use result {}", state, result);
@@ -662,6 +666,11 @@ public final class WorldScreenshotTest {
                 var screen = mc.screen;
                 if (screen != null) {
                     LOG.info("GUI TEST: {} opened {}", state, screen.getClass().getName());
+                    if (screen instanceof LegacyContainerScreen lcs && lcs.legacy() != null) {
+                        var g = lcs.legacy();
+                        LOG.info("GUI TEST: {} legacy gui {} size {}x{} slots {} screen {}x{}", state, g.getClass().getName(), g.mcc$xSize(), g.mcc$ySize(),
+                                g.inventorySlots.inventorySlots.size(), lcs.width, lcs.height);
+                    }
                     mc.gui.getChat().clearMessages(false);
                 } else {
                     LOG.info("GUI TEST: {} opened no screen", state);
