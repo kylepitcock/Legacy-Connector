@@ -287,6 +287,12 @@ tools/dev/docker-headless.sh run-screenshot-test.sh ...        # same, inside a 
                                 # generate + JVM-verify the synthesized API (no game launch)
 ```
 
+Development commands (operator, any world): `/legacyconnector mods` lists the loaded legacy mods;
+`/legacyconnector dim list|<id> [pos]` switches to a legacy dimension; `/legacyconnector gui <mod> <id> [pos]` opens a mod
+GUI by its `IGuiHandler` id; `/legacyconnector place <block> [meta]`, `give <item> [meta] [count]` and `spawn <entity> [count]`
+create legacy content with metadata; `/legacyconnector biome <id>` jumps to a legacy biome; `/legacyconnector inspect`
+describes the block or entity you look at (legacy class, metadata, tile entity, render type). Ids tab-complete.
+
 Project layout:
 
 | Path | What |

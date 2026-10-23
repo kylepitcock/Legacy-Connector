@@ -180,6 +180,10 @@ public final class DevCommands1710 {
 
     private static int give(CommandSourceStack source, ResourceLocation id, int meta, int count) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
+        if (!BuiltInRegistries.ITEM.containsKey(id)) {
+            source.sendFailure(Component.literal("Unknown item " + id + " (tab completion lists the legacy items)"));
+            return 0;
+        }
         var item = BuiltInRegistries.ITEM.get(id);
         if (meta != 0) {
             ResourceLocation variant = ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_" + meta);
