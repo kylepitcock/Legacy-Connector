@@ -11,7 +11,7 @@ patterns=("$@" ${=EXTRA} codechicken baubles jade jei curios neoforge)
 for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N) ${=MODSRC:+${MODSRC}/*.jar}(N); do
   name=${jar:t:l}
   for p in $patterns; do
-    if [[ $name == *${p:l}* ]]; then if [[ -n $COPYMODS ]]; then cp -L "$PWD/$jar" "run-screenshots/mods/${jar:t}"; else ln -sf "$PWD/$jar" "run-screenshots/mods/${jar:t}"; fi; break; fi
+    if [[ $name == *${p:l}* ]]; then dest=run-screenshots/mods; [[ $jar == run/mods/1.7.10/* ]] && dest=run-screenshots/mods/1.7.10 && mkdir -p $dest; if [[ -n $COPYMODS ]]; then cp -L "$PWD/$jar" "$dest/${jar:t}"; else ln -sf "$PWD/$jar" "$dest/${jar:t}"; fi; break; fi
   done
 done
 # HEADLESS=1 (software rendering, see docker-headless.sh): cheap graphics settings
