@@ -943,6 +943,17 @@ public abstract class Entity implements ICommandSender {
                 pz + (mcc$get$posZ(this) - pz) * partialTicks);
     }
 
+    /** Standing in a portal block; the modern portal blocks handle the entity themselves, so nothing is needed here. */
+    public void setInPortal() {
+    }
+
+    public void setInWeb() {
+    }
+
+    public float getShadowSize() {
+        return height / 2.0F;
+    }
+
     public Vec3 getLookVec() {
         if (mcc$entity == null) return Vec3.createVectorHelper(0, 0, 1);
         var v = mcc$entity.getLookAngle();
