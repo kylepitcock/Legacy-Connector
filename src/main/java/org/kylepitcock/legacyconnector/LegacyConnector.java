@@ -92,6 +92,16 @@ public final class LegacyConnector {
         if (FMLEnvironment.dist.isClient()) EventBridge1710.registerClient(game);
     }
 
+    /** The item handler of a legacy inventory: through its sides when it is an ISidedInventory (a null side sees every slot). */
+    private static net.neoforged.neoforge.items.IItemHandler itemHandler(legacyconnector.v1_7_10.net.minecraft.inventory.IInventory inv,
+            net.minecraft.core.Direction side) {
+        var container = org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyInventoryContainer.of(inv);
+        if (side != null && inv instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ISidedInventory) {
+            return new net.neoforged.neoforge.items.wrapper.SidedInvWrapper(container, side);
+        }
+        return new net.neoforged.neoforge.items.wrapper.InvWrapper(container);
+    }
+
     /** Hoppers, comparators-by-capability and modern item pipes can use legacy tile entity inventories. */
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
@@ -99,8 +109,6 @@ public final class LegacyConnector {
         var type = org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge.type();
         if (type == null) return;
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type, (be, side) ->
-                be.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.inventory.IInventory inv
-                        ? new net.neoforged.neoforge.items.wrapper.InvWrapper(org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyInventoryContainer.of(inv))
-                        : null);
+                be.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.inventory.IInventory inv ? itemHandler(inv, side) : null);
     }
 }

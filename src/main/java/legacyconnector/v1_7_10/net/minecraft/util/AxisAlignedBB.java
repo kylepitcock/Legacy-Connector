@@ -75,6 +75,44 @@ public class AxisAlignedBB {
         return o.maxX > minX && o.minX < maxX && o.maxY > minY && o.minY < maxY && o.maxZ > minZ && o.minZ < maxZ;
     }
 
+    public boolean isVecInside(Vec3 v) {
+        return v.xCoord > minX && v.xCoord < maxX && v.yCoord > minY && v.yCoord < maxY && v.zCoord > minZ && v.zCoord < maxZ;
+    }
+
+    private boolean inYZ(Vec3 v) {
+        return v != null && v.yCoord >= minY && v.yCoord <= maxY && v.zCoord >= minZ && v.zCoord <= maxZ;
+    }
+
+    private boolean inXZ(Vec3 v) {
+        return v != null && v.xCoord >= minX && v.xCoord <= maxX && v.zCoord >= minZ && v.zCoord <= maxZ;
+    }
+
+    private boolean inXY(Vec3 v) {
+        return v != null && v.xCoord >= minX && v.xCoord <= maxX && v.yCoord >= minY && v.yCoord <= maxY;
+    }
+
+    /** The first face of this box the line from {@code from} to {@code to} crosses (side 0..5), or null. */
+    public MovingObjectPosition calculateIntercept(Vec3 from, Vec3 to) {
+        Vec3 west = from.getIntermediateWithXValue(to, minX);
+        Vec3 east = from.getIntermediateWithXValue(to, maxX);
+        Vec3 down = from.getIntermediateWithYValue(to, minY);
+        Vec3 up = from.getIntermediateWithYValue(to, maxY);
+        Vec3 north = from.getIntermediateWithZValue(to, minZ);
+        Vec3 south = from.getIntermediateWithZValue(to, maxZ);
+        if (!inYZ(west)) west = null;
+        if (!inYZ(east)) east = null;
+        if (!inXZ(down)) down = null;
+        if (!inXZ(up)) up = null;
+        if (!inXY(north)) north = null;
+        if (!inXY(south)) south = null;
+        Vec3[] hits = {down, up, north, south, west, east};
+        int side = -1;
+        for (int i = 0; i < hits.length; i++) {
+            if (hits[i] != null && (side < 0 || from.squareDistanceTo(hits[i]) < from.squareDistanceTo(hits[side]))) side = i;
+        }
+        return side < 0 ? null : new MovingObjectPosition(0, 0, 0, side, hits[side]);
+    }
+
     public double getAverageEdgeLength() {
         return ((maxX - minX) + (maxY - minY) + (maxZ - minZ)) / 3.0D;
     }

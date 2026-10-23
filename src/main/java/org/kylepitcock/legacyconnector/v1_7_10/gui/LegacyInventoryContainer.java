@@ -14,7 +14,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge;
  * inventory stores legacy stack views whose backing modern stack is exactly what this returns.
  * Also used for hopper/comparator/capability access to legacy inventories.
  */
-public final class LegacyInventoryContainer implements Container {
+public final class LegacyInventoryContainer implements net.minecraft.world.WorldlyContainer {
     private static final Map<IInventory, LegacyInventoryContainer> VIEWS = new WeakHashMap<>();
     private final IInventory inv;
 
@@ -79,6 +79,36 @@ public final class LegacyInventoryContainer implements Container {
     @Override
     public boolean canPlaceItem(int slot, net.minecraft.world.item.ItemStack stack) {
         return inv.isItemValidForSlot(slot, ItemStack.mcc$wrap(stack));
+    }
+
+    // Sided access: hoppers and item pipes honour the slots a legacy ISidedInventory offers on each face.
+    private static final int[] NO_SLOTS = new int[0];
+
+    @Override
+    public int[] getSlotsForFace(net.minecraft.core.Direction face) {
+        if (inv instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ISidedInventory sided) {
+            int[] slots = sided.getAccessibleSlotsFromSide(face.get3DDataValue());
+            return slots == null ? NO_SLOTS : slots;
+        }
+        int[] all = new int[inv.getSizeInventory()];
+        for (int i = 0; i < all.length; i++) all[i] = i;
+        return all;
+    }
+
+    @Override
+    public boolean canPlaceItemThroughFace(int slot, net.minecraft.world.item.ItemStack stack, net.minecraft.core.Direction face) {
+        if (inv instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ISidedInventory sided) {
+            return sided.canInsertItem(slot, ItemStack.mcc$wrap(stack), face == null ? 0 : face.get3DDataValue());
+        }
+        return canPlaceItem(slot, stack);
+    }
+
+    @Override
+    public boolean canTakeItemThroughFace(int slot, net.minecraft.world.item.ItemStack stack, net.minecraft.core.Direction face) {
+        if (inv instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ISidedInventory sided) {
+            return sided.canExtractItem(slot, ItemStack.mcc$wrap(stack), face == null ? 0 : face.get3DDataValue());
+        }
+        return true;
     }
 
     @Override

@@ -204,6 +204,7 @@ public class PotionHelper {
 
     /** The potion value after adding an ingredient whose effect expression is {@code expression}. */
     public static int applyIngredient(int meta, String expression) {
+        if (expression == null) return meta; // an item with no potion effect
         boolean hasBit = false, invert = false, unset = false, require = false;
         int bit = 0;
         for (int i = 0; i < expression.length(); i++) {

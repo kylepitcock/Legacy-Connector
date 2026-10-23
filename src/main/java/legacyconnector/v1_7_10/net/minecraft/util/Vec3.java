@@ -53,6 +53,28 @@ public class Vec3 {
         return dx * dx + dy * dy + dz * dz;
     }
 
+    /** The point on the line to {@code other} where x has the given value, or null if it is not between the two points. */
+    public Vec3 getIntermediateWithXValue(Vec3 other, double x) {
+        double dx = other.xCoord - xCoord, dy = other.yCoord - yCoord, dz = other.zCoord - zCoord;
+        if (dx * dx < 1.0E-7D) return null;
+        double t = (x - xCoord) / dx;
+        return t >= 0.0D && t <= 1.0D ? createVectorHelper(xCoord + dx * t, yCoord + dy * t, zCoord + dz * t) : null;
+    }
+
+    public Vec3 getIntermediateWithYValue(Vec3 other, double y) {
+        double dx = other.xCoord - xCoord, dy = other.yCoord - yCoord, dz = other.zCoord - zCoord;
+        if (dy * dy < 1.0E-7D) return null;
+        double t = (y - yCoord) / dy;
+        return t >= 0.0D && t <= 1.0D ? createVectorHelper(xCoord + dx * t, yCoord + dy * t, zCoord + dz * t) : null;
+    }
+
+    public Vec3 getIntermediateWithZValue(Vec3 other, double z) {
+        double dx = other.xCoord - xCoord, dy = other.yCoord - yCoord, dz = other.zCoord - zCoord;
+        if (dz * dz < 1.0E-7D) return null;
+        double t = (z - zCoord) / dz;
+        return t >= 0.0D && t <= 1.0D ? createVectorHelper(xCoord + dx * t, yCoord + dy * t, zCoord + dz * t) : null;
+    }
+
     public double lengthVector() {
         return Math.sqrt(xCoord * xCoord + yCoord * yCoord + zCoord * zCoord);
     }

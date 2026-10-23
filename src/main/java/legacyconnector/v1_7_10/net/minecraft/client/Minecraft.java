@@ -24,6 +24,10 @@ public class Minecraft {
     @Deprecated
     public int displayHeight;
     public TextureManager renderEngine = TextureManager.INSTANCE;
+    /** The game directory (mods build paths from it). */
+    public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
+    /** Read reflectively by mods that add a resource pack (the modern game loads packs itself, so adding is a no-op). */
+    private java.util.List defaultResourcePacks = new java.util.ArrayList();
     public final legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame ingameGUI = new legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame();
     public final legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP playerController = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP();
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal renderGlobal = new legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal();
