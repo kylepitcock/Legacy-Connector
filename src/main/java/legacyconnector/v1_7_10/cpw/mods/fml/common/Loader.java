@@ -15,6 +15,12 @@ import org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710;
 public class Loader {
     public static final String MC_VERSION = "1.7.10";
     private static final Loader INSTANCE = new Loader();
+    /** Read reflectively by mods that show it (Custom Main Menu's #mcpversion#). */
+    private String mcpversion = "9.05";
+
+    public String getFMLVersionString() {
+        return "7.10.99.99";
+    }
 
     public static Loader instance() {
         return INSTANCE;

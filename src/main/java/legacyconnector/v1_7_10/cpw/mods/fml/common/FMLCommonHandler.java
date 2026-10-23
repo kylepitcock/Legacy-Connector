@@ -59,6 +59,18 @@ public class FMLCommonHandler {
     public void registerCrashCallable(Object callable) {
     }
 
+    /** The lines FML printed on the title screen: Minecraft, Forge and FML versions and the mod counts. */
+    public java.util.List<String> getBrandings(boolean includeMC) {
+        java.util.List<String> lines = new java.util.ArrayList<>();
+        if (includeMC) lines.add("Minecraft 1.7.10");
+        lines.add("MCP 9.05");
+        lines.add("FML 7.10.99.99");
+        lines.add("Minecraft Forge " + legacyconnector.v1_7_10.net.minecraftforge.common.ForgeVersion.getVersion());
+        int n = Loader.instance().getModList().size();
+        lines.add(n + " mod" + (n == 1 ? "" : "s") + " loaded, " + n + " mod" + (n == 1 ? "" : "s") + " active");
+        return lines;
+    }
+
     public String getModName() {
         return "fml,forge,legacyconnector";
     }

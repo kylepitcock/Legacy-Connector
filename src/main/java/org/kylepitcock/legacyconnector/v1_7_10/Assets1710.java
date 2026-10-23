@@ -220,6 +220,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static String nameOf(IIcon icon) {
         try {
             String name = icon == null ? null : icon.getIconName();
+            // A sub-icon of a texture sheet (connected textures: "chisel:blocks/x-ctmv|0.0") is named after its sheet; the
+            // suffix is no valid resource location, so models point at the whole sheet.
+            if (name != null && name.indexOf('|') > 0) name = name.substring(0, name.indexOf('|'));
             if (name != null) return name;
         } catch (RuntimeException | LinkageError e) {
             // falls through
