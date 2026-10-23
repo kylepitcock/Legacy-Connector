@@ -47,6 +47,7 @@ public class LegacyBlockEntity extends BlockEntity {
                 }
                 if (legacy == null && (level != null || fallback != null)) {
                     Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
+                    if (!block.hasTileEntity(getBlockState().getValue(LegacyBlockAdapter.META))) return null;
                     legacy = block.createTileEntity(level != null ? World.mcc$wrap(level) : fallback, getBlockState().getValue(LegacyBlockAdapter.META));
                 }
             } catch (RuntimeException | LinkageError e) {

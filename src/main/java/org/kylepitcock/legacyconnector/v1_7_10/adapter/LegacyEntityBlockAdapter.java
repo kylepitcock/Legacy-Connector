@@ -19,8 +19,9 @@ public class LegacyEntityBlockAdapter extends LegacyBlockAdapter implements Enti
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        Block legacy = (Block) legacy();
-        if (!legacy.hasTileEntity(state.getValue(META))) return null;
+        // Every metadata value gets a host: the modern block is an EntityBlock as a whole, and vanilla warns about (and
+        // re-tries to load) block entities of such blocks that were never created. Metadata without a tile entity
+        // leaves the host empty (see LegacyBlockEntity.legacy) and unticked.
         return new LegacyBlockEntity(pos, state);
     }
 
@@ -28,7 +29,7 @@ public class LegacyEntityBlockAdapter extends LegacyBlockAdapter implements Enti
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type != TileEntityBridge.type()) return null;
+        if (type != TileEntityBridge.type() || !((Block) legacy()).hasTileEntity(state.getValue(META))) return null;
         return (lvl, pos, st, be) -> ((LegacyBlockEntity) be).tick();
     }
 }
