@@ -12,6 +12,7 @@ public class AdvancedModelLoader {
 
     static {
         registerModelHandler(new ObjModelLoader());
+        registerModelHandler(new legacyconnector.v1_7_10.net.minecraftforge.client.model.techne.TechneModelLoader());
     }
 
     public static void registerModelHandler(IModelCustomLoader modelHandler) {

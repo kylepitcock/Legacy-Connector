@@ -8,18 +8,18 @@
 <style>
   :root {
     --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dfe3e8; --accent: #2f6fed;
-    --works: #1f9d55; --partial: #c98a00; --fails: #d9480f; --crashes: #c92a2a; --untested: #6b7280;
+    --works: #1f9d55; --partial: #c98a00; --loads: #2f7fb5; --fails: #d9480f; --crashes: #c92a2a; --untested: #6b7280;
     --chip: #eef1f5;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
-      --works: #4cc38a; --partial: #e5b13a; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+      --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
-    --works: #4cc38a; --partial: #e5b13a; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+    --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -46,7 +46,7 @@
   .mod summary { list-style: none; display: flex; gap: 12px; align-items: center; padding: 12px 14px; cursor: pointer; }
   .mod summary::-webkit-details-marker { display: none; }
   .badge { flex: none; min-width: 84px; text-align: center; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #fff; }
-  .badge.works { background: var(--works); } .badge.partial { background: var(--partial); } .badge.fails { background: var(--fails); }
+  .badge.works { background: var(--works); } .badge.partial { background: var(--partial); } .badge.loads { background: var(--loads); } .badge.fails { background: var(--fails); }
   .badge.crashes { background: var(--crashes); } .badge.untested { background: var(--untested); }
   .name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .meta { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
@@ -97,15 +97,15 @@
 
   <footer>
     <span id="updated"></span>
-    Maintainer results come from <code>docs/data/mods.json</code>; community results are generated from issues labelled <code>compatibility</code>.
+    <b>Works</b> = tested in game; <b>Partial</b> = some features broken; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Maintainer results come from <code>docs/data/mods.json</code>; community results are generated from issues labelled <code>compatibility</code>.
   </footer>
 </div>
 
 <script>
 (function () {
   var REPO = "kylepitcock/Legacy-Connector";
-  var LABEL = { works: "Works", partial: "Partial", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
-  var ORDER = ["works", "partial", "fails", "crashes"];
+  var LABEL = { works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
+  var ORDER = ["works", "partial", "loads", "fails", "crashes"];
   var state = { q: "", status: "all", mods: [] };
 
   function reportUrl(name) {
@@ -130,7 +130,7 @@
       return byKey[k];
     }
     maintainer.forEach(function (m) {
-      slot(m.name).entries.push({ source: "maintainer", version: m.version, mc: m.mc, status: m.status, notes: m.notes || "" });
+      slot(m.name).entries.push({ source: m.source || "maintainer", version: m.version, mc: m.mc, status: m.status, notes: m.notes || "", date: m.date });
     });
     community.forEach(function (r) {
       slot(r.mod).entries.push({ source: "community", version: "", mc: r.mc, status: r.status, notes: r.details, issue: r.issue,
@@ -138,7 +138,7 @@
     });
     return Object.keys(byKey).map(function (k) {
       var m = byKey[k];
-      var maint = m.entries.filter(function (e) { return e.source === "maintainer"; });
+      var maint = m.entries.filter(function (e) { return e.source !== "community"; });
       var pool = maint.length ? maint : m.entries;
       var counts = {};
       pool.forEach(function (e) { counts[e.status] = (counts[e.status] || 0) + 1; });
@@ -152,9 +152,9 @@
   function renderStats() {
     var box = document.getElementById("stats");
     box.textContent = "";
-    var counts = { works: 0, partial: 0, fails: 0, crashes: 0 };
+    var counts = { works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
     state.mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
-    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"],
+    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"], ["Load (untested)", counts.loads, "loads"],
      ["Fail or crash", counts.fails + counts.crashes, "fails"]].forEach(function (s) {
       var d = el("div", "stat");
       var b = el("b", null, String(s[1]));
@@ -168,7 +168,7 @@
   function renderChips() {
     var box = document.getElementById("chips");
     box.textContent = "";
-    [["all", "All"], ["works", "Works"], ["partial", "Partial"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
+    [["all", "All"], ["works", "Works"], ["partial", "Partial"], ["loads", "Loads"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
       var b = el("button", "chip", c[1]);
       b.type = "button";
       b.setAttribute("aria-pressed", String(state.status === c[0]));
@@ -204,7 +204,7 @@
         var row = el("div", "entry");
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
-        var who = en.source === "maintainer" ? "Maintainer" : "Community";
+        var who = en.source === "maintainer" ? "Maintainer" : en.source === "corpus" ? "Startup test" : "Community";
         top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "") + (en.mc ? " · MC " + en.mc : "")));
         if (en.issue) {
           var a = el("a", null, "#" + en.issue);
