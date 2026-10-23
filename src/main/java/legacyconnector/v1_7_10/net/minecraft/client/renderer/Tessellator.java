@@ -1,5 +1,6 @@
 package legacyconnector.v1_7_10.net.minecraft.client.renderer;
 
+import org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists;
 import org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices;
 
 /** 1.7.10 Tessellator: buffered legacy geometry, emitted into the active render context on draw(). */
@@ -12,6 +13,12 @@ public class Tessellator {
     public int draw() {
         if (!isDrawing) throw new IllegalStateException("Not tesselating!");
         isDrawing = false;
+        if (DisplayLists.recording()) {
+            // compiling a display list: the draw is kept and replayed by glCallList (also run now when compiling and executing)
+            var draw = vertices.take();
+            if (!DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
+            return draw.vertices().size();
+        }
         return vertices.end();
     }
 

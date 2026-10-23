@@ -21,7 +21,7 @@ case $1 in
     tools/dev/win-headless.sh --stage || exit 1
     docker run --rm -v lc-work:/work $IMAGE bash -c "rm -rf $CTL && mkdir -p $CTL/in $CTL/out"
     envs=()
-    for v in WORLDTYPE EXTRA MODSRC WIDTH HEIGHT RENDER LC_DEBUG; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
+    for v in COPYMODS WORLDTYPE EXTRA MODSRC WIDTH HEIGHT RENDER LC_DEBUG; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
     docker run -d --name $NAME --shm-size=1g -v lc-work:/work -v lc-mods:/mods:ro -v legacyconnector-gradle:/root/.gradle -v legacyconnector-cache:/work/run-screenshots/.legacyconnector \
       -w /work -e HEADLESS=1 -e JAVA_TOOL_OPTIONS="-Dorg.lwjgl.librarypath=/opt/lwjgl -Xmx${HEAP:-4g}" -e SCENARIO=control -e LOOPS=${LOOPS:-4000} -e WIDTH=${WIDTH:-1280} -e HEIGHT=${HEIGHT:-720} -e RENDER=${RENDER:-6} "${envs[@]}" $IMAGE \
       bash -c 'Xvfb :99 -screen 0 ${WIDTH}x${HEIGHT}x24 +extension GLX -nolisten tcp >/dev/null 2>&1 & sleep 2; export DISPLAY=:99; mkdir -p run; [ -e run/mods ] || ln -sfn /mods run/mods; exec zsh tools/dev/run-screenshot-test.sh "$@"' x "$@" >/dev/null

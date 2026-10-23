@@ -11,13 +11,15 @@ public class GLAllocation {
     private static final AtomicInteger NEXT_LIST = new AtomicInteger(1);
 
     public static synchronized int generateDisplayLists(int range) {
-        return NEXT_LIST.getAndAdd(Math.max(1, range));
+        return org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists.generate(range);
     }
 
     public static synchronized void deleteDisplayLists(int list) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists.delete(list, 1);
     }
 
     public static synchronized void deleteDisplayLists(int list, int range) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists.delete(list, range);
     }
 
     public static synchronized ByteBuffer createDirectByteBuffer(int size) {

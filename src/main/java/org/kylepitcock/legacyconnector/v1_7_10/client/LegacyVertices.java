@@ -97,40 +97,55 @@ public final class LegacyVertices {
         vertices.add(new double[] {x + tx, y + ty, z + tz, u, v, color & 0xFFFFFFFFL, light >= 0 ? light : RenderContext.vertexLight()});
     }
 
+    /** A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). */
+    public record Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {}
+
+    /** Ends the draw without emitting it. */
+    public Snapshot take() {
+        drawing = false;
+        Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal);
+        vertices.clear();
+        return s;
+    }
+
     /** Emits the assembled primitives; returns the vertex count like the legacy Tessellator. */
     public int end() {
-        drawing = false;
+        Snapshot s = take();
+        emit(s);
+        return s.vertices().size();
+    }
+
+    public static void emit(Snapshot s) {
+        List<double[]> vertices = s.vertices();
         int n = vertices.size();
-        switch (mode) {
+        switch (s.mode()) {
             case GL_QUADS -> {
-                for (int i = 0; i + 3 < n; i += 4) emit(vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
+                for (int i = 0; i + 3 < n; i += 4) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
             }
             case GL_TRIANGLES -> {
-                for (int i = 0; i + 2 < n; i += 3) emit(vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
+                for (int i = 0; i + 2 < n; i += 3) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
             }
             case GL_TRIANGLE_FAN, GL_POLYGON -> {
-                for (int i = 1; i + 1 < n; i++) emit(vertices.get(0), vertices.get(i), vertices.get(i + 1), vertices.get(i + 1));
+                for (int i = 1; i + 1 < n; i++) emit(s, vertices.get(0), vertices.get(i), vertices.get(i + 1), vertices.get(i + 1));
             }
             case GL_TRIANGLE_STRIP -> {
                 for (int i = 0; i + 2 < n; i++) {
-                    if ((i & 1) == 0) emit(vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
-                    else emit(vertices.get(i + 1), vertices.get(i), vertices.get(i + 2), vertices.get(i + 2));
+                    if ((i & 1) == 0) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
+                    else emit(s, vertices.get(i + 1), vertices.get(i), vertices.get(i + 2), vertices.get(i + 2));
                 }
             }
             case GL_QUAD_STRIP -> {
-                for (int i = 0; i + 3 < n; i += 2) emit(vertices.get(i), vertices.get(i + 1), vertices.get(i + 3), vertices.get(i + 2));
+                for (int i = 0; i + 3 < n; i += 2) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 3), vertices.get(i + 2));
             }
             default -> {
                 // lines and points have no counterpart in the entity pipelines
             }
         }
-        vertices.clear();
-        return n;
     }
 
-    private void emit(double[] a, double[] b, double[] c, double[] d) {
-        float fx = nx, fy = ny, fz = nz;
-        if (!hasNormal) {
+    private static void emit(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
+        float fx = s.nx(), fy = s.ny(), fz = s.nz();
+        if (!s.hasNormal()) {
             // Face normal from the first three corners.
             double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
             double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];

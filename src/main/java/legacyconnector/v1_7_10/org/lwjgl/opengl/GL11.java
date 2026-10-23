@@ -3,6 +3,7 @@ package legacyconnector.v1_7_10.org.lwjgl.opengl;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.FloatBuffer;
+import org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists;
 import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 import org.slf4j.LoggerFactory;
 
@@ -20,34 +21,42 @@ public class GL11 extends GL11Guard {
     // ------------------------------------------------------------------ matrix stack
 
     public static void glPushMatrix() {
+        if (DisplayLists.record(() -> glPushMatrix())) return;
         RenderContext.push();
     }
 
     public static void glPopMatrix() {
+        if (DisplayLists.record(() -> glPopMatrix())) return;
         RenderContext.pop();
     }
 
     public static void glTranslatef(float x, float y, float z) {
+        if (DisplayLists.record(() -> glTranslatef(x, y, z))) return;
         RenderContext.translate(x, y, z);
     }
 
     public static void glTranslated(double x, double y, double z) {
+        if (DisplayLists.record(() -> glTranslated(x, y, z))) return;
         RenderContext.translate(x, y, z);
     }
 
     public static void glRotatef(float angle, float x, float y, float z) {
+        if (DisplayLists.record(() -> glRotatef(angle, x, y, z))) return;
         RenderContext.rotate(angle, x, y, z);
     }
 
     public static void glRotated(double angle, double x, double y, double z) {
+        if (DisplayLists.record(() -> glRotated(angle, x, y, z))) return;
         RenderContext.rotate((float) angle, (float) x, (float) y, (float) z);
     }
 
     public static void glScalef(float x, float y, float z) {
+        if (DisplayLists.record(() -> glScalef(x, y, z))) return;
         RenderContext.scale(x, y, z);
     }
 
     public static void glScaled(double x, double y, double z) {
+        if (DisplayLists.record(() -> glScaled(x, y, z))) return;
         RenderContext.scale((float) x, (float) y, (float) z);
     }
 
@@ -63,32 +72,39 @@ public class GL11 extends GL11Guard {
     // ------------------------------------------------------------------ color
 
     public static void glColor4f(float r, float g, float b, float a) {
+        if (DisplayLists.record(() -> glColor4f(r, g, b, a))) return;
         RenderContext.color(r, g, b, a);
     }
 
     public static void glColor3f(float r, float g, float b) {
+        if (DisplayLists.record(() -> glColor3f(r, g, b))) return;
         RenderContext.color(r, g, b, 1.0F);
     }
 
     public static void glColor4d(double r, double g, double b, double a) {
+        if (DisplayLists.record(() -> glColor4d(r, g, b, a))) return;
         RenderContext.color((float) r, (float) g, (float) b, (float) a);
     }
 
     public static void glColor3d(double r, double g, double b) {
+        if (DisplayLists.record(() -> glColor3d(r, g, b))) return;
         RenderContext.color((float) r, (float) g, (float) b, 1.0F);
     }
 
     public static void glColor4ub(byte r, byte g, byte b, byte a) {
+        if (DisplayLists.record(() -> glColor4ub(r, g, b, a))) return;
         RenderContext.color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, (a & 255) / 255F);
     }
 
     public static void glColor3ub(byte r, byte g, byte b) {
+        if (DisplayLists.record(() -> glColor3ub(r, g, b))) return;
         RenderContext.color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, 1.0F);
     }
 
     // ------------------------------------------------------------------ capabilities
 
     public static void glEnable(int cap) {
+        if (DisplayLists.record(() -> glEnable(cap))) return;
         mcc$track(cap, true);
         switch (cap) {
             case GL_BLEND -> RenderSystem.enableBlend();
@@ -115,6 +131,7 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glDisable(int cap) {
+        if (DisplayLists.record(() -> glDisable(cap))) return;
         mcc$track(cap, false);
         switch (cap) {
             case GL_BLEND -> RenderSystem.disableBlend();
@@ -129,11 +146,13 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glBlendFunc(int src, int dst) {
+        if (DisplayLists.record(() -> glBlendFunc(src, dst))) return;
         RenderSystem.blendFunc(src, dst);
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlendFunc(src, dst);
     }
 
     public static void glDepthMask(boolean flag) {
+        if (DisplayLists.record(() -> glDepthMask(flag))) return;
         RenderSystem.depthMask(flag);
     }
 
@@ -144,6 +163,7 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glNormal3f(float x, float y, float z) {
+        if (DisplayLists.record(() -> glNormal3f(x, y, z))) return;
         IMMEDIATE.normal(x, y, z);
     }
 
@@ -157,19 +177,24 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glCallList(int list) {
+        if (DisplayLists.record(() -> glCallList(list))) return;
+        DisplayLists.call(list);
     }
 
     public static int glGenLists(int range) {
-        return 0;
+        return DisplayLists.generate(range);
     }
 
     public static void glNewList(int list, int mode) {
+        DisplayLists.begin(list, mode);
     }
 
     public static void glEndList() {
+        DisplayLists.end();
     }
 
     public static void glDeleteLists(int list, int range) {
+        DisplayLists.delete(list, range);
     }
 
     // ------------------------------------------------------------------ immediate mode
@@ -177,34 +202,42 @@ public class GL11 extends GL11Guard {
     private static final org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices IMMEDIATE = new org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices();
 
     public static void glBegin(int mode) {
+        if (DisplayLists.record(() -> glBegin(mode))) return;
         IMMEDIATE.begin(mode);
     }
 
     public static void glEnd() {
+        if (DisplayLists.record(() -> glEnd())) return;
         if (IMMEDIATE.isDrawing()) IMMEDIATE.end();
     }
 
     public static void glVertex3f(float x, float y, float z) {
+        if (DisplayLists.record(() -> glVertex3f(x, y, z))) return;
         IMMEDIATE.vertex(x, y, z);
     }
 
     public static void glVertex3d(double x, double y, double z) {
+        if (DisplayLists.record(() -> glVertex3d(x, y, z))) return;
         IMMEDIATE.vertex(x, y, z);
     }
 
     public static void glVertex2f(float x, float y) {
+        if (DisplayLists.record(() -> glVertex2f(x, y))) return;
         IMMEDIATE.vertex(x, y, 0);
     }
 
     public static void glVertex2i(int x, int y) {
+        if (DisplayLists.record(() -> glVertex2i(x, y))) return;
         IMMEDIATE.vertex(x, y, 0);
     }
 
     public static void glTexCoord2f(float u, float v) {
+        if (DisplayLists.record(() -> glTexCoord2f(u, v))) return;
         IMMEDIATE.uv(u, v);
     }
 
     public static void glTexCoord2d(double u, double v) {
+        if (DisplayLists.record(() -> glTexCoord2d(u, v))) return;
         IMMEDIATE.uv(u, v);
     }
 

@@ -2,7 +2,7 @@
 # Graphical test: boots the client, creates a world, builds showcases of legacy blocks and items and writes screenshots
 # to run-screenshots/shots (look at them with the image viewer). It quits by itself when the script is done.
 # usage: run-screenshot-test.sh [name-fragment...]   -- mods are linked from run/mods (and $MODSRC); fragments select jars
-# env:   WORLDTYPE=biomesoplenty:biomesop  MODS=agricraft,appliedenergistics2  BLOCKS=24  ITEMS=36  TOUR=6  RENDER=16  SCENARIO=portal (Twilight Forest style portal test instead of the tour)
+# env:   COPYMODS=1 copies the jars instead of linking them (a dev tree whose mods folder is a symlink);  WORLDTYPE=biomesoplenty:biomesop  MODS=agricraft,appliedenergistics2  BLOCKS=24  ITEMS=36  TOUR=6  RENDER=16  SCENARIO=portal (Twilight Forest style portal test instead of the tour)
 cd "$(dirname "$0")/../.."
 export JAVA_HOME="${JAVA_HOME:-$(/usr/libexec/java_home -v 21 2>/dev/null)}"
 rm -rf run-screenshots/mods run-screenshots/shots
@@ -11,7 +11,7 @@ patterns=("$@" ${=EXTRA} codechicken baubles jade jei curios neoforge)
 for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N) ${=MODSRC:+${MODSRC}/*.jar}(N); do
   name=${jar:t:l}
   for p in $patterns; do
-    if [[ $name == *${p:l}* ]]; then ln -sf "$PWD/$jar" "run-screenshots/mods/${jar:t}"; break; fi
+    if [[ $name == *${p:l}* ]]; then if [[ -n $COPYMODS ]]; then cp -L "$PWD/$jar" "run-screenshots/mods/${jar:t}"; else ln -sf "$PWD/$jar" "run-screenshots/mods/${jar:t}"; fi; break; fi
   done
 done
 # HEADLESS=1 (software rendering, see docker-headless.sh): cheap graphics settings
