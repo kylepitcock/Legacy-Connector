@@ -59,6 +59,51 @@ public abstract class Container {
         }
     }
 
+    /**
+     * A click in the container (mode: 0 pickup, 1 quick move, 2 swap, 3 clone, 4 throw, 5 quick craft, 6 pickup all).
+     * The behaviour is the modern menu's; containers that override this (ghost slots, filters, sort buttons) are called by the
+     * hosting menu for every click and reach it through {@code super.slotClick}.
+     */
+    public ItemStack slotClick(int slotId, int mouseButton, int mode, EntityPlayer player) {
+        if (mcc$menu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu menu) menu.mcc$modernClick(slotId, mouseButton, mode, player);
+        return null;
+    }
+
+    public void retrySlotClick(int slotId, int mouseButton, boolean mode, EntityPlayer player) {
+        slotClick(slotId, mouseButton, 1, player);
+    }
+
+    // Drag helpers legacy containers call or override (the drag itself is handled by modern code).
+    public static int extractDragMode(int mask) {
+        return mask >> 2 & 3;
+    }
+
+    public static int getDragEvent(int mask) {
+        return mask & 3;
+    }
+
+    public static boolean isValidDragMode(int mode, EntityPlayer player) {
+        return mode == 0 || mode == 1 || mode == 2 && player != null && player.capabilities.isCreativeMode;
+    }
+
+    public static int func_94534_d(int event, int mode) {
+        return event & 3 | (mode & 3) << 2;
+    }
+
+    public static void computeStackSize(java.util.Set slots, int mode, ItemStack stack, int existing) {
+        switch (mode) {
+            case 0 -> stack.stackSize = (int) Math.floor((float) stack.stackSize / slots.size());
+            case 1 -> stack.stackSize = 1;
+            case 2 -> stack.stackSize = stack.getItem().getItemStackLimit();
+            default -> {
+            }
+        }
+        stack.stackSize += existing;
+    }
+
+    public void resetDrag() {
+    }
+
     public boolean enchantItem(EntityPlayer player, int id) {
         return false;
     }

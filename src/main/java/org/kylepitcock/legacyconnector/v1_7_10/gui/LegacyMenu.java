@@ -23,15 +23,39 @@ public class LegacyMenu extends AbstractContainerMenu {
     private final Object clientGui;
     private final Player player;
     private boolean crafterAdded;
+    /** Whether the legacy container class overrides slotClick: every click then goes through it (it may swallow or rewrite them). */
+    private final boolean overridesSlotClick;
+    private boolean inSlotClick;
 
     public LegacyMenu(MenuType<?> type, int windowId, Inventory playerInventory, Container legacy, Object clientGui) {
         super(type, windowId);
         this.legacy = legacy;
         this.clientGui = clientGui;
         this.player = playerInventory.player;
+        this.overridesSlotClick = org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(legacy, "slotClick", int.class, int.class, int.class, EntityPlayer.class);
         legacy.windowId = windowId;
         legacy.mcc$menu = this;
         for (Object o : legacy.inventorySlots) addSlot(new LegacySlot((legacyconnector.v1_7_10.net.minecraft.inventory.Slot) o));
+    }
+
+    @Override
+    public void clicked(int slotId, int button, net.minecraft.world.inventory.ClickType type, Player player) {
+        if (!overridesSlotClick || inSlotClick) {
+            super.clicked(slotId, button, type, player);
+            return;
+        }
+        inSlotClick = true;
+        try {
+            legacy.slotClick(slotId, button, type.ordinal(), legacyPlayer(player));
+        } finally {
+            inSlotClick = false;
+        }
+    }
+
+    /** The modern click algorithm, for {@code Container.slotClick} to fall back to. */
+    public void mcc$modernClick(int slotId, int button, int mode, EntityPlayer legacyPlayer) {
+        var types = net.minecraft.world.inventory.ClickType.values();
+        super.clicked(slotId, button, mode >= 0 && mode < types.length ? types[mode] : net.minecraft.world.inventory.ClickType.PICKUP, player);
     }
 
     public Container legacy() {
