@@ -40,6 +40,9 @@ public class World implements IBlockAccess {
     private static final Map<LevelAccessor, World> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
 
     public final boolean isRemote;
+    /** Phantom: redirected to {@link #mcc$get$difficultySetting}. */
+    @Deprecated
+    public EnumDifficulty difficultySetting;
     public Random rand = new Random();
     public final legacyconnector.v1_7_10.net.minecraft.profiler.Profiler theProfiler = legacyconnector.v1_7_10.net.minecraft.profiler.Profiler.INSTANCE;
     /** Phantom: redirected to {@link #mcc$get$provider} (created on first use: mod providers need a usable world). */
@@ -208,6 +211,14 @@ public class World implements IBlockAccess {
     }
 
     // ------------------------------------------------------------------ virtual fields
+
+    public static EnumDifficulty mcc$get$difficultySetting(World w) {
+        return EnumDifficulty.mcc$of(w.lvl().getDifficulty());
+    }
+
+    public static void mcc$set$difficultySetting(World w, EnumDifficulty d) {
+        // the difficulty is a server setting; legacy code that sets it directly changes nothing
+    }
 
     public static List mcc$get$playerEntities(World w) {
         List<EntityPlayer> out = new ArrayList<>();

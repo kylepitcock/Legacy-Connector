@@ -27,6 +27,8 @@ import legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingAttackEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDeathEvent;
+import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingDropsEvent;
+import legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityInteractEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingFallEvent;
 import legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -203,6 +205,26 @@ public final class EventBridge1710 {
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (!wants(forge(), LivingDeathEvent.class)) return;
             if (forge().post(new LivingDeathEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), legacySource(e.getSource())))) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
+            if (!wants(forge(), LivingDropsEvent.class)) return;
+            ArrayList<EntityItem> drops = new ArrayList<>();
+            for (var item : e.getDrops()) if (EntityBridge.wrap(item) instanceof EntityItem legacyItem) drops.add(legacyItem);
+            LivingDropsEvent legacy = new LivingDropsEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), legacySource(e.getSource()), drops,
+                    0, e.isRecentlyHit(), 0);
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+                return;
+            }
+            // listeners may have removed drops or added their own: the modern list becomes what the legacy list holds
+            e.getDrops().clear();
+            for (EntityItem item : legacy.drops) {
+                if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
+            if (!wants(forge(), EntityInteractEvent.class)) return;
+            if (forge().post(new EntityInteractEvent(player(e.getEntity()), EntityBridge.wrap(e.getTarget())))) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingFallEvent e) -> {
             if (!wants(forge(), LivingFallEvent.class)) return;
