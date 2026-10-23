@@ -492,6 +492,10 @@ public final class ItemBridge {
             }
             return stack;
         }
+        if (item instanceof ItemBlock ib && ib.mcc$block() != null) {
+            var vanillaItem = VanillaEquivalents.item(ib.mcc$block(), meta);
+            if (vanillaItem != null) return new net.minecraft.world.item.ItemStack(vanillaItem, count);
+        }
         if (item.mcc$variants.isEmpty()) {
             LOG.debug("ItemStack created for unregistered legacy item {}", item);
             var probe = new net.minecraft.world.item.ItemStack(Items.BARRIER, Math.max(count, 1));

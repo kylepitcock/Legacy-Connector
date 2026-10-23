@@ -230,6 +230,7 @@ public final class BlockBridge {
         BY_ID.put(numeric, block);
         IDS.put(block, numeric);
         MOD_BLOCKS.add(block);
+        VanillaEquivalents.consider(block, legacyName);
 
         if (itemClass != null) {
             ItemBlock item = instantiateItemBlock(itemClass, block, itemArgs);
@@ -357,6 +358,8 @@ public final class BlockBridge {
 
     public static BlockState toModern(Block block, int meta) {
         if (block == null) return Blocks.AIR.defaultBlockState();
+        var equivalent = VanillaEquivalents.block(block, meta);
+        if (equivalent != null) return equivalent.defaultBlockState();
         if (block.mcc$modern instanceof LegacyBlockAdapter a) return a.stateForMeta(meta);
         if (block.mcc$vanilla != null) return stateOfVanilla(block.mcc$vanilla, meta);
         LOG.warn("Legacy block {} used in the world before it was registered; placing air", block);

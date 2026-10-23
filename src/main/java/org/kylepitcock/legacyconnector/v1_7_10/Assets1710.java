@@ -283,6 +283,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 for (String n : names) {
                     JsonObject face = new JsonObject();
                     face.addProperty("texture", "#" + n);
+                    // a face on the block's boundary is hidden by an opaque neighbour, as in 1.7.10
+                    String cull = boundary(n, x1, y1, z1, x2, y2, z2);
+                    if (cull != null) face.addProperty("cullface", cull);
                     if (tint) face.addProperty("tintindex", 0);
                     f.add(n, face);
                 }
@@ -296,6 +299,17 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         tex.addProperty("particle", faces[1]);
         model.add("textures", tex);
         return model;
+    }
+
+    private static String boundary(String face, double x1, double y1, double z1, double x2, double y2, double z2) {
+        return switch (face) {
+            case "down" -> y1 <= 0 ? face : null;
+            case "up" -> y2 >= 1 ? face : null;
+            case "north" -> z1 <= 0 ? face : null;
+            case "south" -> z2 >= 1 ? face : null;
+            case "west" -> x1 <= 0 ? face : null;
+            default -> x2 >= 1 ? face : null;
+        };
     }
 
     private static JsonArray vec(double x, double y, double z) {

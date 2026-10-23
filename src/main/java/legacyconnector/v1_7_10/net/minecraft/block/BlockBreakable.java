@@ -28,6 +28,11 @@ public class BlockBreakable extends Block {
         return false;
     }
 
+    /** Whether neighbouring blocks of this kind hide the faces between them (glass); read by the adapter's skipRendering. */
+    public boolean mcc$hidesSimilarNeighbours() {
+        return !field_149996_a;
+    }
+
     @Override
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
         if (!field_149996_a && world.getBlock(x, y, z) == this) return false;

@@ -166,6 +166,13 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         };
     }
 
+    /** As BlockBreakable.shouldSideBeRendered: two neighbouring glass-like blocks of the same kind draw no faces between them. */
+    @Override
+    protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
+        return adjacent.is(this) && legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBreakable bb && bb.mcc$hidesSimilarNeighbours()
+                && adjacent.getValue(META).equals(state.getValue(META));
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
         builder.add(META);
