@@ -1,19 +1,124 @@
 {
-  "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml.",
-  "mods": [
-    {"name": "AgriCraft", "version": "1.5.0", "mc": "1.7.10", "status": "works", "notes": "Crops, greenhouses in modern villages and rendering verified."},
-    {"name": "Applied Energistics 2", "version": "rv3-beta-6", "mc": "1.7.10", "status": "partial", "notes": "Loads, 16 GUIs open, blocks and items render. Some cable/part inventory icons are blank."},
-    {"name": "BiblioCraft", "version": "1.11.7", "mc": "1.7.10", "status": "works", "notes": "Tile-entity rendered furniture, inventory icons and GUIs verified."},
-    {"name": "BuildCraft", "version": "7.1.23", "mc": "1.7.10", "status": "partial", "notes": "Loads, 6 GUIs open; some GUIs depended on icon providers that were fixed after the last full sweep."},
-    {"name": "HBM's Nuclear Tech Mod", "version": "1.0.27 BETA", "mc": "1.7.10", "status": "works", "notes": "Machines, GUIs and entities verified."},
-    {"name": "IndustrialCraft 2", "version": "2.2.827-experimental", "mc": "1.7.10", "status": "partial", "notes": "Loads, 72 screens open. Long-running machine behaviour not verified."},
-    {"name": "Mystcraft", "version": "0.12.3.04", "mc": "1.7.10", "status": "partial", "notes": "Loads, 6 GUIs open. Writing desk screen draws incorrectly."},
-    {"name": "OpenBlocks", "version": "1.6", "mc": "1.7.10", "status": "works", "notes": "11 GUIs open."},
-    {"name": "RFTools", "version": "4.23", "mc": "1.7.10", "status": "works", "notes": "42 GUIs open, including logic and monitor blocks."},
-    {"name": "Thaumcraft", "version": "4.2.3.5", "mc": "1.7.10", "status": "works", "notes": "Arcane Workbench, Arcane Bore and other GUIs, Outer Lands dimension and world generation verified."},
-    {"name": "Thermal Expansion", "version": "4.1.5", "mc": "1.7.10", "status": "works", "notes": "Machine GUIs open, RF gauge hover tooltips work."},
-    {"name": "Tinkers' Construct", "version": "1.8.8", "mc": "1.7.10", "status": "partial", "notes": "Loads, tables and smeltery render, the manual opens. No bridge to a modern Tinkers' Construct yet; manual item icons draw black."},
-    {"name": "Twilight Forest", "version": "2.3.7", "mc": "1.7.10", "status": "works", "notes": "Portal, dimension generation, entities and loot verified."},
-    {"name": "Witchery", "version": "0.24.1", "mc": "1.7.10", "status": "partial", "notes": "Loads, village walls and towers generate. The Dream World teleport returns the player to the overworld."}
-  ]
+ "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml.",
+ "mods": [
+  {
+   "name": "AgriCraft",
+   "version": "1.5.0",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Crops, greenhouses in modern villages and rendering verified."
+  },
+  {
+   "name": "Applied Energistics 2",
+   "version": "rv3-beta-6",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, 16 GUIs open, blocks and items render. Some cable/part inventory icons are blank."
+  },
+  {
+   "name": "BiblioCraft",
+   "version": "1.11.7",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Tile-entity rendered furniture, inventory icons and GUIs verified."
+  },
+  {
+   "name": "Botania",
+   "version": "r1.8-249",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads with the Baubles bridge (Curios installed): 771 items, 307 blocks and 19 entity types register and self-test. GUIs and gameplay not verified yet."
+  },
+  {
+   "name": "BuildCraft",
+   "version": "7.1.23",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, 6 GUIs open; some GUIs depended on icon providers that were fixed after the last full sweep."
+  },
+  {
+   "name": "EnderIO",
+   "version": "2.3.0.429 beta",
+   "mc": "1.7.10",
+   "status": "fails",
+   "notes": "Fails during init: EnderCore's Techne model loader (TechneModel) is not implemented yet."
+  },
+  {
+   "name": "Forestry",
+   "version": "4.2.16.64",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads after the BlockCocoa constructor fix; 45 blocks and 533 items register. GUIs and genetics gameplay not verified yet."
+  },
+  {
+   "name": "HBM's Nuclear Tech Mod",
+   "version": "1.0.27 BETA",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Machines, GUIs and entities verified."
+  },
+  {
+   "name": "IndustrialCraft 2",
+   "version": "2.2.827-experimental",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, 72 screens open. Long-running machine behaviour not verified."
+  },
+  {
+   "name": "Mystcraft",
+   "version": "0.12.3.04",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, 6 GUIs open. Writing desk screen draws incorrectly."
+  },
+  {
+   "name": "OpenBlocks",
+   "version": "1.6",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "11 GUIs open."
+  },
+  {
+   "name": "RFTools",
+   "version": "4.23",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "42 GUIs open, including logic and monitor blocks."
+  },
+  {
+   "name": "Thaumcraft",
+   "version": "4.2.3.5",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Arcane Workbench, Arcane Bore and other GUIs, Outer Lands dimension and world generation verified."
+  },
+  {
+   "name": "Thermal Expansion",
+   "version": "4.1.5",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Machine GUIs open, RF gauge hover tooltips work."
+  },
+  {
+   "name": "Tinkers' Construct",
+   "version": "1.8.8",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, tables and smeltery render, the manual opens. No bridge to a modern Tinkers' Construct yet; manual item icons draw black."
+  },
+  {
+   "name": "Twilight Forest",
+   "version": "2.3.7",
+   "mc": "1.7.10",
+   "status": "works",
+   "notes": "Portal, dimension generation, entities and loot verified."
+  },
+  {
+   "name": "Witchery",
+   "version": "0.24.1",
+   "mc": "1.7.10",
+   "status": "partial",
+   "notes": "Loads, village walls and towers generate. The Dream World teleport returns the player to the overworld."
+  }
+ ]
 }

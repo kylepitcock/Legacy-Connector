@@ -145,8 +145,11 @@ public final class SynthJarBuilder {
      */
     private boolean extendsEntity(String c) {
         Set<String> seen = new HashSet<>();
-        for (String a = superOf(c); a != null && !a.equals("java/lang/Object") && seen.add(a); a = superOf(a)) {
+        ClassInfo info = hierarchy.find(c);
+        for (String a = info == null ? null : info.superName; a != null && seen.add(a); ) {
             if (a.equals("legacyconnector/v1_7_10/net/minecraft/entity/Entity")) return true;
+            ClassInfo next = hierarchy.find(a);
+            a = next == null ? null : next.superName;
         }
         return false;
     }
