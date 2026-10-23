@@ -46,7 +46,7 @@ public class Items {
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item iron_hoe = ItemBridge.vanilla("iron_hoe", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item diamond_hoe = ItemBridge.vanilla("diamond_hoe", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item golden_hoe = ItemBridge.vanilla("golden_hoe", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.item.Item wheat_seeds = ItemBridge.vanilla("wheat_seeds", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.item.Item wheat_seeds = ItemBridge.vanilla("wheat_seeds", legacyconnector.v1_7_10.net.minecraft.item.ItemSeeds.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item wheat = ItemBridge.vanilla("wheat", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item bread = ItemBridge.vanilla("bread", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.ItemArmor leather_helmet = ItemBridge.vanilla("leather_helmet", legacyconnector.v1_7_10.net.minecraft.item.ItemArmor.class);
@@ -112,8 +112,8 @@ public class Items {
     public static final legacyconnector.v1_7_10.net.minecraft.item.ItemMap filled_map = ItemBridge.vanilla("filled_map", legacyconnector.v1_7_10.net.minecraft.item.ItemMap.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.ItemShears shears = ItemBridge.vanilla("shears", legacyconnector.v1_7_10.net.minecraft.item.ItemShears.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item melon = ItemBridge.vanilla("melon", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.item.Item pumpkin_seeds = ItemBridge.vanilla("pumpkin_seeds", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.item.Item melon_seeds = ItemBridge.vanilla("melon_seeds", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.item.Item pumpkin_seeds = ItemBridge.vanilla("pumpkin_seeds", legacyconnector.v1_7_10.net.minecraft.item.ItemSeeds.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.item.Item melon_seeds = ItemBridge.vanilla("melon_seeds", legacyconnector.v1_7_10.net.minecraft.item.ItemSeeds.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item beef = ItemBridge.vanilla("beef", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item cooked_beef = ItemBridge.vanilla("cooked_beef", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item chicken = ItemBridge.vanilla("chicken", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
@@ -123,7 +123,7 @@ public class Items {
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item blaze_rod = ItemBridge.vanilla("blaze_rod", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item ghast_tear = ItemBridge.vanilla("ghast_tear", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item gold_nugget = ItemBridge.vanilla("gold_nugget", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.item.Item nether_wart = ItemBridge.vanilla("nether_wart", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.item.Item nether_wart = ItemBridge.vanilla("nether_wart", legacyconnector.v1_7_10.net.minecraft.item.ItemSeeds.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.ItemPotion potionitem = ItemBridge.vanilla("potion", legacyconnector.v1_7_10.net.minecraft.item.ItemPotion.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item glass_bottle = ItemBridge.vanilla("glass_bottle", legacyconnector.v1_7_10.net.minecraft.item.Item.class);
     public static final legacyconnector.v1_7_10.net.minecraft.item.Item spider_eye = ItemBridge.vanilla("spider_eye", legacyconnector.v1_7_10.net.minecraft.item.Item.class);

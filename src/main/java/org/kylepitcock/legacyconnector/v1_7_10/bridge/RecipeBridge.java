@@ -190,7 +190,14 @@ public final class RecipeBridge {
         o.addProperty("category", "misc");
         JsonArray pattern = new JsonArray();
         int width = s.pattern.stream().mapToInt(String::length).max().orElse(0);
-        for (String row : s.pattern) pattern.add(String.format("%-" + width + "s", row));
+        // 1.7.10's CraftingManager read a symbol with no key as an empty slot (AgriCraft's clipper recipe relies on it).
+        for (String row : s.pattern) {
+            StringBuilder padded = new StringBuilder(String.format("%-" + width + "s", row));
+            for (int i = 0; i < padded.length(); i++) {
+                if (padded.charAt(i) != ' ' && !s.key.containsKey(padded.charAt(i))) padded.setCharAt(i, ' ');
+            }
+            pattern.add(padded.toString());
+        }
         o.add("pattern", pattern);
         // Legacy Forge ignored keys the pattern never uses (mods often pass one shared key list to every recipe);
         // 1.21 rejects the whole recipe, and an untranslatable unused ingredient must not sink it either.

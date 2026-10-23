@@ -9,6 +9,18 @@ runs Fabric mods on NeoForge. The original jar is never modified.
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
 
+## Installation (alpha)
+
+1. Install **Minecraft 1.21.1** with **NeoForge 21.1.x** (Java 21).
+2. Download `legacyconnector-<version>.jar` from the [Releases](https://github.com/kylepitcock/Legacy-Connector/releases) page.
+3. Put it in your `mods` folder together with the **1.7.10** mod jars you own. Nothing else is needed; the jar contains
+   the loader and the runtime. Mods that need a library (CodeChickenLib, CoFH Core, ...) need that library's 1.7.10 jar too.
+4. Start the game. The first start translates each legacy jar (cached under `.legacyconnector/cache`, later starts are fast).
+5. Read `logs/legacyconnector-report.txt` to see what was translated and what could not be linked.
+
+This is an alpha: back up your worlds, expect missing features and report what you find on the
+[compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
+
 ## Screenshots
 
 All taken in the game (NeoForge 1.21.1, headless), with legacy 1.7.10 mods next to modern content.
