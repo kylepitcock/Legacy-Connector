@@ -66,7 +66,8 @@ public final class RenderContext {
             Frame f = FRAMES.pop();
             if (FRAMES.isEmpty()) resetState();
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
-            for (int guard = 0; f.pose.last() != f.base && !f.pose.clear() && guard < 64; guard++) f.pose.popPose();
+            // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
+            for (int guard = 0; !f.pose.clear() && f.pose.last() != f.base && guard < 64; guard++) f.pose.popPose();
             if (f.gui != null) f.gui.setColor(1, 1, 1, 1);
             resetColor();
         } finally {
@@ -292,8 +293,12 @@ public final class RenderContext {
 
     public static void pop() {
         PoseStack p = pose();
-        if (p != null) p.popPose();
-        else if (strayPushes > 0) strayPushes--;
+        // A pop with nothing pushed (legacy code is sloppy) must not remove the caller's base matrix.
+        if (p != null) {
+            if (!p.clear()) p.popPose();
+        } else if (strayPushes > 0) {
+            strayPushes--;
+        }
     }
 
     public static void translate(double x, double y, double z) {

@@ -187,6 +187,8 @@ public class BiomeGenBase {
         theBiomeDecorator.decorateChunk(world, rand, this, chunkX, chunkZ);
     }
 
+    protected static final legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenDoublePlant genTallFlowers =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenDoublePlant();
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenTrees worldGeneratorTrees =
             new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenTrees(false);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigTree worldGeneratorBigTree =
