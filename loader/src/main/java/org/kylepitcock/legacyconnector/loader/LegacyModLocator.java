@@ -229,7 +229,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
-            md.update(fileDigest(jar.path));
+            md.update(fileDigest(jar.existing()));
             md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
         }
@@ -320,7 +320,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     /** Content hash + transformer version + shim index + the other legacy jars of its version: any change re-translates. */
     private static String cacheName(LegacyJar jar, byte[] modSet) throws IOException {
         MessageDigest md = SplitPackageResolver.sha256();
-        md.update(fileDigest(jar.path));
+        md.update(fileDigest(jar.existing()));
         md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
         md.update(LOADER_DIGEST);
         if (indexDigest != null) md.update(indexDigest);

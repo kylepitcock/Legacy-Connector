@@ -104,7 +104,7 @@ public final class LegacyJarTransformer {
         Map<String, byte[]> classes = new LinkedHashMap<>();
         Map<String, byte[]> other = new LinkedHashMap<>();
         Manifest manifest = null;
-        try (ZipFile zip = new ZipFile(jar.path.toFile())) {
+        try (ZipFile zip = new ZipFile(jar.existing().toFile())) {
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry e = entries.nextElement();

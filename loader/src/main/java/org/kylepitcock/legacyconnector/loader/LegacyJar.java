@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -8,7 +9,8 @@ import java.util.List;
  * Everything the inspector learned about a jar that looks like a legacy Forge mod.
  */
 public final class LegacyJar {
-    public final Path path;
+    /** Where the jar was found; a coremod that moves it (CodeChickenCore's dependency loader) is followed by {@link #existing()}. */
+    public volatile Path path;
     public LegacyVersion version;
     /** Why {@link #version} was chosen; shown in the compatibility report. */
     public String versionEvidence = "";
@@ -29,6 +31,29 @@ public final class LegacyJar {
 
     public String fileName() {
         return path.getFileName().toString();
+    }
+
+    /**
+     * The jar's current location. Legacy coremods run while mods are being translated, and some move library jars
+     * (CodeChickenCore's DepLoader files ForgeMultipart, Baubles ... under mods/<minecraft version>/ as 1.7.10 did),
+     * so a jar that is gone from where it was found is looked for in the version folders next to it.
+     */
+    public Path existing() {
+        Path p = path;
+        if (Files.exists(p)) return p;
+        Path dir = p.getParent();
+        if (dir == null) return p;
+        String name = p.getFileName().toString();
+        List<Path> candidates = new ArrayList<>();
+        for (String v : new String[] {"1.7.10", "1.12.2", "1.20.1", "1.16.5"}) candidates.add(dir.resolve(v).resolve(name));
+        if (dir.getParent() != null) candidates.add(dir.getParent().resolve(name));
+        for (Path c : candidates) {
+            if (Files.exists(c)) {
+                path = c;
+                return c;
+            }
+        }
+        return p;
     }
 
     /** A jar with no {@code @Mod} class has nothing the shim can bootstrap. */
