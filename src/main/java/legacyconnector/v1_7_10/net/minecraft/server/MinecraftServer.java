@@ -166,4 +166,15 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public World getEntityWorld() {
         return worldServerForDimension(0);
     }
+    public boolean isPVPEnabled() {
+        return mcc$server.isPvpAllowed();
+    }
+
+    public boolean getAllowNether() {
+        return mcc$server.getLevel(net.minecraft.world.level.Level.NETHER) != null;
+    }
+
+    public boolean isServerStopped() {
+        return mcc$server.isStopped();
+    }
 }
