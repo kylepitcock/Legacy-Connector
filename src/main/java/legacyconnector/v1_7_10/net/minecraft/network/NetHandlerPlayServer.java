@@ -26,6 +26,8 @@ public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecra
         } else if (packet instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket fml) {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.send(fml,
                     legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.PLAYER, playerEntity);
+        } else if (packet != null) {
+            packet.mcc$send(player);
         }
     }
 

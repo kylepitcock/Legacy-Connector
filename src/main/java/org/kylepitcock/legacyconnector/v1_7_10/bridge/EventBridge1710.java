@@ -372,6 +372,27 @@ public final class EventBridge1710 {
                 if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
             }
         });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)) return;
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerDropsEvent.class)) return;
+            if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
+            ArrayList<EntityItem> drops = new ArrayList<>();
+            for (var item : e.getDrops()) if (EntityBridge.wrap(item) instanceof EntityItem legacyItem) drops.add(legacyItem);
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerDropsEvent(player, legacySource(e.getSource()), drops, e.isRecentlyHit());
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+                return;
+            }
+            e.getDrops().clear();
+            for (EntityItem item : legacy.drops) {
+                if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerDestroyItemEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerDestroyItemEvent.class)) return;
+            if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerDestroyItemEvent(player, ItemStack.mcc$wrap(e.getOriginal())));
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
             var held = e.getItemStack();
             if (!(held.getItem() instanceof net.minecraft.world.item.ShearsItem) || e.getLevel().isClientSide()) return;
