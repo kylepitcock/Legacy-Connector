@@ -372,6 +372,22 @@ public final class EventBridge1710 {
                 if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
             }
         });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e) -> {
+            var legacy = playerUse(e, 0);
+            if (legacy != null && forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Tick e) -> {
+            var legacy = playerUse(e, 1);
+            if (legacy != null && forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Stop e) -> {
+            var legacy = playerUse(e, 2);
+            if (legacy != null && forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish e) -> {
+            var legacy = playerUse(e, 3);
+            if (legacy != null) forge().post(legacy);
+        });
         gameBus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.Watch e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.Watch.class)) return;
             if (!(EntityBridge.wrap(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player)) return;
@@ -476,6 +492,28 @@ public final class EventBridge1710 {
         }
     }
 
+    /** The legacy PlayerUseItemEvent (kind 0 start, 1 tick, 2 stop, 3 finish) for a player using an item, or null when nothing listens. */
+    private static legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent playerUse(
+            net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent e, int kind) {
+        if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)) return null;
+        Class<? extends legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent> type = switch (kind) {
+            case 0 -> legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Start.class;
+            case 1 -> legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Tick.class;
+            case 2 -> legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Stop.class;
+            default -> legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Finish.class;
+        };
+        if (!wants(forge(), type)) return null;
+        if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return null;
+        ItemStack stack = ItemStack.mcc$wrap(e.getItem());
+        int duration = e.getDuration();
+        return switch (kind) {
+            case 0 -> new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Start(player, stack, duration);
+            case 1 -> new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Tick(player, stack, duration);
+            case 2 -> new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Stop(player, stack, duration);
+            default -> new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent.Finish(player, stack, duration);
+        };
+    }
+
     /** The legacy RenderLivingEvent for an entity about to be drawn, or null when nothing listens or the entity has no legacy view. */
     private static legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent livingRenderEvent(net.minecraft.world.entity.LivingEntity entity, boolean pre) {
         boolean wanted = wants(forge(), pre ? legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre.class
@@ -493,6 +531,16 @@ public final class EventBridge1710 {
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
+        gameBus.addListener((net.neoforged.neoforge.client.event.ViewportEvent.ComputeFogColor e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.EntityViewRenderEvent.FogColors.class)) return;
+            if (!(EntityBridge.wrap(e.getCamera().getEntity()) instanceof EntityLivingBase living)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.client.event.EntityViewRenderEvent.FogColors(living, e.getPartialTick(),
+                    e.getRed(), e.getGreen(), e.getBlue());
+            forge().post(legacy);
+            e.setRed(legacy.red);
+            e.setGreen(legacy.green);
+            e.setBlue(legacy.blue);
+        });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) e.getMouseX(), (int) e.getMouseY(), 0, 0,

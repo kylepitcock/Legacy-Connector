@@ -40,6 +40,62 @@ public class EntityRegistry {
         legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.put(legacyName, entityClass);
         legacyconnector.v1_7_10.net.minecraft.entity.EntityList.classToStringMapping.put(entityClass, legacyName);
         legacyconnector.v1_7_10.net.minecraft.entity.EntityList.mcc$registered(entityClass);
+        REGISTRATIONS.put(entityClass, new EntityRegistration(entityClass, entityName, id, mod, trackingRange, updateFrequency, sendsVelocityUpdates));
+    }
+
+    private static final java.util.Map<Class<?>, EntityRegistration> REGISTRATIONS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** What a mod passed to {@link #registerModEntity}. */
+    public static class EntityRegistration {
+        private final Class<?> entityClass;
+        private final String entityName;
+        private final int modEntityId;
+        private final Object mod;
+        private final int trackingRange;
+        private final int updateFrequency;
+        private final boolean sendsVelocityUpdates;
+
+        EntityRegistration(Class<?> entityClass, String entityName, int id, Object mod, int trackingRange, int updateFrequency, boolean velocity) {
+            this.entityClass = entityClass;
+            this.entityName = entityName;
+            this.modEntityId = id;
+            this.mod = mod;
+            this.trackingRange = trackingRange;
+            this.updateFrequency = updateFrequency;
+            this.sendsVelocityUpdates = velocity;
+        }
+
+        public Class<?> getEntityClass() {
+            return entityClass;
+        }
+
+        public String getEntityName() {
+            return entityName;
+        }
+
+        public int getModEntityId() {
+            return modEntityId;
+        }
+
+        public Object getContainer() {
+            return mod;
+        }
+
+        public int getTrackingRange() {
+            return trackingRange;
+        }
+
+        public int getUpdateFrequency() {
+            return updateFrequency;
+        }
+
+        public boolean sendsVelocityUpdates() {
+            return sendsVelocityUpdates;
+        }
+    }
+
+    public EntityRegistration lookupModSpawn(Class<?> entityClass, boolean keyByEntityClass) {
+        return REGISTRATIONS.get(entityClass);
     }
 
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id) {
