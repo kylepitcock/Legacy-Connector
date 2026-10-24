@@ -14,7 +14,7 @@ public class VillageCollection {
         return villageList;
     }
 
-    public Object findNearestVillage(int x, int y, int z, int radius) {
+    public Village findNearestVillage(int x, int y, int z, int radius) {
         return null;
     }
 

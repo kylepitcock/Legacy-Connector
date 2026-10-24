@@ -11,6 +11,18 @@ public class PlayerEvent extends LivingEvent {
         this.entityPlayer = player;
     }
 
+    /** The player entity was recreated (death, or returning from the End): copy what must survive from {@link #original}. */
+    public static class Clone extends PlayerEvent {
+        public final EntityPlayer original;
+        public final boolean wasDeath;
+
+        public Clone(EntityPlayer newPlayer, EntityPlayer original, boolean wasDeath) {
+            super(newPlayer);
+            this.original = original;
+            this.wasDeath = wasDeath;
+        }
+    }
+
     /** How fast a player mines a block: handlers change {@link #newSpeed}. */
     @legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Cancelable
     public static class BreakSpeed extends PlayerEvent {

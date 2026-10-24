@@ -372,6 +372,24 @@ public final class EventBridge1710 {
                 if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
             }
         });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.Watch e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.Watch.class)) return;
+            if (!(EntityBridge.wrap(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.Watch(
+                    new legacyconnector.v1_7_10.net.minecraft.world.ChunkCoordIntPair(e.getPos().x, e.getPos().z), player));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.UnWatch e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.UnWatch.class)) return;
+            if (!(EntityBridge.wrap(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.UnWatch(
+                    new legacyconnector.v1_7_10.net.minecraft.world.ChunkCoordIntPair(e.getPos().x, e.getPos().z), player));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.Clone e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.Clone.class)) return;
+            if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer now)) return;
+            if (!(EntityBridge.wrap(e.getOriginal()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer before)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.Clone(now, before, e.isWasDeath()));
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
             if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)) return;
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerDropsEvent.class)) return;
@@ -475,6 +493,19 @@ public final class EventBridge1710 {
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
+        gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
+            var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) e.getMouseX(), (int) e.getMouseY(), 0, 0,
+                    (int) Math.signum(e.getScrollDeltaY()) * 120, -1, false);
+            if (forge().post(event)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseButton.Pre e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
+            var mouse = net.minecraft.client.Minecraft.getInstance().mouseHandler;
+            var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) mouse.xpos(), (int) mouse.ypos(), 0, 0, 0,
+                    e.getButton(), e.getAction() != 0);
+            if (forge().post(event)) e.setCanceled(true);
+        });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
             var legacy = livingRenderEvent(e.getEntity(), true);
             if (legacy != null && forge().post(legacy)) e.setCanceled(true);

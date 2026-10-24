@@ -37,6 +37,26 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
         }
     }
 
+    /** A player connected to this (integrated or dedicated) server. */
+    public static class ServerConnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
+        public final legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager;
+
+        public ServerConnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
+            super(handler);
+            this.manager = manager;
+        }
+    }
+
+    /** A player left this server. */
+    public static class ServerDisconnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
+        public final legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager;
+
+        public ServerDisconnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
+            super(handler);
+            this.manager = manager;
+        }
+    }
+
     public static class ServerCustomPacketEvent extends CustomPacketEvent<INetHandler> {
         public ServerCustomPacketEvent(Object manager, FMLProxyPacket packet, INetHandler handler) {
             super(handler, packet, Side.SERVER);
