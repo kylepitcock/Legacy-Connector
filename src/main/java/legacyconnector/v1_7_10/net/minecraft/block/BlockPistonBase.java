@@ -29,12 +29,12 @@ public class BlockPistonBase extends legacyconnector.v1_7_10.net.minecraft.block
 
     public static int determineOrientation(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
             legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
-        if (Math.abs((float) entity.posX - x) < 2.0F && Math.abs((float) entity.posZ - z) < 2.0F) {
-            double eye = entity.posY + 1.82D - entity.yOffset;
+        if (Math.abs((float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posX(entity) - x) < 2.0F && Math.abs((float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posZ(entity) - z) < 2.0F) {
+            double eye = legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posY(entity) + 1.82D - entity.yOffset;
             if (eye - y > 2.0D) return 1;
             if (y - eye > 0.0D) return 0;
         }
-        int facing = (int) Math.floor(entity.rotationYaw * 4.0F / 360.0F + 0.5D) & 3;
+        int facing = (int) Math.floor(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$rotationYaw(entity) * 4.0F / 360.0F + 0.5D) & 3;
         return facing == 0 ? 2 : facing == 1 ? 5 : facing == 2 ? 3 : facing == 3 ? 4 : 0;
     }
 }
