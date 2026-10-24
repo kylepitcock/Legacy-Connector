@@ -15,7 +15,7 @@ public class ItemRenderer {
         if (pose == null || modern == null || modern.isEmpty()) return;
         var mc = Minecraft.getInstance();
         LivingEntity living = entity != null && entity.mcc$entity instanceof LivingEntity l ? l : null;
-        mc.getItemRenderer().renderStatic(living, modern, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, pose, RenderContext.buffers(), mc.level,
+        mc.getItemRenderer().renderStatic(living, modern, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, false, pose, RenderContext.buffers(), (net.minecraft.world.level.Level) (Object) mc.level,
                 RenderContext.light(), RenderContext.overlay(), 0);
     }
 
