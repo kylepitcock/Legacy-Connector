@@ -1,1 +1,4 @@
 net/minecraft/entity/monster/EntityCreeper func_146077_cc ()V 2
+net/minecraft/client/renderer/entity/RenderPlayer renderOffsetLivingLabel (Lnet/minecraft/entity/EntityLivingBase;DDDLjava/lang/String;FD)V 4
+net/minecraft/client/resources/SimpleReloadableResourceManager clearResources ()V 2
+net/minecraft/client/gui/inventory/GuiContainerCreative setCurrentCreativeTab (Lnet/minecraft/creativetab/CreativeTabs;)V 2
