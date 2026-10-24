@@ -1,3 +1,16 @@
 {
- "reports": []
+ "reports": [
+  {
+   "issue": 52,
+   "mod": "Orespawn",
+   "mc": "1.7.10",
+   "status": "works",
+   "details": "almost perfect, some issues with particle effects and boss bars but everything else works",
+   "lc": "0.1.0",
+   "neoforge": "21.1.586",
+   "link": "",
+   "date": "2026-10-24",
+   "open": true
+  }
+ ]
 }
