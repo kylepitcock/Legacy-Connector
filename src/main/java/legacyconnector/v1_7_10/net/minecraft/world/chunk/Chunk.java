@@ -77,11 +77,21 @@ public class Chunk {
     }
 
     public Block[] mcc$blocks() {
+        mcc$mergeStorage();
         return mcc$blocks;
     }
 
     public byte[] mcc$meta() {
+        mcc$mergeStorage();
         return mcc$meta;
+    }
+
+    /** Sections a generator made with {@code new ExtendedBlockStorage} and stored in {@link #getBlockStorageArray()} become part of the arrays. */
+    private void mcc$mergeStorage() {
+        if (mcc$storage == null || mcc$blocks == null) return;
+        for (var s : mcc$storage) {
+            if (s != null && s.mcc$standalone()) s.mcc$mergeInto(mcc$blocks, mcc$meta);
+        }
     }
 
     /** Column height of an array chunk: the arrays hold (x * 16 + z) * height + y (vanilla 256, some mods' 128). */

@@ -17,4 +17,9 @@ public class TileEntityMobSpawner extends TileEntity {
     public MobSpawnerBaseLogic getSpawnerBaseLogic() {
         return logic;
     }
+
+    /** 1.7.10 MCP has no readable name for this one: mods call it by its SRG name. */
+    public MobSpawnerBaseLogic func_145881_a() {
+        return logic;
+    }
 }

@@ -54,7 +54,7 @@ public class ChunkProviderGenerate implements IChunkProvider {
         rand.setSeed(cx * 341873128712L + cz * 132897987541L);
         Block[] blocks = new Block[65536];
         byte[] meta = new byte[65536];
-        generateTerrain(cx, cz, blocks);
+        func_147424_a(cx, cz, blocks);
         biomesForGeneration = worldObj.getWorldChunkManager().loadBlockGeneratorData(biomesForGeneration, cx * 16, cz * 16, 16, 16);
         replaceBlocksForBiome(cx, cz, blocks, meta, biomesForGeneration);
         caveGenerator.generate(this, worldObj, cx, cz, blocks);
@@ -66,10 +66,10 @@ public class ChunkProviderGenerate implements IChunkProvider {
         return chunk;
     }
 
-    public void generateTerrain(int cx, int cz, Block[] blocks) {
+    public void func_147424_a(int cx, int cz, Block[] blocks) {
         final int seaLevel = 63;
         biomesForGeneration = worldObj.getWorldChunkManager().getBiomesForGeneration(biomesForGeneration, cx * 4 - 2, cz * 4 - 2, 10, 10);
-        fillNoise(cx * 4, 0, cz * 4);
+        func_147423_a(cx * 4, 0, cz * 4);
         for (int cellX = 0; cellX < 4; cellX++) {
             int l = cellX * 5;
             int i1 = (cellX + 1) * 5;
@@ -127,7 +127,7 @@ public class ChunkProviderGenerate implements IChunkProvider {
         }
     }
 
-    private void fillNoise(int x, int y, int z) {
+    public void func_147423_a(int x, int y, int z) {
         noise6 = noiseGen6.generateNoiseOctaves(noise6, x, z, 5, 5, 200.0D, 200.0D, 0.5D);
         double d0 = 684.412D;
         double d1 = 684.412D;
