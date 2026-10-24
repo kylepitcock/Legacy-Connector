@@ -439,6 +439,7 @@ public final class EventBridge1710 {
 
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {
             if (wants(fml(), TickEvent.ClientTickEvent.class)) fml().post(new TickEvent.ClientTickEvent(TickEvent.Phase.START));
         });

@@ -310,7 +310,9 @@ public final class LegacyCoreModTransformers {
      */
     private static byte[] guavaCalls(byte[] bytes) {
         try {
-            if (!new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1).contains("com/google/common/base/Objects")) return bytes;
+            String text = new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1);
+            // also the (URLClassLoader) casts of dependency loaders (Galacticraft's plugin adds its libraries to the class path)
+            if (!text.contains("com/google/common/base/Objects") && !text.contains("java/net/URLClassLoader")) return bytes;
             org.objectweb.asm.tree.ClassNode node = new org.objectweb.asm.tree.ClassNode();
             new ClassReader(bytes).accept(node, 0);
             if (JavaCompatRedirects.apply(node) == 0) return bytes;
@@ -336,6 +338,7 @@ public final class LegacyCoreModTransformers {
 
     /** Classes of coremods compiled against ASM 5 use names ASM 9 replaced (see {@link LegacyRemapper#JDK_RELOCATIONS}). */
     private static byte[] modernizeApi(byte[] bytes) {
+        bytes = CoremodPatches.apply(bytes);
         bytes = guavaCalls(bytes);
         Map<String, String> renames = new HashMap<>();
         for (var e : LegacyRemapper.JDK_RELOCATIONS.entrySet()) {

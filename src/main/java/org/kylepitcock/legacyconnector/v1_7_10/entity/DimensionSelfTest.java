@@ -78,7 +78,8 @@ public final class DimensionSelfTest {
                 ok++;
                 sb.append("\n  dimension ").append(id).append(" (").append(dims.get(id).getSimpleName()).append("): ").append(solid)
                         .append(" blocks near the surface ").append(byNamespace).append(" in ").append((System.nanoTime() - start) / 1_000_000)
-                        .append(" ms");
+                        .append(" ms; ").append(org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.describe(server.getLevel(
+                                org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.levelKey(id))));
             } catch (RuntimeException | LinkageError ex) {
                 sb.append("\n  dimension ").append(id).append(": generation threw ").append(ex);
             }
