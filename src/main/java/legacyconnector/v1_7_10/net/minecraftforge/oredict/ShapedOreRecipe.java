@@ -76,12 +76,15 @@ public class ShapedOreRecipe implements IRecipe {
         return this;
     }
 
+    /** The grid as Forge kept it: item stacks, and the stacks registered for an ore name in place of the name. */
     public Object[] getInput() {
-        return input;
+        Object[] out = new Object[input.length];
+        for (int i = 0; i < out.length; i++) out[i] = input[i] instanceof String name ? OreDictionary.getOres(name) : input[i];
+        return out;
     }
 
     public static Object[] getInput(ShapedOreRecipe recipe) {
-        return recipe.input;
+        return recipe.getInput();
     }
 
     public boolean mcc$mirrored() {

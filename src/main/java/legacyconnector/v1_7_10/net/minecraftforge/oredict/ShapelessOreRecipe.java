@@ -34,7 +34,9 @@ public class ShapelessOreRecipe implements IRecipe {
     }
 
     public java.util.ArrayList<Object> getInput() {
-        return input;
+        java.util.ArrayList<Object> out = new java.util.ArrayList<>();
+        for (Object o : input) out.add(o instanceof String name ? OreDictionary.getOres(name) : o);
+        return out;
     }
 
     @Override
