@@ -13,6 +13,20 @@ public enum EnumConnectionState {
     private final BiMap<Integer, Class> serverPackets = HashBiMap.create();
     private final BiMap<Integer, Class> clientPackets = HashBiMap.create();
 
+    /** Phantoms for the legacy field names (Galacticraft registers its packet class by reflection-free field access). */
+    @Deprecated
+    public BiMap<Integer, Class> field_150770_i;
+    @Deprecated
+    public BiMap<Integer, Class> field_150769_h;
+
+    public static BiMap<Integer, Class> mcc$get$field_150770_i(EnumConnectionState s) {
+        return s.serverPackets;
+    }
+
+    public static BiMap<Integer, Class> mcc$get$field_150769_h(EnumConnectionState s) {
+        return s.clientPackets;
+    }
+
     /** Packets the server sends. */
     public BiMap<Integer, Class> func_150755_b() {
         return serverPackets;
