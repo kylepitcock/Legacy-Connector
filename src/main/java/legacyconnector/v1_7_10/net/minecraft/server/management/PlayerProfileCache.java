@@ -7,6 +7,9 @@ import java.util.UUID;
 public class PlayerProfileCache {
     private final net.minecraft.server.MinecraftServer mcc$server;
 
+    /** Username (lower case) -> entry; mods reflect it (CodeChickenLib's ServerUtils), the lookups here use the modern cache. */
+    public java.util.Map<String, Object> field_152661_c = new java.util.LinkedHashMap<>();
+
     public PlayerProfileCache(net.minecraft.server.MinecraftServer server) {
         this.mcc$server = server;
     }
