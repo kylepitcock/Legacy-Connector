@@ -107,6 +107,18 @@ public class GL11 extends GL11Guard {
     public static void glClipPlane(int plane, java.nio.DoubleBuffer equation) {
     }
 
+    /** Binds a GL texture the mod created itself, and makes the emulated renderer draw with it. */
+    public static void glBindTexture(int target, int texture) {
+        if (DisplayLists.record(() -> glBindTexture(target, texture))) return;
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) {
+            GlStateManager._bindTexture(texture);
+            if (texture != 0) RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.RawGlTextures.location(texture));
+        } else {
+            GL11Guard.glBindTexture(target, texture);
+        }
+    }
+
     // ------------------------------------------------------------------ matrix stack
 
     public static void glPushMatrix() {
