@@ -53,6 +53,8 @@ public final class LegacyCoreModTransformers {
         this.transform = transform;
     }
 
+    private final java.util.Map<String, byte[]> results = new java.util.HashMap<>();
+
     public boolean isEmpty() {
         return transformers.isEmpty();
     }
@@ -214,6 +216,12 @@ public final class LegacyCoreModTransformers {
         if (transformers.isEmpty()) return bytes;
         String name = internalName.replace('/', '.');
         for (String e : exclusions) if (name.startsWith(e)) return bytes;
+        // A jar is read more than once (a scan for the hierarchy, then the translation) and FML ran each transformer once
+        // per class: some remember what they patched (Binnie Patcher) and leave the second copy untouched. The first result
+        // is therefore reused for the same input.
+        String key = name + ':' + bytes.length + ':' + java.util.Arrays.hashCode(bytes);
+        byte[] remembered = results.get(key);
+        if (remembered != null) return remembered;
         byte[] current = bytes;
         for (Transformer t : transformers) {
             try {
@@ -226,6 +234,7 @@ public final class LegacyCoreModTransformers {
                 if (n == 1) LOG.debug("Legacy Connector: class transformer {} failure detail", t.name, cause);
             }
         }
+        if (current != bytes) results.put(key, current);
         return current;
     }
 
