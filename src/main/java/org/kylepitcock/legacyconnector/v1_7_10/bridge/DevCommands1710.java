@@ -136,9 +136,30 @@ public final class DevCommands1710 {
         int n = 0;
         for (ServerLevel level : source.getServer().getAllLevels()) {
             n++;
-            source.sendSuccess(() -> Component.literal("  " + WorldProvider.dimensionId(level.dimension()) + "  " + level.dimension().location()), false);
+            String described = describe(level);
+            source.sendSuccess(() -> Component.literal("  " + WorldProvider.dimensionId(level.dimension()) + "  " + level.dimension().location() + described), false);
         }
         return n;
+    }
+
+    /** "  Name (ProviderClass)" for a level: the legacy provider's dimension name, or the vanilla name. */
+    private static String describe(ServerLevel level) {
+        int id = WorldProvider.dimensionId(level.dimension());
+        String vanilla = switch (id) {
+            case 0 -> "Overworld";
+            case -1 -> "Nether";
+            case 1 -> "The End";
+            default -> null;
+        };
+        if (vanilla != null) return "  " + vanilla;
+        try {
+            WorldProvider provider = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level));
+            String name = provider == null ? null : provider.getDimensionName();
+            String cls = provider == null ? "" : provider.getClass().getSimpleName();
+            return "  " + (name == null || name.isBlank() ? cls : name + " (" + cls + ")");
+        } catch (RuntimeException | LinkageError e) {
+            return "";
+        }
     }
 
     private static int dim(CommandSourceStack source, int id, BlockPos pos) throws CommandSyntaxException {
