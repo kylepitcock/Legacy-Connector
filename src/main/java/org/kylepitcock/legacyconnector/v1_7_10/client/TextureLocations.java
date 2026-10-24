@@ -34,6 +34,7 @@ public final class TextureLocations {
                 if (colon > 0) return ResourceLocation.fromNamespaceAndPath(modern.substring(0, colon), "textures/" + modern.substring(colon + 1) + ".png");
             }
         }
+        if (ns.equals("minecraft") && p.equals("textures/gui/icons.png")) LegacyIcons.ensure();
         return ResourceLocation.fromNamespaceAndPath(ns, p);
     }
 }

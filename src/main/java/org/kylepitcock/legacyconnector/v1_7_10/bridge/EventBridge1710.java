@@ -421,6 +421,22 @@ public final class EventBridge1710 {
         gameBus.addListener((ServerStoppedEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStoppedEvent()));
     }
 
+    /**
+     * FML's RenderTickEvent: posted once per frame at the start and the end of the HUD pass, inside a GUI render frame so the
+     * legacy drawing that mods do from it (oxygen and radiation meters, custom HUDs) has somewhere to draw.
+     */
+    public static void renderTick(TickEvent.Phase phase, float partial, net.minecraft.client.gui.GuiGraphics graphics) {
+        if (!wants(fml(), TickEvent.RenderTickEvent.class)) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginGui(graphics);
+        try {
+            fml().post(new TickEvent.RenderTickEvent(phase, partial));
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Hud").warn("A render tick handler failed: {}", e.toString());
+        } finally {
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
+        }
+    }
+
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {

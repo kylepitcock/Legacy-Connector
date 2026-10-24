@@ -39,9 +39,13 @@ public final class HudEvents1710 {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Pre e) -> {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.START,
+                    e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
             if (wants()) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), ElementType.ALL, false);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post e) -> {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.END,
+                    e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
             if (!wants()) return;
             float partial = e.getPartialTick().getGameTimeDeltaPartialTick(false);
             post(e.getGuiGraphics(), partial, ElementType.TEXT, false);
