@@ -917,6 +917,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Extra Planets",
+   "version": "1.7.10-2.1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Extra Trees",
    "version": "2.5.24",
    "mc": "1.7.10",
@@ -1780,6 +1789,15 @@
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "More Planets",
+   "version": "1.4.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
