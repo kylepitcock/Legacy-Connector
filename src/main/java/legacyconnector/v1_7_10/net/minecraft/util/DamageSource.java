@@ -217,4 +217,15 @@ public class DamageSource {
         out.mcc$original = modern;
         return out;
     }
+
+    private legacyconnector.v1_7_10.net.minecraft.world.Explosion explosionSource;
+
+    public DamageSource setExplosionSource(legacyconnector.v1_7_10.net.minecraft.world.Explosion source) {
+        explosionSource = source;
+        return setExplosion();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.Explosion mcc$explosionSource() {
+        return explosionSource;
+    }
 }

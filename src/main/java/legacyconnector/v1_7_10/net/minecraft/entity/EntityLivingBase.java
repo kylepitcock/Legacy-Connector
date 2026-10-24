@@ -467,4 +467,8 @@ public abstract class EntityLivingBase extends Entity {
     public boolean isClientWorld() {
         return mcc$entity != null && mcc$entity.level().isClientSide();
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getItemIcon(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, int pass) {
+        return stack.getIconIndex();
+    }
 }

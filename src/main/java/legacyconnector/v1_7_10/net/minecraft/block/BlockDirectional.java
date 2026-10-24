@@ -13,4 +13,8 @@ public class BlockDirectional extends legacyconnector.v1_7_10.net.minecraft.bloc
     protected BlockDirectional(legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
         super(material);
     }
+
+    public static int getDirection(int meta) {
+        return meta & 3;
+    }
 }

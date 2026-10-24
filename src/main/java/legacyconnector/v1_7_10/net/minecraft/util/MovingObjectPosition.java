@@ -12,6 +12,8 @@ public class MovingObjectPosition {
     public int sideHit;
     public Vec3 hitVec;
     public Entity entityHit;
+    /** Forge: which sub-part of a multi-part block was hit. */
+    public int subHit = -1;
 
     public MovingObjectPosition(int x, int y, int z, int side, Vec3 hit) {
         this(x, y, z, side, hit, true);

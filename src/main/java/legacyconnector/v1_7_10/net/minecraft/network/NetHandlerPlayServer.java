@@ -32,4 +32,8 @@ public class NetHandlerPlayServer implements INetHandler {
     public void kickPlayerFromServer(String reason) {
         playerEntity.mcc$serverPlayer().connection.disconnect(new ChatComponentText(reason).mcc$toModern());
     }
+
+    public void setPlayerLocation(double x, double y, double z, float yaw, float pitch) {
+        playerEntity.mcc$serverPlayer().connection.teleport(x, y, z, yaw, pitch);
+    }
 }

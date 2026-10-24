@@ -44,4 +44,9 @@ public class ItemEnchantedBook extends legacyconnector.v1_7_10.net.minecraft.ite
         addEnchantment(stack, data);
         return stack;
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList func_92110_g(ItemStack stack) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
+        return tag != null && tag.hasKey("StoredEnchantments", 9) ? tag.getTagList("StoredEnchantments", 10) : new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList();
+    }
 }

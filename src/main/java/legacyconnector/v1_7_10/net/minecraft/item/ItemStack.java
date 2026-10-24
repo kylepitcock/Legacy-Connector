@@ -448,4 +448,12 @@ public final class ItemStack {
     public String toString() {
         return mcc$count() + "x" + (mcc$item == null ? "null" : mcc$item.getUnlocalizedName()) + "@" + getItemDamage();
     }
+
+    public boolean hasEffect(int pass) {
+        return mcc$item != null && mcc$item.hasEffect(this, pass);
+    }
+
+    public com.google.common.collect.Multimap getAttributeModifiers() {
+        return mcc$item == null ? com.google.common.collect.HashMultimap.create() : mcc$item.getAttributeModifiers(this);
+    }
 }

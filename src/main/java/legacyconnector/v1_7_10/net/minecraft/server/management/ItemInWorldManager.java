@@ -32,4 +32,13 @@ public class ItemInWorldManager {
         if (mcc$player == null) return false;
         return mcc$player.gameMode.destroyBlock(new net.minecraft.core.BlockPos(x, y, z));
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType getGameType() {
+        if (mcc$player == null) return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL;
+        return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(mcc$player.gameMode.getGameModeForPlayer().getId());
+    }
+
+    public void setWorld(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+        this.theWorld = world;
+    }
 }

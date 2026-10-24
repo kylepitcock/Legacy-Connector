@@ -13,4 +13,9 @@ public class BlockLiquid extends legacyconnector.v1_7_10.net.minecraft.block.Blo
     protected BlockLiquid(legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
         super(material);
     }
+
+    public static float getLiquidHeightPercent(int meta) {
+        if (meta >= 8) meta = 0;
+        return (meta + 1) / 9.0F;
+    }
 }

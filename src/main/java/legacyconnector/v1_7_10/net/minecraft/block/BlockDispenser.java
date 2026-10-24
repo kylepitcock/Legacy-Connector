@@ -52,4 +52,8 @@ public class BlockDispenser extends legacyconnector.v1_7_10.net.minecraft.block.
         return new legacyconnector.v1_7_10.net.minecraft.dispenser.PositionImpl(source.getX() + 0.7D * facing.getFrontOffsetX(),
                 source.getY() + 0.7D * facing.getFrontOffsetY(), source.getZ() + 0.7D * facing.getFrontOffsetZ());
     }
+
+    public static legacyconnector.v1_7_10.net.minecraft.util.EnumFacing getFacingDirection(int meta) {
+        return legacyconnector.v1_7_10.net.minecraft.util.EnumFacing.getFront(meta & 7);
+    }
 }

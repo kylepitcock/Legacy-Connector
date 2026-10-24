@@ -37,4 +37,9 @@ public class PlayerControllerMP {
 
     public void sendSlotPacket(ItemStack stack, int slot) {
     }
+
+    public float getBlockReachDistance() {
+        var player = net.minecraft.client.Minecraft.getInstance().player;
+        return player == null ? 4.5F : (float) player.blockInteractionRange();
+    }
 }

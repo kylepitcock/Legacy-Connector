@@ -59,4 +59,12 @@ public class CompressedStreamTools {
         if (file.exists()) throw new IOException("Failed to delete " + file);
         tmp.renameTo(file);
     }
+
+    public static NBTTagCompound decompress(byte[] data, NBTSizeTracker tracker) throws IOException {
+        return decompress(data);
+    }
+
+    public static NBTTagCompound read(DataInput in, NBTSizeTracker tracker) throws IOException {
+        return read(in);
+    }
 }

@@ -105,4 +105,10 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
             return customCraftingMaterial;
         }
     }
+
+    public int getColor(ItemStack stack) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
+        if (tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3)) return tag.getCompoundTag("display").getInteger("color");
+        return 10511680;
+    }
 }

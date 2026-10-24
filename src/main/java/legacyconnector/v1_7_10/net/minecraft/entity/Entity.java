@@ -1190,4 +1190,29 @@ public abstract class Entity implements ICommandSender {
     public String toString() {
         return getClass().getSimpleName() + "[" + getCommandSenderName() + "]";
     }
+
+    public void handleHealthUpdate(byte state) {
+    }
+
+    public int getAir() {
+        return mcc$entity != null ? mcc$entity.getAirSupply() : 300;
+    }
+
+    public void setAir(int air) {
+        if (mcc$entity != null) mcc$entity.setAirSupply(air);
+    }
+
+    public boolean isInsideOfMaterial(legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
+        if (mcc$entity == null) return false;
+        if (material == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water) return mcc$entity.isEyeInFluid(net.minecraft.tags.FluidTags.WATER);
+        if (material == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava) return mcc$entity.isEyeInFluid(net.minecraft.tags.FluidTags.LAVA);
+        return false;
+    }
+
+    public void copyDataFrom(Entity other, boolean full) {
+        NBTTagCompound tag = new NBTTagCompound();
+        other.writeToNBT(tag);
+        tag.removeTag("Dimension");
+        readFromNBT(tag);
+    }
 }

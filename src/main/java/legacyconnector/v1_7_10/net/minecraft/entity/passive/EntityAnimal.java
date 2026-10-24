@@ -66,4 +66,10 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimals {
     protected int getExperiencePoints(EntityPlayer player) {
         return 1 + getRNG().nextInt(3);
     }
+
+    public void setInLove(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Animal animal) {
+            animal.setInLove(player == null ? null : (net.minecraft.world.entity.player.Player) player.mcc$entity);
+        }
+    }
 }
