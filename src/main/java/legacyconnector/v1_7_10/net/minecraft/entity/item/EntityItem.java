@@ -43,8 +43,16 @@ public class EntityItem extends Entity {
         super(modern);
     }
 
+    /** Backing item entity for a subclass hosted as a mod entity (no modern item entity behind it). */
+    private ItemEntity mcc$detached;
+
     public ItemEntity mcc$item() {
-        return (ItemEntity) mcc$entity;
+        if (mcc$entity instanceof ItemEntity ie) return ie;
+        if (mcc$detached == null) {
+            mcc$detached = new ItemEntity(net.minecraft.world.entity.EntityType.ITEM, null);
+            mcc$detached.setItem(net.minecraft.world.item.ItemStack.EMPTY);
+        }
+        return mcc$detached;
     }
 
     public static int mcc$get$delayBeforeCanPickup(EntityItem e) {
