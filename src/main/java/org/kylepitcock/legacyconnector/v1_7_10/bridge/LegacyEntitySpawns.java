@@ -87,6 +87,7 @@ public final class LegacyEntitySpawns {
         for (EntityRegistry.Spawn s : EntityRegistry.mcc$spawns()) {
             LegacyHosts.Info info = LegacyHosts.info(s.entityClass());
             if (info == null || s.weight() <= 0) continue;
+            adoptCategory(info.type(), s.type().mcc$modern());
             Set<String> biomes = new LinkedHashSet<>();
             for (BiomeGenBase b : s.biomes()) {
                 ResourceLocation id = modernBiome(b);
@@ -106,6 +107,21 @@ public final class LegacyEntitySpawns {
             json.add("spawners", spawner);
             byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/legacyconnector/neoforge/biome_modifier/spawns/" + info.id().getNamespace() + "_" + info.id().getPath() + "_" + (n++) + ".json", () -> bytes);
+        }
+    }
+
+    /**
+     * Entity types are built before a mod says what kind of creature it spawns (the category comes from the class
+     * hierarchy), and the natural spawner only runs the categories it knows: a mob registered as MISC would never
+     * spawn. The kind the mod passed to addSpawn is authoritative.
+     */
+    private static void adoptCategory(net.minecraft.world.entity.EntityType<?> type, net.minecraft.world.entity.MobCategory wanted) {
+        if (type == null || wanted == null || type.getCategory() == wanted) return;
+        try {
+            java.lang.reflect.Field f = org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.getDeclaredField(net.minecraft.world.entity.EntityType.class, "category");
+            org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.set(f, type, wanted);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Spawns").warn("Could not set the spawn category of {}: {}", type, e.toString());
         }
     }
 }
