@@ -245,6 +245,21 @@ tasks.register('bundleJar', Jar) {
 }
 tasks.named('assemble') { dependsOn 'bundleJar' }
 
+// ./gradlew installBundle -PmodsDir=<instance>/mods : builds the distributable jar and replaces any older Legacy Connector jar in that folder.
+tasks.register('installBundle', Copy) {
+    group = 'build'
+    description = 'Builds the bundled jar and copies it into the mods folder given by -PmodsDir.'
+    dependsOn 'bundleJar'
+    from(tasks.named('bundleJar'))
+    doFirst {
+        def dir = findProperty('modsDir')
+        if (!dir) throw new GradleException('Pass the target mods folder: -PmodsDir=/path/to/instance/mods')
+        fileTree(dir: dir, include: 'legacyconnector-*.jar').each { it.delete() }
+        destinationDir = file(dir)
+    }
+    destinationDir = layout.buildDirectory.dir('installBundle-unset').get().asFile
+}
+
 idea {
     module {
         downloadSources = true
