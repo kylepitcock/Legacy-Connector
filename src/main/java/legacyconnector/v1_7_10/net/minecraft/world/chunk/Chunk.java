@@ -29,6 +29,24 @@ public class Chunk {
     @SuppressWarnings("unchecked")
     public List<Object>[] entityLists = new List[16];
     public int[] heightMap = new int[256];
+    public int[] precipitationHeightMap = new int[256];
+    public boolean[] updateSkylightColumns = new boolean[256];
+    public int heightMapMinimum = Integer.MAX_VALUE;
+    public boolean isLit;
+    public boolean sendUpdates;
+    public boolean isGapLightingUpdated;
+    public int queuedLightChecks = 4096;
+    public long lastSaveTime;
+    public long inhabitedTime;
+
+    /** Phantom: redirected to {@link #mcc$get$storageArrays}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] storageArrays;
+
+    public static legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] mcc$get$storageArrays(Chunk c) {
+        return c.getBlockStorageArray();
+    }
+
     private final ChunkAccess modern;
     /** Array mode (a chunk a mod's generator builds): blocks as x << 12 | z << 8 | y, metadata by the same index. */
     private Block[] mcc$blocks;
