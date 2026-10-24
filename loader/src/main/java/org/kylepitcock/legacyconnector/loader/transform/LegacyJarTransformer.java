@@ -149,7 +149,11 @@ public final class LegacyJarTransformer {
         for (byte[] data : classes.values()) {
             try {
                 ClassNode n = new ClassNode();
-                new ClassReader(data).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                // Instructions are needed to see a class calling an inherited method under its SRG name while declaring the readable one
+                // (Twilight Forest's Naga: getMaximumHomeDistance() { return func_110174_bM(); } would recurse once renamed); only classes
+                // that mention an SRG method name can do that.
+                boolean srgCalls = new String(data, java.nio.charset.StandardCharsets.ISO_8859_1).contains("func_");
+                new ClassReader(data).accept(n, (srgCalls ? 0 : ClassReader.SKIP_CODE) | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 remapper.preventCollisions(n);
             } catch (RuntimeException ignored) {
                 // unreadable classes are reported later
