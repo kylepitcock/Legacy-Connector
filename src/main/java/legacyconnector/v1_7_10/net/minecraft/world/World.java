@@ -741,28 +741,7 @@ public class World implements IBlockAccess {
 
     /** The world's chunks as a 1.7.10 chunk provider (only chunks that are loaded or generating here are provided). */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider getChunkProvider() {
-        World world = this;
-        return new legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider() {
-            @Override
-            public boolean chunkExists(int x, int z) {
-                return world.chunkExists(x, z);
-            }
-
-            @Override
-            public legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk provideChunk(int x, int z) {
-                return world.getChunkFromChunkCoords(x, z);
-            }
-
-            @Override
-            public String makeString() {
-                return "ServerChunkCache";
-            }
-
-            @Override
-            public int getLoadedChunkCount() {
-                return world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel s ? s.getChunkSource().getLoadedChunksCount() : 0;
-            }
-        };
+        return new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer(this);
     }
 
     public EntityPlayer func_152378_a(java.util.UUID id) {

@@ -69,8 +69,8 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
                 LOG.warn("Legacy block renderer {} drew nothing for {} (render id {})", handler.getClass().getName(), block.getClass().getName(), renderId);
             }
         } else if (FAILED.add("count:" + block.getClass().getName())) {
-            LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}", handler.getClass().getSimpleName(),
-                    solid.size(), translucent.size(), block.getClass().getSimpleName());
+            LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}; {}", handler.getClass().getSimpleName(),
+                    solid.size(), translucent.size(), block.getClass().getSimpleName(), IsbrhQuads.describeLast());
         }
         return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
     }

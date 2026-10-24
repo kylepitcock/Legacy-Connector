@@ -36,9 +36,27 @@ public class WorldChunkManager {
         return biomesToSpawnIn;
     }
 
+    /**
+     * Single-column lookups read a 16x16 block of columns computed once, like vanilla's BiomeCache did. Evaluating the layer
+     * stack for one column costs about as much as for a whole block, and the modern biome source asks per 4x4 cell.
+     */
+    private final java.util.Map<Long, BiomeGenBase[]> mcc$columnCache = new java.util.HashMap<>();
+    private static final int MCC$CACHED_BLOCKS = 2048;
+
     public BiomeGenBase getBiomeGenAt(int x, int z) {
-        int[] ids = biomeIndexLayer.getInts(x, z, 1, 1);
-        return BiomeGenBase.mcc$biomeOrOcean(ids[0]);
+        long key = ((long) (x >> 4) << 32) | ((z >> 4) & 0xFFFFFFFFL);
+        BiomeGenBase[] block;
+        synchronized (mcc$columnCache) {
+            block = mcc$columnCache.get(key);
+            if (block == null) {
+                if (mcc$columnCache.size() >= MCC$CACHED_BLOCKS) mcc$columnCache.clear();
+                int[] ids = biomeIndexLayer.getInts(x & ~15, z & ~15, 16, 16);
+                block = new BiomeGenBase[256];
+                for (int i = 0; i < 256; i++) block[i] = BiomeGenBase.mcc$biomeOrOcean(ids[i]);
+                mcc$columnCache.put(key, block);
+            }
+        }
+        return block[(z & 15) * 16 + (x & 15)];
     }
 
     public BiomeGenBase[] getBiomesForGeneration(BiomeGenBase[] out, int x, int z, int w, int h) {
