@@ -25,11 +25,11 @@ public class WorldSettings {
         }
 
         public void configurePlayerCapabilities(legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities capabilities) {
-            capabilities.allowFlying = this == CREATIVE;
-            capabilities.isCreativeMode = this == CREATIVE;
-            capabilities.disableDamage = this == CREATIVE;
-            if (this != CREATIVE) capabilities.isFlying = false;
-            capabilities.allowEdit = this != ADVENTURE;
+            legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$set$allowFlying(capabilities, this == CREATIVE);
+            legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$set$isCreativeMode(capabilities, this == CREATIVE);
+            legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$set$disableDamage(capabilities, this == CREATIVE);
+            if (this != CREATIVE) legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$set$isFlying(capabilities, false);
+            legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities.mcc$set$allowEdit(capabilities, this != ADVENTURE);
         }
 
         public boolean isAdventure() {
