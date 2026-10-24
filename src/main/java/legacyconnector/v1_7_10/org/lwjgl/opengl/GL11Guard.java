@@ -16,12 +16,30 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDisable(p0);
     }
 
+    public static void glAccum(int p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glAlphaFunc(int p0, float p1) {
+        // not in the core profile
+    }
+
     public static boolean glAreTexturesResident(java.nio.IntBuffer p0, java.nio.ByteBuffer p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glAreTexturesResident(p0, p1) : false;
+        // not in the core profile
+        return false;
     }
 
     public static boolean glAreTexturesResident(int p0, java.nio.ByteBuffer p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glAreTexturesResident(p0, p1) : false;
+        // not in the core profile
+        return false;
+    }
+
+    public static void glArrayElement(int p0) {
+        // not in the core profile
+    }
+
+    public static void glBegin(int p0) {
+        // not in the core profile
     }
 
     public static void glBindTexture(int p0, int p1) {
@@ -29,35 +47,43 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glBitmap(int p0, int p1, float p2, float p3, float p4, float p5, java.nio.ByteBuffer p6) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glBitmap(p0, p1, p2, p3, p4, p5, p6);
+        // not in the core profile
     }
 
     public static void glBitmap(int p0, int p1, float p2, float p3, float p4, float p5, long p6) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glBitmap(p0, p1, p2, p3, p4, p5, p6);
+        // not in the core profile
     }
 
     public static void glBlendFunc(int p0, int p1) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glBlendFunc(p0, p1);
     }
 
+    public static void glCallList(int p0) {
+        // not in the core profile
+    }
+
     public static void glCallLists(int p0, java.nio.ByteBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCallLists(p0, p1);
+        // not in the core profile
     }
 
     public static void glCallLists(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCallLists(p0);
+        // not in the core profile
     }
 
     public static void glCallLists(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCallLists(p0);
+        // not in the core profile
     }
 
     public static void glCallLists(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCallLists(p0);
+        // not in the core profile
     }
 
     public static void glClear(int p0) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glClear(p0);
+    }
+
+    public static void glClearAccum(float p0, float p1, float p2, float p3) {
+        // not in the core profile
     }
 
     public static void glClearColor(float p0, float p1, float p2, float p3) {
@@ -68,104 +94,184 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glClearDepth(p0);
     }
 
+    public static void glClearIndex(float p0) {
+        // not in the core profile
+    }
+
     public static void glClearStencil(int p0) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glClearStencil(p0);
     }
 
     public static void glClipPlane(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glClipPlane(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glColor3b(byte p0, byte p1, byte p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3d(double p0, double p1, double p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3ub(byte p0, byte p1, byte p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3us(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glColor3ui(int p0, int p1, int p2) {
+        // not in the core profile
     }
 
     public static void glColor3bv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3bv(p0);
+        // not in the core profile
     }
 
     public static void glColor3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3sv(p0);
+        // not in the core profile
     }
 
     public static void glColor3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3iv(p0);
+        // not in the core profile
     }
 
     public static void glColor3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3fv(p0);
+        // not in the core profile
     }
 
     public static void glColor3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3dv(p0);
+        // not in the core profile
     }
 
     public static void glColor3ubv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3ubv(p0);
+        // not in the core profile
     }
 
     public static void glColor3usv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3usv(p0);
+        // not in the core profile
     }
 
     public static void glColor3uiv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3uiv(p0);
+        // not in the core profile
+    }
+
+    public static void glColor4b(byte p0, byte p1, byte p2, byte p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4s(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4i(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4f(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4d(double p0, double p1, double p2, double p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4ub(byte p0, byte p1, byte p2, byte p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4us(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glColor4ui(int p0, int p1, int p2, int p3) {
+        // not in the core profile
     }
 
     public static void glColor4bv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4bv(p0);
+        // not in the core profile
     }
 
     public static void glColor4sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4sv(p0);
+        // not in the core profile
     }
 
     public static void glColor4iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4iv(p0);
+        // not in the core profile
     }
 
     public static void glColor4fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4fv(p0);
+        // not in the core profile
     }
 
     public static void glColor4dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4dv(p0);
+        // not in the core profile
     }
 
     public static void glColor4ubv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4ubv(p0);
+        // not in the core profile
     }
 
     public static void glColor4usv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4usv(p0);
+        // not in the core profile
     }
 
     public static void glColor4uiv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4uiv(p0);
+        // not in the core profile
     }
 
     public static void glColorMask(boolean p0, boolean p1, boolean p2, boolean p3) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorMask(p0, p1, p2, p3);
     }
 
+    public static void glColorMaterial(int p0, int p1) {
+        // not in the core profile
+    }
+
     public static void glColorPointer(int p0, int p1, int p2, java.nio.ByteBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glColorPointer(int p0, int p1, int p2, long p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glColorPointer(int p0, int p1, int p2, java.nio.ShortBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glColorPointer(int p0, int p1, int p2, java.nio.IntBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glColorPointer(int p0, int p1, int p2, java.nio.FloatBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColorPointer(p0, p1, p2, p3);
+        // not in the core profile
+    }
+
+    public static void glCopyPixels(int p0, int p1, int p2, int p3, int p4) {
+        // not in the core profile
     }
 
     public static void glCullFace(int p0) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glCullFace(p0);
+    }
+
+    public static void glDeleteLists(int p0, int p1) {
+        // not in the core profile
     }
 
     public static void glDepthFunc(int p0) {
@@ -178,6 +284,10 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
 
     public static void glDepthRange(double p0, double p1) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDepthRange(p0, p1);
+    }
+
+    public static void glDisableClientState(int p0) {
+        // not in the core profile
     }
 
     public static void glDrawArrays(int p0, int p1, int p2) {
@@ -209,55 +319,99 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, java.nio.ByteBuffer p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, long p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, java.nio.ShortBuffer p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, java.nio.IntBuffer p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, java.nio.FloatBuffer p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
+    }
+
+    public static void glEdgeFlag(boolean p0) {
+        // not in the core profile
     }
 
     public static void glEdgeFlagv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEdgeFlagv(p0);
+        // not in the core profile
     }
 
     public static void glEdgeFlagPointer(int p0, java.nio.ByteBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEdgeFlagPointer(p0, p1);
+        // not in the core profile
     }
 
     public static void glEdgeFlagPointer(int p0, long p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEdgeFlagPointer(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glEnableClientState(int p0) {
+        // not in the core profile
+    }
+
+    public static void glEnd() {
+        // not in the core profile
+    }
+
+    public static void glEvalCoord1f(float p0) {
+        // not in the core profile
     }
 
     public static void glEvalCoord1fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord1fv(p0);
+        // not in the core profile
+    }
+
+    public static void glEvalCoord1d(double p0) {
+        // not in the core profile
     }
 
     public static void glEvalCoord1dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord1dv(p0);
+        // not in the core profile
+    }
+
+    public static void glEvalCoord2f(float p0, float p1) {
+        // not in the core profile
     }
 
     public static void glEvalCoord2fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord2fv(p0);
+        // not in the core profile
+    }
+
+    public static void glEvalCoord2d(double p0, double p1) {
+        // not in the core profile
     }
 
     public static void glEvalCoord2dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord2dv(p0);
+        // not in the core profile
+    }
+
+    public static void glEvalMesh1(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glEvalMesh2(int p0, int p1, int p2, int p3, int p4) {
+        // not in the core profile
+    }
+
+    public static void glEvalPoint1(int p0) {
+        // not in the core profile
+    }
+
+    public static void glEvalPoint2(int p0, int p1) {
+        // not in the core profile
     }
 
     public static void glFeedbackBuffer(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFeedbackBuffer(p0, p1);
+        // not in the core profile
     }
 
     public static void glFinish() {
@@ -268,16 +422,29 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFlush();
     }
 
+    public static void glFogi(int p0, int p1) {
+        // not in the core profile
+    }
+
     public static void glFogiv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFogiv(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glFogf(int p0, float p1) {
+        // not in the core profile
     }
 
     public static void glFogfv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFogfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glFrontFace(int p0) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFrontFace(p0);
+    }
+
+    public static int glGenLists(int p0) {
+        // not in the core profile
+        return 0;
     }
 
     public static void glGenTextures(java.nio.IntBuffer p0) {
@@ -297,7 +464,7 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetClipPlane(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetClipPlane(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetBooleanv(int p0, java.nio.ByteBuffer p1) {
@@ -337,75 +504,80 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetLightiv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetLightiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static int glGetLighti(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetLighti(p0, p1) : 0;
+        // not in the core profile
+        return 0;
     }
 
     public static void glGetLightfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetLightfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static float glGetLightf(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetLightf(p0, p1) : 0F;
+        // not in the core profile
+        return 0F;
     }
 
     public static void glGetMapiv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static int glGetMapi(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetMapi(p0, p1) : 0;
+        // not in the core profile
+        return 0;
     }
 
     public static void glGetMapfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static float glGetMapf(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetMapf(p0, p1) : 0F;
+        // not in the core profile
+        return 0F;
     }
 
     public static void glGetMapdv(int p0, int p1, java.nio.DoubleBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapdv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static double glGetMapd(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetMapd(p0, p1) : 0D;
+        // not in the core profile
+        return 0D;
     }
 
     public static void glGetMaterialiv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMaterialiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMaterialfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMaterialfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetPixelMapfv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapfv(int p0, long p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapusv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapusv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapusv(int p0, long p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapusv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapuiv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapuiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapuiv(int p0, long p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapuiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPointerv(int p0, org.lwjgl.PointerBuffer p1) {
@@ -417,11 +589,11 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetPolygonStipple(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPolygonStipple(p0);
+        // not in the core profile
     }
 
     public static void glGetPolygonStipple(long p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPolygonStipple(p0);
+        // not in the core profile
     }
 
     public static java.lang.String glGetString(int p0) {
@@ -429,43 +601,48 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetTexEnviv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexEnviv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static int glGetTexEnvi(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetTexEnvi(p0, p1) : 0;
+        // not in the core profile
+        return 0;
     }
 
     public static void glGetTexEnvfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexEnvfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static float glGetTexEnvf(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetTexEnvf(p0, p1) : 0F;
+        // not in the core profile
+        return 0F;
     }
 
     public static void glGetTexGeniv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGeniv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static int glGetTexGeni(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetTexGeni(p0, p1) : 0;
+        // not in the core profile
+        return 0;
     }
 
     public static void glGetTexGenfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGenfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static float glGetTexGenf(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetTexGenf(p0, p1) : 0F;
+        // not in the core profile
+        return 0F;
     }
 
     public static void glGetTexGendv(int p0, int p1, java.nio.DoubleBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGendv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static double glGetTexGend(int p0, int p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glGetTexGend(p0, p1) : 0D;
+        // not in the core profile
+        return 0D;
     }
 
     public static void glGetTexImage(int p0, int p1, int p2, int p3, java.nio.ByteBuffer p4) {
@@ -528,104 +705,169 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glHint(p0, p1);
     }
 
+    public static void glIndexi(int p0) {
+        // not in the core profile
+    }
+
+    public static void glIndexub(byte p0) {
+        // not in the core profile
+    }
+
+    public static void glIndexs(short p0) {
+        // not in the core profile
+    }
+
+    public static void glIndexf(float p0) {
+        // not in the core profile
+    }
+
+    public static void glIndexd(double p0) {
+        // not in the core profile
+    }
+
     public static void glIndexiv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexiv(p0);
+        // not in the core profile
     }
 
     public static void glIndexubv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexubv(p0);
+        // not in the core profile
     }
 
     public static void glIndexsv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexsv(p0);
+        // not in the core profile
     }
 
     public static void glIndexfv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexfv(p0);
+        // not in the core profile
     }
 
     public static void glIndexdv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexdv(p0);
+        // not in the core profile
+    }
+
+    public static void glIndexMask(int p0) {
+        // not in the core profile
     }
 
     public static void glIndexPointer(int p0, int p1, java.nio.ByteBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glIndexPointer(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glIndexPointer(int p0, java.nio.ByteBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexPointer(p0, p1);
+        // not in the core profile
     }
 
     public static void glIndexPointer(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexPointer(p0, p1);
+        // not in the core profile
     }
 
     public static void glIndexPointer(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexPointer(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glInitNames() {
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, java.nio.ByteBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, java.nio.ShortBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, java.nio.DoubleBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static boolean glIsEnabled(int p0) {
         return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glIsEnabled(p0) : false;
     }
 
+    public static boolean glIsList(int p0) {
+        // not in the core profile
+        return false;
+    }
+
     public static boolean glIsTexture(int p0) {
         return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glIsTexture(p0) : false;
     }
 
+    public static void glLightModeli(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glLightModelf(int p0, float p1) {
+        // not in the core profile
+    }
+
     public static void glLightModeliv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightModeliv(p0, p1);
+        // not in the core profile
     }
 
     public static void glLightModelfv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightModelfv(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glLighti(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glLightf(int p0, int p1, float p2) {
+        // not in the core profile
     }
 
     public static void glLightiv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glLightfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightfv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glLineStipple(int p0, short p1) {
+        // not in the core profile
     }
 
     public static void glLineWidth(float p0) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLineWidth(p0);
     }
 
+    public static void glListBase(int p0) {
+        // not in the core profile
+    }
+
     public static void glLoadMatrixf(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLoadMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glLoadMatrixd(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLoadMatrixd(p0);
+        // not in the core profile
+    }
+
+    public static void glLoadIdentity() {
+        // not in the core profile
+    }
+
+    public static void glLoadName(int p0) {
+        // not in the core profile
     }
 
     public static void glLogicOp(int p0) {
@@ -633,99 +875,167 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glMap1f(int p0, float p1, float p2, int p3, int p4, java.nio.FloatBuffer p5) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap1f(p0, p1, p2, p3, p4, p5);
+        // not in the core profile
     }
 
     public static void glMap1d(int p0, double p1, double p2, int p3, int p4, java.nio.DoubleBuffer p5) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap1d(p0, p1, p2, p3, p4, p5);
+        // not in the core profile
     }
 
     public static void glMap2f(int p0, float p1, float p2, int p3, int p4, float p5, float p6, int p7, int p8, java.nio.FloatBuffer p9) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap2f(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+        // not in the core profile
     }
 
     public static void glMap2d(int p0, double p1, double p2, int p3, int p4, double p5, double p6, int p7, int p8, java.nio.DoubleBuffer p9) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap2d(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+        // not in the core profile
+    }
+
+    public static void glMapGrid1f(int p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glMapGrid1d(int p0, double p1, double p2) {
+        // not in the core profile
+    }
+
+    public static void glMapGrid2f(int p0, float p1, float p2, int p3, float p4, float p5) {
+        // not in the core profile
+    }
+
+    public static void glMapGrid2d(int p0, double p1, double p2, int p3, double p4, double p5) {
+        // not in the core profile
+    }
+
+    public static void glMateriali(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glMaterialf(int p0, int p1, float p2) {
+        // not in the core profile
     }
 
     public static void glMaterialiv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMaterialiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glMaterialfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMaterialfv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glMatrixMode(int p0) {
+        // not in the core profile
     }
 
     public static void glMultMatrixf(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMultMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glMultMatrixd(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMultMatrixd(p0);
+        // not in the core profile
+    }
+
+    public static void glFrustum(double p0, double p1, double p2, double p3, double p4, double p5) {
+        // not in the core profile
+    }
+
+    public static void glNewList(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glEndList() {
+        // not in the core profile
+    }
+
+    public static void glNormal3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glNormal3b(byte p0, byte p1, byte p2) {
+        // not in the core profile
+    }
+
+    public static void glNormal3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glNormal3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glNormal3d(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glNormal3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3fv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3bv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3bv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3sv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3iv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3dv(p0);
+        // not in the core profile
     }
 
     public static void glNormalPointer(int p0, int p1, java.nio.ByteBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormalPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glNormalPointer(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormalPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glNormalPointer(int p0, int p1, java.nio.ShortBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormalPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glNormalPointer(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormalPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glNormalPointer(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormalPointer(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glOrtho(double p0, double p1, double p2, double p3, double p4, double p5) {
+        // not in the core profile
+    }
+
+    public static void glPassThrough(float p0) {
+        // not in the core profile
     }
 
     public static void glPixelMapfv(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glPixelMapfv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPixelMapusv(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapusv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glPixelMapusv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapusv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPixelMapuiv(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapuiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glPixelMapuiv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapuiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPixelStorei(int p0, int p1) {
@@ -734,6 +1044,18 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
 
     public static void glPixelStoref(int p0, float p1) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelStoref(p0, p1);
+    }
+
+    public static void glPixelTransferi(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glPixelTransferf(int p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glPixelZoom(float p0, float p1) {
+        // not in the core profile
     }
 
     public static void glPointSize(float p0) {
@@ -749,63 +1071,143 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glPolygonStipple(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPolygonStipple(p0);
+        // not in the core profile
     }
 
     public static void glPolygonStipple(long p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPolygonStipple(p0);
+        // not in the core profile
+    }
+
+    public static void glPushAttrib(int p0) {
+        // not in the core profile
+    }
+
+    public static void glPushClientAttrib(int p0) {
+        // not in the core profile
+    }
+
+    public static void glPopAttrib() {
+        // not in the core profile
+    }
+
+    public static void glPopClientAttrib() {
+        // not in the core profile
+    }
+
+    public static void glPopMatrix() {
+        // not in the core profile
+    }
+
+    public static void glPopName() {
+        // not in the core profile
     }
 
     public static void glPrioritizeTextures(java.nio.IntBuffer p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPrioritizeTextures(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glPushMatrix() {
+        // not in the core profile
+    }
+
+    public static void glPushName(int p0) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos2i(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos2s(short p0, short p1) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos2f(float p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos2d(double p0, double p1) {
+        // not in the core profile
     }
 
     public static void glRasterPos2iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2dv(p0);
+        // not in the core profile
+    }
+
+    public static void glRasterPos3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos3d(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glRasterPos3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3dv(p0);
+        // not in the core profile
+    }
+
+    public static void glRasterPos4i(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos4s(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos4f(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glRasterPos4d(double p0, double p1, double p2, double p3) {
+        // not in the core profile
     }
 
     public static void glRasterPos4iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4dv(p0);
+        // not in the core profile
     }
 
     public static void glReadBuffer(int p0) {
@@ -832,20 +1234,57 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glReadPixels(p0, p1, p2, p3, p4, p5, p6);
     }
 
+    public static void glRecti(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glRects(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glRectf(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glRectd(double p0, double p1, double p2, double p3) {
+        // not in the core profile
+    }
+
     public static void glRectiv(java.nio.IntBuffer p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectsv(java.nio.ShortBuffer p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectsv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectfv(java.nio.FloatBuffer p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectdv(java.nio.DoubleBuffer p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectdv(p0, p1);
+        // not in the core profile
+    }
+
+    public static int glRenderMode(int p0) {
+        // not in the core profile
+        return 0;
+    }
+
+    public static void glRotatef(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glRotated(double p0, double p1, double p2, double p3) {
+        // not in the core profile
+    }
+
+    public static void glScalef(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glScaled(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glScissor(int p0, int p1, int p2, int p3) {
@@ -853,7 +1292,11 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glSelectBuffer(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glSelectBuffer(p0);
+        // not in the core profile
+    }
+
+    public static void glShadeModel(int p0) {
+        // not in the core profile
     }
 
     public static void glStencilFunc(int p0, int p1, int p2) {
@@ -868,108 +1311,192 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glStencilOp(p0, p1, p2);
     }
 
+    public static void glTexCoord1f(float p0) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord1s(short p0) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord1i(int p0) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord1d(double p0) {
+        // not in the core profile
+    }
+
     public static void glTexCoord1fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1dv(p0);
+        // not in the core profile
+    }
+
+    public static void glTexCoord2f(float p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord2s(short p0, short p1) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord2i(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord2d(double p0, double p1) {
+        // not in the core profile
     }
 
     public static void glTexCoord2fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2dv(p0);
+        // not in the core profile
+    }
+
+    public static void glTexCoord3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord3d(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glTexCoord3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3dv(p0);
+        // not in the core profile
+    }
+
+    public static void glTexCoord4f(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord4s(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord4i(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glTexCoord4d(double p0, double p1, double p2, double p3) {
+        // not in the core profile
     }
 
     public static void glTexCoord4fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4dv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoordPointer(int p0, int p1, int p2, java.nio.ByteBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoordPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glTexCoordPointer(int p0, int p1, int p2, long p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoordPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glTexCoordPointer(int p0, int p1, int p2, java.nio.ShortBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoordPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glTexCoordPointer(int p0, int p1, int p2, java.nio.IntBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoordPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glTexCoordPointer(int p0, int p1, int p2, java.nio.FloatBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoordPointer(p0, p1, p2, p3);
+        // not in the core profile
+    }
+
+    public static void glTexEnvi(int p0, int p1, int p2) {
+        // not in the core profile
     }
 
     public static void glTexEnviv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexEnviv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glTexEnvf(int p0, int p1, float p2) {
+        // not in the core profile
     }
 
     public static void glTexEnvfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexEnvfv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glTexGeni(int p0, int p1, int p2) {
+        // not in the core profile
     }
 
     public static void glTexGeniv(int p0, int p1, java.nio.IntBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGeniv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glTexGenf(int p0, int p1, float p2) {
+        // not in the core profile
     }
 
     public static void glTexGenfv(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGenfv(p0, p1, p2);
+        // not in the core profile
+    }
+
+    public static void glTexGend(int p0, int p1, double p2) {
+        // not in the core profile
     }
 
     public static void glTexGendv(int p0, int p1, java.nio.DoubleBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGendv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexImage1D(int p0, int p1, int p2, int p3, int p4, int p5, int p6, java.nio.ByteBuffer p7) {
@@ -1100,72 +1627,128 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexSubImage2D(p0, p1, p2, p3, p4, p5, p6, p7, p8);
     }
 
+    public static void glTranslatef(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glTranslated(double p0, double p1, double p2) {
+        // not in the core profile
+    }
+
+    public static void glVertex2f(float p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glVertex2s(short p0, short p1) {
+        // not in the core profile
+    }
+
+    public static void glVertex2i(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glVertex2d(double p0, double p1) {
+        // not in the core profile
+    }
+
     public static void glVertex2fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2dv(p0);
+        // not in the core profile
+    }
+
+    public static void glVertex3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glVertex3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glVertex3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glVertex3d(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glVertex3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3dv(p0);
+        // not in the core profile
+    }
+
+    public static void glVertex4f(float p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glVertex4s(short p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glVertex4i(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glVertex4d(double p0, double p1, double p2, double p3) {
+        // not in the core profile
     }
 
     public static void glVertex4fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4dv(p0);
+        // not in the core profile
     }
 
     public static void glVertexPointer(int p0, int p1, int p2, java.nio.ByteBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertexPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glVertexPointer(int p0, int p1, int p2, long p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertexPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glVertexPointer(int p0, int p1, int p2, java.nio.ShortBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertexPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glVertexPointer(int p0, int p1, int p2, java.nio.IntBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertexPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glVertexPointer(int p0, int p1, int p2, java.nio.FloatBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertexPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glViewport(int p0, int p1, int p2, int p3) {
@@ -1173,99 +1756,100 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static boolean glAreTexturesResident(int[] p0, java.nio.ByteBuffer p1) {
-        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL11.glAreTexturesResident(p0, p1) : false;
+        // not in the core profile
+        return false;
     }
 
     public static void glClipPlane(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glClipPlane(p0, p1);
+        // not in the core profile
     }
 
     public static void glColor3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3sv(p0);
+        // not in the core profile
     }
 
     public static void glColor3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3iv(p0);
+        // not in the core profile
     }
 
     public static void glColor3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3fv(p0);
+        // not in the core profile
     }
 
     public static void glColor3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3dv(p0);
+        // not in the core profile
     }
 
     public static void glColor3usv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3usv(p0);
+        // not in the core profile
     }
 
     public static void glColor3uiv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor3uiv(p0);
+        // not in the core profile
     }
 
     public static void glColor4sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4sv(p0);
+        // not in the core profile
     }
 
     public static void glColor4iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4iv(p0);
+        // not in the core profile
     }
 
     public static void glColor4fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4fv(p0);
+        // not in the core profile
     }
 
     public static void glColor4dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4dv(p0);
+        // not in the core profile
     }
 
     public static void glColor4usv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4usv(p0);
+        // not in the core profile
     }
 
     public static void glColor4uiv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glColor4uiv(p0);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, short[] p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, int[] p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glDrawPixels(int p0, int p1, int p2, int p3, float[] p4) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDrawPixels(p0, p1, p2, p3, p4);
+        // not in the core profile
     }
 
     public static void glEvalCoord1fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord1fv(p0);
+        // not in the core profile
     }
 
     public static void glEvalCoord1dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord1dv(p0);
+        // not in the core profile
     }
 
     public static void glEvalCoord2fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord2fv(p0);
+        // not in the core profile
     }
 
     public static void glEvalCoord2dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glEvalCoord2dv(p0);
+        // not in the core profile
     }
 
     public static void glFeedbackBuffer(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFeedbackBuffer(p0, p1);
+        // not in the core profile
     }
 
     public static void glFogiv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFogiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glFogfv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glFogfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGenTextures(int[] p0) {
@@ -1277,7 +1861,7 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetClipPlane(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetClipPlane(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetFloatv(int p0, float[] p1) {
@@ -1293,63 +1877,63 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glGetLightiv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetLightiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetLightfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetLightfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMapiv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMapfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMapdv(int p0, int p1, double[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMapdv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMaterialiv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMaterialiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetMaterialfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetMaterialfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetPixelMapfv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapusv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapusv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetPixelMapuiv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetPixelMapuiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glGetTexEnviv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexEnviv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetTexEnvfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexEnvfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetTexGeniv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGeniv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetTexGenfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGenfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetTexGendv(int p0, int p1, double[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glGetTexGendv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glGetTexImage(int p0, int p1, int p2, int p3, short[] p4) {
@@ -1385,171 +1969,171 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glIndexiv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexiv(p0);
+        // not in the core profile
     }
 
     public static void glIndexsv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexsv(p0);
+        // not in the core profile
     }
 
     public static void glIndexfv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexfv(p0);
+        // not in the core profile
     }
 
     public static void glIndexdv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glIndexdv(p0);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, short[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glInterleavedArrays(int p0, int p1, double[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glInterleavedArrays(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glLightModeliv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightModeliv(p0, p1);
+        // not in the core profile
     }
 
     public static void glLightModelfv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightModelfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glLightiv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glLightfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLightfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glLoadMatrixf(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLoadMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glLoadMatrixd(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glLoadMatrixd(p0);
+        // not in the core profile
     }
 
     public static void glMap1f(int p0, float p1, float p2, int p3, int p4, float[] p5) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap1f(p0, p1, p2, p3, p4, p5);
+        // not in the core profile
     }
 
     public static void glMap1d(int p0, double p1, double p2, int p3, int p4, double[] p5) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap1d(p0, p1, p2, p3, p4, p5);
+        // not in the core profile
     }
 
     public static void glMap2f(int p0, float p1, float p2, int p3, int p4, float p5, float p6, int p7, int p8, float[] p9) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap2f(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+        // not in the core profile
     }
 
     public static void glMap2d(int p0, double p1, double p2, int p3, int p4, double p5, double p6, int p7, int p8, double[] p9) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMap2d(p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
+        // not in the core profile
     }
 
     public static void glMaterialiv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMaterialiv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glMaterialfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMaterialfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glMultMatrixf(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMultMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glMultMatrixd(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glMultMatrixd(p0);
+        // not in the core profile
     }
 
     public static void glNormal3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3fv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3sv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3iv(p0);
+        // not in the core profile
     }
 
     public static void glNormal3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glNormal3dv(p0);
+        // not in the core profile
     }
 
     public static void glPixelMapfv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPixelMapusv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapusv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPixelMapuiv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPixelMapuiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glPrioritizeTextures(int[] p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glPrioritizeTextures(p0, p1);
+        // not in the core profile
     }
 
     public static void glRasterPos2iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos2dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos2dv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos3dv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4iv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4sv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4fv(p0);
+        // not in the core profile
     }
 
     public static void glRasterPos4dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRasterPos4dv(p0);
+        // not in the core profile
     }
 
     public static void glReadPixels(int p0, int p1, int p2, int p3, int p4, int p5, short[] p6) {
@@ -1565,107 +2149,107 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glRectiv(int[] p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectiv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectsv(short[] p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectsv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectfv(float[] p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectfv(p0, p1);
+        // not in the core profile
     }
 
     public static void glRectdv(double[] p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glRectdv(p0, p1);
+        // not in the core profile
     }
 
     public static void glSelectBuffer(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glSelectBuffer(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord1dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord1dv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord2dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord2dv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord3dv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4fv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4sv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4iv(p0);
+        // not in the core profile
     }
 
     public static void glTexCoord4dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexCoord4dv(p0);
+        // not in the core profile
     }
 
     public static void glTexEnviv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexEnviv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexEnvfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexEnvfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexGeniv(int p0, int p1, int[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGeniv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexGenfv(int p0, int p1, float[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGenfv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexGendv(int p0, int p1, double[] p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glTexGendv(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glTexImage1D(int p0, int p1, int p2, int p3, int p4, int p5, int p6, short[] p7) {
@@ -1741,51 +2325,51 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glVertex2fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex2dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex2dv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex3dv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4fv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4sv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4iv(p0);
+        // not in the core profile
     }
 
     public static void glVertex4dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glVertex4dv(p0);
+        // not in the core profile
     }
 
 }

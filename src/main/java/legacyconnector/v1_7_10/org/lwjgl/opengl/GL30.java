@@ -197,11 +197,11 @@ public class GL30 extends org.lwjgl.opengl.GL30 {
     }
 
     public static void glBeginConditionalRender(int p0, int p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL30.glBeginConditionalRender(p0, p1);
+        // not in the core profile
     }
 
     public static void glEndConditionalRender() {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL30.glEndConditionalRender();
+        // not in the core profile
     }
 
     public static java.nio.ByteBuffer glMapBufferRange(int p0, long p1, long p2, int p3) {
@@ -397,11 +397,11 @@ public class GL30 extends org.lwjgl.opengl.GL30 {
     }
 
     public static void glBeginTransformFeedback(int p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL30.glBeginTransformFeedback(p0);
+        // not in the core profile
     }
 
     public static void glEndTransformFeedback() {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL30.glEndTransformFeedback();
+        // not in the core profile
     }
 
     public static void glTransformFeedbackVaryings(int p0, org.lwjgl.PointerBuffer p1, int p2) {

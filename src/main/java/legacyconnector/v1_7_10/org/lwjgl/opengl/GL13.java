@@ -72,164 +72,232 @@ public class GL13 extends org.lwjgl.opengl.GL13 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glActiveTexture(p0);
     }
 
+    public static void glClientActiveTexture(int p0) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord1f(int p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord1s(int p0, short p1) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord1i(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord1d(int p0, double p1) {
+        // not in the core profile
+    }
+
     public static void glMultiTexCoord1fv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1sv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1iv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1dv(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1dv(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord2f(int p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord2s(int p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord2i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord2d(int p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2fv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2sv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2iv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2dv(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2dv(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord3f(int p0, float p1, float p2, float p3) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord3s(int p0, short p1, short p2, short p3) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord3i(int p0, int p1, int p2, int p3) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord3d(int p0, double p1, double p2, double p3) {
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3fv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3sv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3iv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3dv(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3dv(p0, p1);
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord4f(int p0, float p1, float p2, float p3, float p4) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord4s(int p0, short p1, short p2, short p3, short p4) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord4i(int p0, int p1, int p2, int p3, int p4) {
+        // not in the core profile
+    }
+
+    public static void glMultiTexCoord4d(int p0, double p1, double p2, double p3, double p4) {
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4fv(int p0, java.nio.FloatBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4sv(int p0, java.nio.ShortBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4iv(int p0, java.nio.IntBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4dv(int p0, java.nio.DoubleBuffer p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4dv(p0, p1);
+        // not in the core profile
     }
 
     public static void glLoadTransposeMatrixf(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glLoadTransposeMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glLoadTransposeMatrixd(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glLoadTransposeMatrixd(p0);
+        // not in the core profile
     }
 
     public static void glMultTransposeMatrixf(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultTransposeMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glMultTransposeMatrixd(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultTransposeMatrixd(p0);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1fv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1sv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1iv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord1dv(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord1dv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2fv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2sv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2iv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord2dv(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord2dv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3fv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3sv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3iv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord3dv(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord3dv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4fv(int p0, float[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4fv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4sv(int p0, short[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4sv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4iv(int p0, int[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4iv(p0, p1);
+        // not in the core profile
     }
 
     public static void glMultiTexCoord4dv(int p0, double[] p1) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultiTexCoord4dv(p0, p1);
+        // not in the core profile
     }
 
     public static void glLoadTransposeMatrixf(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glLoadTransposeMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glLoadTransposeMatrixd(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glLoadTransposeMatrixd(p0);
+        // not in the core profile
     }
 
     public static void glMultTransposeMatrixf(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultTransposeMatrixf(p0);
+        // not in the core profile
     }
 
     public static void glMultTransposeMatrixd(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glMultTransposeMatrixd(p0);
+        // not in the core profile
     }
 
 }

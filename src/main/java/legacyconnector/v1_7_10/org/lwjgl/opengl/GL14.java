@@ -16,28 +16,36 @@ public class GL14 extends org.lwjgl.opengl.GL14 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glBlendEquation(p0);
     }
 
+    public static void glFogCoordf(float p0) {
+        // not in the core profile
+    }
+
+    public static void glFogCoordd(double p0) {
+        // not in the core profile
+    }
+
     public static void glFogCoordfv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordfv(p0);
+        // not in the core profile
     }
 
     public static void glFogCoorddv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoorddv(p0);
+        // not in the core profile
     }
 
     public static void glFogCoordPointer(int p0, int p1, java.nio.ByteBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glFogCoordPointer(int p0, int p1, long p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glFogCoordPointer(int p0, int p1, java.nio.ShortBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glFogCoordPointer(int p0, int p1, java.nio.FloatBuffer p2) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordPointer(p0, p1, p2);
+        // not in the core profile
     }
 
     public static void glMultiDrawArrays(int p0, java.nio.IntBuffer p1, java.nio.IntBuffer p2) {
@@ -64,100 +72,164 @@ public class GL14 extends org.lwjgl.opengl.GL14 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glPointParameteriv(p0, p1);
     }
 
+    public static void glSecondaryColor3b(byte p0, byte p1, byte p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3d(double p0, double p1, double p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3ub(byte p0, byte p1, byte p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3us(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glSecondaryColor3ui(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
     public static void glSecondaryColor3bv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3bv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3sv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3iv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3fv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3dv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3ubv(java.nio.ByteBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3ubv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3usv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3usv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3uiv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3uiv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColorPointer(int p0, int p1, int p2, java.nio.ByteBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glSecondaryColorPointer(int p0, int p1, int p2, long p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glSecondaryColorPointer(int p0, int p1, int p2, java.nio.ShortBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glSecondaryColorPointer(int p0, int p1, int p2, java.nio.IntBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glSecondaryColorPointer(int p0, int p1, int p2, java.nio.FloatBuffer p3) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColorPointer(p0, p1, p2, p3);
+        // not in the core profile
     }
 
     public static void glBlendFuncSeparate(int p0, int p1, int p2, int p3) {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glBlendFuncSeparate(p0, p1, p2, p3);
     }
 
+    public static void glWindowPos2i(int p0, int p1) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos2s(short p0, short p1) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos2f(float p0, float p1) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos2d(double p0, double p1) {
+        // not in the core profile
+    }
+
     public static void glWindowPos2iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2iv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2sv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2fv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2dv(p0);
+        // not in the core profile
+    }
+
+    public static void glWindowPos3i(int p0, int p1, int p2) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos3s(short p0, short p1, short p2) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos3f(float p0, float p1, float p2) {
+        // not in the core profile
+    }
+
+    public static void glWindowPos3d(double p0, double p1, double p2) {
+        // not in the core profile
     }
 
     public static void glWindowPos3iv(java.nio.IntBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3iv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3sv(java.nio.ShortBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3sv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3fv(java.nio.FloatBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3fv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3dv(java.nio.DoubleBuffer p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3dv(p0);
+        // not in the core profile
     }
 
     public static void glFogCoordfv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoordfv(p0);
+        // not in the core profile
     }
 
     public static void glFogCoorddv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glFogCoorddv(p0);
+        // not in the core profile
     }
 
     public static void glMultiDrawArrays(int p0, int[] p1, int[] p2) {
@@ -177,59 +249,59 @@ public class GL14 extends org.lwjgl.opengl.GL14 {
     }
 
     public static void glSecondaryColor3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3sv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3iv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3fv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3dv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3usv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3usv(p0);
+        // not in the core profile
     }
 
     public static void glSecondaryColor3uiv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glSecondaryColor3uiv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2iv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2sv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2fv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos2dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos2dv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3iv(int[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3iv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3sv(short[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3sv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3fv(float[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3fv(p0);
+        // not in the core profile
     }
 
     public static void glWindowPos3dv(double[] p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL14.glWindowPos3dv(p0);
+        // not in the core profile
     }
 
 }

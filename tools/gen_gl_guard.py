@@ -14,11 +14,22 @@ jar, java_home = sys.argv[1], sys.argv[2]
 cls = sys.argv[3] if len(sys.argv) > 3 else "GL11"
 name_out = "GL11Guard" if cls == "GL11" else cls
 out = subprocess.run([java_home + "/bin/javap", "-cp", jar, "org.lwjgl.opengl." + cls], capture_output=True, text=True, check=True).stdout
+# Fixed-function entry points that LWJGL 3 exposes but a core-profile context (Minecraft 1.21) does not provide: calling
+# them aborts the JVM ("function that is not available in the current context"), so they are always no-ops.
+COMPAT_ONLY = re.compile(r"gl(TexEnv|TexGen|Light|LightModel|Material|ColorMaterial|Fog|ClipPlane|AlphaFunc|ShadeModel|MatrixMode|"
+                         r"LoadMatrix|MultMatrix|LoadIdentity|Push|Pop|Rotate|Translate|Scale|Ortho|Frustum|Begin|End|Vertex\d|Color\d|"
+                         r"Normal\d|TexCoord\d|EdgeFlag|Index|RasterPos|Rect|EvalCoord|EvalMesh|EvalPoint|Map\d|MapGrid|NewList|EndList|"
+                         r"CallList|GenLists|DeleteLists|ListBase|IsList|Bitmap|DrawPixels|CopyPixels|PixelTransfer|PixelMap|PixelZoom|"
+                         r"PolygonStipple|LineStipple|PassThrough|FeedbackBuffer|SelectBuffer|RenderMode|InitNames|LoadName|PushName|PopName|"
+                         r"InitNames|Accum|ClearAccum|ClearIndex|IndexMask|IndexPointer|InterleavedArrays|ArrayElement|EnableClientState|"
+                         r"DisableClientState|ColorPointer|VertexPointer|NormalPointer|TexCoordPointer|EdgeFlagPointer|PrioritizeTextures|"
+                         r"AreTexturesResident|GetLight|GetMaterial|GetTexEnv|GetTexGen|GetClipPlane|GetMap|GetPixelMap|GetPolygonStipple|"
+                         r"CallLists|MultiTexCoord|ClientActiveTexture|LoadTransposeMatrix|MultTransposeMatrix|FogCoord|SecondaryColor|WindowPos|FogCoordPointer|SecondaryColorPointer)")
 DEFAULT = {"void": None, "int": "0", "long": "0L", "float": "0F", "double": "0D", "boolean": "false", "short": "(short) 0", "byte": "(byte) 0"}
 lines = []
 seen = set()
 for line in out.splitlines():
-    m = re.match(r"\s*public static (\S+) (gl[A-Za-z0-9_]+)\((.*)\);", line)
+    m = re.match(r"\s*public static (?:native )?(\S+) (gl[A-Za-z0-9_]+)\((.*)\);", line)
     if not m:
         continue
     ret, name, params = m.groups()
@@ -29,7 +40,12 @@ for line in out.splitlines():
     seen.add(key)
     decl = ", ".join(f"{t} p{i}" for i, t in enumerate(ptypes))
     call = ", ".join(f"p{i}" for i in range(len(ptypes)))
-    if ret == "void":
+    if COMPAT_ONLY.match(name):
+        d = DEFAULT.get(ret, "null")
+        body = "        // not in the core profile"
+        if ret != "void":
+            body += f"\n        return {d};"
+    elif ret == "void":
         body = f"        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.{cls}.{name}({call});"
     else:
         d = DEFAULT.get(ret, "null")
