@@ -54,6 +54,21 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return configurationManager;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$worldServers} (the overworld first, as 1.7.10's array was indexed by dimension order). */
+    @Deprecated
+    public WorldServer[] worldServers;
+
+    public static WorldServer[] mcc$get$worldServers(MinecraftServer s) {
+        if (s.mcc$server == null) return new WorldServer[0];
+        java.util.List<WorldServer> out = new java.util.ArrayList<>();
+        ServerLevel overworld = s.mcc$server.overworld();
+        out.add((WorldServer) WorldServer.mcc$wrap(overworld));
+        for (ServerLevel level : s.mcc$server.getAllLevels()) {
+            if (level != overworld) out.add((WorldServer) WorldServer.mcc$wrap(level));
+        }
+        return out.toArray(new WorldServer[0]);
+    }
+
     public WorldServer worldServerForDimension(int dimension) {
         ServerLevel level = DimensionBridge.level(mcc$server, dimension);
         return level == null ? null : (WorldServer) WorldServer.mcc$wrap(level);

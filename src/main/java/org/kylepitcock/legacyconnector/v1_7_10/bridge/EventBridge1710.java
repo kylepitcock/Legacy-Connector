@@ -218,6 +218,21 @@ public final class EventBridge1710 {
             if (forge().post(legacy)) e.setCanceled(true);
             else e.setNewSpeed(legacy.newSpeed);
         });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player p) || !(e.getItem().getItem() instanceof net.minecraft.world.item.BowItem)
+                    || !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent.class)) return;
+            var stack = ItemStack.mcc$wrap(e.getItem());
+            if (forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.ArrowNockEvent(player(p), stack))) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BlockToolModificationEvent e) -> {
+            if (e.getItemAbility() != net.neoforged.neoforge.common.ItemAbilities.HOE_TILL || e.isSimulated() || e.getPlayer() == null
+                    || !(e.getLevel() instanceof net.minecraft.world.level.Level level)
+                    || !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.UseHoeEvent.class)) return;
+            var p = e.getPos();
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.UseHoeEvent(player(e.getPlayer()),
+                    ItemStack.mcc$wrap(e.getHeldItemStack()), World.mcc$wrap(level), p.getX(), p.getY(), p.getZ());
+            if (forge().post(legacy)) e.setCanceled(true);
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.BonemealEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.BonemealEvent.class)) return;
             var p = e.getPos();
