@@ -666,6 +666,15 @@ public class World implements IBlockAccess {
             if (biome != null) return biome;
         }
         // Outside a generation region's chunks there is no heightmap to read: sample at sea level.
+        // A generation worker must not ask the real level for a chunk: that waits on the main thread, which may be
+        // waiting for this very chunk (a self-test or player load that generates synchronously).
+        boolean offThread = lvl() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread();
+        if (offThread) {
+            var holder = generatorBiome(x, lvl().getSeaLevel(), z);
+            var key = holder == null ? null : holder.unwrapKey().map(k -> k.location()).orElse(null);
+            var legacy = org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
+            return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+        }
         int y = lvl().hasChunk(x >> 4, z >> 4)
                 ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
                 : lvl().getSeaLevel();
