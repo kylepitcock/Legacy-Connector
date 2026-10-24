@@ -133,9 +133,25 @@ public class LegacyBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         if (tag.contains("legacy")) {
             CompoundTag data = tag.getCompound("legacy");
-            if (legacy != null) legacy.readFromNBT(new NBTTagCompound(data));
-            else pending = data;
+            if (legacy != null) {
+                try {
+                    legacy.readFromNBT(new NBTTagCompound(data));
+                } catch (RuntimeException | LinkageError e) {
+                    logNbtFailure("reading", e);
+                }
+            } else {
+                pending = data;
+            }
         }
+    }
+
+    private boolean nbtFailureLogged;
+
+    /** A legacy tile entity throwing while its NBT is read or written must not crash the chunk load or save; log it once per block entity. */
+    private void logNbtFailure(String what, Throwable e) {
+        if (nbtFailureLogged) return;
+        nbtFailureLogged = true;
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("{} threw while {} its NBT at {}: {}", legacy == null ? "A tile entity" : legacy.getClass().getName(), what, getBlockPos(), e.toString());
     }
 
     @Override
@@ -144,7 +160,11 @@ public class LegacyBlockEntity extends BlockEntity {
         TileEntity te = legacy();
         if (te != null) {
             NBTTagCompound out = new NBTTagCompound();
-            te.writeToNBT(out);
+            try {
+                te.writeToNBT(out);
+            } catch (RuntimeException | LinkageError e) {
+                logNbtFailure("writing", e);
+            }
             tag.put("legacy", out.mcc$modern());
         } else if (pending != null) {
             tag.put("legacy", pending);

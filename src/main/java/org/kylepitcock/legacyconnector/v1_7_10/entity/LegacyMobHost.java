@@ -340,8 +340,12 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         if (legacy != null) {
-            legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
-            legacy.mcc$saveExtended(new NBTTagCompound(tag));
+            try {
+                legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
+                legacy.mcc$saveExtended(new NBTTagCompound(tag));
+            } catch (RuntimeException | LinkageError e) {
+                LegacyHosts.nbtFailure(this, "writing", e);
+            }
         }
     }
 
@@ -349,8 +353,12 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
         if (legacy != null) {
-            legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
-            legacy.mcc$loadExtended(new NBTTagCompound(tag));
+            try {
+                legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
+                legacy.mcc$loadExtended(new NBTTagCompound(tag));
+            } catch (RuntimeException | LinkageError e) {
+                LegacyHosts.nbtFailure(this, "reading", e);
+            }
         }
     }
 

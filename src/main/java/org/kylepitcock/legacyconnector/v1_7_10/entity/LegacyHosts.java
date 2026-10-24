@@ -53,6 +53,18 @@ public final class LegacyHosts {
 
     private LegacyHosts() {}
 
+    private static final Set<Class<?>> NBT_FAILED = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Legacy entity code throwing while its NBT is read or written (a rocket without its type, a projectile without its shooter)
+     * must not take down the chunk save or the load: the entity keeps what it had, and the first failure per class is logged.
+     */
+    static void nbtFailure(net.minecraft.world.entity.Entity host, String what, Throwable e) {
+        if (NBT_FAILED.add(host.getClass())) {
+            LOG.warn("A legacy entity threw while {} its NBT ({}); its saved data may be incomplete: {}", what, host.getType().getDescriptionId(), e.toString());
+        }
+    }
+
     // ------------------------------------------------------------------ registration
 
     /** Legacy {@code EntityRegistry.registerModEntity}. Must run while registries are open (legacy loading). */

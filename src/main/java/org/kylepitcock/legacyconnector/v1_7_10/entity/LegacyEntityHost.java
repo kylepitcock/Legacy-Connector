@@ -156,16 +156,24 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
     @Override
     protected void readAdditionalSaveData(CompoundTag tag) {
         if (legacy != null) {
-            legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
-            legacy.mcc$loadExtended(new NBTTagCompound(tag));
+            try {
+                legacy.mcc$readEntityFromNBT(new NBTTagCompound(tag));
+                legacy.mcc$loadExtended(new NBTTagCompound(tag));
+            } catch (RuntimeException | LinkageError e) {
+                LegacyHosts.nbtFailure(this, "reading", e);
+            }
         }
     }
 
     @Override
     protected void addAdditionalSaveData(CompoundTag tag) {
         if (legacy != null) {
-            legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
-            legacy.mcc$saveExtended(new NBTTagCompound(tag));
+            try {
+                legacy.mcc$writeEntityToNBT(new NBTTagCompound(tag));
+                legacy.mcc$saveExtended(new NBTTagCompound(tag));
+            } catch (RuntimeException | LinkageError e) {
+                LegacyHosts.nbtFailure(this, "writing", e);
+            }
         }
     }
 
