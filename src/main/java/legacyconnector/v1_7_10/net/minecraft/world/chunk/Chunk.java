@@ -58,6 +58,22 @@ public class Chunk {
         }
     }
 
+    /**
+     * Views of the same loaded chunk are equal: 1.7.10 had one Chunk object per loaded chunk and mods key maps by it
+     * (CodeChickenLib's world extensions), while every event here builds a fresh view.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        return o instanceof Chunk c && modern != null && c.modern != null && c.worldObj == worldObj
+                && c.xPosition == xPosition && c.zPosition == zPosition;
+    }
+
+    @Override
+    public int hashCode() {
+        return modern == null ? System.identityHashCode(this) : (xPosition * 31 + zPosition) * 31 + System.identityHashCode(worldObj);
+    }
+
     public Chunk(World world, ChunkAccess modern) {
         this(world, modern.getPos().x, modern.getPos().z, modern);
     }
