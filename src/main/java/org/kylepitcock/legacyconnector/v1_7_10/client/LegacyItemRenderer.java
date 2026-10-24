@@ -53,6 +53,12 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             renderer = MinecraftForgeClient.getItemRenderer(view, type);
         }
         if (renderer == null) return;
+        if (context == ItemDisplayContext.GUI && LOGGED.add("gui-pose:" + renderer.getClass().getName())) {
+            // Diagnostic: the matrix a legacy renderer starts from in a slot (translation, scale) - items drawn away from their slot
+            var m = pose.last().pose();
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").info("GUI item {} ({}): pose translate ({}, {}, {}) scale ({}, {}, {}), type {}",
+                    renderer.getClass().getName(), view.getItem().getClass().getSimpleName(), m.m30(), m.m31(), m.m32(), m.m00(), m.m11(), m.m22(), type);
+        }
         pose.pushPose();
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
