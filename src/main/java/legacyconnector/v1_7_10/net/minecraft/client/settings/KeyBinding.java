@@ -43,9 +43,21 @@ public class KeyBinding implements Comparable<KeyBinding> {
     public synchronized KeyMapping mcc$modern() {
         if (modern == null) {
             int glfw = KeyCodes.toGlfw(keyCode);
-            modern = new KeyMapping(description, com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, glfw, category);
+            modern = new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, glfw, category);
         }
         return modern;
+    }
+
+    private static final java.util.Set<String> USED_NAMES = new java.util.HashSet<>();
+
+    /**
+     * Options are saved by key name, and a duplicate name makes the options file unreadable (the early loading window
+     * collects it into a map and aborts). Legacy mods may register several bindings under one description (JourneyMap's minimap type).
+     */
+    private static synchronized String uniqueName(String name) {
+        String candidate = name;
+        for (int i = 2; !USED_NAMES.add(candidate); i++) candidate = name + "." + i;
+        return candidate;
     }
 
     public boolean getIsKeyPressed() {
