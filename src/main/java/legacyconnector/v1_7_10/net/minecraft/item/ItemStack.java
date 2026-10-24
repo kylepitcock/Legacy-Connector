@@ -30,6 +30,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge;
  * subtypes that were never registered as variants). NBT lives in the {@code CUSTOM_DATA} component.</p>
  */
 public final class ItemStack {
+    /** The "#.###" format vanilla uses for attribute values in tooltips (mods reflect it by its SRG name). */
+    public static final java.text.DecimalFormat field_111284_a = new java.text.DecimalFormat("#.###");
+
     /** Phantom: accesses are redirected to {@link #mcc$get$stackSize}. */
     @Deprecated
     public int stackSize;
