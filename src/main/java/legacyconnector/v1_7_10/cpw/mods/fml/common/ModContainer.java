@@ -5,6 +5,11 @@ import java.util.Map;
 
 /** Subset of the legacy ModContainer interface that mods actually call. */
 public interface ModContainer {
+    /** FML asked each container to register its event handlers on the lifecycle bus; true when it did. */
+    default boolean registerBus(com.google.common.eventbus.EventBus bus, LoadController controller) {
+        return false;
+    }
+
     String getModId();
 
     String getName();

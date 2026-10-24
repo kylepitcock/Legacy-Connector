@@ -131,6 +131,7 @@ public final class CoreModPlugins {
             if (container instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer mc) {
                 if (mc instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.DummyModContainer d && d.mcc$source == null) d.mcc$source = location(cls);
                 legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$addCoreModContainer(mc);
+                legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$registerCoreModBus(mc);
             }
         }
         String setup = p.getSetupClass();

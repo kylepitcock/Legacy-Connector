@@ -34,6 +34,28 @@ public class Loader {
     private static final List<ModContainer> MCC$CORE_CONTAINERS = new java.util.concurrent.CopyOnWriteArrayList<>();
     private static volatile LoaderState mcc$state = LoaderState.LOADING;
 
+    /** Lifecycle buses of coremod containers that registered handlers (Binnie Patcher registers ore dictionary entries this way). */
+    private static final List<com.google.common.eventbus.EventBus> MCC$CORE_BUSES = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void mcc$registerCoreModBus(ModContainer container) {
+        try {
+            com.google.common.eventbus.EventBus bus = new com.google.common.eventbus.EventBus(container.getModId());
+            if (container.registerBus(bus, new LoadController())) MCC$CORE_BUSES.add(bus);
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/CoreMods").warn("Coremod container {} could not register its event bus: {}", container.getModId(), e.toString());
+        }
+    }
+
+    public static void mcc$postToCoreModBuses(Object event) {
+        for (com.google.common.eventbus.EventBus bus : MCC$CORE_BUSES) {
+            try {
+                bus.post(event);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/CoreMods").warn("A coremod container failed handling {}: {}", event.getClass().getSimpleName(), e.toString());
+            }
+        }
+    }
+
     public static void mcc$addCoreModContainer(ModContainer container) {
         if (container != null && container.getModId() != null) MCC$CORE_CONTAINERS.add(container);
     }

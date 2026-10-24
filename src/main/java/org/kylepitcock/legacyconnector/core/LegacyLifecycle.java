@@ -72,6 +72,7 @@ public final class LegacyLifecycle {
 
         phase(mods, "construction", m -> LegacyMods.platform(m.version).construct(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.beforePreInit();
+        for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("preInit");
         phase(mods, "preInit", m -> LegacyMods.platform(m.version).preInit(m));
         for (LegacyPlatform p : LegacyMods.platforms()) {
             try {
@@ -81,7 +82,9 @@ public final class LegacyLifecycle {
             }
         }
         phase(mods, "init", m -> LegacyMods.platform(m.version).init(m));
+        for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("init");
         phase(mods, "imc", m -> LegacyMods.platform(m.version).interMod(m));
+        for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("postInit");
         phase(mods, "postInit", m -> LegacyMods.platform(m.version).postInit(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.afterPostInit();
         LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size());

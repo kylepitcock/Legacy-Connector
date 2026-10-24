@@ -245,6 +245,15 @@ public final class Platform1710 implements LegacyPlatform {
     }
 
     @Override
+    public void coreModPhase(String phase) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$postToCoreModBuses(switch (phase) {
+            case "preInit" -> new FMLPreInitializationEvent(null);
+            case "init" -> new FMLInitializationEvent();
+            default -> new FMLPostInitializationEvent();
+        });
+    }
+
+    @Override
     public void preInit(LegacyModRecord mod) throws Exception {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.PREINITIALIZATION);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(true);

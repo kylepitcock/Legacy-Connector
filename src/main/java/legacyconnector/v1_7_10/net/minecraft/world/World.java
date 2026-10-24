@@ -102,7 +102,18 @@ public class World implements IBlockAccess {
 
     protected World(LevelAccessor level) {
         this.mcc$level = level;
-        this.isRemote = level.isClientSide();
+        this.isRemote = level != null && level.isClientSide();
+    }
+
+    /** A world a mod builds itself (a fake world for rendering or simulation): it has no level behind it, so every query sees empty space. */
+    public World(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler, String name, WorldSettings settings, WorldProvider provider,
+            legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
+        this((LevelAccessor) null);
+    }
+
+    protected World(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler, String name, WorldProvider provider, WorldSettings settings,
+            legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
+        this((LevelAccessor) null);
     }
 
     /**

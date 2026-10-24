@@ -13,6 +13,12 @@ public interface LegacyPlatform {
     /** Called once before any legacy preInit runs, with all mods of this version constructed. */
     default void beforePreInit() {}
 
+    /**
+     * Coremod containers get the lifecycle events as well, once per phase and not per mod: "preInit" before the mods' preInit,
+     * "init" after their init, "postInit" before their postInit.
+     */
+    default void coreModPhase(String phase) {}
+
     void preInit(LegacyModRecord mod) throws Exception;
 
     /** Between preInit and init. 1.12 posts its {@code RegistryEvent.Register<T>} events here. */
