@@ -66,7 +66,6 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
         IGuiHelper gui = registration.getJeiHelpers().getGuiHelper();
         for (TemplateRecipeHandler handler : NeiBridge.templateHandlers()) {
             List<NeiBridge.Recipe> recipes = NeiBridge.recipes(handler);
-            if (recipes.isEmpty()) continue;
             String path = "nei_" + handler.getClass().getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]", "_");
             RecipeType<NeiBridge.Recipe> type = RecipeType.create("legacyconnector", path, NeiBridge.Recipe.class);
             String title;
@@ -75,10 +74,10 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             } catch (RuntimeException | LinkageError e) {
                 title = handler.getClass().getSimpleName();
             }
-            IDrawable icon = gui.createDrawableItemStack(recipes.get(0).outputs().isEmpty()
+            IDrawable icon = gui.createDrawableItemStack(recipes.isEmpty() || recipes.get(0).outputs().isEmpty()
                     ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE)
                     : recipes.get(0).outputs().get(0).stacks().get(0));
-            categories.add(new Category(type, Component.literal(title == null ? path : title), background(gui, handler), icon, recipes));
+            categories.add(new Category(type, Component.literal(title == null ? path : title), background(gui, handler), icon, recipes, handler));
         }
         if (!categories.isEmpty()) registration.addRecipeCategories(categories.toArray(new IRecipeCategory[0])); // JEI rejects an empty list
     }
@@ -99,7 +98,44 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
 
     @Override
     public void registerRecipes(IRecipeRegistration registration) {
-        for (Category c : categories) registration.addRecipes(c.type, c.recipes);
+        for (Category c : categories) if (!c.recipes.isEmpty()) registration.addRecipes(c.type, c.recipes);
+    }
+
+    /** NEI asked its handlers per item ("recipes of this", "uses of this"); JEI does the same through this plugin. */
+    @Override
+    public void registerAdvanced(mezz.jei.api.registration.IAdvancedRegistration registration) {
+        registration.addRecipeManagerPlugin(new mezz.jei.api.recipe.advanced.IRecipeManagerPlugin() {
+            @Override
+            public <V> List<RecipeType<?>> getRecipeTypes(mezz.jei.api.recipe.IFocus<V> focus) {
+                List<RecipeType<?>> out = new ArrayList<>();
+                net.minecraft.world.item.ItemStack stack = stackOf(focus);
+                if (stack == null) return out;
+                boolean usage = focus.getRole() == RecipeIngredientRole.INPUT;
+                if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return out;
+                for (Category c : categories) if (!NeiBridge.lookup(c.handler, stack, usage).isEmpty()) out.add(c.type);
+                return out;
+            }
+
+            @Override
+            @SuppressWarnings("unchecked")
+            public <T, V> List<T> getRecipes(IRecipeCategory<T> category, mezz.jei.api.recipe.IFocus<V> focus) {
+                if (!(category instanceof Category c)) return List.of();
+                net.minecraft.world.item.ItemStack stack = stackOf(focus);
+                if (stack == null) return List.of();
+                if (focus.getRole() != RecipeIngredientRole.INPUT && focus.getRole() != RecipeIngredientRole.OUTPUT) return List.of();
+                return (List<T>) NeiBridge.lookup(c.handler, stack, focus.getRole() == RecipeIngredientRole.INPUT);
+            }
+
+            @Override
+            public <T> List<T> getRecipes(IRecipeCategory<T> category) {
+                return List.of();
+            }
+        });
+    }
+
+    private static net.minecraft.world.item.ItemStack stackOf(mezz.jei.api.recipe.IFocus<?> focus) {
+        Object value = focus.getTypedValue().getIngredient();
+        return value instanceof net.minecraft.world.item.ItemStack s ? s : null;
     }
 
     @Override
@@ -109,7 +145,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
     }
 
     private record Category(RecipeType<NeiBridge.Recipe> type, Component title, IDrawable background, IDrawable icon,
-                            List<NeiBridge.Recipe> recipes) implements IRecipeCategory<NeiBridge.Recipe> {
+                            List<NeiBridge.Recipe> recipes, TemplateRecipeHandler handler) implements IRecipeCategory<NeiBridge.Recipe> {
         @Override
         public RecipeType<NeiBridge.Recipe> getRecipeType() {
             return type;

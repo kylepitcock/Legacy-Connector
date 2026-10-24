@@ -127,4 +127,38 @@ public final class NeiBridge {
         }
         return out;
     }
+
+    private static final Map<String, List<Recipe>> LOOKUPS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The recipes a handler shows for one item, as NEI asked on a recipe/usage lookup: {@code loadCraftingRecipes("item", stack)}
+     * (what makes the item) or {@code loadUsageRecipes("item", stack)} (what uses it). Handlers without a recipe list of their
+     * own, such as Chisel's, only answer these. Results are cached per handler, item and direction.
+     */
+    public static List<Recipe> lookup(TemplateRecipeHandler handler, net.minecraft.world.item.ItemStack stack, boolean usage) {
+        if (stack == null || stack.isEmpty()) return List.of();
+        String key = handler.getClass().getName() + (usage ? "|use|" : "|make|") + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())
+                + "|" + stack.getOrDefault(org.kylepitcock.legacyconnector.core.data.CompatComponents.legacyMeta(), 0);
+        List<Recipe> cached = LOOKUPS.get(key);
+        if (cached != null) return cached;
+        List<Recipe> out = new ArrayList<>();
+        try {
+            ItemStack legacy = ItemStack.mcc$wrap(stack);
+            TemplateRecipeHandler h = handler.newInstance();
+            if (usage) h.loadUsageRecipes("item", legacy);
+            else h.loadCraftingRecipes("item", legacy);
+            for (int i = 0; i < h.numRecipes(); i++) {
+                try {
+                    PositionedStack result = h.getResultStack(i);
+                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i))));
+                } catch (RuntimeException | LinkageError e) {
+                    // skip a broken recipe
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a handler that cannot answer for this item has no recipes for it
+        }
+        LOOKUPS.put(key, out);
+        return out;
+    }
 }
