@@ -5,7 +5,7 @@ this mod; it is translated at load time, the same way [Sinytra Connector](https:
 runs Fabric mods on NeoForge. The original jar is never modified.
 
 > **Status: alpha.** 1.7.10 is the active target. Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
-> Plenty, Twilight Forest, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
+> Plenty, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
 > world generation and dimensions, and large tech packs load most of their mods. Some features are still missing or
 > unverified (see [Known compatibility issues](#known-compatibility-issues)), so back up your worlds.
 
