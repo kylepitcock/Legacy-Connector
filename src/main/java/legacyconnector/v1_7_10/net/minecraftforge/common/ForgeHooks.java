@@ -26,6 +26,48 @@ public class ForgeHooks {
         }
     }
 
+    /** Whether the tool in {@code stack} is the kind that breaks {@code block} (with this metadata) quickly. */
+    public static boolean isToolEffective(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata) {
+        if (stack == null || stack.getItem() == null) return false;
+        for (String toolClass : stack.getItem().getToolClasses(stack)) {
+            if (block.isToolEffective(toolClass, metadata)) return true;
+        }
+        return false;
+    }
+
+    /** As Forge: a block that needs no tool is harvestable by hand; otherwise the held tool's harvest level must reach the block's. */
+    public static boolean canHarvestBlock(legacyconnector.v1_7_10.net.minecraft.block.Block block,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, int metadata) {
+        if (block.getMaterial().isToolNotRequired()) return true;
+        ItemStack stack = player.inventory.getCurrentItem();
+        String tool = block.getHarvestTool(metadata);
+        if (stack == null || tool == null) return player.canHarvestBlock(block);
+        int toolLevel = stack.getItem().getHarvestLevel(stack, tool);
+        if (toolLevel < 0) return player.canHarvestBlock(block);
+        return toolLevel >= block.getHarvestLevel(metadata);
+    }
+
+    /** How fast the player breaks the block: 0 for unbreakable blocks, slower by 3x when the tool cannot harvest it. */
+    public static float blockStrength(legacyconnector.v1_7_10.net.minecraft.block.Block block,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        int metadata = world.getBlockMetadata(x, y, z);
+        float hardness = block.getBlockHardness(world, x, y, z);
+        if (hardness < 0.0F) return 0.0F;
+        if (!canHarvestBlock(block, player, metadata)) return player.getBreakSpeed(block, true, metadata, x, y, z) / hardness / 100.0F;
+        return player.getBreakSpeed(block, false, metadata, x, y, z) / hardness / 30.0F;
+    }
+
+    public static float onLivingFall(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, float distance) {
+        return distance;
+    }
+
+    public static void onLivingJump(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+    }
+
+    public static float getEnchantPower(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        return world.getBlock(x, y, z).getEnchantPowerBonus(world, x, y, z);
+    }
+
     public static boolean canToolHarvestBlock(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, ItemStack stack) {
         if (block.getMaterial().isToolNotRequired()) return true;
         return stack != null && stack.getItem() != null && stack.getItem().canHarvestBlock(block, stack);

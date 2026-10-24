@@ -71,6 +71,29 @@ public class FMLCommonHandler {
         return lines;
     }
 
+    // Mods fire these themselves when they craft, smelt, pick up or teleport outside the vanilla paths.
+    public void firePlayerCraftingEvent(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.item.ItemStack crafted, legacyconnector.v1_7_10.net.minecraft.inventory.IInventory matrix) {
+        bus().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.ItemCraftedEvent(player, crafted, matrix));
+    }
+
+    public void firePlayerSmeltedEvent(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.item.ItemStack smelted) {
+        bus().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.ItemSmeltedEvent(player, smelted));
+    }
+
+    public void firePlayerItemPickupEvent(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem item) {
+        bus().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.ItemPickupEvent(player, item));
+    }
+
+    public void firePlayerChangedDimensionEvent(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, int from, int to) {
+        bus().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent(player, from, to));
+    }
+
+    public String getCurrentLanguage() {
+        return "en_US";
+    }
+
     public String getModName() {
         return "fml,forge,legacyconnector";
     }

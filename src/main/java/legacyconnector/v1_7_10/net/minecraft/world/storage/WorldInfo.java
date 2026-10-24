@@ -66,6 +66,31 @@ public class WorldInfo {
         return level != null && level.isThundering();
     }
 
+    private void weather(java.util.function.Consumer<net.minecraft.server.level.ServerLevel> change) {
+        Level level = level();
+        if (level instanceof net.minecraft.server.level.ServerLevel server) change.accept(server);
+    }
+
+    public void setRaining(boolean raining) {
+        weather(l -> l.setWeatherParameters(raining ? 0 : 6000, raining ? 6000 : 0, raining, l.isThundering() && raining));
+    }
+
+    public void setThundering(boolean thundering) {
+        weather(l -> l.setWeatherParameters(0, 6000, l.isRaining() || thundering, thundering));
+    }
+
+    public void setRainTime(int ticks) {
+        weather(l -> l.setWeatherParameters(0, ticks, l.isRaining(), l.isThundering()));
+    }
+
+    public void setThunderTime(int ticks) {
+        weather(l -> l.setWeatherParameters(0, ticks, l.isRaining(), l.isThundering()));
+    }
+
+    public void setWorldTime(long time) {
+        weather(l -> l.setDayTime(time));
+    }
+
     public boolean isHardcoreModeEnabled() {
         Level level = level();
         return level != null && level.getLevelData().isHardcore();
