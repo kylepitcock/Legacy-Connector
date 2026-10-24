@@ -91,8 +91,49 @@ public final class SoundBridge {
         if (legacyName == null || legacyName.isEmpty()) return null;
         SoundEvent known = SOUNDS.get(legacyName);
         if (known != null) return known;
+        known = vanillaEntitySound(legacyName);
+        if (known != null) {
+            SOUNDS.put(legacyName, known);
+            return known;
+        }
         // modid:path stays a mod sound; vanilla names that changed fall back to their 1.9+ dotted path guess.
         return SoundEvent.createVariableRangeEvent(Ids.location(legacyName, "minecraft"));
+    }
+
+    /** 1.7.10 vanilla sound events renamed in 1.9: {@code mob.cow.say} is {@code entity.cow.ambient}, {@code mob.zombie.hurt} is {@code entity.zombie.hurt}. */
+    private static SoundEvent vanillaEntitySound(String name) {
+        if (name.indexOf(':') >= 0) return null;
+        String[] parts = name.split("\\.");
+        if (parts.length < 3 || !(parts[0].equals("mob") || parts[0].equals("game"))) return null;
+        String mob = switch (parts[1]) {
+            case "endermen" -> "enderman";
+            case "irongolem" -> "iron_golem";
+            case "zombiepig" -> "zombified_piglin";
+            case "snowman" -> "snow_golem";
+            case "villager" -> "villager";
+            case "neutral" -> "generic";
+            case "hostile" -> "generic";
+            case "player" -> "player";
+            default -> parts[1];
+        };
+        StringBuilder rest = new StringBuilder();
+        for (int i = 2; i < parts.length; i++) rest.append(i > 2 ? "." : "").append(parts[i]);
+        String action = switch (rest.toString()) {
+            case "say", "idle", "moan", "breathe", "bark", "haggle" -> "ambient";
+            case "hit", "hurtflesh" -> "hurt";
+            case "kill" -> "death";
+            case "walk" -> "step";
+            case "no" -> "no";
+            case "yes" -> "yes";
+            default -> rest.toString().replace("hurt.fall.big", "big_fall").replace("hurt.fall.small", "small_fall");
+        };
+        for (String candidate : new String[] {"entity." + mob + "." + action, "entity." + mob + ".ambient", "entity." + mob + ".hurt"}) {
+            var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace(candidate);
+            if (net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
+                return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+            }
+        }
+        return null;
     }
 
     public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch) {
