@@ -27,19 +27,23 @@ public final class LegacyMethods {
         Map<String, List<Method>> map = CACHE.get(version);
         if (map != null) return map;
         map = new HashMap<>();
-        String resource = "legacyconnector/legacy/" + version.id() + "/methods.txt";
-        try (InputStream in = LegacyMethods.class.getClassLoader().getResourceAsStream(resource)) {
-            if (in != null) {
-                BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                for (String line; (line = r.readLine()) != null; ) {
-                    String[] p = line.split(" ");
-                    if (p.length != 4) continue;
-                    int flags = Integer.parseInt(p[3]);
-                    map.computeIfAbsent(p[0], k -> new ArrayList<>()).add(new Method(p[1], p[2], (flags & 0x8) != 0));
+        // methods.txt is generated and leaves private methods out; methods-private.txt lists, by hand, the private vanilla
+        // methods that mods are known to reflect (FiskHeroes calls EntityCreeper.func_146077_cc), same line format.
+        for (String name : new String[] {"methods.txt", "methods-private.txt"}) {
+            String resource = "legacyconnector/legacy/" + version.id() + "/" + name;
+            try (InputStream in = LegacyMethods.class.getClassLoader().getResourceAsStream(resource)) {
+                if (in != null) {
+                    BufferedReader r = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    for (String line; (line = r.readLine()) != null; ) {
+                        String[] p = line.split(" ");
+                        if (p.length != 4) continue;
+                        int flags = Integer.parseInt(p[3]);
+                        map.computeIfAbsent(p[0], k -> new ArrayList<>()).add(new Method(p[1], p[2], (flags & 0x8) != 0));
+                    }
                 }
+            } catch (Exception e) {
+                // no table: only demanded members are generated
             }
-        } catch (Exception e) {
-            // no table: only demanded members are generated
         }
         CACHE.put(version, map);
         return map;
