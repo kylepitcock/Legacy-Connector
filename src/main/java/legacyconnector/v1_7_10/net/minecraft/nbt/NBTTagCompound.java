@@ -92,13 +92,14 @@ public class NBTTagCompound extends NBTBase {
         mcc$markDirty();
     }
 
+    /** A null array was storable in 1.7.10; the modern tags cannot write one (the chunk save fails), so it becomes empty. */
     public void setByteArray(String key, byte[] value) {
-        mcc$tag.putByteArray(key, value);
+        mcc$tag.putByteArray(key, value == null ? new byte[0] : value);
         mcc$markDirty();
     }
 
     public void setIntArray(String key, int[] value) {
-        mcc$tag.putIntArray(key, value);
+        mcc$tag.putIntArray(key, value == null ? new int[0] : value);
         mcc$markDirty();
     }
 

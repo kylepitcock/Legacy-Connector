@@ -7,7 +7,7 @@ public class NBTTagIntArray extends NBTBase {
     private final int[] data;
 
     public NBTTagIntArray(int[] data) {
-        this.data = data;
+        this.data = data == null ? new int[0] : data;
     }
 
     @Override

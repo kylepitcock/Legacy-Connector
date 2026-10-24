@@ -7,7 +7,7 @@ public class NBTTagByteArray extends NBTBase {
     private final byte[] data;
 
     public NBTTagByteArray(byte[] data) {
-        this.data = data;
+        this.data = data == null ? new byte[0] : data;
     }
 
     @Override

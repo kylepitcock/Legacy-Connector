@@ -288,6 +288,19 @@ public final class BlockBridge {
         // Case-insensitive legacy ids ("IC2:blockOre") and modern names of other mods.
         Block ci = BY_NAME.getIgnoreCase(full);
         if (ci != null) return ci;
+        // Configs name blocks by their unlocalized name ("Railcraft:tile.railcraft.ore") where the block was registered as "ore".
+        int colon = full.indexOf(':');
+        String path = full.substring(colon + 1);
+        if (path.startsWith("tile.")) {
+            String ns = full.substring(0, colon + 1);
+            String bare = path.substring("tile.".length());
+            Block stripped = BY_NAME.getIgnoreCase(ns + bare);
+            if (stripped == null) {
+                int dot = bare.indexOf('.');
+                if (dot > 0 && bare.substring(0, dot).equalsIgnoreCase(full.substring(0, colon))) stripped = BY_NAME.getIgnoreCase(ns + bare.substring(dot + 1));
+            }
+            if (stripped != null) return stripped;
+        }
         ResourceLocation rl = ResourceLocation.tryParse(full.toLowerCase(java.util.Locale.ROOT));
         if (rl != null && BuiltInRegistries.BLOCK.containsKey(rl)) return legacyBlock(BuiltInRegistries.BLOCK.get(rl).defaultBlockState());
         return null;
