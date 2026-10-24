@@ -6,12 +6,12 @@ package legacyconnector.v1_7_10.org.lwjgl.opengl;
  * the honest answer is "no shader support": mods then draw their fixed-function fallbacks instead of effects that would be invisible.
  */
 public class ContextCapabilities {
-    public final boolean OpenGL11 = true, OpenGL12 = true, OpenGL13 = true, OpenGL14 = true, OpenGL15 = true, OpenGL20 = true,
-            OpenGL21 = true, OpenGL30 = true, OpenGL31 = true, OpenGL32 = true, OpenGL33 = true, OpenGL40 = true, OpenGL41 = true,
+    public final boolean OpenGL11 = true, OpenGL12 = true, OpenGL13 = true, OpenGL14 = true, OpenGL15 = true, OpenGL20 = false,
+            OpenGL21 = false, OpenGL30 = true, OpenGL31 = true, OpenGL32 = true, OpenGL33 = true, OpenGL40 = true, OpenGL41 = true,
             OpenGL42 = true, OpenGL43 = true, OpenGL44 = false, OpenGL45 = false;
     public final boolean GL_ARB_multitexture = true, GL_ARB_texture_non_power_of_two = true, GL_ARB_vertex_buffer_object = true,
-            GL_ARB_framebuffer_object = true, GL_EXT_framebuffer_object = true, GL_ARB_shader_objects = true,
-            GL_ARB_vertex_shader = true, GL_ARB_fragment_shader = true, GL_ARB_shading_language_100 = true,
+            GL_ARB_framebuffer_object = true, GL_EXT_framebuffer_object = true, GL_ARB_shader_objects = false,
+            GL_ARB_vertex_shader = false, GL_ARB_fragment_shader = false, GL_ARB_shading_language_100 = false,
             GL_ARB_occlusion_query = true, GL_ARB_texture_cube_map = true, GL_ARB_texture_env_combine = true,
             GL_ARB_texture_env_crossbar = false, GL_ARB_vertex_program = false, GL_ARB_fragment_program = false,
             GL_ARB_imaging = false, GL_ARB_depth_texture = true, GL_ARB_shadow = true, GL_ARB_point_sprite = true,
