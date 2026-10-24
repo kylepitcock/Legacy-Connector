@@ -268,6 +268,7 @@ public final class LegacyJarTransformer {
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
+            InterfaceFlags.apply(node, hierarchy);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             ClassWriter writer = new ClassWriter(0);
             node.accept(writer);
