@@ -31,6 +31,10 @@ public class EnumHelper {
                 new Object[] {durability, reductionAmounts, enchantability});
     }
 
+    public static legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType addEnchantmentType(String name) {
+        return addEnum(legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType.class, name);
+    }
+
     public static EnumRarity addRarity(String name, EnumChatFormatting color, String displayName) {
         return addEnum(EnumRarity.class, name, new Object[] {color, displayName});
     }

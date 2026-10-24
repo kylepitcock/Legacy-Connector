@@ -69,6 +69,9 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final VoxelShape[] staticShapes = new VoxelShape[16];
     private final boolean collisionList;
     private final boolean ladder;
+    private final boolean pickBlock;
+    private final boolean fireSource;
+    private final boolean entityDestroy;
     private final boolean customRemoval;
     private final boolean sustainsPlants;
     private final boolean customExplosion;
@@ -84,6 +87,13 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 java.util.List.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
         this.ladder = overrides(legacy, "isLadder", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class,
                 EntityLivingBase.class);
+        this.pickBlock = overrides(legacy, "getPickBlock", legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition.class, World.class, int.class, int.class, int.class)
+                || overrides(legacy, "getPickBlock", legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition.class, World.class, int.class, int.class, int.class,
+                        EntityPlayer.class);
+        this.fireSource = overrides(legacy, "isFireSource", World.class, int.class, int.class, int.class,
+                legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class);
+        this.entityDestroy = overrides(legacy, "canEntityDestroy", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
+                int.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
         this.customRemoval = overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class)
                 || overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class, boolean.class);
         this.sustainsPlants = overrides(legacy, "canSustainPlant", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
@@ -462,6 +472,31 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     // ------------------------------------------------------------------ Forge hooks
 
     @Override
+    public int getFlammability(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        try {
+            return legacy.getFlammability(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
+                    legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(direction.get3DDataValue()));
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public int getFireSpreadSpeed(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        try {
+            return legacy.getFireSpreadSpeed(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(),
+                    legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.getOrientation(direction.get3DDataValue()));
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
+    @Override
+    public boolean isFlammable(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
+        return getFlammability(state, level, pos, direction) > 0;
+    }
+
+    @Override
     public boolean isLadder(BlockState state, LevelReader level, BlockPos pos, LivingEntity entity) {
         if (!ladder) return super.isLadder(state, level, pos, entity);
         try {
@@ -556,6 +591,44 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             for (ItemStack s : legacyDrops) if (s != null && s.mcc$count() > 0) out.add(s.mcc$modern());
         }
         return out;
+    }
+
+    @Override
+    public net.minecraft.world.item.ItemStack getCloneItemStack(BlockState state, net.minecraft.world.phys.HitResult target, LevelReader level, BlockPos pos,
+            Player player) {
+        if (pickBlock && level instanceof LevelAccessor acc && target instanceof net.minecraft.world.phys.BlockHitResult hit) {
+            try {
+                World w = world(acc);
+                var loc = hit.getLocation();
+                var mop = new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(pos.getX(), pos.getY(), pos.getZ(), hit.getDirection().get3DDataValue(),
+                        legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(loc.x, loc.y, loc.z));
+                ItemStack picked = legacy.getPickBlock(mop, w, pos.getX(), pos.getY(), pos.getZ(), (EntityPlayer) EntityBridge.wrap(player));
+                return picked == null ? net.minecraft.world.item.ItemStack.EMPTY : picked.mcc$modern();
+            } catch (RuntimeException | LinkageError e) {
+                // fall through to the plain clone stack
+            }
+        }
+        return super.getCloneItemStack(state, target, level, pos, player);
+    }
+
+    @Override
+    public boolean isFireSource(BlockState state, net.minecraft.world.level.LevelReader level, BlockPos pos, net.minecraft.core.Direction side) {
+        if (!fireSource || !(level instanceof LevelAccessor acc)) return super.isFireSource(state, level, pos, side);
+        try {
+            return legacy.isFireSource(world(acc), pos.getX(), pos.getY(), pos.getZ(), legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.mcc$of(side));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean canEntityDestroy(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.world.entity.Entity entity) {
+        if (!entityDestroy) return super.canEntityDestroy(state, level, pos, entity);
+        try {
+            return legacy.canEntityDestroy(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ(), EntityBridge.wrap(entity));
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
     }
 
     @Override

@@ -33,6 +33,10 @@ public class ShapelessOreRecipe implements IRecipe {
         }
     }
 
+    public java.util.ArrayList<Object> getInput() {
+        return input;
+    }
+
     @Override
     public ItemStack getCraftingResult(InventoryCrafting inv) {
         return output.copy();

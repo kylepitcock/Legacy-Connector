@@ -18,6 +18,35 @@ public class GL11 extends GL11Guard {
     protected GL11() {
     }
 
+    // ------------------------------------------------------------------ texture queries
+
+    private static final int GL_TEXTURE_BINDING_2D = 0x8069;
+    private static final int GL_TEXTURE_WIDTH = 4096;
+    private static final int GL_TEXTURE_HEIGHT = 4097;
+
+    /**
+     * Legacy bind calls only tell the render context which texture is current, so the real GL binding is unrelated to it: width and
+     * height of "the bound texture" (mods compute UVs from them, Custom Main Menu's images) are read from the texture the legacy code bound.
+     */
+    public static int glGetTexLevelParameteri(int target, int level, int pname) {
+        if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D && (pname == GL_TEXTURE_WIDTH || pname == GL_TEXTURE_HEIGHT) && RenderSystem.isOnRenderThread()) {
+            var rl = RenderContext.texture();
+            if (rl != null) {
+                try {
+                    int id = net.minecraft.client.Minecraft.getInstance().getTextureManager().getTexture(rl).getId();
+                    int previous = org.lwjgl.opengl.GL11.glGetInteger(GL_TEXTURE_BINDING_2D);
+                    GlStateManager._bindTexture(id);
+                    int value = org.lwjgl.opengl.GL11.glGetTexLevelParameteri(target, level, pname);
+                    GlStateManager._bindTexture(previous);
+                    return value;
+                } catch (RuntimeException | LinkageError e) {
+                    // fall back to whatever is bound
+                }
+            }
+        }
+        return GL11Guard.glGetTexLevelParameteri(target, level, pname);
+    }
+
     // ------------------------------------------------------------------ matrix stack
 
     public static void glPushMatrix() {

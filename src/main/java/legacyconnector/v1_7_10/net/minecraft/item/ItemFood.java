@@ -27,6 +27,9 @@ public class ItemFood extends Item {
         stack.mcc$setCount(stack.mcc$count() - 1);
         player.getFoodStats().addStats(this, stack);
         world.playSoundAtEntity(player, "random.burp", 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
+        if (potionId > 0 && !world.isRemote && world.rand.nextFloat() < potionEffectProbability) {
+            player.addPotionEffect(new legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect(potionId, potionDuration * 20, potionAmplifier));
+        }
         onFoodEaten(stack, world, player);
         return stack;
     }
@@ -60,6 +63,19 @@ public class ItemFood extends Item {
 
     public boolean isWolfsFavoriteMeat() {
         return isWolfsFavoriteMeat;
+    }
+
+    private int potionId;
+    private int potionDuration;
+    private int potionAmplifier;
+    private float potionEffectProbability;
+
+    public ItemFood setPotionEffect(int id, int seconds, int amplifier, float probability) {
+        potionId = id;
+        potionDuration = seconds;
+        potionAmplifier = amplifier;
+        potionEffectProbability = probability;
+        return this;
     }
 
     public ItemFood setAlwaysEdible() {

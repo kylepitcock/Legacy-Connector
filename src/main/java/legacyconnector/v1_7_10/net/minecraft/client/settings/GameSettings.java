@@ -37,6 +37,21 @@ public class GameSettings {
     public KeyBinding[] keyBindsHotbar = hotbar();
     public KeyBinding[] keyBindings = new KeyBinding[0];
 
+    public static boolean isKeyDown(KeyBinding key) {
+        int code = key.getKeyCode();
+        if (code == 0) return false;
+        long window = net.minecraft.client.Minecraft.getInstance().getWindow().getWindow();
+        return code < 0
+            ? org.lwjgl.glfw.GLFW.glfwGetMouseButton(window, code + 100) == org.lwjgl.glfw.GLFW.GLFW_PRESS
+            : legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.isKeyDown(code);
+    }
+
+    public static String getKeyDisplayString(int code) {
+        return code < 0
+            ? legacyconnector.v1_7_10.net.minecraft.client.resources.I18n.format("key.mouseButton", code + 101)
+            : legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.getKeyName(code);
+    }
+
     private static KeyBinding vanilla(String name, java.util.function.Function<net.minecraft.client.Options, net.minecraft.client.KeyMapping> get) {
         try {
             return new KeyBinding(get.apply(net.minecraft.client.Minecraft.getInstance().options));

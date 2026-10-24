@@ -419,20 +419,113 @@ public class Block {
         return false;
     }
 
+    // ---- Forge hooks 1.7.10 mods override or call (defaults as Forge had them)
+
+    /** Wrench/rotation: rotates this block about {@code axis}; false when it cannot. */
+    public boolean rotateBlock(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, ForgeDirection axis) {
+        return false;
+    }
+
+    public ForgeDirection[] getValidRotations(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        return null;
+    }
+
+    public boolean recolourBlock(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, ForgeDirection side, int colour) {
+        return false;
+    }
+
+    /** Whether ray traces may hit this block for this metadata ({@code boolean}: the player is holding the block's item). */
+    public boolean canCollideCheck(int meta, boolean includeLiquid) {
+        return isCollidable();
+    }
+
+    public void beginLeavesDecay(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+    }
+
+    public float getAmbientOcclusionLightValue() {
+        return isNormalCube() ? 0.2F : 1.0F;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.item.ItemStack getPickBlock(legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
+            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        Item item = Item.getItemFromBlock(this);
+        if (item == null) return null;
+        return new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, getDamageValue(world, x, y, z));
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.item.ItemStack getPickBlock(legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
+            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return getPickBlock(target, world, x, y, z);
+    }
+
+    public boolean isFireSource(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, ForgeDirection side) {
+        return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.netherrack && side == ForgeDirection.UP;
+    }
+
+    public boolean isFertile(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.farmland && world.getBlockMetadata(x, y, z) > 0;
+    }
+
+    public boolean getBlocksMovement(IBlockAccess world, int x, int y, int z) {
+        return !getMaterial().blocksMovement();
+    }
+
+    public boolean canEntityDestroy(IBlockAccess world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        return true;
+    }
+
+    public void velocityToAddToEntity(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, legacyconnector.v1_7_10.net.minecraft.util.Vec3 velocity) {
+    }
+
+    public boolean isBed(IBlockAccess world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase player) {
+        return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.bed;
+    }
+
+    public boolean isBedFoot(IBlockAccess world, int x, int y, int z) {
+        return false;
+    }
+
+    public int getBedDirection(IBlockAccess world, int x, int y, int z) {
+        return 0;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getBedSpawnPosition(IBlockAccess world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return null;
+    }
+
+    public boolean isBurning(IBlockAccess world, int x, int y, int z) {
+        return false;
+    }
+
+    public boolean shouldCheckWeakPower(IBlockAccess world, int x, int y, int z, int side) {
+        return isNormalCube();
+    }
+
+    public boolean getWeakChanges(IBlockAccess world, int x, int y, int z) {
+        return false;
+    }
+
+    public boolean addDestroyEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, int meta,
+            legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
+        return false;
+    }
+
     public boolean isLeaves(IBlockAccess world, int x, int y, int z) {
         return getMaterial() == Material.leaves;
     }
 
     public boolean isFlammable(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
-        return getMaterial().getCanBurn();
+        return getFlammability(world, x, y, z, face) > 0;
     }
 
     public int getFlammability(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
-        return getMaterial().getCanBurn() ? 20 : 0;
+        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getFlammability(this);
     }
 
     public int getFireSpreadSpeed(IBlockAccess world, int x, int y, int z, ForgeDirection face) {
-        return getMaterial().getCanBurn() ? 5 : 0;
+        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.getEncouragement(this);
     }
 
     public final double getBlockBoundsMinX() {

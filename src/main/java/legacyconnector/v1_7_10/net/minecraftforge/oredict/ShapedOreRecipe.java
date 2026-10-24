@@ -76,6 +76,14 @@ public class ShapedOreRecipe implements IRecipe {
         return this;
     }
 
+    public Object[] getInput() {
+        return input;
+    }
+
+    public static Object[] getInput(ShapedOreRecipe recipe) {
+        return recipe.input;
+    }
+
     public boolean mcc$mirrored() {
         return mirrored;
     }

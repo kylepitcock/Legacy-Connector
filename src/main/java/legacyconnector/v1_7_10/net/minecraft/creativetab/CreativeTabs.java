@@ -48,6 +48,17 @@ public abstract class CreativeTabs {
         if (!(this instanceof Vanilla)) CreativeTabBridge.onTabCreated(this);
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[] relevantEnchantmentTypes = new legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[0];
+
+    public CreativeTabs setRelevantEnchantmentTypes(legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType... types) {
+        relevantEnchantmentTypes = types;
+        return this;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[] func_111225_m() {
+        return relevantEnchantmentTypes;
+    }
+
     public static int getNextID() {
         return creativeTabArray.length;
     }

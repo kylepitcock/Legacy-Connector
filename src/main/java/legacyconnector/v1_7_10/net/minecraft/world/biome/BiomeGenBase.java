@@ -159,6 +159,27 @@ public class BiomeGenBase {
         return enableSnow;
     }
 
+    public List<SpawnListEntry> getSpawnableList(legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType type) {
+        return switch (type) {
+            case monster -> spawnableMonsterList;
+            case creature -> spawnableCreatureList;
+            case waterCreature -> spawnableWaterCreatureList;
+            default -> spawnableCaveCreatureList;
+        };
+    }
+
+    /** Forge: the flowers bonemeal and the generator may place in the biome (block, metadata, weight). */
+    public final List<Object[]> mcc$flowers = new ArrayList<>();
+
+    public void addFlower(legacyconnector.v1_7_10.net.minecraft.block.Block block, int meta, int weight) {
+        mcc$flowers.add(new Object[] {block, meta, weight});
+    }
+
+    public void addDefaultFlowers() {
+        addFlower(legacyconnector.v1_7_10.net.minecraft.init.Blocks.yellow_flower, 0, 20);
+        addFlower(legacyconnector.v1_7_10.net.minecraft.init.Blocks.red_flower, 0, 10);
+    }
+
     public boolean canSpawnLightningBolt() {
         return !enableSnow && enableRain;
     }

@@ -78,6 +78,7 @@ public final class LegacyConnector {
         modBus.addListener(LegacyLifecycle::onCommonSetup);
         modBus.addListener(LegacyLifecycle::onLoadComplete);
         modBus.addListener(GeneratedPack::onAddPackFinders);
+        modBus.addListener(org.kylepitcock.legacyconnector.core.pack.GameResourcesFolderPack::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
         modBus.addListener(CreativeTabBridge::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs::addToTab);

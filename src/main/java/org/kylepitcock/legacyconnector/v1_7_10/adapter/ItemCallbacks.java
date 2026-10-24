@@ -159,6 +159,22 @@ final class ItemCallbacks {
         return legacy.onEntityItemUpdate((legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem) EntityBridge.wrap(entity));
     }
 
+    public static boolean blockStartBreak(Item legacy, net.minecraft.world.item.ItemStack stack, BlockPos pos, Player player) {
+        try {
+            return legacy.onBlockStartBreak(ItemStack.mcc$wrap(stack), pos.getX(), pos.getY(), pos.getZ(), player(player));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    static int enchantability(Item legacy, net.minecraft.world.item.ItemStack stack) {
+        try {
+            return legacy.getItemEnchantability(ItemStack.mcc$wrap(stack));
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
     static boolean leftClickEntity(Item legacy, net.minecraft.world.item.ItemStack stack, Player player, Entity target) {
         return legacy.onLeftClickEntity(ItemStack.mcc$wrap(stack), player(player), EntityBridge.wrap(target));
     }

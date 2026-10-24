@@ -58,6 +58,20 @@ public class PotionEffect {
         return p != null ? p.getName() : "potion." + potionID;
     }
 
+    private java.util.List<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> curativeItems;
+
+    public java.util.List<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> getCurativeItems() {
+        if (curativeItems == null) {
+            curativeItems = new java.util.ArrayList<>();
+            curativeItems.add(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.milk_bucket));
+        }
+        return curativeItems;
+    }
+
+    public void setCurativeItems(java.util.List<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> items) {
+        curativeItems = items;
+    }
+
     public static PotionEffect mcc$wrap(MobEffectInstance modern) {
         int id = PotionBridge.idOf(modern.getEffect());
         return id < 0 ? null : new PotionEffect(id, modern.getDuration(), modern.getAmplifier(), modern.isAmbient());

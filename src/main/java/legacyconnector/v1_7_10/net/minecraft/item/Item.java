@@ -265,6 +265,82 @@ public class Item {
         return false;
     }
 
+    // ---- Forge hooks 1.7.10 mods override or call
+
+    /** The font used for this stack's tooltip; null: the default one. */
+    public legacyconnector.v1_7_10.net.minecraft.client.gui.FontRenderer getFontRenderer(ItemStack stack) {
+        return null;
+    }
+
+    public boolean isValidArmor(ItemStack stack, int armorType, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        return this instanceof ItemArmor armor && armor.armorType == armorType;
+    }
+
+    public String getArmorTexture(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int slot, String type) {
+        return null;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped getArmorModel(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
+            ItemStack stack, int slot) {
+        return null;
+    }
+
+    public void onArmorTick(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            ItemStack stack) {
+    }
+
+    public boolean onBlockStartBreak(ItemStack stack, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return false;
+    }
+
+    public com.google.common.collect.Multimap getAttributeModifiers(ItemStack stack) {
+        return getItemAttributeModifiers();
+    }
+
+    public com.google.common.collect.Multimap getItemAttributeModifiers() {
+        return com.google.common.collect.HashMultimap.create();
+    }
+
+    public int getItemEnchantability(ItemStack stack) {
+        return getItemEnchantability();
+    }
+
+    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        return true;
+    }
+
+    public boolean hasCustomEntity(ItemStack stack) {
+        return false;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.entity.Entity createEntity(legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity location, ItemStack stack) {
+        return null;
+    }
+
+    public float getSmeltingExperience(ItemStack stack) {
+        return -1.0F;
+    }
+
+    public boolean onEntitySwing(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, ItemStack stack) {
+        return false;
+    }
+
+    public boolean doesSneakBypassUse(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return false;
+    }
+
+    public int getDisplayDamage(ItemStack stack) {
+        return stack.getItemDamage();
+    }
+
+    public boolean isBeaconPayment(ItemStack stack) {
+        return false;
+    }
+
+    public static final java.util.UUID itemModifierUUID = java.util.UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+
     public int getItemEnchantability() {
         return 0;
     }
@@ -501,6 +577,12 @@ public class Item {
 
         public int getEnchantability() {
             return enchantability;
+        }
+
+        public ToolMaterial setRepairItem(ItemStack stack) {
+            if (customCraftingMaterial != null) throw new RuntimeException("Repair material has already been set");
+            customCraftingMaterial = stack.getItem();
+            return this;
         }
 
         public Item getBaseItemForRepair() {

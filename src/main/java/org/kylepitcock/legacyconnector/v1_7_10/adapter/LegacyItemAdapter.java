@@ -160,6 +160,11 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
     }
 
     @Override
+    public int getEnchantmentValue(ItemStack stack) {
+        return ItemCallbacks.enchantability(legacy, stack);
+    }
+
+    @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity target) {
         return ItemCallbacks.leftClickEntity(legacy, stack, player, target);
     }

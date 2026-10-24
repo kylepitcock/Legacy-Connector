@@ -122,6 +122,14 @@ public class Potion {
         return this;
     }
 
+    /** Attribute modifiers registered by legacy code: attribute -> {uuid, amount, operation}. Not applied to modern attributes yet. */
+    public final java.util.Map<legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.IAttribute, Object[]> mcc$attributeModifiers = new java.util.HashMap<>();
+
+    public Potion registerPotionAttributeModifier(legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.IAttribute attribute, String uuid, double amount, int operation) {
+        mcc$attributeModifiers.put(attribute, new Object[] {uuid, amount, operation});
+        return this;
+    }
+
     public double getEffectiveness() {
         return effectiveness;
     }

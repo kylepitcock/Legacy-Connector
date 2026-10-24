@@ -45,7 +45,35 @@ public final class ClientGui {
             mc.setScreen(null);
             return;
         }
-        mc.setScreen(new LegacyScreen(screen));
+        net.minecraft.client.gui.screens.Screen vanilla = vanillaEquivalent(mc, screen);
+        mc.setScreen(vanilla != null ? vanilla : new LegacyScreen(screen));
+    }
+
+    /**
+     * 1.7.10's own screens (world list, options, ...) are not implemented as legacy GUIs: a mod that opens one (Custom Main Menu's buttons) gets
+     * the modern screen that does the same job, with the screen showing now as its parent.
+     */
+    private static net.minecraft.client.gui.screens.Screen vanillaEquivalent(Minecraft mc, GuiScreen screen) {
+        Class<?> cls = screen.getClass();
+        if (!cls.getName().contains("net.minecraft.client.gui.") && !cls.getName().contains("cpw.mods.fml.client.")) return null;
+        net.minecraft.client.gui.screens.Screen parent = mc.screen;
+        return switch (cls.getSimpleName()) {
+            case "GuiMainMenu" -> new net.minecraft.client.gui.screens.TitleScreen();
+            case "GuiSelectWorld" -> new net.minecraft.client.gui.screens.worldselection.SelectWorldScreen(parent);
+            case "GuiCreateWorld" -> {
+                net.minecraft.client.gui.screens.worldselection.CreateWorldScreen.openFresh(mc, parent);
+                yield mc.screen;
+            }
+            case "GuiMultiplayer" -> new net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen(parent);
+            case "GuiOptions", "GuiSnooper", "GuiScreenResourcePacks" -> new net.minecraft.client.gui.screens.options.OptionsScreen(parent, mc.options);
+            case "GuiLanguage" -> new net.minecraft.client.gui.screens.options.LanguageSelectScreen(parent, mc.options, mc.getLanguageManager());
+            case "GuiScreenOptionsSounds" -> new net.minecraft.client.gui.screens.options.SoundOptionsScreen(parent, mc.options);
+            case "GuiVideoSettings" -> new net.minecraft.client.gui.screens.options.VideoSettingsScreen(parent, mc, mc.options);
+            case "GuiControls" -> new net.minecraft.client.gui.screens.options.controls.ControlsScreen(parent, mc.options);
+            case "GuiIngameMenu" -> new net.minecraft.client.gui.screens.PauseScreen(true);
+            case "GuiModList" -> new net.neoforged.neoforge.client.gui.ModListScreen(parent);
+            default -> null;
+        };
     }
 
     public static GuiScreen currentLegacyScreen() {
