@@ -10,6 +10,7 @@ public class TextureManager {
 
     public void bindTexture(ResourceLocation location) {
         if (location == null) return; // legacy renderers with an unset texture keep the previous one
+        mcc$flush();
         RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 
@@ -32,8 +33,20 @@ public class TextureManager {
     public boolean loadTexture(ResourceLocation location, ITextureObject texture) {
         if (location == null || !(texture instanceof DynamicTexture dynamic)) return false;
         var modern = TextureLocations.modern(location.getResourceDomain(), location.getResourcePath());
-        net.minecraft.client.Minecraft.getInstance().getTextureManager().register(modern, dynamic.mcc$modern());
+        mcc$pending.put(modern, dynamic);
+        mcc$flush();
         return true;
+    }
+
+    /** Mods create dynamic textures while loading, before the client's texture manager exists: those wait here. */
+    private final java.util.Map<net.minecraft.resources.ResourceLocation, DynamicTexture> mcc$pending = new java.util.LinkedHashMap<>();
+
+    private synchronized void mcc$flush() {
+        if (mcc$pending.isEmpty()) return;
+        var manager = net.minecraft.client.Minecraft.getInstance().getTextureManager();
+        if (manager == null) return;
+        mcc$pending.forEach((id, texture) -> manager.register(id, texture.mcc$modern()));
+        mcc$pending.clear();
     }
 
     public ResourceLocation getDynamicTextureLocation(String name, DynamicTexture texture) {
