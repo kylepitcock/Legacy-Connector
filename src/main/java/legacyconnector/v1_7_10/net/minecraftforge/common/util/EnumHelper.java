@@ -71,7 +71,8 @@ public class EnumHelper {
             all[1] = int.class;
             System.arraycopy(paramTypes, 0, all, 2, paramTypes.length);
             MethodHandles.Lookup lookup = MethodHandles.privateLookupIn(enumType, MethodHandles.lookup());
-            MethodHandle ctor = lookup.findConstructor(enumType, MethodType.methodType(void.class, all));
+            // asFixedArity: an enum constructor ending in a varargs parameter must receive its array as given, not be re-collected
+            MethodHandle ctor = lookup.findConstructor(enumType, MethodType.methodType(void.class, all)).asFixedArity();
             Object[] args = new Object[all.length];
             args[0] = enumName;
             args[1] = previous.length;

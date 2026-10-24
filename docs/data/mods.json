@@ -757,6 +757,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Decocraft",
+   "version": "2.4.2",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Default Configs",
    "version": "1.3.0",
    "mc": "1.7.10",
@@ -976,6 +985,24 @@
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Fisk's Superheroes",
+   "version": "2.4.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "FiskTag",
+   "version": "3.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1334,6 +1361,15 @@
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Hbm's Nuclear Tech",
+   "version": "1.0.27 BETA (5687)",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2262,6 +2298,15 @@
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-23",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "PTRModelLib",
+   "version": "1.0.0",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
