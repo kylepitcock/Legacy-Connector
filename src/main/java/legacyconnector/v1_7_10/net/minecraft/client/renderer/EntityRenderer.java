@@ -22,4 +22,7 @@ public class EntityRenderer {
 
     public void func_78463_b(double partialTicks) {
     }
+
+    public void setupOverlayRendering() {
+    }
 }

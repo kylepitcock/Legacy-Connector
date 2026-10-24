@@ -137,4 +137,47 @@ public class AxisAlignedBB {
     public static AxisAlignedBB mcc$of(AABB box) {
         return new AxisAlignedBB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
+
+    /** How far this box can move along X before it hits {@code other}, given the wanted move (collision resolution). */
+    public double calculateXOffset(AxisAlignedBB other, double dx) {
+        if (other.maxY <= minY || other.minY >= maxY) return dx;
+        if (other.maxZ <= minZ || other.minZ >= maxZ) return dx;
+        if (dx > 0.0D && other.maxX <= minX) {
+            double d = minX - other.maxX;
+            if (d < dx) dx = d;
+        }
+        if (dx < 0.0D && other.minX >= maxX) {
+            double d = maxX - other.minX;
+            if (d > dx) dx = d;
+        }
+        return dx;
+    }
+
+    public double calculateYOffset(AxisAlignedBB other, double dy) {
+        if (other.maxX <= minX || other.minX >= maxX) return dy;
+        if (other.maxZ <= minZ || other.minZ >= maxZ) return dy;
+        if (dy > 0.0D && other.maxY <= minY) {
+            double d = minY - other.maxY;
+            if (d < dy) dy = d;
+        }
+        if (dy < 0.0D && other.minY >= maxY) {
+            double d = maxY - other.minY;
+            if (d > dy) dy = d;
+        }
+        return dy;
+    }
+
+    public double calculateZOffset(AxisAlignedBB other, double dz) {
+        if (other.maxX <= minX || other.minX >= maxX) return dz;
+        if (other.maxY <= minY || other.minY >= maxY) return dz;
+        if (dz > 0.0D && other.maxZ <= minZ) {
+            double d = minZ - other.maxZ;
+            if (d < dz) dz = d;
+        }
+        if (dz < 0.0D && other.minZ >= maxZ) {
+            double d = maxZ - other.minZ;
+            if (d > dz) dz = d;
+        }
+        return dz;
+    }
 }

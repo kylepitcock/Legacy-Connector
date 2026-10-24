@@ -355,4 +355,13 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public void onCriticalHit(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
     }
+
+    /** Drops a stack from the player (the legacy dropPlayerItem): thrown forward, or scattered when {@code scatter}. */
+    public legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem func_146097_a(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, boolean scatter, boolean setThrower) {
+        if (stack == null) return null;
+        var modern = stack.mcc$modern();
+        if (modern.isEmpty()) return null;
+        var dropped = mcc$player().drop(modern, scatter, setThrower);
+        return dropped == null ? null : (legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(dropped);
+    }
 }

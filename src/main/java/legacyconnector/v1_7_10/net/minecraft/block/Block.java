@@ -1028,4 +1028,8 @@ public class Block {
             legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
         return false;
     }
+
+    public boolean isFlowerPot() {
+        return false;
+    }
 }

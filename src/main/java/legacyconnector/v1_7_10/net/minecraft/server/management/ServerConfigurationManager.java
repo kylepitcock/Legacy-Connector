@@ -86,4 +86,18 @@ public class ServerConfigurationManager {
     public MinecraftServer getServerInstance() {
         return mcc$server;
     }
+
+    public void sendPacketToAllPlayers(legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
+        if (packet instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket fml) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.send(fml,
+                    legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.ALL, null);
+        }
+    }
+
+    public void sendPacketToAllPlayersInDimension(legacyconnector.v1_7_10.net.minecraft.network.Packet packet, int dimension) {
+        if (packet instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket fml) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.send(fml,
+                    legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.DIMENSION, dimension);
+        }
+    }
 }

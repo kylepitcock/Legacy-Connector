@@ -15,4 +15,11 @@ public class NetworkManager {
     public java.net.SocketAddress getSocketAddress() {
         return null;
     }
+
+    public io.netty.channel.Channel channel() {
+        return null;
+    }
+
+    public void scheduleOutboundPacket(legacyconnector.v1_7_10.net.minecraft.network.Packet packet, io.netty.util.concurrent.GenericFutureListener... listeners) {
+    }
 }

@@ -26,4 +26,11 @@ public class ForgeHooksClient {
         legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderItem.getInstance().renderItemIntoGUI(null, textures, stack, (int) x, (int) y);
         return true;
     }
+
+    /** Custom item-entity rendering is not available; false makes the caller draw the item normally. */
+    public static boolean renderEntityItem(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem entity, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack,
+            float bobing, float rotation, java.util.Random random, legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures,
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks blocks, int count) {
+        return false;
+    }
 }

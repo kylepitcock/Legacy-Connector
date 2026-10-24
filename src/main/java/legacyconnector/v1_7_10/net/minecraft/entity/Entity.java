@@ -1234,4 +1234,8 @@ public abstract class Entity implements ICommandSender {
         if (mcc$entity == null) return 1.0F;
         return mcc$entity.level().getLightEngine().getRawBrightness(mcc$entity.blockPosition(), 0) / 15.0F;
     }
+
+    public double getYOffset() {
+        return yOffset;
+    }
 }

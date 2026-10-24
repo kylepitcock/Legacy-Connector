@@ -60,4 +60,8 @@ public class EntityVillager extends EntityAgeable {
     public EntityAgeable createChild(EntityAgeable mate) {
         return null;
     }
+
+    public boolean isMating() {
+        return false;
+    }
 }

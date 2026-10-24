@@ -48,4 +48,20 @@ public class MobSpawnerBaseLogic {
         }
         return null;
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.World getSpawnerWorld() {
+        return null;
+    }
+
+    public int getSpawnerX() {
+        return 0;
+    }
+
+    public int getSpawnerY() {
+        return 0;
+    }
+
+    public int getSpawnerZ() {
+        return 0;
+    }
 }

@@ -23,4 +23,8 @@ public class BlockCocoa extends BlockDirectional implements IGrowable {
     @Override
     public void fertilize(legacyconnector.v1_7_10.net.minecraft.world.World world, java.util.Random random, int x, int y, int z) {
     }
+
+    public static int func_149987_c(int meta) {
+        return (meta & 12) >> 2;
+    }
 }

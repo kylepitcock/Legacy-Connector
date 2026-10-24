@@ -27,4 +27,8 @@ public abstract class AbstractClientPlayer extends EntityPlayer {
     public static legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation getLocationSkin(String username) {
         return new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation("textures/entity/steve.png");
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation getLocationCape() {
+        return null;
+    }
 }

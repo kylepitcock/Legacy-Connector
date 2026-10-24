@@ -72,4 +72,8 @@ public class SoundHandler {
             if (legacy.isDonePlaying()) stop();
         }
     }
+
+    public boolean isSoundPlaying(ISound sound) {
+        return false;
+    }
 }

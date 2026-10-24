@@ -465,4 +465,8 @@ public final class ItemStack {
             legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
         if (mcc$item != null) mcc$item.onBlockDestroyed(this, world, block, x, y, z, player);
     }
+
+    public boolean isOnItemFrame() {
+        return false;
+    }
 }

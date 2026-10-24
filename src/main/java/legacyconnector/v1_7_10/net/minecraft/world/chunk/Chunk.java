@@ -296,4 +296,8 @@ public class Chunk {
     public boolean setBlockIDWithMetadata(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block, int meta) {
         return worldObj.setBlock(wx(x), y, wz(z), block, meta, 2);
     }
+
+    public void setBlockTileEntityInChunk(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
+        worldObj.setTileEntity(wx(x), y, wz(z), tile);
+    }
 }

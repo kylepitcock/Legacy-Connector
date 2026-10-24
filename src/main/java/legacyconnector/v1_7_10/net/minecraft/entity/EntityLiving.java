@@ -382,4 +382,8 @@ public abstract class EntityLiving extends EntityLivingBase {
     static EquipmentSlot mcc$equipmentSlot(int legacy) {
         return mcc$slot(legacy);
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.item.ItemStack func_130225_q(int armorSlot) {
+        return getEquipmentInSlot(armorSlot + 1);
+    }
 }

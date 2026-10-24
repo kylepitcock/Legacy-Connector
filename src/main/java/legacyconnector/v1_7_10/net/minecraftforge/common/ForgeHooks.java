@@ -72,4 +72,14 @@ public class ForgeHooks {
         if (block.getMaterial().isToolNotRequired()) return true;
         return stack != null && stack.getItem() != null && stack.getItem().canHarvestBlock(block, stack);
     }
+
+    /** Fires the break event for a block a player is breaking: -1 when a handler cancelled it, else the experience to drop. */
+    public static int onBlockBreakEvent(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player, int x, int y, int z) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block block = world.getBlock(x, y, z);
+        legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent(
+                x, y, z, world, block, world.getBlockMetadata(x, y, z), player);
+        if (MinecraftForge.EVENT_BUS.post(event)) return -1;
+        return event.getExpToDrop();
+    }
 }

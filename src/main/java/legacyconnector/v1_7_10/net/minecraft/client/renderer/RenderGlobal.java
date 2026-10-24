@@ -18,4 +18,8 @@ public class RenderGlobal {
         var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
         if (renderer != null) renderer.setBlocksDirty(x1, y1, z1, x2, y2, z2);
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.particle.EntityFX doSpawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
+        return null;
+    }
 }
