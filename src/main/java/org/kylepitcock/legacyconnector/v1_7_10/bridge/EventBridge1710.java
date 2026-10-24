@@ -251,6 +251,40 @@ public final class EventBridge1710 {
                 e.setMaterialCost(legacy.materialCost);
             }
         });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Load(new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk())));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Unload.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Unload(new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk())));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Load e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Load(
+                    new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
+                    new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save(
+                    new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
+                    new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn(
+                    (EntityLivingBase) EntityBridge.wrap(e.getEntity()), World.mcc$wrap(e.getLevel()), (float) e.getX(), (float) e.getY(), (float) e.getZ());
+            forge().post(legacy);
+            if (legacy.getResult() == Event.Result.ALLOW) e.setResult(net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck.Result.SUCCEED);
+            else if (legacy.getResult() == Event.Result.DENY) e.setResult(net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck.Result.FAIL);
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.ComputeFovModifierEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.FOVUpdateEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.client.event.FOVUpdateEvent(player(e.getPlayer()), e.getFovModifier());
+            forge().post(legacy);
+            e.setNewFovModifier(legacy.newfov);
+        });
         gameBus.addListener((LevelEvent.Load e) -> worldEvent(e.getLevel(), WorldEvent.Load::new));
         gameBus.addListener((LevelEvent.Unload e) -> worldEvent(e.getLevel(), WorldEvent.Unload::new));
         gameBus.addListener((LevelEvent.Save e) -> worldEvent(e.getLevel(), WorldEvent.Save::new));
