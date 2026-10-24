@@ -119,7 +119,9 @@ public final class TileEntityBridge {
 
     private static TileEntity view(net.minecraft.world.level.block.entity.BlockEntity be) {
         TileEntity view = null;
-        if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
+        if (be instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner(spawner);
+        } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest(chest);
         } else if (be instanceof net.minecraft.world.Container c) {
             view = new VanillaInventoryTile(c);

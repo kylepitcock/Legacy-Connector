@@ -275,11 +275,26 @@ public class World implements IBlockAccess {
                 // Neighbours may still be missing; the game fixes the shape when the chunk is finished, as for structures.
                 boolean placed = region.setBlock(p, state, flags);
                 if (placed) region.getChunk(p).markPosForPostprocessing(p);
+                ensureGeneratedBlockEntity(region, p, state);
                 return placed;
             }
             state = net.minecraft.world.level.block.Block.updateFromNeighbourShapes(state, lvl(), p);
         }
-        return lvl().setBlock(p, state, flags);
+        boolean placed = lvl().setBlock(p, state, flags);
+        if (placed && lvl() instanceof net.minecraft.server.level.WorldGenRegion region) ensureGeneratedBlockEntity(region, p, state);
+        return placed;
+    }
+
+    /**
+     * While a chunk is generated the game only records a stub for a placed block entity (it is created when the chunk is finished),
+     * but legacy generators fetch the tile entity right after placing the block to fill it (chest loot, spawner mob).
+     */
+    private static void ensureGeneratedBlockEntity(net.minecraft.server.level.WorldGenRegion region, BlockPos p, BlockState state) {
+        if (!state.hasBlockEntity() || !(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock entityBlock)) return;
+        var chunk = region.getChunk(p);
+        if (chunk.getBlockEntity(p) != null) return;
+        var be = entityBlock.newBlockEntity(p, state);
+        if (be != null) chunk.setBlockEntity(be);
     }
 
     /**

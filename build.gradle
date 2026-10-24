@@ -214,6 +214,10 @@ tasks.withType(JavaCompile).configureEach {
 // Distribution: ONE jar for players. It is the loader (an FML service, picked up from the mods folder) with
 // the runtime mod embedded; the loader extracts and registers the runtime mod at discovery time.
 // ---------------------------------------------------------------------------------------------------------
+// The plain runtime jar is only an input of the bundle: dropped into a mods folder alone it has no loader, so NeoForge rejects every
+// legacy mod as built for an old Minecraft. A distinct classifier keeps it from being mistaken for the distributable.
+tasks.named('jar') { archiveClassifier = 'runtime-only' }
+
 tasks.register('bundleJar', Jar) {
     group = 'build'
     description = 'Builds the single distributable jar (loader service + embedded runtime mod).'

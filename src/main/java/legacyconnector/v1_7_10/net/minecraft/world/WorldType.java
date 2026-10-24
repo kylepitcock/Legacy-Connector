@@ -22,7 +22,7 @@ public class WorldType {
 
     /** The terrain generator of worlds of this type (Forge: vanilla's overworld generator unless a mod type overrides it). */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider getChunkGenerator(World world, String generatorOptions) {
-        return new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderDefault(world, world.getSeed());
+        return new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderGenerate(world, world.getSeed(), true);
     }
 
     /** Modern id of the legacy mod that registered this world type (null for vanilla types). */

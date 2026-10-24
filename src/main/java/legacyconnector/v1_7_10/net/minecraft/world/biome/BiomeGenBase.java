@@ -183,6 +183,67 @@ public class BiomeGenBase {
         return y > 64 ? temperature - (y - 64) * 0.05F / 30.0F : temperature;
     }
 
+    /** Vanilla's surface pass for one column of freshly generated terrain (mods override it for their own layering). */
+    public void genTerrainBlocks(World world, Random rand, Block[] blocks, byte[] meta, int x, int z, double noise) {
+        genBiomeTerrain(world, rand, blocks, meta, x, z, noise);
+    }
+
+    public final void genBiomeTerrain(World world, Random rand, Block[] blocks, byte[] meta, int x, int z, double noise) {
+        Block top = this.topBlock;
+        byte topMeta = (byte) (this.field_150604_aj & 255);
+        Block filler = this.fillerBlock;
+        int depth = -1;
+        int layer = (int) (noise / 3.0D + 3.0D + rand.nextDouble() * 0.25D);
+        int cx = x & 15;
+        int cz = z & 15;
+        int height = blocks.length / 256;
+        for (int y = height - 1; y >= 0; --y) {
+            int i = (cz * 16 + cx) * height + y;
+            if (y <= rand.nextInt(5)) {
+                blocks[i] = Blocks.bedrock;
+                continue;
+            }
+            Block b = blocks[i];
+            if (b == null || b == Blocks.air) {
+                depth = -1;
+            } else if (b == Blocks.stone) {
+                if (depth == -1) {
+                    if (layer <= 0) {
+                        top = null;
+                        topMeta = 0;
+                        filler = Blocks.stone;
+                    } else if (y >= 59 && y <= 64) {
+                        top = this.topBlock;
+                        topMeta = (byte) (this.field_150604_aj & 255);
+                        filler = this.fillerBlock;
+                    }
+                    if (y < 63 && (top == null || top == Blocks.air)) {
+                        top = getFloatTemperature(x, y, z) < 0.15F ? Blocks.ice : Blocks.water;
+                        topMeta = 0;
+                    }
+                    depth = layer;
+                    if (y >= 62) {
+                        blocks[i] = top;
+                        meta[i] = topMeta;
+                    } else if (y < 56 - layer) {
+                        top = null;
+                        filler = Blocks.stone;
+                        blocks[i] = Blocks.gravel;
+                    } else {
+                        blocks[i] = filler;
+                    }
+                } else if (depth > 0) {
+                    --depth;
+                    blocks[i] = filler;
+                    if (depth == 0 && filler == Blocks.sand) {
+                        depth = rand.nextInt(4) + Math.max(0, y - 63);
+                        filler = Blocks.sandstone;
+                    }
+                }
+            }
+        }
+    }
+
     public void decorate(World world, Random rand, int chunkX, int chunkZ) {
         theBiomeDecorator.decorateChunk(world, rand, this, chunkX, chunkZ);
     }
@@ -214,7 +275,9 @@ public class BiomeGenBase {
     }
 
     public int getSkyColorByTemp(float temp) {
-        return 0x78A7FF;
+        temp /= 3.0F;
+        temp = Math.max(-1.0F, Math.min(1.0F, temp));
+        return java.awt.Color.HSBtoRGB(0.62222224F - temp * 0.05F, 0.5F + temp * 0.1F, 1.0F) & 0xFFFFFF;
     }
 
     public boolean isEqualTo(BiomeGenBase other) {

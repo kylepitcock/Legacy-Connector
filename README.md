@@ -271,8 +271,9 @@ At runtime, `LegacyConnector/Stubs` log lines show which synthesized APIs are ac
 Requires JDK 21.
 
 ```sh
-./gradlew build                 # runtime mod + loader
-./gradlew bundleJar             # single distributable jar
+./gradlew build                 # runtime mod + loader (also builds the distributable jar)
+./gradlew bundleJar             # single distributable jar: build/dist/legacyconnector-<ver>.jar, the ONLY jar for a mods folder
+                                # (build/libs/*-runtime-only.jar has no loader: every legacy mod is then rejected as built for an old Minecraft)
 ./gradlew runClient             # dev client, mods from run/mods
 ./gradlew runServerTest         # headless smoke test with run-servertest/mods; the fixture mod self-tests and stops
 LEVELTYPE=biomesoplenty:biomesop tools/dev/run-subset.sh biomesoplenty   # same, in a mod's world type

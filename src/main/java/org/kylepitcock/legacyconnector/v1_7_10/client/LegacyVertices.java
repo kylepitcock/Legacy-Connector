@@ -94,7 +94,8 @@ public final class LegacyVertices {
     public void vertex(double x, double y, double z) {
         if (!drawing) return;
         int color = hasColor ? argb : RenderContext.argb();
-        vertices.add(new double[] {x + tx, y + ty, z + tz, u, v, color & 0xFFFFFFFFL, light >= 0 ? light : RenderContext.vertexLight()});
+        // [7]: the vertex carries its own colour; otherwise it takes the colour current when the geometry is emitted (display lists replay later)
+        vertices.add(new double[] {x + tx, y + ty, z + tz, u, v, color & 0xFFFFFFFFL, light >= 0 ? light : RenderContext.vertexLight(), hasColor ? 1.0D : 0.0D});
     }
 
     /** A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). */
@@ -118,6 +119,15 @@ public final class LegacyVertices {
     public static void emit(Snapshot s) {
         List<double[]> vertices = s.vertices();
         int n = vertices.size();
+        long current = RenderContext.argb() & 0xFFFFFFFFL;
+        for (int i = 0; i < n; i++) {
+            double[] v = vertices.get(i);
+            if (v.length > 7 && v[7] == 0.0D && (long) v[5] != current) {
+                v = v.clone();
+                v[5] = current;
+                vertices.set(i, v);
+            }
+        }
         switch (s.mode()) {
             case GL_QUADS -> {
                 for (int i = 0; i + 3 < n; i += 4) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
