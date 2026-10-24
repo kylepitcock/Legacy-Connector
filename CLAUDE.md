@@ -51,4 +51,4 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 Pre-1.0 versioning: bump the PATCH for every release (0.0.1, 0.0.2, ...); bump the MINOR only for a milestone (a new legacy
 version supported); 1.0.0 is reserved for when the project is ready. Steps: set `mod_version` in `gradle.properties`
 BEFORE building and committing, `./gradlew bundleJar`, copy `build/dist/legacyconnector-<ver>*.jar` to
-`legacyconnector-<ver>.jar`, `gh release create v<ver> <jar> --prerelease` with release notes. License: MIT.
+`legacyconnector-<ver>.jar`, `gh release create v<ver> <jar>` with release notes. License: MIT.
