@@ -49,6 +49,22 @@ public final class CreativeTabBridge {
         }
     }
 
+    /** One line per mod-created tab: how many stacks it lists (the creative screen shows exactly these). */
+    public static synchronized String mcc$selfTest() {
+        StringBuilder sb = new StringBuilder();
+        for (CreativeTabs tab : CUSTOM) {
+            int n;
+            try {
+                n = contents(tab).size();
+            } catch (RuntimeException | LinkageError e) {
+                sb.append("\n  ").append(tab.getTabLabel()).append(": threw ").append(e);
+                continue;
+            }
+            sb.append("\n  ").append(tab.getTabLabel()).append(": ").append(n).append(" stacks, owner ").append(OWNER.get(tab));
+        }
+        return sb.toString();
+    }
+
     /** The legacy icon, or the tab's first item if the legacy code throws or has none. Called every frame. */
     private static net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {
         try {

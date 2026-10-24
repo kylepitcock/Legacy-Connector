@@ -51,9 +51,15 @@ public final class BlockBridge {
 
     private BlockBridge() {}
 
+    /** The registered objects, copied under the registry lock: other threads register items while a tab or JEI iterates. */
+    private static synchronized List<Object> snapshot() {
+        return new ArrayList<Object>(BY_NAME.values());
+    }
+
+
     public static RegistryNamespaced legacyRegistry() {
         return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Block>(name -> byName(name), o -> nameOf((Block) o), BlockBridge::byId, o -> idOf((Block) o),
-                () -> new ArrayList<Object>(BY_NAME.values()).iterator());
+                () -> snapshot().iterator());
     }
 
     public static List<Block> modBlocks() {

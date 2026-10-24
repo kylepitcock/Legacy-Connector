@@ -207,6 +207,7 @@ public final class BlockSelfTest {
         StringBuilder ib = new StringBuilder();
         itemProblems.forEach((k, v) -> ib.append("\n  ").append(k).append(": ").append(v));
         LOG.info("ITEM SELF TEST: {} items with problems{}", itemProblems.size(), ib);
+        LOG.info("TAB SELF TEST:{}", org.kylepitcock.legacyconnector.v1_7_10.bridge.CreativeTabBridge.mcc$selfTest());
     }
 
     /** Names, tooltips and right clicks (in the air and on the ground) of every legacy item. */

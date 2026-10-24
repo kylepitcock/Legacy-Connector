@@ -53,8 +53,18 @@ public final class LegacyDimensions {
         if (server == null) return null;
         var level = server.getLevel(levelKey(dimension));
         if (level == null) return null;
-        return legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level));
+        if (BROKEN.contains(dimension)) return null;
+        try {
+            return legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level));
+        } catch (RuntimeException | LinkageError e) {
+            // A mod's provider that cannot be built here (Mystcraft's needs the age data of a real age) must not take the
+            // server down: the dimension generates with the fallback provider's defaults.
+            if (BROKEN.add(dimension)) LOG.error("The world provider of dimension {} cannot be created; using defaults", dimension, e);
+            return null;
+        }
     }
+
+    private static final java.util.Set<Integer> BROKEN = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** The provider object of a level: the mod's class for mod dimensions, the shim's plain one otherwise. */
     public static WorldProvider newProvider(Level level) {

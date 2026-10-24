@@ -65,9 +65,15 @@ public final class ItemBridge {
 
     private ItemBridge() {}
 
+    /** The registered objects, copied under the registry lock: other threads register items while a tab or JEI iterates. */
+    private static synchronized List<Object> snapshot() {
+        return new ArrayList<Object>(BY_NAME.values());
+    }
+
+
     public static RegistryNamespaced legacyRegistry() {
         return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
-                () -> new ArrayList<Object>(BY_NAME.values()).iterator());
+                () -> snapshot().iterator());
     }
 
     public static List<Item> modItems() {
