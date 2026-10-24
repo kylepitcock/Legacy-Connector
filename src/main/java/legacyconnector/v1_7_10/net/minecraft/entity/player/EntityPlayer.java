@@ -276,8 +276,34 @@ public abstract class EntityPlayer extends EntityLivingBase {
         addStat(stat, 1);
     }
 
-    /** Counts are not tracked yet (modern statistics are not driven by legacy stats). */
+    private static final String ACHIEVEMENTS_TAG = "legacyconnector_achievements";
+
+    /** Achievements earned are remembered in the player's persistent data; counts of other stats are not tracked. */
+    public boolean hasAchievementUnlocked(legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement) {
+        var data = mcc$player().getPersistentData();
+        if (!data.contains(ACHIEVEMENTS_TAG, 9)) return false;
+        for (var tag : data.getList(ACHIEVEMENTS_TAG, 8)) if (tag.getAsString().equals(achievement.statId)) return true;
+        return false;
+    }
+
     public void addStat(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat, int amount) {
+        if (!(stat instanceof legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement)) return;
+        // an achievement needs its parent first, and is only earned once
+        if (achievement.parentAchievement != null && !hasAchievementUnlocked(achievement.parentAchievement)) return;
+        if (hasAchievementUnlocked(achievement)) return;
+        var data = mcc$player().getPersistentData();
+        var list = data.getList(ACHIEVEMENTS_TAG, 8);
+        list.add(net.minecraft.nbt.StringTag.valueOf(achievement.statId));
+        data.put(ACHIEVEMENTS_TAG, list);
+        String name = achievement.getStatName().getFormattedText();
+        if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && sp.getServer() != null && sp.getServer().isSingleplayer()
+                    || net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && org.kylepitcock.legacyconnector.v1_7_10.client.LegacyToasts.isLocal(sp.getUUID())) {
+                org.kylepitcock.legacyconnector.v1_7_10.client.LegacyToasts.achievement(name);
+            } else {
+                sp.sendSystemMessage(net.minecraft.network.chat.Component.literal("Achievement get! " + name));
+            }
+        }
     }
 
     public float getDefaultEyeHeight() {
