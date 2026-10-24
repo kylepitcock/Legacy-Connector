@@ -5,6 +5,10 @@ plugins {
 // Fixture mods that imitate real legacy Forge mods. They are compiled with Java 8 against the generated legacy API
 // stubs (see :legacyApiStubs1_7_10), then reobfuscated to SRG names exactly like ForgeGradle released them.
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Helper tools read class files built for 21: run them on a 21 JVM even when the IDE starts Gradle on an older JDK.
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
 
 sourceSets {
     legacy1710

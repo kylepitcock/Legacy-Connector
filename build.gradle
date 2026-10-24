@@ -28,6 +28,10 @@ base {
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+// Helper tools read class files built for 21: run them on a 21 JVM even when the IDE starts Gradle on an older JDK.
+tasks.withType(JavaExec).configureEach {
+    javaLauncher = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }
+}
 
 def shimIndexFile = layout.buildDirectory.file('generated/shimIndex/legacyconnector/shim-index.txt')
 
@@ -276,6 +280,7 @@ tasks.named('compileJava', JavaCompile) {
     def loaderClasspath = project(':loader').sourceSets.main.runtimeClasspath
     doLast {
         project.javaexec {
+            executable = javaToolchains.launcherFor { languageVersion = JavaLanguageVersion.of(21) }.get().executablePath.asFile.absolutePath
             classpath = loaderClasspath
             mainClass = 'org.kylepitcock.legacyconnector.loader.shim.ShimAccessWidener'
             args destinationDirectory.get().asFile.absolutePath
