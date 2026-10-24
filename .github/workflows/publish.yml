@@ -53,7 +53,7 @@ jobs:
           files: build/dist/legacyconnector-*.jar
           name: Legacy Connector ${{ steps.ver.outputs.version }}
           version: ${{ steps.ver.outputs.version }}
-          version-type: alpha
+          version-type: beta
           loaders: neoforge
           game-versions: 1.21.1
           java: 21
