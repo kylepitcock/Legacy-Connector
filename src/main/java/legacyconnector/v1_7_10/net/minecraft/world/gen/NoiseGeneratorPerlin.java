@@ -3,7 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.world.gen;
 import java.util.Random;
 
 /** Octaves of simplex noise (vanilla's "Perlin" generator, used by biome terrain and swamp colouring). */
-public class NoiseGeneratorPerlin {
+public class NoiseGeneratorPerlin extends NoiseGenerator {
     private final NoiseGeneratorSimplex[] octaves;
     private final int levels;
 

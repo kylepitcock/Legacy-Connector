@@ -3,7 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.world.gen;
 import java.util.Random;
 
 /** Improved Perlin noise exactly as 1.7.10 computed it (terrain generators depend on its precise values). */
-public class NoiseGeneratorImproved {
+public class NoiseGeneratorImproved extends NoiseGenerator {
     private final int[] permutations = new int[512];
     public double xCoord;
     public double yCoord;

@@ -3,7 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.world.gen;
 import java.util.Random;
 
 /** Several octaves of improved noise (vanilla terrain, biome and surface noise). */
-public class NoiseGeneratorOctaves {
+public class NoiseGeneratorOctaves extends NoiseGenerator {
     private final NoiseGeneratorImproved[] generators;
     private final int octaves;
 

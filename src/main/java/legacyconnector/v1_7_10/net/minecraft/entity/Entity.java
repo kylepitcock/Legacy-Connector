@@ -261,7 +261,7 @@ public abstract class Entity implements ICommandSender {
         String id = identifier;
         for (int i = 1; mcc$extended.containsKey(id); i++) id = identifier + i;
         mcc$extended.put(id, properties);
-        properties.init(this, mcc$world);
+        properties.init(this, mcc$get$worldObj(this));
         return id;
     }
 
