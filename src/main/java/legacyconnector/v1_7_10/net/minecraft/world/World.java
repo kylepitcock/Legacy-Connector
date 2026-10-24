@@ -141,6 +141,21 @@ public class World implements IBlockAccess {
         return mcc$level;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$villageCollectionObj}. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.village.VillageCollection villageCollectionObj;
+
+    private legacyconnector.v1_7_10.net.minecraft.village.VillageCollection mcc$villages;
+
+    public static legacyconnector.v1_7_10.net.minecraft.village.VillageCollection mcc$get$villageCollectionObj(World w) {
+        if (w.mcc$villages == null) w.mcc$villages = new legacyconnector.v1_7_10.net.minecraft.village.VillageCollection();
+        return w.mcc$villages;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.village.VillageCollection getVillageCollection() {
+        return mcc$get$villageCollectionObj(this);
+    }
+
     public static WorldProvider mcc$get$provider(World w) {
         WorldProvider p = w.mcc$provider;
         if (p != null) return p;
