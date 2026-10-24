@@ -30,12 +30,12 @@ public class BehaviorDefaultDispenseItem implements IBehaviorDispenseItem {
         double z = position.getZ();
         EntityItem item = new EntityItem(world, x, y - 0.3D, z, stack);
         double power = world.rand.nextDouble() * 0.1D + 0.2D;
-        mcc$set$motionX(item, facing.getFrontOffsetX() * power);
-        mcc$set$motionY(item, 0.20000000298023224D);
-        mcc$set$motionZ(item, facing.getFrontOffsetZ() * power);
-        mcc$set$motionX(item, mcc$get$motionX(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
-        mcc$set$motionY(item, mcc$get$motionY(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
-        mcc$set$motionZ(item, mcc$get$motionZ(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionX(item, facing.getFrontOffsetX() * power);
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionY(item, 0.20000000298023224D);
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionZ(item, facing.getFrontOffsetZ() * power);
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionX(item, legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$motionX(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionY(item, legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$motionY(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$set$motionZ(item, legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$motionZ(item) + (world.rand.nextGaussian() * 0.007499999832361937D * speed));
         world.spawnEntityInWorld(item);
     }
 
