@@ -79,7 +79,8 @@ public final class LegacyVillages {
             List<StructureComponent> planned = plan(start, box, rand, desert, world.getBiomeGenForCoords((box.minX() + box.maxX()) / 2, (box.minZ() + box.maxZ()) / 2), handlers);
             Random buildRand = new Random(seed ^ ((long) chunkX * 3418731287L + (long) chunkZ * 1328979875L));
             for (StructureComponent component : planned) {
-                if (!component.getBoundingBox().intersectsWith(chunkBox)) continue;
+                // a mod's component that never set its box (its constructor failed or was cancelled) has nothing to build
+                if (component == null || component.getBoundingBox() == null || !component.getBoundingBox().intersectsWith(chunkBox)) continue;
                 try {
                     component.addComponentParts(world, buildRand, chunkBox);
                 } catch (RuntimeException | LinkageError e) {

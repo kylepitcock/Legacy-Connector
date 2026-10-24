@@ -220,9 +220,13 @@ public class DamageSource {
 
     private legacyconnector.v1_7_10.net.minecraft.world.Explosion explosionSource;
 
-    public DamageSource setExplosionSource(legacyconnector.v1_7_10.net.minecraft.world.Explosion source) {
-        explosionSource = source;
-        return setExplosion();
+    /** 1.7.10's explosion damage: attributed to whoever placed the explosion (when known), scaled by difficulty. */
+    public static DamageSource setExplosionSource(legacyconnector.v1_7_10.net.minecraft.world.Explosion source) {
+        DamageSource out = source != null && source.getExplosivePlacedBy() != null
+                ? new EntityDamageSource("explosion.player", source.getExplosivePlacedBy())
+                : new DamageSource("explosion");
+        out.explosionSource = source;
+        return out.setDifficultyScaled().setExplosion();
     }
 
     public legacyconnector.v1_7_10.net.minecraft.world.Explosion mcc$explosionSource() {
