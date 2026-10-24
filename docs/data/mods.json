@@ -2167,6 +2167,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "OreSpawn",
+   "version": "1.7.10.20.3",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
    "name": "Overloaded Armor Bar",
    "version": "1.1.0",
    "mc": "1.7.10",
