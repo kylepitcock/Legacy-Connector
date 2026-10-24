@@ -16,6 +16,11 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge;
 
 public abstract class EntityPlayer extends EntityLivingBase {
+    /** The outcome of trying to sleep in a bed. */
+    public enum EnumStatus {
+        OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE
+    }
+
     public final InventoryPlayer inventory;
     public final PlayerCapabilities capabilities;
     /** Phantom: the legacy container behind the open menu (null for modern menus). */

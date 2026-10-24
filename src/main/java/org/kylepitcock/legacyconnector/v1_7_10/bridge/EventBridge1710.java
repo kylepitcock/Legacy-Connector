@@ -458,9 +458,31 @@ public final class EventBridge1710 {
         }
     }
 
+    /** The legacy RenderLivingEvent for an entity about to be drawn, or null when nothing listens or the entity has no legacy view. */
+    private static legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent livingRenderEvent(net.minecraft.world.entity.LivingEntity entity, boolean pre) {
+        boolean wanted = wants(forge(), pre ? legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre.class
+                : legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post.class);
+        if (!wanted) return null;
+        if (!(EntityBridge.wrap(entity) instanceof EntityLivingBase living)) return null;
+        var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        double x = entity.getX() - camera.x;
+        double y = entity.getY() - camera.y;
+        double z = entity.getZ() - camera.z;
+        return pre ? new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre(living, null, x, y, z)
+                : new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post(living, null, x, y, z);
+    }
+
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
+        gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
+            var legacy = livingRenderEvent(e.getEntity(), true);
+            if (legacy != null && forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) -> {
+            var legacy = livingRenderEvent(e.getEntity(), false);
+            if (legacy != null) forge().post(legacy);
+        });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {
             if (wants(fml(), TickEvent.ClientTickEvent.class)) fml().post(new TickEvent.ClientTickEvent(TickEvent.Phase.START));
         });

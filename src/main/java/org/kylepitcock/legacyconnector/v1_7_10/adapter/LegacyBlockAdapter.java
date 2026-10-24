@@ -256,20 +256,42 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block neighbor, BlockPos from, boolean moving) {
-        legacy.onNeighborBlockChange(world(level), pos.getX(), pos.getY(), pos.getZ(), BlockBridge.legacyBlock(neighbor.defaultBlockState()));
+        try {
+            legacy.onNeighborBlockChange(world(level), pos.getX(), pos.getY(), pos.getZ(), BlockBridge.legacyBlock(neighbor.defaultBlockState()));
+        } catch (RuntimeException | LinkageError e) {
+            legacyFailure("onNeighborBlockChange", e);
+        }
     }
 
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         World w = world(level);
-        legacy.updateTick(w, pos.getX(), pos.getY(), pos.getZ(), w.rand);
+        try {
+            legacy.updateTick(w, pos.getX(), pos.getY(), pos.getZ(), w.rand);
+        } catch (RuntimeException | LinkageError e) {
+            legacyFailure("updateTick", e);
+        }
     }
 
     @Override
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         World w = world(level);
-        legacy.updateTick(w, pos.getX(), pos.getY(), pos.getZ(), w.rand);
+        try {
+            legacy.updateTick(w, pos.getX(), pos.getY(), pos.getZ(), w.rand);
+        } catch (RuntimeException | LinkageError e) {
+            legacyFailure("updateTick", e);
+        }
     }
+
+    /** Legacy block code throwing in a world callback must not crash the server; log it, a few times per block. */
+    private void legacyFailure(String callback, Throwable e) {
+        if (failures++ < 3) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").error("{} of {} threw; the call is skipped{}", callback, legacy,
+                    failures == 3 ? " (further failures of this block are not logged)" : "", e);
+        }
+    }
+
+    private int failures;
 
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
