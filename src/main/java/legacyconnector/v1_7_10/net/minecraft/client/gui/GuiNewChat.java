@@ -7,7 +7,13 @@ import net.minecraft.network.chat.Component;
 public class GuiNewChat extends Gui {
     public void printChatMessage(IChatComponent message) {
         if (message == null) return;
-        net.minecraft.client.Minecraft.getInstance().gui.getChat().addMessage(Component.literal(message.getFormattedText()));
+        var gui = net.minecraft.client.Minecraft.getInstance().gui;
+        if (gui == null) {
+            // mods report problems while loading, before the HUD exists
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Chat").info("[chat] {}", message.getUnformattedText());
+            return;
+        }
+        gui.getChat().addMessage(Component.literal(message.getFormattedText()));
     }
 
     public void printChatMessageWithOptionalDeletion(IChatComponent message, int id) {
@@ -15,7 +21,8 @@ public class GuiNewChat extends Gui {
     }
 
     public void clearChatMessages() {
-        net.minecraft.client.Minecraft.getInstance().gui.getChat().clearMessages(false);
+        var gui = net.minecraft.client.Minecraft.getInstance().gui;
+        if (gui != null) gui.getChat().clearMessages(false);
     }
 
     public boolean getChatOpen() {

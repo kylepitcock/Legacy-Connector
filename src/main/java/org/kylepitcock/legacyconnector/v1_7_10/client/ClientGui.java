@@ -80,8 +80,12 @@ public final class ClientGui {
         var s = Minecraft.getInstance().screen;
         if (s instanceof LegacyScreen ls) return ls.legacy();
         if (s instanceof LegacyContainerScreen cs) return cs.legacy();
-        return null;
+        // Any other open screen (chat, pause, a modern mod's): legacy code only asks whether one is open, e.g. to stop
+        // reacting to hotkeys while the player types.
+        return s == null ? null : FOREIGN_SCREEN;
     }
+
+    private static final GuiScreen FOREIGN_SCREEN = new GuiScreen();
 
     public static void showClientOnly(IGuiHandler handler, EntityPlayer player, int id, World world, int x, int y, int z) {
         Object gui = handler.getClientGuiElement(id, player, world, x, y, z);

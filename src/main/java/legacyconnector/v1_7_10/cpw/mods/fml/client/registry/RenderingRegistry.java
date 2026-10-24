@@ -7,8 +7,11 @@ import legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManage
 
 /** Legacy renderer registration: entity renderers (drawn by the entity bridge) and block render handlers. */
 public class RenderingRegistry {
-    private static final RenderingRegistry INSTANCE = new RenderingRegistry();
     private static final Map<Integer, ISimpleBlockRenderingHandler> BLOCK_HANDLERS = new ConcurrentHashMap<>();
+    private static final RenderingRegistry INSTANCE = new RenderingRegistry();
+
+    /** Forge's private field of this name, read reflectively (JABBA). */
+    private final Map<Integer, ISimpleBlockRenderingHandler> blockRenderers = BLOCK_HANDLERS;
     private static int nextRenderId = 42;
 
     public static RenderingRegistry instance() {
