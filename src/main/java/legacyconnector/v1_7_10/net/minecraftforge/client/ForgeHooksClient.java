@@ -17,4 +17,13 @@ public class ForgeHooksClient {
     public static int getWorldRenderPass() {
         return worldRenderPass;
     }
+
+    /** Draws the stack as a GUI icon through the item's modern model; true when drawn. */
+    public static boolean renderInventoryItem(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks blocks,
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures,
+            legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, boolean inColor, float zLevel, float x, float y) {
+        if (stack == null || stack.getItem() == null) return false;
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderItem.getInstance().renderItemIntoGUI(null, textures, stack, (int) x, (int) y);
+        return true;
+    }
 }

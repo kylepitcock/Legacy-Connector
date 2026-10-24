@@ -25,4 +25,20 @@ public class TextureManager {
     public ResourceLocation getResourceLocation(int spriteIndex) {
         return new ResourceLocation(spriteIndex == 0 ? "textures/atlas/blocks.png" : "textures/atlas/items.png");
     }
+
+    private int mcc$dynamicCount;
+
+    /** Registers a dynamic texture under a location so legacy code can bind it; other texture objects are not tracked. */
+    public boolean loadTexture(ResourceLocation location, ITextureObject texture) {
+        if (location == null || !(texture instanceof DynamicTexture dynamic)) return false;
+        var modern = TextureLocations.modern(location.getResourceDomain(), location.getResourcePath());
+        net.minecraft.client.Minecraft.getInstance().getTextureManager().register(modern, dynamic.mcc$modern());
+        return true;
+    }
+
+    public ResourceLocation getDynamicTextureLocation(String name, DynamicTexture texture) {
+        ResourceLocation location = new ResourceLocation("legacyconnector", "dynamic/" + name.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_.-]", "_") + mcc$dynamicCount++);
+        loadTexture(location, texture);
+        return location;
+    }
 }
