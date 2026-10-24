@@ -20,6 +20,20 @@ import net.minecraft.world.entity.Mob;
  * host keeps (target, name tag, persistence, equipment drop chances, leash).
  */
 public abstract class EntityLiving extends EntityLivingBase {
+    /** The inventory slot (1 boots .. 4 helmet) an item wears in; 0 when it is not armor. */
+    public static int getArmorPosition(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        if (stack != null && stack.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemArmor armor) {
+            return switch (armor.armorType) {
+                case 0 -> 4;
+                case 1 -> 3;
+                case 2 -> 2;
+                case 3 -> 1;
+                default -> 0;
+            };
+        }
+        return 0;
+    }
+
     public int livingSoundTime;
     protected int experienceValue;
     protected EntityLookHelper lookHelper;
