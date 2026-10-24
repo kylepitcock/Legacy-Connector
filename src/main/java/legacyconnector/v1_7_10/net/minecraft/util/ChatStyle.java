@@ -2,7 +2,7 @@ package legacyconnector.v1_7_10.net.minecraft.util;
 
 import net.minecraft.network.chat.Style;
 
-/** Style subset: color and decorations. Click/hover events are not translated yet. */
+/** Style subset: color and decorations. Click events (url, command) and text hover events are translated. */
 public class ChatStyle {
     private EnumChatFormatting color;
     private Boolean bold;
@@ -10,6 +10,26 @@ public class ChatStyle {
     private Boolean underlined;
     private Boolean strikethrough;
     private Boolean obfuscated;
+    private legacyconnector.v1_7_10.net.minecraft.event.ClickEvent clickEvent;
+    private legacyconnector.v1_7_10.net.minecraft.event.HoverEvent hoverEvent;
+
+    public legacyconnector.v1_7_10.net.minecraft.event.ClickEvent getChatClickEvent() {
+        return clickEvent;
+    }
+
+    public ChatStyle setChatClickEvent(legacyconnector.v1_7_10.net.minecraft.event.ClickEvent event) {
+        clickEvent = event;
+        return this;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.event.HoverEvent getChatHoverEvent() {
+        return hoverEvent;
+    }
+
+    public ChatStyle setChatHoverEvent(legacyconnector.v1_7_10.net.minecraft.event.HoverEvent event) {
+        hoverEvent = event;
+        return this;
+    }
 
     public EnumChatFormatting getColor() {
         return color;
@@ -73,6 +93,8 @@ public class ChatStyle {
         s.underlined = underlined;
         s.strikethrough = strikethrough;
         s.obfuscated = obfuscated;
+        s.clickEvent = clickEvent;
+        s.hoverEvent = hoverEvent;
         return s;
     }
 
@@ -88,6 +110,8 @@ public class ChatStyle {
         if (underlined != null) s = s.withUnderlined(underlined);
         if (strikethrough != null) s = s.withStrikethrough(strikethrough);
         if (obfuscated != null) s = s.withObfuscated(obfuscated);
+        if (clickEvent != null && clickEvent.mcc$modern() != null) s = s.withClickEvent(clickEvent.mcc$modern());
+        if (hoverEvent != null && hoverEvent.mcc$modern() != null) s = s.withHoverEvent(hoverEvent.mcc$modern());
         return s;
     }
 }
