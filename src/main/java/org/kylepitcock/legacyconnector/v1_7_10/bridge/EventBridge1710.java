@@ -172,8 +172,28 @@ public final class EventBridge1710 {
             if (forge().post(legacy)) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.event.level.BlockDropsEvent e) -> {
-            if (!wants(forge(), BlockEvent.HarvestDropsEvent.class)) return;
             var p = e.getPos();
+            // Shears on a block that is shearable the legacy way (leaves, tall grass, vines) drop what the block says.
+            if (e.getTool().getItem() instanceof net.minecraft.world.item.ShearsItem
+                    && BlockBridge.legacyBlock(e.getState()) instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IShearable shearable) {
+                try {
+                    var view = BlockAccessView.of(e.getLevel());
+                    ItemStack tool = ItemStack.mcc$wrap(e.getTool());
+                    if (shearable.isShearable(tool, view, p.getX(), p.getY(), p.getZ())) {
+                        var sheared = shearable.onSheared(tool, view, p.getX(), p.getY(), p.getZ(), 0);
+                        e.getDrops().clear();
+                        if (sheared != null) {
+                            for (ItemStack s : sheared) {
+                                var modern = s == null ? net.minecraft.world.item.ItemStack.EMPTY : s.mcc$modern();
+                                if (!modern.isEmpty()) e.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(e.getLevel(), p.getX() + 0.5D, p.getY() + 0.5D, p.getZ() + 0.5D, modern));
+                            }
+                        }
+                    }
+                } catch (RuntimeException | LinkageError ex) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Shears").warn("Shearing {} failed: {}", e.getState(), ex.toString());
+                }
+            }
+            if (!wants(forge(), BlockEvent.HarvestDropsEvent.class)) return;
             java.util.ArrayList<ItemStack> stacks = new java.util.ArrayList<>();
             for (var item : e.getDrops()) stacks.add(ItemStack.mcc$wrap(item.getItem()));
             boolean silk = false;
@@ -334,6 +354,36 @@ public final class EventBridge1710 {
             e.getDrops().clear();
             for (EntityItem item : legacy.drops) {
                 if (item != null && item.mcc$entity() instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
+            var held = e.getItemStack();
+            if (!(held.getItem() instanceof net.minecraft.world.item.ShearsItem) || e.getLevel().isClientSide()) return;
+            if (!(EntityBridge.wrap(e.getTarget()) instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IShearable shearable)) return;
+            try {
+                var target = e.getTarget();
+                var view = World.mcc$wrap(e.getLevel());
+                ItemStack tool = ItemStack.mcc$wrap(held);
+                int x = target.getBlockX();
+                int y = target.getBlockY();
+                int z = target.getBlockZ();
+                if (!shearable.isShearable(tool, view, x, y, z)) return;
+                var sheared = shearable.onSheared(tool, view, x, y, z, 0);
+                if (sheared != null) {
+                    for (ItemStack s : sheared) {
+                        var modern = s == null ? net.minecraft.world.item.ItemStack.EMPTY : s.mcc$modern();
+                        if (modern.isEmpty()) continue;
+                        var drop = new net.minecraft.world.entity.item.ItemEntity(e.getLevel(), target.getX(), target.getY() + 1.0D, target.getZ(), modern);
+                        drop.setDeltaMovement((e.getLevel().random.nextFloat() - e.getLevel().random.nextFloat()) * 0.1F, e.getLevel().random.nextFloat() * 0.05F,
+                                (e.getLevel().random.nextFloat() - e.getLevel().random.nextFloat()) * 0.1F);
+                        e.getLevel().addFreshEntity(drop);
+                    }
+                }
+                held.hurtAndBreak(1, e.getEntity(), net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+                e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+                e.setCanceled(true);
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Shears").warn("Shearing {} failed: {}", e.getTarget(), ex.toString());
             }
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
