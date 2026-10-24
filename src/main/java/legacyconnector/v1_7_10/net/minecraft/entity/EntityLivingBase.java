@@ -70,6 +70,16 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity != null) mcc$living().setArrowCount(count);
     }
 
+    /** Ticks an arm swing takes: 6, shorter with Haste, longer with Mining Fatigue (mods reflect this private method). */
+    protected int getArmSwingAnimationEnd() {
+        if (mcc$entity == null) return 6;
+        var living = mcc$living();
+        var haste = living.getEffect(net.minecraft.world.effect.MobEffects.DIG_SPEED);
+        if (haste != null) return 6 - (1 + haste.getAmplifier());
+        var fatigue = living.getEffect(net.minecraft.world.effect.MobEffects.DIG_SLOWDOWN);
+        return fatigue != null ? 6 + (1 + fatigue.getAmplifier()) * 2 : 6;
+    }
+
     public LivingEntity mcc$living() {
         return (LivingEntity) mcc$entity;
     }
