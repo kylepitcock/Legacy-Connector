@@ -281,6 +281,11 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity != null) mcc$living().removeAllEffects();
     }
 
+    /** Experience dropped on death; reflected on by mods that boost it (EnderCore). */
+    protected int getExperiencePoints(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return 0;
+    }
+
     public void addPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect) {
         if (mcc$entity != null && effect != null) mcc$living().addEffect(effect.mcc$modern());
     }

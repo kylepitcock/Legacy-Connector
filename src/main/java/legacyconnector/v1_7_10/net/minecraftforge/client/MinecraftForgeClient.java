@@ -32,10 +32,27 @@ public class MinecraftForgeClient {
     }
 
     public static int getRenderPass() {
-        return 0;
+        return ForgeHooksClient.renderPass < 0 ? 0 : ForgeHooksClient.renderPass;
+    }
+
+    // Forge's private pool of free stencil bits (CoFH Core replaces it reflectively).
+    private static java.util.BitSet stencilBits = new java.util.BitSet(8);
+
+    static {
+        stencilBits.set(0, 8);
     }
 
     public static int getStencilBits() {
         return 8;
+    }
+
+    public static int reserveStencilBit() {
+        int bit = stencilBits.nextSetBit(0);
+        if (bit >= 0) stencilBits.clear(bit);
+        return bit;
+    }
+
+    public static void releaseStencilBit(int bit) {
+        if (bit >= 0 && bit < 8) stencilBits.set(bit);
     }
 }

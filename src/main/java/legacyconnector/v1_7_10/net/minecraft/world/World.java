@@ -70,7 +70,7 @@ public class World implements IBlockAccess {
     private static final Map<Object, legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage> STORAGES =
             Collections.synchronizedMap(new WeakHashMap<>());
     private static final legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage CLIENT_STORAGE =
-            new legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage(null);
+            new legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage((net.minecraft.world.level.storage.DimensionDataStorage) null);
 
     private static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage storage(ServerLevel level) {
         if (level == null) return CLIENT_STORAGE;

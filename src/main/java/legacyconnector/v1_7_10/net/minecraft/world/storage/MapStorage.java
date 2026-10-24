@@ -21,6 +21,11 @@ public class MapStorage {
         this.storage = storage;
     }
 
+    /** Mods that pass the world's save handler (Mystcraft): the data stays in memory, the world's own storage is used by {@code World.mapStorage}. */
+    public MapStorage(ISaveHandler handler) {
+        this((DimensionDataStorage) null);
+    }
+
     private static String file(String name) {
         return "legacy_" + name.replaceAll("[^a-zA-Z0-9_.-]", "_");
     }

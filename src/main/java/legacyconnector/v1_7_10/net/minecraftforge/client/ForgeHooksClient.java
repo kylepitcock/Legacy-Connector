@@ -7,6 +7,13 @@ package legacyconnector.v1_7_10.net.minecraftforge.client;
 public class ForgeHooksClient {
     public static int worldRenderPass = -1;
 
+    /** The item/entity render pass legacy renderers query through {@code MinecraftForgeClient.getRenderPass()}. */
+    public static int renderPass = -1;
+
+    public static void setRenderPass(int pass) {
+        renderPass = pass;
+    }
+
     public static int getWorldRenderPass() {
         return worldRenderPass;
     }
