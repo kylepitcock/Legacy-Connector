@@ -15,11 +15,11 @@ fi
 docker image inspect $IMAGE >/dev/null 2>&1 || docker build -q -t $IMAGE tools/docker || exit 1
 docker volume create lc-work >/dev/null
 # stage the project (the container has its own build/ and Gradle caches)
-tar --exclude=./build --exclude=./.gradle --exclude='./run*' --exclude=./.git --exclude=./testmods --exclude=./docs --exclude='./legacyconnector-*.jar' --exclude='*.log' -cf - . \
+tar --exclude=./build --exclude=./loader/build --exclude=./testmods/build --exclude=./.gradle --exclude='./run*' --exclude=./.git --exclude=./testmods --exclude=./docs --exclude='./legacyconnector-*.jar' --exclude='*.log' -cf - . \
   | docker run --rm -i -v lc-work:/work $IMAGE bash -c 'cd /work && find . -mindepth 1 -maxdepth 1 ! -name build ! -name .gradle ! -name "run*" -exec rm -rf {} + ; tar xf - && sed -i "s/\\r\$//" tools/dev/*.sh gradlew && mkdir -p run-screenshots run-clienttest build && ln -sfn /mods run/mods 2>/dev/null || (mkdir -p run && ln -sfn /mods run/mods)'
 [ "$1" = "--stage" ] && exit 0
 envs=()
-for v in COPYMODS TIMEOUT AFTER MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS COMMANDS LOOPS LC_DEBUG WIDTH HEIGHT; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
+for v in SKIP COPYMODS TIMEOUT AFTER MODS BLOCKS ITEMS TOUR WORLDTYPE EXTRA MODSRC SCENARIO RENDER SHOW SHOWITEMS SHOWENT METAS COMMANDS LOOPS LC_DEBUG WIDTH HEIGHT; do [ -n "${!v}" ] && envs+=(-e "$v=${!v}"); done
 docker run --rm --shm-size=1g -v lc-work:/work -v lc-mods:/mods:ro -v legacyconnector-gradle:/root/.gradle -v legacyconnector-cache:/work/run-screenshots/.legacyconnector \
   -w /work -e HEADLESS=1 "${envs[@]}" $IMAGE \
   bash -c 'Xvfb :99 -screen 0 ${WIDTH:-854}x${HEIGHT:-480}x24 +extension GLX -nolisten tcp >/dev/null 2>&1 & sleep 2; export DISPLAY=:99; mkdir -p run; [ -e run/mods ] || ln -sfn /mods run/mods; exec zsh tools/dev/"$0" "$@"' "$@"

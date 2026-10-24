@@ -1,4 +1,5 @@
 #!/bin/zsh
+# SKIP=sodium leaves out jars whose name contains it (client-only mods cannot start a dedicated server)
 # Server test over every jar of a directory (default test-mods2, the GTNH pack): links them into run-subtest/mods and runs the
 # server (block/item/entity self tests). usage: tools/dev/run-corpus.sh [dir] ; AFTER=60 waits longer after the self test
 cd "$(dirname "$0")/../.."
@@ -7,7 +8,7 @@ SRC=${1:-test-mods2}
 D=run-subtest
 rm -rf $D/mods $D/crash-reports; mkdir -p $D/mods $D/logs $D/config build/devtools
 : > $D/logs/latest.log
-for jar in $SRC/*.jar(N); do if [[ -n $COPYMODS ]]; then cp -L "$jar" "$D/mods/${jar:t}"; else ln -sf "$PWD/$jar" "$D/mods/${jar:t}"; fi; done
+for jar in $SRC/*.jar(N); do [[ -n $SKIP && ${jar:t:l} == *${SKIP:l}* ]] && continue; if [[ -n $COPYMODS ]]; then cp -L "$jar" "$D/mods/${jar:t}"; else ln -sf "$PWD/$jar" "$D/mods/${jar:t}"; fi; done
 # library jars that dependency downloaders file under mods/<minecraft version>/ stay there
 if [[ -d $SRC/1.7.10 ]]; then mkdir -p $D/mods/1.7.10; for jar in $SRC/1.7.10/*.jar(N); do if [[ -n $COPYMODS ]]; then cp -L "$jar" "$D/mods/1.7.10/${jar:t}"; else ln -sf "$PWD/$jar" "$D/mods/1.7.10/${jar:t}"; fi; done; fi
 echo "mods: $(ls $D/mods | wc -l)"
