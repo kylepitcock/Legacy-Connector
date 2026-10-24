@@ -171,6 +171,86 @@ public final class EventBridge1710 {
                     player(pl), ItemStack.mcc$wrap(pl.getMainHandItem()));
             if (forge().post(legacy)) e.setCanceled(true);
         });
+        gameBus.addListener((net.neoforged.neoforge.event.level.BlockDropsEvent e) -> {
+            if (!wants(forge(), BlockEvent.HarvestDropsEvent.class)) return;
+            var p = e.getPos();
+            java.util.ArrayList<ItemStack> stacks = new java.util.ArrayList<>();
+            for (var item : e.getDrops()) stacks.add(ItemStack.mcc$wrap(item.getItem()));
+            boolean silk = false;
+            BlockEvent.HarvestDropsEvent legacy = new BlockEvent.HarvestDropsEvent(p.getX(), p.getY(), p.getZ(), World.mcc$wrap(e.getLevel()),
+                    BlockBridge.legacyBlock(e.getState()), BlockBridge.legacyMeta(e.getState()), 0, 1.0F, stacks,
+                    e.getBreaker() instanceof net.minecraft.world.entity.player.Player pl ? player(pl) : null, silk);
+            forge().post(legacy);
+            // Handlers edit the list of stacks; the modern drops are rebuilt from it.
+            e.getDrops().clear();
+            for (ItemStack s : legacy.drops) {
+                if (s == null) continue;
+                var modern = s.mcc$modern();
+                if (modern.isEmpty() || legacy.dropChance < 1.0F && e.getLevel().random.nextFloat() > legacy.dropChance) continue;
+                e.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(e.getLevel(), p.getX() + 0.5D, p.getY() + 0.5D, p.getZ() + 0.5D, modern));
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.BreakSpeed e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed.class)) return;
+            var pos = e.getPosition().orElse(net.minecraft.core.BlockPos.ZERO);
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed(player(e.getEntity()),
+                    BlockBridge.legacyBlock(e.getState()), BlockBridge.legacyMeta(e.getState()), e.getOriginalSpeed(), pos.getX(), pos.getY(), pos.getZ());
+            if (forge().post(legacy)) e.setCanceled(true);
+            else e.setNewSpeed(legacy.newSpeed);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.BonemealEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.BonemealEvent.class)) return;
+            var p = e.getPos();
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.BonemealEvent(player(e.getPlayer()), World.mcc$wrap(e.getLevel()),
+                    BlockBridge.legacyBlock(e.getState()), p.getX(), p.getY(), p.getZ());
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+            } else if (legacy.getResult() == Event.Result.ALLOW) {
+                e.setSuccessful(true);
+                e.setCanceled(true);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.EntityTeleportEvent.EnderEntity e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.EnderTeleportEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.EnderTeleportEvent((EntityLivingBase) EntityBridge.wrap(e.getEntityLiving()),
+                    e.getTargetX(), e.getTargetY(), e.getTargetZ(), 0.0F);
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+            } else {
+                e.setTargetX(legacy.targetX);
+                e.setTargetY(legacy.targetY);
+                e.setTargetZ(legacy.targetZ);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.ServerChatEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.ServerChatEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.ServerChatEvent(
+                    (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP) EntityBridge.wrap(e.getPlayer()), e.getRawText(), null);
+            if (forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.item.ItemTossEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.item.ItemTossEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.item.ItemTossEvent((EntityItem) EntityBridge.wrap(e.getEntity()), player(e.getPlayer()));
+            if (forge().post(legacy)) e.setCanceled(true);
+        });
+        gameBus.addListener((ItemEntityPickupEvent.Pre e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityItemPickupEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityItemPickupEvent(player(e.getPlayer()), (EntityItem) EntityBridge.wrap(e.getItemEntity()));
+            if (forge().post(legacy) || legacy.getResult() == Event.Result.DENY) e.setCanPickup(net.neoforged.neoforge.common.util.TriState.FALSE);
+            else if (legacy.getResult() == Event.Result.ALLOW) e.setCanPickup(net.neoforged.neoforge.common.util.TriState.TRUE);
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.AnvilUpdateEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.AnvilUpdateEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.AnvilUpdateEvent(ItemStack.mcc$wrap(e.getLeft()), ItemStack.mcc$wrap(e.getRight()),
+                    e.getName(), (int) e.getCost());
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+            } else if (legacy.output != null) {
+                e.setOutput(legacy.output.mcc$modern());
+                e.setCost((long) legacy.cost);
+                e.setMaterialCost(legacy.materialCost);
+            }
+        });
         gameBus.addListener((LevelEvent.Load e) -> worldEvent(e.getLevel(), WorldEvent.Load::new));
         gameBus.addListener((LevelEvent.Unload e) -> worldEvent(e.getLevel(), WorldEvent.Unload::new));
         gameBus.addListener((LevelEvent.Save e) -> worldEvent(e.getLevel(), WorldEvent.Save::new));

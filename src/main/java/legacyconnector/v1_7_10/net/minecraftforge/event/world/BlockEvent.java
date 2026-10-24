@@ -62,4 +62,23 @@ public class BlockEvent extends Event {
             this.placedAgainst = placedAgainst;
         }
     }
+
+    /** A block is about to drop its items: handlers add, remove or replace them. */
+    public static class HarvestDropsEvent extends BlockEvent {
+        public final int fortuneLevel;
+        public final java.util.ArrayList<ItemStack> drops;
+        public final boolean isSilkTouching;
+        public float dropChance;
+        public final EntityPlayer harvester;
+
+        public HarvestDropsEvent(int x, int y, int z, World world, Block block, int meta, int fortuneLevel, float dropChance,
+                java.util.ArrayList<ItemStack> drops, EntityPlayer harvester, boolean isSilkTouching) {
+            super(x, y, z, world, block, meta);
+            this.fortuneLevel = fortuneLevel;
+            this.dropChance = dropChance;
+            this.drops = drops;
+            this.isSilkTouching = isSilkTouching;
+            this.harvester = harvester;
+        }
+    }
 }
