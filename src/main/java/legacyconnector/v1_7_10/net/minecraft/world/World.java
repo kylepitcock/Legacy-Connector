@@ -1043,4 +1043,59 @@ public class World implements IBlockAccess {
     public void updateNeighborsAboutBlockChange(int x, int y, int z, Block block) {
         notifyBlocksOfNeighborChange(x, y, z, block);
     }
+
+    public boolean restoringBlockSnapshots;
+
+    public boolean updateLightByType(EnumSkyBlock type, int x, int y, int z) {
+        LevelAccessor level = lvl();
+        if (level.getLightEngine() != null) level.getLightEngine().checkBlock(pos(x, y, z));
+        return true;
+    }
+
+    public void setEntityState(Entity entity, byte state) {
+        if (entity.mcc$entity != null && entity.mcc$entity.level() instanceof net.minecraft.server.level.ServerLevel server) {
+            server.broadcastEntityEvent(entity.mcc$entity, state);
+        }
+    }
+
+    public boolean addWeatherEffect(Entity entity) {
+        return false;
+    }
+
+    public void updateEntityWithOptionalForce(Entity entity, boolean force) {
+    }
+
+    public void updateAllPlayersSleepingFlag() {
+    }
+
+    public void onEntityRemoved(Entity entity) {
+    }
+
+    public void addTileEntity(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
+    }
+
+    public int getBlockLightOpacity(int x, int y, int z) {
+        return getBlock(x, y, z).getLightOpacity(this, x, y, z);
+    }
+
+    public float getCelestialAngleRadians(float partial) {
+        return getCelestialAngle(partial) * (float) Math.PI * 2.0F;
+    }
+
+    public boolean isAABBInMaterial(AxisAlignedBB box, legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {
+        int x0 = (int) Math.floor(box.minX);
+        int x1 = (int) Math.floor(box.maxX + 1.0D);
+        int y0 = (int) Math.floor(box.minY);
+        int y1 = (int) Math.floor(box.maxY + 1.0D);
+        int z0 = (int) Math.floor(box.minZ);
+        int z1 = (int) Math.floor(box.maxZ + 1.0D);
+        for (int x = x0; x < x1; x++) {
+            for (int y = y0; y < y1; y++) {
+                for (int z = z0; z < z1; z++) {
+                    if (getBlock(x, y, z).getMaterial() == material) return true;
+                }
+            }
+        }
+        return false;
+    }
 }

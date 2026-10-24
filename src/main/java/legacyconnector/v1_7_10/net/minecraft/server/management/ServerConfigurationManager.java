@@ -72,4 +72,18 @@ public class ServerConfigurationManager {
     public boolean canSendCommands(com.mojang.authlib.GameProfile profile) {
         return mcc$server.mcc$modern().getPlayerList().isOp(profile);
     }
+
+    public void syncPlayerInventory(EntityPlayerMP player) {
+        player.mcc$serverPlayer().inventoryMenu.sendAllDataToRemote();
+    }
+
+    public void updateTimeAndWeatherForPlayer(EntityPlayerMP player, legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+    }
+
+    public void func_72375_a(EntityPlayerMP player, legacyconnector.v1_7_10.net.minecraft.world.WorldServer world) {
+    }
+
+    public MinecraftServer getServerInstance() {
+        return mcc$server;
+    }
 }

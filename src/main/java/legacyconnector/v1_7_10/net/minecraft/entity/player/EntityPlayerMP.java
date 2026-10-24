@@ -83,4 +83,14 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
             org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.sendProgressBar(sp, container.windowId, id, value);
         }
     }
+
+    public void sendContainerToPlayer(legacyconnector.v1_7_10.net.minecraft.inventory.Container container) {
+        mcc$serverPlayer().containerMenu.broadcastChanges();
+    }
+
+    public void updateHeldItem() {
+        mcc$serverPlayer().containerMenu.broadcastChanges();
+    }
+
+    public java.util.List loadedChunks = new java.util.ArrayList();
 }

@@ -1215,4 +1215,12 @@ public abstract class Entity implements ICommandSender {
         tag.removeTag("Dimension");
         readFromNBT(tag);
     }
+
+    public int getBrightnessForRender(float partial) {
+        if (mcc$entity == null) return 0;
+        var pos = mcc$entity.blockPosition();
+        int block = mcc$entity.level().getBrightness(net.minecraft.world.level.LightLayer.BLOCK, pos);
+        int sky = mcc$entity.level().getBrightness(net.minecraft.world.level.LightLayer.SKY, pos);
+        return sky << 20 | block << 4;
+    }
 }

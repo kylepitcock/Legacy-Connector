@@ -112,4 +112,8 @@ public class ExtendedBlockStorage {
 
     public void removeInvalidBlocks() {
     }
+
+    public void setExtBlockID(int x, int y, int z, Block block) {
+        func_150818_a(x, y, z, block);
+    }
 }

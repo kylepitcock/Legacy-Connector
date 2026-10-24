@@ -427,4 +427,16 @@ public class RenderBlocks {
         t.addVertexWithUV(xx, y2, z1, u1, v0);
         t.addVertexWithUV(xx, y2, z2, u0, v0);
     }
+
+    private static RenderBlocks mcc$instance;
+
+    public static synchronized RenderBlocks getInstance() {
+        if (mcc$instance == null) mcc$instance = new RenderBlocks();
+        return mcc$instance;
+    }
+
+    /** Draws the block at the position the way its render type asks (standard cube or crossed squares; other types go through their own renderer). */
+    public boolean renderBlockByRenderType(Block block, int x, int y, int z) {
+        return block.getRenderType() == 1 ? renderCrossedSquares(block, x, y, z) : renderStandardBlock(block, x, y, z);
+    }
 }

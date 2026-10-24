@@ -75,4 +75,15 @@ public class RenderItem extends Render {
     public byte getMiniItemCount(ItemStack stack, byte original) {
         return original;
     }
+
+    private static RenderItem mcc$instance;
+
+    public static synchronized RenderItem getInstance() {
+        if (mcc$instance == null) mcc$instance = new RenderItem();
+        return mcc$instance;
+    }
+
+    public void renderIcon(int x, int y, legacyconnector.v1_7_10.net.minecraft.util.IIcon icon, int width, int height) {
+        new legacyconnector.v1_7_10.net.minecraft.client.gui.Gui().drawTexturedModelRectFromIcon(x, y, icon, width, height);
+    }
 }

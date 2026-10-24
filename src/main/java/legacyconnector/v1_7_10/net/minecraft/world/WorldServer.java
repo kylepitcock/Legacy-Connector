@@ -25,4 +25,10 @@ public class WorldServer extends World {
     public boolean areAllPlayersAsleep() {
         return mcc$fullLevel() instanceof ServerLevel s && s.players().stream().allMatch(net.minecraft.world.entity.player.Player::isSleeping);
     }
+
+    public void resetUpdateEntityTick() {
+    }
+
+    public void removePlayerEntityDangerously(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+    }
 }

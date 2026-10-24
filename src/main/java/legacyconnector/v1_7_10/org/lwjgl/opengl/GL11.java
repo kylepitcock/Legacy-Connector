@@ -47,6 +47,66 @@ public class GL11 extends GL11Guard {
         return GL11Guard.glGetTexLevelParameteri(target, level, pname);
     }
 
+    // ------------------------------------------------------------------ LWJGL 2 overloads without the "v" suffix
+
+    private static final int GL_MODELVIEW_MATRIX = 0x0BA6;
+    private static final int GL_PROJECTION_MATRIX = 0x0BA7;
+
+    /** The matrix stack is emulated, so the current model-view and projection matrices come from the render context. */
+    public static void glGetFloat(int pname, FloatBuffer params) {
+        if (pname == GL_MODELVIEW_MATRIX && RenderContext.pose() != null) {
+            RenderContext.pose().last().pose().get(params.position(), params);
+        } else if (pname == GL_PROJECTION_MATRIX && RenderSystem.isOnRenderThread()) {
+            RenderSystem.getProjectionMatrix().get(params.position(), params);
+        } else {
+            GL11Guard.glGetFloatv(pname, params);
+        }
+    }
+
+    public static void glGetInteger(int pname, java.nio.IntBuffer params) {
+        GL11Guard.glGetIntegerv(pname, params);
+    }
+
+    public static void glGetBoolean(int pname, java.nio.ByteBuffer params) {
+        GL11Guard.glGetBooleanv(pname, params);
+    }
+
+    public static void glGetDouble(int pname, java.nio.DoubleBuffer params) {
+        GL11Guard.glGetDoublev(pname, params);
+    }
+
+    public static void glTexParameter(int target, int pname, FloatBuffer params) {
+        GL11Guard.glTexParameterfv(target, pname, params);
+    }
+
+    public static void glTexParameter(int target, int pname, java.nio.IntBuffer params) {
+        GL11Guard.glTexParameteriv(target, pname, params);
+    }
+
+    public static void glTexGen(int coord, int pname, FloatBuffer params) {
+    }
+
+    public static void glTexEnv(int target, int pname, FloatBuffer params) {
+    }
+
+    public static void glTexEnv(int target, int pname, java.nio.IntBuffer params) {
+    }
+
+    public static void glLight(int light, int pname, FloatBuffer params) {
+    }
+
+    public static void glMaterial(int face, int pname, FloatBuffer params) {
+    }
+
+    public static void glFog(int pname, FloatBuffer params) {
+    }
+
+    public static void glLoadMatrix(FloatBuffer m) {
+    }
+
+    public static void glClipPlane(int plane, java.nio.DoubleBuffer equation) {
+    }
+
     // ------------------------------------------------------------------ matrix stack
 
     public static void glPushMatrix() {
