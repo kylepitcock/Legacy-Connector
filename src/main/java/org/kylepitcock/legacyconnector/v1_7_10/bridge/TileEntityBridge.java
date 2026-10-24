@@ -89,18 +89,22 @@ public final class TileEntityBridge {
     private static final Map<net.minecraft.world.level.block.entity.BlockEntity, TileEntity> VIEWS =
             java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
-    public static TileEntity legacyAt(World world, BlockPos pos) {
-        var level = world.mcc$level();
-        net.minecraft.world.level.block.entity.BlockEntity be;
+    /**
+     * The block entity at {@code pos}. Legacy generators probe for tile entities everywhere; a generation region warns
+     * for every block that will have one but has none yet (hundreds of thousands of lines), so it asks the chunk and
+     * only falls back to the region when the chunk holds pending data for the position.
+     */
+    private static net.minecraft.world.level.block.entity.BlockEntity blockEntityAt(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
         if (level instanceof net.minecraft.server.level.WorldGenRegion region) {
-            // Legacy generators probe for tile entities everywhere; the region warns for every block that will have one
-            // but has none yet (hundreds of thousands of lines), so ask the chunk and only fall back when it has pending data.
             var chunk = region.getChunk(pos);
-            be = chunk.getBlockEntity(pos);
-            if (be == null && chunk.getBlockEntityNbt(pos) != null) be = region.getBlockEntity(pos);
-        } else {
-            be = level.getBlockEntity(pos);
+            var be = chunk.getBlockEntity(pos);
+            return be == null && chunk.getBlockEntityNbt(pos) != null ? region.getBlockEntity(pos) : be;
         }
+        return level.getBlockEntity(pos);
+    }
+
+    public static TileEntity legacyAt(World world, BlockPos pos) {
+        var be = blockEntityAt(world.mcc$level(), pos);
         if (be == null) return null;
         if (be instanceof LegacyBlockEntity l) {
             TileEntity te = l.legacy(world);
@@ -142,14 +146,14 @@ public final class TileEntityBridge {
 
     /** Called before legacy code changes the block at {@code pos}: writes back reflective edits to chest views. */
     public static void beforeBlockChange(World world, BlockPos pos) {
-        var be = world.mcc$level().getBlockEntity(pos);
+        var be = blockEntityAt(world.mcc$level(), pos);
         if (be == null) return;
         TileEntity view = VIEWS.get(be);
         if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) chest.mcc$flush();
     }
 
     public static void setAt(World world, BlockPos pos, TileEntity te) {
-        var be = world.mcc$level().getBlockEntity(pos);
+        var be = blockEntityAt(world.mcc$level(), pos);
         if (be instanceof LegacyBlockEntity l) {
             l.replaceLegacy(te);
             if (te != null && te.worldObj == null) te.worldObj = world;
