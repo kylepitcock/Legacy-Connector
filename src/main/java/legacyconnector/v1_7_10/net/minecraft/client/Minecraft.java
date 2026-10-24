@@ -130,8 +130,12 @@ public class Minecraft {
         return legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler.INSTANCE;
     }
 
-    public legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient getNetHandler() {
-        return mc().getConnection() == null ? null : legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient.INSTANCE;
+    public com.mojang.authlib.minecraft.MinecraftSessionService getSessionService() {
+        return mc().getMinecraftSessionService();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient getNetHandler() {
+        return mc().getConnection() == null ? null : legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE;
     }
 
     /** Captures the mouse for the game (as closing a screen does). */

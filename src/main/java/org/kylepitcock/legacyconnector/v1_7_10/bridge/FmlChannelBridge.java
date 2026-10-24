@@ -10,7 +10,7 @@ import legacyconnector.v1_7_10.cpw.mods.fml.common.network.NetworkRegistry;
 import legacyconnector.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket;
 import legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;
-import legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient;
+import legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;
 import legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;

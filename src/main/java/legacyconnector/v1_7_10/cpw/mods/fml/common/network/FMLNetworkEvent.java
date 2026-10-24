@@ -33,7 +33,7 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
 
     public static class ClientCustomPacketEvent extends CustomPacketEvent<INetHandler> {
         public ClientCustomPacketEvent(Object manager, FMLProxyPacket packet) {
-            super(legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient.INSTANCE, packet, Side.CLIENT);
+            super(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE, packet, Side.CLIENT);
         }
     }
 

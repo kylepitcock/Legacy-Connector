@@ -57,6 +57,10 @@ public class MerchantRecipe {
         toolUses++;
     }
 
+    public void func_82783_a(int amount) {
+        increaseMaxTradeUses(amount);
+    }
+
     public void increaseMaxTradeUses(int amount) {
         maxTradeUses += amount;
     }

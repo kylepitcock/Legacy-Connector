@@ -10,6 +10,15 @@ public class ItemPotion extends legacyconnector.v1_7_10.net.minecraft.item.Item 
         super(info);
     }
 
+    public static boolean isSplash(int meta) {
+        return (meta & 16384) != 0;
+    }
+
+    /** The effects of a potion's metadata; the legacy brewing tables are not ported, so every potion lists none. */
+    public java.util.List<legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect> getEffects(int meta) {
+        return new java.util.ArrayList<>();
+    }
+
     protected ItemPotion() {
         super();
     }

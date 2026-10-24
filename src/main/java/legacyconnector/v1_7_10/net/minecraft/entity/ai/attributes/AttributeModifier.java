@@ -15,7 +15,7 @@ public class AttributeModifier {
     }
 
     public AttributeModifier(UUID id, String name, double amount, int operation) {
-        this.id = id;
+        this.id = id != null ? id : UUID.randomUUID();
         this.name = name;
         this.amount = amount;
         this.operation = operation;

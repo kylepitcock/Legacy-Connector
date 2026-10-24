@@ -199,7 +199,7 @@ public class LegacyBlockEntity extends BlockEntity {
     private void deliver(CompoundTag tag) {
         if (tag.contains("mcc$fml")) {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.deliver(tag.getString("mcc$channel"), tag.getByteArray("mcc$fml"),
-                    legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT, legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayClient.INSTANCE);
+                    legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
             return;
         }
         TileEntity te = legacy();
