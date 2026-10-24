@@ -60,6 +60,21 @@ public final class DimensionSelfTest {
                         }
                     }
                 }
+                for (int[] col : new int[][] {{3, 3}, {9, 10}}) {
+                    var chunk = level.getChunk(0, 0);
+                    StringBuilder runs = new StringBuilder();
+                    String last = null;
+                    int from = 0;
+                    for (int y = 0; y <= 256; y++) {
+                        String name = y == 256 ? "end" : BuiltInRegistries.BLOCK.getKey(chunk.getBlockState(new BlockPos(col[0], y, col[1])).getBlock()).getPath();
+                        if (!name.equals(last)) {
+                            if (last != null) runs.append(last).append(' ').append(from).append('-').append(y - 1).append(", ");
+                            last = name;
+                            from = y;
+                        }
+                    }
+                    LOG.info("DIMENSION COLUMN {} at {},{}: {}", id, col[0], col[1], runs);
+                }
                 ok++;
                 sb.append("\n  dimension ").append(id).append(" (").append(dims.get(id).getSimpleName()).append("): ").append(solid)
                         .append(" blocks near the surface ").append(byNamespace).append(" in ").append((System.nanoTime() - start) / 1_000_000)
