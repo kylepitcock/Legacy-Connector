@@ -4,9 +4,9 @@ Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar i
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified.
 
-> **Status: alpha.** 1.7.10 is the active target. Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
+> **Status: alpha (0.1.x).** 1.7.10 is the active target. Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
 > Plenty, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
-> world generation and dimensions, and large tech packs load most of their mods. Some features are still missing or
+> world generation and dimensions, and large tech packs load most of their mods; Galacticraft with its addons runs with per-planet gravity and silent space. Some features are still missing or
 > unverified (see [Known compatibility issues](#known-compatibility-issues)), so back up your worlds.
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
@@ -132,6 +132,8 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
 | Commands | `ICommand`, server command manager | Brigadier |
+| Dimension physics | `WorldProvider` gravity, fall damage and sound attenuation (Galacticraft's `IGalacticraftWorldProvider`) | gravity attribute, fall damage multiplier, client sound volume per dimension |
+| Chest loot | `ChestGenHooks.addItem` for dungeon, mineshaft, pyramid, stronghold, village and bonus chests | an extra pool on the matching vanilla chest loot table |
 | Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes, `legacyconnector:dim_<id>` |
 | World generation | `IWorldGenerator`, decorators | chunk generation hooks |
 | Events | Forge/FML event buses | NeoForge event bus |
@@ -233,7 +235,9 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
 
 Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
-LaunchWrapper tweakers. They are reported, and the rest of the mod still loads.
+LaunchWrapper tweakers. They are reported, and the rest of the mod still loads. Where a coremod only exists to change
+engine behaviour that has a modern equivalent, the layer bridges the behaviour instead (Galacticraft's gravity and
+silent space are applied per dimension, see *Dimension physics* above).
 
 ### Known compatibility issues
 
