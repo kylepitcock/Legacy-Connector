@@ -23,8 +23,27 @@ public class ChunkProviderServer implements IChunkProvider {
     @Deprecated
     public List loadedChunks;
 
+    /**
+     * Loaded chunks by {@code ChunkCoordIntPair.chunkXZ2Int} key (IC2's {@code Util.getLoadedChunk} reads it): answers from the
+     * world without loading anything.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.util.LongHashMap loadedChunkHashMap;
+
     public ChunkProviderServer(World world) {
         this.mcc$world = world;
+        this.loadedChunkHashMap = new legacyconnector.v1_7_10.net.minecraft.util.LongHashMap() {
+            @Override
+            public Object getValueByKey(long key) {
+                int x = (int) (key & 0xFFFFFFFFL);
+                int z = (int) (key >>> 32);
+                return mcc$world.chunkExists(x, z) ? mcc$world.getChunkFromChunkCoords(x, z) : null;
+            }
+
+            @Override
+            public boolean containsItem(long key) {
+                return getValueByKey(key) != null;
+            }
+        };
     }
 
     public static List mcc$get$loadedChunks(ChunkProviderServer p) {

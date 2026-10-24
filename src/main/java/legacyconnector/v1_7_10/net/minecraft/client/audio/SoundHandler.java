@@ -54,12 +54,16 @@ public class SoundHandler {
             this.looping = legacy.canRepeat();
             this.delay = legacy.getRepeatDelay();
             this.relative = legacy.getAttenuationType() == ISound.AttenuationType.NONE;
+            // A sound without attenuation plays at the listener whatever position the legacy code gives it (the rocket's engine
+            // note sets its own coordinates): relative to the listener that means the origin, with no fall-off.
+            if (this.relative) this.attenuation = net.minecraft.client.resources.sounds.SoundInstance.Attenuation.NONE;
             copy();
         }
 
         private void copy() {
             this.volume = legacy.getVolume();
             this.pitch = legacy.getPitch();
+            if (this.relative) return;
             this.x = legacy.getXPosF();
             this.y = legacy.getYPosF();
             this.z = legacy.getZPosF();

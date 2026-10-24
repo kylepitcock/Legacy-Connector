@@ -1074,6 +1074,7 @@ public abstract class Entity implements ICommandSender {
 
     public boolean attackEntityFrom(DamageSource source, float amount) {
         if (mcc$entity == null) return false;
+        if (source == null) source = DamageSource.generic;
         if (mcc$entity instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHost h) {
             return h.mcc$superHurt(source.mcc$modern(mcc$entity.level()), amount);
         }

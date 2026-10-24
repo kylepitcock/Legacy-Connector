@@ -386,7 +386,7 @@ public final class SynthJarBuilder {
         }
         for (Member f : instanceInits) {
             mv.visitVarInsn(Opcodes.ALOAD, 0);
-            Defaults.pushDefault(mv, Type.getType(f.desc()));
+            if (!f.desc().startsWith("[") || !InstanceArrays.push(mv, version, legacyName(name), f.name(), f.desc())) Defaults.pushDefault(mv, Type.getType(f.desc()));
             mv.visitFieldInsn(Opcodes.PUTFIELD, name, f.name(), f.desc());
         }
         mv.visitInsn(Opcodes.RETURN);

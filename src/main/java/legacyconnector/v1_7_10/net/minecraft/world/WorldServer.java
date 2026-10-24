@@ -18,6 +18,13 @@ public class WorldServer extends World {
         return mcc$fullLevel() instanceof ServerLevel s ? MinecraftServer.mcc$wrap(s.getServer()) : null;
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker mcc$tracker;
+
+    public legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker getEntityTracker() {
+        if (mcc$tracker == null) mcc$tracker = new legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker(this);
+        return mcc$tracker;
+    }
+
     public java.io.File getChunkSaveLocation() {
         return getSaveHandler().getWorldDirectory();
     }
