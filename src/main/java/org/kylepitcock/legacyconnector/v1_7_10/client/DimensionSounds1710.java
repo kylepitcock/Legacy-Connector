@@ -19,6 +19,23 @@ public final class DimensionSounds1710 {
     private DimensionSounds1710() {}
 
     public static void register(IEventBus gameBus) {
+        // 1.7.10's PlaySoundEvent17: handlers may silence a sound
+        gameBus.addListener((PlaySoundEvent e) -> {
+            SoundInstance sound = e.getSound();
+            var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (sound == null || !forge.mcc$hasListeners(legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundEvent17.class)) return;
+            var location = sound.getLocation();
+            var legacy = new legacyconnector.v1_7_10.net.minecraft.client.audio.PositionedSoundRecord(
+                    new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation(location.getNamespace(), location.getPath()),
+                    sound.getVolume(), sound.getPitch(), (float) sound.getX(), (float) sound.getY(), (float) sound.getZ());
+            try {
+                var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundEvent17(location.getPath(), legacy);
+                forge.post(event);
+                if (event.result == null) e.setSound(null);
+            } catch (RuntimeException | LinkageError ex) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A PlaySoundEvent17 handler failed: {}", ex.toString());
+            }
+        });
         gameBus.addListener((PlaySoundEvent e) -> {
             SoundInstance sound = e.getSound();
             Minecraft mc = Minecraft.getInstance();

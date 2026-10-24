@@ -24,6 +24,9 @@ public class Minecraft {
     @Deprecated
     public int displayHeight;
     public TextureManager renderEngine = TextureManager.INSTANCE;
+    /** The frame timer (obfuscated name field_71428_T): its partial tick is set by the layer each frame. */
+    public legacyconnector.v1_7_10.net.minecraft.util.Timer timer = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
+    public legacyconnector.v1_7_10.net.minecraft.util.Timer field_71428_T = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
     /** The game directory (mods build paths from it). */
     public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
     /** Read reflectively by mods that add a resource pack (the modern game loads packs itself, so adding is a no-op). */

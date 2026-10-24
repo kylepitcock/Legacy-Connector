@@ -91,6 +91,25 @@ public final class LegacyConnector {
         IEventBus game = NeoForge.EVENT_BUS;
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
+        game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
+            if (!e.getServer().isDedicatedServer()) return;
+            // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.
+            Thread exit = new Thread(() -> {
+                try {
+                    Thread.sleep(10_000);
+                } catch (InterruptedException ex) {
+                    return;
+                }
+                StringBuilder names = new StringBuilder();
+                for (Thread t : Thread.getAllStackTraces().keySet()) {
+                    if (t.isAlive() && !t.isDaemon() && t != Thread.currentThread() && !t.getName().equals("main")) names.append(' ').append(t.getName());
+                }
+                LOGGER.info("The server has stopped and saved; exiting now. Threads that would have kept the JVM alive:{}", names);
+                System.exit(0);
+            }, "legacyconnector-exit");
+            exit.setDaemon(true);
+            exit.start();
+        });
         int stopTicks = Integer.getInteger("legacyconnector.autostopTicks", 0);
         if (stopTicks > 0) {
             int[] ticks = {0};
