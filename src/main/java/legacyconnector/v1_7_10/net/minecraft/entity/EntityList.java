@@ -26,6 +26,65 @@ public class EntityList {
     };
     public static Map<Class<?>, Integer> classToIDMapping = new HashMap<>();
     public static Map<String, Integer> stringToIDMapping = new HashMap<>();
+
+    /** Vanilla's 1.7.10 entity classes, which have no behaviour here (they are not created through these maps). */
+    private static final java.util.Set<Class<?>> VANILLA = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
+    /** Name, id and class (relative to net.minecraft.entity) of every entity vanilla 1.7.10 registered. */
+    private static final String[][] VANILLA_ENTITIES = {
+            {"Item", "1", "item.EntityItem"}, {"XPOrb", "2", "item.EntityXPOrb"}, {"LeashKnot", "8", "EntityLeashKnot"},
+            {"Painting", "9", "item.EntityPainting"}, {"Arrow", "10", "projectile.EntityArrow"}, {"Snowball", "11", "projectile.EntitySnowball"},
+            {"Fireball", "12", "projectile.EntityLargeFireball"}, {"SmallFireball", "13", "projectile.EntitySmallFireball"},
+            {"ThrownEnderpearl", "14", "projectile.EntityEnderPearl"}, {"EyeOfEnderSignal", "15", "item.EntityEnderEye"},
+            {"ThrownPotion", "16", "projectile.EntityPotion"}, {"ThrownExpBottle", "17", "item.EntityExpBottle"},
+            {"ItemFrame", "18", "item.EntityItemFrame"}, {"WitherSkull", "19", "projectile.EntityWitherSkull"},
+            {"PrimedTnt", "20", "item.EntityTNTPrimed"}, {"FallingSand", "21", "item.EntityFallingBlock"},
+            {"FireworksRocketEntity", "22", "item.EntityFireworkRocket"}, {"Boat", "41", "item.EntityBoat"},
+            {"MinecartRideable", "42", "item.EntityMinecartEmpty"}, {"MinecartChest", "43", "item.EntityMinecartChest"},
+            {"MinecartFurnace", "44", "item.EntityMinecartFurnace"}, {"MinecartTNT", "45", "item.EntityMinecartTNT"},
+            {"MinecartHopper", "46", "item.EntityMinecartHopper"}, {"MinecartSpawner", "47", "item.EntityMinecartMobSpawner"},
+            {"MinecartCommandBlock", "40", "item.EntityMinecartCommandBlock"},
+            {"Creeper", "50", "monster.EntityCreeper"}, {"Skeleton", "51", "monster.EntitySkeleton"}, {"Spider", "52", "monster.EntitySpider"},
+            {"Giant", "53", "monster.EntityGiantZombie"}, {"Zombie", "54", "monster.EntityZombie"}, {"Slime", "55", "monster.EntitySlime"},
+            {"Ghast", "56", "monster.EntityGhast"}, {"PigZombie", "57", "monster.EntityPigZombie"}, {"Enderman", "58", "monster.EntityEnderman"},
+            {"CaveSpider", "59", "monster.EntityCaveSpider"}, {"Silverfish", "60", "monster.EntitySilverfish"}, {"Blaze", "61", "monster.EntityBlaze"},
+            {"LavaSlime", "62", "monster.EntityMagmaCube"}, {"EnderDragon", "63", "boss.EntityDragon"}, {"WitherBoss", "64", "boss.EntityWither"},
+            {"Bat", "65", "passive.EntityBat"}, {"Witch", "66", "monster.EntityWitch"}, {"Pig", "90", "passive.EntityPig"},
+            {"Sheep", "91", "passive.EntitySheep"}, {"Cow", "92", "passive.EntityCow"}, {"Chicken", "93", "passive.EntityChicken"},
+            {"Squid", "94", "passive.EntitySquid"}, {"Wolf", "95", "passive.EntityWolf"}, {"MushroomCow", "96", "passive.EntityMooshroom"},
+            {"SnowMan", "97", "monster.EntitySnowman"}, {"Ozelot", "98", "passive.EntityOcelot"}, {"VillagerGolem", "99", "monster.EntityIronGolem"},
+            {"EntityHorse", "100", "passive.EntityHorse"}, {"Villager", "120", "passive.EntityVillager"}, {"EnderCrystal", "200", "item.EntityEnderCrystal"},
+    };
+
+    static {
+        // Mods read the vanilla names from these maps (Botania's shedding patterns, Thaumcraft, Mystcraft). Classes that cannot be
+        // loaded here are left out.
+        for (String[] e : VANILLA_ENTITIES) {
+            Class<?> cls = vanillaClass(e[2]);
+            if (cls == null) continue;
+            int id = Integer.parseInt(e[1]);
+            stringToClassMapping.put(e[0], cls);
+            classToStringMapping.put(cls, e[0]);
+            IDtoClassMapping.put(id, cls);
+            classToIDMapping.put(cls, id);
+            stringToIDMapping.put(e[0], id);
+            VANILLA.add(cls);
+        }
+    }
+
+    private static Class<?> vanillaClass(String relative) {
+        for (String prefix : new String[] {"legacyconnector.v1_7_10.net.minecraft.entity.", "legacyconnector_synth.v1_7_10.net.minecraft.entity."}) {
+            for (ClassLoader loader : new ClassLoader[] {EntityList.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
+                if (loader == null) continue;
+                try {
+                    return Class.forName(prefix + relative, false, loader);
+                } catch (ClassNotFoundException | LinkageError e) {
+                    // try the next place
+                }
+            }
+        }
+        return null;
+    }
     public static HashMap<Integer, Object> entityEggs = new LinkedHashMap<>() {
         @Override
         public Object put(Integer id, Object value) {
@@ -77,7 +136,7 @@ public class EntityList {
     }
 
     private static Entity mcc$create(Class<?> cls, World world) {
-        if (cls == null) return null;
+        if (cls == null || VANILLA.contains(cls)) return null;
         try {
             return (Entity) cls.getConstructor(World.class).newInstance(world);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
