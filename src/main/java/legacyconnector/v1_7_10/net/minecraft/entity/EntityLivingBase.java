@@ -62,6 +62,14 @@ public abstract class EntityLivingBase extends Entity {
         super(modern);
     }
 
+    public int getArrowCountInEntity() {
+        return mcc$entity == null ? 0 : mcc$living().getArrowCount();
+    }
+
+    public void setArrowCountInEntity(int count) {
+        if (mcc$entity != null) mcc$living().setArrowCount(count);
+    }
+
     public LivingEntity mcc$living() {
         return (LivingEntity) mcc$entity;
     }

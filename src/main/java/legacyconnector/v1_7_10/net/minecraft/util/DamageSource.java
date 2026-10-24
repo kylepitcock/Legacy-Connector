@@ -54,6 +54,10 @@ public class DamageSource {
         return new EntityDamageSource("player", player);
     }
 
+    public static DamageSource causeArrowDamage(legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityArrow arrow, Entity shooter) {
+        return new EntityDamageSourceIndirect("arrow", arrow, shooter).setProjectile();
+    }
+
     public static DamageSource causeThrownDamage(Entity direct, Entity indirect) {
         return new EntityDamageSourceIndirect("thrown", direct, indirect).setProjectile();
     }

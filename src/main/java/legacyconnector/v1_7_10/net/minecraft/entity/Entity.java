@@ -944,6 +944,13 @@ public abstract class Entity implements ICommandSender {
     }
 
     /** Standing in a portal block; the modern portal blocks handle the entity themselves, so nothing is needed here. */
+    /** How far away the entity is still drawn, relative to the default (arrows and other small projectiles use a larger value). */
+    public double renderDistanceWeight = 1.0D;
+
+    /** Applies the effects of the blocks the entity overlaps; the modern game does this for every entity itself. */
+    public void doBlockCollisions() {
+    }
+
     public void setInPortal() {
     }
 
@@ -951,7 +958,7 @@ public abstract class Entity implements ICommandSender {
     }
 
     public float getShadowSize() {
-        return height / 2.0F;
+        return mcc$get$height(this) / 2.0F;
     }
 
     public Vec3 getLookVec() {

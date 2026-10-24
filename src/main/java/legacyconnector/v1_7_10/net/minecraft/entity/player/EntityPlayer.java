@@ -204,6 +204,17 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return mcc$player().isBlocking();
     }
 
+    /** Whether this player may be hurt by {@code other} (the server's player-versus-player setting). */
+    public boolean canAttackPlayer(EntityPlayer other) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null || server.isPvpAllowed();
+    }
+
+    /** Plays the pickup animation of {@code entity} flying into this player. */
+    public void onItemPickup(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int count) {
+        if (entity != null && entity.mcc$entity != null) mcc$player().take(entity.mcc$entity, count);
+    }
+
     public EntityItem dropPlayerItemWithRandomChoice(ItemStack stack, boolean randomly) {
         var dropped = mcc$player().drop(ItemStack.mcc$toModern(stack), randomly, false);
         return dropped == null ? null : (EntityItem) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(dropped);

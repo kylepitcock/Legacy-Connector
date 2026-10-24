@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.InventoryPlayer;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 import legacyconnector.v1_7_10.net.minecraft.util.MathHelper;
@@ -83,7 +84,7 @@ public abstract class Container {
     }
 
     public static boolean isValidDragMode(int mode, EntityPlayer player) {
-        return mode == 0 || mode == 1 || mode == 2 && player != null && player.capabilities.isCreativeMode;
+        return mode == 0 || mode == 1 || mode == 2 && player != null && PlayerCapabilities.mcc$get$isCreativeMode(player.capabilities);
     }
 
     public static int func_94534_d(int event, int mode) {
@@ -91,14 +92,15 @@ public abstract class Container {
     }
 
     public static void computeStackSize(java.util.Set slots, int mode, ItemStack stack, int existing) {
+        int size = ItemStack.mcc$get$stackSize(stack);
         switch (mode) {
-            case 0 -> stack.stackSize = (int) Math.floor((float) stack.stackSize / slots.size());
-            case 1 -> stack.stackSize = 1;
-            case 2 -> stack.stackSize = stack.getItem().getItemStackLimit();
+            case 0 -> size = (int) Math.floor((float) size / slots.size());
+            case 1 -> size = 1;
+            case 2 -> size = stack.getItem().getItemStackLimit();
             default -> {
             }
         }
-        stack.stackSize += existing;
+        ItemStack.mcc$set$stackSize(stack, size + existing);
     }
 
     public void resetDrag() {

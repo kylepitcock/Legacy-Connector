@@ -37,17 +37,17 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         super(world);
         this.thrower = thrower;
         setSize(0.25F, 0.25F);
-        setLocationAndAngles(thrower.posX, thrower.posY + thrower.getEyeHeight(), thrower.posZ, thrower.rotationYaw, thrower.rotationPitch);
-        posX -= MathHelper.cos(rotationYaw / 180.0F * (float) Math.PI) * 0.16F;
-        posY -= 0.10000000149011612D;
-        posZ -= MathHelper.sin(rotationYaw / 180.0F * (float) Math.PI) * 0.16F;
-        setPosition(posX, posY, posZ);
+        setLocationAndAngles(mcc$get$posX(thrower), mcc$get$posY(thrower) + thrower.getEyeHeight(), mcc$get$posZ(thrower), mcc$get$rotationYaw(thrower), mcc$get$rotationPitch(thrower));
+        mcc$set$posX(this, mcc$get$posX(this) - (MathHelper.cos(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * 0.16F));
+        mcc$set$posY(this, mcc$get$posY(this) - (0.10000000149011612D));
+        mcc$set$posZ(this, mcc$get$posZ(this) - (MathHelper.sin(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * 0.16F));
+        setPosition(mcc$get$posX(this), mcc$get$posY(this), mcc$get$posZ(this));
         yOffset = 0.0F;
         float f = 0.4F;
-        motionX = -MathHelper.sin(rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float) Math.PI) * f;
-        motionZ = MathHelper.cos(rotationYaw / 180.0F * (float) Math.PI) * MathHelper.cos(rotationPitch / 180.0F * (float) Math.PI) * f;
-        motionY = -MathHelper.sin((rotationPitch + getInaccuracy()) / 180.0F * (float) Math.PI) * f;
-        setThrowableHeading(motionX, motionY, motionZ, func_70182_d(), 1.0F);
+        mcc$set$motionX(this, -MathHelper.sin(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * MathHelper.cos(mcc$get$rotationPitch(this) / 180.0F * (float) Math.PI) * f);
+        mcc$set$motionZ(this, MathHelper.cos(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * MathHelper.cos(mcc$get$rotationPitch(this) / 180.0F * (float) Math.PI) * f);
+        mcc$set$motionY(this, -MathHelper.sin((mcc$get$rotationPitch(this) + getInaccuracy()) / 180.0F * (float) Math.PI) * f);
+        setThrowableHeading(mcc$get$motionX(this), mcc$get$motionY(this), mcc$get$motionZ(this), func_70182_d(), 1.0F);
     }
 
     public EntityThrowable(World world, double x, double y, double z) {
@@ -63,7 +63,7 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
     }
 
     public boolean isInRangeToRenderDist(double distance) {
-        double d1 = boundingBox.getAverageEdgeLength() * 4.0D;
+        double d1 = mcc$get$boundingBox(this).getAverageEdgeLength() * 4.0D;
         d1 *= 64.0D;
         return distance < d1 * d1;
     }
@@ -88,65 +88,73 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         x *= velocity;
         y *= velocity;
         z *= velocity;
-        motionX = x;
-        motionY = y;
-        motionZ = z;
+        mcc$set$motionX(this, x);
+        mcc$set$motionY(this, y);
+        mcc$set$motionZ(this, z);
         float f3 = MathHelper.sqrt_double(x * x + z * z);
-        prevRotationYaw = rotationYaw = (float) (Math.atan2(x, z) * 180.0D / Math.PI);
-        prevRotationPitch = rotationPitch = (float) (Math.atan2(y, f3) * 180.0D / Math.PI);
+        var chain1 = (float) (Math.atan2(x, z) * 180.0D / Math.PI);
+        mcc$set$rotationYaw(this, chain1);
+        mcc$set$prevRotationYaw(this, chain1);
+        var chain2 = (float) (Math.atan2(y, f3) * 180.0D / Math.PI);
+        mcc$set$rotationPitch(this, chain2);
+        mcc$set$prevRotationPitch(this, chain2);
         ticksInGround = 0;
     }
 
     @Override
     public void setVelocity(double x, double y, double z) {
-        motionX = x;
-        motionY = y;
-        motionZ = z;
-        if (prevRotationPitch == 0.0F && prevRotationYaw == 0.0F) {
+        mcc$set$motionX(this, x);
+        mcc$set$motionY(this, y);
+        mcc$set$motionZ(this, z);
+        if (mcc$get$prevRotationPitch(this) == 0.0F && mcc$get$prevRotationYaw(this) == 0.0F) {
             float f = MathHelper.sqrt_double(x * x + z * z);
-            prevRotationYaw = rotationYaw = (float) (Math.atan2(x, z) * 180.0D / Math.PI);
-            prevRotationPitch = rotationPitch = (float) (Math.atan2(y, f) * 180.0D / Math.PI);
+            var chain3 = (float) (Math.atan2(x, z) * 180.0D / Math.PI);
+            mcc$set$rotationYaw(this, chain3);
+            mcc$set$prevRotationYaw(this, chain3);
+            var chain4 = (float) (Math.atan2(y, f) * 180.0D / Math.PI);
+            mcc$set$rotationPitch(this, chain4);
+            mcc$set$prevRotationPitch(this, chain4);
         }
     }
 
     @Override
     public void onUpdate() {
-        lastTickPosX = posX;
-        lastTickPosY = posY;
-        lastTickPosZ = posZ;
+        mcc$set$lastTickPosX(this, mcc$get$posX(this));
+        mcc$set$lastTickPosY(this, mcc$get$posY(this));
+        mcc$set$lastTickPosZ(this, mcc$get$posZ(this));
         super.onUpdate();
         if (throwableShake > 0) --throwableShake;
         if (inGround) {
-            if (worldObj.getBlock(xTile, yTile, zTile) == inTile) {
+            if (mcc$get$worldObj(this).getBlock(xTile, yTile, zTile) == inTile) {
                 ++ticksInGround;
                 if (ticksInGround == 1200) setDead();
                 return;
             }
             inGround = false;
-            motionX *= rand.nextFloat() * 0.2F;
-            motionY *= rand.nextFloat() * 0.2F;
-            motionZ *= rand.nextFloat() * 0.2F;
+            mcc$set$motionX(this, mcc$get$motionX(this) * (rand.nextFloat() * 0.2F));
+            mcc$set$motionY(this, mcc$get$motionY(this) * (rand.nextFloat() * 0.2F));
+            mcc$set$motionZ(this, mcc$get$motionZ(this) * (rand.nextFloat() * 0.2F));
             ticksInGround = 0;
             ticksInAir = 0;
         } else {
             ++ticksInAir;
         }
-        Vec3 from = Vec3.createVectorHelper(posX, posY, posZ);
-        Vec3 to = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
-        MovingObjectPosition hit = worldObj.rayTraceBlocks(from, to);
-        from = Vec3.createVectorHelper(posX, posY, posZ);
-        to = Vec3.createVectorHelper(posX + motionX, posY + motionY, posZ + motionZ);
+        Vec3 from = Vec3.createVectorHelper(mcc$get$posX(this), mcc$get$posY(this), mcc$get$posZ(this));
+        Vec3 to = Vec3.createVectorHelper(mcc$get$posX(this) + mcc$get$motionX(this), mcc$get$posY(this) + mcc$get$motionY(this), mcc$get$posZ(this) + mcc$get$motionZ(this));
+        MovingObjectPosition hit = mcc$get$worldObj(this).rayTraceBlocks(from, to);
+        from = Vec3.createVectorHelper(mcc$get$posX(this), mcc$get$posY(this), mcc$get$posZ(this));
+        to = Vec3.createVectorHelper(mcc$get$posX(this) + mcc$get$motionX(this), mcc$get$posY(this) + mcc$get$motionY(this), mcc$get$posZ(this) + mcc$get$motionZ(this));
         if (hit != null) to = Vec3.createVectorHelper(hit.hitVec.xCoord, hit.hitVec.yCoord, hit.hitVec.zCoord);
-        if (!worldObj.isRemote) {
+        if (!mcc$get$worldObj(this).isRemote) {
             Entity target = null;
-            List list = worldObj.getEntitiesWithinAABBExcludingEntity(this, boundingBox.addCoord(motionX, motionY, motionZ).expand(1.0D, 1.0D, 1.0D));
+            List list = mcc$get$worldObj(this).getEntitiesWithinAABBExcludingEntity(this, mcc$get$boundingBox(this).addCoord(mcc$get$motionX(this), mcc$get$motionY(this), mcc$get$motionZ(this)).expand(1.0D, 1.0D, 1.0D));
             double nearest = 0.0D;
             EntityLivingBase owner = getThrower();
             for (Object o : list) {
                 Entity candidate = (Entity) o;
                 if (candidate.canBeCollidedWith() && (candidate != owner || ticksInAir >= 5)) {
                     float border = 0.3F;
-                    AxisAlignedBB box = candidate.boundingBox.expand(border, border, border);
+                    AxisAlignedBB box = mcc$get$boundingBox(candidate).expand(border, border, border);
                     MovingObjectPosition intercept = box.calculateIntercept(from, to);
                     if (intercept != null) {
                         double distance = from.distanceTo(intercept.hitVec);
@@ -161,32 +169,40 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         }
         if (hit != null) {
             if (hit.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK
-                    && worldObj.getBlock(hit.blockX, hit.blockY, hit.blockZ) == legacyconnector.v1_7_10.net.minecraft.init.Blocks.portal) {
+                    && mcc$get$worldObj(this).getBlock(hit.blockX, hit.blockY, hit.blockZ) == legacyconnector.v1_7_10.net.minecraft.init.Blocks.portal) {
                 setInPortal();
             } else {
                 onImpact(hit);
             }
         }
-        posX += motionX;
-        posY += motionY;
-        posZ += motionZ;
-        float horizontal = MathHelper.sqrt_double(motionX * motionX + motionZ * motionZ);
-        rotationYaw = (float) (Math.atan2(motionX, motionZ) * 180.0D / Math.PI);
-        for (rotationPitch = (float) (Math.atan2(motionY, horizontal) * 180.0D / Math.PI); rotationPitch - prevRotationPitch < -180.0F; prevRotationPitch -= 360.0F) {
+        mcc$set$posX(this, mcc$get$posX(this) + (mcc$get$motionX(this)));
+        mcc$set$posY(this, mcc$get$posY(this) + (mcc$get$motionY(this)));
+        mcc$set$posZ(this, mcc$get$posZ(this) + (mcc$get$motionZ(this)));
+        float horizontal = MathHelper.sqrt_double(mcc$get$motionX(this) * mcc$get$motionX(this) + mcc$get$motionZ(this) * mcc$get$motionZ(this));
+        mcc$set$rotationYaw(this, (float) (Math.atan2(mcc$get$motionX(this), mcc$get$motionZ(this)) * 180.0D / Math.PI));
+        mcc$set$rotationPitch(this, (float) (Math.atan2(mcc$get$motionY(this), horizontal) * 180.0D / Math.PI));
+        while (mcc$get$rotationPitch(this) - mcc$get$prevRotationPitch(this) < -180.0F) {
+            mcc$set$prevRotationPitch(this, mcc$get$prevRotationPitch(this) - (360.0F));
         }
-        while (rotationPitch - prevRotationPitch >= 180.0F) prevRotationPitch += 360.0F;
-        while (rotationYaw - prevRotationYaw < -180.0F) prevRotationYaw -= 360.0F;
-        while (rotationYaw - prevRotationYaw >= 180.0F) prevRotationYaw += 360.0F;
-        rotationPitch = prevRotationPitch + (rotationPitch - prevRotationPitch) * 0.2F;
-        rotationYaw = prevRotationYaw + (rotationYaw - prevRotationYaw) * 0.2F;
+        while (mcc$get$rotationPitch(this) - mcc$get$prevRotationPitch(this) >= 180.0F) {
+            mcc$set$prevRotationPitch(this, mcc$get$prevRotationPitch(this) + (360.0F));
+        }
+        while (mcc$get$rotationYaw(this) - mcc$get$prevRotationYaw(this) < -180.0F) {
+            mcc$set$prevRotationYaw(this, mcc$get$prevRotationYaw(this) - (360.0F));
+        }
+        while (mcc$get$rotationYaw(this) - mcc$get$prevRotationYaw(this) >= 180.0F) {
+            mcc$set$prevRotationYaw(this, mcc$get$prevRotationYaw(this) + (360.0F));
+        }
+        mcc$set$rotationPitch(this, mcc$get$prevRotationPitch(this) + (mcc$get$rotationPitch(this) - mcc$get$prevRotationPitch(this)) * 0.2F);
+        mcc$set$rotationYaw(this, mcc$get$prevRotationYaw(this) + (mcc$get$rotationYaw(this) - mcc$get$prevRotationYaw(this)) * 0.2F);
         float drag = 0.99F;
         float gravity = getGravityVelocity();
         if (isInWater()) drag = 0.8F;
-        motionX *= drag;
-        motionY *= drag;
-        motionZ *= drag;
-        motionY -= gravity;
-        setPosition(posX, posY, posZ);
+        mcc$set$motionX(this, mcc$get$motionX(this) * (drag));
+        mcc$set$motionY(this, mcc$get$motionY(this) * (drag));
+        mcc$set$motionZ(this, mcc$get$motionZ(this) * (drag));
+        mcc$set$motionY(this, mcc$get$motionY(this) - (gravity));
+        setPosition(mcc$get$posX(this), mcc$get$posY(this), mcc$get$posZ(this));
     }
 
     protected float getGravityVelocity() {
@@ -228,7 +244,7 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
 
     public EntityLivingBase getThrower() {
         if (thrower == null && throwerName != null && throwerName.length() > 0) {
-            thrower = worldObj.getPlayerEntityByName(throwerName);
+            thrower = mcc$get$worldObj(this).getPlayerEntityByName(throwerName);
         }
         return thrower;
     }
