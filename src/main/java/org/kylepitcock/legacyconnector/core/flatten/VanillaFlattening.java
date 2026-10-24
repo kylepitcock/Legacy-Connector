@@ -120,15 +120,21 @@ public final class VanillaFlattening {
         for (var e : blockIds.entrySet()) itemIds.putIfAbsent(e.getKey(), e.getValue());
     }
 
+    /** Qualifies a 1.7.10 item name and applies the one rename the data fixer's 1.8 era names do not cover. */
+    private static String modernised(String legacyName) {
+        String name = legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName;
+        return name.equals("minecraft:cooked_fished") ? "minecraft:cooked_fish" : name;
+    }
+
     public static int itemId(String legacyName) {
         initItemIds();
-        Integer id = itemIds.get(legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName);
+        Integer id = itemIds.get(modernised(legacyName));
         return id == null ? -1 : id;
     }
 
     /** Modern item for a legacy vanilla item (or block-item) name and metadata/damage. */
     public static synchronized Item item(String legacyName, int meta) {
-        String name = legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName;
+        String name = modernised(legacyName);
         int key = (name.hashCode() * 31) ^ meta;
         Item cached = ITEMS.get(key);
         if (cached != null) return cached;

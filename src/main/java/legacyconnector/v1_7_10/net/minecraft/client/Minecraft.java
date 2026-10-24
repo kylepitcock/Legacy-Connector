@@ -147,6 +147,11 @@ public class Minecraft {
         mc().mouseHandler.releaseMouse();
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer getIntegratedServer() {
+        return (legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer)
+                legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.mcc$wrap(mc().getSingleplayerServer());
+    }
+
     public boolean isIntegratedServerRunning() {
         return mc().hasSingleplayerServer();
     }
