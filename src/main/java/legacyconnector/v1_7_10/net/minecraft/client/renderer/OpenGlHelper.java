@@ -9,8 +9,8 @@ public class OpenGlHelper {
     public static int lightmapTexUnit = 33985;
     public static float lastBrightnessX;
     public static float lastBrightnessY;
-    public static boolean shadersSupported = true;
-    public static boolean openGL21 = true;
+    public static boolean shadersSupported = false;
+    public static boolean openGL21 = false;
     public static boolean framebufferSupported = true;
     public static boolean anisotropicFilteringSupported = true;
 

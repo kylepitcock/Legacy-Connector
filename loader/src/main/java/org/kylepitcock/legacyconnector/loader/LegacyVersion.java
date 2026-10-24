@@ -39,6 +39,7 @@ public enum LegacyVersion {
             "org/lwjgl/opengl/PixelFormat",
             "org/lwjgl/opengl/ContextCapabilities",
             "org/lwjgl/opengl/GLContext",
+            "org/lwjgl/opengl/OpenGLException",
             "org/lwjgl/LWJGLException",
             "org/lwjgl/Sys",
             // The sound library 1.7.10 bundled (mods configure it directly); the modern game has its own engine.
