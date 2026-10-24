@@ -102,6 +102,7 @@ def generateBuildId = tasks.register('generateBuildId') {
     def classesDir = sourceSets.main.java.classesDirectory
     def hierarchy = fileTree('src/main/resources/legacyconnector/legacy')
     def mappings = fileTree(layout.buildDirectory.dir('generated/mappings'))
+    dependsOn 'extractMappings'
     inputs.files(classesDir, hierarchy, mappings)
     outputs.dir buildIdDir
     doLast {

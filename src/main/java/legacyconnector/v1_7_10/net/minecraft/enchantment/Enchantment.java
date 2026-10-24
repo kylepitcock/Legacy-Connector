@@ -109,6 +109,14 @@ public class Enchantment {
         return 0;
     }
 
+    /** Extra melee damage against a creature of this attribute (func_152376_a). */
+    public float func_152376_a(int level, legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute attribute) {
+        if (effectId == 16) return level * 1.25F;
+        if (effectId == 17 && attribute == legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute.UNDEAD) return level * 2.5F;
+        if (effectId == 18 && attribute == legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute.ARTHROPOD) return level * 2.5F;
+        return 0.0F;
+    }
+
     public boolean canApplyTogether(Enchantment other) {
         return this != other;
     }

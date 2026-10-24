@@ -57,6 +57,63 @@ public class EnchantmentHelper {
         return entity == null ? 0 : getEnchantmentLevel(id, entity.getHeldItem());
     }
 
+    /** Melee bonus of {@code stack} against a creature attribute (func_152377_a). */
+    public static float func_152377_a(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute attribute) {
+        float total = 0.0F;
+        for (Object o : getEnchantments(stack).entrySet()) {
+            Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+            int id = ((Number) e.getKey()).intValue();
+            if (id >= 0 && id < Enchantment.enchantmentsList.length && Enchantment.enchantmentsList[id] != null) {
+                total += Enchantment.enchantmentsList[id].func_152376_a(((Number) e.getValue()).intValue(), attribute);
+            }
+        }
+        return total;
+    }
+
+    public static float getEnchantmentModifierLiving(EntityLivingBase attacker, EntityLivingBase target) {
+        return func_152377_a(attacker == null ? null : attacker.getHeldItem(), target == null ? legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute.UNDEFINED : target.getCreatureAttribute());
+    }
+
+    /** Hit effects of the attacker's held enchantments (func_151384_a). */
+    public static void func_151384_a(EntityLivingBase user, legacyconnector.v1_7_10.net.minecraft.entity.Entity attacker) {
+        for (ItemStack s : new ItemStack[] {user == null ? null : user.getHeldItem()}) {
+            for (Object o : getEnchantments(s).entrySet()) {
+                Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+                int id = ((Number) e.getKey()).intValue();
+                if (id >= 0 && id < Enchantment.enchantmentsList.length && Enchantment.enchantmentsList[id] != null) {
+                    Enchantment.enchantmentsList[id].func_151367_b(user, attacker, ((Number) e.getValue()).intValue());
+                }
+            }
+        }
+    }
+
+    public static void func_151385_b(EntityLivingBase user, legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+        ItemStack held = user == null ? null : user.getHeldItem();
+        for (Object o : getEnchantments(held).entrySet()) {
+            Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+            int id = ((Number) e.getKey()).intValue();
+            if (id >= 0 && id < Enchantment.enchantmentsList.length && Enchantment.enchantmentsList[id] != null) {
+                Enchantment.enchantmentsList[id].func_151368_a(user, target, ((Number) e.getValue()).intValue());
+            }
+        }
+    }
+
+    public static int getEnchantmentModifierDamage(ItemStack[] armor, legacyconnector.v1_7_10.net.minecraft.util.DamageSource source) {
+        int total = 0;
+        if (armor != null) {
+            for (ItemStack s : armor) {
+                for (Object o : getEnchantments(s).entrySet()) {
+                    Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+                    int id = ((Number) e.getKey()).intValue();
+                    if (id >= 0 && id < Enchantment.enchantmentsList.length && Enchantment.enchantmentsList[id] != null) {
+                        total += Enchantment.enchantmentsList[id].calcModifierDamage(((Number) e.getValue()).intValue(), source);
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
     public static int getKnockbackModifier(EntityLivingBase attacker, EntityLivingBase target) {
         return held(Enchantment.knockback.effectId, attacker);
     }
