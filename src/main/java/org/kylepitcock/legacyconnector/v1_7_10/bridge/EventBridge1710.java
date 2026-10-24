@@ -452,11 +452,11 @@ public final class EventBridge1710 {
         }
     }
 
+    /** Load, Unload and Save: the interest check must use the concrete event class (listeners subscribe to {@code WorldEvent.Load}, not to the base class). */
     private static void worldEvent(LevelAccessor level, java.util.function.Function<World, WorldEvent> factory) {
-        WorldEvent probe;
-        if (!wants(forge(), WorldEvent.class)) return;
-        probe = factory.apply(World.mcc$wrap(level));
-        forge().post(probe);
+        WorldEvent event = factory.apply(World.mcc$wrap(level));
+        if (!wants(forge(), event.getClass())) return;
+        forge().post(event);
     }
 
     private static EntityPlayer player(net.minecraft.world.entity.player.Player p) {
