@@ -97,6 +97,10 @@ public final class LegacyConnector {
             game.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
                 if (++ticks[0] != stopTicks) return;
                 LOGGER.info("Test autostop after {} ticks: saving and stopping", stopTicks);
+                long chunks = 0;
+                for (var level : e.getServer().getAllLevels()) chunks += level.getChunkSource().getLoadedChunksCount();
+                Runtime rt = Runtime.getRuntime();
+                LOGGER.info("Before the stop: {} chunks loaded, heap {} MB used of {} MB", chunks, (rt.totalMemory() - rt.freeMemory()) >> 20, rt.maxMemory() >> 20);
                 long start = System.nanoTime();
                 Thread watch = new Thread(() -> {
                     try {

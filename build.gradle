@@ -71,7 +71,7 @@ neoForge {
             gameDirectory = project.file('run-subtest')
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
-            systemProperty 'legacyconnector.autostopTicks', '1500'
+            systemProperty 'legacyconnector.autostopTicks', '700'
             systemProperty 'legacyconnector.entitySelfTest', 'true'
         }
 
