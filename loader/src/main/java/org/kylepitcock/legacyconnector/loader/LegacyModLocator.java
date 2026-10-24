@@ -256,6 +256,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(Files.readAllBytes(tmpDemand));
             md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
             md.update(LOADER_DIGEST);
+            if (runtimeDigest != null) md.update(runtimeDigest);
             if (indexDigest != null) md.update(indexDigest);
             Path target = cacheDir.resolve("legacyconnector-synth-" + version.id() + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar");
             if (Files.exists(target)) return target;
@@ -323,6 +324,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         md.update(fileDigest(jar.existing()));
         md.update(("v" + LegacyJarTransformer.TRANSFORMER_VERSION).getBytes(StandardCharsets.UTF_8));
         md.update(LOADER_DIGEST);
+        // Any change to the embedded runtime (shim code, bridges) re-translates: no cache can outlive the build that wrote it.
+        if (runtimeDigest != null) md.update(runtimeDigest);
         if (indexDigest != null) md.update(indexDigest);
         if (modSet != null) md.update(modSet);
         String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
@@ -331,6 +334,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     private static byte[] indexDigest;
+    private static byte[] runtimeDigest;
     /** Digest of the loader's own jar: any change to the translator re-translates, without manual version bumps. */
     private static final byte[] LOADER_DIGEST = loaderDigest();
 
@@ -348,7 +352,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         try (InputStream in = LegacyModLocator.class.getResourceAsStream(EMBEDDED_RUNTIME)) {
             if (in == null) return null; // development: the runtime mod is on the classpath already
             byte[] bytes = in.readAllBytes();
-            String hash = HexFormat.of().formatHex(SplitPackageResolver.sha256().digest(bytes)).substring(0, 16);
+            runtimeDigest = SplitPackageResolver.sha256().digest(bytes);
+            String hash = HexFormat.of().formatHex(runtimeDigest).substring(0, 16);
             Path target = cacheDir.resolve("legacyconnector-runtime-" + hash + ".jar");
             if (!Files.exists(target)) Files.write(target, bytes);
             return target;

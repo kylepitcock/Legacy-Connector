@@ -101,11 +101,12 @@ def buildIdDir = layout.buildDirectory.dir('generated/buildId')
 def generateBuildId = tasks.register('generateBuildId') {
     def classesDir = sourceSets.main.java.classesDirectory
     def hierarchy = fileTree('src/main/resources/legacyconnector/legacy')
-    inputs.files(classesDir, hierarchy)
+    def mappings = fileTree(layout.buildDirectory.dir('generated/mappings'))
+    inputs.files(classesDir, hierarchy, mappings)
     outputs.dir buildIdDir
     doLast {
         def md = java.security.MessageDigest.getInstance('SHA-256')
-        (classesDir.get().asFileTree.files + hierarchy.files).sort { it.absolutePath }.each { md.update(it.bytes) }
+        (classesDir.get().asFileTree.files + hierarchy.files + mappings.files).sort { it.absolutePath }.each { md.update(it.bytes) }
         def out = buildIdDir.get().file('legacyconnector/loader-build-id.txt').asFile
         out.parentFile.mkdirs()
         out.text = md.digest().encodeHex().toString()
