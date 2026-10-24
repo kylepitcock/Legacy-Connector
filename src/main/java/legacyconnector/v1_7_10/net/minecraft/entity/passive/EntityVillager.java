@@ -8,6 +8,12 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge;
 
 /** A modern villager as the 1.7.10 class: numeric professions (vanilla 0-4, mods' registered ids) and its trades. */
 public class EntityVillager extends EntityAgeable {
+    /** The trade chance curve vanilla uses when it builds trade offers (mods reflect it: FiskHeroes). */
+    public static float adjustProbability(float probability) {
+        float f = probability + 0.3F;
+        return f > 0.9F ? 0.9F - (f - 0.9F) : f;
+    }
+
     public EntityVillager(legacyconnector.v1_7_10.net.minecraft.world.World world) {
         super(world);
     }
