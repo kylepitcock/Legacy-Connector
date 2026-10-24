@@ -65,6 +65,14 @@ public class DimensionManager {
                 Class<?> provider = PROVIDERS.get(e.getValue());
                 if (provider != null) out.put(id, provider);
             }
+            // Mods such as Galacticraft register their planets' dimensions only when the server starts, long after the
+            // dimension data is written: a provider type nobody has a dimension for gets one under its own id (the id
+            // those mods register it under).
+            for (var e : PROVIDERS.entrySet()) {
+                int id = e.getKey();
+                if (id == 0 || id == -1 || id == 1 || DIMENSIONS.containsKey(id) || DIMENSIONS.containsValue(id)) continue;
+                out.putIfAbsent(id, e.getValue());
+            }
         }
         return out;
     }
