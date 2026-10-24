@@ -39,7 +39,7 @@ public final class CreativeTabBridge {
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup." + tab.getTabLabel()))
-                    .icon(() -> icon(tab))
+                    .icon(() -> icon(tab).copy())
                     .displayItems((params, output) -> {
                         for (net.minecraft.world.item.ItemStack s : contents(tab)) output.accept(s);
                     })
@@ -65,16 +65,26 @@ public final class CreativeTabBridge {
         return sb.toString();
     }
 
-    /** The legacy icon, or the tab's first item if the legacy code throws or has none. Called every frame. */
-    private static net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {
+    /** The icon of every tab, worked out once: the creative screen asks for it every frame and the fallback lists the whole tab. */
+    private static final java.util.Map<CreativeTabs, net.minecraft.world.item.ItemStack> ICONS = new java.util.IdentityHashMap<>();
+
+    /** The legacy icon, or the tab's first item if the legacy code throws or has none. */
+    private static synchronized net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {
+        net.minecraft.world.item.ItemStack cached = ICONS.get(tab);
+        if (cached != null) return cached;
+        net.minecraft.world.item.ItemStack icon = null;
         try {
-            ItemStack icon = tab.getIconItemStack();
-            if (icon != null && !icon.mcc$modern().isEmpty()) return icon.mcc$modern().copy();
+            ItemStack legacy = tab.getIconItemStack();
+            if (legacy != null && !legacy.mcc$modern().isEmpty()) icon = legacy.mcc$modern().copy();
         } catch (RuntimeException | LinkageError e) {
             // fall through
         }
-        List<net.minecraft.world.item.ItemStack> items = contents(tab);
-        return items.isEmpty() ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK) : items.get(0);
+        if (icon == null) {
+            List<net.minecraft.world.item.ItemStack> items = contents(tab);
+            icon = items.isEmpty() ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BOOK) : items.get(0);
+        }
+        ICONS.put(tab, icon);
+        return icon;
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
