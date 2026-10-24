@@ -176,29 +176,6 @@ public class Material {
         }
     }
 
-    static class MaterialLiquid extends Material {
-        MaterialLiquid(MapColor c) {
-            super(c);
-            setReplaceable();
-            setNoPushMobility();
-        }
-
-        @Override
-        public boolean isLiquid() {
-            return true;
-        }
-
-        @Override
-        public boolean blocksMovement() {
-            return false;
-        }
-
-        @Override
-        public boolean isSolid() {
-            return false;
-        }
-    }
-
     static class MaterialPortal extends Material {
         MaterialPortal(MapColor c) {
             super(c);

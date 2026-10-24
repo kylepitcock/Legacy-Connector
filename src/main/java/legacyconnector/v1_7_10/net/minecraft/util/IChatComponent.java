@@ -29,4 +29,16 @@ public interface IChatComponent extends Iterable<IChatComponent> {
     static IChatComponent mcc$fromModern(Component component) {
         return new ChatComponentText(component.getString());
     }
+
+    /** The JSON form of components (commands, books, packets). */
+    class Serializer {
+        public static IChatComponent jsonToComponent(String json) {
+            Component c = Component.Serializer.fromJson(json, net.minecraft.core.RegistryAccess.EMPTY);
+            return mcc$fromModern(c == null ? Component.empty() : c);
+        }
+
+        public static String componentToJson(IChatComponent component) {
+            return Component.Serializer.toJson(component.mcc$toModern(), net.minecraft.core.RegistryAccess.EMPTY);
+        }
+    }
 }

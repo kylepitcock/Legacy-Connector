@@ -20,6 +20,10 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.WorldGenBridge;
 
 public class GameRegistry {
+    public enum Type {
+        BLOCK, ITEM
+    }
+
     /** Forge's private registry of generators; DragonAPI's retrogen settings read it reflectively. */
     private static final java.util.Set<IWorldGenerator> worldGenerators = new java.util.LinkedHashSet<>();
     /** Forge's generator list sorted by weight (read reflectively like {@code worldGenerators}). */
