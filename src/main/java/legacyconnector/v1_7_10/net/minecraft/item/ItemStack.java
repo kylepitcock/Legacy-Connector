@@ -460,4 +460,9 @@ public final class ItemStack {
     public legacyconnector.v1_7_10.net.minecraft.util.IChatComponent func_151000_E() {
         return new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(getDisplayName());
     }
+
+    public void onBlockDestroyed(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.block.Block block, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (mcc$item != null) mcc$item.onBlockDestroyed(this, world, block, x, y, z, player);
+    }
 }

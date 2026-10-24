@@ -381,4 +381,18 @@ public class BiomeGenBase {
     public enum TempCategory {
         OCEAN, COLD, MEDIUM, WARM
     }
+
+    public void plantFlower(legacyconnector.v1_7_10.net.minecraft.world.World world, Random rand, int x, int y, int z) {
+        if (mcc$flowers.isEmpty()) addDefaultFlowers();
+        int total = 0;
+        for (Object[] f : mcc$flowers) total += (Integer) f[2];
+        int pick = rand.nextInt(Math.max(1, total));
+        for (Object[] f : mcc$flowers) {
+            pick -= (Integer) f[2];
+            if (pick < 0) {
+                world.setBlock(x, y, z, (legacyconnector.v1_7_10.net.minecraft.block.Block) f[0], (Integer) f[1], 3);
+                return;
+            }
+        }
+    }
 }

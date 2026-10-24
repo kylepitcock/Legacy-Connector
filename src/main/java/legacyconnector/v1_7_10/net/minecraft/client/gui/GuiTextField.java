@@ -207,4 +207,7 @@ public class GuiTextField extends Gui {
     public int getWidth() {
         return enableBackgroundDrawing ? width - 8 : width;
     }
+
+    public void setSelectionPos(int position) {
+    }
 }

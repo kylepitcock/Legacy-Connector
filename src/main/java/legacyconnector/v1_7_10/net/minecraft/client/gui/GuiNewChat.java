@@ -28,4 +28,12 @@ public class GuiNewChat extends Gui {
     public boolean getChatOpen() {
         return net.minecraft.client.Minecraft.getInstance().screen instanceof net.minecraft.client.gui.screens.ChatScreen;
     }
+
+    public void addToSentMessages(String message) {
+        var gui = net.minecraft.client.Minecraft.getInstance().gui;
+        if (gui != null) gui.getChat().addRecentChat(message);
+    }
+
+    public void deleteChatLine(int id) {
+    }
 }

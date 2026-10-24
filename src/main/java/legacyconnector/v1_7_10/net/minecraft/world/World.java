@@ -1114,4 +1114,25 @@ public class World implements IBlockAccess {
     public boolean isBlockFreezable(int x, int y, int z) {
         return false;
     }
+
+    public int getSkyBlockTypeBrightness(EnumSkyBlock type, int x, int y, int z) {
+        return lvl().getBrightness(type == EnumSkyBlock.Sky ? net.minecraft.world.level.LightLayer.SKY : net.minecraft.world.level.LightLayer.BLOCK, pos(x, y, z));
+    }
+
+    public void destroyBlockInWorldPartially(int breakerId, int x, int y, int z, int progress) {
+    }
+
+    public void playRecord(String name, int x, int y, int z) {
+    }
+
+    public float getCurrentMoonPhaseFactor() {
+        return 1.0F;
+    }
+
+    public float getBlockDensity(legacyconnector.v1_7_10.net.minecraft.util.Vec3 origin, AxisAlignedBB box) {
+        return 1.0F;
+    }
+
+    public void makeFireworks(double x, double y, double z, double motionX, double motionY, double motionZ, legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+    }
 }

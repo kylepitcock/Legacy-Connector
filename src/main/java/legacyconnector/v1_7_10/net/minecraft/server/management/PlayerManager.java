@@ -36,4 +36,11 @@ public class PlayerManager {
             }
         }
     }
+
+    public boolean isPlayerWatchingChunk(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player, int chunkX, int chunkZ) {
+        return level.getChunkSource().chunkMap.getPlayers(new ChunkPos(chunkX, chunkZ), false).contains(player.mcc$serverPlayer());
+    }
+
+    public void removePlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+    }
 }

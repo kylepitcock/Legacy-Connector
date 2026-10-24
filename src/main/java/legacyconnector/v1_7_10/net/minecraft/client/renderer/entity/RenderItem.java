@@ -86,4 +86,8 @@ public class RenderItem extends Render {
     public void renderIcon(int x, int y, legacyconnector.v1_7_10.net.minecraft.util.IIcon icon, int width, int height) {
         new legacyconnector.v1_7_10.net.minecraft.client.gui.Gui().drawTexturedModelRectFromIcon(x, y, icon, width, height);
     }
+
+    public void renderItemIntoGUI(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, boolean renderEffect) {
+        renderItemIntoGUI(font, tm, stack, x, y);
+    }
 }

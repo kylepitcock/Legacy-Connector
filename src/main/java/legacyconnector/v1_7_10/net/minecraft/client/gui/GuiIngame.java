@@ -11,4 +11,8 @@ public class GuiIngame extends Gui {
     public int getUpdateCounter() {
         return net.minecraft.client.Minecraft.getInstance().gui.getGuiTicks();
     }
+
+    public void setRecordPlayingMessage(String message) {
+        net.minecraft.client.Minecraft.getInstance().gui.setOverlayMessage(net.minecraft.network.chat.Component.literal(message), true);
+    }
 }

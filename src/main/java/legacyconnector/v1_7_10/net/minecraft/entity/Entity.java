@@ -1229,4 +1229,9 @@ public abstract class Entity implements ICommandSender {
 
     public void applyEntityCollision(Entity other) {
     }
+
+    public float getBrightness(float partial) {
+        if (mcc$entity == null) return 1.0F;
+        return mcc$entity.level().getLightEngine().getRawBrightness(mcc$entity.blockPosition(), 0) / 15.0F;
+    }
 }

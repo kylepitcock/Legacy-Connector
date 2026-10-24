@@ -191,4 +191,7 @@ public class WorldProvider {
     public String getSaveFolder() {
         return dimensionId == 0 ? null : "DIM" + dimensionId;
     }
+
+    public void updateWeather() {
+    }
 }

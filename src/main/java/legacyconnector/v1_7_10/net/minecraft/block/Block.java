@@ -1023,4 +1023,9 @@ public class Block {
         }
         return false;
     }
+
+    public boolean addHitEffects(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
+            legacyconnector.v1_7_10.net.minecraft.client.particle.EffectRenderer effects) {
+        return false;
+    }
 }

@@ -31,4 +31,7 @@ public class WorldServer extends World {
 
     public void removePlayerEntityDangerously(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
     }
+
+    public void func_147487_a(String particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double speed) {
+    }
 }

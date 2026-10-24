@@ -198,4 +198,18 @@ public class InventoryPlayer implements IInventory {
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return true;
     }
+
+    /** Removes up to {@code count} (all when negative) of an item, ignoring the metadata when {@code meta} is negative; returns how many went. */
+    public int clearInventory(legacyconnector.v1_7_10.net.minecraft.item.Item item, int meta) {
+        int removed = 0;
+        for (int i = 0; i < getSizeInventory(); i++) {
+            legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack = getStackInSlot(i);
+            if (stack == null) continue;
+            if (item != null && stack.getItem() != item) continue;
+            if (meta > -1 && stack.getItemDamage() != meta) continue;
+            removed += legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$get$stackSize(stack);
+            setInventorySlotContents(i, null);
+        }
+        return removed;
+    }
 }

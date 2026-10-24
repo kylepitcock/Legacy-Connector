@@ -58,4 +58,8 @@ public class FMLClientHandler {
     public legacyconnector.v1_7_10.net.minecraft.network.INetHandler getClientPlayHandler() {
         return legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE;
     }
+
+    public String getCurrentLanguage() {
+        return net.minecraft.client.Minecraft.getInstance().options.languageCode;
+    }
 }

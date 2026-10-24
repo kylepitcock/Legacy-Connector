@@ -248,4 +248,8 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         }
         return thrower;
     }
+
+    protected float func_70183_g() {
+        return 0.03F;
+    }
 }

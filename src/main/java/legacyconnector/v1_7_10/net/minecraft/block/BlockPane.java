@@ -17,4 +17,10 @@ public class BlockPane extends legacyconnector.v1_7_10.net.minecraft.block.Block
     protected BlockPane(java.lang.String p0, java.lang.String p1, legacyconnector.v1_7_10.net.minecraft.block.material.Material p2, boolean p3) {
         this(p2);
     }
+
+    public boolean canPaneConnectTo(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection direction) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block other = world.getBlock(x, y, z);
+        return other == this || other.isOpaqueCube();
+    }
 }

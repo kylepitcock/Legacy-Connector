@@ -7,4 +7,15 @@ public class EntityClientPlayerMP extends EntityPlayerSP {
     public EntityClientPlayerMP(Player modern) {
         super(modern);
     }
+
+    public void sendChatMessage(String message) {
+        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+        if (connection == null) return;
+        if (message.startsWith("/")) connection.sendCommand(message.substring(1));
+        else connection.sendChat(message);
+    }
+
+    public float getSwingProgress(float partial) {
+        return mcc$player().getAttackAnim(partial);
+    }
 }

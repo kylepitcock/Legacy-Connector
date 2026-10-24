@@ -14,4 +14,12 @@ public class ItemDye extends Item {
         setHasSubtypes(true);
         setMaxDamage(0);
     }
+
+    public static boolean applyBonemeal(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        var level = world.mcc$fullLevel();
+        if (level == null) return false;
+        return net.minecraft.world.item.BoneMealItem.applyBonemeal(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BONE_MEAL),
+                level, new net.minecraft.core.BlockPos(x, y, z), player == null ? null : (net.minecraft.world.entity.player.Player) player.mcc$entity);
+    }
 }

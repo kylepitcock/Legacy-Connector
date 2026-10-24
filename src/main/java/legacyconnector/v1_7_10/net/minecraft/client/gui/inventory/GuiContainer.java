@@ -78,4 +78,10 @@ public abstract class GuiContainer extends GuiScreen {
     public void mcc$drawForeground(int mouseX, int mouseY) {
         drawGuiContainerForegroundLayer(mouseX, mouseY);
     }
+
+    protected void handleMouseClick(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot, int slotId, int button, int mode) {
+    }
+
+    protected void drawSlot(legacyconnector.v1_7_10.net.minecraft.inventory.Slot slot) {
+    }
 }

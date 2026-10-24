@@ -116,4 +116,10 @@ public class FMLCommonHandler {
 
     public void registerCrashCallable(ICrashCallable callable) {
     }
+
+    public void showGuiScreen(Object screen) {
+        if (screen instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen gui) {
+            net.minecraft.client.Minecraft.getInstance().execute(() -> legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().displayGuiScreen(gui));
+        }
+    }
 }

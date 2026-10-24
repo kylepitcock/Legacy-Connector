@@ -288,4 +288,12 @@ public class Chunk {
 
     public void removeEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
     }
+
+    public int getSavedLightValue(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock type, int x, int y, int z) {
+        return worldObj.getSkyBlockTypeBrightness(type, wx(x), y, wz(z));
+    }
+
+    public boolean setBlockIDWithMetadata(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block, int meta) {
+        return worldObj.setBlock(wx(x), y, wz(z), block, meta, 2);
+    }
 }

@@ -93,4 +93,7 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
     }
 
     public java.util.List loadedChunks = new java.util.ArrayList();
+
+    public void getNextWindowId() {
+    }
 }

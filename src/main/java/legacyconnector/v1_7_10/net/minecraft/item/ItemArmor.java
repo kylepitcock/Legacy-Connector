@@ -111,4 +111,15 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         if (tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3)) return tag.getCompoundTag("display").getInteger("color");
         return 10511680;
     }
+
+    public void func_82813_b(ItemStack stack, int color) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+            stack.setTagCompound(tag);
+        }
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound display = tag.getCompoundTag("display");
+        if (!tag.hasKey("display", 10)) tag.setTag("display", display);
+        display.setInteger("color", color);
+    }
 }

@@ -352,4 +352,7 @@ public abstract class EntityPlayer extends EntityLivingBase {
         }
         return null;
     }
+
+    public void onCriticalHit(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+    }
 }
