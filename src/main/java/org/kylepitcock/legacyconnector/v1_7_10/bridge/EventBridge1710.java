@@ -447,8 +447,11 @@ public final class EventBridge1710 {
     }
 
     private static void worldTick(net.minecraft.world.level.Level level, TickEvent.Phase phase) {
+        // 1.7.10 posted WorldTickEvent for server worlds only (the client had ClientTickEvent); handlers cast event.world to
+        // WorldServer without checking the side (Galacticraft's TickHandlerServer).
+        if (level.isClientSide) return;
         if (wants(fml(), TickEvent.WorldTickEvent.class)) {
-            fml().post(new TickEvent.WorldTickEvent(level.isClientSide ? Side.CLIENT : Side.SERVER, phase, World.mcc$wrap(level)));
+            fml().post(new TickEvent.WorldTickEvent(Side.SERVER, phase, World.mcc$wrap(level)));
         }
     }
 

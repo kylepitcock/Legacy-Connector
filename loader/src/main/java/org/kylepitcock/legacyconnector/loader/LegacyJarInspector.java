@@ -43,6 +43,9 @@ public final class LegacyJarInspector {
      */
     public static LegacyJar inspect(Path path) throws IOException {
         try (ZipFile zip = new ZipFile(path.toFile())) {
+            // Legacy Connector itself, whatever the file is called (a second copy of the jar in mods/ is not a legacy mod:
+            // translating it puts the loader's packages in two modules and the game does not start).
+            if (zip.getEntry("org/kylepitcock/legacyconnector/loader/LegacyModLocator.class") != null) return null;
             // Anything that already speaks a modern metadata format is not ours to touch.
             if (zip.getEntry("META-INF/neoforge.mods.toml") != null
                     || zip.getEntry("META-INF/mods.toml") != null
