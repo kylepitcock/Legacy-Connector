@@ -34,6 +34,9 @@ public final class RenderEvents1710 {
     }
 
     private static void onStage(RenderLevelStageEvent e) {
+        if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.ActiveRenderInfo.mcc$update(e.getCamera().getYRot(), e.getCamera().getXRot());
+        }
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || !MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderWorldLastEvent.class)) return;
         Minecraft mc = Minecraft.getInstance();
         var cam = e.getCamera().getPosition();

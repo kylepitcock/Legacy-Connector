@@ -11,6 +11,37 @@ import legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess;
  * per-vertex shading: the baked quads are lit by the modern renderer.
  */
 public class RenderBlocks {
+    /** Draws {@code icon} as two crossing upright squares centred on the block (plants, crops, tall grass). */
+    public void drawCrossedSquares(legacyconnector.v1_7_10.net.minecraft.util.IIcon icon, double x, double y, double z, float scale) {
+        Tessellator t = Tessellator.instance;
+        double u1 = icon.getMinU();
+        double u2 = icon.getMaxU();
+        double v1 = icon.getMinV();
+        double v2 = icon.getMaxV();
+        double r = 0.45D * scale;
+        double x1 = x + 0.5D - r;
+        double x2 = x + 0.5D + r;
+        double z1 = z + 0.5D - r;
+        double z2 = z + 0.5D + r;
+        double top = y + scale;
+        t.addVertexWithUV(x1, top, z1, u1, v1);
+        t.addVertexWithUV(x1, y, z1, u1, v2);
+        t.addVertexWithUV(x2, y, z2, u2, v2);
+        t.addVertexWithUV(x2, top, z2, u2, v1);
+        t.addVertexWithUV(x2, top, z2, u1, v1);
+        t.addVertexWithUV(x2, y, z2, u1, v2);
+        t.addVertexWithUV(x1, y, z1, u2, v2);
+        t.addVertexWithUV(x1, top, z1, u2, v1);
+        t.addVertexWithUV(x1, top, z2, u1, v1);
+        t.addVertexWithUV(x1, y, z2, u1, v2);
+        t.addVertexWithUV(x2, y, z1, u2, v2);
+        t.addVertexWithUV(x2, top, z1, u2, v1);
+        t.addVertexWithUV(x2, top, z1, u1, v1);
+        t.addVertexWithUV(x2, y, z1, u1, v2);
+        t.addVertexWithUV(x1, y, z2, u2, v2);
+        t.addVertexWithUV(x1, top, z2, u2, v1);
+    }
+
     public IBlockAccess blockAccess;
     public IIcon overrideBlockTexture;
     public boolean flipTexture;

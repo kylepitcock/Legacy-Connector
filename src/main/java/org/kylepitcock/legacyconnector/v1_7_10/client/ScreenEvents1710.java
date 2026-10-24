@@ -18,6 +18,7 @@ public final class ScreenEvents1710 {
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ScreenEvents1710::onOpening);
+        NeoForge.EVENT_BUS.addListener((ScreenEvent.MouseScrolled.Pre e) -> legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$scrolled(e.getScrollDeltaY()));
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Init.Post e) -> {
             if (!(e.getScreen() instanceof LegacyScreen ls) || !wants(GuiScreenEvent.InitGuiEvent.Post.class)) return;
             GuiScreenEvent.InitGuiEvent.Post post = new GuiScreenEvent.InitGuiEvent.Post(ls.legacy(), ls.legacy().mcc$buttons());

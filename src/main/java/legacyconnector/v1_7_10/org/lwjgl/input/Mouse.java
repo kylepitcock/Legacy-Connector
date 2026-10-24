@@ -31,16 +31,58 @@ public class Mouse {
         }
     }
 
+    private static double lastX = Double.NaN;
+    private static double lastY = Double.NaN;
+    private static volatile int wheel;
+
+    /** Scroll steps (one notch is 120, as in LWJGL 2) the game has seen since the last {@link #getDWheel()}. */
+    public static void mcc$scrolled(double vertical) {
+        wheel += (int) Math.round(vertical * 120.0D);
+    }
+
+    /** Movement since the last call, in window pixels (up is positive in LWJGL 2's y axis). */
     public static int getDX() {
-        return 0;
+        try {
+            double x = net.minecraft.client.Minecraft.getInstance().mouseHandler.xpos();
+            int d = Double.isNaN(lastX) ? 0 : (int) (x - lastX);
+            lastX = x;
+            return d;
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
     }
 
     public static int getDY() {
-        return 0;
+        try {
+            double y = net.minecraft.client.Minecraft.getInstance().mouseHandler.ypos();
+            int d = Double.isNaN(lastY) ? 0 : (int) (lastY - y);
+            lastY = y;
+            return d;
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
+    public static int getEventX() {
+        return getX();
+    }
+
+    public static int getEventY() {
+        return getY();
+    }
+
+    public static int getEventDX() {
+        return getDX();
+    }
+
+    public static int getEventDY() {
+        return getDY();
     }
 
     public static int getDWheel() {
-        return 0;
+        int w = wheel;
+        wheel = 0;
+        return w;
     }
 
     public static boolean isGrabbed() {
@@ -75,7 +117,7 @@ public class Mouse {
     }
 
     public static int getEventDWheel() {
-        return 0;
+        return wheel;
     }
 
     public static void setCursorPosition(int x, int y) {

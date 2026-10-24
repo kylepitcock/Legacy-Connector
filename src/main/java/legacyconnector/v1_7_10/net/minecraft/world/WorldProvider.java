@@ -135,6 +135,34 @@ public class WorldProvider {
         return legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(r, g, b);
     }
 
+    /** How many blocks of this dimension one block of the overworld is when travelling through a portal (the nether is 8). */
+    public double getMovementFactor() {
+        return dimensionId == -1 ? 8.0D : 1.0D;
+    }
+
+    public long getSeed() {
+        return worldObj == null ? 0L : worldObj.getSeed();
+    }
+
+    public long getWorldTime() {
+        return worldObj == null ? 0L : worldObj.getWorldTime();
+    }
+
+    public int getHeight() {
+        return 256;
+    }
+
+    public float[] calcSunriseSunsetColors(float celestialAngle, float partialTicks) {
+        float f2 = (float) Math.cos(celestialAngle * (float) Math.PI * 2.0F);
+        if (f2 >= -0.4F && f2 <= 0.4F) {
+            float f3 = f2 / 0.4F * 0.5F + 0.5F;
+            float f4 = 1.0F - (1.0F - (float) Math.sin(f3 * (float) Math.PI)) * 0.99F;
+            f4 *= f4;
+            return new float[] {f3 * 0.3F + 0.7F, f3 * f3 * 0.7F + 0.2F, f3 * f3 * 0.0F + 0.2F, f4};
+        }
+        return null;
+    }
+
     public boolean isSkyColored() {
         return true;
     }
