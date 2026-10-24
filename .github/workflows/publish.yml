@@ -1,6 +1,6 @@
 name: Publish release
 
-# Builds the distributable jar and uploads it to Modrinth, CurseForge and the GitHub release
+# Builds the distributable jar and uploads it to Modrinth and CurseForge
 # whenever a GitHub release is published. The version comes from the tag (v0.0.7 -> 0.0.7).
 # Needs the repository secrets MODRINTH_TOKEN and CURSEFORGE_TOKEN.
 on:
@@ -13,7 +13,7 @@ on:
         required: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   publish:
@@ -41,7 +41,7 @@ jobs:
           chmod +x gradlew
           ./gradlew bundleJar -Pmod_version=${{ steps.ver.outputs.version }}
 
-      - name: Publish to Modrinth, CurseForge and the GitHub release
+      - name: Publish to Modrinth and CurseForge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
           modrinth-id: CCxw8Nzy
@@ -49,9 +49,6 @@ jobs:
 
           curseforge-id: 1763521
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-
-          github-tag: ${{ github.event.release.tag_name || inputs.tag }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
 
           files: build/dist/legacyconnector-*.jar
           name: Legacy Connector ${{ steps.ver.outputs.version }}
