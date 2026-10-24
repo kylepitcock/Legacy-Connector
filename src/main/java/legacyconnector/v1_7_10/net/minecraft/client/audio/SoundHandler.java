@@ -16,6 +16,10 @@ public class SoundHandler {
         SoundEvent event = SoundBridge.sound(name);
         if (event == null) return;
         var manager = net.minecraft.client.Minecraft.getInstance().getSoundManager();
+        if (sound instanceof ITickableSound tickable) {
+            manager.play(new Tickable(event, tickable));
+            return;
+        }
         if (sound.getAttenuationType() == ISound.AttenuationType.NONE) {
             manager.play(SimpleSoundInstance.forUI(event, sound.getPitch(), sound.getVolume()));
         } else {
@@ -38,5 +42,34 @@ public class SoundHandler {
     }
 
     public void stopSounds() {
+    }
+
+    /** A legacy sound updated every tick: its position, volume and pitch are copied each time, and it ends when the legacy sound says so. */
+    private static final class Tickable extends net.minecraft.client.resources.sounds.AbstractTickableSoundInstance {
+        private final ITickableSound legacy;
+
+        Tickable(SoundEvent event, ITickableSound legacy) {
+            super(event, net.minecraft.sounds.SoundSource.MASTER, RandomSource.create());
+            this.legacy = legacy;
+            this.looping = legacy.canRepeat();
+            this.delay = legacy.getRepeatDelay();
+            this.relative = legacy.getAttenuationType() == ISound.AttenuationType.NONE;
+            copy();
+        }
+
+        private void copy() {
+            this.volume = legacy.getVolume();
+            this.pitch = legacy.getPitch();
+            this.x = legacy.getXPosF();
+            this.y = legacy.getYPosF();
+            this.z = legacy.getZPosF();
+        }
+
+        @Override
+        public void tick() {
+            legacy.update();
+            copy();
+            if (legacy.isDonePlaying()) stop();
+        }
     }
 }
