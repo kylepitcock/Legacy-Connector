@@ -38,7 +38,7 @@ public final class CreativeTabBridge {
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
-                    .title(Component.translatable("itemGroup." + tab.getTabLabel()))
+                    .title(Component.translatableWithFallback("itemGroup." + tab.getTabLabel(), tab.getTabLabel()))
                     .icon(() -> icon(tab).copy())
                     .displayItems((params, output) -> {
                         for (net.minecraft.world.item.ItemStack s : contents(tab)) output.accept(s);

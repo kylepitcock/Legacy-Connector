@@ -173,11 +173,15 @@ public final class BlockSelfTest {
         var player = FakePlayerFactory.get(level, new GameProfile(UUID.nameUUIDFromBytes("legacyconnector-block-test".getBytes()), "[LegacyConnectorTest]"));
         checkFluids(level);
         int survived = 0, activated = 0;
+        Map<String, Integer> vanished = new java.util.TreeMap<>();
         for (int i = 0; i < PLACED.size(); i++) {
             BlockPos pos = PLACED.get(i);
             String name = NAMES.get(i);
             BlockState state = level.getBlockState(pos);
-            if (state.isAir()) continue;
+            if (state.isAir()) {
+                vanished.merge(name.contains(":") ? name.substring(0, name.indexOf(':')) : name, 1, Integer::sum);
+                continue;
+            }
             survived++;
             try {
                 player.setPos(pos.getX() + 0.5, pos.getY() + 2, pos.getZ() + 0.5);
@@ -199,6 +203,7 @@ public final class BlockSelfTest {
                 }
             }
         }
+        LOG.info("Blocks gone after 60 ticks, per mod: {}", vanished);
         Map<String, String> itemProblems = itemTest(level, player);
         StringBuilder sb = new StringBuilder();
         PROBLEMS.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));
