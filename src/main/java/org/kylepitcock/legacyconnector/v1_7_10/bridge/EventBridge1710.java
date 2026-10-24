@@ -286,7 +286,8 @@ public final class EventBridge1710 {
                     new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
         });
         gameBus.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
-            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)
+                    || !(e.getChunk() instanceof net.minecraft.world.level.chunk.LevelChunk)) return; // a chunk still generating never got its load event
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkDataEvent.Save(
                     new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
                     new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));

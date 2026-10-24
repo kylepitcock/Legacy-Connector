@@ -3,7 +3,7 @@ package legacyconnector.v1_7_10.net.minecraft.network;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;
 import legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText;
 
-public class NetHandlerPlayServer implements INetHandler {
+public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecraft.network.play.INetHandlerPlayServer {
     public final EntityPlayerMP playerEntity;
 
     public NetHandlerPlayServer(EntityPlayerMP player) {
