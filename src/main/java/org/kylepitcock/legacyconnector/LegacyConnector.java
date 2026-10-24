@@ -32,6 +32,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.FuelBridge;
  */
 @Mod(LegacyConnector.MOD_ID)
 public final class LegacyConnector {
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("LegacyConnector/Test");
     public static final String MOD_ID = "legacyconnector";
 
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
@@ -90,6 +91,32 @@ public final class LegacyConnector {
         IEventBus game = NeoForge.EVENT_BUS;
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
+        int stopTicks = Integer.getInteger("legacyconnector.autostopTicks", 0);
+        if (stopTicks > 0) {
+            int[] ticks = {0};
+            game.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
+                if (++ticks[0] != stopTicks) return;
+                LOGGER.info("Test autostop after {} ticks: saving and stopping", stopTicks);
+                long start = System.nanoTime();
+                Thread watch = new Thread(() -> {
+                    try {
+                        Thread.sleep(120_000);
+                    } catch (InterruptedException ex) {
+                        return;
+                    }
+                    LOGGER.error("Server still saving 120 s after the stop request");
+                    Thread.getAllStackTraces().forEach((t, st) -> {
+                        StringBuilder sb = new StringBuilder(t.getName());
+                        for (StackTraceElement f : st) sb.append("\n\tat ").append(f);
+                        LOGGER.error("{}", sb);
+                    });
+                }, "autostop-watchdog");
+                watch.setDaemon(true);
+                watch.start();
+                e.getServer().halt(false);
+                LOGGER.info("Stop requested in {} ms", (System.nanoTime() - start) / 1_000_000);
+            });
+        }
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ChestLootBridge1710.register(game);
         game.addListener(FuelBridge::onBurnTime);
         if (FMLEnvironment.dist.isClient()) EventBridge1710.registerClient(game);

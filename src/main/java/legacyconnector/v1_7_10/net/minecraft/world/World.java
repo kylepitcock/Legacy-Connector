@@ -265,8 +265,18 @@ public class World implements IBlockAccess {
 
     // ------------------------------------------------------------------ blocks
 
+    /**
+     * A server level that has not loaded the chunk: legacy code read such blocks as air, while the modern level would load the
+     * chunk and wait for it, which deadlocks when a tile entity reads its neighbours as its own chunk unloads (world save and exit hang).
+     */
+    private boolean unloaded(int x, int z) {
+        return lvl() instanceof net.minecraft.server.level.ServerLevel sl && !(lvl() instanceof net.minecraft.server.level.WorldGenRegion)
+                && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
+    }
+
     @Override
     public Block getBlock(int x, int y, int z) {
+        if (unloaded(x, z)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
         BlockState state = lvl().getBlockState(pos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
@@ -275,6 +285,7 @@ public class World implements IBlockAccess {
 
     @Override
     public int getBlockMetadata(int x, int y, int z) {
+        if (unloaded(x, z)) return 0;
         return BlockBridge.legacyMeta(lvl().getBlockState(pos(x, y, z)));
     }
 
