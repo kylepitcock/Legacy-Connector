@@ -7,4 +7,12 @@ public class NetworkManager {
     public boolean isLocalChannel() {
         return false;
     }
+
+    public boolean isChannelOpen() {
+        return true;
+    }
+
+    public java.net.SocketAddress getSocketAddress() {
+        return null;
+    }
 }

@@ -153,4 +153,8 @@ public class TileEntity {
     public boolean canUpdateWhileInvalid() {
         return false;
     }
+
+    public static final legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB INFINITE_EXTENT_AABB =
+            legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
 }

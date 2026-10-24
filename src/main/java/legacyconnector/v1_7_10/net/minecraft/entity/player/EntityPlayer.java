@@ -315,4 +315,7 @@ public abstract class EntityPlayer extends EntityLivingBase {
         BlockPos p = mcc$player().blockPosition();
         return new ChunkCoordinates(p.getX(), p.getY(), p.getZ());
     }
+
+    public void onEnchantmentCritical(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+    }
 }

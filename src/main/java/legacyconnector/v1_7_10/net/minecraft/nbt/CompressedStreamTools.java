@@ -67,4 +67,14 @@ public class CompressedStreamTools {
     public static NBTTagCompound read(DataInput in, NBTSizeTracker tracker) throws IOException {
         return read(in);
     }
+
+    public static NBTTagCompound read(java.io.DataInputStream in) throws IOException {
+        return read((DataInput) in);
+    }
+
+    public static void write(NBTTagCompound tag, File file) throws IOException {
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(new FileOutputStream(file))) {
+            write(tag, (DataOutput) out);
+        }
+    }
 }

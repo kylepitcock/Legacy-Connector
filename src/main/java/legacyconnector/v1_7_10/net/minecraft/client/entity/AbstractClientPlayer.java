@@ -19,4 +19,8 @@ public abstract class AbstractClientPlayer extends EntityPlayer {
             return new net.minecraft.client.player.RemotePlayer(level, profile);
         }
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation getLocationSkin() {
+        return new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation("textures/entity/steve.png");
+    }
 }

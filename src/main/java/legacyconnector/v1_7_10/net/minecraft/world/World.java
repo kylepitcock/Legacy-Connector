@@ -1098,4 +1098,20 @@ public class World implements IBlockAccess {
         }
         return false;
     }
+
+    public java.util.List func_147461_a(AxisAlignedBB box) {
+        return getCollidingBoundingBoxes(null, box);
+    }
+
+    public java.util.List getPendingBlockUpdates(legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk, boolean remove) {
+        return null;
+    }
+
+    public boolean canSnowAt(int x, int y, int z, boolean checkLight) {
+        return false;
+    }
+
+    public boolean isBlockFreezable(int x, int y, int z) {
+        return false;
+    }
 }

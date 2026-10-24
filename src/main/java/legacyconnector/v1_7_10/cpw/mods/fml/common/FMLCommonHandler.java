@@ -109,4 +109,11 @@ public class FMLCommonHandler {
         }
         return org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
     }
+
+    public org.apache.logging.log4j.Logger getFMLLogger() {
+        return org.apache.logging.log4j.LogManager.getLogger("FML");
+    }
+
+    public void registerCrashCallable(ICrashCallable callable) {
+    }
 }

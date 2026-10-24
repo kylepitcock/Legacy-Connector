@@ -86,4 +86,8 @@ public class EntityItem extends Entity {
     public void setAgeToCreativeDespawnTime() {
         mcc$item().setExtendedLifetime();
     }
+
+    public boolean combineItems(EntityItem other) {
+        return false;
+    }
 }

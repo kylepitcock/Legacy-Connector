@@ -285,4 +285,7 @@ public class Chunk {
     public BlockPos mcc$pos(int x, int y, int z) {
         return new BlockPos(wx(x), y, wz(z));
     }
+
+    public void removeEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+    }
 }

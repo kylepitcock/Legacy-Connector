@@ -154,4 +154,8 @@ public class ItemTool extends Item {
     public float mcc$attackDamage() {
         return damageVsEntity;
     }
+
+    public Item.ToolMaterial getToolMaterial() {
+        return toolMaterial;
+    }
 }

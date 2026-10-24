@@ -471,4 +471,8 @@ public abstract class EntityLivingBase extends Entity {
     public legacyconnector.v1_7_10.net.minecraft.util.IIcon getItemIcon(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, int pass) {
         return stack.getIconIndex();
     }
+
+    public EntityLivingBase func_94060_bK() {
+        return null;
+    }
 }

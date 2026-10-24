@@ -127,4 +127,12 @@ public abstract class CommandBase implements ICommand {
     public int compareTo(Object o) {
         return getCommandName().compareTo(((ICommand) o).getCommandName());
     }
+
+    public int compareTo(ICommand other) {
+        return getCommandName().compareTo(other.getCommandName());
+    }
+
+    public static void notifyOperators(ICommandSender sender, ICommand command, String message, Object... args) {
+        sender.addChatMessage(new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentTranslation(message, args));
+    }
 }

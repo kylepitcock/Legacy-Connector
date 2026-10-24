@@ -22,4 +22,8 @@ public class ItemPotion extends legacyconnector.v1_7_10.net.minecraft.item.Item 
     protected ItemPotion() {
         super();
     }
+
+    public java.util.List<legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect> getEffects(ItemStack stack) {
+        return getEffects(stack.getItemDamage());
+    }
 }

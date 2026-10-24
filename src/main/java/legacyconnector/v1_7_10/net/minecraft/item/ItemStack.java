@@ -456,4 +456,8 @@ public final class ItemStack {
     public com.google.common.collect.Multimap getAttributeModifiers() {
         return mcc$item == null ? com.google.common.collect.HashMultimap.create() : mcc$item.getAttributeModifiers(this);
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.IChatComponent func_151000_E() {
+        return new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(getDisplayName());
+    }
 }

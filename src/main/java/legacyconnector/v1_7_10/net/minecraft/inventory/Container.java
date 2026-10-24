@@ -246,4 +246,8 @@ public abstract class Container {
 
     /** The modern menu hosting this container (set by the bridge). */
     public Object mcc$menu;
+
+    public static boolean isValidDragMode(int mode) {
+        return mode == 0 || mode == 1 || mode == 2;
+    }
 }

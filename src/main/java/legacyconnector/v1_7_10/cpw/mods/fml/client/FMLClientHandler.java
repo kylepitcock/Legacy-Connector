@@ -50,4 +50,12 @@ public class FMLClientHandler {
         GuiScreen current = Minecraft.mcc$get$currentScreen(getClient());
         return current != null && type.isInstance(current);
     }
+
+    public boolean hasOptifine() {
+        return false;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.network.INetHandler getClientPlayHandler() {
+        return legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE;
+    }
 }

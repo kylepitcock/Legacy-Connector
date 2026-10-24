@@ -1223,4 +1223,10 @@ public abstract class Entity implements ICommandSender {
         int sky = mcc$entity.level().getBrightness(net.minecraft.world.level.LightLayer.SKY, pos);
         return sky << 20 | block << 4;
     }
+
+    public void setCurrentItemOrArmor(int slot, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+    }
+
+    public void applyEntityCollision(Entity other) {
+    }
 }

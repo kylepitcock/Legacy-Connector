@@ -595,4 +595,8 @@ public class Item {
             return customCraftingMaterial;
         }
     }
+
+    public IIcon getIcon(ItemStack stack, int renderPass, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack usingItem, int useRemaining) {
+        return getIcon(stack, renderPass);
+    }
 }
