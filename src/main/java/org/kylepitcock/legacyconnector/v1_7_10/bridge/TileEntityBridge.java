@@ -90,7 +90,17 @@ public final class TileEntityBridge {
             java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public static TileEntity legacyAt(World world, BlockPos pos) {
-        var be = world.mcc$level().getBlockEntity(pos);
+        var level = world.mcc$level();
+        net.minecraft.world.level.block.entity.BlockEntity be;
+        if (level instanceof net.minecraft.server.level.WorldGenRegion region) {
+            // Legacy generators probe for tile entities everywhere; the region warns for every block that will have one
+            // but has none yet (hundreds of thousands of lines), so ask the chunk and only fall back when it has pending data.
+            var chunk = region.getChunk(pos);
+            be = chunk.getBlockEntity(pos);
+            if (be == null && chunk.getBlockEntityNbt(pos) != null) be = region.getBlockEntity(pos);
+        } else {
+            be = level.getBlockEntity(pos);
+        }
         if (be == null) return null;
         if (be instanceof LegacyBlockEntity l) {
             TileEntity te = l.legacy(world);

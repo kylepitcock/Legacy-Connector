@@ -514,6 +514,9 @@ public class World implements IBlockAccess {
     public void markBlockForUpdate(int x, int y, int z) {
         Level level = mcc$liveLevel();
         if (level == null) return;
+        // Generation workers (lighting passes of mod chunk providers) must not read the live level: that waits for the
+        // main thread, which may be waiting for the chunk being generated. Nothing is sent to clients for them yet anyway.
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) return;
         BlockPos p = pos(x, y, z);
         BlockState s = level.getBlockState(p);
         level.sendBlockUpdated(p, s, s, 3);
