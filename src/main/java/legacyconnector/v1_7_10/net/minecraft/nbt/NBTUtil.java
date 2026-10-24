@@ -23,6 +23,7 @@ public class NBTUtil {
     }
 
     public static void writeGameProfileToNBT(NBTTagCompound tag, GameProfile profile) {
+        if (profile == null) return;
         if (profile.getName() != null && !profile.getName().isEmpty()) tag.setString("Name", profile.getName());
         if (profile.getId() != null) tag.setString("Id", profile.getId().toString());
     }

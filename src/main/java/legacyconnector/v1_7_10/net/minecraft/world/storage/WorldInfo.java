@@ -121,7 +121,7 @@ public class WorldInfo {
     }
 
     public legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType getGameType() {
-        var current = net.minecraft.client.Minecraft.getInstance().getSingleplayerServer();
+        var current = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (current != null) return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(current.getDefaultGameType().getId());
         return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL;
     }
