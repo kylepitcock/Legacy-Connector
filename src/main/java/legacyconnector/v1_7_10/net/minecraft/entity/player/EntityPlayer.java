@@ -318,4 +318,12 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public void onEnchantmentCritical(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getBedLocation(int dimension) {
+        if (mcc$entity instanceof net.minecraft.server.level.ServerPlayer sp && sp.getRespawnPosition() != null) {
+            var pos = sp.getRespawnPosition();
+            return new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(pos.getX(), pos.getY(), pos.getZ());
+        }
+        return null;
+    }
 }

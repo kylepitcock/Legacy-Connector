@@ -177,4 +177,8 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public boolean isServerStopped() {
         return mcc$server.isStopped();
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.server.management.PlayerProfileCache getPlayerProfileCache() {
+        return new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerProfileCache(mcc$modern());
+    }
 }

@@ -30,4 +30,8 @@ public class Explosion {
 
     public void doExplosionB(boolean spawnParticles) {
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase getExplosivePlacedBy() {
+        return exploder instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase living ? living : null;
+    }
 }
