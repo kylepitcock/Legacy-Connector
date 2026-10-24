@@ -41,10 +41,15 @@ public class ReflectionHelper {
         throw new UnableToFindFieldException(names, last);
     }
 
+    /** Declared fields as the legacy class had them: the shim's own bookkeeping fields do not shift the indices. */
+    private static Field[] legacyFields(Class<?> cls) {
+        return java.util.Arrays.stream(cls.getDeclaredFields()).filter(f -> !f.getName().startsWith("mcc$")).toArray(Field[]::new);
+    }
+
     @SuppressWarnings("unchecked")
     public static <T, E> T getPrivateValue(Class<? super E> cls, E instance, int fieldIndex) {
         try {
-            Field f = cls.getDeclaredFields()[fieldIndex];
+            Field f = legacyFields(cls)[fieldIndex];
             ReflectionCompat.setAccessible(f, true);
             return (T) read(f, instance);
         } catch (Exception e) {
@@ -65,7 +70,7 @@ public class ReflectionHelper {
 
     public static <T, E> void setPrivateValue(Class<? super T> cls, T instance, E value, int fieldIndex) {
         try {
-            Field f = cls.getDeclaredFields()[fieldIndex];
+            Field f = legacyFields(cls)[fieldIndex];
             ReflectionCompat.setAccessible(f, true);
             write(f, instance, value);
         } catch (Exception e) {

@@ -16,7 +16,7 @@ public class NBTTagList extends NBTBase {
     /** A live view of the tags as legacy wrappers; writes go through to the list. */
     public static java.util.List mcc$get$tagList(NBTTagList list) {
         ListTag backing = list.mcc$list;
-        return new java.util.AbstractList<NBTBase>() {
+        java.util.AbstractList<NBTBase> inner = new java.util.AbstractList<NBTBase>() {
             @Override
             public NBTBase get(int index) {
                 return NBTBase.mcc$wrap(backing.get(index), list);
@@ -49,6 +49,42 @@ public class NBTTagList extends NBTBase {
                 return old;
             }
         };
+        return new View(inner);
+    }
+
+    /** 1.7.10 kept an ArrayList and mods cast to it (Railcraft), so the live view is one that forwards to the tags. */
+    private static final class View extends java.util.ArrayList<NBTBase> {
+        private final java.util.AbstractList<NBTBase> inner;
+
+        View(java.util.AbstractList<NBTBase> inner) {
+            super(0);
+            this.inner = inner;
+        }
+
+        @Override public NBTBase get(int i) { return inner.get(i); }
+        @Override public int size() { return inner.size(); }
+        @Override public boolean isEmpty() { return inner.isEmpty(); }
+        @Override public NBTBase set(int i, NBTBase v) { return inner.set(i, v); }
+        @Override public boolean add(NBTBase v) { return inner.add(v); }
+        @Override public void add(int i, NBTBase v) { inner.add(i, v); }
+        @Override public NBTBase remove(int i) { return inner.remove(i); }
+        @Override public boolean remove(Object o) { return inner.remove(o); }
+        @Override public void clear() { inner.clear(); }
+        @Override public boolean contains(Object o) { return inner.contains(o); }
+        @Override public int indexOf(Object o) { return inner.indexOf(o); }
+        @Override public int lastIndexOf(Object o) { return inner.lastIndexOf(o); }
+        @Override public java.util.Iterator<NBTBase> iterator() { return inner.iterator(); }
+        @Override public java.util.ListIterator<NBTBase> listIterator() { return inner.listIterator(); }
+        @Override public java.util.ListIterator<NBTBase> listIterator(int i) { return inner.listIterator(i); }
+        @Override public java.util.List<NBTBase> subList(int a, int b) { return inner.subList(a, b); }
+        @Override public Object[] toArray() { return inner.toArray(); }
+        @Override public <T> T[] toArray(T[] a) { return inner.toArray(a); }
+        @Override public java.util.stream.Stream<NBTBase> stream() { return inner.stream(); }
+        @Override public void forEach(java.util.function.Consumer<? super NBTBase> c) { inner.forEach(c); }
+        @Override public boolean addAll(java.util.Collection<? extends NBTBase> c) { return inner.addAll(c); }
+        @Override public boolean equals(Object o) { return inner.equals(o); }
+        @Override public int hashCode() { return inner.hashCode(); }
+        @Override public String toString() { return inner.toString(); }
     }
 
     public NBTTagList() {
