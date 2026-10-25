@@ -4,19 +4,20 @@ name: Sync description pages
 # (or a release is published) and updates the Modrinth project body. Uses the same MODRINTH_TOKEN secret
 # and project ids as publish.yml; the token needs the "Write projects" scope.
 # CurseForge has no API for project descriptions, so its rendering is attached to the run as an artifact
-# (and shown in the run summary) to paste into the CurseForge description editor (Markdown mode).
+# (and shown in the run summary), and the rendered pages are committed as .github/description/curseforge.md and modrinth.md:
+# paste curseforge.md into the CurseForge description editor (Markdown mode).
 on:
   push:
     branches: [master]
     paths:
-      - .github/description/**
+      - .github/description/description.md
       - tools/release/render_description.py
   release:
     types: [published]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   sync:
@@ -29,6 +30,15 @@ jobs:
           mkdir -p out
           python3 tools/release/render_description.py modrinth out/modrinth.md
           python3 tools/release/render_description.py curseforge out/curseforge.md
+
+      - name: Commit rendered pages
+        run: |
+          cp out/curseforge.md out/modrinth.md .github/description/
+          git add .github/description/curseforge.md .github/description/modrinth.md
+          if ! git diff --cached --quiet; then
+            git -c user.name=github-actions -c user.email=github-actions@users.noreply.github.com commit -m "Render description pages"
+            git push
+          fi
 
       - name: Update Modrinth
         env:

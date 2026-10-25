@@ -2,7 +2,7 @@
   Source of the CurseForge and Modrinth description pages. Edit this file, not the pages:
   .github/workflows/sync-description.yml renders it per platform (tools/release/render_description.py)
   and uploads it. {{buttons}} and {{links}} become links to the other platform and GitHub.
-  Keep it in step with README.md.
+  Keep it in step with README.md. Don't paste this file anywhere: CurseForge gets curseforge.md (rendered).
 -->
 # Legacy Connector
 
