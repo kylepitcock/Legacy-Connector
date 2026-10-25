@@ -129,6 +129,9 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
 
     /** Tool tiers (an enum in 1.12.2; a class here so mods can add their own through EnumHelper). */
     public static final class ToolMaterial {
+        private static final java.util.List<ToolMaterial> ALL = new java.util.ArrayList<>();
+        private final int ordinal;
+
         public static final ToolMaterial WOOD = new ToolMaterial("WOOD", 0, 59, 2.0F, 0.0F, 15);
         public static final ToolMaterial STONE = new ToolMaterial("STONE", 1, 131, 4.0F, 1.0F, 5);
         public static final ToolMaterial IRON = new ToolMaterial("IRON", 2, 250, 6.0F, 2.0F, 14);
@@ -144,6 +147,8 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         private ItemStack repairMaterial = ItemStack.EMPTY;
 
         public ToolMaterial(String name, int harvestLevel, int maxUses, float efficiency, float attackDamage, int enchantability) {
+            this.ordinal = ALL.size();
+            ALL.add(this);
             this.name = name;
             this.harvestLevel = harvestLevel;
             this.maxUses = maxUses;
@@ -193,6 +198,21 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         public String toString() {
             return name;
         }
+
+        public static ToolMaterial[] values() {
+            synchronized (ALL) {
+                return ALL.toArray(new ToolMaterial[0]);
+            }
+        }
+
+        public int ordinal() {
+            return ordinal;
+        }
+
+        public static ToolMaterial valueOf(String name) {
+            for (ToolMaterial v : values()) if (v.name().equals(name)) return v;
+            throw new IllegalArgumentException("No enum constant " + name);
+        }
     }
 
     public static Item getItemFromBlock(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
@@ -216,5 +236,59 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         } catch (NumberFormatException e) {
             return null;
         }
+    }
+
+    public Item setTranslationKey(String name) {
+        return setUnlocalizedName(name);
+    }
+
+    public String getTranslationKey(ItemStack stack) {
+        return getUnlocalizedName(stack);
+    }
+
+    public Item setNoRepair() {
+        this.canRepair = false;
+        return this;
+    }
+
+    private boolean canRepair = true;
+    private final java.util.Map<String, Integer> toolClasses = new java.util.HashMap<>();
+
+    public boolean isRepairable() {
+        return canRepair && isDamageable();
+    }
+
+    public void setHarvestLevel(String toolClass, int level) {
+        toolClasses.put(toolClass, level);
+    }
+
+    public int getHarvestLevel(ItemStack stack, String toolClass, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockState) {
+        Integer level = toolClasses.get(toolClass);
+        return level == null ? -1 : level;
+    }
+
+    public java.util.Set<String> getToolClasses(ItemStack stack) {
+        return toolClasses.keySet();
+    }
+
+    public int getMetadata(int damage) {
+        return 0;
+    }
+
+    public int getMetadata(ItemStack stack) {
+        return getMetadata(stack.getItemDamage());
+    }
+
+    public EnumRarity getRarity(ItemStack stack) {
+        return EnumRarity.COMMON;
+    }
+
+    public int getItemEnchantability() {
+        return 0;
+    }
+
+    public boolean isEnchantable(ItemStack stack) {
+        return getItemStackLimit(stack) == 1 && isDamageable();
     }
 }

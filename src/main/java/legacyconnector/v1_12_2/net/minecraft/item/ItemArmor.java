@@ -36,6 +36,9 @@ public class ItemArmor extends Item {
 
     /** Armour tiers (an enum in 1.12.2; a class here so mods can add their own through EnumHelper). */
     public static final class ArmorMaterial {
+        private static final java.util.List<ArmorMaterial> ALL = new java.util.ArrayList<>();
+        private final int ordinal;
+
         public static final ArmorMaterial LEATHER = new ArmorMaterial("leather", 5, new int[] {1, 2, 3, 1}, 15, SoundEvents.ITEM_ARMOR_EQUIP_LEATHER, 0.0F);
         public static final ArmorMaterial CHAIN = new ArmorMaterial("chainmail", 15, new int[] {1, 4, 5, 2}, 12, SoundEvents.ITEM_ARMOR_EQUIP_CHAIN, 0.0F);
         public static final ArmorMaterial IRON = new ArmorMaterial("iron", 15, new int[] {2, 5, 6, 2}, 9, SoundEvents.ITEM_ARMOR_EQUIP_IRON, 0.0F);
@@ -52,6 +55,8 @@ public class ItemArmor extends Item {
         private ItemStack repairMaterial = ItemStack.EMPTY;
 
         public ArmorMaterial(String name, int maxDamageFactor, int[] damageReductionAmountArray, int enchantability, SoundEvent soundEvent, float toughness) {
+            this.ordinal = ALL.size();
+            ALL.add(this);
             this.name = name;
             this.maxDamageFactor = maxDamageFactor;
             this.damageReductionAmountArray = damageReductionAmountArray;
@@ -99,6 +104,21 @@ public class ItemArmor extends Item {
 
         public String name() {
             return name.toUpperCase(java.util.Locale.ROOT);
+        }
+
+        public static ArmorMaterial[] values() {
+            synchronized (ALL) {
+                return ALL.toArray(new ArmorMaterial[0]);
+            }
+        }
+
+        public int ordinal() {
+            return ordinal;
+        }
+
+        public static ArmorMaterial valueOf(String name) {
+            for (ArmorMaterial v : values()) if (v.name().equals(name)) return v;
+            throw new IllegalArgumentException("No enum constant " + name);
         }
     }
 }

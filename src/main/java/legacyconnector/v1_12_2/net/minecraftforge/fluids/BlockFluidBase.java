@@ -11,9 +11,16 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
     protected boolean canDisplace = true;
     protected int tickRate = 5;
 
+    public BlockFluidBase(Fluid fluid, Material material, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor mapColor) {
+        super(material, mapColor);
+        this.fluidName = fluid.getName();
+        if (fluid.getBlock() == null) fluid.setBlock(this);
+    }
+
     public BlockFluidBase(Fluid fluid, Material material) {
         super(material);
         this.fluidName = fluid.getName();
+        if (fluid.getBlock() == null) fluid.setBlock(this);
     }
 
     @Override

@@ -183,4 +183,68 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         Block block = state.getBlock();
         return getIdFromBlock(block) + (block.getMetaFromState(state) << 12);
     }
+
+    public Block setTranslationKey(String name) {
+        return setUnlocalizedName(name);
+    }
+
+    public Block setTickRandomly(boolean shouldTick) {
+        return this;
+    }
+
+    public Block disableStats() {
+        return this;
+    }
+
+    private final java.util.Map<String, Integer> harvest = new java.util.HashMap<>();
+
+    public void setHarvestLevel(String toolClass, int level) {
+        harvest.put(toolClass, level);
+    }
+
+    public void setHarvestLevel(String toolClass, int level, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        harvest.put(toolClass, level);
+    }
+
+    public String getHarvestTool(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return harvest.isEmpty() ? null : harvest.keySet().iterator().next();
+    }
+
+    public int getHarvestLevel(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        String tool = getHarvestTool(state);
+        return tool == null ? -1 : harvest.get(tool);
+    }
+
+    public CreativeTabs getCreativeTab() {
+        return displayOnCreativeTab;
+    }
+
+    public Material getMaterial(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return blockMaterial;
+    }
+
+    public int damageDropped(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return 0;
+    }
+
+    public float getBlockHardness(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return blockHardness;
+    }
+
+    public int getLightValue(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return lightValue;
+    }
+
+    public boolean isOpaqueCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return true;
+    }
+
+    public boolean isFullCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return true;
+    }
+
+    public void getSubBlocks(CreativeTabs tab, legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> items) {
+        items.add(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(this));
+    }
 }

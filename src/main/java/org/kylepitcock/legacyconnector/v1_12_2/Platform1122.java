@@ -238,6 +238,14 @@ public final class Platform1122 implements LegacyPlatform {
     }
 
     @Override
+    public void interMod(LegacyModRecord mod) throws Exception {
+        Loader.mcc$setState(LoaderState.INITIALIZATION);
+        // IMC is delivered after every mod's init and before any postInit
+        var messages = legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLInterModComms.mcc$drain(mod.legacyId);
+        if (!messages.isEmpty()) dispatch(mod, new legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLInterModComms.IMCEvent(messages));
+    }
+
+    @Override
     public void postInit(LegacyModRecord mod) throws Exception {
         Loader.mcc$setState(LoaderState.POSTINITIALIZATION);
         dispatch(mod, new FMLPostInitializationEvent());

@@ -14,4 +14,12 @@ public class EnumHelper {
     public static Item.ToolMaterial addToolMaterial(String name, int harvestLevel, int maxUses, float efficiency, float damage, int enchantability) {
         return new Item.ToolMaterial(name, harvestLevel, maxUses, efficiency, damage, enchantability);
     }
+
+    public static legacyconnector.v1_12_2.net.minecraft.item.EnumRarity addRarity(String name, legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting color, String displayName) {
+        return new legacyconnector.v1_12_2.net.minecraft.item.EnumRarity(name, color, displayName);
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType addEnchantmentType(String name, com.google.common.base.Predicate<Item> test) {
+        return new legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType(name, test);
+    }
 }

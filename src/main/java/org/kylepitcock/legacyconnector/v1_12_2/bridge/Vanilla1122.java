@@ -164,6 +164,11 @@ public final class Vanilla1122 {
             // a constant of its own class (BiomeDictionary.Type.FOREST, ...): an instance per name keeps identity and equality working
             return enumConstant(type, field);
         }
+        if (!blocks && !items && key.startsWith("net.minecraft.init.") && type.getName().startsWith("legacyconnector_synth.v1_12_2.")
+                && !java.lang.reflect.Modifier.isAbstract(type.getModifiers())) {
+            // Biomes.PLAINS, PotionTypes.WATER, ...: a distinct inert object per name
+            return enumConstant(type, field);
+        }
         if (!blocks && !items) {
             // a state property of a vanilla block class (BlockFarmland.MOISTURE): mods read these from the states of their own blocks
             String name = field.toLowerCase(java.util.Locale.ROOT);
@@ -266,8 +271,53 @@ public final class Vanilla1122 {
         }
     }
 
+    private static final Map<Class<?>, Class<?>> CONCRETE = new HashMap<>();
+
+    /** A concrete subclass of an abstract synthesized class (Blocks.LEAVES is a BlockLeaves, which is abstract), defined next to it. */
+    private static synchronized Class<?> concreteSubclass(Class<?> parent) {
+        Class<?> existing = CONCRETE.get(parent);
+        if (existing != null) return existing;
+        try {
+            java.lang.reflect.Constructor<?>[] ctors = parent.getDeclaredConstructors();
+            java.lang.reflect.Constructor<?> smallest = null;
+            for (var c : ctors) {
+                if (!java.lang.reflect.Modifier.isPrivate(c.getModifiers()) && (smallest == null || c.getParameterCount() < smallest.getParameterCount())) smallest = c;
+            }
+            if (smallest == null) return null;
+            String name = parent.getName().replace('.', '/') + "$Concrete";
+            String superName = parent.getName().replace('.', '/');
+            org.objectweb.asm.ClassWriter cw = new org.objectweb.asm.ClassWriter(org.objectweb.asm.ClassWriter.COMPUTE_FRAMES | org.objectweb.asm.ClassWriter.COMPUTE_MAXS);
+            cw.visit(org.objectweb.asm.Opcodes.V21, org.objectweb.asm.Opcodes.ACC_PUBLIC | org.objectweb.asm.Opcodes.ACC_SUPER, name, null, superName, null);
+            var mv = cw.visitMethod(org.objectweb.asm.Opcodes.ACC_PUBLIC, "<init>", "()V", null, null);
+            mv.visitCode();
+            mv.visitVarInsn(org.objectweb.asm.Opcodes.ALOAD, 0);
+            for (Class<?> p : smallest.getParameterTypes()) {
+                if (p == boolean.class || p == int.class || p == short.class || p == byte.class || p == char.class) mv.visitInsn(org.objectweb.asm.Opcodes.ICONST_0);
+                else if (p == long.class) mv.visitInsn(org.objectweb.asm.Opcodes.LCONST_0);
+                else if (p == float.class) mv.visitInsn(org.objectweb.asm.Opcodes.FCONST_0);
+                else if (p == double.class) mv.visitInsn(org.objectweb.asm.Opcodes.DCONST_0);
+                else mv.visitInsn(org.objectweb.asm.Opcodes.ACONST_NULL);
+            }
+            mv.visitMethodInsn(org.objectweb.asm.Opcodes.INVOKESPECIAL, superName, "<init>", org.objectweb.asm.Type.getConstructorDescriptor(smallest), false);
+            mv.visitInsn(org.objectweb.asm.Opcodes.RETURN);
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
+            cw.visitEnd();
+            Class<?> defined = java.lang.invoke.MethodHandles.privateLookupIn(parent, java.lang.invoke.MethodHandles.lookup()).defineClass(cw.toByteArray());
+            CONCRETE.put(parent, defined);
+            return defined;
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** A new instance of a synthesized class: its smallest constructor with default arguments, or an uninitialized object. */
     private static Object instantiate(Class<?> type) {
+        if (java.lang.reflect.Modifier.isAbstract(type.getModifiers())) {
+            Class<?> concrete = concreteSubclass(type);
+            if (concrete == null) return null;
+            type = concrete;
+        }
         var ctors = type.getDeclaredConstructors();
         java.util.Arrays.sort(ctors, java.util.Comparator.comparingInt(java.lang.reflect.Constructor::getParameterCount));
         for (var c : ctors) {
