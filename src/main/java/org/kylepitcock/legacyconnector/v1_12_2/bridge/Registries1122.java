@@ -63,7 +63,9 @@ public final class Registries1122 {
             @Override
             public synchronized V getObject(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name) {
                 V v = reg.getValue(name);
-                return v != null ? v : super.getObject(name);
+                if (v != null) return v;
+                V fallback = super.getObject(name);
+                return fallback != null ? fallback : reg.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(defaultKey));
             }
 
             @Override
