@@ -53,6 +53,35 @@ public final class LegacyRenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
+    /**
+     * glBlendFunc(GL_SRC_ALPHA, GL_ONE) with a texture: additive light weighted by alpha (Thaumcraft's aura nodes, beams and
+     * glows). The eyes type adds ONE, ONE and ignores alpha, so faint layers stacked into solid white.
+     */
+    private static final Function<ResourceLocation, RenderType> ADDITIVE_ALPHA = Util.memoize(texture -> create(
+            "legacyconnector_additive_alpha", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)));
+
+    private static final Function<ResourceLocation, RenderType> ADDITIVE_ALPHA_NO_DEPTH = Util.memoize(texture -> create(
+            "legacyconnector_additive_alpha_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
+            CompositeState.builder()
+                    .setShaderState(RENDERTYPE_EYES_SHADER)
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)));
+
+    public static RenderType additiveAlpha(ResourceLocation texture, boolean depthTest) {
+        return depthTest ? ADDITIVE_ALPHA.apply(texture) : ADDITIVE_ALPHA_NO_DEPTH.apply(texture);
+    }
+
     public static RenderType cutoutNoDepth(ResourceLocation texture) {
         return CUTOUT_NO_DEPTH.apply(texture);
     }

@@ -189,6 +189,8 @@ public final class RenderContext {
     private static boolean blend;
     private static boolean depthTest = true;
     private static boolean additive;
+    /** Additive with the source weighted by alpha (GL_SRC_ALPHA, GL_ONE) rather than GL_ONE, GL_ONE. */
+    private static boolean additiveAlpha;
     private static boolean lighting = true;
     private static int forcedLight = -1;
 
@@ -206,6 +208,7 @@ public final class RenderContext {
 
     public static void setBlendFunc(int src, int dst) {
         additive = dst == 1; // GL_ONE
+        additiveAlpha = additive && src == 770; // GL_SRC_ALPHA
     }
 
     public static void setLighting(boolean on) {
@@ -223,6 +226,7 @@ public final class RenderContext {
 
     /** Buffer for raw legacy geometry (Tessellator, glBegin), chosen from the emulated texture and blend state. */
     public static VertexConsumer geometryBuffer() {
+        if (blend && additiveAlpha && texture2d) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
         if (!depthTest && !additive) {
             if (!texture2d) return buffers().getBuffer(LegacyRenderTypes.untexturedNoDepth());
             return buffers().getBuffer(blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture));
@@ -300,6 +304,7 @@ public final class RenderContext {
         blend = false;
         depthTest = true;
         additive = false;
+        additiveAlpha = false;
         lighting = true;
         forcedLight = -1;
     }

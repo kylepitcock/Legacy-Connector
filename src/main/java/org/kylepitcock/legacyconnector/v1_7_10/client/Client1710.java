@@ -33,6 +33,7 @@ public final class Client1710 {
         ScreenEvents1710.register();
         RenderEvents1710.register();
         FirstPersonPose.register();
+        LegacyKeyConflicts.register();
         HudEvents1710.register();
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent e) ->
                 e.register(org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.EFFECTS, new LegacyDimensionEffects()));

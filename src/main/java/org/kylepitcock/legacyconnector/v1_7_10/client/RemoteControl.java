@@ -54,6 +54,8 @@ public final class RemoteControl {
                 pendingShot = null;
                 return;
             }
+            // keys stay held for the whole command, whatever released them in between (mod key bindings did not stay down)
+            for (var key : held) key.setDown(true);
             if (--waitTicks > 0) return;
             finish(later != null ? later : "ok");
             later = null;
@@ -194,6 +196,26 @@ public final class RemoteControl {
                     mc.screen.keyReleased(key, 0, 0);
                 }
                 waitTicks = 3;
+            }
+            // holds a key binding found by (part of) its name, mods' included: "holdkey Wand Focus 40"
+            case "holdkey" -> {
+                int ticks = Integer.parseInt(a[a.length - 1]);
+                String name = String.join(" ", java.util.Arrays.copyOf(a, a.length - 1)).toLowerCase(java.util.Locale.ROOT);
+                net.minecraft.client.KeyMapping found = null;
+                for (var k : mc.options.keyMappings) {
+                    if (k.getName().toLowerCase(java.util.Locale.ROOT).contains(name)
+                            || net.minecraft.network.chat.Component.translatable(k.getName()).getString().toLowerCase(java.util.Locale.ROOT).contains(name)) {
+                        found = k;
+                        break;
+                    }
+                }
+                if (found == null) {
+                    finishLater("holdkey: no key binding named " + name);
+                } else {
+                    net.minecraft.client.KeyMapping.click(found.getKey());
+                    hold(found, ticks);
+                    finishLater("holdkey " + found.getName());
+                }
             }
             case "type" -> {
                 if (mc.screen != null) for (char c : arg.toCharArray()) mc.screen.charTyped(c, 0);

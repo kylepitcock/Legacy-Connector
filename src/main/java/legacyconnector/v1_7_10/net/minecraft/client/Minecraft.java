@@ -23,6 +23,17 @@ public class Minecraft {
     public int displayWidth;
     @Deprecated
     public int displayHeight;
+    /** Phantom: what the crosshair is on (block or entity), null when nothing. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition objectMouseOver;
+    /** Phantom: the entity under the crosshair. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.entity.Entity pointedEntity;
+    /** Phantom: true while playing with the mouse captured (key handlers check it: Thaumcraft's wand focus key). */
+    @Deprecated
+    public boolean inGameHasFocus;
+    /** 1.7.10's frames-per-second counter. */
+    public static int debugFPS;
     public TextureManager renderEngine = TextureManager.INSTANCE;
     /** The frame timer (obfuscated name field_71428_T): its partial tick is set by the layer each frame. */
     public legacyconnector.v1_7_10.net.minecraft.util.Timer timer = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
@@ -136,6 +147,32 @@ public class Minecraft {
 
     public static legacyconnector.v1_7_10.net.minecraft.util.MouseHelper mcc$get$mouseHelper(Minecraft m) {
         return MOUSE_HELPER;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition mcc$get$objectMouseOver(Minecraft m) {
+        var hit = mc().hitResult;
+        if (hit == null || hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
+        var at = hit.getLocation();
+        var vec = legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x, at.y, at.z);
+        if (hit instanceof net.minecraft.world.phys.EntityHitResult e) {
+            return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(EntityBridge.wrap(e.getEntity()), vec);
+        }
+        var b = (net.minecraft.world.phys.BlockHitResult) hit;
+        return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(b.getBlockPos().getX(), b.getBlockPos().getY(), b.getBlockPos().getZ(),
+                b.getDirection().get3DDataValue(), vec);
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.entity.Entity mcc$get$pointedEntity(Minecraft m) {
+        var e = mc().crosshairPickEntity;
+        return e == null ? null : EntityBridge.wrap(e);
+    }
+
+    public static boolean mcc$get$inGameHasFocus(Minecraft m) {
+        return mc().screen == null && mc().mouseHandler.isMouseGrabbed();
+    }
+
+    public static void mcc$set$inGameHasFocus(Minecraft m, boolean focus) {
+        // the game owns the mouse grab; setIngameFocus/setIngameNotInFocus do the switching
     }
 
     public static int mcc$get$displayWidth(Minecraft m) {

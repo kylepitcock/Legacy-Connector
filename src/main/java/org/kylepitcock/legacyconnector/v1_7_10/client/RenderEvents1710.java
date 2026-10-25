@@ -37,6 +37,7 @@ public final class RenderEvents1710 {
         if (e.getStage() == RenderLevelStageEvent.Stage.AFTER_SKY) {
             legacyconnector.v1_7_10.net.minecraft.client.renderer.ActiveRenderInfo.mcc$update(e.getCamera().getYRot(), e.getCamera().getXRot());
             legacyconnector.v1_7_10.net.minecraft.util.Timer.mcc$frame(e.getPartialTick().getGameTimeDeltaPartialTick(false));
+            legacyconnector.v1_7_10.net.minecraft.client.Minecraft.debugFPS = Minecraft.getInstance().getFps();
         }
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || !MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderWorldLastEvent.class)) return;
         Minecraft mc = Minecraft.getInstance();

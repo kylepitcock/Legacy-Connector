@@ -824,11 +824,15 @@ public class World implements IBlockAccess {
         return rayTraceBlocks(start, end, liquids, false, false);
     }
 
-    /** Null on a miss, as in 1.7.10. The modern clip stands in for the block-by-block walk over each block's collisionRayTrace. */
+    /**
+     * Null on a miss, as in 1.7.10. The modern clip stands in for the block-by-block walk over each block's collisionRayTrace:
+     * by default every block is hit through its selection box (OUTLINE: nodes, torches, flowers, which items such as
+     * Thaumcraft's wand target); {@code ignoreNoBoundingBox} skips blocks without a collision box (COLLIDER, projectiles).
+     */
     public legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition rayTraceBlocks(legacyconnector.v1_7_10.net.minecraft.util.Vec3 start,
             legacyconnector.v1_7_10.net.minecraft.util.Vec3 end, boolean liquids, boolean ignoreNoBoundingBox, boolean returnLastUncollidable) {
         var hit = lvl().clip(new net.minecraft.world.level.ClipContext(start.mcc$modern(), end.mcc$modern(),
-                ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.OUTLINE : net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE,
                 liquids ? net.minecraft.world.level.ClipContext.Fluid.ANY : net.minecraft.world.level.ClipContext.Fluid.NONE,
                 net.minecraft.world.phys.shapes.CollisionContext.empty()));
         if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
