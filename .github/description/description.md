@@ -119,7 +119,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 
 **1.7.10 (alpha):** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game. Galacticraft and its addons run with per-planet gravity. In the latest startup test, which included the 230-mod **GT New Horizons** pack, **282 mods** loaded without errors and **52** failed during loading.
 
-**1.12.2 (experimental):** mostly tested on a server so far; the client starts but rendering is far from done. In a server test of 31 big mods (Applied Energistics 2, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), all but 4 loaded fully. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
+**1.12.2 (experimental):** mostly tested on a server so far; the client starts but rendering is far from done. In a server test of 32 big mods (Applied Energistics 2, Blood Magic, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), every mod but BuildCraft Silicon loaded fully: about 2,060 blocks, 3,480 items and 3,670 recipes. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
 
 See the **[compatibility site](https://kylepitcock.github.io/Legacy-Connector/)** for per-mod results.
 
