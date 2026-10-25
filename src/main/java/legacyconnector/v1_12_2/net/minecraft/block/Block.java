@@ -1,5 +1,6 @@
 package legacyconnector.v1_12_2.net.minecraft.block;
 
+import legacyconnector.v1_12_2.net.minecraft.block.material.MapColor;
 import legacyconnector.v1_12_2.net.minecraft.block.material.Material;
 import legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs;
 import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry;
@@ -20,6 +21,13 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     protected SoundType blockSoundType = SoundType.STONE;
     protected final legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer blockState;
     private legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState defaultBlockState;
+
+    protected MapColor blockMapColor;
+
+    public Block(Material material, MapColor color) {
+        this(material);
+        this.blockMapColor = color;
+    }
 
     public Block(Material material) {
         this.blockMaterial = material;
@@ -141,5 +149,38 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public int mcc$light() {
         return lightValue;
+    }
+
+    public static Block getBlockFromName(String name) {
+        if (name == null) return null;
+        Block b = REGISTRY.getObject(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name));
+        if (b != null) return b;
+        try {
+            return getBlockById(Integer.parseInt(name));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public static Block getBlockById(int id) {
+        return REGISTRY.getObjectById(id);
+    }
+
+    public static int getIdFromBlock(Block block) {
+        return REGISTRY.getIDForObject(block);
+    }
+
+    public static Block getBlockFromItem(legacyconnector.v1_12_2.net.minecraft.item.Item item) {
+        return item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib ? ib.getBlock() : null;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateById(int id) {
+        Block block = getBlockById(id & 4095);
+        return block == null ? null : block.getStateFromMeta(id >> 12 & 15);
+    }
+
+    public static int getStateId(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        Block block = state.getBlock();
+        return getIdFromBlock(block) + (block.getMetaFromState(state) << 12);
     }
 }

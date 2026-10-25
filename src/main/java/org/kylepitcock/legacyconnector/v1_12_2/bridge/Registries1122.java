@@ -27,6 +27,15 @@ public final class Registries1122 {
     public static final Reg<Item> ITEMS = new Reg<>(Item.class, ItemBridge1122::register);
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> RECIPES =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe.class, RecipeBridge1122::add);
+    /** Registries whose entry classes only the synthesizer provides (biomes, entities, villager professions, potion types): typed when their event is posted. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static final Reg BIOMES = new Reg(null, o -> {});
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static final Reg ENTITIES = new Reg(null, o -> {});
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static final Reg VILLAGER_PROFESSIONS = new Reg(null, o -> {});
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static final Reg POTION_TYPES = new Reg(null, o -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, p -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment> ENCHANTMENTS =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.class, e -> {});
@@ -84,7 +93,7 @@ public final class Registries1122 {
     }
 
     public static final class Reg<V extends IForgeRegistryEntry<V>> implements IForgeRegistry<V> {
-        private final Class<V> type;
+        private Class<V> type;
         private final Map<ResourceLocation, V> byName = new LinkedHashMap<>();
         private final Map<V, ResourceLocation> byValue = new IdentityHashMap<>();
         private final Consumer<V> onRegister;
@@ -99,6 +108,21 @@ public final class Registries1122 {
             ResourceLocation name = value.getRegistryName();
             byName.putIfAbsent(name, value);
             byValue.putIfAbsent(value, name);
+        }
+
+        /** Types a registry whose entry class is synthesized: the class is looked up by its legacy name once. */
+        @SuppressWarnings("unchecked")
+        public void mcc$type(String legacyClass) {
+            if (type != null) return;
+            try {
+                type = (Class<V>) Class.forName("legacyconnector_synth.v1_12_2." + legacyClass, false, Thread.currentThread().getContextClassLoader());
+            } catch (ClassNotFoundException | LinkageError e) {
+                try {
+                    type = (Class<V>) Class.forName("legacyconnector.v1_12_2." + legacyClass, false, Thread.currentThread().getContextClassLoader());
+                } catch (ClassNotFoundException | LinkageError e2) {
+                    // stays untyped: its event is not posted
+                }
+            }
         }
 
         @Override
@@ -130,7 +154,7 @@ public final class Registries1122 {
 
         @Override
         public synchronized boolean containsKey(ResourceLocation key) {
-            return byName.containsKey(key);
+            return getValue(key) != null;
         }
 
         @Override
@@ -138,9 +162,17 @@ public final class Registries1122 {
             return byValue.containsKey(value);
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public synchronized V getValue(ResourceLocation key) {
-            return byName.get(key);
+            Vanilla1122.ensureLoaded();
+            V v = byName.get(key);
+            if (v == null && key != null && "minecraft".equals(key.getNamespace()) && (type == Block.class || type == Item.class)) {
+                // a vanilla name nobody asked for through Blocks/Items yet
+                Object made = type == Block.class ? Vanilla1122.blockByName(key.getPath()) : Vanilla1122.itemByName(key.getPath());
+                v = (V) made;
+            }
+            return v;
         }
 
         @Override

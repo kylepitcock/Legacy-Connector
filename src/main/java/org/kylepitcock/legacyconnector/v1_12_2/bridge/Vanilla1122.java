@@ -240,6 +240,35 @@ public final class Vanilla1122 {
         }
     }
 
+    private static boolean loaded;
+
+    /** Creates the generated Blocks/Items wrappers once (they register themselves by name). */
+    public static void ensureLoaded() {
+        if (loaded) return;
+        loaded = true;
+        try {
+            Class.forName("legacyconnector.v1_12_2.net.minecraft.init.Blocks", true, Vanilla1122.class.getClassLoader());
+            Class.forName("legacyconnector.v1_12_2.net.minecraft.init.Items", true, Vanilla1122.class.getClassLoader());
+        } catch (ClassNotFoundException | LinkageError e) {
+            // the lookups simply find nothing
+        }
+    }
+
+    /** A vanilla block by its 1.12 registry path (stone, grass, log...). */
+    public static Block blockByName(String legacyPath) {
+        String field = legacyPath.toUpperCase(java.util.Locale.ROOT);
+        ResourceLocation modern = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacyPath));
+        if (modern == null || BuiltInRegistries.BLOCK.get(modern) == net.minecraft.world.level.block.Blocks.AIR && !legacyPath.equals("air")) return null;
+        return block(field);
+    }
+
+    public static Item itemByName(String legacyPath) {
+        String field = legacyPath.toUpperCase(java.util.Locale.ROOT);
+        ResourceLocation modern = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacyPath));
+        if (modern == null || BuiltInRegistries.ITEM.get(modern) == net.minecraft.world.item.Items.AIR && !legacyPath.equals("air")) return null;
+        return item(field);
+    }
+
     public static legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState airState() {
         return legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR.getDefaultState();
     }

@@ -182,4 +182,16 @@ public final class ItemStack {
     public String toString() {
         return stackSize + "x" + (item == null ? "air" : item.getUnlocalizedName()) + "@" + itemDamage;
     }
+
+    public NBTTagCompound serializeNBT() {
+        return writeToNBT(new NBTTagCompound());
+    }
+
+    public void deserializeNBT(NBTTagCompound tag) {
+        ItemStack parsed = new ItemStack(tag);
+        this.item = parsed.item;
+        this.stackSize = parsed.stackSize;
+        this.itemDamage = parsed.itemDamage;
+        this.stackTagCompound = parsed.stackTagCompound;
+    }
 }

@@ -73,4 +73,8 @@ public class Material {
         return this == GRASS || this == GROUND || this == WOOD || this == LEAVES || this == PLANTS || this == CLOTH || this == SAND
                 || this == GLASS || this == CIRCUITS || this == CLAY || this == SNOW || this == CRAFTED_SNOW || this == GOURD || this == CACTUS;
     }
+
+    public MapColor getMaterialMapColor() {
+        return MapColor.STONE;
+    }
 }

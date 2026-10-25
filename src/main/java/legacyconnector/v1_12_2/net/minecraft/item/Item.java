@@ -194,4 +194,27 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
             return name;
         }
     }
+
+    public static Item getItemFromBlock(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
+        Item item = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.itemOf(block);
+        return item != null ? item : legacyconnector.v1_12_2.net.minecraft.init.Items.AIR;
+    }
+
+    public static Item getItemById(int id) {
+        return REGISTRY.getObjectById(id);
+    }
+
+    public static int getIdFromItem(Item item) {
+        return REGISTRY.getIDForObject(item);
+    }
+
+    public static Item getByNameOrId(String id) {
+        Item item = REGISTRY.getObject(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id));
+        if (item != null) return item;
+        try {
+            return getItemById(Integer.parseInt(id));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
 }
