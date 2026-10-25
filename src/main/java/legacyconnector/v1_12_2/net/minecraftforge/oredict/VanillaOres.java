@@ -95,6 +95,11 @@ final class VanillaOres {
         i("ingotBrick", Items.BRICK, 0);
         i("ingotBrickNether", Items.NETHERBRICK, 0);
         i("nuggetGold", Items.GOLD_NUGGET, 0);
+        i("nuggetIron", Items.IRON_NUGGET, 0);
+        i("gemPrismarine", Items.PRISMARINE_SHARD, 0);
+        b("blockPrismarine", Blocks.PRISMARINE, 0);
+        b("blockPrismarineBrick", Blocks.PRISMARINE, 1);
+        b("blockPrismarineDark", Blocks.PRISMARINE, 2);
         b("chest", V.block("CHEST"), ANY);
         b("chestWood", V.block("CHEST"), ANY);
         b("chestTrapped", Blocks.TRAPPED_CHEST, ANY);

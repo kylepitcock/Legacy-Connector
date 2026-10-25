@@ -87,6 +87,23 @@ public class PotionEffect implements Comparable<PotionEffect> {
         return changed;
     }
 
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound writeCustomPotionEffectToNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        tag.setByte("Id", (byte) org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS.getID(potion));
+        tag.setByte("Amplifier", (byte) amplifier);
+        tag.setInteger("Duration", duration);
+        tag.setBoolean("Ambient", isAmbient);
+        tag.setBoolean("ShowParticles", showParticles);
+        return tag;
+    }
+
+    public static PotionEffect readCustomPotionEffectFromNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        Potion potion = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS.getValue(tag.getByte("Id") & 0xFF);
+        if (potion == null) return null;
+        int amplifier = Math.max(tag.getByte("Amplifier"), 0);
+        boolean particles = !tag.hasKey("ShowParticles", 1) || tag.getBoolean("ShowParticles");
+        return new PotionEffect(potion, tag.getInteger("Duration"), amplifier, tag.getBoolean("Ambient"), particles);
+    }
+
     @Override
     public int compareTo(PotionEffect other) {
         if (duration > 32147 && other.duration > 32147 || isAmbient && other.isAmbient) {
