@@ -1,10 +1,10 @@
 # Legacy Connector
 
-Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar into your `mods` folder next to
+Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar (1.12.2 mods are experimental, see the status table) into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified.
 
-> **Status: alpha (0.1.x).** 1.7.10 is the active target. Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
+> **Status: alpha (0.1.x).** 1.7.10 is the main target; 1.12.2 is experimental (server side only, issue #64). Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
 > Plenty, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
 > world generation and dimensions, and large tech packs load most of their mods; Galacticraft with its addons runs with per-planet gravity and silent space. Some features are still missing or
 > unverified (see [Known compatibility issues](#known-compatibility-issues)), so back up your worlds.
@@ -154,7 +154,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
-| 1.12.2 bridges | started (server side only, see the status table and issue #64) |
+| 1.12.2 bridges | experimental (server side only, see the status table and issue #64) |
 | 1.8 - 1.11.2, 1.16.5, 1.20.1 (+ Sinytra) bridges | planned, in that order |
 
 ### World generation
@@ -244,7 +244,7 @@ Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate
 | Legacy version | Status |
 |---|---|
 | 1.7.10 | **Alpha.** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game; Galacticraft with its addons runs with per-planet gravity. In the latest startup test of the 230-mod GTNH pack, 282 mods across the corpus load without errors and 52 fail during loading (see the [compatibility list](https://kylepitcock.github.io/Legacy-Connector/)). Mod biomes, world types and dimensions generate; mod entities spawn, tick, fight and save; entity rendering (including the player renderer), armour and held items, dimension fog/sky and Twilight Forest's portal are bridged, though not verified in game for every mod. All synthesized API classes pass JVM verification. |
-| 1.12.2 | **Experimental groundwork (server side).** FML lifecycle, registry events, items, blocks and block states, tile entities, capabilities (items, fluids, energy), networking channels, recipes, ore dictionary, tools/armor, fluids data model and vanilla constants exist; in a server test of 29 jars of the big mods (49 mod ids: Mekanism, Thermal, BuildCraft, AE2, Botania, Tinkers, Forestry, Twilight Forest, ...) 30 mod ids get through preInit, init and postInit without an error and 19 fail in one of those phases; 427 blocks and 1337 items register. Entities, GUIs, world access beyond the basics, client rendering and in-world fluids are missing, and nothing has been verified in a real game yet (issue #64). |
+| 1.12.2 | **Experimental (server side only, unverified in a real game; issue #64).** Implemented: the FML lifecycle, registry events (blocks, items, potions, enchantments, sounds, biomes, entities, recipes, villager professions, custom registries made with `RegistryBuilder`), items with subtypes, blocks and block states (one `meta` property mapped through `getStateFromMeta`/`getMetaFromState`), tile entities with client sync, capabilities (items, fluids, energy), networking channels, recipes (code recipes become data pack recipes), ore dictionary, tools/armor, fluid data model, `@ObjectHolder`, `@SidedProxy`, `@EventBusSubscriber`, coremod plugins and vanilla constants (`Blocks`, `Items`, ...). Mod blockstates, item models (`ModelLoader`) and model/texture names renamed after 1.12 are translated, but the client has only been smoke-tested (about 1750 model warnings across Botania, Chisel, AE2 and Immersive Engineering in the last client run). Server test of 39 more jars (Roots, Vampirism, Totemic, RFTools, Pam's HarvestCraft, The Betweenlands, Ice and Fire, TechReborn, ...): 22 of 42 mod ids fail in preInit/init/postInit, mostly missing dependency jars and API gaps. Missing: entities and AI, containers and GUIs, in-world fluids, world generation, custom `IRecipe` classes, `@Config` annotations and client rendering. Performance, bug-fix and mixin-loader mods (FoamFix, BetterFPS, VanillaFix, ...) are skipped. |
 | 1.8 - 1.11.2 | Planned (folded into the 1.12.2 shim where the API did not change). |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
