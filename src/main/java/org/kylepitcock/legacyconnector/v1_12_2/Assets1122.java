@@ -94,6 +94,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             m.addProperty("model", id.getNamespace() + ":block/" + id.getPath());
             variants.add("meta=0", m);
         }
+        // metadata values no legacy state maps to (the block saves only some of the 16): they show the first state's model instead of a missing-model cube
+        if (variants.size() > 0) {
+            JsonElement fallback = variants.has("meta=0") ? variants.get("meta=0") : variants.entrySet().iterator().next().getValue();
+            for (int meta = 0; meta < 16; meta++) if (!variants.has("meta=" + meta)) variants.add("meta=" + meta, fallback);
+        }
         JsonObject out = new JsonObject();
         out.add("variants", variants);
         return out;
