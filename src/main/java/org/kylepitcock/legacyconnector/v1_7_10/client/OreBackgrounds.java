@@ -58,7 +58,7 @@ public final class OreBackgrounds {
             int colon = name.indexOf(':');
             String domain = colon < 0 ? "minecraft" : name.substring(0, colon);
             String path = colon < 0 ? name : name.substring(colon + 1);
-            if (domain.equals("minecraft") || !path.toLowerCase(Locale.ROOT).contains("ore")) continue;
+            if (domain.equals("minecraft") || !isOreName(path)) continue;
             byte[] original = LegacySprites.modTexture(domain, "textures/blocks/" + path + ".png");
             if (original == null) continue;
             try {
@@ -72,6 +72,20 @@ public final class OreBackgrounds {
             }
         }
         LOG.info("Replaced the stone, netherrack or end stone background of {} legacy ore textures with the modern textures", changed);
+    }
+
+    /** Words that end in "ore" without being ores. */
+    private static final java.util.Set<String> NOT_ORE = java.util.Set.of("core", "more", "store", "score", "before", "ignore", "restore",
+            "explore", "shore", "chore", "bore", "snore", "pore", "spore", "fore", "adore", "galore", "lore", "sore", "wore", "tore", "yore");
+
+    /** Whether a texture name names an ore: a whole word "ore"/"ores" (camelCase, dots, dashes and underscores separate words), or a word like "copperore". */
+    static boolean isOreName(String name) {
+        for (String word : name.split("[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")) {
+            String w = word.toLowerCase(Locale.ROOT);
+            if (w.equals("ore") || w.equals("ores")) return true;
+            if (w.length() > 4 && w.endsWith("ore") && !NOT_ORE.contains(w)) return true;
+        }
+        return false;
     }
 
     /** The texture with its host rock pixels replaced, or null when it has no recognisable host rock (or is animated). */
