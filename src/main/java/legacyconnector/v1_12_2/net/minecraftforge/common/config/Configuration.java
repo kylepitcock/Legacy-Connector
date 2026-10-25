@@ -236,6 +236,15 @@ public class Configuration {
         return null;
     }
 
+    public Property get(String category, String key, String defaultValue, String comment, java.util.regex.Pattern validationPattern) {
+        Property prop = get(category, key, defaultValue, comment, Property.Type.STRING);
+        return prop;
+    }
+
+    public Property get(String category, String key, String[] defaultValues, String comment, java.util.regex.Pattern validationPattern) {
+        return get(category, key, defaultValues, comment, Property.Type.STRING);
+    }
+
     public Property get(String category, String key, String[] defaultValues, String comment, Property.Type type) {
         ConfigCategory cat = getCategory(category);
         if (cat.containsKey(key)) {

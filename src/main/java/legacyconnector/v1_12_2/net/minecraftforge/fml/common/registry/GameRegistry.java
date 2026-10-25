@@ -29,6 +29,9 @@ public class GameRegistry {
                 ForgeRegistries.POTION_TYPES}) {
             if (reg.getRegistrySuperType() == registryType) return (IForgeRegistry<T>) reg;
         }
+        for (IForgeRegistry<?> reg : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
+            if (reg.getRegistrySuperType() == registryType) return (IForgeRegistry<T>) reg;
+        }
         return null;
     }
 
