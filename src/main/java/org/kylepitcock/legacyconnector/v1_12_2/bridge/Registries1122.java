@@ -28,8 +28,8 @@ public final class Registries1122 {
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> RECIPES =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe.class, RecipeBridge1122::add);
     /** Registries whose entry classes only the synthesizer provides (biomes, entities, villager professions, potion types): typed when their event is posted. */
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public static final Reg BIOMES = new Reg(null, o -> {});
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome> BIOMES =
+            new Reg<>(legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.class, b -> {});
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final Reg ENTITIES = new Reg(null, o -> {});
     @SuppressWarnings({"rawtypes", "unchecked"})

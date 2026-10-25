@@ -37,3 +37,6 @@ emit("MobEffects", "net/minecraft/init/MobEffects", "Lnet/minecraft/potion/Potio
      "effect", "1.12.2 vanilla potion effects")
 emit("Enchantments", "net/minecraft/init/Enchantments", "Lnet/minecraft/enchantment/Enchantment;", "legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment",
      "enchantment", "1.12.2 vanilla enchantments")
+
+emit("Biomes", "net/minecraft/init/Biomes", "Lnet/minecraft/world/biome/Biome;", "legacyconnector.v1_12_2.net.minecraft.world.biome.Biome", "biome",
+     "1.12.2 vanilla biomes (names only)")

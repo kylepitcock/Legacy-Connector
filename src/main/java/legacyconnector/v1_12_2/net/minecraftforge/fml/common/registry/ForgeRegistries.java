@@ -10,7 +10,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122;
 public class ForgeRegistries {
     public static final IForgeRegistry<Block> BLOCKS = Registries1122.BLOCKS;
     public static final IForgeRegistry<Item> ITEMS = Registries1122.ITEMS;
-    public static final IForgeRegistry BIOMES = Registries1122.BIOMES;
+    public static final IForgeRegistry<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome> BIOMES = Registries1122.BIOMES;
     public static final IForgeRegistry ENTITIES = Registries1122.ENTITIES;
     public static final IForgeRegistry VILLAGER_PROFESSIONS = Registries1122.VILLAGER_PROFESSIONS;
     public static final IForgeRegistry POTION_TYPES = Registries1122.POTION_TYPES;

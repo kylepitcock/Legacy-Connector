@@ -355,6 +355,13 @@ public final class Vanilla1122 {
         }
     }
 
+    /** A vanilla biome as a legacy object (named by its field; properties are not tracked). */
+    public static legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome(String field) {
+        var b = new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome(new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.BiomeProperties(field.toLowerCase(java.util.Locale.ROOT)));
+        b.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        return b;
+    }
+
     private static boolean loaded;
 
     /** Creates the generated Blocks/Items wrappers once (they register themselves by name). */
