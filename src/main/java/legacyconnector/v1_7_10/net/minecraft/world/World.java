@@ -304,6 +304,17 @@ public class World implements IBlockAccess {
 
     /** An ore placed into deepslate (or over a deepslate ore) becomes the ore's deepslate variant. */
     private BlockState deepslateOre(BlockState state, BlockPos p) {
+        if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter) && inDeepPass()) {
+            // vanilla ores placed by legacy generators (CoFHWorld, Galacticraft...) into deepslate use the deepslate variant
+            var key = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            if ("minecraft".equals(key.getNamespace()) && key.getPath().endsWith("_ore") && !key.getPath().startsWith("deepslate_")
+                    && lvl().getBlockState(p).is(Blocks.DEEPSLATE)) {
+                var twin = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(
+                        net.minecraft.resources.ResourceLocation.withDefaultNamespace("deepslate_" + key.getPath()));
+                if (twin.isPresent()) return twin.get().defaultBlockState();
+            }
+            return state;
+        }
         if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a) || a.isDeepVariant()) return state;
         var twin = a.deepVariant();
         if (twin == null) return state;

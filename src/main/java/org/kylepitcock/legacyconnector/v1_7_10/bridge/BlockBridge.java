@@ -276,6 +276,10 @@ public final class BlockBridge {
         } catch (RuntimeException | LinkageError e) {
             return false;
         }
+        for (Class<?> c = block.getClass(); c != null && c != Block.class; c = c.getSuperclass()) {
+            String n = c.getSimpleName();
+            if (n.endsWith("Ore") || n.endsWith("Ores") || n.startsWith("BlockOre")) return true;
+        }
         for (String word : name.replaceAll("([a-z0-9])([A-Z])", "$1 $2").toLowerCase(java.util.Locale.ROOT).split("[^a-z0-9]+")) {
             if (word.equals("ore") || word.equals("ores")) return true;
         }
