@@ -47,6 +47,24 @@ public class GL11 extends GL11Guard {
         return GL11Guard.glGetTexLevelParameteri(target, level, pname);
     }
 
+    // ------------------------------------------------------------------ texture uploads (see GlPixels)
+
+    public static void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, java.nio.ByteBuffer pixels) {
+        GL11Guard.glTexImage2D(target, level, internalFormat, width, height, border, format, type, org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.safe(pixels, width, height, format, type));
+    }
+
+    public static void glTexImage2D(int target, int level, int internalFormat, int width, int height, int border, int format, int type, java.nio.IntBuffer pixels) {
+        GL11Guard.glTexImage2D(target, level, internalFormat, width, height, border, format, type, org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.safe(pixels, width, height, format, type));
+    }
+
+    public static void glTexSubImage2D(int target, int level, int xOffset, int yOffset, int width, int height, int format, int type, java.nio.ByteBuffer pixels) {
+        GL11Guard.glTexSubImage2D(target, level, xOffset, yOffset, width, height, format, type, org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.safe(pixels, width, height, format, type));
+    }
+
+    public static void glTexSubImage2D(int target, int level, int xOffset, int yOffset, int width, int height, int format, int type, java.nio.IntBuffer pixels) {
+        GL11Guard.glTexSubImage2D(target, level, xOffset, yOffset, width, height, format, type, org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.safe(pixels, width, height, format, type));
+    }
+
     // ------------------------------------------------------------------ LWJGL 2 overloads without the "v" suffix
 
     private static final int GL_MODELVIEW_MATRIX = 0x0BA6;
