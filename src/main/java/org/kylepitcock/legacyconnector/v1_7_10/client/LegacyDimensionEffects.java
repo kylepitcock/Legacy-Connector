@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 public final class LegacyDimensionEffects extends DimensionSpecialEffects {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
     private static final Set<String> FAILED = ConcurrentHashMap.newKeySet();
+    private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();
 
     public LegacyDimensionEffects() {
         super(128.0F, true, SkyType.NORMAL, false, false);
@@ -98,6 +99,10 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
             Runnable setupFog) {
         WorldProvider p = provider();
         IRenderHandler handler = p == null || FAILED.contains(p.getClass().getName() + ":sky") ? null : p.getSkyRenderer();
+        if (p != null && REPORTED.add(p.getClass().getName())) {
+            LOG.info("Sky of dimension {} ({}): legacy sky renderer {}, cloud renderer {}, hasNoSky {}", p.dimensionId, p.getClass().getName(),
+                    handler == null ? "none (the vanilla sky is drawn)" : handler.getClass().getName(), p.getCloudRenderer() == null ? "none" : "set", p.hasNoSky);
+        }
         if (handler == null) return false;
         setupFog.run();
         return draw(p, "sky", handler, level, partialTick, modelView);
