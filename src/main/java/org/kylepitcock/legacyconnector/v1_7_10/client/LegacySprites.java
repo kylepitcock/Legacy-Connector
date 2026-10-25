@@ -134,7 +134,7 @@ public final class LegacySprites {
             throw new java.io.FileNotFoundException(location.getResourceDomain() + ":" + location.getResourcePath());
         }
 
-        private static byte[] readModern(String ns, String path) {
+        static byte[] readModern(String ns, String path) {
             try {
                 var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(ns, path);
                 var mc = net.minecraft.client.Minecraft.getInstance();
@@ -211,6 +211,20 @@ public final class LegacySprites {
     }
 
     private record Built(byte[] png, byte[] meta) {}
+
+    /** The bytes of a texture file in the mod files (e.g. {@code textures/blocks/oreCopper.png} of "IC2"), or null if there is none. */
+    static byte[] modTexture(String domain, String path) {
+        try (InputStream in = new ModResources().getResource(new ResourceLocation(domain, path)).getInputStream()) {
+            return in.readAllBytes();
+        } catch (IOException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    /** A texture of the running game (vanilla pack), or null. */
+    static byte[] vanillaTexture(String path) {
+        return ModResources.readModern("minecraft", path);
+    }
 
     public static void bake(TextureMap map, boolean block, Map<String, Supplier<byte[]>> out) {
         ModResources resources = new ModResources();

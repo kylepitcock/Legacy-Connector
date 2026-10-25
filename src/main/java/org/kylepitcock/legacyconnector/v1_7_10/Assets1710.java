@@ -103,6 +103,13 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            try {
+                org.kylepitcock.legacyconnector.v1_7_10.client.OreBackgrounds.contribute(blocks, out);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Replacing ore backgrounds failed: {}", e.toString());
+            }
+        }
     }
 
     /**
