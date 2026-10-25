@@ -87,4 +87,18 @@ public class ForgeHooks {
         if (MinecraftForge.EVENT_BUS.post(event)) return -1;
         return event.getExpToDrop();
     }
+
+    /** Posts the attack event; false when a handler cancelled the attack. */
+    public static boolean onLivingAttack(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
+            legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, float amount) {
+        return !MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingAttackEvent(entity, source, amount));
+    }
+
+    /** Posts the hurt event; the damage to apply (0 when cancelled). */
+    public static float onLivingHurt(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity,
+            legacyconnector.v1_7_10.net.minecraft.util.DamageSource source, float amount) {
+        legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent event =
+                new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, amount);
+        return MinecraftForge.EVENT_BUS.post(event) ? 0.0F : event.ammount;
+    }
 }

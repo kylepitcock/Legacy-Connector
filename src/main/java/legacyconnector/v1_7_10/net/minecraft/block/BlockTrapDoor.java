@@ -15,4 +15,8 @@ public class BlockTrapDoor extends Block {
     public static boolean func_150118_d(int meta) {
         return (meta & 4) != 0;
     }
+
+    public static boolean isTrapdoorOpen(int meta) {
+        return (meta & 4) != 0;
+    }
 }

@@ -42,4 +42,8 @@ public class BlockRailBase extends Block {
     public float getRailMaxSpeed(World world, Object cart, int x, int y, int z) {
         return 0.4F;
     }
+
+    public static boolean isRailBlockAt(World world, int x, int y, int z) {
+        return isRailBlock(world.getBlock(x, y, z));
+    }
 }

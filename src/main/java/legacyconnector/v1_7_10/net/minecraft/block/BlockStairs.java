@@ -48,4 +48,8 @@ public class BlockStairs extends Block {
     public void registerBlockIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
         // icons come from the model block
     }
+
+    public static boolean isBlockStairs(Block block) {
+        return block instanceof BlockStairs;
+    }
 }
