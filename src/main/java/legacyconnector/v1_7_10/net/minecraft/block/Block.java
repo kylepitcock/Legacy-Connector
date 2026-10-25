@@ -739,7 +739,9 @@ public class Block {
     }
 
     public boolean canBeReplacedByLeaves(IBlockAccess world, int x, int y, int z) {
-        return !isOpaqueCube();
+        // vanilla blocks are wrappers that do not know their shape: air and leaves are replaceable whatever isOpaqueCube says
+        return !isOpaqueCube() || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.air || getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.air
+                || getMaterial() == legacyconnector.v1_7_10.net.minecraft.block.material.Material.leaves;
     }
 
     public boolean canSustainLeaves(IBlockAccess world, int x, int y, int z) {

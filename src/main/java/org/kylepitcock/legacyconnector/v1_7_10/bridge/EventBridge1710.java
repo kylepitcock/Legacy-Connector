@@ -210,6 +210,19 @@ public final class EventBridge1710 {
                 e.getDrops().add(new net.minecraft.world.entity.item.ItemEntity(e.getLevel(), p.getX() + 0.5D, p.getY() + 0.5D, p.getZ() + 0.5D, modern));
             }
         });
+        // Bone meal on a legacy block: handlers (Thaumcraft's saplings) grow it themselves and set the result to ALLOW.
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.BonemealEvent e) -> {
+            if (BlockBridge.legacyBlock(e.getState()) == null || !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.BonemealEvent.class)) return;
+            var p = e.getPos();
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.BonemealEvent(player(e.getPlayer()), World.mcc$wrap(e.getLevel()),
+                    BlockBridge.legacyBlock(e.getState()), p.getX(), p.getY(), p.getZ());
+            if (forge().post(legacy)) {
+                e.setCanceled(true);
+            } else if (legacy.getResult() == legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event.Result.ALLOW) {
+                e.setSuccessful(true);
+                e.setCanceled(true);
+            }
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.BreakSpeed e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed.class)) return;
             var pos = e.getPosition().orElse(net.minecraft.core.BlockPos.ZERO);
