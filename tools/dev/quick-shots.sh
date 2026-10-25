@@ -5,6 +5,6 @@
 cd "$(dirname "$0")/../.." || exit 1
 export JAVA_HOME="${JAVA_HOME:-C:/Program Files/Java/jdk-21}"
 rm -rf run-screenshots/shots
-./gradlew runScreenshotTest -q -PshotScenario=full -PshotWorldType="${WORLD:-minecraft:flat}" -PshotTour="${TOUR:-0}" \
-  -PshotRenderDistance="${RD:-4}" -PshotBlocksPerMod="${BLOCKS:-12}" -PshotItemsPerMod="${ITEMS:-12}" ${EXTRA:-} -PshotWidth=640 -PshotHeight=360
+./gradlew runScreenshotTest -q -PshotScenario="${SCENARIO:-full}" -PshotWorldType="${WORLD:-minecraft:flat}" -PshotTour="${TOUR:-0}" \
+  -PshotRenderDistance="${RD:-4}" -PshotBlocksPerMod="${BLOCKS:-12}" -PshotItemsPerMod="${ITEMS:-12}" ${EXTRA:-} ${COMMANDS:+"-PshotCommands=$COMMANDS"} -PshotWidth=640 -PshotHeight=360
 echo "shots: $(ls run-screenshots/shots 2>/dev/null | wc -l) in run-screenshots/shots"

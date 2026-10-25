@@ -44,6 +44,26 @@ public final class Client1710 {
         modBus.addListener(Client1710::onRegisterItemColors);
         modBus.addListener(Client1710::onRegisterBlockColors);
         modBus.addListener(Client1710::onModifyBaking);
+        modBus.addListener(Client1710::onAddLayers);
+    }
+
+    /** Legacy armor is drawn by its own layer on players and humanoid mobs. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void onAddLayers(EntityRenderersEvent.AddLayers event) {
+        for (var skin : event.getSkins()) {
+            var renderer = event.getSkin(skin);
+            if (renderer instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer player) {
+                player.addLayer(new LegacyArmorLayer(player));
+                LegacyArmorLayer.hideFromHeadLayer(player);
+            }
+        }
+        for (var type : event.getEntityTypes()) {
+            var renderer = event.getRenderer((net.minecraft.world.entity.EntityType) type);
+            if (renderer instanceof net.minecraft.client.renderer.entity.HumanoidMobRenderer humanoid) {
+                humanoid.addLayer(new LegacyArmorLayer(humanoid));
+                LegacyArmorLayer.hideFromHeadLayer(humanoid);
+            }
+        }
     }
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {

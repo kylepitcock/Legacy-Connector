@@ -126,6 +126,12 @@ public class Minecraft {
         return SETTINGS;
     }
 
+    private static final legacyconnector.v1_7_10.net.minecraft.util.MouseHelper MOUSE_HELPER = new legacyconnector.v1_7_10.net.minecraft.util.MouseHelper();
+
+    public static legacyconnector.v1_7_10.net.minecraft.util.MouseHelper mcc$get$mouseHelper(Minecraft m) {
+        return MOUSE_HELPER;
+    }
+
     public static int mcc$get$displayWidth(Minecraft m) {
         return mc().getWindow().getWidth();
     }

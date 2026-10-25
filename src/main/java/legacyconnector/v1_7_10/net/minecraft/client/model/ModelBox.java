@@ -31,20 +31,37 @@ public class ModelBox {
                 ? new ModelPart.Cube(u, v, x, y, z, w, h, d, grow, grow, grow, renderer.mirror, renderer.textureWidth, renderer.textureHeight,
                         EnumSet.allOf(Direction.class))
                 : null;
-        float x2 = x + w, y2 = y + h, z2 = z + d;
-        PositionTextureVertex v0 = new PositionTextureVertex(x2, y, z, 0.0F, 0.0F);
-        PositionTextureVertex v1 = new PositionTextureVertex(x, y, z, 0.0F, 8.0F);
-        PositionTextureVertex v2 = new PositionTextureVertex(x, y2, z, 8.0F, 8.0F);
-        PositionTextureVertex v3 = new PositionTextureVertex(x2, y2, z, 8.0F, 0.0F);
-        PositionTextureVertex v4 = new PositionTextureVertex(x2, y, z2, 0.0F, 0.0F);
-        PositionTextureVertex v5 = new PositionTextureVertex(x, y, z2, 0.0F, 8.0F);
-        PositionTextureVertex v6 = new PositionTextureVertex(x, y2, z2, 8.0F, 8.0F);
-        PositionTextureVertex v7 = new PositionTextureVertex(x2, y2, z2, 8.0F, 0.0F);
-        this.vertexPositions = new PositionTextureVertex[] {v0, v1, v2, v3, v4, v5, v6, v7};
+        // vanilla 1.7.10's unwrapping (a mirrored box flips x), so code reading or drawing the quads sees the real UVs
+        float x1 = x - grow, y1 = y - grow, z1 = z - grow;
+        float x2 = x + w + grow, y2 = y + h + grow, z2 = z + d + grow;
+        if (renderer.mirror) {
+            float t = x2;
+            x2 = x1;
+            x1 = t;
+        }
+        PositionTextureVertex p0 = new PositionTextureVertex(x1, y1, z1, 0.0F, 0.0F);
+        PositionTextureVertex p1 = new PositionTextureVertex(x2, y1, z1, 0.0F, 8.0F);
+        PositionTextureVertex p2 = new PositionTextureVertex(x2, y2, z1, 8.0F, 8.0F);
+        PositionTextureVertex p3 = new PositionTextureVertex(x1, y2, z1, 8.0F, 0.0F);
+        PositionTextureVertex p4 = new PositionTextureVertex(x1, y1, z2, 0.0F, 0.0F);
+        PositionTextureVertex p5 = new PositionTextureVertex(x2, y1, z2, 0.0F, 8.0F);
+        PositionTextureVertex p6 = new PositionTextureVertex(x2, y2, z2, 8.0F, 8.0F);
+        PositionTextureVertex p7 = new PositionTextureVertex(x1, y2, z2, 8.0F, 0.0F);
+        this.vertexPositions = new PositionTextureVertex[] {p0, p1, p2, p3, p4, p5, p6, p7};
+        float tw = renderer.textureWidth, th = renderer.textureHeight;
         this.quadList = new TexturedQuad[] {
-                new TexturedQuad(new PositionTextureVertex[] {v4, v0, v3, v7}), new TexturedQuad(new PositionTextureVertex[] {v1, v5, v6, v2}),
-                new TexturedQuad(new PositionTextureVertex[] {v4, v5, v1, v0}), new TexturedQuad(new PositionTextureVertex[] {v3, v2, v6, v7}),
-                new TexturedQuad(new PositionTextureVertex[] {v0, v1, v2, v3}), new TexturedQuad(new PositionTextureVertex[] {v5, v4, v7, v6})};
+                new TexturedQuad(new PositionTextureVertex[] {p5, p1, p2, p6}, u + d + w, v + d, u + d + w + d, v + d + h, tw, th),
+                new TexturedQuad(new PositionTextureVertex[] {p0, p4, p7, p3}, u, v + d, u + d, v + d + h, tw, th),
+                new TexturedQuad(new PositionTextureVertex[] {p5, p4, p0, p1}, u + d, v, u + d + w, v + d, tw, th),
+                new TexturedQuad(new PositionTextureVertex[] {p2, p3, p7, p6}, u + d + w, v + d, u + d + w + w, v, tw, th),
+                new TexturedQuad(new PositionTextureVertex[] {p1, p0, p3, p2}, u + d, v + d, u + d + w, v + d + h, tw, th),
+                new TexturedQuad(new PositionTextureVertex[] {p4, p5, p6, p7}, u + d + w + d, v + d, u + d + w + d + w, v + d + h, tw, th)};
+        if (renderer.mirror) for (TexturedQuad q : quadList) q.flipFace();
+    }
+
+    /** Draws the box's quads (1.7.10's immediate-mode path: the caller binds the texture). */
+    public void render(legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator tessellator, float scale) {
+        for (TexturedQuad q : quadList) q.draw(tessellator, scale);
     }
 
     public ModelBox func_78244_a(String name) {

@@ -235,11 +235,14 @@ public final class WorldScreenshotTest {
         if ("commands".equals(System.getProperty("legacyconnector.shotScenario"))) {
             // runs the commands of -Dlegacyconnector.shotCommands (separated by ';') and logs the chat
             add(waitForWorld(), wait(40), command("gamemode creative"), command("tp @s 0 150 0"), waitForTerrain(60));
-            for (String c : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) {
-                c = c.trim();
+            for (String c0 : System.getProperty("legacyconnector.shotCommands", "legacyconnector mods").split(";")) {
+                final String c = c0.trim();
+                final String camName = c.startsWith("cam:") ? c.substring(4) : "";
                 // "shot:<name>" takes a screenshot (after the world around has had time to render), "wait:<ticks>" waits
                 if (c.startsWith("shot:")) add(wait(100), shot(c.substring(5)));
                 else if (c.startsWith("wait:")) add(wait(Integer.parseInt(c.substring(5))));
+                else if (c.startsWith("cam:")) add(run(mc -> mc.options.setCameraType(camName.equals("front") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
+                        : camName.equals("back") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON)));
                 else add(command(c), wait(30));
             }
             add(run(mc -> {

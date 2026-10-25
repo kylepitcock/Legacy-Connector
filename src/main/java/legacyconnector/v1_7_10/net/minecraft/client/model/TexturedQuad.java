@@ -21,6 +21,19 @@ public class TexturedQuad {
         vertices[3] = vertices[3].setTexturePosition(u2 / texWidth - f, v2 / texHeight - f1);
     }
 
+    public void draw(legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator tessellator, float scale) {
+        legacyconnector.v1_7_10.net.minecraft.util.Vec3 a = vertexPositions[1].vector3D.subtract(vertexPositions[0].vector3D);
+        legacyconnector.v1_7_10.net.minecraft.util.Vec3 b = vertexPositions[1].vector3D.subtract(vertexPositions[2].vector3D);
+        legacyconnector.v1_7_10.net.minecraft.util.Vec3 n = b.crossProduct(a).normalize();
+        float sign = invertNormal ? -1.0F : 1.0F;
+        tessellator.startDrawingQuads();
+        tessellator.setNormal(sign * (float) n.xCoord, sign * (float) n.yCoord, sign * (float) n.zCoord);
+        for (PositionTextureVertex v : vertexPositions) {
+            tessellator.addVertexWithUV(v.vector3D.xCoord * scale, v.vector3D.yCoord * scale, v.vector3D.zCoord * scale, v.texturePositionX, v.texturePositionY);
+        }
+        tessellator.draw();
+    }
+
     public void flipFace() {
         PositionTextureVertex[] flipped = new PositionTextureVertex[vertexPositions.length];
         for (int i = 0; i < vertexPositions.length; i++) flipped[i] = vertexPositions[vertexPositions.length - i - 1];
