@@ -64,4 +64,149 @@ public class CraftingHelper {
         }
         return primer;
     }
+
+    // ------------------------------------------------------------------ JSON recipes
+
+    public static ItemStack getItemStackBasic(com.google.gson.JsonObject json, JsonContext context) {
+        String itemName = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "item");
+        Item item = Item.REGISTRY.getObject(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(itemName));
+        if (item == null) throw new com.google.gson.JsonSyntaxException("Unknown item '" + itemName + "'");
+        int data = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getInt(json, "data", 0);
+        int count = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getInt(json, "count", 1);
+        return new ItemStack(item, count, data == 32767 ? 0 : data);
+    }
+
+    public static ItemStack getItemStack(com.google.gson.JsonObject json, JsonContext context) {
+        return getItemStackBasic(json, context);
+    }
+
+    public static Ingredient getIngredient(com.google.gson.JsonElement json, JsonContext context) {
+        if (json == null || json.isJsonNull()) throw new com.google.gson.JsonSyntaxException("Json cannot be null");
+        if (json.isJsonArray()) {
+            java.util.ArrayList<ItemStack> stacks = new java.util.ArrayList<>();
+            for (com.google.gson.JsonElement e : json.getAsJsonArray()) stacks.addAll(java.util.Arrays.asList(getIngredient(e, context).getMatchingStacks()));
+            return Ingredient.fromStacks(stacks.toArray(new ItemStack[0]));
+        }
+        if (!json.isJsonObject()) throw new com.google.gson.JsonSyntaxException("Expected ingredient to be a object or array of objects");
+        com.google.gson.JsonObject obj = json.getAsJsonObject();
+        String type = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(obj, "type", "minecraft:item");
+        if (type.equals("forge:ore_dict") && obj.has("ore")) return new OreIngredient(obj.get("ore").getAsString());
+        if (obj.has("item")) {
+            ItemStack stack = getItemStackBasic(obj, context);
+            int data = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getInt(obj, "data", 0);
+            if (data == 32767) return Ingredient.fromItem(stack.getItem());
+            return Ingredient.fromStacks(stack);
+        }
+        return Ingredient.EMPTY;
+    }
+
+    /** A recipe from its JSON (shaped and shapeless, plain and ore dictionary); other recipe types need their mod's own factory. */
+    public static legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe getRecipe(com.google.gson.JsonObject json, JsonContext context) {
+        String type = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "type");
+        String group = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "group", "");
+        legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation groupId = group.isEmpty() ? null : new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(group);
+        if (type.endsWith("crafting_shaped") || type.equals("forge:ore_shaped")) {
+            Map<Character, Ingredient> key = new HashMap<>();
+            for (var e : legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonObject(json, "key").entrySet()) {
+                key.put(e.getKey().charAt(0), getIngredient(e.getValue(), context));
+            }
+            key.put(' ', Ingredient.EMPTY);
+            com.google.gson.JsonArray pattern = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonArray(json, "pattern");
+            ShapedPrimer primer = new ShapedPrimer();
+            primer.height = pattern.size();
+            primer.width = primer.height == 0 ? 0 : pattern.get(0).getAsString().length();
+            for (com.google.gson.JsonElement row : pattern) {
+                String r = row.getAsString();
+                for (int x = 0; x < primer.width; x++) {
+                    Ingredient ing = x < r.length() ? key.get(r.charAt(x)) : null;
+                    primer.input.add(ing == null ? Ingredient.EMPTY : ing);
+                }
+            }
+            primer.mirrored = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getBoolean(json, "mirrored", true);
+            ItemStack result = getItemStack(legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonObject(json, "result"), context);
+            return new legacyconnector.v1_12_2.net.minecraftforge.oredict.ShapedOreRecipe(groupId, result, primer);
+        }
+        if (type.endsWith("crafting_shapeless") || type.equals("forge:ore_shapeless")) {
+            NonNullList<Ingredient> ings = NonNullList.create();
+            for (com.google.gson.JsonElement e : legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonArray(json, "ingredients")) ings.add(getIngredient(e, context));
+            ItemStack result = getItemStack(legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonObject(json, "result"), context);
+            return new legacyconnector.v1_12_2.net.minecraftforge.oredict.ShapelessOreRecipe(groupId, ings, result);
+        }
+        return customFactory(context, type, "recipes") instanceof IRecipeFactory f ? f.parse(context, json) : null;
+    }
+
+    /** The factory a mod's assets/&lt;mod&gt;/recipes/_factories.json names for a recipe or ingredient type. */
+    private static Object customFactory(JsonContext context, String type, String kind) {
+        try {
+            int colon = type.indexOf(':');
+            String modId = colon >= 0 ? type.substring(0, colon) : context.getModId();
+            String name = colon >= 0 ? type.substring(colon + 1) : type;
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            try (var in = loader.getResourceAsStream("assets/" + modId + "/recipes/_factories.json")) {
+                if (in == null) return null;
+                com.google.gson.JsonObject root = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                if (!root.has(kind) || !root.getAsJsonObject(kind).has(name)) return null;
+                String className = root.getAsJsonObject(kind).get(name).getAsString();
+                return Class.forName(className, true, loader).getDeclaredConstructor().newInstance();
+            }
+        } catch (java.io.IOException | ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
+    /**
+     * Visits the files under {@code base} (for example "assets/mod/recipes") of the mod's jar: the preprocessor gets the root, the processor each file
+     * with the root. Returns false when a callback failed or nothing was found and {@code defaultUnfoundRoot} is false.
+     */
+    public static boolean findFiles(legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModContainer mod, String base,
+            java.util.function.Function<java.nio.file.Path, Boolean> preprocessor,
+            java.util.function.BiFunction<java.nio.file.Path, java.nio.file.Path, Boolean> processor, boolean defaultUnfoundRoot, boolean visitAllFiles) {
+        boolean success = true;
+        boolean found = false;
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            java.util.Enumeration<java.net.URL> urls = loader.getResources(base);
+            while (urls.hasMoreElements()) {
+                java.net.URL url = urls.nextElement();
+                java.nio.file.Path root;
+                try {
+                    java.net.URI uri = url.toURI();
+                    if ("jar".equals(uri.getScheme())) {
+                        java.nio.file.FileSystem fs;
+                        try {
+                            fs = java.nio.file.FileSystems.getFileSystem(uri);
+                        } catch (java.nio.file.FileSystemNotFoundException e) {
+                            fs = java.nio.file.FileSystems.newFileSystem(uri, java.util.Map.of());
+                        }
+                        root = fs.getPath(uri.getSchemeSpecificPart().substring(uri.getSchemeSpecificPart().indexOf("!/") + 1));
+                    } else {
+                        root = java.nio.file.Paths.get(uri);
+                    }
+                } catch (java.net.URISyntaxException | java.io.IOException | RuntimeException e) {
+                    continue;
+                }
+                if (!java.nio.file.Files.exists(root)) continue;
+                found = true;
+                if (preprocessor != null) {
+                    Boolean ok = preprocessor.apply(root);
+                    if (ok != null && !ok) return false;
+                }
+                if (processor != null) {
+                    final java.nio.file.Path base0 = root;
+                    try (java.util.stream.Stream<java.nio.file.Path> walk = java.nio.file.Files.walk(root)) {
+                        for (java.nio.file.Path file : (Iterable<java.nio.file.Path>) walk.filter(java.nio.file.Files::isRegularFile)::iterator) {
+                            Boolean ok = processor.apply(base0, file);
+                            if (ok != null && !ok) {
+                                success = false;
+                                if (!visitAllFiles) return false;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (java.io.IOException | RuntimeException e) {
+            return false;
+        }
+        return found ? success : defaultUnfoundRoot;
+    }
 }
