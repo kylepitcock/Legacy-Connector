@@ -30,12 +30,21 @@ public final class DirectMemoryGuard {
         t.start();
     }
 
+    /** Every 10 s, heap and direct memory in the log (-Dlegacyconnector.memoryLog=true, and during the screenshot test). */
+    private static final boolean MEMORY_LOG = Boolean.getBoolean("legacyconnector.memoryLog") || System.getProperty("legacyconnector.shotScenario") != null;
+
     private static void watch(BufferPoolMXBean direct) {
         int reported = 0;
+        int ticks = 0;
         while (true) {
             try {
                 Thread.sleep(5000);
                 long used = direct.getMemoryUsed();
+                if (MEMORY_LOG && ++ticks % 2 == 0) {
+                    Runtime rt = Runtime.getRuntime();
+                    LOG.info("Memory: heap {} / {} MB, direct buffers {} MB ({} buffers)", (rt.totalMemory() - rt.freeMemory()) >> 20,
+                            rt.maxMemory() >> 20, used >> 20, direct.getCount());
+                }
                 if (used < THRESHOLD) continue;
                 System.gc();
                 Thread.sleep(10000);

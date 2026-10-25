@@ -4,9 +4,9 @@ package legacyconnector.v1_7_10.net.minecraft.item;
 public class ItemDye extends Item {
     public static final String[] dyeColorNames = {"black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow",
             "lightBlue", "magenta", "orange", "white"};
-    public static final String[] dyeIcons = {"dye_powder_black", "dye_powder_red", "dye_powder_green", "dye_powder_brown", "dye_powder_blue",
-            "dye_powder_purple", "dye_powder_cyan", "dye_powder_silver", "dye_powder_gray", "dye_powder_pink", "dye_powder_lime", "dye_powder_yellow",
-            "dye_powder_light_blue", "dye_powder_magenta", "dye_powder_orange", "dye_powder_white"};
+    /** Icon name suffixes (vanilla's dye_powder_ + these; mods build their own texture names from them, e.g. HBM's concrete_silver). */
+    public static final String[] dyeIcons = {"black", "red", "green", "brown", "blue", "purple", "cyan", "silver", "gray", "pink", "lime", "yellow",
+            "light_blue", "magenta", "orange", "white"};
     public static final int[] dyeColors = {1973019, 11743532, 3887386, 5320730, 2437522, 8073150, 2651799, 11250603, 4408131, 14188952, 4312372, 14602026,
             6719955, 12801229, 15435844, 15790320};
 

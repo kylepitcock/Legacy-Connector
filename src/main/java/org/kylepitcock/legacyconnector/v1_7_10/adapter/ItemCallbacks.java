@@ -129,9 +129,17 @@ final class ItemCallbacks {
     static Component name(Item legacy, net.minecraft.world.item.ItemStack stack, boolean customName) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null) return Component.empty();
-        if (customName) return Component.literal(legacy.getItemStackDisplayName(view));
-        return Component.translatable(legacy.getUnlocalizedNameInefficiently(view).isEmpty()
-                ? legacy.getUnlocalizedName(view) + ".name" : legacy.getUnlocalizedName(view) + ".name");
+        try {
+            if (customName) return Component.literal(legacy.getItemStackDisplayName(view));
+            return Component.translatable(legacy.getUnlocalizedName(view) + ".name");
+        } catch (RuntimeException | LinkageError e) {
+            // Names are built for every item at once (the creative search), and a mod's name can depend on another mod that
+            // failed to load (BuildCraft facades of MCFrames frames): a broken name must never take the game down.
+            if (TOOLTIP_FAILURES.incrementAndGet() <= 5) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Items").warn("Name of {} failed: {}", legacy, e.toString());
+            }
+            return Component.literal(String.valueOf(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(stack.getItem())));
+        }
     }
 
     static float destroySpeed(Item legacy, net.minecraft.world.item.ItemStack stack, BlockState state) {

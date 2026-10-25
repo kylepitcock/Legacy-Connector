@@ -89,6 +89,10 @@ public final class TileEntityBridge {
     private static final Map<net.minecraft.world.level.block.entity.BlockEntity, TileEntity> VIEWS =
             java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
+    static {
+        org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 block entity", VIEWS, net.minecraft.world.level.block.entity.BlockEntity::isRemoved);
+    }
+
     /**
      * The block entity at {@code pos}. Legacy generators probe for tile entities everywhere; a generation region warns
      * for every block that will have one but has none yet (hundreds of thousands of lines), so it asks the chunk and

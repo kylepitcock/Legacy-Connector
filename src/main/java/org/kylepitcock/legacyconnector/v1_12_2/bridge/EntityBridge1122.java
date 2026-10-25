@@ -9,7 +9,12 @@ import net.minecraft.server.level.ServerPlayer;
 
 /** Legacy views of modern entities, one per entity. */
 public final class EntityBridge1122 {
-    private static final Map<net.minecraft.world.entity.Entity, Entity> ENTITIES = new WeakHashMap<>();
+    private static final Map<net.minecraft.world.entity.Entity, Entity> ENTITIES = java.util.Collections.synchronizedMap(new WeakHashMap<>());
+
+    static {
+        org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.12.2 entity", ENTITIES,
+                e -> e.isRemoved() && !(e instanceof net.minecraft.world.entity.player.Player)); // players change dimension in place
+    }
 
     private EntityBridge1122() {}
 

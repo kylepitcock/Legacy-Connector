@@ -20,6 +20,13 @@ public class Legacy1122EntityBlock extends Legacy1122Block implements EntityBloc
     @Nullable
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        // only the states whose legacy hasTileEntity is true get a host (see the 1.7.10 adapter: empty hosts for every
+        // generated ore or plant sharing a class with a machine filled the heap)
+        try {
+            if (!legacy().hasTileEntity(legacy().getStateFromMeta(state.getValue(META)))) return null;
+        } catch (RuntimeException | LinkageError e) {
+            // unknown: keep the host
+        }
         return new Legacy1122BlockEntity(pos, state);
     }
 

@@ -60,6 +60,8 @@ public final class LegacyConnector {
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
+        org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
+        org.kylepitcock.legacyconnector.core.EntityCensus.register();
         LegacyMods.registerPlatform(new Platform1710());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
 

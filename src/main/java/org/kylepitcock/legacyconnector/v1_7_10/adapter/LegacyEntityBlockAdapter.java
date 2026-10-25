@@ -19,9 +19,14 @@ public class LegacyEntityBlockAdapter extends LegacyBlockAdapter implements Enti
 
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        // Every metadata value gets a host: the modern block is an EntityBlock as a whole, and vanilla warns about (and
-        // re-tries to load) block entities of such blocks that were never created. Metadata without a tile entity
-        // leaves the host empty (see LegacyBlockEntity.legacy) and unticked.
+        // The modern block is an EntityBlock as a whole, but only the metadata values whose legacy hasTileEntity is true
+        // get a host. An empty host for every other placement (a mod's ore or plant block sharing its class with a machine)
+        // was created for every such block world generation placed: hundreds of thousands per few minutes of play.
+        try {
+            if (!((Block) legacy()).hasTileEntity(state.getValue(META))) return null;
+        } catch (RuntimeException | LinkageError e) {
+            // unknown: keep the host
+        }
         return new LegacyBlockEntity(pos, state);
     }
 

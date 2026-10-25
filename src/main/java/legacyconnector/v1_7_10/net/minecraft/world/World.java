@@ -170,10 +170,23 @@ public class World implements IBlockAccess {
         }
     }
 
+    /**
+     * The view of a world generation region, per thread. Regions live for one generation step; in {@link #VIEWS} (weak keys)
+     * they would never be released, because the view holds its region strongly: every region a legacy generator touched,
+     * with all its proto chunks, stayed in memory (gigabytes after a few minutes of exploring).
+     */
+    private static final ThreadLocal<World> REGION_VIEW = new ThreadLocal<>();
+
     public static World mcc$wrap(LevelAccessor level) {
         if (level == null) return null;
-        return VIEWS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel
-                || l instanceof net.minecraft.world.level.WorldGenLevel ? new WorldServer(l)
+        if (level instanceof net.minecraft.world.level.WorldGenLevel && !(level instanceof Level)) {
+            World cached = REGION_VIEW.get();
+            if (cached != null && cached.mcc$level == level) return cached;
+            World view = new WorldServer(level);
+            REGION_VIEW.set(view);
+            return view;
+        }
+        return VIEWS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
                 : l.isClientSide() ? new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient(l) : new World(l));
     }
 

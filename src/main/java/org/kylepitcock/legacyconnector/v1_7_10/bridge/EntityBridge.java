@@ -31,6 +31,11 @@ public final class EntityBridge {
      * client and server players share one, which handed the client the server player's view (and vice versa).
      */
     private static final Map<net.minecraft.world.entity.Entity, Entity> VIEWS = new com.google.common.collect.MapMaker().weakKeys().makeMap();
+
+    static {
+        org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 entity", VIEWS,
+                e -> e.isRemoved() && !(e instanceof net.minecraft.world.entity.player.Player)); // players change dimension in place
+    }
     private static boolean warnedCustom;
 
     /** Where extended properties of vanilla entities (players) are kept in the modern persistent data. */

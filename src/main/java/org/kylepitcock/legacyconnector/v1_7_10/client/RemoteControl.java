@@ -21,6 +21,8 @@ import net.minecraft.world.phys.HitResult;
  * <pre>
  * cmd &lt;slash command&gt;   shot &lt;name&gt;   wait &lt;ticks&gt;   look &lt;yaw&gt; &lt;pitch&gt;   use   useat &lt;x&gt; &lt;y&gt; &lt;z&gt;   mouse &lt;x&gt; &lt;y&gt;   click &lt;x&gt; &lt;y&gt; [button]
  * key &lt;glfw code&gt;   type &lt;text&gt;   close   title   info   quit        (x, y are GUI-scaled coordinates)
+ * js &lt;JavaScript&gt;   (the rest of the file, several lines allowed; see DevScript)
+ * walk forward|back|left|right [ticks] [sprint]   jump [ticks]   sneak [ticks]   attack [ticks]   slot &lt;0-8&gt;   (play like a player)
  * </pre>
  */
 public final class RemoteControl {
@@ -77,7 +79,18 @@ public final class RemoteControl {
         }
     }
 
+    /** Keys a player verb holds down (walk, jump, attack, sneak) until its command finishes. */
+    private final java.util.List<net.minecraft.client.KeyMapping> held = new java.util.ArrayList<>();
+
+    private void hold(net.minecraft.client.KeyMapping key, int ticks) {
+        key.setDown(true);
+        held.add(key);
+        waitTicks = Math.max(waitTicks, ticks);
+    }
+
     private void finish(String text) {
+        for (var key : held) key.setDown(false);
+        held.clear();
         try {
             Files.writeString(new File(out, current + ".txt").toPath(), text + "\n");
         } catch (IOException ignored) {
@@ -100,6 +113,35 @@ public final class RemoteControl {
                 mc.gui.getChat().clearMessages(false);
                 pendingShot = a.length > 0 ? a[0] : "shot";
                 shotDelay = 6;
+            }
+            // player verbs: hold movement/action keys for a number of ticks, like a player would
+            case "walk" -> {
+                var o = mc.options;
+                var key = switch (a[0]) {
+                    case "back" -> o.keyDown;
+                    case "left" -> o.keyLeft;
+                    case "right" -> o.keyRight;
+                    default -> o.keyUp;
+                };
+                hold(key, a.length > 1 ? Integer.parseInt(a[1]) : 20);
+                if (a.length > 2 && a[2].equals("sprint")) hold(o.keySprint, a.length > 1 ? Integer.parseInt(a[1]) : 20);
+            }
+            case "jump" -> hold(mc.options.keyJump, a.length > 0 ? Integer.parseInt(a[0]) : 5);
+            case "sneak" -> hold(mc.options.keyShift, a.length > 0 ? Integer.parseInt(a[0]) : 20);
+            case "attack" -> {
+                // a tap hits the entity under the crosshair; holding mines the block under it
+                if (mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult eh) {
+                    mc.gameMode.attack(mc.player, eh.getEntity());
+                    mc.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                    finishLater("attacked " + eh.getEntity().getName().getString());
+                    waitTicks = 5;
+                } else {
+                    hold(mc.options.keyAttack, a.length > 0 ? Integer.parseInt(a[0]) : 40);
+                }
+            }
+            case "slot" -> {
+                mc.player.getInventory().selected = Math.max(0, Math.min(8, Integer.parseInt(a[0])));
+                finishLater("holding " + mc.player.getMainHandItem());
             }
             case "look" -> {
                 mc.player.setYRot(Float.parseFloat(a[0]));
@@ -172,6 +214,17 @@ public final class RemoteControl {
             }
             case "info" -> {
                 finishLater(info(mc));
+                waitTicks = 1;
+            }
+            case "js" -> {
+                // JavaScript in the live game: mc (client), server (integrated server), log
+                try {
+                    finishLater(org.kylepitcock.legacyconnector.core.DevScript.eval(arg, java.util.Map.of("mc", mc,
+                            "server", (Object) java.util.Objects.requireNonNullElse(mc.getSingleplayerServer(), "none"),
+                            "log", org.slf4j.LoggerFactory.getLogger("LegacyConnector/DevScript"))));
+                } catch (Exception e) {
+                    finishLater("error: " + e);
+                }
                 waitTicks = 1;
             }
             case "quit" -> {
