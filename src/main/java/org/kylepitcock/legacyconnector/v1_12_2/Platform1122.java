@@ -49,6 +49,7 @@ public final class Platform1122 implements LegacyPlatform {
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
             registerSubscribers(mod, loader);
+            injectCapabilities(mod, loader);
         } finally {
             LegacyModContainer1122.setActive(null);
         }
@@ -108,6 +109,31 @@ public final class Platform1122 implements LegacyPlatform {
             }
             f.setAccessible(true);
             f.set(Modifier.isStatic(f.getModifiers()) ? null : mod.instance, proxy);
+        }
+    }
+
+    /** {@code @CapabilityInject} fields and methods wait in the manager until their capability type is registered. */
+    private static void injectCapabilities(LegacyModRecord mod, ClassLoader loader) {
+        var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
+        if (scan == null) return;
+        String desc = Type.getDescriptor(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityInject.class);
+        for (var a : scan.getAnnotations()) {
+            if (!a.annotationType().getDescriptor().equals(desc)) continue;
+            try {
+                Class<?> owner = Class.forName(a.clazz().getClassName(), false, loader);
+                String member = a.memberName();
+                java.lang.reflect.Member target = null;
+                if (member.contains("(")) {
+                    for (Method m : owner.getDeclaredMethods()) if ((m.getName() + Type.getMethodDescriptor(m)).equals(member)) target = m;
+                } else {
+                    target = owner.getDeclaredField(member);
+                }
+                var inject = target instanceof Field f ? f.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityInject.class)
+                        : target instanceof Method m ? m.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityInject.class) : null;
+                if (inject != null) legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityManager.INSTANCE.mcc$addInjection(inject.value().getName(), target);
+            } catch (ReflectiveOperationException | LinkageError e) {
+                LOG.warn("{}: cannot prepare the capability injection {}: {}", mod.legacyId, a.memberName(), e.toString());
+            }
         }
     }
 

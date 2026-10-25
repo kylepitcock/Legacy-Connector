@@ -41,7 +41,7 @@ public final class ItemBridge1122 {
     /** The modern item of a legacy item and metadata (the base variant when that subtype was never listed). */
     public static synchronized net.minecraft.world.item.Item modern(Item item, int meta) {
         Map<Integer, net.minecraft.world.item.Item> v = VARIANTS.get(item);
-        if (v == null) return null;
+        if (v == null) return item.mcc$vanillaModern;
         net.minecraft.world.item.Item i = v.get(meta);
         return i != null ? i : v.values().iterator().next();
     }

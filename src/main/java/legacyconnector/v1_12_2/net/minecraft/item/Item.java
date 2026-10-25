@@ -15,6 +15,8 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     protected boolean bFull3D;
     /** The modern item registered for this one (set by the bridge). */
     public Object mcc$modern;
+    /** The modern vanilla item this one stands for, when it is a vanilla item. */
+    public net.minecraft.world.item.Item mcc$vanillaModern;
 
     public Item() {
     }

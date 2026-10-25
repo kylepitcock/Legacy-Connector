@@ -16,8 +16,39 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** The modern block registered for this one (set by the bridge). */
     public Object mcc$modern;
 
+    protected final legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer blockState;
+    private legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState defaultBlockState;
+
     public Block(Material material) {
         this.blockMaterial = material;
+        this.blockState = createBlockState();
+        setDefaultState(blockState.getBaseState());
+    }
+
+    protected legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer createBlockState() {
+        return new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer getBlockState() {
+        return blockState;
+    }
+
+    protected final void setDefaultState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        this.defaultBlockState = state;
+    }
+
+    public final legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getDefaultState() {
+        return defaultBlockState;
+    }
+
+    /** The state saved as these 4 metadata bits; mods override both directions. */
+    @SuppressWarnings("deprecation")
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateFromMeta(int meta) {
+        return getDefaultState();
+    }
+
+    public int getMetaFromState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return 0;
     }
 
     public Material getMaterialLegacy() {

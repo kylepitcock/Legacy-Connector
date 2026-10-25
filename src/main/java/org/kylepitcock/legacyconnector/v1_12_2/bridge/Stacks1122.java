@@ -35,7 +35,9 @@ public final class Stacks1122 {
             legacy = b.legacy();
             meta = 0;
         } else {
-            return ItemStack.EMPTY;
+            legacy = Vanilla1122.legacyOf(stack.getItem());
+            if (legacy == null) return ItemStack.EMPTY;
+            meta = 0;
         }
         if (legacy.isDamageable()) meta = stack.getDamageValue();
         ItemStack out = new ItemStack(legacy, stack.getCount(), meta);

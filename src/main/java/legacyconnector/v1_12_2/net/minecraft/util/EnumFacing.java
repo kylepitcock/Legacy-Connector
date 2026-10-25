@@ -184,7 +184,7 @@ public enum EnumFacing implements IStringSerializable {
         return directionVec;
     }
 
-    public enum Axis implements java.util.function.Predicate<EnumFacing>, IStringSerializable {
+    public enum Axis implements com.google.common.base.Predicate<EnumFacing>, IStringSerializable {
         X("x", Plane.HORIZONTAL), Y("y", Plane.VERTICAL), Z("z", Plane.HORIZONTAL);
 
         private final String name;
@@ -219,7 +219,7 @@ public enum EnumFacing implements IStringSerializable {
         }
 
         @Override
-        public boolean test(EnumFacing facing) {
+        public boolean apply(EnumFacing facing) {
             return facing != null && facing.getAxis() == this;
         }
 
@@ -254,7 +254,7 @@ public enum EnumFacing implements IStringSerializable {
         }
     }
 
-    public enum Plane implements java.util.function.Predicate<EnumFacing>, Iterable<EnumFacing> {
+    public enum Plane implements com.google.common.base.Predicate<EnumFacing>, Iterable<EnumFacing> {
         HORIZONTAL, VERTICAL;
 
         public EnumFacing[] facings() {
@@ -267,7 +267,7 @@ public enum EnumFacing implements IStringSerializable {
         }
 
         @Override
-        public boolean test(EnumFacing facing) {
+        public boolean apply(EnumFacing facing) {
             return facing != null && facing.getAxis().getPlane() == this;
         }
 

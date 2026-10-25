@@ -44,6 +44,13 @@ public final class Registries1122 {
             this.onRegister = onRegister;
         }
 
+        /** Adds a vanilla object so lookups by name find it; it is not registered with the modern registries. */
+        public synchronized void registerVanilla(V value) {
+            ResourceLocation name = value.getRegistryName();
+            byName.putIfAbsent(name, value);
+            byValue.putIfAbsent(value, name);
+        }
+
         @Override
         public Class<V> getRegistrySuperType() {
             return type;
