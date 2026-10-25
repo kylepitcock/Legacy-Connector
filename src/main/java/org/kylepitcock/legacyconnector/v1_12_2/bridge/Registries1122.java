@@ -106,7 +106,7 @@ public final class Registries1122 {
         return ItemBridge1122.itemOf(block);
     }
 
-    public static final class Reg<V extends IForgeRegistryEntry<V>> implements legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryModifiable<V> {
+    public static final class Reg<V extends IForgeRegistryEntry<V>> extends legacyconnector.v1_12_2.net.minecraftforge.registries.ForgeRegistry<V> {
         private Class<V> type;
         private final Map<ResourceLocation, V> byName = new LinkedHashMap<>();
         private final Map<V, ResourceLocation> byValue = new IdentityHashMap<>();
@@ -137,6 +137,27 @@ public final class Registries1122 {
                     // stays untyped: its event is not posted
                 }
             }
+        }
+
+        @Override
+        public synchronized int getID(V value) {
+            return new java.util.ArrayList<>(byName.values()).indexOf(value);
+        }
+
+        @Override
+        public synchronized int getID(ResourceLocation name) {
+            int i = 0;
+            for (ResourceLocation k : byName.keySet()) {
+                if (k.equals(name)) return i;
+                i++;
+            }
+            return -1;
+        }
+
+        @Override
+        public synchronized V getValue(int id) {
+            var all = new java.util.ArrayList<>(byName.values());
+            return id >= 0 && id < all.size() ? all.get(id) : null;
         }
 
         @Override
