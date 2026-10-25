@@ -29,6 +29,8 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
     private static final ResourceLocation NONE = ResourceLocation.withDefaultNamespace("textures/misc/white.png");
     private static final java.util.Map<Class<?>, Integer> FAILURES = new ConcurrentHashMap<>();
     private static final int MAX_FAILURES = 20;
+    /** All failures per renderer class, only for logging (a renderer that works for some entities must not log every frame). */
+    private static final java.util.Map<Class<?>, Integer> TOTAL = new java.util.concurrent.ConcurrentHashMap<>();
 
     public LegacyEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
@@ -60,9 +62,11 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
                 if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
             } catch (RuntimeException | LinkageError e) {
                 int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
-                if (n == 1 || n == MAX_FAILURES) {
-                    LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy entity renderer {} failed{}", renderer.getClass().getName(),
-                            n >= MAX_FAILURES ? " repeatedly and is disabled" : "", e);
+                int total = TOTAL.merge(renderer.getClass(), 1, Integer::sum);
+                boolean power = total == 1 || total == 10 || total == 100 || total == 1000 || total == 10000 || total == 100000;
+                if (power || n == MAX_FAILURES) {
+                    LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy entity renderer {} failed ({} times so far{}){}", renderer.getClass().getName(), total,
+                            total > 1 ? ", later failures are not logged" : "", n >= MAX_FAILURES ? "; it keeps failing and is disabled" : "", total == 1 ? e : null);
                 }
             } finally {
                 pose.popPose();

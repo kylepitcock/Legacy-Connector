@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 public final class EntitySelfTest {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/EntityTest");
     private static final List<Entity> SPAWNED = new ArrayList<>();
+    /** Where each test entity started: after 100 ticks the distance walked shows mobs that move far too fast. */
+    private static final Map<Entity, net.minecraft.world.phys.Vec3> START = new java.util.IdentityHashMap<>();
     private static final Map<String, String> RESULT = new TreeMap<>();
     private static int ticks = -1;
 
@@ -82,6 +84,7 @@ public final class EntitySelfTest {
                     continue;
                 }
                 SPAWNED.add(copy);
+                START.put(copy, copy.position());
                 RESULT.put(name, "spawned");
             } catch (RuntimeException | LinkageError ex) {
                 RESULT.put(name, "spawn threw " + describe(ex));
@@ -122,6 +125,15 @@ public final class EntitySelfTest {
                 RESULT.put(name, "removed (" + e.getRemovalReason() + ")");
             }
         }
+        java.util.List<String> fast = new ArrayList<>();
+        for (Entity e : SPAWNED) {
+            var from = START.get(e);
+            if (from == null || !e.isAlive() || !(e instanceof net.minecraft.world.entity.Mob)) continue;
+            double moved = Math.hypot(e.getX() - from.x, e.getZ() - from.z);
+            fast.add(String.format(java.util.Locale.ROOT, "%08.2f %s", moved, EntityType.getKey(e.getType())));
+        }
+        java.util.Collections.sort(fast, java.util.Collections.reverseOrder());
+        LOG.info("Mob walking distance in 100 ticks (blocks), fastest first: {}", fast.subList(0, Math.min(12, fast.size())));
         StringBuilder sb = new StringBuilder();
         RESULT.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));
         LOG.info("ENTITY SELF TEST: {} alive, {} removed, {} failed, {} not spawned of {} types{}", alive, gone, failed,

@@ -37,6 +37,8 @@ public final class HudEvents1710 {
 
     private HudEvents1710() {}
 
+    private static final Map<String, Integer> HUD_FAILURES = new java.util.concurrent.ConcurrentHashMap<>();
+
     public static void register() {
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Pre e) -> {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.START,
@@ -103,7 +105,9 @@ public final class HudEvents1710 {
             }
             return MinecraftForge.EVENT_BUS.post(new RenderGameOverlayEvent.Pre(root, type));
         } catch (RuntimeException | LinkageError ex) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Hud").warn("A HUD overlay handler failed: {}", ex.toString());
+            if (HUD_FAILURES.merge(ex.toString(), 1, Integer::sum) == 1) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Hud").warn("A HUD overlay handler failed (reported once per kind of failure): {}", ex.toString());
+            }
             return false;
         } finally {
             RenderContext.end();

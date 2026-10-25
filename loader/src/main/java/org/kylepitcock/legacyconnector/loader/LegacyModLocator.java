@@ -113,12 +113,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             var coremods = new java.util.concurrent.atomic.AtomicReference<org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers>();
             transformer.patcher((jar, name, bytes) -> {
                 if (jar.version != LegacyVersion.V1_7_10) return bytes;
+                // Legacy coremod transformers keep their own state and were written for one thread: one class at a time.
                 synchronized (coremods) {
                     if (coremods.get() == null) {
                         coremods.set(org.kylepitcock.legacyconnector.loader.transform.LegacyCoreModTransformers.load(loading, cacheDir, gameDir, side, runtimeJar));
                     }
+                    return coremods.get().apply(name, bytes);
                 }
-                return coremods.get().apply(name, bytes);
             });
             org.kylepitcock.legacyconnector.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null)
@@ -140,6 +141,18 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 if (!Files.exists(cached) || !Files.exists(cached.resolveSibling(cached.getFileName() + ".synth.txt"))) uncached++;
             }
             TranslationProgress progress = new TranslationProgress(uncached);
+            // The jars that are not cached are independent of each other once all classes have been scanned: translate them in parallel.
+            TranslationPool pool = new TranslationPool(transformer, TranslationPool.defaultThreads(uncached));
+            if (uncached > 1) {
+                progress.step("reading all legacy jars");
+                for (LegacyJar jar : legacy) {
+                    if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
+                    Path out = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
+                    if (Files.exists(out) && Files.exists(out.resolveSibling(out.getFileName() + ".synth.txt"))) continue;
+                    Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
+                    pool.submit(jar, out, jarPeers);
+                }
+            }
             for (LegacyJar jar : legacy) {
                 // Claim the original even if we end up skipping it, so FML does not raise its own
                 // "this is an old Forge mod" error on top of ours.
@@ -166,7 +179,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
                         progress.starting(jar.fileName());
                         long start = System.nanoTime();
-                        LegacyJarTransformer.Result result = transformer.transform(jar, out, jarPeers);
+                        LegacyJarTransformer.Result result = pool.take(jar, out, jarPeers);
                         result.demand.write(demandFile);
                         LOG.info("Legacy Connector: translated {} ({} classes, {} JDK fixes, {} virtual fields, {} synthesized API classes) in {} ms",
                                 jar.fileName(), result.classes, result.compatRedirects, result.virtualFieldRedirects,
@@ -197,6 +210,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 if (translating) progress.finished();
             }
             progress.close();
+            pool.close();
 
             // One generated jar per legacy version with every API class/member the shim lacks, for all mods at once
             // (mods pass these types to each other, so there must be exactly one copy of each).
@@ -229,6 +243,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         Map<String, ClassInfo> out = new HashMap<>();
         for (LegacyJar jar : legacy) {
             if (jar.version != version || skipReason(jar) != null) continue;
+            TranslationPool.heartbeat();
             try {
                 for (ClassInfo c : transformer.scan(jar)) out.putIfAbsent(c.name, c);
             } catch (IOException | RuntimeException e) {

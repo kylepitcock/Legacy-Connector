@@ -52,16 +52,20 @@ public final class CreativeTabBridge {
     /** One line per mod-created tab: how many stacks it lists (the creative screen shows exactly these). */
     public static synchronized String mcc$selfTest() {
         StringBuilder sb = new StringBuilder();
+        long total = System.nanoTime();
         for (CreativeTabs tab : CUSTOM) {
             int n;
+            long start = System.nanoTime();
             try {
                 n = contents(tab).size();
             } catch (RuntimeException | LinkageError e) {
                 sb.append("\n  ").append(tab.getTabLabel()).append(": threw ").append(e);
                 continue;
             }
-            sb.append("\n  ").append(tab.getTabLabel()).append(": ").append(n).append(" stacks, owner ").append(OWNER.get(tab));
+            sb.append("\n  ").append(tab.getTabLabel()).append(": ").append(n).append(" stacks in ").append((System.nanoTime() - start) / 1_000_000)
+                    .append(" ms, owner ").append(OWNER.get(tab));
         }
+        sb.append("\n  all tabs: ").append((System.nanoTime() - total) / 1_000_000).append(" ms");
         return sb.toString();
     }
 

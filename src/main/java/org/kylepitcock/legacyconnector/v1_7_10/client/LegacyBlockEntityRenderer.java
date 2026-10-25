@@ -21,6 +21,11 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
     /** Consecutive failures per renderer class: a renderer that keeps failing is disabled, an occasional one is not. */
     private static final java.util.Map<Class<?>, Integer> FAILURES = new java.util.concurrent.ConcurrentHashMap<>();
     private static final int MAX_FAILURES = 20;
+    /** All failures per renderer class, only for logging: a renderer that fails for some blocks and works for others must not log every frame. */
+    private static final java.util.Map<Class<?>, Integer> TOTAL = new java.util.concurrent.ConcurrentHashMap<>();
+    /** A block entity whose render just failed is skipped for a few seconds (it would fail again every frame). */
+    private static final java.util.Map<LegacyBlockEntity, Long> RETRY_AT = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static final long RETRY_NANOS = 5_000_000_000L;
 
     @Override
     public void render(LegacyBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -29,6 +34,11 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         TileEntityRendererDispatcher dispatcher = TileEntityRendererDispatcher.instance;
         TileEntitySpecialRenderer renderer = dispatcher.getSpecialRenderer(te);
         if (renderer == null || FAILURES.getOrDefault(renderer.getClass(), 0) >= MAX_FAILURES) return;
+        Long retryAt = RETRY_AT.get(be);
+        if (retryAt != null) {
+            if (System.nanoTime() - retryAt < 0) return;
+            RETRY_AT.remove(be);
+        }
         Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         dispatcher.mcc$setCamera(cam.x, cam.y, cam.z);
         if (be.getLevel() != null) dispatcher.worldObj = World.mcc$wrap(be.getLevel());
@@ -42,9 +52,12 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
             if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
         } catch (RuntimeException | LinkageError e) {
             int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
-            if (n == 1 || n == MAX_FAILURES) {
-                LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy renderer {} failed{}", renderer.getClass().getName(),
-                        n >= MAX_FAILURES ? " repeatedly and is disabled" : "", e);
+            RETRY_AT.put(be, System.nanoTime() + RETRY_NANOS);
+            int total = TOTAL.merge(renderer.getClass(), 1, Integer::sum);
+            boolean power = total == 1 || total == 10 || total == 100 || total == 1000 || total == 10000 || total == 100000;
+            if (power || n == MAX_FAILURES) {
+                LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy renderer {} failed ({} times so far{}){}", renderer.getClass().getName(), total,
+                        total > 1 ? ", later failures are not logged" : "", n >= MAX_FAILURES ? "; it keeps failing and is disabled" : "", total == 1 ? e : null);
             }
         } finally {
             RenderContext.end();
