@@ -162,7 +162,8 @@ public final class LegacyJarTransformer {
     }
 
     private static final List<String> PROVIDED_LIBRARIES = List.of("it/unimi/dsi/fastutil/", "com/google/common/", "com/google/gson/",
-            "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/");
+            "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/",
+            "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
 
     private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
