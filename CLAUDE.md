@@ -50,6 +50,13 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   distance 4, 640x360, 12 blocks/items per mod (`EXTRA="-PshotMods=chisel -PdebugIcons=Stairs"` narrows it and logs icon lookups of block classes
   containing that text). Mods go in `run-screenshots/mods`; move `run-screenshots/.legacyconnector/cache` aside after code changes. The shot list comes from the
   mods' creative tabs, so subtypes a mod never lists (e.g. Chisel stairs `.3`-`.7`) show as missing textures in the log without being a defect.
+- Live probing (fastest loop, no restart): start a session with `SCENARIO=control tools/dev/quick-shots.sh` (add `WORLD=minecraft:normal`), then
+  `tools/dev/js.sh '<JavaScript>'` or `tools/dev/js.sh -f probe.js` evaluates in the running game (bindings `mc`, `server`, `log`; any class via
+  `Java.type(...)`). Command files in `run-screenshots/control/in/*.cmd` also take player verbs: `walk forward|back|left|right [ticks] [sprint]`, `jump`,
+  `sneak`, `attack`, `slot n`, `inv`, `creative`, `use`, `click x y`, `shot name` (PNG in `control/out/`, view it with Read), `cmd /...`. The screenshot test
+  and server self test log a per-level entity/chunk census and heap/direct memory every 30 s (`-Dlegacyconnector.memoryLog=true` elsewhere). For leaks:
+  `jmap -histo:live <pid>` twice and diff, or `jcmd <pid> GC.heap_dump` + Eclipse MAT headless (`MemoryAnalyzerc.exe -consolelog -application
+  org.eclipse.mat.api.parse dump.hprof org.eclipse.mat.api:suspects`).
 - Gotchas learned the hard way: vanilla block tags are not bound while mods load (never use `BlockTags` when
   constructing shims); legacy code that runs during chunk generation must read blocks through the generation region, never
   the real `ServerLevel`; name lookups must stay O(1) (mods look up thousands of absent names); per-tick and per-chunk
