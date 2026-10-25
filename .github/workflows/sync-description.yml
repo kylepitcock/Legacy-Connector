@@ -1,0 +1,64 @@
+name: Sync description pages
+
+# Renders .github/description/description.md for Modrinth and CurseForge whenever it changes on master
+# (or a release is published) and updates the Modrinth project body. Uses the same MODRINTH_TOKEN secret
+# and project ids as publish.yml; the token needs the "Write projects" scope.
+# CurseForge has no API for project descriptions, so its rendering is attached to the run as an artifact
+# (and shown in the run summary) to paste into the CurseForge description editor (Markdown mode).
+on:
+  push:
+    branches: [master]
+    paths:
+      - .github/description/**
+      - tools/release/render_description.py
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Render
+        run: |
+          mkdir -p out
+          python3 tools/release/render_description.py modrinth out/modrinth.md
+          python3 tools/release/render_description.py curseforge out/curseforge.md
+
+      - name: Update Modrinth
+        env:
+          MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
+        run: |
+          python3 - <<'EOF'
+          import json, os, urllib.request
+          body = open("out/modrinth.md", encoding="utf-8").read()
+          req = urllib.request.Request(
+              "https://api.modrinth.com/v2/project/CCxw8Nzy",
+              data=json.dumps({"body": body}).encode(),
+              method="PATCH",
+              headers={"Authorization": os.environ["MODRINTH_TOKEN"], "Content-Type": "application/json",
+                       "User-Agent": "kylepitcock/Legacy-Connector (description sync)"})
+          with urllib.request.urlopen(req) as r:
+              print("Modrinth:", r.status)
+          EOF
+
+      - name: CurseForge text
+        run: |
+          {
+            echo "## CurseForge description"
+            echo "CurseForge has no API for descriptions: paste this into the project's description editor (Markdown)."
+            echo
+            echo '````markdown'
+            cat out/curseforge.md
+            echo '````'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: description-pages
+          path: out/

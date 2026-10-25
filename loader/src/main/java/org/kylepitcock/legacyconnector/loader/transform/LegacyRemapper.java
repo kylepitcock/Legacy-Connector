@@ -127,7 +127,42 @@ public final class LegacyRemapper extends Remapper {
             if (internalName.startsWith(e.getKey())) return e.getValue() + internalName.substring(e.getKey().length());
         }
         if (LegacyVersion.isRelocatedRoot(internalName)) return relocate(internalName);
-        return internalName;
+        // String literals keep keyword segments: "class.insecta" (Forestry) is an id, not a package.
+        return mappingString ? internalName : renameKeywordPackages(internalName);
+    }
+
+    private boolean mappingString;
+
+    private static final java.util.Set<String> JAVA_KEYWORDS = java.util.Set.of(
+            "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",
+            "default", "do", "double", "else", "enum", "extends", "final", "finally", "float", "for", "goto", "if",
+            "implements", "import", "instanceof", "int", "interface", "long", "native", "new", "package", "private",
+            "protected", "public", "return", "short", "static", "strictfp", "super", "switch", "synchronized", "this",
+            "throw", "throws", "transient", "try", "void", "volatile", "while", "true", "false", "null", "_");
+
+    /**
+     * Kotlin and Scala mods can use Java keywords as package names ({@code ejektaflex.bountiful.api.enum}); the JVM
+     * accepts them but module resolution rejects the whole jar ("enum is not a Java identifier"), which stops the
+     * launch. Such segments get a {@code _} suffix; every legacy jar is remapped the same way, so references between
+     * mods stay consistent.
+     */
+    static String renameKeywordPackages(String internalName) {
+        int end = internalName.lastIndexOf('/');
+        if (end < 0) return internalName;
+        StringBuilder out = null;
+        int start = 0;
+        while (start < end) {
+            int slash = internalName.indexOf('/', start);
+            String segment = internalName.substring(start, slash);
+            if (JAVA_KEYWORDS.contains(segment)) {
+                if (out == null) out = new StringBuilder(internalName.length() + 4).append(internalName, 0, start);
+                out.append(segment).append("_/");
+            } else if (out != null) {
+                out.append(segment).append('/');
+            }
+            start = slash + 1;
+        }
+        return out == null ? internalName : out.append(internalName, end + 1, internalName.length()).toString();
     }
 
     private String relocate(String legacyName) {
@@ -185,10 +220,12 @@ public final class LegacyRemapper extends Remapper {
         recording = shim != null && LegacyVersion.isRelocatedRoot(internal)
                 && org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(version).get(internal) != null;
         String mapped;
+        mappingString = true;
         try {
             mapped = map(internal);
         } finally {
             recording = true;
+            mappingString = false;
         }
         if (mapped.equals(internal)) {
             // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.

@@ -54,6 +54,24 @@ public final class Vanilla1122 {
         for (int i = 0; i < items.length; i += 2) ITEM_NAMES.put(items[i], items[i + 1]);
     }
 
+    /** 1.12 registry paths that are not the lower-case field name (and the reverse, for lookups by name). */
+    private static final Map<String, String> LEGACY_PATHS = Map.of("POTIONITEM", "potion", "EMPTY_MAP", "map", "MAP", "filled_map",
+            "OAK_DOOR", "wooden_door", "OAK_FENCE", "fence", "OAK_FENCE_GATE", "fence_gate");
+    private static final Map<String, String> LEGACY_FIELDS = new HashMap<>();
+
+    static {
+        LEGACY_PATHS.forEach((field, path) -> LEGACY_FIELDS.put(path, field));
+        ITEM_NAMES.put("MAP", "filled_map");
+    }
+
+    private static String legacyPath(String field) {
+        return LEGACY_PATHS.getOrDefault(field, field.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private static String fieldOf(String legacyPath) {
+        return LEGACY_FIELDS.getOrDefault(legacyPath, legacyPath.toUpperCase(java.util.Locale.ROOT));
+    }
+
     private Vanilla1122() {}
 
     private static ResourceLocation find(net.minecraft.core.Registry<?> registry, String path) {
@@ -67,7 +85,7 @@ public final class Vanilla1122 {
     }
 
     public static Block block(String field) {
-        String legacy = field.toLowerCase(java.util.Locale.ROOT);
+        String legacy = legacyPath(field);
         Block b = field.endsWith("_STAIRS") ? new VanillaStairs() : new VanillaBlock(field.equals("AIR") ? Material.AIR : Material.ROCK);
         b.setRegistryName("minecraft", legacy);
         ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
@@ -87,7 +105,7 @@ public final class Vanilla1122 {
         Item existing = ITEM_REVERSE.get(modern);
         if (existing != null) return existing;
         ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
-        VanillaItem i = new VanillaItem();
+        Item i = wrap(modern);
         i.setRegistryName(id.getNamespace(), id.getPath());
         i.mcc$modern = modern;
         i.mcc$vanillaModern = modern;
@@ -97,18 +115,42 @@ public final class Vanilla1122 {
     }
 
     public static synchronized Item item(String field) {
-        String legacy = field.toLowerCase(java.util.Locale.ROOT);
-        VanillaItem i = new VanillaItem();
-        i.setRegistryName("minecraft", legacy);
+        String legacy = legacyPath(field);
         ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacy));
-        if (id != null) {
-            var modern = BuiltInRegistries.ITEM.get(id);
+        var modern = id == null ? null : BuiltInRegistries.ITEM.get(id);
+        Item i = wrap(modern);
+        i.setRegistryName("minecraft", legacy);
+        if (modern != null) {
             i.mcc$modern = modern;
             ITEM_REVERSE.putIfAbsent(modern, i);
             i.mcc$vanillaModern = modern;
         }
         Registries1122.ITEMS.registerVanilla(i);
         return i;
+    }
+
+    /** Block items become {@code ItemBlock}s over the legacy block (mods cast them: Thermal Expansion's tapper). */
+    private static Item wrap(net.minecraft.world.item.Item modern) {
+        if (modern instanceof net.minecraft.world.item.BlockItem blockItem) {
+            ensureLoaded(); // the Blocks constants first, so the item shares their legacy block
+            Block block = blockForModern(blockItem.getBlock());
+            if (block != null) return new VanillaItemBlock(block);
+        }
+        return new VanillaItem();
+    }
+
+    /** The legacy wrapper of a modern vanilla block (made on first use, named after the modern block). */
+    public static synchronized Block blockForModern(net.minecraft.world.level.block.Block modern) {
+        Block existing = BLOCK_REVERSE.get(modern);
+        if (existing != null) return existing;
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(modern);
+        if (!"minecraft".equals(id.getNamespace())) return null;
+        Block b = new VanillaBlock(modern == net.minecraft.world.level.block.Blocks.AIR ? Material.AIR : Material.ROCK);
+        b.setRegistryName("minecraft", id.getPath());
+        b.mcc$modern = modern;
+        BLOCK_REVERSE.put(modern, b);
+        Registries1122.BLOCKS.registerVanilla(b);
+        return b;
     }
 
     /** A vanilla sound: the field name (BLOCK_STONE_BREAK) is the sound id with dots (block.stone.break), or underscores inside a word. */
@@ -420,14 +462,14 @@ public final class Vanilla1122 {
 
     /** A vanilla block by its 1.12 registry path (stone, grass, log...). */
     public static Block blockByName(String legacyPath) {
-        String field = legacyPath.toUpperCase(java.util.Locale.ROOT);
+        String field = fieldOf(legacyPath);
         ResourceLocation modern = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacyPath));
         if (modern == null || BuiltInRegistries.BLOCK.get(modern) == net.minecraft.world.level.block.Blocks.AIR && !legacyPath.equals("air")) return null;
         return block(field);
     }
 
     public static Item itemByName(String legacyPath) {
-        String field = legacyPath.toUpperCase(java.util.Locale.ROOT);
+        String field = fieldOf(legacyPath);
         ResourceLocation modern = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacyPath));
         if (modern == null || BuiltInRegistries.ITEM.get(modern) == net.minecraft.world.item.Items.AIR && !legacyPath.equals("air")) return null;
         return item(field);
@@ -462,5 +504,12 @@ public final class Vanilla1122 {
 
     /** A vanilla item as a legacy object. */
     public static final class VanillaItem extends Item {
+    }
+
+    /** A vanilla block item as a legacy object. */
+    public static final class VanillaItemBlock extends legacyconnector.v1_12_2.net.minecraft.item.ItemBlock {
+        VanillaItemBlock(Block block) {
+            super(block);
+        }
     }
 }

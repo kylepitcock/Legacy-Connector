@@ -1,5 +1,7 @@
 # Legacy Connector
 
+[![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/CCxw8Nzy)
+
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar (1.12.2 mods are experimental, see the status table) into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified.
