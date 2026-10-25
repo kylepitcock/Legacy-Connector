@@ -319,7 +319,8 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ComputeFovModifierEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.FOVUpdateEvent.class)) return;
-            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.client.event.FOVUpdateEvent(player(e.getPlayer()), e.getFovModifier());
+            if (!(player(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.EntityPlayerSP)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.client.event.FOVUpdateEvent(player(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.client.entity.EntityPlayerSP sp ? sp : null, e.getFovModifier());
             forge().post(legacy);
             e.setNewFovModifier(legacy.newfov);
         });
