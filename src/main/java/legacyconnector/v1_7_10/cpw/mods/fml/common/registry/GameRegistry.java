@@ -42,6 +42,27 @@ public class GameRegistry {
         WorldGenBridge.register(generator, modGenerationWeight);
     }
 
+    /**
+     * Runs every registered world generator for one chunk with FML's per-chunk seeding. Forge called it from {@code Chunk.populateChunk};
+     * here the engine does that itself, so this is for mods that run the generators on a chunk of their own making (retrogen, structures).
+     */
+    public static void generateWorld(int chunkX, int chunkZ, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider chunkGenerator, legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider chunkProvider) {
+        long worldSeed = world.getSeed();
+        java.util.Random fmlRandom = new java.util.Random(worldSeed);
+        long xSeed = fmlRandom.nextLong() >> 2 + 1L;
+        long zSeed = fmlRandom.nextLong() >> 2 + 1L;
+        long chunkSeed = (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+        java.util.List<IWorldGenerator> generators;
+        synchronized (worldGenerators) {
+            generators = new java.util.ArrayList<>(sortedGeneratorList);
+        }
+        for (IWorldGenerator generator : generators) {
+            fmlRandom.setSeed(chunkSeed);
+            generator.generate(fmlRandom, chunkX, chunkZ, world, chunkGenerator, chunkProvider);
+        }
+    }
+
     public static void registerFuelHandler(IFuelHandler handler) {
         FuelBridge.register(handler);
     }

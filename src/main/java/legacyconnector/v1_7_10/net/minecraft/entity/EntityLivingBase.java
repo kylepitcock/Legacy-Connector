@@ -485,4 +485,12 @@ public abstract class EntityLivingBase extends Entity {
     public EntityLivingBase func_94060_bK() {
         return null;
     }
+
+    /** A dead mob cannot move or act. */
+    protected boolean isMovementBlocked() {
+        return getHealth() <= 0.0F;
+    }
+
+    protected void updateArmSwingProgress() {
+    }
 }

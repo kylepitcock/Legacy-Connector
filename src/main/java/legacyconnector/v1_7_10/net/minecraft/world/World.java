@@ -1193,4 +1193,18 @@ public class World implements IBlockAccess {
 
     public void makeFireworks(double x, double y, double z, double motionX, double motionY, double motionZ, legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
     }
+
+    /** Whether any fluid block is inside the box (vanilla's func_147470_e). */
+    public boolean func_147470_e(legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box) {
+        return isAnyLiquid(box);
+    }
+
+    /** Sets the light level stored for a block position; the modern engine computes light itself, so this does nothing. */
+    public void setLightValue(EnumSkyBlock type, int x, int y, int z, int value) {
+    }
+
+    /** How strongly an explosion of the strength is felt at the point (used by wolves and golems to flee); the engine does not track it. */
+    public float getTensionFactorForBlock(double x, double y, double z) {
+        return 0.0F;
+    }
 }

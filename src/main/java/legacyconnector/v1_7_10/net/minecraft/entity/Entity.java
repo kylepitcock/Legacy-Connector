@@ -1254,4 +1254,31 @@ public abstract class Entity implements ICommandSender {
     public double getYOffset() {
         return yOffset;
     }
+
+    /** How well the block at the position resists this entity's explosion (Forge, func_145772_a in vanilla). */
+    public float getExplosionResistance(legacyconnector.v1_7_10.net.minecraft.world.Explosion explosion, World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        return block.getExplosionResistance(this);
+    }
+
+    /** Whether the explosion may destroy the block (Forge's shouldExplodeBlock). */
+    public boolean func_145774_a(legacyconnector.v1_7_10.net.minecraft.world.Explosion explosion, World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.block.Block block, float power) {
+        return true;
+    }
+
+    protected legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList newDoubleNBTList(double... values) {
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList list = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList();
+        for (double v : values) list.appendTag(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagDouble(v));
+        return list;
+    }
+
+    /** Fall bookkeeping of the entity; the modern game tracks fall distance itself. */
+    protected void updateFallState(double y, boolean onGround) {
+    }
+
+    /** Whether the entity's head is inside an opaque block (it suffocates). */
+    public boolean isEntityInsideOpaqueBlock() {
+        return false;
+    }
 }
