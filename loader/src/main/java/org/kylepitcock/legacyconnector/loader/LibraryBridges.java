@@ -2,6 +2,7 @@ package org.kylepitcock.legacyconnector.loader;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,19 +29,20 @@ public final class LibraryBridges {
      * @param legacyModId  the legacy library mod this bridge replaces, or null when the API is only shaded into other mods
      * @param apiRoot      internal-name package root of the legacy API, re-implemented under the shim prefix
      * @param modernModId  modern mod the bridge needs, or null when it targets NeoForge itself (always active)
+     * @param configKey    {@code bridges.<configKey>.enabled} in config/legacyconnector.properties switches the bridge off
      */
-    public record Bridge(String legacyModId, String apiRoot, String modernModId) {}
+    public record Bridge(String legacyModId, String apiRoot, String modernModId, String configKey) {}
 
     public static final List<Bridge> KNOWN = List.of(
-            new Bridge("Baubles", "baubles/api/", "curios"),
+            new Bridge("Baubles", "baubles/api/", "curios", "baubles"),
             // Mods also call Baubles' PlayerHandler / InventoryBaubles directly (Botania's Flight Tiara and Travel Belt).
-            new Bridge("Baubles", "baubles/common/", "curios"),
+            new Bridge("Baubles", "baubles/common/", "curios", "baubles"),
             // Waila tooltip providers are shown through Jade.
-            new Bridge("Waila", "mcp/mobius/waila/api/", "jade"),
+            new Bridge("Waila", "mcp/mobius/waila/api/", "jade", "waila"),
             // NEI recipe handlers and hidden items are shown through JEI.
-            new Bridge("NotEnoughItems", "codechicken/nei/", "jei"),
+            new Bridge("NotEnoughItems", "codechicken/nei/", "jei", "nei"),
             // CoFH's RF energy API (shaded by most 1.7.10 tech mods) is backed by NeoForge's Energy capability.
-            new Bridge(null, "cofh/api/energy/", null));
+            new Bridge(null, "cofh/api/energy/", null, "cofhEnergy"));
 
     /**
      * Mods that only make sense on the 1.7.10 engine or launcher (performance/bug-fix patches, ID extenders, mixin
@@ -92,16 +95,39 @@ public final class LibraryBridges {
 
     private LibraryBridges() {}
 
-    /** Bridges whose modern mod is present in {@code modsDir} (or forced with -Dlegacyconnector.bridges=baubles,...). */
+    /**
+     * Bridges whose modern mod is present in {@code modsDir} (or forced with -Dlegacyconnector.bridges=baubles,...),
+     * minus those switched off with {@code bridges.<name>.enabled = false} in config/legacyconnector.properties; the
+     * legacy library of a disabled bridge is then translated and loaded as usual.
+     */
     public static List<Bridge> active(Path modsDir) {
         Set<String> modern = modernModIds(modsDir);
+        Properties config = readConfig(modsDir);
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         for (Bridge b : KNOWN) {
+            if (!enabled(config, b)) continue;
             if (b.modernModId == null || modern.contains(b.modernModId)
                     || b.legacyModId != null && forced.contains(b.legacyModId.toLowerCase(Locale.ROOT))) out.add(b);
         }
         return out;
+    }
+
+    private static Properties readConfig(Path modsDir) {
+        Properties p = new Properties();
+        Path file = modsDir.resolveSibling("config").resolve("legacyconnector.properties");
+        if (Files.isRegularFile(file)) {
+            try (Reader r = Files.newBufferedReader(file)) {
+                p.load(r);
+            } catch (IOException | RuntimeException ignored) {
+                // unreadable config: every bridge stays enabled
+            }
+        }
+        return p;
+    }
+
+    private static boolean enabled(Properties config, Bridge b) {
+        return !"false".equalsIgnoreCase(config.getProperty("bridges." + b.configKey + ".enabled", "true").trim());
     }
 
     private static Set<String> modernModIds(Path modsDir) {

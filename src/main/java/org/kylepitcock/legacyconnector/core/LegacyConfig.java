@@ -36,6 +36,13 @@ public final class LegacyConfig {
             deepLayer.enabled = true
             # Comma separated class name prefixes of legacy world generators that must not run below y=0.
             deepLayer.excludeGenerators =
+
+            # Library bridges replace an outdated legacy library by its modern equivalent when that mod is installed.
+            # Set one to false to load the legacy library itself instead (read by the loader at startup).
+            bridges.baubles.enabled = true
+            bridges.waila.enabled = true
+            bridges.nei.enabled = true
+            bridges.cofhEnergy.enabled = true
             """;
     private static Properties values;
 
