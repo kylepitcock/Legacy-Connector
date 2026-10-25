@@ -97,7 +97,7 @@
 
   <footer>
     <span id="updated"></span>
-    <b>Works</b> = tested in game; <b>Partial</b> = some features broken; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Maintainer results come from <code>docs/data/mods.json</code>; community results are generated from issues labelled <code>compatibility</code>.
+    <b>Works</b> = tested in game; <b>Partial</b> = some features broken; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
   </footer>
 </div>
 
@@ -105,6 +105,7 @@
 (function () {
   var REPO = "kylepitcock/Legacy-Connector";
   var LABEL = { works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
+  var TIER = ["community", "maintainer", "corpus"];
   var ORDER = ["works", "partial", "loads", "fails", "crashes"];
   var state = { q: "", status: "all", mods: [] };
 
@@ -138,12 +139,23 @@
     });
     return Object.keys(byKey).map(function (k) {
       var m = byKey[k];
-      var maint = m.entries.filter(function (e) { return e.source !== "community"; });
-      var pool = maint.length ? maint : m.entries;
-      var counts = {};
-      pool.forEach(function (e) { counts[e.status] = (counts[e.status] || 0) + 1; });
-      m.status = ORDER.slice().sort(function (a, b) { return (counts[b] || 0) - (counts[a] || 0) || ORDER.indexOf(a) - ORDER.indexOf(b); })[0];
+      // Weight: a user's report beats the maintainer's hand-tested result, which beats the automated startup test.
+      // Within the winning tier the most common status wins, ties go to the newest entry.
+      var pool = [];
+      ["community", "maintainer", "corpus"].some(function (tier) {
+        pool = m.entries.filter(function (e) { return e.source === tier; });
+        return pool.length > 0;
+      });
+      var counts = {}, newest = {};
+      pool.forEach(function (e) {
+        counts[e.status] = (counts[e.status] || 0) + 1;
+        if ((e.date || "") >= (newest[e.status] || "")) newest[e.status] = e.date || "";
+      });
+      m.status = ORDER.slice().sort(function (a, b) {
+        return (counts[b] || 0) - (counts[a] || 0) || (newest[b] || "").localeCompare(newest[a] || "") || ORDER.indexOf(a) - ORDER.indexOf(b);
+      })[0];
       if (!counts[m.status]) m.status = "untested";
+      m.entries.sort(function (a, b) { return TIER.indexOf(a.source) - TIER.indexOf(b.source) || (b.date || "").localeCompare(a.date || ""); });
       m.mcs = Array.from(new Set(m.entries.map(function (e) { return e.mc; }).filter(Boolean)));
       return m;
     }).sort(function (a, b) { return a.name.localeCompare(b.name); });
@@ -154,7 +166,7 @@
     box.textContent = "";
     var counts = { works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
     state.mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
-    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"], ["Load (untested)", counts.loads, "loads"],
+    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"], ["Load (startup test)", counts.loads, "loads"],
      ["Fail or crash", counts.fails + counts.crashes, "fails"]].forEach(function (s) {
       var d = el("div", "stat");
       var b = el("b", null, String(s[1]));
@@ -204,7 +216,7 @@
         var row = el("div", "entry");
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
-        var who = en.source === "maintainer" ? "Maintainer" : en.source === "corpus" ? "Startup test" : "Community";
+        var who = en.source === "maintainer" ? "Maintainer" : en.source === "corpus" ? "Startup test" : "Player report";
         top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "") + (en.mc ? " · MC " + en.mc : "")));
         if (en.issue) {
           var a = el("a", null, "#" + en.issue);

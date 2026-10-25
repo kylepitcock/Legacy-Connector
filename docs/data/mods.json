@@ -6,7 +6,7 @@
    "version": "1.7.10-3.5.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -15,7 +15,7 @@
    "version": "1.3.13-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -24,7 +24,7 @@
    "version": "1.4.120-gtnh",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during postInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
   },
@@ -33,7 +33,7 @@
    "version": "0.9.9-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -42,7 +42,7 @@
    "version": "1.12.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -51,7 +51,7 @@
    "version": "1.0.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -60,7 +60,7 @@
    "version": "1.3.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -76,7 +76,7 @@
    "version": "1.2.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -85,7 +85,7 @@
    "version": "1.3.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -94,7 +94,7 @@
    "version": "1.3.8",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -103,7 +103,7 @@
    "version": "0.8.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: Could not register provider mothership provider ID. Please change I:mothershipProviderID in the config."
   },
@@ -112,7 +112,7 @@
    "version": "1.0.0-beta66b",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
   },
@@ -121,7 +121,7 @@
    "version": "0.9.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -139,7 +139,7 @@
    "version": "3.3.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -155,7 +155,7 @@
    "version": "0.7.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -164,7 +164,7 @@
    "version": "1.11.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -191,7 +191,7 @@
    "version": "0.7.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -200,7 +200,7 @@
    "version": "0.28.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -209,7 +209,7 @@
    "version": "1.77",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -218,7 +218,7 @@
    "version": "1.9.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -227,7 +227,7 @@
    "version": "1.7.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -236,7 +236,7 @@
    "version": "2.5.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -245,16 +245,16 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+   "notes": "Fails during init: java.lang.IllegalAccessError: The Enum 'Circuit_Integrated' has not been set to an Item at this time!"
   },
   {
    "name": "BartWorks Mod Additions",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector.v1_7_10.net.minecraft.item.ItemStack.copy()\" because \"bartworks.common.loaders.ItemRegistry.voidm"
   },
@@ -263,7 +263,7 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NullPointerException: Cannot read field \"mMetaItemSubID\" because \"x\" is null"
   },
@@ -272,7 +272,7 @@
    "version": "2.1.19-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -281,7 +281,7 @@
    "version": "2.1.19-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -290,7 +290,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -299,7 +299,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -308,7 +308,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -317,7 +317,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -326,7 +326,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -335,7 +335,7 @@
    "version": "7.1.44",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -344,7 +344,7 @@
    "version": "1.11.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -353,7 +353,7 @@
    "version": "0.4.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -362,7 +362,7 @@
    "version": "0.3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -371,7 +371,7 @@
    "version": "1.7.2-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -380,7 +380,7 @@
    "version": "0.13.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -389,7 +389,7 @@
    "version": "1.4.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -398,7 +398,7 @@
    "version": "1.3.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -407,7 +407,7 @@
    "version": "3.7.15-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -423,7 +423,7 @@
    "version": "1.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -432,7 +432,7 @@
    "version": "1.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -441,7 +441,7 @@
    "version": "1.5",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -459,16 +459,16 @@
    "version": "2.5.24",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot(String)\" because \"forestry.api.genetics.AlleleManager.allele"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Biomes O' Plenty",
    "version": "2.1.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -477,7 +477,7 @@
    "version": "0.7.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -486,7 +486,7 @@
    "version": "1.3.17",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -495,7 +495,7 @@
    "version": "1.4.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -504,7 +504,7 @@
    "version": "1.7.52",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -529,7 +529,7 @@
    "version": "1.11.27-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.IllegalAccessError: The Enum 'Field_Generator_IV' has not been set to an Item at this time!"
   },
@@ -538,16 +538,16 @@
    "version": "2.5.24",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.registerSpeciesRoot(forestry.api.genetics.ISpeciesRoot)\" because \"forestry."
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Brandon's Core",
    "version": "1.2.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -556,7 +556,7 @@
    "version": "1.2.14",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -572,16 +572,16 @@
    "version": "7.1.18",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot(String)\" because \"forestry.api.genetics.AlleleManager.allele"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BuildCraft Oil Tweak",
    "version": "1.1.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -590,7 +590,7 @@
    "version": "3.7.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -599,7 +599,7 @@
    "version": "2.0.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -608,7 +608,7 @@
    "version": "2.16.15-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -617,7 +617,7 @@
    "version": "1.2.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -626,7 +626,7 @@
    "version": "1.7.10R3.1.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -635,7 +635,7 @@
    "version": "3.7.15-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -644,7 +644,7 @@
    "version": "1.7.10-1.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -662,7 +662,7 @@
    "version": "1.9.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoSuchMethodError: 'void li.cil.oc.api.prefab.ResourceContentProvider.<init>(java.lang.String, java.lang.String)'"
   },
@@ -671,7 +671,7 @@
    "version": "2.1.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -680,16 +680,16 @@
    "version": "1.4.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during loadComplete: java.lang.IndexOutOfBoundsException: Index 0 out of bounds for length 0"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "CoreTweaks",
    "version": "0.3.3.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -698,7 +698,7 @@
    "version": "2.6.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -707,7 +707,7 @@
    "version": "1.5.14-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -716,7 +716,7 @@
    "version": "0.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -725,16 +725,16 @@
    "version": "1.8.11",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.IllegalAccessError: This Constructor has to be called in the load Phase"
+   "notes": "Fails during postInit: java.lang.IllegalAccessError: The Enum 'Circuit_Integrated' has not been set to an Item at this time!"
   },
   {
    "name": "Custom Main Menu",
    "version": "1.12.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -743,7 +743,7 @@
    "version": "1.0.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -770,7 +770,7 @@
    "version": "1.3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -779,7 +779,7 @@
    "version": "0.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -797,7 +797,7 @@
    "version": "1.4.27-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -806,7 +806,7 @@
    "version": "1.20.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -815,25 +815,25 @@
    "version": "1.3.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "date": "2026-10-24",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NoSuchMethodError: 'void appeng.api.storage.IItemDisplayRegistry.addPostItemRenderHook(appeng.api.storage.IItemDisplayRegistry$ItemRenderHook)'"
   },
   {
    "name": "Electro-Magic Tools",
    "version": "1.6.18",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Embeddium",
    "version": "1.0.0-beta66b",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -842,7 +842,7 @@
    "version": "1.3.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -851,7 +851,7 @@
    "version": "0.4.8",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -867,7 +867,7 @@
    "version": "1.7.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -885,7 +885,7 @@
    "version": "1.2.8",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext"
   },
@@ -894,7 +894,7 @@
    "version": "2.6.2.25-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read the array length because \"<local1>\" is null"
   },
@@ -903,7 +903,7 @@
    "version": "1.2.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -912,7 +912,7 @@
    "version": "2.5.24",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -939,7 +939,7 @@
    "version": "2.5.24",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -948,7 +948,7 @@
    "version": "1.2.12",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -984,7 +984,7 @@
    "version": "1.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1011,7 +1011,7 @@
    "version": "1.5.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoSuchMethodError: 'void de.keridos.floodlights.compatability.ModCompatibility.hideNEIItems()'"
   },
@@ -1020,7 +1020,7 @@
    "version": "0.8.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1036,7 +1036,7 @@
    "version": "1.7.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1045,7 +1045,7 @@
    "version": "1.7.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1054,7 +1054,7 @@
    "version": "2.0.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1063,7 +1063,7 @@
    "version": "0.3.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1108,7 +1108,7 @@
    "version": "1.4.8",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NoSuchMethodException: thaumcraft.common.entities.golems.EnumGolemType.gadomancyRawCreate(java.lang.String,int,int,int,float,boolean,int,int,int,int)"
   },
@@ -1117,7 +1117,7 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1126,7 +1126,7 @@
    "version": "3.3.13-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: "
   },
@@ -1135,7 +1135,7 @@
    "version": "3.3.13-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"micdoodle8.mods.galacticraft.core.network.GalacticraftChannelHandler.addDiscriminator(int, java.lang.Class)\" beca"
   },
@@ -1144,7 +1144,7 @@
    "version": "1.1.121-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: Registering satellite without a parent!!!"
   },
@@ -1153,25 +1153,25 @@
    "version": "1.9.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"forestry.api.genetics.IAlleleRegistry.getSpeciesRoot()\" because \"forestry.api.genetics.AlleleManager.alleleRegist"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Genetics",
    "version": "2.5.24",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during postInit: Item not found: Forestry:sturdyMachine"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "GigaGramFab",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1180,16 +1180,16 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+   "notes": "Fails during preInit: java.lang.IllegalStateException: Invalid sideIconContainer count"
   },
   {
    "name": "Graviation Suite",
    "version": "1.7.10-2.0.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1198,7 +1198,7 @@
    "version": "1.3.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1207,7 +1207,7 @@
    "version": "1.2.68-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1216,7 +1216,7 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1225,34 +1225,34 @@
    "version": "",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during construction: java.lang.NoSuchMethodError: 'void legacyconnector.v1_7_10.net.minecraft.world.World.<init>(legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler, ja"
+   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot read the array length because \"mPollutionDieselGeneratorReleasedByTier\" is null"
   },
   {
    "name": "GregTech ToxicEverglades",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: com/gtnewhorizon/gtnhmixins/IEarlyMixinLoader"
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: Could not initialize class gtPlusPlus.core.material.MaterialsElements"
   },
   {
    "name": "GT NEI Ore Plugin GT:NH Mod",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"mUndergroundOil\" because \"gregtech.GTMod.proxy\" is null"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "GT Scanner Mod",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1261,25 +1261,25 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: com/gtnewhorizon/gtnhmixins/IEarlyMixinLoader"
   },
   {
    "name": "GT: New Horizons",
    "version": "2.7.268",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"gregtech.common.items.MetaGeneratedItem01.addItem(int, String, String, Object[])\" because \"this.GT\" is null"
   },
   {
    "name": "GTNH Lib",
    "version": "0.7.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1288,34 +1288,34 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
   {
    "name": "GTNH-TC-Wands",
    "version": "1.4.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during postInit: Invalid shaped ore recipe: MSC, SRS, CSM, R, 1xitem.minecraft:stick@0, M, null, S, screwAluminium, C, 1xitem.WandCap@0, 1xitem.WandCasting@0"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "GTNH: Lanthanides",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot read field \"mCTMBlockCache\" because \"gregtech.GTMod.proxy\" is null"
+   "notes": "Fails during preInit: java.lang.IllegalAccessError: The Enum 'Circuit_Wafer_ILC' has not been set to an Item at this time!"
   },
   {
    "name": "GTTweaker",
    "version": "2.3.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1333,9 +1333,9 @@
    "version": "1.12.16-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.IllegalStateException: Error replacing entity with ID 58, entity entry missing!"
+   "notes": "Fails during preInit: legacyconnector.v1_7_10.cpw.mods.fml.relauncher.ReflectionHelper$UnableToFindFieldException: deobfuscatedEnvironment"
   },
   {
    "name": "Hardcore Questing Mode",
@@ -1394,7 +1394,7 @@
    "version": "1.3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1403,7 +1403,7 @@
    "version": "2.6.112",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1412,7 +1412,7 @@
    "version": "2.5.5-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1421,7 +1421,7 @@
    "version": "1.7.10-1.0.0.jenkins104",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1430,7 +1430,7 @@
    "version": "1.4.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
@@ -1439,7 +1439,7 @@
    "version": "1.11.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1448,7 +1448,7 @@
    "version": "1.2.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1466,7 +1466,7 @@
    "version": "2.6.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1493,7 +1493,7 @@
    "version": "2 2.2.828-experimental",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1509,7 +1509,7 @@
    "version": "1.10.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1518,7 +1518,7 @@
    "version": "2.8.30",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1536,7 +1536,7 @@
    "version": "1.2.68-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1563,16 +1563,7 @@
    "version": "1.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Iron Chests",
-   "version": "6.1.6",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1581,7 +1572,7 @@
    "version": "1.0.12",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1590,7 +1581,7 @@
    "version": "1.4.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1599,7 +1590,7 @@
    "version": "1.5.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1608,7 +1599,7 @@
    "version": "5.2.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1617,7 +1608,7 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
@@ -1626,9 +1617,9 @@
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+   "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
   {
    "name": "Let's Encrypt Craft @VERSION@",
@@ -1644,7 +1635,7 @@
    "version": "1.5.14-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1653,7 +1644,7 @@
    "version": "1.4.24-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during construction: LogisticsPipes FMLLoadingPlugin wasn't loaded. Your download seems to be corrupt/modified. Please redownload LP from our Jenkins [http://ci.thezorro266.com/] an"
   },
@@ -1662,7 +1653,7 @@
    "version": "2.2.0.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1671,7 +1662,7 @@
    "version": "1.2.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1680,7 +1671,7 @@
    "version": "2.1.16",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1689,16 +1680,16 @@
    "version": "2.9.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Malisis Core",
    "version": "1.18.2-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
   },
@@ -1707,7 +1698,7 @@
    "version": "1.18.2-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: Could not initialize class net.malisis.core.util.replacement.ReplacementTool"
   },
@@ -1716,7 +1707,7 @@
    "version": "0.5.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1725,7 +1716,7 @@
    "version": "0.0.51-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoClassDefFoundError: com/gtnewhorizon/gtnhmixins/builders/ITargetMod"
   },
@@ -1734,7 +1725,7 @@
    "version": "0.3.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1743,7 +1734,7 @@
    "version": "1.0.0-alpha",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1761,7 +1752,7 @@
    "version": "2 1.5.9-backhand",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1770,7 +1761,7 @@
    "version": "1.7.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1788,7 +1779,7 @@
    "version": "3 3.4.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1797,7 +1788,7 @@
    "version": "0.5.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1806,7 +1797,7 @@
    "version": "2 0.12.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1815,7 +1806,7 @@
    "version": "0.3.12-1.7.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1824,7 +1815,7 @@
    "version": "1.2.20",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1851,7 +1842,7 @@
    "version": "1.2.68-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1860,7 +1851,7 @@
    "version": "1.3.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1876,7 +1867,7 @@
    "version": "2.8.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1885,7 +1876,7 @@
    "version": "1.5.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1894,7 +1885,7 @@
    "version": "1.0.17",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1903,7 +1894,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1912,7 +1903,7 @@
    "version": "2 1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1921,7 +1912,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1930,7 +1921,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1939,7 +1930,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1948,7 +1939,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1957,7 +1948,7 @@
    "version": "1.17.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1966,7 +1957,7 @@
    "version": "1.7.5",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1975,7 +1966,7 @@
    "version": "1.5.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1993,7 +1984,7 @@
    "version": "1.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2002,7 +1993,7 @@
    "version": "1.3.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2020,7 +2011,7 @@
    "version": "1.7.14",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2029,7 +2020,7 @@
    "version": "2.1.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2038,7 +2029,7 @@
    "version": "1.0.0-beta66b",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2047,7 +2038,7 @@
    "version": "2 2.6.20",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2056,7 +2047,7 @@
    "version": "0.1.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2065,7 +2056,7 @@
    "version": "1.3.3-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2074,7 +2065,7 @@
    "version": "1.6.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during postInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
   },
@@ -2083,7 +2074,7 @@
    "version": "2.4.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2099,7 +2090,7 @@
    "version": "1.11.20-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2108,7 +2099,7 @@
    "version": "0.10.11",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2144,7 +2135,7 @@
    "version": "0.3.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
   },
@@ -2153,7 +2144,7 @@
    "version": "1.2.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoSuchMethodError: 'legacyconnector.v1_7_10.net.minecraft.item.ItemStack li.cil.oc.api.Items.registerFloppy(java.lang.String, int, java.util.concurren"
   },
@@ -2162,7 +2153,7 @@
    "version": "1.4.6-mapless",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2180,7 +2171,7 @@
    "version": "1.1.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2189,7 +2180,7 @@
    "version": "1.7.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2198,7 +2189,7 @@
    "version": "1.3.2-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2207,7 +2198,7 @@
    "version": "1.0.33",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.NoSuchMethodError: 'void me.eigenraven.personalspace.PersonalSpaceMod.removeAe2Meteors()'"
   },
@@ -2216,7 +2207,7 @@
    "version": "1.1.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2225,7 +2216,7 @@
    "version": "1.2.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2234,7 +2225,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2243,7 +2234,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2252,7 +2243,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2261,7 +2252,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2270,7 +2261,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2279,7 +2270,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2288,7 +2279,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2297,7 +2288,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2306,7 +2297,7 @@
    "version": "4.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2324,7 +2315,7 @@
    "version": "9.16.33",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2333,7 +2324,7 @@
    "version": "2.6.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2342,7 +2333,7 @@
    "version": "",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2360,7 +2351,7 @@
    "version": "0.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2369,7 +2360,7 @@
    "version": "2.7.6",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2394,7 +2385,7 @@
    "version": "1.6.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2412,7 +2403,7 @@
    "version": "1.1.33-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: Could not initialize class dev.rndmorris.salisarcana.config.SalisConfig"
   },
@@ -2421,7 +2412,7 @@
    "version": "1.12.6-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.ExceptionInInitializerError"
   },
@@ -2430,7 +2421,7 @@
    "version": "2.2.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2439,7 +2430,7 @@
    "version": "1.4.5-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NoSuchMethodError: 'li.cil.oc.api.detail.ItemInfo li.cil.oc.api.Items.get(java.lang.String)'"
   },
@@ -2448,7 +2439,7 @@
    "version": "2.1.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2466,7 +2457,7 @@
    "version": "0.3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2484,7 +2475,7 @@
    "version": "3.6.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
@@ -2502,7 +2493,7 @@
    "version": "3.7.15-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2511,7 +2502,7 @@
    "version": "0.14.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2520,7 +2511,7 @@
    "version": "2 2.3.12",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2529,7 +2520,7 @@
    "version": "1.3.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2547,7 +2538,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2556,7 +2547,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2565,7 +2556,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2574,7 +2565,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2583,7 +2574,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2592,7 +2583,7 @@
    "version": "2.1.10-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2601,7 +2592,7 @@
    "version": "0.7.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2610,7 +2601,7 @@
    "version": "1.4.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2619,7 +2610,7 @@
    "version": "1.1.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2628,7 +2619,7 @@
    "version": "1.5.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2637,7 +2628,7 @@
    "version": "",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2655,7 +2646,7 @@
    "version": "1.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2664,16 +2655,16 @@
    "version": "1.5.39",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.IncompatibleClassChangeError: Inconsistent constant pool data in classfile for class net/glease/tc4tweak/api/InfusionExtAPI$RecipeNBTBehavior. Method "
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "TecTech - Tec Technology!",
    "version": "5.09.51.482",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"legacyconnector_synth.v1_7_10.cpw.mods.fml.common.ProgressManager$ProgressBar.step(String)\" because \"progressBarP"
   },
@@ -2689,7 +2680,7 @@
    "version": "1.2.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2698,7 +2689,7 @@
    "version": "1.5.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2707,7 +2698,7 @@
    "version": "",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2716,7 +2707,7 @@
    "version": "1.3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2725,7 +2716,7 @@
    "version": "1.8.13",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.IllegalAccessError: The Enum 'Color_00' has not been set to an Item at this time!"
   },
@@ -2734,7 +2725,7 @@
    "version": "1.4.14",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2743,7 +2734,7 @@
    "version": "1.7.14-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2752,7 +2743,7 @@
    "version": "1.4.8-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2761,7 +2752,7 @@
    "version": "0.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2770,7 +2761,7 @@
    "version": "0.2.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"thaumcraft.api.crafting.InfusionRecipe.getRecipeOutput()\" because \"recipe\" is null"
   },
@@ -2779,7 +2770,7 @@
    "version": "2.11.27",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2788,7 +2779,7 @@
    "version": "1.7.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2797,7 +2788,7 @@
    "version": "2.2.3-carrot",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during init: java.lang.ExceptionInInitializerError"
   },
@@ -2831,7 +2822,7 @@
    "version": "1.4.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2840,7 +2831,7 @@
    "version": "1.3.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2849,7 +2840,7 @@
    "version": "0.4.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2865,16 +2856,16 @@
    "version": "1.7.10-GTNH-1.0.28",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during postInit: java.lang.NullPointerException: Cannot invoke \"gregtech.api.interfaces.internal.IGTRecipeAdder.stdBuilder()\" because \"gregtech.api.enums.GTValues.RA\" is null"
+   "date": "2026-10-24",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "TooMuchLoot",
    "version": "4.3.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2883,7 +2874,7 @@
    "version": "1.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2892,7 +2883,7 @@
    "version": "1.3.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2908,7 +2899,7 @@
    "version": "1.1.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2917,7 +2908,7 @@
    "version": "0.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2926,7 +2917,7 @@
    "version": "0.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2935,7 +2926,7 @@
    "version": "0.5.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2944,7 +2935,7 @@
    "version": "2.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2953,7 +2944,7 @@
    "version": "0.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2962,7 +2953,7 @@
    "version": "1.2.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2971,7 +2962,7 @@
    "version": "0.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2980,7 +2971,7 @@
    "version": "0.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2989,7 +2980,7 @@
    "version": "2.0.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2998,7 +2989,7 @@
    "version": "8.10.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3007,7 +2998,7 @@
    "version": "1.4.8",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
    "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"mRGBa\" because \"material\" is null"
   },
@@ -3016,7 +3007,7 @@
    "version": "1.8.15",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3025,7 +3016,7 @@
    "version": "1.3.4-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3034,7 +3025,7 @@
    "version": "0.6.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3043,7 +3034,7 @@
    "version": "1.10.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3052,7 +3043,7 @@
    "version": "1.5.0-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3061,7 +3052,7 @@
    "version": "1.3.1-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3077,16 +3068,16 @@
    "version": "1.7.25-GTNH",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "fails",
-   "notes": "Fails during postInit: java.lang.IllegalArgumentException: ROSEVINE.1: Catalyst cannot be null"
+   "notes": "Fails during postInit: Invalid SpinningWheel recipe for: item.barley.plant.name input should be ItemStack, Item, Block or String"
   },
   {
    "name": "WR-CBE Addons",
    "version": "1.7.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3095,7 +3086,7 @@
    "version": "1.7.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3104,7 +3095,7 @@
    "version": "1.7.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3113,7 +3104,7 @@
    "version": "0.7.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3122,7 +3113,7 @@
    "version": "1.7.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   }

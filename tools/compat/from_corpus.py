@@ -3,7 +3,8 @@
 already listed becomes "loads" (registered at startup without errors) or "fails" (listed as failed to load, with the reason).
 
 usage: from_corpus.py <legacyconnector-report.txt> <latest.log> [mc-version] [date]
-Maintainer entries (hand written) are never overwritten.
+Maintainer entries (hand written) are never overwritten; earlier corpus entries (source "corpus") are refreshed with this run.
+Player reports (docs/data/reports.json) always outrank both on the site.
 """
 import json, pathlib, re, sys
 
@@ -40,6 +41,8 @@ for m in re.finditer(r"\]:\s+(\S+): Legacy mod \S+ \([^)]*\) failed during (\w+)
     failed.setdefault(norm(legacy), f"Fails during {phase}: {reason}")
 
 data = json.loads(DATA.read_text(encoding="utf-8"))
+refreshed = {norm(e["name"]) for e in data["mods"] if e.get("source") == "corpus"} & {norm(n) for n, _, _ in mods.values()}
+data["mods"] = [e for e in data["mods"] if not (e.get("source") == "corpus" and norm(e["name"]) in refreshed)]
 listed = {norm(e["name"]) for e in data["mods"]}
 added = 0
 for modern, (name, version, jarname) in sorted(mods.items()):

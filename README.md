@@ -147,9 +147,9 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 
 | Bridge | State |
 |---|---|
-| Entity rendering, armour and held items | bridged, not verified in game for every mod |
+| Entity rendering, armour and held items | bridged (including the player renderer and its `RenderPlayerEvent`s, creeper and large chest models, flame and breaking particles), not verified in game for every mod |
 | Block rendering (`ISimpleBlockRenderingHandler`, TESRs) | Handlers draw in the world (Tinkers' tables, AE2, AgriCraft crops), renderers can bind vanilla textures by their 1.7.10 names, blocks that colour themselves (leaves, grass, `colorMultiplier`) are biome tinted; per-vertex colour and ambient occlusion of handler-drawn blocks missing, some handlers (Tinkers' drying rack, barricades) still draw nothing |
-| Dimension sky/fog/clouds | A mod dimension takes its fog colour, cloud height and sky/cloud/weather renderers from its legacy `WorldProvider` (Twilight Forest's fog works; legacy sky renderers that draw with unsupported GL fall back to the vanilla sky) |
+| Dimension sky/fog/clouds | Implemented (see *Mod dimensions*); Twilight Forest's fog and Galacticraft's planets work, but the skies of other mods' dimensions are not all verified |
 | Portal placement | Twilight Forest's portal works; other mods' portals are not verified |
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
@@ -177,7 +177,7 @@ A dimension a legacy mod registers with `DimensionManager.registerDimension` bec
 terrain comes from `provideChunk` (block/metadata arrays), trees, structures and ores from `populate`. Biomes come from the
 provider's own `WorldChunkManager` layers (`LegacyBiomeSource`), and `World.provider` is an instance of the mod's provider class.
 `ServerConfigurationManager.transferPlayerToDimension` and `Teleporter` work as in 1.7.10. Verified with Twilight Forest's
-terrain; portal placement and dimension-specific rendering (sky, fog) are not done yet.
+terrain, portal and fog, and Galacticraft's planets (per-planet gravity, silent space). A dimension takes its fog colour, cloud height, sky/cloud/weather renderers and flat-world horizon from its legacy `WorldProvider`; legacy sky renderers that draw with unsupported GL fall back to the vanilla sky.
 
 ### Structures, fluids and input
 
@@ -236,13 +236,13 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `deepLayer.enabled` | `true` | Run legacy world generators a second time so ores also spawn below y=0 |
 | `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
 
-Generated deepslate variants of legacy ores are not implemented yet.
+Legacy ores keep one block each: a separate deepslate variant is not generated, but the ore texture can sit on a deepslate background (`oreBackgrounds.stone=deepslate`).
 
 ## Compatibility status
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **Alpha.** Offline, 129 real mods from a 140-mod test pack link with 0-34 unresolved references each, and all 1,400 synthesized API classes pass JVM verification. Iron Chest works (blocks, GUIs, upgrades, rendering, recipes); Witchery, Thaumcraft and others now get through most of loading. Mod biomes and world types generate; mod entities spawn, tick, fight and save (520 of 560 entity types in the test packs pass a spawn/save/load self test; 1 of the ~140 test mods still fails to finish loading, see [Known compatibility issues](#known-compatibility-issues)). Entity rendering is bridged (not yet verified in game for every mod); armour and held items on biped mobs are drawn (not yet verified in game); dimension sky/fog rendering and portal placement are not done. |
+| 1.7.10 | **Alpha.** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game; Galacticraft with its addons runs with per-planet gravity. In the latest startup test of the 230-mod GTNH pack, 282 mods across the corpus load without errors and 52 fail during loading (see the [compatibility list](https://kylepitcock.github.io/Legacy-Connector/)). Mod biomes, world types and dimensions generate; mod entities spawn, tick, fight and save; entity rendering (including the player renderer), armour and held items, dimension fog/sky and Twilight Forest's portal are bridged, though not verified in game for every mod. All synthesized API classes pass JVM verification. |
 | 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
@@ -282,7 +282,6 @@ After launching, read **`logs/legacyconnector-report.txt`**. For every legacy ja
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
 At runtime, `LegacyConnector/Stubs` log lines show which synthesized APIs are actually called.
 
-/
 ## Development
 
 Requires JDK 21.
