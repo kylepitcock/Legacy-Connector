@@ -24,6 +24,8 @@ public final class ReflectiveEventBus {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/EventBus");
     private static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicInteger> FAILURES =
             new java.util.concurrent.ConcurrentHashMap<>();
+    /** (handler, event class) pairs already reported as cancelling: which mod hides something is the first thing to know. */
+    private static final java.util.Set<String> CANCELLERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** Version-specific knowledge: which annotation marks handlers and how events report cancellation. */
     public interface Adapter {
@@ -103,9 +105,13 @@ public final class ReflectiveEventBus {
     public boolean post(Object event) {
         List<Listener> targets = dispatchCache.computeIfAbsent(event.getClass(), this::collect);
         for (Listener l : targets) {
-            if (!l.receiveCanceled && adapter.isCanceled(event)) continue;
+            boolean canceledBefore = adapter.isCanceled(event);
+            if (!l.receiveCanceled && canceledBefore) continue;
             try {
                 l.handle.invoke(event);
+                if (!canceledBefore && adapter.isCanceled(event) && CANCELLERS.add(l.name + " " + event.getClass().getName())) {
+                    LOG.info("[{}] Legacy handler {} cancels {} (reported once)", name, l.name, event.getClass().getName());
+                }
             } catch (Throwable t) {
                 // A handler that fails every tick would flood the log (and the disk) in seconds: say so a few times.
                 int n = FAILURES.computeIfAbsent(l.name, k -> new java.util.concurrent.atomic.AtomicInteger()).incrementAndGet();
