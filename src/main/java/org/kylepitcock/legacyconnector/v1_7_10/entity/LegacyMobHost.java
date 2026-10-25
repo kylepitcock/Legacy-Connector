@@ -94,6 +94,31 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     // ------------------------------------------------------------------ ticking
 
     private int failedTicks;
+    /** The boss bar of a legacy boss (IBossDisplayData): 1.7.10 showed it to every player that had the boss loaded, not only to those next to it. */
+    private net.minecraft.server.level.ServerBossEvent bossEvent;
+
+    private void updateBossBar() {
+        if (!(level() instanceof ServerLevel sl) || !(legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.boss.IBossDisplayData boss)) return;
+        if (bossEvent == null) {
+            bossEvent = new net.minecraft.server.level.ServerBossEvent(getDisplayName(), net.minecraft.world.BossEvent.BossBarColor.PURPLE,
+                    net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
+        }
+        float max = boss.getMaxHealth();
+        bossEvent.setProgress(max <= 0 ? 0 : Math.max(0, Math.min(1, boss.getHealth() / max)));
+        bossEvent.setName(getDisplayName());
+        if (tickCount % 20 != 0) return;
+        for (var player : sl.players()) {
+            boolean near = player.distanceToSqr(this) < 128.0 * 128.0;
+            if (near) bossEvent.addPlayer(player);
+            else bossEvent.removePlayer(player);
+        }
+    }
+
+    @Override
+    public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
+        if (bossEvent != null) bossEvent.removeAllPlayers();
+        super.remove(reason);
+    }
 
     @Override
     public void tick() {
@@ -104,6 +129,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         try {
             legacy.onUpdate();
             failedTicks = 0;
+            updateBossBar();
         } catch (RuntimeException | LinkageError e) {
             if (LegacyHosts.tickFailed(this, legacy.getClass(), e, ++failedTicks)) discard();
         }
