@@ -26,6 +26,7 @@ public class ASMDataTable {
     }
 
     private ASMDataTable(boolean scan) {
+        java.util.Set<String> seen = new java.util.HashSet<>();
         for (var scanData : ModList.get().getAllScanData()) {
             File file = null;
             try {
@@ -36,9 +37,24 @@ public class ASMDataTable {
             ModCandidate candidate = new ModCandidate(file);
             for (var c : scanData.getClasses()) candidate.mcc$addClass(c.clazz().getInternalName());
             for (String pkg : candidate.getContainedPackages()) byPackage.computeIfAbsent(pkg, k -> new LinkedHashSet<>()).add(candidate);
+            // NeoForge's scan lists the annotations nested in a repeatable container ({@code @A({@code @B(1)}, {@code @B(2)})}) as entries of their own; FML's did not
+            java.util.Set<String> nested = new java.util.HashSet<>();
             for (var a : scanData.getAnnotations()) {
+                if (a.annotationData().get("value") instanceof java.util.List<?> list) {
+                    for (Object element : list) {
+                        if (element instanceof Map<?, ?>) nested.add(a.clazz().getClassName() + "|" + a.memberName() + "|" + element);
+                    }
+                }
+            }
+            for (var a : scanData.getAnnotations()) {
+                if (nested.contains(a.clazz().getClassName() + "|" + a.memberName() + "|" + a.annotationData())) continue;
                 String annotation = a.annotationType().getClassName();
                 String className = a.clazz().getClassName();
+                if (System.getProperty("legacyconnector.debugAsm") != null && className.contains(System.getProperty("legacyconnector.debugAsm"))) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Asm").info("{} on {} member {}: {}", annotation, className, a.memberName(), a.annotationData());
+                }
+                // the same class can be in two scan results (a translated jar and its split companion): one entry per class and member
+                if (!seen.add(annotation + "|" + className + "|" + a.memberName())) continue;
                 ASMData data = new ASMData(candidate, annotation, className, a.memberName(), convert(a.annotationData()));
                 byAnnotation.computeIfAbsent(annotation, k -> new LinkedHashSet<>()).add(data);
             }
