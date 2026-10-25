@@ -40,10 +40,17 @@ for m in re.finditer(r"\]:\s+(\S+): Legacy mod \S+ \([^)]*\) failed during (\w+)
     reason = re.sub(r"\s+", " ", reason)[:160]
     failed.setdefault(norm(legacy), f"Fails during {phase}: {reason}")
 
+LOADS_NOTE = {
+    "1.7.10": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet.",
+    "1.12.2": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: "
+              "client rendering, GUIs, entities and world generation are not done yet.",
+}
 data = json.loads(DATA.read_text(encoding="utf-8"))
-refreshed = {norm(e["name"]) for e in data["mods"] if e.get("source") == "corpus"} & {norm(n) for n, _, _ in mods.values()}
-data["mods"] = [e for e in data["mods"] if not (e.get("source") == "corpus" and norm(e["name"]) in refreshed)]
-listed = {norm(e["name"]) for e in data["mods"]}
+# entries are per Minecraft version: a 1.12.2 run never replaces or hides the 1.7.10 entry of the same mod
+same_mc = [e for e in data["mods"] if e.get("mc", "1.7.10") == mc]
+refreshed = {norm(e["name"]) for e in same_mc if e.get("source") == "corpus"} & {norm(n) for n, _, _ in mods.values()}
+data["mods"] = [e for e in data["mods"] if not (e.get("mc", "1.7.10") == mc and e.get("source") == "corpus" and norm(e["name"]) in refreshed)]
+listed = {norm(e["name"]) for e in data["mods"] if e.get("mc", "1.7.10") == mc}
 added = 0
 for modern, (name, version, jarname) in sorted(mods.items()):
     if norm(name) in listed or norm(modern) in listed:
@@ -56,7 +63,7 @@ for modern, (name, version, jarname) in sorted(mods.items()):
     if reason:
         entry.update(status="fails", notes=reason)
     else:
-        entry.update(status="loads", notes="Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet.")
+        entry.update(status="loads", notes=LOADS_NOTE.get(mc, LOADS_NOTE["1.7.10"]))
     data["mods"].append(entry)
     listed.add(norm(name))
     added += 1
