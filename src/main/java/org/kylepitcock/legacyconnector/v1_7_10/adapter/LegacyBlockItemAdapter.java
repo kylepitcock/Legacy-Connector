@@ -68,6 +68,11 @@ public class LegacyBlockItemAdapter extends BlockItem implements LegacyItemHolde
     }
 
     @Override
+    public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remainingUseDuration) {
+        ItemCallbacks.useTick(legacy, stack, level, entity, remainingUseDuration);
+    }
+
+    @Override
     public void releaseUsing(ItemStack stack, Level level, LivingEntity entity, int timeLeft) {
         ItemCallbacks.releaseUsing(legacy, stack, level, entity, timeLeft);
     }

@@ -83,6 +83,11 @@ final class ItemCallbacks {
         if (entity instanceof Player p) legacy.onPlayerStoppedUsing(ItemStack.mcc$wrap(stack), World.mcc$wrap(level), player(p), timeLeft);
     }
 
+    /** Every tick the item is held in use (wands charging, bows drawing): the legacy {@code onUsingTick} with the remaining duration. */
+    static void useTick(Item legacy, net.minecraft.world.item.ItemStack stack, Level level, LivingEntity entity, int remaining) {
+        if (entity instanceof Player p) legacy.onUsingTick(ItemStack.mcc$wrap(stack), player(p), remaining);
+    }
+
     static void inventoryTick(Item legacy, net.minecraft.world.item.ItemStack stack, Level level, Entity entity, int slot, boolean selected) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view != null) legacy.onUpdate(view, World.mcc$wrap(level), EntityBridge.wrap(entity), slot, selected);
