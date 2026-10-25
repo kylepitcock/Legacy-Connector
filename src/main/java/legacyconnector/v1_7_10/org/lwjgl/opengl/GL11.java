@@ -76,21 +76,59 @@ public class GL11 extends GL11Guard {
             RenderContext.pose().last().pose().get(params.position(), params);
         } else if (pname == GL_PROJECTION_MATRIX && RenderSystem.isOnRenderThread()) {
             RenderSystem.getProjectionMatrix().get(params.position(), params);
-        } else {
+        } else if (!legacyOnly(pname)) {
             GL11Guard.glGetFloatv(pname, params);
         }
     }
 
     public static void glGetInteger(int pname, java.nio.IntBuffer params) {
-        GL11Guard.glGetIntegerv(pname, params);
+        if (!legacyOnly(pname)) GL11Guard.glGetIntegerv(pname, params);
     }
 
     public static void glGetBoolean(int pname, java.nio.ByteBuffer params) {
-        GL11Guard.glGetBooleanv(pname, params);
+        if (!legacyOnly(pname)) GL11Guard.glGetBooleanv(pname, params);
     }
 
     public static void glGetDouble(int pname, java.nio.DoubleBuffer params) {
-        GL11Guard.glGetDoublev(pname, params);
+        if (!legacyOnly(pname)) GL11Guard.glGetDoublev(pname, params);
+    }
+
+    /**
+     * State that exists only in the fixed-function pipeline (current colour, lists, lighting, fog, matrix mode and stacks, alpha test,
+     * ...): querying it in a core profile raises GL_INVALID_ENUM, which the debug callback logged on every frame (#35).
+     */
+    private static boolean legacyOnly(int pname) {
+        return (pname >= 0x0B00 && pname <= 0x0B0F) || (pname >= 0x0B30 && pname <= 0x0B33) || (pname >= 0x0B50 && pname <= 0x0B6F)
+                || pname == 0x0BA0 || (pname >= 0x0BA3 && pname <= 0x0BA5) || pname == 0x0BA8 || pname == 0x0BB0
+                || (pname >= 0x0BC0 && pname <= 0x0BC3) || (pname >= 0x0C30 && pname <= 0x0C31) || (pname >= 0x0C40 && pname <= 0x0C41);
+    }
+
+    public static float glGetFloat(int pname) {
+        return legacyOnly(pname) ? 0F : GL11Guard.glGetFloat(pname);
+    }
+
+    public static int glGetInteger(int pname) {
+        return legacyOnly(pname) ? 0 : GL11Guard.glGetInteger(pname);
+    }
+
+    public static double glGetDouble(int pname) {
+        return legacyOnly(pname) ? 0D : GL11Guard.glGetDouble(pname);
+    }
+
+    public static boolean glGetBoolean(int pname) {
+        return !legacyOnly(pname) && GL11Guard.glGetBoolean(pname);
+    }
+
+    /** Fixed-function capabilities (lighting, alpha test, fog, texturing, normalization...) are not GL capabilities any more: the tracked emulated state answers. */
+    public static boolean glIsEnabled(int cap) {
+        switch (cap) {
+            case 3553: return org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.geometryHasEntityFormat();
+            case 2896: case 3008: case 2912: case 2977: case 32826: case 2903: case 3552: case 3168: case 3169: case 3170: case 3171:
+                return false;
+            default:
+                if (cap >= 0x4000 && cap <= 0x4007) return false; // GL_LIGHT0..7
+                return GL11Guard.glIsEnabled(cap);
+        }
     }
 
     public static void glTexParameter(int target, int pname, FloatBuffer params) {
