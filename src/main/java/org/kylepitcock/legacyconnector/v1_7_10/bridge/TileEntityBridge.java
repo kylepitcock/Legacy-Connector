@@ -156,6 +156,18 @@ public final class TileEntityBridge {
         if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) chest.mcc$flush();
     }
 
+    /** Legacy setBlock with the same block and another metadata: the tile entity refreshes as in 1.7.10 (setBlockMetadata does not). */
+    public static void beforeSetBlock(World world, BlockPos pos, net.minecraft.world.level.block.state.BlockState next) {
+        if (!(next.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter)) return;
+        var current = world.mcc$level().getBlockState(pos);
+        if (current.getBlock() != next.getBlock()) return;
+        var be = blockEntityAt(world.mcc$level(), pos);
+        if (be instanceof LegacyBlockEntity l) {
+            l.refreshForMeta(current.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META),
+                    next.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META));
+        }
+    }
+
     public static void setAt(World world, BlockPos pos, TileEntity te) {
         var be = blockEntityAt(world.mcc$level(), pos);
         if (be instanceof LegacyBlockEntity l) {

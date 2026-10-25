@@ -138,8 +138,13 @@ public class TileEntity {
     public void onChunkUnload() {
     }
 
+    /**
+     * Forge 1.7.10: whether the tile entity is recreated when its block or metadata is replaced (Chunk.setBlock). True by default
+     * there; mods override it to keep their tile entity across metadata changes (a furnace's facing). Thaumcraft relies on the
+     * default when a table becomes a research table.
+     */
     public boolean shouldRefresh(Block oldBlock, Block newBlock, int oldMeta, int newMeta, World world, int x, int y, int z) {
-        return oldBlock != newBlock;
+        return true;
     }
 
     public boolean shouldRenderInPass(int pass) {

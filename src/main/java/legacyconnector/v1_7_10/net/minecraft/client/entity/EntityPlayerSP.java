@@ -8,6 +8,14 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 
     public EntityPlayerSP(Player modern) {
         super(modern);
+        // 1.7.10's client player stood at eye level: posY = feet + yOffset, and its eye height above posY was 0.12
+        this.yOffset = 1.62F;
+        this.mcc$posYShift = 1.62;
+    }
+
+    @Override
+    public float getEyeHeight() {
+        return 0.12F;
     }
 
     public void closeScreen() {

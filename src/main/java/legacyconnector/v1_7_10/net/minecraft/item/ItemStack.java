@@ -79,10 +79,30 @@ public final class ItemStack {
         this.mcc$item = legacy;
     }
 
-    /** Wraps a modern stack without copying. Returns null for empty stacks (legacy code expects null). */
+    /** The last stacks wrapped on this thread, as modern/view pairs (a ring of {@link #RECENT_SIZE}). */
+    private static final int RECENT_SIZE = 8;
+    private static final ThreadLocal<Object[]> RECENT = ThreadLocal.withInitial(() -> new Object[RECENT_SIZE * 2 + 1]);
+
+    /**
+     * Wraps a modern stack without copying. Returns null for empty stacks (legacy code expects null), except for a stack legacy code
+     * just decremented to 0 through a view of it: 1.7.10 kept that object in the slot until the caller removed it, and mods fetch it
+     * again to check ({@code player.getCurrentEquippedItem().stackSize--; if (player.getCurrentEquippedItem().stackSize == 0)},
+     * Thaumcraft's pedestal), so the same view comes back with stackSize 0.
+     */
     public static ItemStack mcc$wrap(net.minecraft.world.item.ItemStack modern) {
-        if (modern == null || modern.isEmpty()) return null;
-        return new ItemStack(modern, ItemBridge.legacyItemOf(modern));
+        if (modern == null) return null;
+        Object[] recent = RECENT.get();
+        if (modern.isEmpty()) {
+            if (modern == net.minecraft.world.item.ItemStack.EMPTY || modern.getCount() != 0) return null;
+            for (int i = 0; i < RECENT_SIZE * 2; i += 2) if (recent[i] == modern) return (ItemStack) recent[i + 1];
+            return null;
+        }
+        ItemStack view = new ItemStack(modern, ItemBridge.legacyItemOf(modern));
+        int at = recent[RECENT_SIZE * 2] instanceof Integer n ? n : 0;
+        recent[at] = modern;
+        recent[at + 1] = view;
+        recent[RECENT_SIZE * 2] = (at + 2) % (RECENT_SIZE * 2);
+        return view;
     }
 
     /** Modern stack backing this view (shared, not a copy). */

@@ -5,7 +5,23 @@ import legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound;
 
 /** An amount (mB) of a fluid, with optional NBT. NBT format matches Forge 1.7.10 ("FluidName", "Amount", "Tag"). */
 public class FluidStack {
-    public final Fluid fluid;
+    /** Not final: legacy code sets {@link #fluidID}, which in 1.7.10 was the stack's identity. */
+    public Fluid fluid;
+
+    /**
+     * Phantom: redirected to {@link #mcc$get$fluidID}/{@link #mcc$set$fluidID}. Mods compare {@code stack.fluidID} with
+     * {@code FluidRegistry.WATER.getID()} (Thaumcraft's crucible); as an unbacked field it read 0 and every fluid was refused.
+     */
+    @Deprecated
+    public int fluidID;
+
+    public static int mcc$get$fluidID(FluidStack s) {
+        return s.getFluidID();
+    }
+
+    public static void mcc$set$fluidID(FluidStack s, int id) {
+        s.fluid = FluidRegistry.getFluid(id);
+    }
     public int amount;
     public NBTTagCompound tag;
 

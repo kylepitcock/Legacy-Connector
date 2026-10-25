@@ -174,6 +174,13 @@ public abstract class Entity implements ICommandSender {
 
     public Random rand = new Random();
     public float yOffset;
+
+    /**
+     * Added to the modern y in {@code posY}/{@code prevPosY}/{@code lastTickPosY}: 1.62 for the local client player, whose posY
+     * was at eye level in 1.7.10 (EntityPlayerSP's yOffset); renderers translate by {@code -player.posY} (Thaumcraft's nodes and
+     * beams) and were drawn 1.62 blocks too high with a feet-level posY. 0 for every other entity.
+     */
+    protected double mcc$posYShift;
     public boolean forceSpawn;
     public boolean preventEntitySpawning;
     public boolean isImmuneToFire;
@@ -312,13 +319,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$posY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.getY() : e.mcc$local_posY;
+        return m != null ? m.getY() + e.mcc$posYShift : e.mcc$local_posY;
     }
 
     public static void mcc$set$posY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setPos(m.getX(), v, m.getZ());
+            m.setPos(m.getX(), v - e.mcc$posYShift, m.getZ());
         } else {
             e.mcc$local_posY = v;
         }
@@ -354,13 +361,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$prevPosY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.yo : e.mcc$local_prevPosY;
+        return m != null ? m.yo + e.mcc$posYShift : e.mcc$local_prevPosY;
     }
 
     public static void mcc$set$prevPosY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.yo = v;
+            m.yo = v - e.mcc$posYShift;
         } else {
             e.mcc$local_prevPosY = v;
         }
@@ -396,13 +403,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$lastTickPosY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.yOld : e.mcc$local_lastTickPosY;
+        return m != null ? m.yOld + e.mcc$posYShift : e.mcc$local_lastTickPosY;
     }
 
     public static void mcc$set$lastTickPosY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.yOld = v;
+            m.yOld = v - e.mcc$posYShift;
         } else {
             e.mcc$local_lastTickPosY = v;
         }

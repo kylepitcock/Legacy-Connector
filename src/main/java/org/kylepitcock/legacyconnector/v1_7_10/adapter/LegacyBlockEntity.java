@@ -74,6 +74,37 @@ public class LegacyBlockEntity extends BlockEntity {
         return createFailed;
     }
 
+    /**
+     * 1.7.10's Chunk.setBlock: when the metadata of the block changes, the tile entity is dropped if it asks to be refreshed, and the
+     * block creates the one for the new metadata on next access (a table becoming a research table gets a TileResearchTable).
+     */
+    public void refreshForMeta(int oldMeta, int newMeta) {
+        if (legacy == null || oldMeta == newMeta) return;
+        boolean refresh;
+        try {
+            Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
+            refresh = legacy.shouldRefresh(block, block, oldMeta, newMeta, legacy.worldObj, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ());
+        } catch (RuntimeException | LinkageError e) {
+            refresh = false;
+        }
+        if (!refresh) return;
+        legacy.invalidate();
+        legacy = null;
+        pending = null;
+        createFailed = false;
+    }
+
+    /** Client: a metadata change from the server is 1.7.10's client-side setBlock, which refreshes the tile entity as on the server. */
+    @Override
+    public void setBlockState(BlockState state) {
+        BlockState old = getBlockState();
+        super.setBlockState(state);
+        if (level != null && level.isClientSide && old.getBlock() == state.getBlock() && old.hasProperty(LegacyBlockAdapter.META)
+                && state.hasProperty(LegacyBlockAdapter.META)) {
+            refreshForMeta(old.getValue(LegacyBlockAdapter.META), state.getValue(LegacyBlockAdapter.META));
+        }
+    }
+
     public void replaceLegacy(TileEntity te) {
         if (legacy != null) legacy.invalidate();
         legacy = te;

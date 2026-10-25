@@ -342,6 +342,7 @@ public class World implements IBlockAccess {
         if (outsideRegion(p)) return false;
         state = deepslateOre(state, p);
         TileEntityBridge.beforeBlockChange(this, p);
+        TileEntityBridge.beforeSetBlock(this, p, state);
         if (connectsToNeighbours(state)) {
             if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) {
                 // Neighbours may still be missing; the game fixes the shape when the chunk is finished, as for structures.

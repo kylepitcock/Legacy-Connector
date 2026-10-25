@@ -41,7 +41,9 @@ public final class LegacyEntitySpawns {
     /** The legacy biome a modern biome corresponds to (a generated mod biome, or the vanilla legacy biome). */
     public static BiomeGenBase legacyBiome(ResourceLocation modern) {
         if (modern == null) return null;
-        BiomeGenBase mod = LegacyBiomes.byModernId(modern);
+        // a vanilla biome is its vanilla legacy biome: mod biomes that are not generated themselves stand on vanilla ids
+        // (Thaumcraft's Tainted Land on dark_forest) and must not answer for it (Biome Wand sampled id 192 in a dark forest)
+        BiomeGenBase mod = modern.getNamespace().equals("minecraft") ? null : LegacyBiomes.byModernId(modern);
         if (mod != null) return mod;
         Map<ResourceLocation, Integer> r = reverse;
         if (r == null) {

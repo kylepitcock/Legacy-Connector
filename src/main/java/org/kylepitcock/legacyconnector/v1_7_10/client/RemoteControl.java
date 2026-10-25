@@ -209,7 +209,9 @@ public final class RemoteControl {
                 waitTicks = 40;
             }
             case "close" -> {
-                mc.setScreen(null);
+                // like Escape: a container screen tells the server, or the server keeps the menu open and inventory updates go to it
+                if (mc.screen instanceof net.minecraft.client.gui.screens.inventory.AbstractContainerScreen<?>) mc.player.closeContainer();
+                else mc.setScreen(null);
                 waitTicks = 3;
             }
             case "info" -> {

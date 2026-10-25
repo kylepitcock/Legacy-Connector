@@ -186,10 +186,34 @@ public final class BlockBridge {
     public static Material vanillaMaterial(VanillaInfo info) {
         BlockState s = stateOfVanilla(info, 0);
         if (s.isAir()) return Material.air;
-        if (s.liquid()) return s.getFluidState().is(net.minecraft.tags.FluidTags.LAVA) ? Material.lava : Material.water;
+        // Tags (fluid tags too) are not bound while mods load: lava is told by its fluid type. Mods compare materials by identity
+        // (Thaumcraft's crucible heats only over Material.lava or Material.fire), so these must be the shared constants.
+        if (s.liquid()) return s.getFluidState().getType().isSame(net.minecraft.world.level.material.Fluids.LAVA) ? Material.lava : Material.water;
         // Block tags are not bound while mods load, so the material comes from the block's class, sound and name.
         var block = s.getBlock();
         String path = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(block).getPath();
+        if (block instanceof net.minecraft.world.level.block.BaseFireBlock) return Material.fire;
+        if (block instanceof net.minecraft.world.level.block.NetherPortalBlock || block instanceof net.minecraft.world.level.block.EndPortalBlock) return Material.portal;
+        if (block instanceof net.minecraft.world.level.block.TntBlock) return Material.tnt;
+        if (block instanceof net.minecraft.world.level.block.CactusBlock) return Material.cactus;
+        if (block instanceof net.minecraft.world.level.block.WebBlock) return Material.web;
+        if (block instanceof net.minecraft.world.level.block.CakeBlock) return Material.cake;
+        if (block instanceof net.minecraft.world.level.block.AnvilBlock) return Material.anvil;
+        if (block instanceof net.minecraft.world.level.block.piston.PistonBaseBlock || block instanceof net.minecraft.world.level.block.piston.PistonHeadBlock) return Material.piston;
+        if (block instanceof net.minecraft.world.level.block.CarpetBlock) return Material.carpet;
+        if (block instanceof net.minecraft.world.level.block.SpongeBlock || block instanceof net.minecraft.world.level.block.WetSpongeBlock) return Material.sponge;
+        if (block instanceof net.minecraft.world.level.block.DragonEggBlock) return Material.dragonEgg;
+        if (path.equals("packed_ice") || path.equals("blue_ice")) return Material.packedIce;
+        if (block instanceof net.minecraft.world.level.block.IceBlock || path.equals("ice")) return Material.ice;
+        if (block instanceof net.minecraft.world.level.block.SnowLayerBlock) return Material.snow;
+        if (path.equals("snow_block")) return Material.craftedSnow;
+        if (path.equals("pumpkin") || path.equals("carved_pumpkin") || path.equals("jack_o_lantern") || path.equals("melon")) return Material.gourd;
+        if (block instanceof net.minecraft.world.level.block.RedstoneLampBlock) return Material.redstoneLight;
+        if (block instanceof net.minecraft.world.level.block.RedStoneWireBlock || block instanceof net.minecraft.world.level.block.DiodeBlock
+                || block instanceof net.minecraft.world.level.block.LeverBlock || block instanceof net.minecraft.world.level.block.ButtonBlock
+                || block instanceof net.minecraft.world.level.block.TorchBlock) {
+            return Material.circuits;
+        }
         var sound = s.getSoundType();
         if (block instanceof net.minecraft.world.level.block.LeavesBlock) return Material.leaves;
         if (block instanceof net.minecraft.world.level.block.SpreadingSnowyDirtBlock) return Material.grass;
