@@ -183,12 +183,16 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     }
 
     private static void writeBlockModels(Block b, ResourceLocation id, boolean deepslate, Map<String, Supplier<byte[]>> out) {
+        boolean oreBlock = b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a && a.deepVariant() != null;
         JsonObject variants = new JsonObject();
         for (int meta = 0; meta < 16; meta++) {
             String[] faces = new String[6];
             for (int side = 0; side < 6; side++) {
                 faces[side] = iconName(b, side, meta);
                 if (deepslate) faces[side] = org.kylepitcock.legacyconnector.v1_7_10.client.OreBackgrounds.deepslateTexture(faces[side], out);
+                else if (oreBlock && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+                    org.kylepitcock.legacyconnector.v1_7_10.client.OreBackgrounds.noteOreSprite(faces[side]);
+                }
             }
             boolean stairs = b.getRenderType() == 10;
             JsonObject model = stairs ? stairsModel(faces) : model(b, faces);

@@ -27,8 +27,9 @@ public final class OreBackgrounds {
     private static final int[][] LEGACY_HOSTS = {{125, 125, 125}, {111, 54, 53}, {221, 223, 165}};
     private static final String[] HOST_KEYS = {"stone", "netherrack", "endStone"};
     private static final String[] HOST_DEFAULTS = {"stone", "netherrack", "end_stone"};
-    private static final double MATCH_DISTANCE = 48.0D;
-    private static final double MIN_BACKGROUND_SHARE = 0.35D;
+    /** Colour distance to a host's average that still counts as host rock; netherrack's texture varies more than stone's. */
+    private static final double[] MATCH_DISTANCE = {48.0D, 64.0D, 48.0D};
+    private static final double MIN_BACKGROUND_SHARE = 0.3D;
 
     private OreBackgrounds() {}
 
@@ -58,7 +59,7 @@ public final class OreBackgrounds {
             int colon = name.indexOf(':');
             String domain = colon < 0 ? "minecraft" : name.substring(0, colon);
             String path = colon < 0 ? name : name.substring(colon + 1);
-            if (domain.equals("minecraft") || !isOreName(path)) continue;
+            if (domain.equals("minecraft") || !isOreName(path) && !ORE_SPRITES.contains(Ids.namespace(domain) + ":blocks/" + Ids.normalizePath(path))) continue;
             byte[] original = LegacySprites.modTexture(domain, "textures/blocks/" + path + ".png");
             if (original == null) continue;
             try {
@@ -72,6 +73,14 @@ public final class OreBackgrounds {
             }
         }
         LOG.info("Replaced the stone, netherrack or end stone background of {} legacy ore textures with the modern textures", changed);
+    }
+
+    /** Sprites ({@code namespace:blocks/name}) drawn by ore blocks, whatever their file names say (NetherOres' textures are called Copper, Tin ...). */
+    private static final java.util.Set<String> ORE_SPRITES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Records a sprite used by an ore block (called while the block models are written). */
+    public static void noteOreSprite(String sprite) {
+        if (sprite != null) ORE_SPRITES.add(sprite);
     }
 
     /** Words that end in "ore" without being ores. */
@@ -205,6 +214,6 @@ public final class OreBackgrounds {
         int dr = ((argb >> 16) & 255) - LEGACY_HOSTS[host][0];
         int dg = ((argb >> 8) & 255) - LEGACY_HOSTS[host][1];
         int db = (argb & 255) - LEGACY_HOSTS[host][2];
-        return Math.sqrt(dr * dr + dg * dg + db * db) < MATCH_DISTANCE;
+        return Math.sqrt(dr * dr + dg * dg + db * db) < MATCH_DISTANCE[host];
     }
 }

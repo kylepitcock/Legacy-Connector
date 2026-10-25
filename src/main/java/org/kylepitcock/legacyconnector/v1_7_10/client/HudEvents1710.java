@@ -41,6 +41,9 @@ public final class HudEvents1710 {
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Pre e) -> {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.START,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
+            // GuiIngameForge started every frame with the rows above the hotbar at 39; handlers that draw their own rows add to them.
+            legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.left_height = 39;
+            legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.right_height = 39;
             if (wants()) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), ElementType.ALL, false);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post e) -> {
@@ -53,12 +56,27 @@ public final class HudEvents1710 {
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre e) -> {
             ElementType type = LAYERS.get(e.getName());
-            if (type != null && wants() && post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, false)) e.setCanceled(true);
+            if (type != null && wants() && drawnForMode(type) && post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, false)) e.setCanceled(true);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post e) -> {
             ElementType type = LAYERS.get(e.getName());
-            if (type != null && wants()) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, true);
+            if (type != null && wants() && drawnForMode(type)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, true);
         });
+    }
+
+    /**
+     * 1.7.10's GuiIngameForge only posted the survival elements (health, armour, food, air) when the HUD was drawn for the
+     * game mode, and the experience bar in survival and adventure. The modern layers run in every mode and skip their drawing
+     * themselves, so without this a handler that replaces the hearts (Tinkers' Construct) draws them in creative.
+     */
+    private static boolean drawnForMode(ElementType type) {
+        var gameMode = Minecraft.getInstance().gameMode;
+        if (gameMode == null) return true;
+        return switch (type) {
+            case HEALTH, ARMOR, FOOD, AIR -> gameMode.canHurtPlayer();
+            case EXPERIENCE -> gameMode.hasExperience();
+            default -> true;
+        };
     }
 
     private static boolean wants() {

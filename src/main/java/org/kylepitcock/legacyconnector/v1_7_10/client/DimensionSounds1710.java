@@ -25,6 +25,9 @@ public final class DimensionSounds1710 {
             var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
             if (sound == null || !forge.mcc$hasListeners(legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundEvent17.class)) return;
             var location = sound.getLocation();
+            // The event fires before the engine resolved the instance; an unresolved one has no volume yet.
+            sound.resolve(Minecraft.getInstance().getSoundManager());
+            if (sound.getSound() == null) return;
             var legacy = new legacyconnector.v1_7_10.net.minecraft.client.audio.PositionedSoundRecord(
                     new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation(location.getNamespace(), location.getPath()),
                     sound.getVolume(), sound.getPitch(), (float) sound.getX(), (float) sound.getY(), (float) sound.getZ());

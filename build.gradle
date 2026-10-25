@@ -46,6 +46,7 @@ neoForge {
     runs {
         client {
             client()
+            jvmArgument '-Xmx6G'
         }
 
         server {

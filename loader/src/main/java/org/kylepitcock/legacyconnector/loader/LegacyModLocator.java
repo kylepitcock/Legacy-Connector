@@ -133,6 +133,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
+            int uncached = 0;
+            for (LegacyJar jar : legacy) {
+                if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
+                Path cached = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
+                if (!Files.exists(cached) || !Files.exists(cached.resolveSibling(cached.getFileName() + ".synth.txt"))) uncached++;
+            }
+            TranslationProgress progress = new TranslationProgress(uncached);
             for (LegacyJar jar : legacy) {
                 // Claim the original even if we end up skipping it, so FML does not raise its own
                 // "this is an old Forge mod" error on top of ours.
@@ -148,12 +155,16 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                             .withAffectedPath(jar.path));
                     continue;
                 }
+                boolean translating = false;
                 try {
                     Path out = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
                     Path linkReport = out.resolveSibling(out.getFileName() + ".links.txt");
                     Path demandFile = out.resolveSibling(out.getFileName() + ".synth.txt");
                     if (!Files.exists(out) || !Files.exists(demandFile)) {
+                        translating = true;
+                        if (!peers.containsKey(jar.version)) progress.step("reading all legacy jars");
                         Map<String, ClassInfo> jarPeers = peers.computeIfAbsent(jar.version, v -> scanPeers(transformer, legacy, v));
+                        progress.starting(jar.fileName());
                         long start = System.nanoTime();
                         LegacyJarTransformer.Result result = transformer.transform(jar, out, jarPeers);
                         result.demand.write(demandFile);
@@ -183,7 +194,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     pipeline.addIssue(ModLoadingIssue.error("Legacy Connector could not translate " + jar.fileName())
                             .withAffectedPath(jar.path).withCause(e));
                 }
+                if (translating) progress.finished();
             }
+            progress.close();
 
             // One generated jar per legacy version with every API class/member the shim lacks, for all mods at once
             // (mods pass these types to each other, so there must be exactly one copy of each).
