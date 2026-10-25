@@ -35,4 +35,37 @@ public class GameRegistry {
     public @interface ObjectHolder {
         String value();
     }
+
+    public static void addShapedRecipe(ResourceLocation name, ResourceLocation group, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, Object... params) {
+        var recipe = new legacyconnector.v1_12_2.net.minecraftforge.oredict.ShapedOreRecipe(group, output, params);
+        recipe.setRegistryName(name);
+        ForgeRegistries.RECIPES.register(recipe);
+    }
+
+    public static void addShapelessRecipe(ResourceLocation name, ResourceLocation group, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output,
+            legacyconnector.v1_12_2.net.minecraft.item.crafting.Ingredient... components) {
+        var list = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.<legacyconnector.v1_12_2.net.minecraft.item.crafting.Ingredient>create();
+        for (var c : components) list.add(c);
+        var recipe = new legacyconnector.v1_12_2.net.minecraft.item.crafting.ShapelessRecipes(group == null ? "" : group.toString(), output, list);
+        recipe.setRegistryName(name);
+        ForgeRegistries.RECIPES.register(recipe);
+    }
+
+    public static void addSmelting(legacyconnector.v1_12_2.net.minecraft.item.ItemStack input, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, float xp) {
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.addSmelting(input, output, xp);
+    }
+
+    public static void addSmelting(Item input, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, float xp) {
+        addSmelting(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(input, 1, 32767), output, xp);
+    }
+
+    public static void addSmelting(Block input, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, float xp) {
+        addSmelting(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(input, 1, 32767), output, xp);
+    }
+
+    public static void registerFuelHandler(Object handler) {
+    }
+
+    public static void registerWorldGenerator(Object generator, int modGenerationWeight) {
+    }
 }

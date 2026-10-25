@@ -151,12 +151,27 @@ public final class Vanilla1122 {
     public static Object resolveStatic(String key, Class<?> accessor) {
         boolean blocks = key.startsWith("net.minecraft.init.Blocks.");
         boolean items = key.startsWith("net.minecraft.init.Items.");
-        if (!blocks && !items) return null;
         String field = key.substring(key.lastIndexOf('.') + 1);
         java.lang.reflect.Method getter = null;
         for (var m : accessor.getDeclaredMethods()) if (m.getName().equals("sget$" + field)) getter = m;
         if (getter == null) return null;
         Class<?> type = getter.getReturnType();
+        if (!blocks && !items) {
+            // a state property of a vanilla block class (BlockFarmland.MOISTURE): mods read these from the states of their own blocks
+            String name = field.toLowerCase(java.util.Locale.ROOT);
+            if (key.startsWith("net.minecraft.block.")) {
+                if (type == legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger.class) {
+                    return legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger.create(name, 0, 15);
+                }
+                if (type == legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyBool.class) {
+                    return legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyBool.create(name);
+                }
+                if (type == legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyDirection.class) {
+                    return legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyDirection.create(name);
+                }
+            }
+            return null;
+        }
         Object o = instantiate(type);
         String legacy = field.toLowerCase(java.util.Locale.ROOT);
         if (o instanceof Block b) {

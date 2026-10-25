@@ -87,6 +87,7 @@ public final class LegacyConnector {
 
         GeneratedPack.addContributor(new CoreData());
         GeneratedPack.addContributor(new Data1710());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Data1122());
         GeneratedPack.addContributor(new Assets1710());
 
         IEventBus game = NeoForge.EVENT_BUS;

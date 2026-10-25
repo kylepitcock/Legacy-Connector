@@ -17,7 +17,7 @@ public class Launch {
     public static LaunchClassLoader classLoader = new LaunchClassLoader(Launch.class.getClassLoader());
 
     static {
-        // Translated mods run deobfuscated-by-name (MCP names), but must take their "production" code paths.
+        // Translated mods run deobfuscated-by-name (MCP names), but must take their production code paths.
         blackboard.put("fml.deobfuscatedEnvironment", Boolean.FALSE);
         blackboard.put("Tweaks", new ArrayList<>());
         blackboard.put("TweakClasses", new ArrayList<String>());
