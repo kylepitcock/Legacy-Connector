@@ -144,6 +144,8 @@ public final class ReflectionCompat {
     }
 
     public static void setAccessible(java.lang.reflect.AccessibleObject object, boolean flag) {
+        // a null here is the mod's own bug (a failed lookup); the forced write below would crash the JVM on it
+        if (object == null) throw new NullPointerException("Cannot invoke \"java.lang.reflect.AccessibleObject.setAccessible(boolean)\" because the reflected member is null");
         try {
             object.setAccessible(flag);
         } catch (RuntimeException e) {

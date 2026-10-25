@@ -311,6 +311,13 @@ public final class Platform1122 implements LegacyPlatform {
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
+        var registries = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.class;
+        LOG.info("1.12.2 content registered: {} blocks, {} items, {} recipes, {} fluids, {} ore dictionary names",
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().stream().filter(i -> i instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock).count(),
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().size(),
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.RECIPES.getValues().size(),
+                legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidRegistry.getRegisteredFluids().size(),
+                legacyconnector.v1_12_2.net.minecraftforge.oredict.OreDictionary.getOreNames().length);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122.registerTabs();
     }
 

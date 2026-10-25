@@ -9,6 +9,12 @@ public class NetworkRegistry {
         return new SimpleNetworkWrapper(name);
     }
 
+    public java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel> newChannel(String name, io.netty.channel.ChannelHandler... handlers) {
+        var map = new java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel>(legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.class);
+        for (var side : legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.values()) map.put(side, new FMLEmbeddedChannel(name, side, handlers));
+        return map;
+    }
+
     public FMLEventChannel newEventDrivenChannel(String name) {
         return new FMLEventChannel();
     }
