@@ -72,4 +72,79 @@ public class World {
     public boolean isDaytime() {
         return level.isDay();
     }
+
+    public boolean setBlockToAir(BlockPos pos) {
+        return level.removeBlock(modern(pos), false);
+    }
+
+    public boolean destroyBlock(BlockPos pos, boolean dropBlock) {
+        return level.destroyBlock(modern(pos), dropBlock);
+    }
+
+    public void notifyNeighborsOfStateChange(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.Block blockType, boolean updateObservers) {
+        var block = level.getBlockState(modern(pos)).getBlock();
+        level.updateNeighborsAt(modern(pos), block);
+    }
+
+    public int getLight(BlockPos pos) {
+        return level.getMaxLocalRawBrightness(modern(pos));
+    }
+
+    public boolean canSeeSky(BlockPos pos) {
+        return level.canSeeSky(modern(pos));
+    }
+
+    public boolean isRaining() {
+        return level.isRaining();
+    }
+
+    public boolean isThundering() {
+        return level.isThundering();
+    }
+
+    public boolean isRainingAt(BlockPos pos) {
+        return level.isRainingAt(modern(pos));
+    }
+
+    public int getSeaLevel() {
+        return level.getSeaLevel();
+    }
+
+    public int getHeight() {
+        return level.getHeight();
+    }
+
+    public int getActualHeight() {
+        return level.getHeight();
+    }
+
+    public BlockPos getHeight(BlockPos pos) {
+        int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, pos.getX(), pos.getZ());
+        return new BlockPos(pos.getX(), y, pos.getZ());
+    }
+
+    public boolean isBlockPowered(BlockPos pos) {
+        return level.hasNeighborSignal(modern(pos));
+    }
+
+    public int isBlockIndirectlyGettingPowered(BlockPos pos) {
+        return level.getBestNeighborSignal(modern(pos));
+    }
+
+    public boolean isSideSolid(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        var p = modern(pos);
+        return level.getBlockState(p).isFaceSturdy(level, p, net.minecraft.core.Direction.byName(side.getName()));
+    }
+
+    public void playSound(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound, legacyconnector.v1_12_2.net.minecraft.util.SoundCategory category, float volume, float pitch) {
+        if (sound == null || sound.mcc$modern == null) return;
+        net.minecraft.world.entity.player.Player except = player == null ? null : ((legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer) player).mcc$player();
+        net.minecraft.sounds.SoundSource source = net.minecraft.sounds.SoundSource.valueOf(category.getName().toUpperCase(java.util.Locale.ROOT).replace("PLAYERS", "PLAYERS"));
+        level.playSound(except, modern(pos), sound.mcc$modern, source, volume, pitch);
+    }
+
+    public boolean isDaytimeNow() {
+        return isDaytime();
+    }
 }
