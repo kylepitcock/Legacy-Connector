@@ -30,6 +30,11 @@ public enum CapabilityManager {
         });
     }
 
+    @SuppressWarnings("unchecked")
+    public synchronized <T> Capability<T> mcc$capability(Class<T> type) {
+        return (Capability<T>) providers.get(type.getName().intern());
+    }
+
     /** Called by the platform for each annotated member found in a mod. */
     public synchronized void mcc$addInjection(String capabilityType, java.lang.reflect.Member member) {
         injections.computeIfAbsent(capabilityType, k -> new ArrayList<>()).add(member);

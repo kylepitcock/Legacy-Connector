@@ -217,6 +217,14 @@ public final class Platform1122 implements LegacyPlatform {
         return out;
     }
 
+    /** The capabilities Forge itself registers exist before any mod's preInit. */
+    @Override
+    public void beforePreInit() {
+        legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.register();
+        legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.register();
+        legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.register();
+    }
+
     @Override
     public void preInit(LegacyModRecord mod) throws Exception {
         Loader.mcc$setState(LoaderState.PREINITIALIZATION);
