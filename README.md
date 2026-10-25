@@ -236,7 +236,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `deepLayer.enabled` | `true` | Run legacy world generators a second time so ores also spawn below y=0 |
 | `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
 
-Legacy ores keep one block each: a separate deepslate variant is not generated, but the ore texture can sit on a deepslate background (`oreBackgrounds.stone=deepslate`).
+Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate` twin automatically: the same legacy block (drops, hardness, behaviour) with its stone background replaced by deepslate. Where a generator places an ore into deepslate (the deep layer, and the deepslate band just above y=0) the twin is placed instead. Ores with tile entities are not duplicated. The ore texture of the normal block can also sit on a deepslate background (`oreBackgrounds.stone=deepslate`).
 
 ## Compatibility status
 

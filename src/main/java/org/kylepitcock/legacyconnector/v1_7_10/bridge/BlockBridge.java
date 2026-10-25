@@ -237,11 +237,49 @@ public final class BlockBridge {
         IDS.put(block, numeric);
         MOD_BLOCKS.add(block);
         VanillaEquivalents.consider(block, legacyName);
+        registerDeepVariant(block, adapter, id);
 
         if (itemClass != null) {
             ItemBlock item = instantiateItemBlock(itemClass, block, itemArgs);
             if (item != null) ItemBridge.registerBlockItem(item, block, id, legacyName);
         }
+    }
+
+    /**
+     * Ores that generate deep (legacy y=0 is modern y=-64) get a deepslate twin, placed instead of the ore where the rock is
+     * deepslate. The twin is the same legacy block (drops, hardness, behaviour), without an item of its own.
+     */
+    private static void registerDeepVariant(Block block, LegacyBlockAdapter adapter, ResourceLocation id) {
+        if (!isOre(block, id.getPath()) || adapter instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyEntityBlockAdapter) return;
+        try {
+            LegacyBlockAdapter twin = LegacyBlockAdapter.create(block);
+            LegacyRegistrar.register(BuiltInRegistries.BLOCK, ResourceLocation.fromNamespaceAndPath(id.getNamespace(), id.getPath() + "_deepslate"),
+                    (net.minecraft.world.level.block.Block) twin);
+            adapter.linkDeepVariant(twin);
+            DEEP_VARIANTS.add(block);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("No deepslate variant for {}: {}", id, e.toString());
+        }
+    }
+
+    private static final List<Block> DEEP_VARIANTS = new ArrayList<>();
+
+    /** Blocks that have a deepslate twin. */
+    public static synchronized List<Block> blocksWithDeepVariant() {
+        return new ArrayList<>(DEEP_VARIANTS);
+    }
+
+    /** A full rock block whose name has "ore" as a word ({@code oreCopper}, {@code copper_ore}, {@code tile.ore.tin}, not {@code core}). */
+    static boolean isOre(Block block, String name) {
+        try {
+            if (block.getRenderType() != 0 || block.getMaterial() != Material.rock) return false;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+        for (String word : name.replaceAll("([a-z0-9])([A-Z])", "$1 $2").toLowerCase(java.util.Locale.ROOT).split("[^a-z0-9]+")) {
+            if (word.equals("ore") || word.equals("ores")) return true;
+        }
+        return false;
     }
 
     private static ItemBlock instantiateItemBlock(Class<? extends ItemBlock> cls, Block block, Object[] args) {

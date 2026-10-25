@@ -36,6 +36,7 @@ public final class Data1710 implements GeneratedPack.Contributor {
         for (Block b : BlockBridge.modBlocks()) {
             if (b.mcc$modern == null) continue;
             String id = BuiltInRegistries.BLOCK.getKey(b.mcc$modern).toString();
+            String deepId = deepId(b);
             String tool = b.getHarvestTool(0);
             int level = b.getHarvestLevel(0);
             if (tool == null) {
@@ -50,8 +51,16 @@ public final class Data1710 implements GeneratedPack.Contributor {
                 case "hoe" -> "minecraft:mineable/hoe";
                 default -> null;
             };
-            if (mineable != null) tags.computeIfAbsent(mineable, k -> new LinkedHashSet<>()).add(id);
-            if (level >= 1) tags.computeIfAbsent(TIERS[Math.min(level, 3)], k -> new LinkedHashSet<>()).add(id);
+            if (mineable != null) {
+                Set<String> set = tags.computeIfAbsent(mineable, k -> new LinkedHashSet<>());
+                set.add(id);
+                if (deepId != null) set.add(deepId);
+            }
+            if (level >= 1) {
+                Set<String> set = tags.computeIfAbsent(TIERS[Math.min(level, 3)], k -> new LinkedHashSet<>());
+                set.add(id);
+                if (deepId != null) set.add(deepId);
+            }
         }
         for (var e : tags.entrySet()) {
             String[] rl = e.getKey().split(":");
@@ -63,6 +72,11 @@ public final class Data1710 implements GeneratedPack.Contributor {
             byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/" + rl[0] + "/tags/block/" + rl[1] + ".json", () -> bytes);
         }
+    }
+
+    private static String deepId(Block b) {
+        if (!(b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a) || a.deepVariant() == null) return null;
+        return BuiltInRegistries.BLOCK.getKey(a.deepVariant()).toString();
     }
 
     @Override

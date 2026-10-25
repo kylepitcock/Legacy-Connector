@@ -64,6 +64,9 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
     private final Block legacy;
+    /** The deepslate twin of an ore block (same legacy block, deepslate texture), or null; set by BlockBridge. */
+    private LegacyBlockAdapter deepVariant;
+    private LegacyBlockAdapter deepBase;
     private final boolean dynamicBounds;
     private final boolean customHardness;
     private final VoxelShape[] staticShapes = new VoxelShape[16];
@@ -190,6 +193,26 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     public Object legacy() {
         return legacy;
+    }
+
+    public LegacyBlockAdapter deepVariant() {
+        return deepVariant;
+    }
+
+    /** Pairs an ore block with its deepslate twin. */
+    public void linkDeepVariant(LegacyBlockAdapter variant) {
+        this.deepVariant = variant;
+        variant.deepBase = this;
+    }
+
+    /** Whether this is the deepslate twin of another block. */
+    public boolean isDeepVariant() {
+        return deepBase != null;
+    }
+
+    /** The block a deepslate twin stands for (itself otherwise). */
+    public LegacyBlockAdapter baseBlock() {
+        return deepBase != null ? deepBase : this;
     }
 
     public BlockState stateForMeta(int meta) {

@@ -176,11 +176,20 @@ public final class Assets1710 implements GeneratedPack.Contributor {
 
     private static void blockModels(Block b, Map<String, Supplier<byte[]>> out) {
         if (b.mcc$modern == null) return;
-        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(b.mcc$modern);
+        writeBlockModels(b, BuiltInRegistries.BLOCK.getKey(b.mcc$modern), false, out);
+        if (b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a && a.deepVariant() != null) {
+            writeBlockModels(b, BuiltInRegistries.BLOCK.getKey(a.deepVariant()), true, out);
+        }
+    }
+
+    private static void writeBlockModels(Block b, ResourceLocation id, boolean deepslate, Map<String, Supplier<byte[]>> out) {
         JsonObject variants = new JsonObject();
         for (int meta = 0; meta < 16; meta++) {
             String[] faces = new String[6];
-            for (int side = 0; side < 6; side++) faces[side] = iconName(b, side, meta);
+            for (int side = 0; side < 6; side++) {
+                faces[side] = iconName(b, side, meta);
+                if (deepslate) faces[side] = org.kylepitcock.legacyconnector.v1_7_10.client.OreBackgrounds.deepslateTexture(faces[side], out);
+            }
             boolean stairs = b.getRenderType() == 10;
             JsonObject model = stairs ? stairsModel(faces) : model(b, faces);
             String path = "block/" + id.getPath() + "_m" + meta;

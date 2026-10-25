@@ -88,6 +88,62 @@ public final class OreBackgrounds {
         return false;
     }
 
+    private static final java.util.Map<String, String> DEEP_DONE = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile BufferedImage deepslate;
+
+    /**
+     * The sprite name of an ore texture on a deepslate background (its stone pixels replaced by deepslate, written to the
+     * generated pack as {@code <name>_deepslate}), or the name itself when the texture has no stone background, cannot be
+     * read or this is not the client. Used by the deepslate variants of ores that generate below y=0.
+     */
+    public static String deepslateTexture(String sprite, Map<String, Supplier<byte[]>> out) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient() || sprite == null) return sprite;
+        String known = DEEP_DONE.get(sprite);
+        if (known != null) {
+            if (!known.equals(sprite)) generated(sprite, known, out);
+            return known;
+        }
+        String result = sprite;
+        try {
+            int colon = sprite.indexOf(':');
+            String domain = colon < 0 ? "minecraft" : sprite.substring(0, colon);
+            String path = colon < 0 ? sprite : sprite.substring(colon + 1);
+            if (!domain.equals("minecraft") && path.startsWith("blocks/")) {
+                if (deepslate == null) {
+                    byte[] host = LegacySprites.vanillaTexture("textures/block/deepslate.png");
+                    if (host != null) deepslate = ImageIO.read(new ByteArrayInputStream(host));
+                }
+                byte[] original = deepslate == null ? null : LegacySprites.modTexture(domain, "textures/" + path + ".png");
+                byte[] recolored = original == null ? null : recolor(original, new BufferedImage[] {deepslate, null, null}, path.toLowerCase(Locale.ROOT));
+                if (recolored != null) {
+                    result = sprite + "_deepslate";
+                    String file = "assets/" + Ids.namespace(domain) + "/textures/" + path + "_deepslate.png";
+                    out.put(file, () -> recolored);
+                }
+            }
+        } catch (IOException | RuntimeException e) {
+            // the ore keeps its normal texture
+        }
+        DEEP_DONE.put(sprite, result);
+        return result;
+    }
+
+    private static void generated(String sprite, String deep, Map<String, Supplier<byte[]>> out) {
+        // a later pack generation (reload) starts from an empty map: regenerate
+        int colon = sprite.indexOf(':');
+        String domain = colon < 0 ? "minecraft" : sprite.substring(0, colon);
+        String path = colon < 0 ? sprite : sprite.substring(colon + 1);
+        String file = "assets/" + Ids.namespace(domain) + "/textures/" + path + "_deepslate.png";
+        if (out.containsKey(file)) return;
+        byte[] original = LegacySprites.modTexture(domain, "textures/" + path + ".png");
+        try {
+            byte[] recolored = original == null || deepslate == null ? null : recolor(original, new BufferedImage[] {deepslate, null, null}, path.toLowerCase(Locale.ROOT));
+            if (recolored != null) out.put(file, () -> recolored);
+        } catch (IOException | RuntimeException e) {
+            // keep going
+        }
+    }
+
     /** The texture with its host rock pixels replaced, or null when it has no recognisable host rock (or is animated). */
     static byte[] recolor(byte[] png, BufferedImage[] hosts, String lowerName) throws IOException {
         BufferedImage image = ImageIO.read(new ByteArrayInputStream(png));

@@ -302,10 +302,21 @@ public class World implements IBlockAccess {
         return false;
     }
 
+    /** An ore placed into deepslate (or over a deepslate ore) becomes the ore's deepslate variant. */
+    private BlockState deepslateOre(BlockState state, BlockPos p) {
+        if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a) || a.isDeepVariant()) return state;
+        var twin = a.deepVariant();
+        if (twin == null) return state;
+        BlockState current = lvl().getBlockState(p);
+        boolean deep = current.is(Blocks.DEEPSLATE) || current.getBlock() == twin;
+        return deep ? twin.stateForMeta(state.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META)) : state;
+    }
+
     public boolean setBlock(int x, int y, int z, Block block, int meta, int flags) {
         BlockState state = BlockBridge.toModern(block, meta);
         BlockPos p = pos(x, y, z);
         if (outsideRegion(p)) return false;
+        state = deepslateOre(state, p);
         TileEntityBridge.beforeBlockChange(this, p);
         if (connectsToNeighbours(state)) {
             if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) {
