@@ -313,7 +313,18 @@ public final class Platform1122 implements LegacyPlatform {
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
-        var registries = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.class;
+        java.util.Map<String, int[]> perMod = new java.util.TreeMap<>();
+        for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            var name = item.getRegistryName();
+            if (name != null) perMod.computeIfAbsent(name.getNamespace(), k -> new int[2])[0]++;
+        }
+        for (var block : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValues()) {
+            var name = block.getRegistryName();
+            if (name != null && block.mcc$modern != null && !"minecraft".equals(name.getNamespace())) perMod.computeIfAbsent(name.getNamespace(), k -> new int[2])[1]++;
+        }
+        StringBuilder sb = new StringBuilder();
+        perMod.forEach((k, v) -> sb.append(' ').append(k).append('=').append(v[0]).append('/').append(v[1]));
+        LOG.info("1.12.2 items/blocks per mod:{}", sb);
         LOG.info("1.12.2 content registered: {} blocks, {} items, {} recipes, {} fluids, {} ore dictionary names",
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().stream().filter(i -> i instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock).count(),
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().size(),

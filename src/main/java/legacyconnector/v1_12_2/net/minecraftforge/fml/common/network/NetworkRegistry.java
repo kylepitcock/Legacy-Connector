@@ -9,10 +9,23 @@ public class NetworkRegistry {
         return new SimpleNetworkWrapper(name);
     }
 
+    private final java.util.Map<String, java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel>> channels =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
     public java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel> newChannel(String name, io.netty.channel.ChannelHandler... handlers) {
         var map = new java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel>(legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.class);
         for (var side : legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.values()) map.put(side, new FMLEmbeddedChannel(name, side, handlers));
+        channels.put(name, map);
         return map;
+    }
+
+    public boolean hasChannel(String name, legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side side) {
+        return channels.containsKey(name);
+    }
+
+    public FMLEmbeddedChannel getChannel(String name, legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side side) {
+        var map = channels.get(name);
+        return map == null ? null : map.get(side);
     }
 
     public FMLEventChannel newEventDrivenChannel(String name) {
