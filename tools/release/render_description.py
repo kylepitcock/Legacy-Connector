@@ -14,7 +14,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SOURCE = ROOT / ".github" / "description" / "description.md"
 
 # Same project ids as .github/workflows/publish.yml (modrinth-id, curseforge-id).
-MODRINTH = ("Modrinth", "https://modrinth.com/mod/CCxw8Nzy", "00AF5C", "modrinth")
+MODRINTH = ("Modrinth", "https://modrinth.com/mod/legacyconnector", "00AF5C", "modrinth")
 CURSEFORGE = ("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/legacy-connector", "F16436", "curseforge")
 GITHUB = ("GitHub", "https://github.com/kylepitcock/Legacy-Connector", "181717", "github")
 

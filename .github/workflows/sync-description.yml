@@ -44,7 +44,15 @@ jobs:
               headers={"Authorization": os.environ["MODRINTH_TOKEN"], "Content-Type": "application/json",
                        "User-Agent": "kylepitcock/Legacy-Connector (description sync)"})
           with urllib.request.urlopen(req) as r:
-              print("Modrinth:", r.status)
+              print("Modrinth PATCH:", r.status)
+          get = urllib.request.Request("https://api.modrinth.com/v2/project/CCxw8Nzy",
+              headers={"Authorization": os.environ["MODRINTH_TOKEN"], "User-Agent": "kylepitcock/Legacy-Connector (description sync)"})
+          with urllib.request.urlopen(get) as r:
+              project = json.load(r)
+          print("Modrinth project:", project["slug"], "status:", project["status"], "updated:", project["updated"])
+          if project["body"].strip() != body.strip():
+              raise SystemExit("Modrinth body was not updated; first 300 chars now: " + project["body"][:300])
+          print("Modrinth body matches the rendered description")
           EOF
 
       - name: CurseForge text
