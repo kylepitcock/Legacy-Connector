@@ -9,7 +9,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
 
     public ResourceLocation(String namespace, String path) {
         this.namespace = namespace == null || namespace.isEmpty() ? "minecraft" : namespace.toLowerCase(Locale.ROOT);
-        this.path = path.toLowerCase(Locale.ROOT);
+        this.path = path == null ? "" : path.toLowerCase(Locale.ROOT);
     }
 
     /** The constructor mods subclass through: the parts are namespace and path. */

@@ -30,10 +30,11 @@ public final class CreativeTabBridge1122 {
         }
         for (CreativeTabs tab : tabs) {
             if (tab.getTabIndex() < VANILLA_TABS) continue;
-            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy12_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
+            String label = tab.getTabLabel() != null ? tab.getTabLabel() : "tab" + tab.getTabIndex();
+            ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy12_" + Ids.normalizePath(label).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
-                    .title(Component.translatableWithFallback("itemGroup." + tab.getTabLabel(), tab.getTabLabel()))
+                    .title(Component.translatableWithFallback("itemGroup." + label, label))
                     .icon(() -> icon(tab))
                     .displayItems((params, output) -> {
                         for (var s : contents(tab)) output.accept(s);
