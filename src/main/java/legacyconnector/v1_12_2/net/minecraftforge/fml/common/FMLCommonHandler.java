@@ -51,4 +51,8 @@ public class FMLCommonHandler {
         }
         return null;
     }
+
+    public legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer getMinecraftServerInstance() {
+        return legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+    }
 }
