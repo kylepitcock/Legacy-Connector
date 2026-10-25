@@ -26,4 +26,23 @@ public interface IForgeRegistry<V extends IForgeRegistryEntry<V>> extends Iterab
     Collection<V> getValues();
 
     Set<Map.Entry<ResourceLocation, V>> getEntries();
+
+    /** Callbacks of a registry builder: accepted by it, never called (a mod implements their methods itself). */
+    interface AddCallback<V extends IForgeRegistryEntry<V>> {
+    }
+
+    interface ClearCallback<V extends IForgeRegistryEntry<V>> {
+    }
+
+    interface CreateCallback<V extends IForgeRegistryEntry<V>> {
+    }
+
+    interface ValidateCallback<V extends IForgeRegistryEntry<V>> {
+    }
+
+    interface DummyFactory<V extends IForgeRegistryEntry<V>> {
+    }
+
+    interface MissingFactory<V extends IForgeRegistryEntry<V>> {
+    }
 }

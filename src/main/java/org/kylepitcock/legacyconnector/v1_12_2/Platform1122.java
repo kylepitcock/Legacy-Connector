@@ -254,6 +254,7 @@ public final class Platform1122 implements LegacyPlatform {
     /** Forge 1.12 posted the registry events after preInit: blocks first, then items (item blocks look their block up). */
     @Override
     public void registryEvents() {
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.NewRegistry());
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
@@ -265,6 +266,9 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BIOMES));
         // registries typed by classes only the synthesizer has; the events go out once the type is known
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.postSynthesized(Platform1122::post);
+        for (var custom : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
+            if (custom.getRegistrySuperType() != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
+        }
         injectObjectHolders();
     }
 

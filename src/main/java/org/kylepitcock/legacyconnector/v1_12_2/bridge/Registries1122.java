@@ -42,6 +42,20 @@ public final class Registries1122 {
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class, s -> {});
 
+    private static final java.util.List<Reg<?>> CUSTOM = new java.util.ArrayList<>();
+
+    /** A registry a mod made with RegistryBuilder. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static synchronized <V extends IForgeRegistryEntry<V>> Reg<V> custom(ResourceLocation name, Class<V> type) {
+        Reg<V> reg = new Reg<>(type, v -> {});
+        CUSTOM.add(reg);
+        return reg;
+    }
+
+    public static synchronized java.util.List<Reg<?>> customRegistries() {
+        return new java.util.ArrayList<>(CUSTOM);
+    }
+
     /** A legacy-style numbered view of a Forge registry (Item.REGISTRY, Block.REGISTRY, ...), live over the registered objects. */
     public static <V extends legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry<V>>
             legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, V> view(Reg<V> reg, String defaultKey) {
@@ -132,6 +146,7 @@ public final class Registries1122 {
 
         @Override
         public synchronized void register(V value) {
+            if (value == null) return; // a synthesized builder that produced nothing
             ResourceLocation name = value.getRegistryName();
             if (name == null) {
                 LOG.warn("Ignoring an unnamed {} registration: {}", type.getSimpleName(), value);

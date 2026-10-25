@@ -9,6 +9,10 @@ public class RegistryEvent<T extends IForgeRegistryEntry<T>> extends GenericEven
         super(type);
     }
 
+    /** Fired before the registries fill: mods create theirs in it. */
+    public static class NewRegistry extends legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event {
+    }
+
     public static class Register<T extends IForgeRegistryEntry<T>> extends RegistryEvent<T> {
         private final IForgeRegistry<T> registry;
 

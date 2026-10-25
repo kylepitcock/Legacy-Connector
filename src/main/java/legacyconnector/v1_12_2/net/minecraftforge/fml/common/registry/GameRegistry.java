@@ -24,8 +24,11 @@ public class GameRegistry {
 
     @SuppressWarnings("unchecked")
     public static <T extends IForgeRegistryEntry<T>> IForgeRegistry<T> findRegistry(Class<T> registryType) {
-        if (registryType == Block.class) return (IForgeRegistry<T>) ForgeRegistries.BLOCKS;
-        if (registryType == Item.class) return (IForgeRegistry<T>) ForgeRegistries.ITEMS;
+        for (IForgeRegistry<?> reg : new IForgeRegistry<?>[] {ForgeRegistries.BLOCKS, ForgeRegistries.ITEMS, ForgeRegistries.POTIONS, ForgeRegistries.ENCHANTMENTS,
+                ForgeRegistries.SOUND_EVENTS, ForgeRegistries.RECIPES, ForgeRegistries.BIOMES, ForgeRegistries.ENTITIES, ForgeRegistries.VILLAGER_PROFESSIONS,
+                ForgeRegistries.POTION_TYPES}) {
+            if (reg.getRegistrySuperType() == registryType) return (IForgeRegistry<T>) reg;
+        }
         return null;
     }
 
