@@ -91,6 +91,7 @@ public final class EventBridge1710 {
         gameBus.addListener((PlayerTickEvent.Pre e) -> {
             if (wants(fml(), TickEvent.PlayerTickEvent.class)) fml().post(new TickEvent.PlayerTickEvent(TickEvent.Phase.START, player(e.getEntity())));
         });
+        gameBus.addListener((PlayerTickEvent.Post e) -> armorTick(e.getEntity()));
         gameBus.addListener((PlayerTickEvent.Post e) -> {
             if (wants(fml(), TickEvent.PlayerTickEvent.class)) fml().post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, player(e.getEntity())));
         });
@@ -681,5 +682,24 @@ public final class EventBridge1710 {
         player.sendSystemMessage(Component.literal("§c[MC Compatibility] " + failures.size()
                 + " legacy mod(s) failed to load: " + String.join(", ", failures.keySet().stream().map(m -> m.legacyId).toList())
                 + ". See logs/latest.log and logs/legacyconnector-report.txt."));
+    }
+
+    private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+            net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
+    private static int armorTickFailures;
+
+    /** 1.7.10 called {@code Item.onArmorTick} for every worn armor stack on every player tick (boots of the traveller, hover armor, ...). */
+    private static void armorTick(net.minecraft.world.entity.player.Player player) {
+        if (armorTickFailures > 20) return;
+        for (var slot : ARMOR_SLOTS) {
+            var stack = player.getItemBySlot(slot);
+            if (stack.isEmpty() || !(stack.getItem() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemAdapter adapter)
+                    || !(adapter.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.Item item)) continue;
+            try {
+                item.onArmorTick(World.mcc$wrap(player.level()), player(player), ItemStack.mcc$wrap(stack));
+            } catch (RuntimeException | LinkageError ex) {
+                if (armorTickFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").error("onArmorTick of {} failed", item.getClass().getName(), ex);
+            }
+        }
     }
 }
