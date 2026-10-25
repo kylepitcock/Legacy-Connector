@@ -45,10 +45,11 @@ public final class WorldGenBridge {
         // 1.7.10 worlds ended at y=0; below that is the deep layer (deepslate, bedrock at -64). Generators run once more
         // with the world shifted so that legacy y=0 is the modern bottom: what spawned deep or in bedrock spawns there too.
         int bottom = level.getMinBuildHeight();
-        if (bottom >= 0) return;
+        if (bottom >= 0 || !org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerEnabled()) return;
         World.mcc$enterDeepPass(bottom);
         try {
             for (Entry e : gens) {
+                if (!org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerAllows(e.generator.getClass().getName())) continue;
                 fmlRandom.setSeed(chunkSeed ^ DEEP_SEED);
                 try {
                     e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY);

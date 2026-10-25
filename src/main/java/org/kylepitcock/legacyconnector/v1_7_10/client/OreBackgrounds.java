@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import javax.imageio.ImageIO;
 import legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap;
 import org.kylepitcock.legacyconnector.core.Ids;
+import org.kylepitcock.legacyconnector.core.LegacyConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,23 +18,31 @@ import org.slf4j.LoggerFactory;
  * 1.7.10 ore textures carry the old stone, netherrack or end stone as their background, which sits badly next to the modern
  * textures. For every block texture whose name says ore, the pixels that match the old host rock are replaced by the
  * modern host texture at the same place, and the result goes into the generated resource pack over the mod's own file.
- * Disable with {@code -Dlegacyconnector.keepLegacyOreBackgrounds=true}.
+ * The replacement textures are configurable (see {@link LegacyConfig}); disable with {@code oreBackgrounds.enabled = false} or
+ * {@code -Dlegacyconnector.keepLegacyOreBackgrounds=true}.
  */
 public final class OreBackgrounds {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/OreBackgrounds");
     /** Average colours of the 1.7.10 host rocks, and the modern textures that replace them. */
     private static final int[][] LEGACY_HOSTS = {{125, 125, 125}, {111, 54, 53}, {221, 223, 165}};
-    private static final String[] MODERN_HOSTS = {"textures/block/stone.png", "textures/block/netherrack.png", "textures/block/end_stone.png"};
+    private static final String[] HOST_KEYS = {"stone", "netherrack", "endStone"};
+    private static final String[] HOST_DEFAULTS = {"stone", "netherrack", "end_stone"};
     private static final double MATCH_DISTANCE = 48.0D;
     private static final double MIN_BACKGROUND_SHARE = 0.35D;
 
     private OreBackgrounds() {}
 
     public static void contribute(TextureMap blocks, Map<String, Supplier<byte[]>> out) {
-        if (Boolean.getBoolean("legacyconnector.keepLegacyOreBackgrounds")) return;
-        BufferedImage[] hosts = new BufferedImage[MODERN_HOSTS.length];
+        if (Boolean.getBoolean("legacyconnector.keepLegacyOreBackgrounds") || !LegacyConfig.oreBackgroundsEnabled()) return;
+        BufferedImage[] hosts = new BufferedImage[HOST_KEYS.length];
         for (int i = 0; i < hosts.length; i++) {
-            byte[] bytes = LegacySprites.vanillaTexture(MODERN_HOSTS[i]);
+            String configured = LegacyConfig.oreBackground(HOST_KEYS[i], HOST_DEFAULTS[i]);
+            if (configured == null) continue; // "legacy": this host keeps the old rock
+            byte[] bytes = LegacySprites.vanillaTexture("textures/block/" + configured + ".png");
+            if (bytes == null && !configured.equals(HOST_DEFAULTS[i])) {
+                LOG.warn("oreBackgrounds.{}: no vanilla block texture '{}'; using {}", HOST_KEYS[i], configured, HOST_DEFAULTS[i]);
+                bytes = LegacySprites.vanillaTexture("textures/block/" + HOST_DEFAULTS[i] + ".png");
+            }
             if (bytes == null) {
                 LOG.info("The modern host textures are not available yet; ore textures keep their backgrounds");
                 return;
@@ -74,6 +83,7 @@ public final class OreBackgrounds {
         int best = -1;
         double bestShare = 0;
         for (int host = 0; host < LEGACY_HOSTS.length; host++) {
+            if (hosts[host] == null) continue;
             int near = 0;
             for (int p : pixels) if (isHost(p, host)) near++;
             double share = (double) near / pixels.length;

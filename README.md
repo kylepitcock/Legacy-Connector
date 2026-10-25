@@ -225,6 +225,19 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
   from the 1.7.10 jar (`tools/extract_block_constants.sh`), since the vanilla classes are shells.
 - Not yet: per-vertex colour and ambient occlusion of handler-drawn blocks, `IIcon`s of non-block atlases.
 
+## Configuration
+
+Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.
+
+| Key | Default | Effect |
+| --- | --- | --- |
+| `oreBackgrounds.enabled` | `true` | Replace the old stone/netherrack/end stone behind legacy ore textures |
+| `oreBackgrounds.stone`, `.netherrack`, `.endStone` | `stone`, `netherrack`, `end_stone` | Vanilla block texture used instead (e.g. `deepslate`, `tuff`), or `legacy` to keep the old rock |
+| `deepLayer.enabled` | `true` | Run legacy world generators a second time so ores also spawn below y=0 |
+| `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
+
+Generated deepslate variants of legacy ores are not implemented yet.
+
 ## Compatibility status
 
 | Legacy version | Status |
