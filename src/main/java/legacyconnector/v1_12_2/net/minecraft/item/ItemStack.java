@@ -55,8 +55,9 @@ public final class ItemStack {
         return this == EMPTY || item == null || stackSize <= 0;
     }
 
+    /** The item of the stack; an empty stack has the air item (mods read the registry name of any stack's item). */
     public Item getItem() {
-        return item;
+        return item != null ? item : legacyconnector.v1_12_2.net.minecraft.init.Items.AIR;
     }
 
     public int getCount() {

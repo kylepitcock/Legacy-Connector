@@ -39,10 +39,29 @@ public class ASMDataTable {
             for (var a : scanData.getAnnotations()) {
                 String annotation = a.annotationType().getClassName();
                 String className = a.clazz().getClassName();
-                ASMData data = new ASMData(candidate, annotation, className, a.memberName(), new HashMap<>(a.annotationData()));
+                ASMData data = new ASMData(candidate, annotation, className, a.memberName(), convert(a.annotationData()));
                 byAnnotation.computeIfAbsent(annotation, k -> new LinkedHashSet<>()).add(data);
             }
         }
+    }
+
+    /** NeoForge's scan data holds its own enum holders; legacy code casts them to FML's. */
+    private static Map<String, Object> convert(Map<String, Object> data) {
+        Map<String, Object> out = new HashMap<>();
+        for (var e : data.entrySet()) out.put(e.getKey(), convertValue(e.getValue()));
+        return out;
+    }
+
+    private static Object convertValue(Object v) {
+        if (v instanceof net.neoforged.fml.loading.modscan.ModAnnotation.EnumHolder h) {
+            return new legacyconnector.v1_12_2.net.minecraftforge.fml.common.discovery.asm.ModAnnotation.EnumHolder(h.desc(), h.value());
+        }
+        if (v instanceof java.util.List<?> list) {
+            java.util.List<Object> out = new java.util.ArrayList<>();
+            for (Object o : list) out.add(convertValue(o));
+            return out;
+        }
+        return v;
     }
 
     public Set<ASMData> getAll(String annotation) {
