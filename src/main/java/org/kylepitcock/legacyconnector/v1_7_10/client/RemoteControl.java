@@ -128,6 +128,12 @@ public final class RemoteControl {
             }
             case "jump" -> hold(mc.options.keyJump, a.length > 0 ? Integer.parseInt(a[0]) : 5);
             case "sneak" -> hold(mc.options.keyShift, a.length > 0 ? Integer.parseInt(a[0]) : 20);
+            // holds right-click: items used over time (Thaumometer scans, bows, food) see the use key held
+            case "holduse" -> {
+                // a press starts the use (the game only starts on a click), holding keeps it going
+                net.minecraft.client.KeyMapping.click(mc.options.keyUse.getKey());
+                hold(mc.options.keyUse, a.length > 0 ? Integer.parseInt(a[0]) : 40);
+            }
             case "attack" -> {
                 // a tap hits the entity under the crosshair; holding mines the block under it
                 if (mc.hitResult instanceof net.minecraft.world.phys.EntityHitResult eh) {

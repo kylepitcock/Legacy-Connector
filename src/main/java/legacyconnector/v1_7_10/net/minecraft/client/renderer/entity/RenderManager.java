@@ -37,7 +37,17 @@ public class RenderManager {
                 return r;
             }
         }
+        // 1.7.10 mapped EntityPlayer to RenderPlayer: mods fetch it to draw the first-person arm (Thaumcraft's Thaumometer)
+        if (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class.isAssignableFrom(cls)) return mcc$playerRenderer();
         return null;
+    }
+
+    private RenderPlayer mcc$playerRenderer;
+
+    /** The one player renderer (also what RenderPlayerEvent carries). */
+    public synchronized RenderPlayer mcc$playerRenderer() {
+        if (mcc$playerRenderer == null) mcc$playerRenderer = new RenderPlayer();
+        return mcc$playerRenderer;
     }
 
     public Render getEntityRenderObject(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {

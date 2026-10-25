@@ -82,6 +82,10 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                     data = new Object[] {renderBlocks, entityItem(view)};
                 }
                 default -> {
+                    if (context == ItemDisplayContext.FIRST_PERSON_RIGHT_HAND) {
+                        FirstPersonPose.apply(pose, helper(renderer, type, view, ItemRendererHelper.EQUIPPED_BLOCK));
+                        legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().entityRenderer.itemRenderer.mcc$setEquipped(FirstPersonPose.equipProgress());
+                    }
                     data = new Object[] {renderBlocks, Minecraft.getInstance().player == null ? null : EntityBridge.wrap(Minecraft.getInstance().player)};
                 }
             }

@@ -9,6 +9,17 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 
 /** 1.7.10's first-person/held item renderer: mods' entity renderers call it to draw the item an entity holds. */
 public class ItemRenderer {
+    /**
+     * How far the held item is raised (1 = fully up). Mods read these by reflection to place first-person models (Thaumcraft's
+     * Thaumometer); missing, they read 0 and drew the item 1.5 blocks below the screen.
+     */
+    private float equippedProgress = 1.0F;
+    private float prevEquippedProgress = 1.0F;
+
+    public void mcc$setEquipped(float progress) {
+        equippedProgress = prevEquippedProgress = progress;
+    }
+
     public void renderItem(EntityLivingBase entity, ItemStack stack, int pass) {
         var pose = RenderContext.pose();
         var modern = ItemStack.mcc$toModern(stack);

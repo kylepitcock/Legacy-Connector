@@ -521,7 +521,7 @@ public final class EventBridge1710 {
 
     /** The one legacy player renderer handed to RenderPlayerEvent handlers. */
     private static synchronized legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer legacyRenderPlayer() {
-        if (legacyRenderPlayer == null) legacyRenderPlayer = new legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer();
+        if (legacyRenderPlayer == null) legacyRenderPlayer = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.instance.mcc$playerRenderer();
         return legacyRenderPlayer;
     }
 

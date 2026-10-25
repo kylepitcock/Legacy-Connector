@@ -23,8 +23,18 @@ public class RenderPlayer extends RendererLivingEntity {
         this.modelArmor = new ModelBiped(0.5F);
     }
 
-    /** Draws the held item's arm in first person. The modern game draws the arm; nothing is added here. */
+    /**
+     * Draws the player's right arm in the current pose, as item renderers that hold their item in first person expect
+     * (Thaumcraft's Thaumometer): the modern player renderer's own arm, with the player's skin.
+     */
     public void renderFirstPersonArm(EntityPlayer player) {
+        var pose = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.pose();
+        if (pose == null || player == null || !(player.mcc$entity instanceof net.minecraft.client.player.AbstractClientPlayer modern)) return;
+        if (net.minecraft.client.Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(modern)
+                instanceof net.minecraft.client.renderer.entity.player.PlayerRenderer renderer) {
+            renderer.renderRightHand(pose, org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.buffers(),
+                    org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.light(), modern);
+        }
     }
 
     @Override
