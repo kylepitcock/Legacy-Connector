@@ -81,6 +81,20 @@ public final class Synth {
     }
 
     /** Side-stored field value; stores and returns {@code initial} on first access. */
+    /** An inert instance of a synthesized class (no constructor runs, every field is its default), or null for abstract types. */
+    public static Object blank(String className) {
+        try {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class<?> c = Class.forName(className, false, loader != null ? loader : Synth.class.getClassLoader());
+            if (c.isInterface() || java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return null;
+            java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            return ((sun.misc.Unsafe) f.get(null)).allocateInstance(c);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** Supplies the value of a static field the shim lacks (vanilla constants typed with classes only the synthesizer knows). */
     public interface StaticResolver {
         Object resolve(String key, Class<?> accessorClass);
