@@ -7,6 +7,9 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 
 ## Roadmap and rules
 
+- **Do not stop to report.** In a long or unattended run keep going (test, fix, commit, next problem) until the user says stop; post status in GitHub issue
+  comments, never by ending the turn.
+
 - Order: finish 1.7.10, then 1.12.2, then 1.20.1 (with Sinytra Connector compatibility), then 1.16.5. Don't start a later
   version before the earlier one is done. Keep the README status table and `.gitignore` current.
 - Outdated dependencies are bridged to modern equivalents instead of loaded (Baubles -> Curios, Waila -> Jade,
