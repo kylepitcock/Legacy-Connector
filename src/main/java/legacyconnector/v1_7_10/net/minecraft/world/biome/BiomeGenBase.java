@@ -71,6 +71,42 @@ public class BiomeGenBase {
     public static final BiomeGenBase mesaPlateau_F = new BiomeGenBase(38).setBiomeName("Mesa Plateau F").setTemperatureRainfall(2.0F, 0.0F).setDisableRain();
     public static final BiomeGenBase mesaPlateau = new BiomeGenBase(39).setBiomeName("Mesa Plateau").setTemperatureRainfall(2.0F, 0.0F).setDisableRain();
 
+    /** The vanilla biome statics as they were created, to restore one that a mod left null (see {@link #mcc$restoreVanillaStatics}). */
+    private static final java.util.Map<java.lang.reflect.Field, BiomeGenBase> VANILLA = new java.util.LinkedHashMap<>();
+
+    static {
+        for (java.lang.reflect.Field f : BiomeGenBase.class.getDeclaredFields()) {
+            if (f.getType() != BiomeGenBase.class || !java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            try {
+                f.setAccessible(true);
+                BiomeGenBase value = (BiomeGenBase) f.get(null);
+                if (value != null) VANILLA.put(f, value);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // not readable: not restored
+            }
+        }
+    }
+
+    /**
+     * Biomes O' Plenty (and mods like it) replace the vanilla biome statics ({@code BiomeGenBase.plains}) by reflection with biomes
+     * they create; when that creation fails the static is left null, which breaks every generator that reads it. Called once loading
+     * is done: any vanilla static that is null is set back to the vanilla instance.
+     */
+    public static void mcc$restoreVanillaStatics() {
+        int restored = 0;
+        for (var e : VANILLA.entrySet()) {
+            try {
+                if (e.getKey().get(null) != null) continue;
+                e.getKey().set(null, e.getValue());
+                if (e.getValue().biomeID >= 0 && e.getValue().biomeID < biomeList.length && biomeList[e.getValue().biomeID] == null) biomeList[e.getValue().biomeID] = e.getValue();
+                restored++;
+            } catch (ReflectiveOperationException | RuntimeException ex) {
+                // keep going with the others
+            }
+        }
+        if (restored > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Biomes").warn("{} vanilla biome statics were left null by mods (Biomes O' Plenty overrides them); restored", restored);
+    }
+
     public String biomeName;
     public int color;
     public int field_150609_ah;

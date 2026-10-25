@@ -11,8 +11,9 @@ import legacyconnector.v1_7_10.net.minecraft.world.gen.layer.IntCache;
 public class WorldChunkManager {
     public GenLayer genBiomes;
     public GenLayer biomeIndexLayer;
-    public List<BiomeGenBase> biomesToSpawnIn = new ArrayList<>(List.of(BiomeGenBase.forest, BiomeGenBase.plains, BiomeGenBase.taiga,
-            BiomeGenBase.taigaHills, BiomeGenBase.forestHills, BiomeGenBase.jungle, BiomeGenBase.jungleHills));
+    /** The biomes the player may spawn in. A vanilla biome that has no instance yet (null) is left out instead of failing every chunk of the world. */
+    public List<BiomeGenBase> biomesToSpawnIn = new ArrayList<>(java.util.stream.Stream.of(BiomeGenBase.forest, BiomeGenBase.plains, BiomeGenBase.taiga,
+            BiomeGenBase.taigaHills, BiomeGenBase.forestHills, BiomeGenBase.jungle, BiomeGenBase.jungleHills).filter(java.util.Objects::nonNull).toList());
 
     protected WorldChunkManager() {
     }

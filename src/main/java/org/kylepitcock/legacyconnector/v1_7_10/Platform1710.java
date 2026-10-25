@@ -298,6 +298,9 @@ public final class Platform1710 implements LegacyPlatform {
         CreativeTabBridge.registerTabs();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles.registerItems();
         org.kylepitcock.legacyconnector.compat.waila.WailaBridge.processRegistrations();
+        // Mods (Biomes O' Plenty) replace the vanilla biome statics by reflection and can leave them null: put the vanilla ones back,
+        // and initialise the class on this thread so no generation worker is the first to touch it.
+        legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.mcc$restoreVanillaStatics();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyWorldPresets.registerNames();
         org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.register();
