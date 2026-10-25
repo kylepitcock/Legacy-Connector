@@ -105,6 +105,26 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         }
     }
 
+    /** What the client is told about this tile entity: the legacy update tag (its own idea of what the client needs). */
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        CompoundTag tag = new CompoundTag();
+        TileEntity te = legacy();
+        if (te != null) {
+            try {
+                tag.put("legacy", te.getUpdateTag().mcc$modern());
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Legacy tile entity {} failed to build its update tag: {}", te.getClass().getName(), e.toString());
+            }
+        }
+        return tag;
+    }
+
+    @Override
+    public net.minecraft.network.protocol.Packet<net.minecraft.network.protocol.game.ClientGamePacketListener> getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
+    }
+
     @Override
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);

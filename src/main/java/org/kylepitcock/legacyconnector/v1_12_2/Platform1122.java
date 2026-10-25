@@ -264,6 +264,7 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.RECIPES));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BIOMES));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES));
         // registries typed by classes only the synthesizer has; the events go out once the type is known
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.postSynthesized(Platform1122::post);
         for (var custom : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {

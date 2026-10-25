@@ -12,8 +12,7 @@ public final class Registries1122R {
     public static void postSynthesized(Consumer<Event> post) {
         Registries1122.POTION_TYPES.mcc$type("net.minecraft.potion.PotionType");
         Registries1122.VILLAGER_PROFESSIONS.mcc$type("net.minecraftforge.fml.common.registry.VillagerRegistry$VillagerProfession");
-        Registries1122.ENTITIES.mcc$type("net.minecraftforge.fml.common.registry.EntityEntry");
-        for (Registries1122.Reg reg : new Registries1122.Reg[] {Registries1122.POTION_TYPES, Registries1122.VILLAGER_PROFESSIONS, Registries1122.ENTITIES}) {
+        for (Registries1122.Reg reg : new Registries1122.Reg[] {Registries1122.POTION_TYPES, Registries1122.VILLAGER_PROFESSIONS}) {
             if (reg.getRegistrySuperType() == null) continue;
             post.accept(new RegistryEvent.Register(reg));
         }
