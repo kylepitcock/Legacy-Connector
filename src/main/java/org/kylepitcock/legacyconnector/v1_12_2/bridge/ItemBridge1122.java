@@ -31,7 +31,14 @@ public final class ItemBridge1122 {
     private ItemBridge1122() {}
 
     public static synchronized Item itemOf(Block block) {
-        return BLOCK_ITEMS.get(block);
+        Item item = BLOCK_ITEMS.get(block);
+        if (item == null && block != null && block.getRegistryName() != null && "minecraft".equals(block.getRegistryName().getNamespace())) {
+            // a vanilla block (Blocks.LOG): its item is the vanilla item of the same name
+            Item vanilla = Registries1122.ITEMS.getValue(block.getRegistryName());
+            if (vanilla != null && vanilla.mcc$vanillaModern != null) item = vanilla;
+            else if (block.mcc$modern instanceof net.minecraft.world.level.block.Block mb && mb.asItem() != net.minecraft.world.item.Items.AIR) item = Vanilla1122.itemForModern(mb.asItem());
+        }
+        return item;
     }
 
     public static synchronized List<Item> modItems() {

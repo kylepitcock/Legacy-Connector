@@ -41,4 +41,14 @@ public class FMLCommonHandler {
     public legacyconnector.v1_12_2.net.minecraftforge.common.util.CompoundDataFixer getDataFixer() {
         return legacyconnector.v1_12_2.net.minecraftforge.common.util.CompoundDataFixer.INSTANCE;
     }
+
+    /** The container of a mod given by its id or by its mod instance. */
+    public ModContainer findContainerFor(Object mod) {
+        var all = Loader.instance().getIndexedModList();
+        if (mod instanceof String id) return all.get(id);
+        for (ModContainer c : all.values()) {
+            if (c.getMod() == mod) return c;
+        }
+        return null;
+    }
 }

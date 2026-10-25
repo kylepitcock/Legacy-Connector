@@ -82,6 +82,20 @@ public final class Vanilla1122 {
         return b;
     }
 
+    /** The legacy wrapper of a modern vanilla item (made on first use). */
+    public static synchronized Item itemForModern(net.minecraft.world.item.Item modern) {
+        Item existing = ITEM_REVERSE.get(modern);
+        if (existing != null) return existing;
+        ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+        VanillaItem i = new VanillaItem();
+        i.setRegistryName(id.getNamespace(), id.getPath());
+        i.mcc$modern = modern;
+        i.mcc$vanillaModern = modern;
+        ITEM_REVERSE.put(modern, i);
+        Registries1122.ITEMS.registerVanilla(i);
+        return i;
+    }
+
     public static synchronized Item item(String field) {
         String legacy = field.toLowerCase(java.util.Locale.ROOT);
         VanillaItem i = new VanillaItem();
