@@ -376,6 +376,7 @@ public final class Vanilla1122 {
     public static legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome(String field) {
         var b = new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome(new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.BiomeProperties(field.toLowerCase(java.util.Locale.ROOT)));
         b.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        Registries1122.BIOMES.registerVanilla(b);
         return b;
     }
 
