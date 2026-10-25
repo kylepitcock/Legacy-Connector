@@ -10,16 +10,46 @@ import javax.imageio.ImageIO;
 /**
  * 1.7.10 mods that copy vanilla's FontRenderer (Mantle's book font) read the unicode glyph pages and
  * {@code font/glyph_sizes.bin}, which 1.21 no longer ships. Page 0 (Latin) and its glyph sizes are rebuilt from the
- * game's ASCII font texture, drawn at double size, so such fonts show readable text.
+ * game's ASCII font texture, drawn at double size, so such fonts show readable text. They are served both through the
+ * generated resource pack and, for fonts that read them early (before the pack is loaded), through {@link #page0()} and
+ * {@link #glyphSizes()}.
  */
 public final class LegacyFontPages {
+    private static byte[] page0;
+    private static byte[] sizes;
+    private static boolean built;
+
     private LegacyFontPages() {}
 
     public static void contribute(Map<String, Supplier<byte[]>> out) {
+        build();
+        if (page0 == null) return;
+        byte[] png = page0;
+        byte[] glyphSizes = sizes;
+        out.put("assets/minecraft/textures/font/unicode_page_00.png", () -> png);
+        out.put("assets/minecraft/font/glyph_sizes.bin", () -> glyphSizes);
+    }
+
+    /** The rebuilt unicode page 0, or null if the ASCII font texture cannot be read. */
+    public static synchronized byte[] page0() {
+        build();
+        return page0;
+    }
+
+    /** The glyph sizes file: the rebuilt sizes of page 0, and a safe default (full width) for everything else. */
+    public static synchronized byte[] glyphSizes() {
+        build();
+        return sizes;
+    }
+
+    private static synchronized void build() {
+        if (built) return;
+        built = true;
+        sizes = new byte[65536];
+        java.util.Arrays.fill(sizes, (byte) 0x0F);
         BufferedImage ascii = readAscii();
         if (ascii == null || ascii.getWidth() != 128) return;
         BufferedImage page = new BufferedImage(256, 256, BufferedImage.TYPE_INT_ARGB);
-        byte[] sizes = new byte[65536];
         for (int index = 0; index < 256; index++) {
             int cx = index % 16, cy = index / 16;
             int min = 99, max = -1;
@@ -33,11 +63,9 @@ public final class LegacyFontPages {
                 }
             }
             if (max >= 0) sizes[index] = (byte) ((min * 2) << 4 | Math.min(15, max * 2 + 1));
+            else sizes[index] = 0x07;
         }
-        byte[] png = encode(page);
-        if (png == null) return;
-        out.put("assets/minecraft/textures/font/unicode_page_00.png", () -> png);
-        out.put("assets/minecraft/font/glyph_sizes.bin", () -> sizes);
+        page0 = encode(page);
     }
 
     private static BufferedImage readAscii() {

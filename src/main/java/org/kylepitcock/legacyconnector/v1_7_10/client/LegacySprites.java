@@ -172,11 +172,9 @@ public final class LegacySprites {
                     if (renamed != null) return renamed;
                 }
             }
-            if (ns.equals("minecraft") && path.equals("font/glyph_sizes.bin")) {
-                byte[] sizes = new byte[65536];
-                java.util.Arrays.fill(sizes, (byte) 0x07);
-                return sizes;
-            }
+            // Mantle's book font and others read these when they start, before the generated pack is loaded.
+            if (ns.equals("minecraft") && path.equals("font/glyph_sizes.bin")) return LegacyFontPages.glyphSizes();
+            if (ns.equals("minecraft") && path.equals("textures/font/unicode_page_00.png")) return LegacyFontPages.page0();
             return null;
         }
 
