@@ -16,6 +16,8 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
  * so the field names are the MCP ones.
  */
 public class ContainerRepair extends Container {
+    /** First field in 1.7.10 too: mods read the others by index (Railcraft reads {@code inputSlots} as field 2). */
+    private static final org.apache.logging.log4j.Logger logger = org.apache.logging.log4j.LogManager.getLogger();
     private IInventory outputSlot = new InventoryCraftResult();
     private IInventory inputSlots = new InventoryBasic("Repair", true, 2) {
         @Override
