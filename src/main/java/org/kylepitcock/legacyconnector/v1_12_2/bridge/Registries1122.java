@@ -32,6 +32,31 @@ public final class Registries1122 {
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.class, b -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry> ENTITIES =
             new Reg<>(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry.class, e -> {});
+
+    static {
+        ENTITIES.vanilla = Registries1122::vanillaEntities;
+    }
+
+    /** 1.12 entity ids the 1.13+ renames changed (legacy -> modern). */
+    private static final Map<String, String> ENTITY_RENAMES = Map.of("zombie_pigman", "zombified_piglin", "snowman", "snow_golem",
+            "villager_golem", "iron_golem", "commandblock_minecart", "command_block_minecart", "xp_orb", "experience_orb",
+            "xp_bottle", "experience_bottle", "ender_crystal", "end_crystal", "evocation_illager", "evoker",
+            "vindication_illager", "vindicator", "illusion_illager", "illusioner");
+
+    /** Vanilla entity types as legacy entries (Bountiful lists them by name), under their 1.12 ids. */
+    private static void vanillaEntities(Reg<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry> reg) {
+        Map<String, String> legacyName = new java.util.HashMap<>();
+        ENTITY_RENAMES.forEach((legacy, modern) -> legacyName.put(modern, legacy));
+        for (var type : net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE) {
+            var id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
+            if (!"minecraft".equals(id.getNamespace())) continue;
+            String path = legacyName.getOrDefault(id.getPath(), id.getPath());
+            var entry = new legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry(
+                    legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, path);
+            entry.setRegistryName(new ResourceLocation("minecraft", path));
+            reg.registerVanilla(entry);
+        }
+    }
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final Reg VILLAGER_PROFESSIONS = new Reg(null, o -> {});
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -113,6 +138,8 @@ public final class Registries1122 {
         private final Map<ResourceLocation, V> byName = new LinkedHashMap<>();
         private final Map<V, ResourceLocation> byValue = new IdentityHashMap<>();
         private final Consumer<V> onRegister;
+        /** Adds the vanilla entries on first read, for registries whose vanilla objects nobody names through a constant. */
+        Consumer<Reg<V>> vanilla;
 
         Reg(Class<V> type, Consumer<V> onRegister) {
             this.type = type;
@@ -120,6 +147,13 @@ public final class Registries1122 {
         }
 
         /** Adds a vanilla object so lookups by name find it; it is not registered with the modern registries. */
+        private void ensureVanilla() {
+            var fill = vanilla;
+            if (fill == null) return;
+            vanilla = null;
+            fill.accept(this);
+        }
+
         public synchronized void registerVanilla(V value) {
             ResourceLocation name = value.getRegistryName();
             byName.putIfAbsent(name, value);
@@ -148,6 +182,7 @@ public final class Registries1122 {
 
         @Override
         public synchronized int getID(ResourceLocation name) {
+            ensureVanilla();
             int i = 0;
             for (ResourceLocation k : byName.keySet()) {
                 if (k.equals(name)) return i;
@@ -219,6 +254,7 @@ public final class Registries1122 {
         @SuppressWarnings("unchecked")
         @Override
         public synchronized V getValue(ResourceLocation key) {
+            ensureVanilla();
             Vanilla1122.ensureLoaded();
             V v = byName.get(key);
             if (v == null && key != null && "minecraft".equals(key.getNamespace()) && (type == Block.class || type == Item.class)) {
@@ -231,16 +267,19 @@ public final class Registries1122 {
 
         @Override
         public synchronized ResourceLocation getKey(V value) {
+            ensureVanilla();
             return byValue.get(value);
         }
 
         @Override
         public synchronized Set<ResourceLocation> getKeys() {
+            ensureVanilla();
             return Collections.unmodifiableSet(new java.util.LinkedHashSet<>(byName.keySet()));
         }
 
         @Override
         public synchronized Collection<V> getValues() {
+            ensureVanilla();
             return Collections.unmodifiableList(new ArrayList<>(byName.values()));
         }
 
@@ -251,6 +290,7 @@ public final class Registries1122 {
 
         @Override
         public synchronized Set<Map.Entry<ResourceLocation, V>> getEntries() {
+            ensureVanilla();
             return Collections.unmodifiableSet(new java.util.LinkedHashSet<>(byName.entrySet()));
         }
     }
