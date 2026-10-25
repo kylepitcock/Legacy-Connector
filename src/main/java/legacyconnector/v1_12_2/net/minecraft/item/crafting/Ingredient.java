@@ -14,7 +14,12 @@ public class Ingredient implements Predicate<ItemStack> {
     public Object mcc$source;
 
     protected Ingredient(ItemStack... stacks) {
-        this.matchingStacks = stacks;
+        this.matchingStacks = stacks == null ? new ItemStack[0] : stacks;
+    }
+
+    /** Forge's constructor for subclasses that compute their own matches (they override getMatchingStacks/apply). */
+    protected Ingredient(int size) {
+        this(new ItemStack[0]);
     }
 
     public ItemStack[] getMatchingStacks() {
