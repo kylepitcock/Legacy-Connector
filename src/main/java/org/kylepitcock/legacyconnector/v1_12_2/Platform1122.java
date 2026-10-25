@@ -270,6 +270,7 @@ public final class Platform1122 implements LegacyPlatform {
         for (var custom : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
             if (custom.getRegistrySuperType() != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
         }
+        if (FMLEnvironment.dist.isClient()) post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
         injectObjectHolders();
     }
 

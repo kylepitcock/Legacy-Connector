@@ -35,6 +35,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.CLIENT_RESOURCES) return;
+        itemModels(out);
         for (Block block : Registries1122.BLOCKS.getValues()) {
             if (!(block.mcc$modern instanceof Legacy1122Block modern)) continue;
             ResourceLocation id = BuiltInRegistries.BLOCK.getKey(modern);
@@ -45,6 +46,26 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 out.put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", () -> bytes);
             } catch (RuntimeException e) {
                 LOG.debug("Could not translate the blockstate of {}: {}", id, e.toString());
+            }
+        }
+    }
+
+    /** Item models registered in code (ModelLoader): each subtype's modern item points at the model file the mod named. */
+    private static void itemModels(Map<String, Supplier<byte[]>> out) {
+        for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            if (item.getRegistryName() == null || item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock) continue;
+            for (int meta = 0; meta < 16; meta++) {
+                var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
+                if (modern == null) continue;
+                var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
+                if (mrl == null) continue;
+                ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
+                String target = org.kylepitcock.legacyconnector.core.Ids.namespace(mrl.getNamespace()) + ":item/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(mrl.getPath());
+                if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
+                JsonObject model = new JsonObject();
+                model.addProperty("parent", target);
+                byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", () -> bytes);
             }
         }
     }
@@ -65,7 +86,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             String modernKey = "meta=" + meta;
             if (variants.has(modernKey)) continue;
             JsonElement model = legacyVariants == null ? null : find(legacyVariants, state);
-            if (model != null) variants.add(modernKey, model);
+            if (model != null) variants.add(modernKey, blockModels(model, id.getNamespace()));
         }
         if (variants.size() == 0) {
             // no usable legacy file: a cube whose model is named like the block
@@ -76,6 +97,32 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         JsonObject out = new JsonObject();
         out.add("variants", variants);
         return out;
+    }
+
+    /**
+     * A 1.12 blockstate names its models relative to models/block/ ("model": "livingwood" is models/block/livingwood.json); 1.13 and later
+     * name the full path, so the prefix is added.
+     */
+    private static JsonElement blockModels(JsonElement variant, String defaultNamespace) {
+        if (variant.isJsonArray()) {
+            var out = new com.google.gson.JsonArray();
+            for (JsonElement e : variant.getAsJsonArray()) out.add(blockModels(e, defaultNamespace));
+            return out;
+        }
+        if (!variant.isJsonObject()) return variant;
+        JsonObject copy = new JsonObject();
+        for (var e : variant.getAsJsonObject().entrySet()) {
+            if (e.getKey().equals("model") && e.getValue().isJsonPrimitive()) {
+                String m = e.getValue().getAsString().toLowerCase(java.util.Locale.ROOT);
+                int colon = m.indexOf(':');
+                String ns = colon >= 0 ? m.substring(0, colon) : defaultNamespace;
+                String path = colon >= 0 ? m.substring(colon + 1) : m;
+                copy.addProperty("model", org.kylepitcock.legacyconnector.core.Ids.namespace(ns) + ":block/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(path));
+            } else {
+                copy.add(e.getKey(), e.getValue());
+            }
+        }
+        return copy;
     }
 
     /** The variant of one state: the exact "a=b,c=d" key, "normal" for property-less blocks, or Forge's nested form. */
