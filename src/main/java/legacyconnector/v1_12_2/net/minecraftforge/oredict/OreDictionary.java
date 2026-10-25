@@ -20,6 +20,10 @@ public class OreDictionary {
     private static final Map<String, Integer> NAME_TO_ID = new HashMap<>();
     private static final Map<Integer, List<ItemStack>> ORES = new LinkedHashMap<>();
 
+    static {
+        VanillaOres.register();
+    }
+
     public static synchronized int getOreID(String name) {
         Integer id = NAME_TO_ID.get(name);
         if (id == null) {

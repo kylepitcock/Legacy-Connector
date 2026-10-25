@@ -36,6 +36,9 @@ final class Defaults {
             "com/google/common/collect/ImmutableMultimap", "of",
             "com/google/common/collect/ImmutableSortedSet", "of");
 
+    private static final String STACK_1122 = "legacyconnector/v1_12_2/net/minecraft/item/ItemStack";
+    private static final String LIST_1122 = "legacyconnector/v1_12_2/net/minecraft/util/NonNullList";
+
     /** A synthesized 1.12.2 client class: defaults of that type are blank instances, not null. */
     static boolean blankable(Type t) {
         if (t.getSort() != Type.OBJECT) return false;
@@ -73,7 +76,12 @@ final class Defaults {
             case Type.OBJECT -> {
                 String impl = COLLECTIONS.get(t.getInternalName());
                 String immutable = IMMUTABLES.get(t.getInternalName());
-                if (immutable != null) {
+                if (t.getInternalName().equals(STACK_1122)) {
+                    // 1.12 stacks are never null (callers test isEmpty())
+                    mv.visitFieldInsn(Opcodes.GETSTATIC, STACK_1122, "EMPTY", "L" + STACK_1122 + ";");
+                } else if (t.getInternalName().equals(LIST_1122)) {
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, LIST_1122, "create", "()L" + LIST_1122 + ";", false);
+                } else if (immutable != null) {
                     String owner = immutable.equals("of") ? t.getInternalName() : immutable;
                     mv.visitMethodInsn(Opcodes.INVOKESTATIC, owner, "of", "()L" + owner + ";", false);
                 } else if (impl != null) {

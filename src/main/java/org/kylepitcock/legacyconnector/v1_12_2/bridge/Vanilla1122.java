@@ -68,7 +68,7 @@ public final class Vanilla1122 {
 
     public static Block block(String field) {
         String legacy = field.toLowerCase(java.util.Locale.ROOT);
-        VanillaBlock b = new VanillaBlock(field.equals("AIR") ? Material.AIR : Material.ROCK);
+        Block b = field.endsWith("_STAIRS") ? new VanillaStairs() : new VanillaBlock(field.equals("AIR") ? Material.AIR : Material.ROCK);
         b.setRegistryName("minecraft", legacy);
         ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
         if (id != null) {
@@ -134,12 +134,14 @@ public final class Vanilla1122 {
     public static legacyconnector.v1_12_2.net.minecraft.potion.Potion effect(String field) {
         var p = new VanillaPotion();
         p.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        Registries1122.POTIONS.registerVanilla(p);
         return p;
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment enchantment(String field) {
         var e = new VanillaEnchantment();
         e.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        Registries1122.ENCHANTMENTS.registerVanilla(e);
         return e;
     }
 
@@ -266,6 +268,28 @@ public final class Vanilla1122 {
 
 
     /** A constant of a synthesized enum (BlockPlanks.EnumType.ACACIA): created without a constructor, named and numbered in first-use order. */
+    private static final String[] POTION_TYPE_NAMES = {"EMPTY", "WATER", "MUNDANE", "THICK", "AWKWARD", "NIGHT_VISION", "LONG_NIGHT_VISION", "INVISIBILITY",
+            "LONG_INVISIBILITY", "LEAPING", "LONG_LEAPING", "STRONG_LEAPING", "FIRE_RESISTANCE", "LONG_FIRE_RESISTANCE", "SWIFTNESS", "LONG_SWIFTNESS",
+            "STRONG_SWIFTNESS", "SLOWNESS", "LONG_SLOWNESS", "WATER_BREATHING", "LONG_WATER_BREATHING", "HEALING", "STRONG_HEALING", "HARMING",
+            "STRONG_HARMING", "POISON", "LONG_POISON", "STRONG_POISON", "REGENERATION", "LONG_REGENERATION", "STRONG_REGENERATION", "STRENGTH",
+            "LONG_STRENGTH", "STRONG_STRENGTH", "WEAKNESS", "LONG_WEAKNESS", "LUCK"};
+
+    /**
+     * The vanilla potion types as entries of PotionType.REGISTRY (mods look them up by name, e.g. EnderIO's recipes). They are the same objects
+     * {@code PotionTypes.NIGHT_VISION} reads give.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void registerPotionTypes(Class<?> type) {
+        if (type == null) return;
+        for (String name : POTION_TYPE_NAMES) {
+            Object o = enumConstant(type, name);
+            if (o instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl impl) {
+                if (impl.getRegistryName() == null) impl.setRegistryName("minecraft", name.toLowerCase(java.util.Locale.ROOT));
+                ((Registries1122.Reg) Registries1122.POTION_TYPES).registerVanilla(impl);
+            }
+        }
+    }
+
     private static synchronized Object enumConstant(Class<?> type, String name) {
         Map<String, Object> constants = ENUM_CONSTANTS.computeIfAbsent(type, k -> new java.util.LinkedHashMap<>());
         Object existing = constants.get(name);
@@ -426,6 +450,13 @@ public final class Vanilla1122 {
     public static final class VanillaBlock extends Block {
         VanillaBlock(Material material) {
             super(material);
+        }
+    }
+
+    /** A vanilla stairs block: mods check vanilla blocks with {@code instanceof BlockStairs} (EnderIO's painted stairs). */
+    public static final class VanillaStairs extends legacyconnector.v1_12_2.net.minecraft.block.BlockStairs {
+        VanillaStairs() {
+            super(new VanillaBlock(Material.ROCK).getDefaultState());
         }
     }
 

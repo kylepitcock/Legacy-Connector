@@ -239,6 +239,8 @@ public final class Platform1122 implements LegacyPlatform {
         legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.register();
         legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.register();
         legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.register();
+        // mods create their own registries here, before any preInit (EnderIO needs its mod object registry then)
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.NewRegistry());
     }
 
     @Override
@@ -271,7 +273,6 @@ public final class Platform1122 implements LegacyPlatform {
     /** Forge 1.12 posted the registry events after preInit: blocks first, then items (item blocks look their block up). */
     @Override
     public void registryEvents() {
-        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.NewRegistry());
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
@@ -358,6 +359,15 @@ public final class Platform1122 implements LegacyPlatform {
         StringBuilder sb = new StringBuilder();
         perMod.forEach((k, v) -> sb.append(' ').append(k).append('=').append(v[0]).append('/').append(v[1]));
         LOG.info("1.12.2 items/blocks per mod:{}", sb);
+        String dbg = System.getProperty("legacyconnector.debugItems");
+        if (dbg != null) {
+            StringBuilder ids = new StringBuilder();
+            for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+                var name = item.getRegistryName();
+                if (name != null && name.getNamespace().equals(dbg)) ids.append(' ').append(name.getPath());
+            }
+            LOG.info("1.12.2 items of {}:{}", dbg, ids);
+        }
         LOG.info("1.12.2 content registered: {} blocks, {} items, {} recipes, {} fluids, {} ore dictionary names",
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().stream().filter(i -> i instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock).count(),
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems().size(),
