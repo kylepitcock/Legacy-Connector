@@ -1,0 +1,53 @@
+package legacyconnector.v1_12_2.net.minecraft.client;
+
+import legacyconnector.v1_12_2.net.minecraft.client.resources.IReloadableResourceManager;
+import legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager;
+import legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManagerReloadListener;
+
+/**
+ * The client singleton as 1.12 mods see it. Only the parts that do not need a running 1.12 renderer exist: scheduling work on the client
+ * thread, the resource manager (reload listeners are called once when it exists) and the thread checks.
+ */
+public class Minecraft {
+    private static final Minecraft INSTANCE = new Minecraft();
+
+    private final IReloadableResourceManager resourceManager = new IReloadableResourceManager() {
+        @Override
+        public void registerReloadListener(IResourceManagerReloadListener listener) {
+            try {
+                listener.onResourceManagerReload(this);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Client").warn("A resource reload listener failed: {}", e.toString());
+            }
+        }
+    };
+
+    public static Minecraft getMinecraft() {
+        return INSTANCE;
+    }
+
+    public IResourceManager getResourceManager() {
+        return resourceManager;
+    }
+
+    public boolean isCallingFromMinecraftThread() {
+        return !net.neoforged.fml.loading.FMLEnvironment.dist.isClient() || net.minecraft.client.Minecraft.getInstance().isSameThread();
+    }
+
+    public com.google.common.util.concurrent.ListenableFuture<Object> addScheduledTask(Runnable task) {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            net.minecraft.client.Minecraft.getInstance().execute(task);
+        } else {
+            task.run();
+        }
+        return com.google.common.util.concurrent.Futures.immediateFuture(null);
+    }
+
+    public boolean isSingleplayer() {
+        return true;
+    }
+
+    public static long getSystemTime() {
+        return System.currentTimeMillis();
+    }
+}
