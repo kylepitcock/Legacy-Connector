@@ -338,6 +338,8 @@ public final class RecipeBridge {
     private static JsonElement result(ItemStack output) {
         net.minecraft.world.item.ItemStack modern = output.mcc$modern().copy();
         if (modern.isEmpty()) throw new IllegalArgumentException("empty result");
+        // 1.7.10 allowed a recipe to make several of an item that does not stack; the modern recipe loader rejects the whole recipe then.
+        if (modern.getCount() > modern.getMaxStackSize()) modern.setCount(modern.getMaxStackSize());
         var ops = RegistryOps.create(JsonOps.INSTANCE, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY));
         return net.minecraft.world.item.ItemStack.CODEC.encodeStart(ops, modern).getOrThrow();
     }
