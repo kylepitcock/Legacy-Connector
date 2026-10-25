@@ -55,6 +55,7 @@ public final class Platform1122 implements LegacyPlatform {
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
             registerSubscribers(mod, loader);
+            registerConfigs(mod, loader);
             injectCapabilities(mod, loader);
         } finally {
             LegacyModContainer1122.setActive(null);
@@ -158,6 +159,21 @@ public final class Platform1122 implements LegacyPlatform {
         }
     }
 
+    /** {@code @Config} classes: their static fields are filled from the config file before preInit. */
+    private static void registerConfigs(LegacyModRecord mod, ClassLoader loader) {
+        var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
+        if (scan == null) return;
+        String desc = Type.getDescriptor(legacyconnector.v1_12_2.net.minecraftforge.common.config.Config.class);
+        for (var a : scan.getAnnotations()) {
+            if (!a.annotationType().getDescriptor().equals(desc)) continue;
+            try {
+                legacyconnector.v1_12_2.net.minecraftforge.common.config.ConfigManager.mcc$register(Class.forName(a.clazz().getClassName(), false, loader));
+            } catch (ClassNotFoundException | LinkageError e) {
+                LOG.warn("{}: cannot read the config class {}: {}", mod.legacyId, a.clazz().getClassName(), e.toString());
+            }
+        }
+    }
+
     /** {@code @Mod.EventBusSubscriber} classes: their static handlers go on the Forge bus when the mod is constructed. */
     private static void registerSubscribers(LegacyModRecord mod, ClassLoader loader) {
         var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
@@ -228,6 +244,7 @@ public final class Platform1122 implements LegacyPlatform {
     @Override
     public void preInit(LegacyModRecord mod) throws Exception {
         Loader.mcc$setState(LoaderState.PREINITIALIZATION);
+        legacyconnector.v1_12_2.net.minecraftforge.common.config.ConfigManager.sync(mod.legacyId, legacyconnector.v1_12_2.net.minecraftforge.common.config.Config.Type.INSTANCE);
         dispatch(mod, new FMLPreInitializationEvent(mod));
     }
 
