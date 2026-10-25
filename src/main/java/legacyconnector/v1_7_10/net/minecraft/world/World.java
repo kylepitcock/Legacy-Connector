@@ -954,6 +954,17 @@ public class World implements IBlockAccess {
         return level != null && level.isDay();
     }
 
+    /** Registers a listener for world changes; the modern world reports changes to its own renderer, so the listener is only kept. */
+    public void addWorldAccess(IWorldAccess access) {
+        worldAccesses.add(access);
+    }
+
+    public void removeWorldAccess(IWorldAccess access) {
+        worldAccesses.remove(access);
+    }
+
+    private final java.util.List<IWorldAccess> worldAccesses = new java.util.concurrent.CopyOnWriteArrayList<>();
+
     public boolean isRaining() {
         Level level = mcc$fullLevel();
         return level != null && level.isRaining();

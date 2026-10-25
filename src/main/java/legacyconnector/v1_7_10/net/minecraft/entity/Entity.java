@@ -1046,6 +1046,21 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity != null ? mcc$entity.fireImmune() : isImmuneToFire;
     }
 
+    /** Whether this is the same entity as {@code other} (multi-part bosses compare their parts to the whole). */
+    public boolean isEntityEqual(Entity other) {
+        return this == other;
+    }
+
+    /** The extra hit boxes of a multi-part entity, or null. */
+    public Entity[] getParts() {
+        return null;
+    }
+
+    /** Forge: whether the entity counts as {@code type} for natural spawning limits. */
+    public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount) {
+        return false;
+    }
+
     public boolean isInWater() {
         return mcc$entity != null && mcc$entity.isInWater();
     }

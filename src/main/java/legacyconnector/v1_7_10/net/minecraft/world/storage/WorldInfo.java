@@ -41,6 +41,11 @@ public class WorldInfo {
         return "";
     }
 
+    /** The dimension a world with a modded provider uses for its vanilla fields: always the overworld here. */
+    public int getVanillaDimension() {
+        return 0;
+    }
+
     public String getWorldName() {
         Level level = level();
         return level != null && level.getServer() != null ? level.getServer().getWorldData().getLevelName() : "world";

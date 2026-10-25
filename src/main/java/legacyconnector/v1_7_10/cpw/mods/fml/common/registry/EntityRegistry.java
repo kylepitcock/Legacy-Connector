@@ -98,6 +98,17 @@ public class EntityRegistry {
         return REGISTRATIONS.get(entityClass);
     }
 
+    /** The registration a mod made with the given mod entity id. */
+    public EntityRegistration lookupModSpawn(legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer mod, int modEntityId) {
+        for (EntityRegistration r : REGISTRATIONS.values()) {
+            if (r.getModEntityId() == modEntityId && (mod == null || r.getContainer() == null || r.getContainer() == mod
+                    || r.getContainer().equals(mod.getMod()))) {
+                return r;
+            }
+        }
+        return null;
+    }
+
     public static void registerGlobalEntityID(Class<?> entityClass, String entityName, int id) {
         LegacyHosts.register(entityClass, entityName, activeModId(), 80, 3, true);
         legacyconnector.v1_7_10.net.minecraft.entity.EntityList.addMapping(entityClass, entityName, id);

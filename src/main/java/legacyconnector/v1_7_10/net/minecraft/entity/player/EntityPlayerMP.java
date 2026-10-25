@@ -22,6 +22,13 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
         return p.mcc$manager;
     }
 
+    private final legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile mcc$stats = new legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile();
+
+    /** The player's statistics and achievements. */
+    public legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile getStatFile() {
+        return mcc$stats;
+    }
+
     public EntityPlayerMP(ServerPlayer modern) {
         super(modern);
         this.mcServer = MinecraftServer.mcc$wrap(modern.server);

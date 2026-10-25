@@ -17,6 +17,16 @@ public class ServerConfigurationManager {
         this.mcc$server = server;
     }
 
+    /** The names of the operators (the ops list). */
+    public String[] getOppedPlayerNames() {
+        return mcc$server.mcc$modern().getPlayerList().getOpNames();
+    }
+
+    /** Whether the name is an operator. */
+    public boolean func_152596_g(com.mojang.authlib.GameProfile profile) {
+        return mcc$server.mcc$modern().getPlayerList().isOp(profile);
+    }
+
     public static List mcc$get$playerEntityList(ServerConfigurationManager m) {
         List<EntityPlayerMP> out = new ArrayList<>();
         for (var p : m.mcc$server.mcc$modern().getPlayerList().getPlayers()) out.add((EntityPlayerMP) EntityBridge.wrap(p));

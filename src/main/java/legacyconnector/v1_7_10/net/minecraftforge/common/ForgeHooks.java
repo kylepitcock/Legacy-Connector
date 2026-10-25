@@ -10,6 +10,11 @@ import legacyconnector.v1_7_10.net.minecraft.util.WeightedRandom;
  * drops from); behaviour hooks the engine drives are not part of the shim.
  */
 public class ForgeHooks {
+    /** The armour points a player wears (the value the armour bar shows). */
+    public static int getTotalArmorValue(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return player.getTotalArmorValue();
+    }
+
     /** Seeds tall grass can drop (mods add their own through {@code MinecraftForge.addGrassSeed}). */
     static final List<SeedEntry> seedList = new ArrayList<>();
 

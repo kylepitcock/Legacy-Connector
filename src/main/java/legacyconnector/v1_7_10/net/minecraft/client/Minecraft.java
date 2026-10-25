@@ -90,6 +90,11 @@ public class Minecraft {
         return INSTANCE;
     }
 
+    /** Whether this is the demo version of the game (it never is). */
+    public boolean isDemo() {
+        return false;
+    }
+
     private static net.minecraft.client.Minecraft mc() {
         return net.minecraft.client.Minecraft.getInstance();
     }

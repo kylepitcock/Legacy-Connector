@@ -13,6 +13,14 @@ public class TextureUtil {
         return GL11C.glGenTextures();
     }
 
+    /** Reads a texture file of the resource manager as an image. */
+    public static BufferedImage readImageData(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManager manager,
+            legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) throws java.io.IOException {
+        try (java.io.InputStream in = manager.getResource(location).getInputStream()) {
+            return javax.imageio.ImageIO.read(in);
+        }
+    }
+
     public static void deleteTexture(int id) {
         GL11C.glDeleteTextures(id);
     }

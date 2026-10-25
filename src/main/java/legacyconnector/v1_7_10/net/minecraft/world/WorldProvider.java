@@ -24,6 +24,11 @@ public class WorldProvider {
         this.mcc$name = getClass().getSimpleName();
     }
 
+    /** Whether it is day here (dimensions without a day cycle override it). */
+    public boolean isDaytime() {
+        return worldObj == null || worldObj.isDaytime();
+    }
+
     public final void registerWorld(World world) {
         this.worldObj = world;
         try {
