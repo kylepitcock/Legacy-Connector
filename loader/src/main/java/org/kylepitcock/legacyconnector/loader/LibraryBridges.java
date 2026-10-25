@@ -78,7 +78,22 @@ public final class LibraryBridges {
             java.util.Map.entry("mixingasm", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("gasstation", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
             java.util.Map.entry("mixinextras", "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"),
-            java.util.Map.entry("opis", "1.7.10 profiler; use Spark"));
+            java.util.Map.entry("opis", "1.7.10 profiler; use Spark"),
+            // 1.12.2
+            java.util.Map.entry("betterfps", "1.12.2 performance patches; not applicable to 1.21.1"),
+            java.util.Map.entry("foamfix", "1.12.2 performance/memory patches; not applicable to 1.21.1"),
+            java.util.Map.entry("phosphor-lighting", "1.12.2 lighting engine rewrite; 1.21.1 has its own"),
+            java.util.Map.entry("vanillafix", "1.12.2 bug-fix patches; not applicable to 1.21.1"),
+            java.util.Map.entry("randompatches", "1.12.2 bug-fix patches; not applicable to 1.21.1"),
+            java.util.Map.entry("aireducer", "1.12.2 AI performance patch; not applicable to 1.21.1"),
+            java.util.Map.entry("mixinbooter", "1.12.2 mixin loader; NeoForge 1.21.1 ships its own Mixin"),
+            java.util.Map.entry("loliasm", "1.12.2 performance patches; not applicable to 1.21.1"),
+            java.util.Map.entry("ifpatcher", "1.12.2 class patcher; not applicable to 1.21.1"),
+            java.util.Map.entry("oldjavawarning", "warns about old Java versions; not applicable"),
+            java.util.Map.entry("serializationisbad", "1.12.2 deserialization security patch; not applicable to 1.21.1"),
+            java.util.Map.entry("tidychunk", "1.12.2 chunk unloading tweak; not applicable to 1.21.1"),
+            java.util.Map.entry("reauth", "1.12.2 login helper; not needed"),
+            java.util.Map.entry("laggoggles", "1.12.2 profiler; use Spark"));
 
     /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list), or null. */
     public static String obsoleteReason(LegacyJar jar) {
