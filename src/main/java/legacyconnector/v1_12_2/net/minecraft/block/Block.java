@@ -16,6 +16,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** The modern block registered for this one (set by the bridge). */
     public Object mcc$modern;
 
+    protected SoundType blockSoundType = SoundType.STONE;
     protected final legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer blockState;
     private legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState defaultBlockState;
 
@@ -66,6 +67,15 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public String getTranslationKey() {
         return getUnlocalizedName();
+    }
+
+    protected Block setSoundType(SoundType type) {
+        this.blockSoundType = type;
+        return this;
+    }
+
+    public SoundType getSoundType() {
+        return blockSoundType;
     }
 
     public Block setHardness(float hardness) {

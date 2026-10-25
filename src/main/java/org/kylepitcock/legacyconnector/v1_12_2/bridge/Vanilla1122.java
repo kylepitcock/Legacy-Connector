@@ -89,6 +89,53 @@ public final class Vanilla1122 {
         return i;
     }
 
+    /** A vanilla sound: the field name (BLOCK_STONE_BREAK) is the sound id with dots (block.stone.break), or underscores inside a word. */
+    public static legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound(String field) {
+        String[] words = field.toLowerCase(java.util.Locale.ROOT).split("_");
+        String id = joinSound(words, 1, words[0]);
+        var name = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", id == null ? field.toLowerCase(java.util.Locale.ROOT).replace('_', '.') : id);
+        var sound = new legacyconnector.v1_12_2.net.minecraft.util.SoundEvent(name);
+        sound.setRegistryName(name);
+        if (id != null) sound.mcc$modern = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.withDefaultNamespace(id));
+        return sound;
+    }
+
+    /** Tries "." and "_" between the remaining words until the result is a sound that exists. */
+    private static String joinSound(String[] words, int index, String soFar) {
+        if (index == words.length) {
+            return BuiltInRegistries.SOUND_EVENT.containsKey(ResourceLocation.withDefaultNamespace(soFar)) ? soFar : null;
+        }
+        String r = joinSound(words, index + 1, soFar + "." + words[index]);
+        return r != null ? r : joinSound(words, index + 1, soFar + "_" + words[index]);
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.potion.Potion effect(String field) {
+        var p = new VanillaPotion();
+        p.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        return p;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment enchantment(String field) {
+        var e = new VanillaEnchantment();
+        e.setRegistryName("minecraft", field.toLowerCase(java.util.Locale.ROOT));
+        return e;
+    }
+
+    /** A vanilla potion effect as a legacy object. */
+    public static final class VanillaPotion extends legacyconnector.v1_12_2.net.minecraft.potion.Potion {
+        VanillaPotion() {
+            super(false, 0);
+        }
+    }
+
+    /** A vanilla enchantment as a legacy object. */
+    public static final class VanillaEnchantment extends legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment {
+        VanillaEnchantment() {
+            super(Rarity.COMMON, legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType.ALL,
+                    new legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot[0]);
+        }
+    }
+
     /** The legacy wrapper of a modern vanilla item, or null. */
     public static synchronized Item legacyOf(net.minecraft.world.item.Item modern) {
         return ITEM_REVERSE.get(modern);

@@ -24,7 +24,9 @@ public final class BlockBridge1122 {
 
     static void register(Block block) {
         var id = modernId(block.getRegistryName());
-        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().sound(sound(block.getMaterialLegacy()));
+        var legacySound = block.getSoundType();
+        BlockBehaviour.Properties p = BlockBehaviour.Properties.of().sound(legacySound != null && legacySound.mcc$modern != null
+                ? legacySound.mcc$modern : sound(block.getMaterialLegacy()));
         float hardness = block.mcc$hardness();
         if (hardness < 0) p.strength(-1.0F, 3600000.0F);
         else p.strength(hardness, block.mcc$resistance());
