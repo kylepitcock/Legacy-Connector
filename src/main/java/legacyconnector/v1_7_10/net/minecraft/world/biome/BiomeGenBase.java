@@ -395,4 +395,10 @@ public class BiomeGenBase {
             }
         }
     }
+
+    /** The biome with the id; {@code fallback} true returns the ocean for an unknown id instead of null. */
+    public static BiomeGenBase func_150557_a(int id, boolean fallback) {
+        BiomeGenBase biome = getBiome(id);
+        return biome == null && fallback ? mcc$biomeOrOcean(id) : biome;
+    }
 }

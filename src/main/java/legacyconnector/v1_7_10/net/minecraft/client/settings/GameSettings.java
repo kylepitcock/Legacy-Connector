@@ -68,4 +68,8 @@ public class GameSettings {
         }
         return keys;
     }
+
+    /** Sends the language and view distance to the server; the modern client does this itself. */
+    public void sendSettingsToServer() {
+    }
 }

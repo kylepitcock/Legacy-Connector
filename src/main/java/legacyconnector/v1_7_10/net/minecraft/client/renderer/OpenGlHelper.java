@@ -37,4 +37,9 @@ public class OpenGlHelper {
     public static boolean isFramebufferEnabled() {
         return true;
     }
+
+    /** Whether framebuffers are available (always on a modern GL context). */
+    public static boolean func_153193_b() {
+        return true;
+    }
 }

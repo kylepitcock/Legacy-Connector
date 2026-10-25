@@ -19,4 +19,18 @@ public class WorldClient extends World {
     public double getHorizon() {
         return 63.0D;
     }
+
+    /** How bright the stars are: full at night, none by day. */
+    public float getStarBrightness(float partialTicks) {
+        float angle = getCelestialAngle(partialTicks);
+        float brightness = 1.0F - (net.minecraft.util.Mth.cos(angle * (float) Math.PI * 2.0F) * 2.0F + 0.25F);
+        brightness = Math.max(0.0F, Math.min(1.0F, brightness));
+        return brightness * brightness * 0.5F;
+    }
+
+    /** Sets how hard it rains on the client (0 clear, 1 full). */
+    public void setRainStrength(float strength) {
+        var level = mcc$fullLevel();
+        if (level != null) level.setRainLevel(strength);
+    }
 }

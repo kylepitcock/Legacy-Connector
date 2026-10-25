@@ -48,4 +48,8 @@ public class Framebuffer {
 
     public void framebufferRender(int width, int height) {
     }
+
+    /** Sets the filter used when the framebuffer is drawn scaled. */
+    public void setFramebufferFilter(int filter) {
+    }
 }
