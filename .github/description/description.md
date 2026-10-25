@@ -151,7 +151,7 @@ IDs tab-complete.
 
 ## Roadmap
 
-✅ 1.7.10 → 🧪 **1.12.2** (in progress, with 1.8–1.11.2 folded in) → **1.16.5** → **1.20.1** (Forge and Fabric via Sinytra)
+✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.20.1** (Forge and Fabric via Sinytra) → **1.16.5**
 
 ---
 
