@@ -15,8 +15,14 @@ public class PropertyEnum<T extends Enum<T> & IStringSerializable> extends Prope
         super(name, valueClass);
         this.allowedValues = ImmutableSet.copyOf(allowedValues);
         ImmutableMap.Builder<String, T> b = ImmutableMap.builder();
-        for (T t : allowedValues) b.put(t.getName(), t);
+        for (T t : allowedValues) b.put(t.getName() != null ? t.getName() : t.name().toLowerCase(java.util.Locale.ROOT), t);
         this.nameToValue = b.build();
+    }
+
+    /** The constants of an enum; a synthesized enum has none of its own, so they come from the legacy field list. */
+    private static <T extends Enum<T>> T[] constants(Class<T> clazz) {
+        T[] values = clazz.getEnumConstants();
+        return values != null && values.length > 0 ? values : org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.enumValues(clazz);
     }
 
     public static <T extends Enum<T> & IStringSerializable> PropertyEnum<T> create(String name, Class<T> clazz) {
@@ -24,7 +30,7 @@ public class PropertyEnum<T extends Enum<T> & IStringSerializable> extends Prope
     }
 
     public static <T extends Enum<T> & IStringSerializable> PropertyEnum<T> create(String name, Class<T> clazz, Predicate<T> filter) {
-        return create(name, clazz, Lists.newArrayList(com.google.common.collect.Collections2.filter(Lists.newArrayList(clazz.getEnumConstants()), filter)));
+        return create(name, clazz, Lists.newArrayList(com.google.common.collect.Collections2.filter(Lists.newArrayList(constants(clazz)), filter)));
     }
 
     public static <T extends Enum<T> & IStringSerializable> PropertyEnum<T> create(String name, Class<T> clazz, T... values) {
@@ -47,6 +53,6 @@ public class PropertyEnum<T extends Enum<T> & IStringSerializable> extends Prope
 
     @Override
     public String getName(T value) {
-        return value.getName();
+        return value.getName() != null ? value.getName() : value.name().toLowerCase(java.util.Locale.ROOT);
     }
 }

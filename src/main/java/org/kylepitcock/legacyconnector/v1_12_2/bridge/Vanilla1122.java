@@ -158,6 +158,12 @@ public final class Vanilla1122 {
         for (var m : accessor.getDeclaredMethods()) if (m.getName().equals("sget$" + field)) getter = m;
         if (getter == null) return null;
         Class<?> type = getter.getReturnType();
+        if (type.getSuperclass() == Enum.class && type.getName().startsWith("legacyconnector_synth.v1_12_2.")) return enumConstant(type, field);
+        if (accessor.getName().equals(type.getName() + "$$Missing") && !blocks && !items && type.getName().startsWith("legacyconnector_synth.v1_12_2.")
+                && !java.lang.reflect.Modifier.isAbstract(type.getModifiers())) {
+            // a constant of its own class (BiomeDictionary.Type.FOREST, ...): an instance per name keeps identity and equality working
+            return enumConstant(type, field);
+        }
         if (!blocks && !items) {
             // a state property of a vanilla block class (BlockFarmland.MOISTURE): mods read these from the states of their own blocks
             String name = field.toLowerCase(java.util.Locale.ROOT);
@@ -201,6 +207,63 @@ public final class Vanilla1122 {
             Registries1122.ITEMS.registerVanilla(i);
         }
         return o;
+    }
+
+    private static final Map<Class<?>, Map<String, Object>> ENUM_CONSTANTS = new HashMap<>();
+    private static Map<String, java.util.List<String>> enumFieldNames;
+
+    /** All constants of a synthesized enum: the static fields of its own type that the legacy field list names. */
+    @SuppressWarnings("unchecked")
+    public static synchronized <T> T[] enumValues(Class<T> type) {
+        if (enumFieldNames == null) {
+            enumFieldNames = new HashMap<>();
+            for (ClassLoader loader : new ClassLoader[] {Vanilla1122.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
+                if (loader == null) continue;
+                try (var in = loader.getResourceAsStream("legacyconnector/legacy/1.12.2/fields.txt")) {
+                    if (in == null) continue;
+                    var reader = new java.io.BufferedReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        String[] p = line.split(" ");
+                        if (p.length >= 4 && p[3].equals("L" + p[1] + ";")) {
+                            var names = enumFieldNames.computeIfAbsent(p[1], k -> new java.util.ArrayList<>());
+                            if (!names.contains(p[2])) names.add(p[2]);
+                        }
+                    }
+                    break;
+                } catch (java.io.IOException e) {
+                    // no constants known
+                }
+            }
+        }
+        String internal = type.getName().replace("legacyconnector_synth.v1_12_2.", "").replace('.', '/');
+        var names = enumFieldNames.get(internal);
+        if (names == null) return (T[]) java.lang.reflect.Array.newInstance(type, 0);
+        T[] out = (T[]) java.lang.reflect.Array.newInstance(type, names.size());
+        for (int i = 0; i < out.length; i++) out[i] = (T) enumConstant(type, names.get(i));
+        return out;
+    }
+
+
+    /** A constant of a synthesized enum (BlockPlanks.EnumType.ACACIA): created without a constructor, named and numbered in first-use order. */
+    private static synchronized Object enumConstant(Class<?> type, String name) {
+        Map<String, Object> constants = ENUM_CONSTANTS.computeIfAbsent(type, k -> new java.util.LinkedHashMap<>());
+        Object existing = constants.get(name);
+        if (existing != null) return existing;
+        try {
+            Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            sun.misc.Unsafe unsafe = (sun.misc.Unsafe) f.get(null);
+            Object constant = unsafe.allocateInstance(type);
+            if (Enum.class.isAssignableFrom(type)) {
+                unsafe.putObject(constant, unsafe.objectFieldOffset(Enum.class.getDeclaredField("name")), name);
+                unsafe.putInt(constant, unsafe.objectFieldOffset(Enum.class.getDeclaredField("ordinal")), constants.size());
+            }
+            constants.put(name, constant);
+            return constant;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
     }
 
     /** A new instance of a synthesized class: its smallest constructor with default arguments, or an uninitialized object. */
