@@ -17,6 +17,8 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     private CreativeTabs displayOnCreativeTab;
     /** The modern block registered for this one (set by the bridge). */
     public Object mcc$modern;
+    public static final legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB FULL_BLOCK_AABB = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+    public static final legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB NULL_AABB = null;
 
     protected SoundType blockSoundType = SoundType.STONE;
     protected final legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer blockState;
