@@ -28,14 +28,15 @@ import org.joml.Quaternionf;
 public final class RenderContext {
     private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base) {}
 
-    private static final Deque<Frame> FRAMES = new ArrayDeque<>();
+    /** Per thread: chunk-meshing threads capture blocks while the render thread draws, and must not see each other's frames. */
+    private static final ThreadLocal<Deque<Frame>> FRAME_STACK = ThreadLocal.withInitial(ArrayDeque::new);
     /**
      * Legacy renderers share global state (the Tessellator, the emulated GL state, these frames), so every use is
      * serialized: the render thread holds the lock for the duration of a legacy render, and chunk-meshing threads for
      * the duration of a captured block render. Reentrant for nested frames on one thread.
      */
     private static final java.util.concurrent.locks.ReentrantLock LOCK = new java.util.concurrent.locks.ReentrantLock();
-    private static Capture capture;
+    private static final ThreadLocal<Capture> CAPTURE = new ThreadLocal<>();
 
     /** Geometry drawn while capturing: quads of {x, y, z, u, v, argb, light} corners and their face normals. */
     public static final class Capture {
@@ -47,26 +48,30 @@ public final class RenderContext {
     /** Matrices pushed by legacy code outside any context (should be rare): count only, so pops stay balanced. */
     private static int strayPushes;
 
+    private static Deque<Frame> frames() {
+        return FRAME_STACK.get();
+    }
+
     private RenderContext() {}
 
     public static void beginGui(GuiGraphics gui) {
         LOCK.lock();
-        if (FRAMES.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
-        FRAMES.push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last()));
+        if (frames().isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
+        frames().push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last()));
         resetColor();
     }
 
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
         LOCK.lock();
-        if (FRAMES.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
-        FRAMES.push(new Frame(null, pose, buffers, light, overlay, pose.last()));
+        if (frames().isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
+        frames().push(new Frame(null, pose, buffers, light, overlay, pose.last()));
         resetColor();
     }
 
     public static void end() {
         try {
-            Frame f = FRAMES.pop();
-            if (FRAMES.isEmpty()) {
+            Frame f = frames().pop();
+            if (frames().isEmpty()) {
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
                 resetState();
             }
@@ -87,45 +92,45 @@ public final class RenderContext {
     public static Capture beginCapture() {
         LOCK.lock();
         PoseStack pose = new PoseStack();
-        FRAMES.push(new Frame(null, pose, null, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose.last()));
+        frames().push(new Frame(null, pose, null, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose.last()));
         resetColor();
         Capture c = new Capture();
-        capture = c;
+        CAPTURE.set(c);
         return c;
     }
 
     public static void endCapture() {
-        capture = null;
+        CAPTURE.remove();
         end();
     }
 
     public static boolean active() {
-        return !FRAMES.isEmpty();
+        return !frames().isEmpty();
     }
 
     public static GuiGraphics gui() {
-        Frame f = FRAMES.peek();
+        Frame f = frames().peek();
         return f == null ? null : f.gui;
     }
 
     public static PoseStack pose() {
-        Frame f = FRAMES.peek();
+        Frame f = frames().peek();
         return f == null ? null : f.pose;
     }
 
     public static MultiBufferSource buffers() {
-        Frame f = FRAMES.peek();
+        Frame f = frames().peek();
         if (f != null) return f.buffers;
         return Minecraft.getInstance().renderBuffers().bufferSource();
     }
 
     public static int light() {
-        Frame f = FRAMES.peek();
+        Frame f = frames().peek();
         return f == null ? LightTexture.FULL_BRIGHT : f.light;
     }
 
     public static int overlay() {
-        Frame f = FRAMES.peek();
+        Frame f = frames().peek();
         return f == null ? OverlayTexture.NO_OVERLAY : f.overlay;
     }
 
@@ -240,6 +245,7 @@ public final class RenderContext {
         }
         PoseStack p = pose();
         if (p == null) return;
+        Capture capture = CAPTURE.get();
         if (capture != null) {
             org.joml.Matrix4f m = p.last().pose();
             org.joml.Matrix3f n = p.last().normal();
