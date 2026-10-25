@@ -22,10 +22,15 @@ public class BlockStateContainer {
         List<IProperty<?>> sorted = new ArrayList<>(List.of(properties));
         sorted.sort((a, b) -> a.getName().compareTo(b.getName()));
         this.properties = ImmutableList.copyOf(sorted);
-        List<StateImpl> states = new ArrayList<>();
+        List<StateImplementation> states = new ArrayList<>();
         combine(states, new LinkedHashMapHolder(), 0);
-        for (StateImpl s : states) s.link(states);
+        for (StateImplementation s : states) s.link(states);
         this.validStates = ImmutableList.copyOf(states);
+    }
+
+    /** Subclasses return their own state class (it must extend {@link StateImplementation}). */
+    protected StateImplementation createState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties) {
+        return new StateImplementation(block, properties);
     }
 
     /** Insertion-ordered value assignment being built. */
@@ -33,9 +38,9 @@ public class BlockStateContainer {
         final Map<IProperty<?>, Comparable<?>> values = new java.util.LinkedHashMap<>();
     }
 
-    private void combine(List<StateImpl> out, LinkedHashMapHolder current, int index) {
+    private void combine(List<StateImplementation> out, LinkedHashMapHolder current, int index) {
         if (index == properties.size()) {
-            out.add(new StateImpl(block, ImmutableMap.copyOf(current.values)));
+            out.add(createState(block, ImmutableMap.copyOf(current.values)));
             return;
         }
         IProperty<?> p = properties.get(index);
@@ -67,18 +72,18 @@ public class BlockStateContainer {
         return null;
     }
 
-    private static final class StateImpl implements IBlockState {
+    public static class StateImplementation implements IBlockState {
         private final Block block;
         private final ImmutableMap<IProperty<?>, Comparable<?>> values;
-        private final Map<String, StateImpl> neighbours = new HashMap<>();
+        private final Map<String, StateImplementation> neighbours = new HashMap<>();
 
-        StateImpl(Block block, ImmutableMap<IProperty<?>, Comparable<?>> values) {
+        protected StateImplementation(Block block, ImmutableMap<IProperty<?>, Comparable<?>> values) {
             this.block = block;
             this.values = values;
         }
 
-        void link(List<StateImpl> all) {
-            for (StateImpl other : all) {
+        void link(List<StateImplementation> all) {
+            for (StateImplementation other : all) {
                 if (other == this) continue;
                 // a neighbour differs from this state in exactly one property
                 IProperty<?> differing = null;
@@ -115,7 +120,7 @@ public class BlockStateContainer {
             Comparable<?> current = property == null ? null : values.get(property);
             if (current == null) return this; // vanilla blocks carry no properties here: the state stays as it is
             if (current.equals(value)) return this;
-            StateImpl next = neighbours.get(property.getName() + "=" + value);
+            StateImplementation next = neighbours.get(property.getName() + "=" + value);
             return next != null ? next : this;
         }
 
@@ -139,7 +144,8 @@ public class BlockStateContainer {
 
         @Override
         public Material getMaterial() {
-            return block.getMaterialLegacy();
+            Material m = block.getMaterialLegacy();
+            return m != null ? m : Material.ROCK;
         }
 
         @Override

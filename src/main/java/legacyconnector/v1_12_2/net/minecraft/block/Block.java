@@ -69,7 +69,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public Material getMaterialLegacy() {
-        return blockMaterial;
+        return blockMaterial != null ? blockMaterial : legacyconnector.v1_12_2.net.minecraft.block.material.Material.ROCK;
     }
 
     public Block setUnlocalizedName(String name) {
