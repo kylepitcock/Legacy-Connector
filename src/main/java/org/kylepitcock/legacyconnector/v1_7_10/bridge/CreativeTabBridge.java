@@ -144,7 +144,7 @@ public final class CreativeTabBridge {
                     m.setCount(1);
                     try {
                         event.accept(m);
-                    } catch (IllegalStateException duplicate) {
+                    } catch (IllegalArgumentException | IllegalStateException duplicate) {
                         // Already present (e.g. two legacy items flattened to the same modern stack).
                     }
                 }

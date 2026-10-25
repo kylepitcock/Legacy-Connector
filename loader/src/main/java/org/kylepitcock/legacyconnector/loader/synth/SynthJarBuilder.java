@@ -260,6 +260,7 @@ public final class SynthJarBuilder {
                 mv.visitEnd();
                 continue;
             }
+            if (isStatic) staticResolverCall(mv, legacyName(name) + "." + m.name(), m.desc());
             stubCall(mv, legacyName(name) + "." + m.name() + m.desc());
             if (!isStatic && returnsSelf(name, ret)) {
                 // Builder-style setters (fluid.setDensity(..).setViscosity(..)) must keep the chain alive.
@@ -687,6 +688,42 @@ public final class SynthJarBuilder {
         if (isSubtype(info.superName, target, seen)) return true;
         for (String i : info.interfaces) if (isSubtype(i, target, seen)) return true;
         return false;
+    }
+
+    /**
+     * A static stub first asks the runtime's static method resolvers ({@code Synth.callStatic}); a resolver that knows the
+     * method (e.g. {@code PotionType.getPotionTypeForName}) answers it, otherwise the stub's default follows.
+     */
+    private static void staticResolverCall(MethodVisitor mv, String key, String desc) {
+        Type[] args = Type.getArgumentTypes(desc);
+        Type ret = Type.getReturnType(desc);
+        int[] slots = slots(args, 0);
+        mv.visitLdcInsn(key);
+        mv.visitLdcInsn(args.length);
+        mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
+        for (int i = 0; i < args.length; i++) {
+            mv.visitInsn(Opcodes.DUP);
+            mv.visitLdcInsn(i);
+            mv.visitVarInsn(args[i].getOpcode(Opcodes.ILOAD), slots[i]);
+            Defaults.box(mv, args[i]);
+            mv.visitInsn(Opcodes.AASTORE);
+        }
+        mv.visitMethodInsn(Opcodes.INVOKESTATIC, RT, "callStatic", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+        int local = slots.length == 0 ? 0 : slots[slots.length - 1] + args[args.length - 1].getSize();
+        mv.visitVarInsn(Opcodes.ASTORE, local);
+        mv.visitVarInsn(Opcodes.ALOAD, local);
+        mv.visitFieldInsn(Opcodes.GETSTATIC, RT, "NONE", "Ljava/lang/Object;");
+        Label fallback = new Label();
+        mv.visitJumpInsn(Opcodes.IF_ACMPEQ, fallback);
+        if (ret.getSort() == Type.VOID) {
+            mv.visitInsn(Opcodes.RETURN);
+        } else {
+            mv.visitVarInsn(Opcodes.ALOAD, local);
+            if (ret.getSort() == Type.OBJECT || ret.getSort() == Type.ARRAY) mv.visitTypeInsn(Opcodes.CHECKCAST, ret.getInternalName());
+            else Defaults.unbox(mv, ret);
+            mv.visitInsn(ret.getOpcode(Opcodes.IRETURN));
+        }
+        mv.visitLabel(fallback);
     }
 
     private static void stubCall(MethodVisitor mv, String key) {

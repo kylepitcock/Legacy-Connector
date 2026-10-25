@@ -198,6 +198,16 @@ public final class ShimLinker {
             return null;
         }
 
+        // Legacy enums the shim made classes (EnumRarity, ToolMaterial...): Enum-typed parameters (compareTo(Enum)) are Object there.
+        if (m.desc.contains("Ljava/lang/Enum;") && h.isShim(m.owner)) {
+            String objectDesc = m.desc.replace("Ljava/lang/Enum;", "Ljava/lang/Object;");
+            Hierarchy.Lookup retry = h.resolveMethod(m.owner, m.name, objectDesc);
+            if (retry != Hierarchy.Lookup.MISSING_MEMBER && retry != Hierarchy.Lookup.MISSING_CLASS) {
+                m.desc = objectDesc;
+                return m;
+            }
+        }
+
         boolean itf = m.itf || m.getOpcode() == Opcodes.INVOKEINTERFACE;
         String anchor = anchor(m.owner, h, itf);
         if (anchor == null) return null;

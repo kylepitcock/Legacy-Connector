@@ -28,6 +28,34 @@ public class BlockStateContainer {
         this.validStates = ImmutableList.copyOf(states);
     }
 
+    /** Forge's builder: listed properties, plus unlisted ones (which make it an {@code ExtendedBlockState}). */
+    public static class Builder {
+        private final Block block;
+        private final List<IProperty<?>> listed = new ArrayList<>();
+        private final List<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>> unlisted = new ArrayList<>();
+
+        public Builder(Block block) {
+            this.block = block;
+        }
+
+        public Builder add(IProperty<?>... props) {
+            for (IProperty<?> p : props) if (p != null) listed.add(p);
+            return this;
+        }
+
+        public Builder add(legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>... props) {
+            for (var p : props) if (p != null) unlisted.add(p);
+            return this;
+        }
+
+        public BlockStateContainer build() {
+            IProperty<?>[] l = listed.toArray(new IProperty<?>[0]);
+            if (unlisted.isEmpty()) return new BlockStateContainer(block, l);
+            return new legacyconnector.v1_12_2.net.minecraftforge.common.property.ExtendedBlockState(block, l,
+                    unlisted.toArray(new legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>[0]));
+        }
+    }
+
     /** Subclasses return their own state class (it must extend {@link StateImplementation}). */
     protected StateImplementation createState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties) {
         return new StateImplementation(block, properties);

@@ -39,6 +39,11 @@ public class EnumRarity {
         }
     }
 
+    /** {@code Enum.compareTo}: legacy calls taking an Enum are linked here. */
+    public int compareTo(Object other) {
+        return Integer.compare(ordinal(), ((EnumRarity) other).ordinal());
+    }
+
     public int ordinal() {
         return ordinal;
     }

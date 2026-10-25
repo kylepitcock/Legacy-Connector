@@ -60,6 +60,16 @@ public final class Vanilla1122 {
     private static final Map<String, String> LEGACY_FIELDS = new HashMap<>();
 
     static {
+        // more 1.13 flattening renames (legacy field -> modern id of the first variant)
+        String[] more = {"DOUBLE_PLANT", "sunflower", "STONE_SLAB2", "red_sandstone_slab", "DOUBLE_STONE_SLAB2", "red_sandstone_slab",
+                "PURPUR_DOUBLE_SLAB", "purpur_slab", "RED_NETHER_BRICK", "red_nether_bricks", "MAGMA", "magma_block", "PORTAL", "nether_portal",
+                "STONE_STAIRS", "cobblestone_stairs", "NETHER_BRICK", "nether_bricks", "SLIME", "slime_block", "STANDING_BANNER", "white_banner",
+                "WALL_BANNER", "white_wall_banner", "SILVER_GLAZED_TERRACOTTA", "light_gray_glazed_terracotta", "QUARTZ_BLOCK", "quartz_block",
+                "RED_MUSHROOM_BLOCK", "red_mushroom_block", "BROWN_MUSHROOM_BLOCK", "brown_mushroom_block", "WEB", "cobweb",
+                "END_PORTAL", "end_portal", "LIT_PUMPKIN", "jack_o_lantern", "UNLIT_REDSTONE_TORCH", "redstone_torch", "PISTON_HEAD", "piston_head",
+                "SPONGE", "sponge", "STONE", "stone", "DIRT", "dirt", "SAND", "sand", "SANDSTONE", "sandstone", "RED_SANDSTONE", "red_sandstone",
+                "PRISMARINE", "prismarine", "COBBLESTONE_WALL", "cobblestone_wall", "ANVIL", "anvil", "QUARTZ_ORE", "nether_quartz_ore"};
+        for (int i = 0; i < more.length; i += 2) BLOCK_NAMES.putIfAbsent(more[i], more[i + 1]);
         LEGACY_PATHS.forEach((field, path) -> LEGACY_FIELDS.put(path, field));
         ITEM_NAMES.put("MAP", "filled_map");
     }
@@ -116,7 +126,7 @@ public final class Vanilla1122 {
 
     public static synchronized Item item(String field) {
         String legacy = legacyPath(field);
-        ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacy));
+        ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, BLOCK_NAMES.getOrDefault(field, legacy)));
         var modern = id == null ? null : BuiltInRegistries.ITEM.get(id);
         Item i = wrap(modern);
         i.setRegistryName("minecraft", legacy);
@@ -332,6 +342,16 @@ public final class Vanilla1122 {
         }
     }
 
+    /** Static methods of synthesized vanilla classes answered from the legacy registries. */
+    public static void registerStaticMethods() {
+        // PotionType.getPotionTypeForName("minecraft:night_vision" or "night_vision"): EnderIO's recipe files
+        org.kylepitcock.legacyconnector.core.synth.Synth.addStaticMethod("net.minecraft.potion.PotionType.getPotionTypeForName", args -> {
+            if (!(args[0] instanceof String name)) return null;
+            ensureLoaded();
+            return Registries1122.POTION_TYPES.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name));
+        });
+    }
+
     private static synchronized Object enumConstant(Class<?> type, String name) {
         Map<String, Object> constants = ENUM_CONSTANTS.computeIfAbsent(type, k -> new java.util.LinkedHashMap<>());
         Object existing = constants.get(name);
@@ -470,7 +490,8 @@ public final class Vanilla1122 {
 
     public static Item itemByName(String legacyPath) {
         String field = fieldOf(legacyPath);
-        ResourceLocation modern = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacyPath));
+        // a block's item has the block's legacy name (minecraft:double_plant)
+        ResourceLocation modern = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, BLOCK_NAMES.getOrDefault(field, legacyPath)));
         if (modern == null || BuiltInRegistries.ITEM.get(modern) == net.minecraft.world.item.Items.AIR && !legacyPath.equals("air")) return null;
         return item(field);
     }

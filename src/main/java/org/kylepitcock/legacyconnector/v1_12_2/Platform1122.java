@@ -31,6 +31,7 @@ public final class Platform1122 implements LegacyPlatform {
 
     static {
         org.kylepitcock.legacyconnector.core.synth.Synth.addStaticResolver(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122::resolveStatic);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.registerStaticMethods();
     }
 
     @Override
@@ -275,6 +276,7 @@ public final class Platform1122 implements LegacyPlatform {
     public void registryEvents() {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS));
+        injectObjectHolders(); // Forge fills the holders after each registry event: item registration reads block holders
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS));
         injectObjectHolders(); // later registry events (recipes) read the holders
@@ -290,8 +292,12 @@ public final class Platform1122 implements LegacyPlatform {
             if (custom.getRegistrySuperType() != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
         }
         if (FMLEnvironment.dist.isClient()) post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
+        MISSING_HOLDERS.clear();
         injectObjectHolders();
+        if (!MISSING_HOLDERS.isEmpty()) LOG.warn("Object holders with nothing registered under their name: {}", MISSING_HOLDERS);
     }
+
+    private static final java.util.Set<String> MISSING_HOLDERS = new java.util.TreeSet<>();
 
     /** {@code @GameRegistry.ObjectHolder} fields (and classes with a mod id) receive the registered block or item of their name. */
     private static void injectObjectHolders() {
@@ -331,7 +337,11 @@ public final class Platform1122 implements LegacyPlatform {
         Object value = null;
         if (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(key);
         else if (legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS.getValue(key);
-        if (value == null || !f.getType().isInstance(value)) return;
+        if (value == null || !f.getType().isInstance(value)) {
+            if (value == null && (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())
+                    || legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType()))) MISSING_HOLDERS.add(name);
+            return;
+        }
         try {
             org.kylepitcock.legacyconnector.core.StaticFields.set(f, value);
         } catch (ReflectiveOperationException | RuntimeException e) {

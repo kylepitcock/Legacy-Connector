@@ -188,4 +188,22 @@ public final class Synth {
     public static char toChar(Object o) {
         return (char) toInt(o);
     }
+
+    /** Implements a static method of a synthesized class ({@code args} boxed); see {@link #callStatic}. */
+    public interface StaticMethod {
+        Object call(Object[] args) throws Throwable;
+    }
+
+    private static final Map<String, StaticMethod> STATIC_METHODS = new ConcurrentHashMap<>();
+
+    /** {@code key} is the legacy class and method name, e.g. {@code net.minecraft.potion.PotionType.getPotionTypeForName}. */
+    public static void addStaticMethod(String key, StaticMethod method) {
+        STATIC_METHODS.put(key, method);
+    }
+
+    /** Called first by every synthesized static method: the registered implementation's result, or {@link #NONE}. */
+    public static Object callStatic(String key, Object[] args) throws Throwable {
+        StaticMethod m = STATIC_METHODS.get(key);
+        return m == null ? NONE : m.call(args);
+    }
 }
