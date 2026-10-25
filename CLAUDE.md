@@ -41,6 +41,10 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   and `tools/dev/survey.sh <namespace> <name>` (grid of a mod's blocks); screenshots land in
   `~/.cache/legacyconnector-docker/work/run-screenshots/control/out/`. Code changes need `session.sh stop` and a restart.
   Clear the docker volume `legacyconnector-cache` when pack-generation code changes.
+- On a Windows desktop (no Docker) `tools/dev/quick-shots.sh` runs the graphical test directly in about a minute: superflat world, no terrain tour, render
+  distance 4, 640x360, 12 blocks/items per mod (`EXTRA="-PshotMods=chisel -PdebugIcons=Stairs"` narrows it and logs icon lookups of block classes
+  containing that text). Mods go in `run-screenshots/mods`; move `run-screenshots/.legacyconnector/cache` aside after code changes. The shot list comes from the
+  mods' creative tabs, so subtypes a mod never lists (e.g. Chisel stairs `.3`-`.7`) show as missing textures in the log without being a defect.
 - Gotchas learned the hard way: vanilla block tags are not bound while mods load (never use `BlockTags` when
   constructing shims); legacy code that runs during chunk generation must read blocks through the generation region, never
   the real `ServerLevel`; name lookups must stay O(1) (mods look up thousands of absent names); per-tick and per-chunk

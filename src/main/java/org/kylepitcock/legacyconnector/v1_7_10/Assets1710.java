@@ -255,6 +255,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static String iconName(Block b, int side, int meta) {
         try {
             IIcon icon = b.getIcon(side, meta);
+            if (System.getProperty("legacyconnector.debugIcons") != null && b.getClass().getName().contains(System.getProperty("legacyconnector.debugIcons")) && meta < 3) {
+                LOG.info("icon debug {} side {} meta {} -> {} ({})", b.getClass().getName(), side, meta, icon == null ? null : icon.getIconName(), icon == null ? null : icon.getClass().getName());
+            }
             if (icon != null) return nameOf(icon);
             if (meta == 0 && ICON_FAILURES.add(b.getClass().getName())) {
                 LOG.warn("getIcon({}, 0) of {} returned null; its model uses the missing texture", side, b.getClass().getName());
@@ -266,6 +269,19 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             }
         }
         if (meta != 0) return iconName(b, side, 0);
+        // no icon for metadata 0 (a block that only draws some variants): any other metadata's icon beats the missing-texture cube
+        for (int m = 1; m < 16; m++) {
+            try {
+                IIcon icon = b.getIcon(side, m);
+                String name = icon == null ? null : nameOf(icon);
+                if (name != null && !name.equals("minecraft:missingno")) return name;
+            } catch (RuntimeException e) {
+                // next metadata
+            }
+        }
+        if (ICON_FAILURES.add(b.getClass().getName() + "#none")) {
+            LOG.warn("{} has no icon for side {} in any metadata; its model uses the missing texture", b.getClass().getName(), side);
+        }
         return "minecraft:missingno";
     }
 
