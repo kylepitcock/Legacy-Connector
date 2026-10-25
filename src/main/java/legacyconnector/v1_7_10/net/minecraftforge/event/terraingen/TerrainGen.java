@@ -34,6 +34,15 @@ public abstract class TerrainGen {
         return event.getResult() != Event.Result.DENY;
     }
 
+    /** The generator a world uses for a structure or carver: the original unless a handler of {@link InitMapGenEvent} substitutes one. */
+    public static <T extends legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase> T getModdedMapGen(T original, InitMapGenEvent.EventType type) {
+        InitMapGenEvent event = new InitMapGenEvent(type, original);
+        MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        @SuppressWarnings("unchecked")
+        T result = (T) event.newGen;
+        return result;
+    }
+
     public static boolean saplingGrowTree(legacyconnector.v1_7_10.net.minecraft.world.World world, java.util.Random random, int x, int y, int z) {
         return true;
     }
