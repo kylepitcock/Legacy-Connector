@@ -41,7 +41,9 @@ public interface IForgeRegistryEntry<V> {
         public final Class<V> getRegistryType() {
             Class<?> c = getClass();
             while (c != null) {
-                for (Class<?> i : c.getInterfaces()) if (i == IForgeRegistryEntry.class) return (Class<V>) c;
+                // the registry type is the class that extends Impl (Block, Item, ...), not Impl itself
+                if (c.getSuperclass() == Impl.class) return (Class<V>) c;
+                for (Class<?> i : c.getInterfaces()) if (i == IForgeRegistryEntry.class && c != Impl.class) return (Class<V>) c;
                 c = c.getSuperclass();
             }
             return (Class<V>) getClass();

@@ -32,6 +32,23 @@ public class GameRegistry {
         for (IForgeRegistry<?> reg : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
             if (reg.getRegistrySuperType() == registryType) return (IForgeRegistry<T>) reg;
         }
+        for (IForgeRegistry<?> reg : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
+            if (reg.getRegistrySuperType() != null && reg.getRegistrySuperType().getName().equals(registryType.getName())) return (IForgeRegistry<T>) reg;
+        }
+        String synthPrefix = "legacyconnector_synth.v1_12_2.";
+        if (registryType.getName().startsWith(synthPrefix)) {
+            // a registry typed by a synthesized class: typed by its legacy name when first asked for
+            String legacy = registryType.getName().substring(synthPrefix.length());
+            for (var reg : new org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.Reg<?>[] {
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.VILLAGER_PROFESSIONS, org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTION_TYPES}) {
+                if (reg.getRegistrySuperType() == null) reg.mcc$type(legacy);
+                if (reg.getRegistrySuperType() != null && reg.getRegistrySuperType().getName().equals(registryType.getName())) return (IForgeRegistry<T>) reg;
+            }
+        }
+        for (IForgeRegistry<?> reg : new IForgeRegistry<?>[] {ForgeRegistries.VILLAGER_PROFESSIONS, ForgeRegistries.POTION_TYPES}) {
+            if (reg.getRegistrySuperType() != null && reg.getRegistrySuperType().getName().equals(registryType.getName())) return (IForgeRegistry<T>) reg;
+        }
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/Registries").warn("No registry for {}", registryType.getName());
         return null;
     }
 
