@@ -429,4 +429,34 @@ public class Property {
             return fallback;
         }
     }
+
+    public String getComment() {
+        return comment == null ? "" : comment;
+    }
+
+    public Property setComment(String comment) {
+        this.comment = comment;
+        return this;
+    }
+
+    private Object mcc$entryClass;
+    private java.util.regex.Pattern mcc$validation;
+
+    public Property setConfigEntryClass(Class<?> clazz) {
+        this.mcc$entryClass = clazz;
+        return this;
+    }
+
+    public Class<?> getConfigEntryClass() {
+        return (Class<?>) mcc$entryClass;
+    }
+
+    public Property setValidationPattern(java.util.regex.Pattern validationPattern) {
+        this.mcc$validation = validationPattern;
+        return this;
+    }
+
+    public java.util.regex.Pattern getValidationPattern() {
+        return mcc$validation;
+    }
 }

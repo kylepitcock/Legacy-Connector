@@ -9,6 +9,10 @@ public class NetworkRegistry {
         return new SimpleNetworkWrapper(name);
     }
 
+    public FMLEventChannel newEventDrivenChannel(String name) {
+        return new FMLEventChannel();
+    }
+
     public void registerGuiHandler(Object mod, IGuiHandler handler) {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.register(mod, handler);
     }

@@ -12,7 +12,7 @@ import java.util.concurrent.Callable;
 public enum CapabilityManager {
     INSTANCE;
 
-    private final Map<String, Capability<?>> providers = new HashMap<>();
+    private final Map<String, Capability<?>> providers = new java.util.IdentityHashMap<>();
     private final Map<String, List<java.lang.reflect.Member>> injections = new HashMap<>();
 
     public synchronized <T> void register(Class<T> type, Capability.IStorage<T> storage, Callable<? extends T> factory) {
@@ -33,7 +33,7 @@ public enum CapabilityManager {
     /** Called by the platform for each annotated member found in a mod. */
     public synchronized void mcc$addInjection(String capabilityType, java.lang.reflect.Member member) {
         injections.computeIfAbsent(capabilityType, k -> new ArrayList<>()).add(member);
-        Capability<?> cap = providers.get(capabilityType);
+        Capability<?> cap = providers.get(capabilityType.intern());
         if (cap != null) inject(cap, member);
     }
 

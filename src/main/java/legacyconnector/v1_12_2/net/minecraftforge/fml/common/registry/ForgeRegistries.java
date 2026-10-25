@@ -1,4 +1,6 @@
-package legacyconnector.v1_12_2.net.minecraftforge.registries;
+package legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry;
+
+import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry;
 
 import legacyconnector.v1_12_2.net.minecraft.block.Block;
 import legacyconnector.v1_12_2.net.minecraft.item.Item;

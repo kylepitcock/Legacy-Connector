@@ -8,9 +8,11 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModMetadata;
 import org.kylepitcock.legacyconnector.core.LegacyModRecord;
 
 /** The legacy-facing ModContainer of a 1.12.2 mod, plus the "currently active mod" used to attribute registrations. */
-public final class LegacyModContainer1122 implements ModContainer {
+public final class LegacyModContainer1122 extends legacyconnector.v1_12_2.net.minecraftforge.fml.common.FMLModContainer {
     private static volatile LegacyModContainer1122 active;
 
+    /** Mods (Pulsar) register listeners on a container's lifecycle bus, found by reflection on the container class. */
+    private final com.google.common.eventbus.EventBus eventBus = new com.google.common.eventbus.EventBus();
     private final LegacyModRecord record;
     private final ModMetadata metadata = new ModMetadata();
 
@@ -28,6 +30,10 @@ public final class LegacyModContainer1122 implements ModContainer {
 
     static void setActive(LegacyModContainer1122 container) {
         active = container;
+    }
+
+    public com.google.common.eventbus.EventBus mcc$bus() {
+        return eventBus;
     }
 
     public LegacyModRecord record() {

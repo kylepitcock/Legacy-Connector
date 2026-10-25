@@ -23,7 +23,14 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public Block(Material material) {
         this.blockMaterial = material;
-        this.blockState = createBlockState();
+        legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer container = null;
+        try {
+            // overridden by mods before their own fields exist, as in 1.12; a state container that fails to build leaves the plain one
+            container = createBlockState();
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("The block state of {} could not be built: {}", getClass().getName(), e.toString());
+        }
+        this.blockState = container != null ? container : new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this);
         setDefaultState(blockState.getBaseState());
     }
 

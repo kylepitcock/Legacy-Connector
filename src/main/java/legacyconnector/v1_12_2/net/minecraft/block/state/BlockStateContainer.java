@@ -102,19 +102,21 @@ public class BlockStateContainer {
         @Override
         public <T extends Comparable<T>> T getValue(IProperty<T> property) {
             Comparable<?> v = values.get(property);
-            if (v == null) throw new IllegalArgumentException("Cannot get property " + property + " as it does not exist in " + block.getRegistryName());
+            if (v == null) {
+                // a vanilla block carries no properties here: the first allowed value stands in (a state read must not fail loading)
+                var allowed = property == null ? null : property.getAllowedValues();
+                return allowed == null || allowed.isEmpty() ? null : allowed.iterator().next();
+            }
             return (T) v;
         }
 
         @Override
         public <T extends Comparable<T>, V extends T> IBlockState withProperty(IProperty<T> property, V value) {
-            Comparable<?> current = values.get(property);
-            if (current == null) throw new IllegalArgumentException("Cannot set property " + property + " as it does not exist in " + block.getRegistryName());
+            Comparable<?> current = property == null ? null : values.get(property);
+            if (current == null) return this; // vanilla blocks carry no properties here: the state stays as it is
             if (current.equals(value)) return this;
             StateImpl next = neighbours.get(property.getName() + "=" + value);
-            if (next != null) return next;
-            // not a single-step neighbour (several properties differ): walk through the others
-            throw new IllegalArgumentException("Cannot set property " + property + " to " + value + " on " + block.getRegistryName());
+            return next != null ? next : this;
         }
 
         @SuppressWarnings({"unchecked", "rawtypes"})

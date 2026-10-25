@@ -157,6 +157,11 @@ public final class Registries1122 {
         }
 
         @Override
+        public java.util.Iterator<V> iterator() {
+            return getValues().iterator();
+        }
+
+        @Override
         public synchronized Set<Map.Entry<ResourceLocation, V>> getEntries() {
             return Collections.unmodifiableSet(new java.util.LinkedHashSet<>(byName.entrySet()));
         }

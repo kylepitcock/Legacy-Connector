@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
-public interface IForgeRegistry<V extends IForgeRegistryEntry<V>> {
+public interface IForgeRegistry<V extends IForgeRegistryEntry<V>> extends Iterable<V> {
     Class<V> getRegistrySuperType();
 
     void register(V value);

@@ -8,7 +8,6 @@ import legacyconnector.v1_12_2.net.minecraft.block.Block;
 import legacyconnector.v1_12_2.net.minecraft.item.Item;
 import legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
-import legacyconnector.v1_12_2.net.minecraftforge.registries.ForgeRegistries;
 import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry;
 import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122;

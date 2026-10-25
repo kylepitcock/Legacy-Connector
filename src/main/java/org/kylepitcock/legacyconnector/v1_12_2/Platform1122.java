@@ -185,6 +185,11 @@ public final class Platform1122 implements LegacyPlatform {
         LegacyModContainer1122 container = (LegacyModContainer1122) mod.platformData;
         LegacyModContainer1122.setActive(container);
         try {
+            try {
+                container.mcc$bus().post(event);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("{}: a lifecycle listener on the container bus failed for {}: {}", mod.legacyId, event.getClass().getSimpleName(), e.toString());
+            }
             for (Method m : handlers(mod.mainClass)) {
                 if (m.getParameterTypes()[0].isInstance(event)) {
                     m.setAccessible(true);
