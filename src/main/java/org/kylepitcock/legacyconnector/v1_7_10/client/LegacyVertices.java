@@ -147,10 +147,57 @@ public final class LegacyVertices {
             case GL_QUAD_STRIP -> {
                 for (int i = 0; i + 3 < n; i += 2) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 3), vertices.get(i + 2));
             }
+            case GL_LINES -> {
+                for (int i = 0; i + 1 < n; i += 2) line(s, vertices.get(i), vertices.get(i + 1));
+            }
+            case GL_LINE_STRIP -> {
+                for (int i = 0; i + 1 < n; i++) line(s, vertices.get(i), vertices.get(i + 1));
+            }
+            case GL_LINE_LOOP -> {
+                for (int i = 0; i < n && n > 1; i++) line(s, vertices.get(i), vertices.get((i + 1) % n));
+            }
             default -> {
-                // lines and points have no counterpart in the entity pipelines
+                // points have no counterpart in the entity pipelines
             }
         }
+    }
+
+    /**
+     * A line is a thin quad (the pipelines draw no lines): one GUI unit wide in screens, a hair wide in the world; it lies in the xy plane
+     * when the segment does, and otherwise is widened sideways.
+     */
+    private static void line(Snapshot s, double[] a, double[] b) {
+        double dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+        double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
+        if (len < 1.0E-9) return;
+        double half = RenderContext.gui() != null ? 0.5D : 0.01D;
+        double px, py, pz;
+        if (Math.abs(dz) < 1.0E-6) {
+            double l2 = Math.sqrt(dx * dx + dy * dy);
+            px = -dy / l2 * half;
+            py = dx / l2 * half;
+            pz = 0;
+        } else {
+            // perpendicular to the segment and to the up axis (or the x axis for a vertical one)
+            double ux = 0, uy = 1, uz = 0;
+            if (Math.abs(dy) > 0.999D * len) {
+                ux = 1;
+                uy = 0;
+            }
+            px = dy * uz - dz * uy;
+            py = dz * ux - dx * uz;
+            pz = dx * uy - dy * ux;
+            double l2 = Math.sqrt(px * px + py * py + pz * pz);
+            px = px / l2 * half;
+            py = py / l2 * half;
+            pz = pz / l2 * half;
+        }
+        double[] v0 = a.clone(), v1 = b.clone(), v2 = b.clone(), v3 = a.clone();
+        v0[0] += px; v0[1] += py; v0[2] += pz;
+        v1[0] += px; v1[1] += py; v1[2] += pz;
+        v2[0] -= px; v2[1] -= py; v2[2] -= pz;
+        v3[0] -= px; v3[1] -= py; v3[2] -= pz;
+        emit(s, v0, v1, v2, v3);
     }
 
     private static void emit(Snapshot s, double[] a, double[] b, double[] c, double[] d) {

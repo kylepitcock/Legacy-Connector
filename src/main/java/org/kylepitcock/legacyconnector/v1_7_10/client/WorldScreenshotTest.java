@@ -241,6 +241,8 @@ public final class WorldScreenshotTest {
                 // "shot:<name>" takes a screenshot (after the world around has had time to render), "wait:<ticks>" waits
                 if (c.startsWith("shot:")) add(wait(100), shot(c.substring(5)));
                 else if (c.startsWith("wait:")) add(wait(Integer.parseInt(c.substring(5))));
+                else if (c.equals("use")) add(run(mc -> mc.gameMode.useItem(mc.player, net.minecraft.world.InteractionHand.MAIN_HAND)), wait(40));
+                else if (c.startsWith("key:")) add(run(mc -> mc.keyboardHandler.keyPress(mc.getWindow().getWindow(), Integer.parseInt(c.substring(4)), 0, 1, 0)), wait(10));
                 else if (c.startsWith("cam:")) add(run(mc -> mc.options.setCameraType(camName.equals("front") ? net.minecraft.client.CameraType.THIRD_PERSON_FRONT
                         : camName.equals("back") ? net.minecraft.client.CameraType.THIRD_PERSON_BACK : net.minecraft.client.CameraType.FIRST_PERSON)));
                 else add(command(c), wait(30));
