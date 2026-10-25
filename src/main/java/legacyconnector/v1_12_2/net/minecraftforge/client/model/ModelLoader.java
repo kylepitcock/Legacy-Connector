@@ -17,6 +17,19 @@ public class ModelLoader {
         CUSTOM.computeIfAbsent(item, k -> new TreeMap<>()).put(metadata, model);
     }
 
+    private static final Map<legacyconnector.v1_12_2.net.minecraft.block.Block, legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper> STATE_MAPPERS =
+            new java.util.IdentityHashMap<>();
+
+    public static synchronized void setCustomStateMapper(legacyconnector.v1_12_2.net.minecraft.block.Block block,
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper mapper) {
+        STATE_MAPPERS.put(block, mapper);
+    }
+
+    /** The mapper a block's state variants come from, or null for the default (property string) one. */
+    public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper mcc$stateMapper(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
+        return STATE_MAPPERS.get(block);
+    }
+
     public static synchronized void setCustomMeshDefinition(Item item, ItemMeshDefinition meshDefinition) {
         MESH.put(item, meshDefinition);
     }

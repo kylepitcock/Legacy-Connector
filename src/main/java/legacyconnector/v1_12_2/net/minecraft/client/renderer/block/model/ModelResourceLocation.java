@@ -15,6 +15,10 @@ public class ModelResourceLocation extends ResourceLocation {
         this(parse(location));
     }
 
+    public ModelResourceLocation(String location, String variant) {
+        this(parse(location + (variant == null || variant.isEmpty() ? "" : "#" + variant)));
+    }
+
     public ModelResourceLocation(ResourceLocation location, String variant) {
         this(new String[] {location.getNamespace(), location.getPath(), variant == null ? "" : variant});
     }

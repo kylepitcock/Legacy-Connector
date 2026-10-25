@@ -40,10 +40,12 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (!(block.mcc$modern instanceof Legacy1122Block modern)) continue;
             ResourceLocation id = BuiltInRegistries.BLOCK.getKey(modern);
             try {
-                JsonObject state = translate(block, id);
+                JsonObject state = translate(block, id, out);
                 if (state == null) continue;
                 byte[] bytes = GSON.toJson(state).getBytes(StandardCharsets.UTF_8);
                 out.put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", () -> bytes);
+                blockItemModels(block, id, state, out);
+                if (System.getProperty("legacyconnector.debugAssets") != null && id.getPath().equals(System.getProperty("legacyconnector.debugAssets"))) LOG.info("blockstate {}: {}", id, GSON.toJson(state));
             } catch (RuntimeException e) {
                 LOG.debug("Could not translate the blockstate of {}: {}", id, e.toString());
             }
@@ -70,12 +72,18 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         }
     }
 
-    private static JsonObject translate(Block block, ResourceLocation id) {
+    private static JsonObject translate(Block block, ResourceLocation id, Map<String, Supplier<byte[]>> out) {
         JsonObject original = readOriginal(id);
         if (original == null) return null; // the mod models this block in code (or not at all): nothing to translate
         JsonObject legacyVariants = original != null && original.has("variants") && original.get("variants").isJsonObject() ? original.getAsJsonObject("variants") : null;
+        JsonObject defaults = original.has("defaults") && original.get("defaults").isJsonObject() ? original.getAsJsonObject("defaults") : null;
         JsonObject variants = new JsonObject();
         List<IBlockState> states = new ArrayList<>(block.getBlockState().getValidStates());
+        if (System.getProperty("legacyconnector.debugAssets") != null && id.getPath().equals(System.getProperty("legacyconnector.debugAssets"))) {
+            StringBuilder sb = new StringBuilder();
+            for (IBlockState st : states) sb.append(st.getProperties().entrySet().stream().map(e -> e.getKey().getName() + "=" + nameOf(e.getKey(), e.getValue())).collect(java.util.stream.Collectors.joining(","))).append(" | ");
+            LOG.info("states of {}: {} legacyVariants={}", id, sb, legacyVariants == null ? null : legacyVariants.keySet());
+        }
         for (IBlockState state : states) {
             int meta;
             try {
@@ -86,7 +94,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             String modernKey = "meta=" + meta;
             if (variants.has(modernKey)) continue;
             JsonElement model = legacyVariants == null ? null : find(legacyVariants, state);
-            if (model != null) variants.add(modernKey, blockModels(model, id.getNamespace()));
+            if (model == null) model = fromStateMapper(block, id, state);
+            if (model != null) variants.add(modernKey, blockModels(effective(model, defaults), id, modernKey.replace('=', '_'), out));
         }
         if (variants.size() == 0) {
             // no usable legacy file: a cube whose model is named like the block
@@ -99,35 +108,138 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             JsonElement fallback = variants.has("meta=0") ? variants.get("meta=0") : variants.entrySet().iterator().next().getValue();
             for (int meta = 0; meta < 16; meta++) if (!variants.has("meta=" + meta)) variants.add("meta=" + meta, fallback);
         }
-        JsonObject out = new JsonObject();
-        out.add("variants", variants);
-        return out;
+        JsonObject result = new JsonObject();
+        result.add("variants", variants);
+        return result;
+    }
+
+    /** Forge's blockstate format v1: a variant inherits the "defaults" object (its textures are merged, the other keys replaced). */
+    private static JsonElement effective(JsonElement variant, JsonObject defaults) {
+        if (variant.isJsonArray()) {
+            var arr = new com.google.gson.JsonArray();
+            for (JsonElement e : variant.getAsJsonArray()) arr.add(effective(e, defaults));
+            return arr;
+        }
+        if (!variant.isJsonObject() || defaults == null) return variant;
+        JsonObject merged = new JsonObject();
+        for (var e : defaults.entrySet()) merged.add(e.getKey(), e.getValue());
+        for (var e : variant.getAsJsonObject().entrySet()) {
+            if (e.getKey().equals("textures") && merged.has("textures") && merged.get("textures").isJsonObject() && e.getValue().isJsonObject()) {
+                JsonObject tex = merged.getAsJsonObject("textures").deepCopy();
+                for (var t : e.getValue().getAsJsonObject().entrySet()) tex.add(t.getKey(), t.getValue());
+                merged.add("textures", tex);
+            } else {
+                merged.add(e.getKey(), e.getValue());
+            }
+        }
+        return merged;
+    }
+
+    private static boolean modelExists(String namespace, String path) {
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        return loader.getResource("assets/" + namespace + "/models/" + path + ".json") != null;
     }
 
     /**
-     * A 1.12 blockstate names its models relative to models/block/ ("model": "livingwood" is models/block/livingwood.json); 1.13 and later
-     * name the full path, so the prefix is added.
+     * A 1.12 blockstate names its models relative to models/block/ ("model": "livingwood" is models/block/livingwood.json; names without a namespace
+     * are vanilla's unless the mod has such a file); 1.13 and later name the full path. A variant that overrides textures gets its own generated
+     * model file (modern blockstate variants have no texture overrides).
      */
-    private static JsonElement blockModels(JsonElement variant, String defaultNamespace) {
+    private static JsonElement blockModels(JsonElement variant, ResourceLocation blockId, String key, Map<String, Supplier<byte[]>> out) {
         if (variant.isJsonArray()) {
-            var out = new com.google.gson.JsonArray();
-            for (JsonElement e : variant.getAsJsonArray()) out.add(blockModels(e, defaultNamespace));
-            return out;
+            var arr = new com.google.gson.JsonArray();
+            int i = 0;
+            for (JsonElement e : variant.getAsJsonArray()) arr.add(blockModels(e, blockId, key + "_" + i++, out));
+            return arr;
         }
         if (!variant.isJsonObject()) return variant;
+        String defaultNamespace = blockId.getNamespace();
         JsonObject copy = new JsonObject();
-        for (var e : variant.getAsJsonObject().entrySet()) {
-            if (e.getKey().equals("model") && e.getValue().isJsonPrimitive()) {
+        JsonObject source = variant.getAsJsonObject();
+        String model = null;
+        for (var e : source.entrySet()) {
+            String k = e.getKey();
+            if (k.equals("model") && e.getValue().isJsonPrimitive()) {
                 String m = e.getValue().getAsString().toLowerCase(java.util.Locale.ROOT);
                 int colon = m.indexOf(':');
-                String ns = colon >= 0 ? m.substring(0, colon) : defaultNamespace;
                 String path = colon >= 0 ? m.substring(colon + 1) : m;
-                copy.addProperty("model", org.kylepitcock.legacyconnector.core.Ids.namespace(ns) + ":block/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(path));
-            } else {
-                copy.add(e.getKey(), e.getValue());
+                String normalized = org.kylepitcock.legacyconnector.core.Ids.normalizePath(path);
+                String ns = colon >= 0 ? m.substring(0, colon) : modelExists(defaultNamespace, "block/" + normalized) ? defaultNamespace : "minecraft";
+                model = org.kylepitcock.legacyconnector.core.Ids.namespace(ns) + ":block/" + normalized;
+            } else if (!k.equals("textures") && !k.equals("custom") && !k.equals("submodel") && !k.equals("transform") && !k.equals("simple_model")
+                    && !k.equals("ambient_occlusion") && !k.equals("gui3d")) {
+                copy.add(k, e.getValue());
             }
         }
+        if (model == null) return copy;
+        if (source.has("textures") && source.get("textures").isJsonObject() && source.getAsJsonObject("textures").size() > 0) {
+            JsonObject generated = new JsonObject();
+            generated.addProperty("parent", model);
+            JsonObject textures = new JsonObject();
+            for (var t : source.getAsJsonObject("textures").entrySet()) {
+                if (t.getValue().isJsonPrimitive()) textures.addProperty(t.getKey(), lowerRef(t.getValue().getAsString()));
+            }
+            generated.add("textures", textures);
+            String path = "block/lc1122/" + blockId.getPath() + "_" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(key);
+            byte[] bytes = GSON.toJson(generated).getBytes(StandardCharsets.UTF_8);
+            out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+            model = blockId.getNamespace() + ":" + path;
+        }
+        copy.addProperty("model", model);
         return copy;
+    }
+
+    private static String lowerRef(String ref) {
+        if (ref.startsWith("#")) return ref;
+        int colon = ref.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : ref.substring(0, colon);
+        String path = colon < 0 ? ref : ref.substring(colon + 1);
+        return org.kylepitcock.legacyconnector.core.Ids.namespace(ns) + ":" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(path);
+    }
+
+    /** The item models of a block's items (an ItemBlock without a model file of its own draws the block's model of its metadata). */
+    private static void blockItemModels(Block block, ResourceLocation blockId, JsonObject state, Map<String, Supplier<byte[]>> out) {
+        var item = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.itemOf(block);
+        if (item == null || item.getRegistryName() == null) return;
+        JsonObject variants = state.getAsJsonObject("variants");
+        for (int meta = 0; meta < 16; meta++) {
+            var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
+            if (modern == null) continue;
+            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(modern);
+            if (!itemId.getNamespace().equals(blockId.getNamespace()) || modelExists(itemId.getNamespace(), "item/" + itemId.getPath())) continue;
+            JsonElement v = variants.get("meta=" + meta);
+            while (v != null && v.isJsonArray() && v.getAsJsonArray().size() > 0) v = v.getAsJsonArray().get(0);
+            if (v == null || !v.isJsonObject() || !v.getAsJsonObject().has("model")) continue;
+            JsonObject model = new JsonObject();
+            model.addProperty("parent", v.getAsJsonObject().get("model").getAsString());
+            byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+            out.put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", () -> bytes);
+        }
+    }
+
+    /**
+     * A block whose states are mapped in code (ModelLoader.setCustomStateMapper, as Chisel does): the mapper names the blockstate file and
+     * variant of each state.
+     */
+    private static JsonElement fromStateMapper(Block block, ResourceLocation id, IBlockState state) {
+        var mapper = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$stateMapper(block);
+        if (mapper == null) return null;
+        try {
+            var mrl = mapper.putStateModelLocations(block).get(state);
+            if (mrl == null) return null;
+            ResourceLocation file = ResourceLocation.fromNamespaceAndPath(org.kylepitcock.legacyconnector.core.Ids.namespace(mrl.getNamespace()),
+                    org.kylepitcock.legacyconnector.core.Ids.normalizePath(mrl.getPath()));
+            JsonObject original = readOriginal(file);
+            if (original == null || !original.has("variants") || !original.get("variants").isJsonObject()) return null;
+            JsonObject variants = original.getAsJsonObject("variants");
+            JsonElement v = variants.get(mrl.getVariant());
+            if (v == null && mrl.getVariant().equals("normal") && variants.size() == 1) v = variants.entrySet().iterator().next().getValue();
+            if (v == null) return null;
+            JsonObject defaults = original.has("defaults") && original.get("defaults").isJsonObject() ? original.getAsJsonObject("defaults") : null;
+            return effective(v, defaults);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     /** The variant of one state: the exact "a=b,c=d" key, "normal" for property-less blocks, or Forge's nested form. */
@@ -143,6 +255,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         }
         if (legacyVariants.has(key.toString())) return legacyVariants.get(key.toString());
         if (props.isEmpty() && legacyVariants.has("normal")) return legacyVariants.get("normal");
+        // Forge also took the bare value of a block's only varying property as the variant name ("variants": {"array": ...} for variation=array)
+        if (props.size() == 1 && legacyVariants.has(props.firstEntry().getValue()) && !legacyVariants.has(props.firstKey())) {
+            return legacyVariants.get(props.firstEntry().getValue());
+        }
         if (legacyVariants.has("normal") && legacyVariants.get("normal").isJsonObject() && !legacyVariants.has(props.firstKey())) {
             return legacyVariants.get("normal");
         }
