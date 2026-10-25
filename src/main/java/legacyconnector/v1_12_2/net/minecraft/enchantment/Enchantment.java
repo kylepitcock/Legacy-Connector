@@ -4,6 +4,7 @@ import legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot;
 import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry;
 
 public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> {
+    public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Enchantment> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS, "protection");
     public EnumEnchantmentType type;
     private final EntityEquipmentSlot[] applicableEquipmentTypes;
     private final Rarity rarity;

@@ -35,7 +35,20 @@ public final class BlockBridge1122 {
         Material m = block.getMaterialLegacy();
         if (m != null && !m.isOpaque()) p.noOcclusion();
         if (m != null && !m.blocksMovement()) p.noCollission();
-        Legacy1122Block modern = new Legacy1122Block(block, p);
+        boolean entity = false;
+        try {
+            entity = block.hasTileEntity(block.getDefaultState());
+        } catch (RuntimeException | LinkageError e) {
+            // a block that cannot answer before it has a world has no tile entity
+        }
+        Legacy1122Block modern;
+        if (entity) {
+            var eb = new org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122EntityBlock(block, p);
+            TileEntityBridge1122.addBlock(eb);
+            modern = eb;
+        } else {
+            modern = new Legacy1122Block(block, p);
+        }
         LegacyRegistrar.register(BuiltInRegistries.BLOCK, id, modern);
         block.mcc$modern = modern;
         synchronized (MODERN) {

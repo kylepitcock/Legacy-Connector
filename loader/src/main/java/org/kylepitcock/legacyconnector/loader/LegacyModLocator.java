@@ -54,6 +54,36 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     static final String EMBEDDED_RUNTIME = "/META-INF/legacyconnector/legacyconnector-runtime.jar";
     static final String SHIM_INDEX_PROPERTY = "legacyconnector.shimIndex";
 
+    /**
+     * 1.12 jars may carry libraries and coremods as nested jars named by the {@code ContainedDeps} manifest attribute (stored under
+     * {@code META-INF/libraries/}); Forge unpacked them next to the mods. They are extracted and handled as legacy jars of their own.
+     */
+    private static void addContainedDeps(Path jarPath, Path nestedDir, List<LegacyJar> legacy, java.util.Set<String> seenNames) {
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jarPath.toFile())) {
+            var entry = zip.getEntry("META-INF/MANIFEST.MF");
+            if (entry == null) return;
+            String deps;
+            try (var in = zip.getInputStream(entry)) {
+                deps = new Manifest(in).getMainAttributes().getValue("ContainedDeps");
+            }
+            if (deps == null || deps.isBlank()) return;
+            for (String dep : deps.trim().split("\\s+")) {
+                var nested = zip.getEntry("META-INF/libraries/" + dep);
+                if (nested == null) nested = zip.getEntry(dep);
+                if (nested == null || !seenNames.add(dep.toLowerCase())) continue;
+                Files.createDirectories(nestedDir);
+                Path target = nestedDir.resolve(dep);
+                try (var in = zip.getInputStream(nested)) {
+                    Files.copy(in, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                }
+                LegacyJar jar = LegacyJarInspector.inspect(target);
+                if (jar != null) legacy.add(jar);
+            }
+        } catch (IOException | RuntimeException e) {
+            LOG.debug("Legacy Connector: could not read the contained dependencies of {}", jarPath, e);
+        }
+    }
+
     @Override
     public int getPriority() {
         return 100; // before ModsFolderLocator (0)
@@ -87,6 +117,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         try {
                             LegacyJar jar = LegacyJarInspector.inspect(p);
                             if (jar != null) legacy.add(jar);
+                            addContainedDeps(p, gameDir.resolve(".legacyconnector").resolve("nested"), legacy, seenNames);
                         } catch (IOException | RuntimeException e) {
                             LOG.debug("Legacy Connector: could not inspect {}", p, e);
                         }

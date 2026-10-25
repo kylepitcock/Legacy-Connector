@@ -29,6 +29,10 @@ public final class Platform1122 implements LegacyPlatform {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/1.12.2");
     private static final String SIDED_PROXY = Type.getDescriptor(SidedProxy.class);
 
+    static {
+        org.kylepitcock.legacyconnector.core.synth.Synth.addStaticResolver(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122::resolveStatic);
+    }
+
     @Override
     public String version() {
         return "1.12.2";
@@ -38,11 +42,13 @@ public final class Platform1122 implements LegacyPlatform {
     public void construct(LegacyModRecord mod) throws Exception {
         Loader.mcc$setState(LoaderState.CONSTRUCTING);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        mod.mainClass = Class.forName(mod.mainClassName, true, loader);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.CoreModPlugins1122.runAll(loader);
         LegacyModContainer1122 container = new LegacyModContainer1122(mod);
         mod.platformData = container;
+        // the active container is set before the mod class loads: static initializers ask FML which mod they belong to
         LegacyModContainer1122.setActive(container);
         try {
+            mod.mainClass = Class.forName(mod.mainClassName, true, loader);
             var ctor = mod.mainClass.getDeclaredConstructor();
             ctor.setAccessible(true);
             mod.instance = ctor.newInstance();
@@ -97,7 +103,16 @@ public final class Platform1122 implements LegacyPlatform {
             if (sp == null) continue;
             if (!sp.modId().isEmpty() && !sp.modId().equals(mod.legacyId)) continue;
             String cls = client ? sp.clientSide() : sp.serverSide();
-            if (cls.isEmpty()) cls = f.getType().getName();
+            if (cls.isEmpty()) {
+                // Forge's default: the nested ClientProxy / ServerProxy class of the field type
+                String nested = f.getType().getName() + (client ? "$ClientProxy" : "$ServerProxy");
+                try {
+                    Class.forName(nested, false, loader);
+                    cls = nested;
+                } catch (ClassNotFoundException | LinkageError e) {
+                    cls = f.getType().getName();
+                }
+            }
             Object proxy;
             try {
                 var c = Class.forName(cls, true, loader).getDeclaredConstructor();
@@ -105,6 +120,10 @@ public final class Platform1122 implements LegacyPlatform {
                 proxy = c.newInstance();
             } catch (ClassNotFoundException e) {
                 LOG.error("{}: proxy class {} not found", mod.legacyId, cls);
+                continue;
+            } catch (ReflectiveOperationException | LinkageError e) {
+                LOG.error("{}: the proxy {} could not be created ({}): {}", mod.legacyId, cls, e.getClass().getSimpleName(),
+                        java.lang.reflect.Modifier.isAbstract(Class.forName(cls, false, loader).getModifiers()) ? "it is abstract" : String.valueOf(e.getMessage()));
                 continue;
             }
             f.setAccessible(true);
@@ -128,9 +147,11 @@ public final class Platform1122 implements LegacyPlatform {
                 } else {
                     target = owner.getDeclaredField(member);
                 }
-                var inject = target instanceof Field f ? f.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityInject.class)
-                        : target instanceof Method m ? m.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityInject.class) : null;
-                if (inject != null) legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityManager.INSTANCE.mcc$addInjection(inject.value().getName(), target);
+                // the capability type may be a class of an absent mod: read its name from the scan data instead of loading it
+                Object value = a.annotationData().get("value");
+                if (target != null && value instanceof Type t) {
+                    legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityManager.INSTANCE.mcc$addInjection(t.getClassName(), target);
+                }
             } catch (ReflectiveOperationException | LinkageError e) {
                 LOG.warn("{}: cannot prepare the capability injection {}: {}", mod.legacyId, a.memberName(), e.toString());
             }
@@ -216,6 +237,56 @@ public final class Platform1122 implements LegacyPlatform {
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.SOUND_EVENTS));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS));
+        injectObjectHolders();
+    }
+
+    /** {@code @GameRegistry.ObjectHolder} fields (and classes with a mod id) receive the registered block or item of their name. */
+    private static void injectObjectHolders() {
+        String desc = Type.getDescriptor(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder.class);
+        for (LegacyModRecord mod : LegacyMods.all()) {
+            if (!"1.12.2".equals(mod.version) || mod.container == null) continue;
+            var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
+            if (scan == null) continue;
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            for (var a : scan.getAnnotations()) {
+                if (!a.annotationType().getDescriptor().equals(desc)) continue;
+                try {
+                    Class<?> owner = Class.forName(a.clazz().getClassName(), false, loader);
+                    String member = a.memberName();
+                    if (member.equals(a.clazz().getClassName()) || member.isEmpty()) {
+                        var holder = owner.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder.class);
+                        if (holder == null) continue;
+                        for (Field f : owner.getDeclaredFields()) {
+                            if (Modifier.isStatic(f.getModifiers()) && !f.isAnnotationPresent(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder.class)) {
+                                holderField(f, holder.value() + ":" + f.getName().toLowerCase(java.util.Locale.ROOT));
+                            }
+                        }
+                    } else {
+                        Field f = owner.getDeclaredField(member);
+                        var holder = f.getAnnotation(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder.class);
+                        if (holder != null) holderField(f, holder.value().contains(":") ? holder.value() : mod.legacyId + ":" + holder.value());
+                    }
+                } catch (ReflectiveOperationException | LinkageError e) {
+                    LOG.warn("{}: cannot inject the object holder {}: {}", mod.legacyId, a.memberName(), e.toString());
+                }
+            }
+        }
+    }
+
+    private static void holderField(Field f, String name) {
+        var key = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name);
+        Object value = null;
+        if (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(key);
+        else if (legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS.getValue(key);
+        if (value == null || !f.getType().isInstance(value)) return;
+        try {
+            org.kylepitcock.legacyconnector.core.StaticFields.set(f, value);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOG.warn("Cannot inject {} into {}: {}", name, f, e.toString());
+        }
     }
 
     private static void post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
@@ -225,6 +296,7 @@ public final class Platform1122 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122.registerTabs();
     }
 

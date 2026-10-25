@@ -19,7 +19,8 @@ public final class OptionalStripper {
 
     /** @param present legacy mod ids loaded alongside (case-insensitive) */
     public static int apply(ClassNode node, String shimPrefix, Set<String> present, Hierarchy hierarchy) {
-        String base = "L" + shimPrefix + "cpw/mods/fml/common/Optional$";
+        // FML moved from cpw.mods.fml (1.7.10) to net.minecraftforge.fml (1.8 and later).
+        String base = "L" + shimPrefix + ("legacyconnector/v1_12_2/".equals(shimPrefix) ? "net/minecraftforge/fml/common/Optional$" : "cpw/mods/fml/common/Optional$");
         int stripped = 0;
         List<AnnotationNode> annotations = all(node.visibleAnnotations, node.invisibleAnnotations);
         List<String> removeIfaces = new ArrayList<>();

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.bridge;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -17,6 +18,7 @@ public final class Vanilla1122 {
     private static final Map<String, String> BLOCK_NAMES = new HashMap<>();
     private static final Map<String, String> ITEM_NAMES = new HashMap<>();
     private static final Map<net.minecraft.world.item.Item, Item> ITEM_REVERSE = new IdentityHashMap<>();
+    private static final Map<net.minecraft.world.level.block.Block, Block> BLOCK_REVERSE = new IdentityHashMap<>();
 
     static {
         String[] blocks = {"GRASS", "grass_block", "LOG", "oak_log", "LOG2", "acacia_log", "PLANKS", "oak_planks", "LEAVES", "oak_leaves",
@@ -69,7 +71,13 @@ public final class Vanilla1122 {
         VanillaBlock b = new VanillaBlock(field.equals("AIR") ? Material.AIR : Material.ROCK);
         b.setRegistryName("minecraft", legacy);
         ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
-        if (id != null) b.mcc$modern = BuiltInRegistries.BLOCK.get(id);
+        if (id != null) {
+            var modern = BuiltInRegistries.BLOCK.get(id);
+            b.mcc$modern = modern;
+            synchronized (Vanilla1122.class) {
+                BLOCK_REVERSE.putIfAbsent(modern, b);
+            }
+        }
         Registries1122.BLOCKS.registerVanilla(b);
         return b;
     }
@@ -134,6 +142,95 @@ public final class Vanilla1122 {
             super(Rarity.COMMON, legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType.ALL,
                     new legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot[0]);
         }
+    }
+
+    /**
+     * Vanilla constants typed with a class only the synthesizer provides (Blocks.GRASS is a BlockGrass): an instance of that class,
+     * made like the plain wrappers. Called by the synthesized static-field accessor on first read.
+     */
+    public static Object resolveStatic(String key, Class<?> accessor) {
+        boolean blocks = key.startsWith("net.minecraft.init.Blocks.");
+        boolean items = key.startsWith("net.minecraft.init.Items.");
+        if (!blocks && !items) return null;
+        String field = key.substring(key.lastIndexOf('.') + 1);
+        java.lang.reflect.Method getter = null;
+        for (var m : accessor.getDeclaredMethods()) if (m.getName().equals("sget$" + field)) getter = m;
+        if (getter == null) return null;
+        Class<?> type = getter.getReturnType();
+        Object o = instantiate(type);
+        String legacy = field.toLowerCase(java.util.Locale.ROOT);
+        if (o instanceof Block b) {
+            b.setRegistryName("minecraft", legacy);
+            ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));
+            if (id != null) {
+                var modern = BuiltInRegistries.BLOCK.get(id);
+                b.mcc$modern = modern;
+                synchronized (Vanilla1122.class) {
+                    BLOCK_REVERSE.putIfAbsent(modern, b);
+                }
+            }
+            Registries1122.BLOCKS.registerVanilla(b);
+        } else if (o instanceof Item i) {
+            i.setRegistryName("minecraft", legacy);
+            ResourceLocation id = find(BuiltInRegistries.ITEM, ITEM_NAMES.getOrDefault(field, legacy));
+            if (id != null) {
+                var modern = BuiltInRegistries.ITEM.get(id);
+                i.mcc$modern = modern;
+                i.mcc$vanillaModern = modern;
+                synchronized (Vanilla1122.class) {
+                    ITEM_REVERSE.putIfAbsent(modern, i);
+                }
+            }
+            Registries1122.ITEMS.registerVanilla(i);
+        }
+        return o;
+    }
+
+    /** A new instance of a synthesized class: its smallest constructor with default arguments, or an uninitialized object. */
+    private static Object instantiate(Class<?> type) {
+        var ctors = type.getDeclaredConstructors();
+        java.util.Arrays.sort(ctors, java.util.Comparator.comparingInt(java.lang.reflect.Constructor::getParameterCount));
+        for (var c : ctors) {
+            try {
+                Class<?>[] p = c.getParameterTypes();
+                Object[] args = new Object[p.length];
+                for (int k = 0; k < p.length; k++) {
+                    if (p[k] == boolean.class) args[k] = false;
+                    else if (p[k] == float.class) args[k] = 0F;
+                    else if (p[k] == double.class) args[k] = 0D;
+                    else if (p[k] == long.class) args[k] = 0L;
+                    else if (p[k].isPrimitive()) args[k] = (byte) 0;
+                    else args[k] = null;
+                }
+                if (p.length > 0) {
+                    for (int k = 0; k < p.length; k++) {
+                        if (p[k] == int.class) args[k] = 0;
+                        if (p[k] == short.class) args[k] = (short) 0;
+                        if (p[k] == byte.class) args[k] = (byte) 0;
+                        if (p[k] == char.class) args[k] = (char) 0;
+                    }
+                }
+                c.setAccessible(true);
+                return c.newInstance(args);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                // try the next constructor
+            }
+        }
+        try {
+            Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            return ((sun.misc.Unsafe) f.get(null)).allocateInstance(type);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState airState() {
+        return legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR.getDefaultState();
+    }
+
+    public static synchronized Block legacyBlockOf(net.minecraft.world.level.block.Block modern) {
+        return BLOCK_REVERSE.get(modern);
     }
 
     /** The legacy wrapper of a modern vanilla item, or null. */

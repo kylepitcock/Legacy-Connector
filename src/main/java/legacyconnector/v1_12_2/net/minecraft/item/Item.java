@@ -6,6 +6,7 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 
 /** 1.12.2 {@code Item}: a registry entry with an unlocalized name, stack/damage limits and a creative tab. */
 public class Item extends IForgeRegistryEntry.Impl<Item> {
+    public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Item> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS, "air");
     protected int maxStackSize = 64;
     private int maxDamage;
     private boolean hasSubtypes;
@@ -124,5 +125,73 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
 
     public boolean hasEffect(ItemStack stack) {
         return false;
+    }
+
+    /** Tool tiers (an enum in 1.12.2; a class here so mods can add their own through EnumHelper). */
+    public static final class ToolMaterial {
+        public static final ToolMaterial WOOD = new ToolMaterial("WOOD", 0, 59, 2.0F, 0.0F, 15);
+        public static final ToolMaterial STONE = new ToolMaterial("STONE", 1, 131, 4.0F, 1.0F, 5);
+        public static final ToolMaterial IRON = new ToolMaterial("IRON", 2, 250, 6.0F, 2.0F, 14);
+        public static final ToolMaterial DIAMOND = new ToolMaterial("DIAMOND", 3, 1561, 8.0F, 3.0F, 10);
+        public static final ToolMaterial GOLD = new ToolMaterial("GOLD", 0, 32, 12.0F, 0.0F, 22);
+
+        private final String name;
+        private final int harvestLevel;
+        private final int maxUses;
+        private final float efficiency;
+        private final float attackDamage;
+        private final int enchantability;
+        private ItemStack repairMaterial = ItemStack.EMPTY;
+
+        public ToolMaterial(String name, int harvestLevel, int maxUses, float efficiency, float attackDamage, int enchantability) {
+            this.name = name;
+            this.harvestLevel = harvestLevel;
+            this.maxUses = maxUses;
+            this.efficiency = efficiency;
+            this.attackDamage = attackDamage;
+            this.enchantability = enchantability;
+        }
+
+        public int getMaxUses() {
+            return maxUses;
+        }
+
+        public float getEfficiency() {
+            return efficiency;
+        }
+
+        public float getAttackDamage() {
+            return attackDamage;
+        }
+
+        public int getHarvestLevel() {
+            return harvestLevel;
+        }
+
+        public int getEnchantability() {
+            return enchantability;
+        }
+
+        public ToolMaterial setRepairItem(ItemStack stack) {
+            this.repairMaterial = stack;
+            return this;
+        }
+
+        public ItemStack getRepairItemStack() {
+            return repairMaterial;
+        }
+
+        public Item getRepairItem() {
+            return repairMaterial.getItem();
+        }
+
+        public String name() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 }

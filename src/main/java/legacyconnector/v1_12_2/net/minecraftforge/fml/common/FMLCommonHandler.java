@@ -37,4 +37,8 @@ public class FMLCommonHandler {
     public String getModName() {
         return "fml,forge,legacyconnector";
     }
+
+    public legacyconnector.v1_12_2.net.minecraftforge.common.util.CompoundDataFixer getDataFixer() {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.util.CompoundDataFixer.INSTANCE;
+    }
 }

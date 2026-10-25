@@ -3,6 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.potion;
 import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry;
 
 public class Potion extends IForgeRegistryEntry.Impl<Potion> {
+    public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Potion> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS, "speed");
     private final boolean isBadEffect;
     private final int liquidColor;
     private String name = "";

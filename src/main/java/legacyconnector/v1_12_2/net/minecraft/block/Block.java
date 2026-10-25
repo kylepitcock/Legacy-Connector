@@ -6,6 +6,7 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 
 /** 1.12.2 {@code Block}: a registry entry with a material, hardness/resistance, light and a creative tab. */
 public class Block extends IForgeRegistryEntry.Impl<Block> {
+    public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Block> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS, "air");
     protected final Material blockMaterial;
     protected float blockHardness;
     protected float blockResistance;
@@ -111,6 +112,16 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public CreativeTabs getCreativeTabToDisplayOn() {
         return displayOnCreativeTab;
+    }
+
+    /** Forge: whether the state has a tile entity (BlockContainer says yes). */
+    public boolean hasTileEntity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity createTileEntity(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return null;
     }
 
     public float mcc$hardness() {

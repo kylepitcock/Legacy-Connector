@@ -81,9 +81,38 @@ public final class Synth {
     }
 
     /** Side-stored field value; stores and returns {@code initial} on first access. */
+    /** Supplies the value of a static field the shim lacks (vanilla constants typed with classes only the synthesizer knows). */
+    public interface StaticResolver {
+        Object resolve(String key, Class<?> accessorClass);
+    }
+
+    private static final java.util.List<StaticResolver> RESOLVERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final java.util.Set<String> RESOLVED = ConcurrentHashMap.newKeySet();
+
+    public static void addStaticResolver(StaticResolver resolver) {
+        RESOLVERS.add(resolver);
+    }
+
     public static Object getField(Object owner, String key, Object initial) {
         if (owner == null) {
-            if (initial == null) return STATIC_FIELDS.get(key);
+            if (initial == null) {
+                Object v = STATIC_FIELDS.get(key);
+                if (v == null && !RESOLVERS.isEmpty() && RESOLVED.add(key)) {
+                    Class<?> accessor = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE).getCallerClass();
+                    for (StaticResolver r : RESOLVERS) {
+                        try {
+                            v = r.resolve(key, accessor);
+                        } catch (RuntimeException | LinkageError e) {
+                            LOG.warn("Cannot resolve the static field {}: {}", key, e.toString());
+                        }
+                        if (v != null) {
+                            STATIC_FIELDS.put(key, v);
+                            break;
+                        }
+                    }
+                }
+                return v;
+            }
             return STATIC_FIELDS.computeIfAbsent(key, k -> initial);
         }
         synchronized (FIELDS) {

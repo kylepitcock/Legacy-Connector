@@ -25,6 +25,54 @@ public final class Registries1122 {
 
     public static final Reg<Block> BLOCKS = new Reg<>(Block.class, BlockBridge1122::register);
     public static final Reg<Item> ITEMS = new Reg<>(Item.class, ItemBridge1122::register);
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, p -> {});
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment> ENCHANTMENTS =
+            new Reg<>(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.class, e -> {});
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS =
+            new Reg<>(legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class, s -> {});
+
+    /** A legacy-style numbered view of a Forge registry (Item.REGISTRY, Block.REGISTRY, ...), live over the registered objects. */
+    public static <V extends legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry<V>>
+            legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, V> view(Reg<V> reg, String defaultKey) {
+        return new legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, V>(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(defaultKey)) {
+            @Override
+            public synchronized V getObject(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name) {
+                V v = reg.getValue(name);
+                return v != null ? v : super.getObject(name);
+            }
+
+            @Override
+            public synchronized legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation getNameForObject(V value) {
+                return reg.getKey(value);
+            }
+
+            @Override
+            public synchronized java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> getKeys() {
+                return reg.getKeys();
+            }
+
+            @Override
+            public synchronized int getIDForObject(V value) {
+                return new java.util.ArrayList<>(reg.getValues()).indexOf(value);
+            }
+
+            @Override
+            public synchronized V getObjectById(int id) {
+                var all = new java.util.ArrayList<>(reg.getValues());
+                return id >= 0 && id < all.size() ? all.get(id) : null;
+            }
+
+            @Override
+            public boolean containsKey(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key) {
+                return reg.containsKey(key);
+            }
+
+            @Override
+            public java.util.Iterator<V> iterator() {
+                return reg.getValues().iterator();
+            }
+        };
+    }
 
     private Registries1122() {}
 
