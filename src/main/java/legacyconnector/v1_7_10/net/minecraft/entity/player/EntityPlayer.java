@@ -16,6 +16,24 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge;
 
 public abstract class EntityPlayer extends EntityLivingBase {
+    /** Phantom: redirected to {@link #mcc$get$eyeHeight}/{@link #mcc$set$eyeHeight} (Forge's field; mods change it, Thermal Dynamics' ducts). */
+    @Deprecated
+    public float eyeHeight;
+    /** An eye height a mod set through {@link #eyeHeight}, or NaN for the default. */
+    protected float mcc$eyeHeightOverride = Float.NaN;
+
+    public static float mcc$get$eyeHeight(EntityPlayer p) {
+        return p.getEyeHeight();
+    }
+
+    public static void mcc$set$eyeHeight(EntityPlayer p, float v) {
+        p.mcc$eyeHeightOverride = v;
+    }
+
+    @Override
+    public float getEyeHeight() {
+        return Float.isNaN(mcc$eyeHeightOverride) ? super.getEyeHeight() : mcc$eyeHeightOverride;
+    }
     /** The outcome of trying to sleep in a bed. */
     public enum EnumStatus {
         OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE

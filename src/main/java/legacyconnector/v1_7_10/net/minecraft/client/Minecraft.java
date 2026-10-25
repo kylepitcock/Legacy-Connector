@@ -119,6 +119,12 @@ public class Minecraft {
         return camera == null ? null : (legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase) EntityBridge.wrap(camera);
     }
 
+    /** Mods move the camera by setting it (Thermal Dynamics' duct transport). */
+    public static void mcc$set$renderViewEntity(Minecraft m, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        var modern = entity == null ? null : entity.mcc$entity;
+        mc().setCameraEntity(modern != null ? modern : mc().player);
+    }
+
     private static final legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings SETTINGS =
             new legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings();
 

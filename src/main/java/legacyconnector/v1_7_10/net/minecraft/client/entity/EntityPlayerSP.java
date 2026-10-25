@@ -15,7 +15,7 @@ public class EntityPlayerSP extends AbstractClientPlayer {
 
     @Override
     public float getEyeHeight() {
-        return 0.12F;
+        return Float.isNaN(mcc$eyeHeightOverride) ? 0.12F : mcc$eyeHeightOverride;
     }
 
     public void closeScreen() {

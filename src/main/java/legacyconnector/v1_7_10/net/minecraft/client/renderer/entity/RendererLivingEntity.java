@@ -12,6 +12,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
  * model offset), feeds the model the interpolated animation values and renders it plus its render passes.
  */
 public abstract class RendererLivingEntity extends Render {
+    /** Forge 1.7.10: how far name tags show (mods hide or extend them). */
+    public static float NAME_TAG_RANGE = 64.0F;
+    public static float NAME_TAG_RANGE_SNEAK = 32.0F;
     private static final java.util.Set<String> WARNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     protected ModelBase mainModel;
     protected ModelBase renderPassModel;

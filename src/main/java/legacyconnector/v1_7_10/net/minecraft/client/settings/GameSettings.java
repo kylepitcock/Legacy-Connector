@@ -8,7 +8,8 @@ public class GameSettings {
     public int mipmapLevels = 4;
     public int anisotropicFiltering = 1;
     public boolean fancyGraphics = true;
-    public boolean ambientOcclusion = true;
+    /** 0 off, 1 minimum, 2 maximum (an int in 1.7.10). */
+    public int ambientOcclusion = 2;
     public int renderDistanceChunks = 8;
     public int particleSetting = 0;
     public float gammaSetting = 0.0F;

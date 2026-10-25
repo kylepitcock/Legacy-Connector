@@ -8,10 +8,16 @@ import legacyconnector.v1_7_10.net.minecraft.network.INetHandler;
 /** FML network events; the custom packet ones are posted to {@link FMLEventChannel} buses. */
 public class FMLNetworkEvent<T extends INetHandler> extends Event {
     public final T handler;
-    public final Object manager = null;
+    /** The connection (Forge 1.7.10 has it on every network event; Mystcraft's packet handler reads it). */
+    public final legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager;
 
     FMLNetworkEvent(T handler) {
+        this(handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.MCC_DUMMY);
+    }
+
+    FMLNetworkEvent(T handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
         this.handler = handler;
+        this.manager = manager != null ? manager : legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.MCC_DUMMY;
     }
 
     public static class CustomPacketEvent<S extends INetHandler> extends FMLNetworkEvent<S> {
@@ -39,21 +45,15 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
 
     /** A player connected to this (integrated or dedicated) server. */
     public static class ServerConnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
-        public final legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager;
-
         public ServerConnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
-            super(handler);
-            this.manager = manager;
+            super(handler, manager);
         }
     }
 
     /** A player left this server. */
     public static class ServerDisconnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
-        public final legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager;
-
         public ServerDisconnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
-            super(handler);
-            this.manager = manager;
+            super(handler, manager);
         }
     }
 

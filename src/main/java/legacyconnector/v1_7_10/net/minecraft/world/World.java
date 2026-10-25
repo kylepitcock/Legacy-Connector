@@ -675,6 +675,7 @@ public class World implements IBlockAccess {
 
     public boolean spawnEntityInWorld(Entity entity) {
         if (inDeepPass()) return false; // entity positions are not shifted
+        if (entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.effect.EntityLightningBolt) return addWeatherEffect(entity);
         return EntityBridge.spawn(this, entity);
     }
 
@@ -1141,8 +1142,36 @@ public class World implements IBlockAccess {
         }
     }
 
+    /** Phantom: redirected to {@link #mcc$get$weatherEffects}. Mods add lightning to it directly (Mystcraft's lightning effect). */
+    @Deprecated
+    public List weatherEffects;
+    private List mcc$weatherEffects;
+
+    /** A list whose additions strike: 1.7.10 ticked and sent every entity in it. */
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static List mcc$get$weatherEffects(World w) {
+        if (w.mcc$weatherEffects == null) {
+            w.mcc$weatherEffects = new java.util.ArrayList() {
+                @Override
+                public boolean add(Object o) {
+                    if (o instanceof Entity e) w.addWeatherEffect(e);
+                    return true;
+                }
+            };
+        }
+        return w.mcc$weatherEffects;
+    }
+
+    /** Lightning a mod creates strikes as a modern lightning bolt (fire, damage, sound and flash included). */
     public boolean addWeatherEffect(Entity entity) {
-        return false;
+        if (!(entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.effect.EntityLightningBolt)
+                || !(mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level)) {
+            return false;
+        }
+        var bolt = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(level);
+        if (bolt == null) return false;
+        bolt.moveTo(Entity.mcc$get$posX(entity), Entity.mcc$get$posY(entity), Entity.mcc$get$posZ(entity));
+        return level.addFreshEntity(bolt);
     }
 
     public void updateEntityWithOptionalForce(Entity entity, boolean force) {
