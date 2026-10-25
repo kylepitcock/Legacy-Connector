@@ -6,6 +6,30 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> {
     public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Enchantment> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS, "protection");
     public EnumEnchantmentType type;
+
+    /** The vanilla constants register themselves when their holder class loads. */
+    private static void mcc$vanilla() {
+        try {
+            Class.forName("legacyconnector.v1_12_2.net.minecraft.init.Enchantments", true, Enchantment.class.getClassLoader());
+        } catch (ClassNotFoundException | LinkageError e) {
+            // only mod enchantments then
+        }
+    }
+
+    public static Enchantment getEnchantmentByLocation(String location) {
+        mcc$vanilla();
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(location));
+    }
+
+    public static Enchantment getEnchantmentByID(int id) {
+        mcc$vanilla();
+        return REGISTRY.getObjectById(id);
+    }
+
+    public static int getEnchantmentID(Enchantment enchantment) {
+        mcc$vanilla();
+        return REGISTRY.getIDForObject(enchantment);
+    }
     private final EntityEquipmentSlot[] applicableEquipmentTypes;
     private final Rarity rarity;
     protected String name;

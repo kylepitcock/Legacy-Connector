@@ -8,7 +8,8 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegis
 public class EntityList {
     public static ResourceLocation getKey(Class<? extends Entity> cls) {
         for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
-            if (e.getEntityClass() == cls) return e.getRegistryName();
+            // vanilla entries stand on shared base classes (EntityLiving), which name no entity
+            if (e.getEntityClass() == cls && !"minecraft".equals(e.getRegistryName().getNamespace())) return e.getRegistryName();
         }
         String n = cls.getSimpleName();
         if (n.startsWith("Entity")) n = n.substring("Entity".length());
@@ -27,5 +28,18 @@ public class EntityList {
     public static Class<? extends Entity> getClass(ResourceLocation name) {
         EntityEntry e = ForgeRegistries.ENTITIES.getValue(name);
         return e == null ? null : e.getEntityClass();
+    }
+
+    public static java.util.Set<ResourceLocation> getEntityNameList() {
+        return ForgeRegistries.ENTITIES.getKeys();
+    }
+
+    public static boolean isRegistered(ResourceLocation name) {
+        return name != null && ForgeRegistries.ENTITIES.containsKey(name);
+    }
+
+    public static String getTranslationName(ResourceLocation name) {
+        EntityEntry e = name == null ? null : ForgeRegistries.ENTITIES.getValue(name);
+        return e == null ? null : e.getName();
     }
 }

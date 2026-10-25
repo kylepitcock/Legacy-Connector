@@ -342,6 +342,36 @@ public final class Vanilla1122 {
         }
     }
 
+    /** 1.12 vanilla items whose metadata selects a different modern item (wool:14 is red_wool, dye:4 lapis_lazuli). */
+    private static final String[] VARIANT_ITEMS = {"wool", "stained_glass", "stained_glass_pane", "stained_hardened_clay", "carpet", "concrete",
+            "concrete_powder", "dye", "stone", "dirt", "planks", "sapling", "sand", "log", "log2", "leaves", "leaves2", "sponge", "sandstone",
+            "red_sandstone", "red_flower", "double_plant", "tallgrass", "stone_slab", "stone_slab2", "wooden_slab", "stonebrick", "quartz_block",
+            "prismarine", "coal", "golden_apple", "fish", "cooked_fish", "skull", "banner", "bed", "monster_egg", "cobblestone_wall", "anvil",
+            "red_mushroom_block", "brown_mushroom_block", "shulker_box", "glazed_terracotta"};
+    private static Map<net.minecraft.world.item.Item, Object[]> variantReverse;
+
+    /** The modern item of a vanilla legacy item and metadata (the 1.13 flattening, through the game's own data fixers). */
+    public static net.minecraft.world.item.Item modernVariant(Item item, int meta) {
+        net.minecraft.world.item.Item base = item.mcc$vanillaModern;
+        if (meta <= 0 || meta == 32767 || base.components().has(net.minecraft.core.component.DataComponents.MAX_DAMAGE)) return base;
+        var name = item.getRegistryName();
+        if (name == null || !"minecraft".equals(name.getNamespace())) return base;
+        var flat = org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.item(name.getPath(), meta);
+        return flat == net.minecraft.world.item.Items.AIR ? base : flat;
+    }
+
+    /** {legacy item, meta} of a modern item that is a metadata variant of a 1.12 vanilla item, or null. */
+    public static synchronized Object[] legacyVariant(net.minecraft.world.item.Item modern) {
+        if (variantReverse == null) {
+            variantReverse = org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.reverseItems(java.util.List.of(VARIANT_ITEMS));
+        }
+        Object[] v = variantReverse.get(modern);
+        if (v == null) return null;
+        ensureLoaded();
+        Item legacy = Registries1122.ITEMS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", (String) v[0]));
+        return legacy == null ? null : new Object[] {legacy, v[1]};
+    }
+
     /** Static methods of synthesized vanilla classes answered from the legacy registries. */
     public static void registerStaticMethods() {
         // PotionType.getPotionTypeForName("minecraft:night_vision" or "night_vision"): EnderIO's recipe files

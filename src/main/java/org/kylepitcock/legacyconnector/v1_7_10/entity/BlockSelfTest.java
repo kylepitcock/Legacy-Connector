@@ -95,8 +95,36 @@ public final class BlockSelfTest {
             }
         }
         startFluids(level, baseX, baseZ + 84, y0 + 20);
+        biomeArrayTest(level, spawn);
         ticks = 0;
         LOG.info("Placed {} legacy blocks for the self test ({} outside the loaded area)", placed, skipped);
+    }
+
+    /**
+     * What Biome Wand does: write a legacy biome id into {@code chunk.getBiomeArray()} and set {@code isModified}
+     * (mod bytecode reaches the accessor). The modern chunk must report the new biome afterwards.
+     */
+    private static void biomeArrayTest(ServerLevel level, BlockPos spawn) {
+        try {
+            var world = legacyconnector.v1_7_10.net.minecraft.world.World.mcc$wrap(level);
+            var chunk = world.getChunkFromBlockCoords(spawn.getX(), spawn.getZ());
+            int index = (spawn.getZ() & 15) << 4 | (spawn.getX() & 15);
+            byte[] biomes = chunk.getBiomeArray();
+            byte before = biomes[index];
+            byte target = (byte) (before == 2 ? 6 : 2); // desert, or swampland when it already is desert
+            biomes[index] = target;
+            legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk.mcc$set$isModified(chunk, true);
+            int y = level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, spawn.getX(), spawn.getZ());
+            // the biome cell itself (getBiome would blur the position across neighbouring cells)
+            var now = level.getNoiseBiome(net.minecraft.core.QuartPos.fromBlock(spawn.getX()), net.minecraft.core.QuartPos.fromBlock(y),
+                    net.minecraft.core.QuartPos.fromBlock(spawn.getZ())).unwrapKey().map(k -> k.location().toString()).orElse("?");
+            String expected = target == 2 ? "minecraft:desert" : "minecraft:swamp";
+            if (now.equals(expected)) LOG.info("Biome array write-back: ok ({} -> {})", before, now);
+            else LOG.warn("Biome array write-back FAILED: wrote legacy id {} (expected {}), world now has {} (chunk view {})", target, expected, now,
+                    chunk.mcc$modern() == null ? "detached" : chunk.mcc$modern().getClass().getSimpleName());
+        } catch (RuntimeException | LinkageError ex) {
+            LOG.warn("Biome array write-back test threw {}", describe(ex));
+        }
     }
 
     private static final List<Object[]> FLUIDS = new ArrayList<>();

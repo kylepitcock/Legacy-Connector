@@ -23,7 +23,10 @@ public class Chunk {
     public boolean isChunkLoaded = true;
     public boolean isTerrainPopulated = true;
     public boolean isLightPopulated = true;
+    /** Phantom: redirected to {@link #mcc$get$isModified}/{@link #mcc$set$isModified} (setting it saves edited biomes). */
+    @Deprecated
     public boolean isModified;
+    private boolean mcc$modified;
     public boolean hasEntities;
     public Map<Object, TileEntity> chunkTileEntityMap = new HashMap<>();
     @SuppressWarnings("unchecked")
@@ -52,6 +55,18 @@ public class Chunk {
     private Block[] mcc$blocks;
     private byte[] mcc$meta;
     private byte[] mcc$biomes;
+    /** For a live chunk: the biome ids {@link #getBiomeArray} handed out, to find the entries a mod changed. */
+    private byte[] mcc$biomesRead;
+
+    public static boolean mcc$get$isModified(Chunk c) {
+        return c.mcc$modified;
+    }
+
+    /** Mods edit {@code getBiomeArray()} in place and then set {@code isModified} (Biome Wand): the edits reach the world here. */
+    public static void mcc$set$isModified(Chunk c, boolean modified) {
+        c.mcc$modified = modified;
+        if (modified) c.mcc$flushBiomes();
+    }
 
     /** While set on a thread, {@code new Chunk(world, x, z)} builds a detached array chunk (a generator's new chunk). */
     private static final ThreadLocal<Boolean> DETACHED = new ThreadLocal<>();
@@ -214,10 +229,29 @@ public class Chunk {
         return top < 0 ? 0 : modern.getSectionYFromSectionIndex(top) << 4;
     }
 
-    /** Legacy biome id per column (z << 4 | x), from the modern biomes at the surface. */
+    /**
+     * Legacy biome id per column (z << 4 | x), from the modern biomes at the surface. For a live chunk the same array is
+     * returned on every call, and changes a mod writes into it are applied by {@link #setChunkModified} or {@code isModified = true}.
+     */
     public byte[] getBiomeArray() {
         if (mcc$biomes != null) return mcc$biomes;
         if (mcc$blocks != null) return mcc$biomes = new byte[256];
+        byte[] ids = currentBiomeIds();
+        if (mcc$liveChunk() != null) {
+            mcc$biomes = ids;
+            mcc$biomesRead = ids.clone();
+        }
+        return ids;
+    }
+
+    /** The loaded chunk behind this view (a full chunk handed out as a proto chunk is wrapped in an ImposterProtoChunk). */
+    private net.minecraft.world.level.chunk.LevelChunk mcc$liveChunk() {
+        if (modern instanceof net.minecraft.world.level.chunk.LevelChunk c) return c;
+        if (modern instanceof net.minecraft.world.level.chunk.ImposterProtoChunk p) return p.getWrapped();
+        return null;
+    }
+
+    private byte[] currentBiomeIds() {
         byte[] ids = new byte[256];
         for (int x = 0; x < 16; x++) {
             for (int z = 0; z < 16; z++) {
@@ -230,7 +264,44 @@ public class Chunk {
     }
 
     public void setBiomeArray(byte[] biomes) {
+        if (mcc$liveChunk() != null && mcc$biomesRead == null) mcc$biomesRead = currentBiomeIds();
         this.mcc$biomes = biomes;
+        mcc$flushBiomes();
+    }
+
+    /**
+     * Writes the columns whose legacy biome id changed into the modern chunk (every 4x4x4 biome cell that holds a changed
+     * column, over the full height, the way /fillbiome does) and sends the new biomes to the players watching the chunk.
+     */
+    private void mcc$flushBiomes() {
+        var chunk = mcc$liveChunk();
+        if (chunk == null || mcc$biomes == null || mcc$biomesRead == null) return;
+        if (!(chunk.getLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        var registry = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.BIOME);
+        @SuppressWarnings("unchecked")
+        net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome>[] cells = new net.minecraft.core.Holder[16];
+        boolean any = false;
+        for (int i = 0; i < 256; i++) {
+            if (mcc$biomes[i] == mcc$biomesRead[i]) continue;
+            var legacy = legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.getBiome(mcc$biomes[i] & 255);
+            var id = org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.modernBiome(legacy);
+            if (id == null) continue;
+            var holder = registry.getHolder(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BIOME, id));
+            if (holder.isEmpty()) continue;
+            int x = i & 15, z = i >> 4;
+            cells[(z >> 2) << 2 | (x >> 2)] = holder.get();
+            any = true;
+        }
+        mcc$biomesRead = mcc$biomes.clone();
+        if (!any) return;
+        int baseX = net.minecraft.core.QuartPos.fromBlock(chunk.getPos().getMinBlockX());
+        int baseZ = net.minecraft.core.QuartPos.fromBlock(chunk.getPos().getMinBlockZ());
+        chunk.fillBiomesFromNoise((qx, qy, qz, sampler) -> {
+            var replaced = cells[(qz - baseZ) << 2 | (qx - baseX)];
+            return replaced != null ? replaced : chunk.getNoiseBiome(qx, qy, qz);
+        }, level.getChunkSource().randomState().sampler());
+        chunk.setUnsaved(true);
+        level.getChunkSource().chunkMap.resendBiomesForChunks(java.util.List.of(chunk));
     }
 
     public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForWorldCoords(int x, int z, Object chunkManager) {
@@ -250,8 +321,9 @@ public class Chunk {
     }
 
     public void setChunkModified() {
-        isModified = true;
+        mcc$modified = true;
         if (modern != null) modern.setUnsaved(true);
+        mcc$flushBiomes();
     }
 
     public boolean needsSaving(boolean all) {

@@ -43,6 +43,28 @@ public final class Registries1122 {
             "xp_bottle", "experience_bottle", "ender_crystal", "end_crystal", "evocation_illager", "evoker",
             "vindication_illager", "vindicator", "illusion_illager", "illusioner");
 
+    private static final java.util.Set<String> MISC_MOBS = java.util.Set.of("villager", "iron_golem", "snow_golem", "wandering_trader");
+
+    /** The legacy base class standing in for a vanilla entity's class: mobs are EntityLiving (EnderIO lists mobs by it). */
+    @SuppressWarnings("unchecked")
+    private static Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity> entityBase(net.minecraft.world.entity.EntityType<?> type) {
+        String path = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).getPath();
+        boolean mob = type.getCategory() != net.minecraft.world.entity.MobCategory.MISC || MISC_MOBS.contains(path)
+                || path.equals("ender_dragon") || path.equals("wither");
+        if (mob) {
+            for (String prefix : new String[] {"legacyconnector.v1_12_2.", "legacyconnector_synth.v1_12_2."}) {
+                try {
+                    return (Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity>) Class.forName(prefix + "net.minecraft.entity.EntityLiving",
+                            false, Thread.currentThread().getContextClassLoader());
+                } catch (ClassNotFoundException | LinkageError | ClassCastException e) {
+                    // next
+                }
+            }
+            return legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.class;
+        }
+        return legacyconnector.v1_12_2.net.minecraft.entity.Entity.class;
+    }
+
     /** Vanilla entity types as legacy entries (Bountiful lists them by name), under their 1.12 ids. */
     private static void vanillaEntities(Reg<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry> reg) {
         Map<String, String> legacyName = new java.util.HashMap<>();
@@ -51,8 +73,7 @@ public final class Registries1122 {
             var id = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
             if (!"minecraft".equals(id.getNamespace())) continue;
             String path = legacyName.getOrDefault(id.getPath(), id.getPath());
-            var entry = new legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry(
-                    legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, path);
+            var entry = new legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry(entityBase(type), path);
             entry.setRegistryName(new ResourceLocation("minecraft", path));
             reg.registerVanilla(entry);
         }

@@ -32,6 +32,7 @@ jobs:
           python3 tools/release/render_description.py curseforge out/curseforge.md
 
       - name: Commit rendered pages
+        if: github.ref == 'refs/heads/master'
         run: |
           cp out/curseforge.md out/modrinth.md .github/description/
           git add .github/description/curseforge.md .github/description/modrinth.md

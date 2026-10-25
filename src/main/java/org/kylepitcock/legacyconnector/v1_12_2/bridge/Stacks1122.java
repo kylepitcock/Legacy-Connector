@@ -18,7 +18,9 @@ public final class Stacks1122 {
         net.minecraft.world.item.Item modern = ItemBridge1122.modern(item, stack.getMetadata());
         if (modern == null) return net.minecraft.world.item.ItemStack.EMPTY;
         var out = new net.minecraft.world.item.ItemStack(modern, stack.getCount());
-        if (item.isDamageable() && stack.getMetadata() > 0) out.setDamageValue(stack.getMetadata());
+        if ((item.isDamageable() || item.mcc$vanillaModern != null && modern.components().has(DataComponents.MAX_DAMAGE)) && stack.getMetadata() > 0) {
+            out.setDamageValue(stack.getMetadata());
+        }
         NBTTagCompound tag = stack.getTagCompound();
         if (tag != null) out.set(DataComponents.CUSTOM_DATA, CustomData.of(tag.mcc$modern().copy()));
         return out;
@@ -35,11 +37,12 @@ public final class Stacks1122 {
             legacy = b.legacy();
             meta = 0;
         } else {
-            legacy = Vanilla1122.legacyOf(stack.getItem());
+            Object[] variant = Vanilla1122.legacyVariant(stack.getItem());
+            legacy = variant != null ? (Item) variant[0] : Vanilla1122.legacyOf(stack.getItem());
             if (legacy == null) return ItemStack.EMPTY;
-            meta = 0;
+            meta = variant != null ? (Integer) variant[1] : 0;
         }
-        if (legacy.isDamageable()) meta = stack.getDamageValue();
+        if (legacy.isDamageable() || stack.isDamageableItem()) meta = stack.getDamageValue();
         ItemStack out = new ItemStack(legacy, stack.getCount(), meta);
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         if (data != null) out.setTagCompound(new NBTTagCompound(data.copyTag()));
