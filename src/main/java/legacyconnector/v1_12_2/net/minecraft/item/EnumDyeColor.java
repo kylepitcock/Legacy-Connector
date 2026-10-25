@@ -35,6 +35,8 @@ public enum EnumDyeColor implements IStringSerializable {
     private final String name;
     private final String unlocalizedName;
     private final int color;
+    /** The 1.12 field mods read by reflection (field_193351_w). */
+    private final int colorValue;
 
     EnumDyeColor(int meta, int dyeDamage, String name, String unlocalizedName, int color) {
         this.meta = meta;
@@ -42,6 +44,7 @@ public enum EnumDyeColor implements IStringSerializable {
         this.name = name;
         this.unlocalizedName = unlocalizedName;
         this.color = color;
+        this.colorValue = color;
     }
 
     public int getMetadata() {

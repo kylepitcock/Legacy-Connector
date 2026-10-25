@@ -44,7 +44,39 @@ public class ReflectionHelper {
         return n.startsWith("legacyconnector.") || n.startsWith("legacyconnector_synth.");
     }
 
+    /** MCP names of SRG field names (field_12345_a), from the same table the loader uses to link mods; loaded on first use. */
+    private static volatile java.util.Map<String, String> srgFields;
+
+    private static String[] withMcpNames(String[] names) {
+        java.util.List<String> out = null;
+        for (String n : names) {
+            if (!n.startsWith("field_")) continue;
+            java.util.Map<String, String> table = srgFields;
+            if (table == null) {
+                table = new java.util.HashMap<>();
+                try (var in = ReflectionHelper.class.getClassLoader().getResourceAsStream("legacyconnector/legacy/1.12.2/fields.txt")) {
+                    if (in != null) {
+                        for (String line : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
+                            String[] p = line.split(" ");
+                            if (p.length >= 3 && p[0].startsWith("field_")) table.put(p[0], p[2]);
+                        }
+                    }
+                } catch (java.io.IOException | RuntimeException e) {
+                    // no table: SRG names stay unresolved
+                }
+                srgFields = table;
+            }
+            String mcp = table.get(n);
+            if (mcp != null) {
+                if (out == null) out = new java.util.ArrayList<>(java.util.Arrays.asList(names));
+                out.add(mcp);
+            }
+        }
+        return out == null ? names : out.toArray(new String[0]);
+    }
+
     public static Field findField(Class<?> clazz, String... fieldNames) {
+        fieldNames = withMcpNames(fieldNames);
         for (Class<?> c = clazz; c != null; c = c.getSuperclass()) {
             for (String name : fieldNames) {
                 try {
