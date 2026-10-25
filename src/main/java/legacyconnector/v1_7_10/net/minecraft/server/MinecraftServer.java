@@ -78,6 +78,12 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return new java.io.File(mcc$server.getServerDirectory().toFile(), name);
     }
 
+    /** The name of the world (the level name; the folder name if there is none). */
+    public String getWorldName() {
+        String name = mcc$server.getWorldData().getLevelName();
+        return name == null || name.isEmpty() ? getFolderName() : name;
+    }
+
     public String getFolderName() {
         return mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile().getParentFile() == null ? "world"
                 : mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().getParent().getFileName().toString();

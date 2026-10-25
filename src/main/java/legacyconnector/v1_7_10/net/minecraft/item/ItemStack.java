@@ -203,15 +203,22 @@ public final class ItemStack {
 
     // ------------------------------------------------------------------ NBT
 
+    /**
+     * 1.7.10 kept a stack's tag apart from its item. A stack with no usable modern item (the item is null or was never
+     * registered) is empty in the modern game and cannot hold components, so a tag set on it is kept here.
+     */
+    private NBTTagCompound mcc$looseTag;
+
     public boolean hasTagCompound() {
         // As 1.7.10: a stack whose tag was assigned an (empty) compound has one. Code such as
         // "if (!stack.hasTagCompound()) stack.stackTagCompound = new NBTTagCompound();" relies on it.
-        return mcc$stack.get(DataComponents.CUSTOM_DATA) != null;
+        return mcc$stack.get(DataComponents.CUSTOM_DATA) != null || (mcc$stack.isEmpty() && mcc$looseTag != null);
     }
 
     public NBTTagCompound getTagCompound() {
         CustomData data = mcc$stack.get(DataComponents.CUSTOM_DATA);
         if (data == null) {
+            if (mcc$stack.isEmpty() && mcc$looseTag != null) return mcc$looseTag;
             mcc$tagView = null;
             mcc$tagSource = null;
             return null;
@@ -230,6 +237,11 @@ public final class ItemStack {
             mcc$stack.remove(DataComponents.CUSTOM_DATA);
             mcc$tagView = null;
             mcc$tagSource = null;
+            mcc$looseTag = null;
+            return;
+        }
+        if (mcc$stack.isEmpty()) {
+            mcc$looseTag = tag;
             return;
         }
         tag.mcc$setChangeListener(() -> mcc$writeTag(tag));

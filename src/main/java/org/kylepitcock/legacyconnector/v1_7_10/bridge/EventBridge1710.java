@@ -270,6 +270,8 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((ItemEntityPickupEvent.Pre e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityItemPickupEvent.class)) return;
+            // an item entity that was merged away has an empty stack; 1.7.10 never reported those, and handlers read the stack unchecked
+            if (e.getItemEntity().getItem().isEmpty()) return;
             var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.EntityItemPickupEvent(player(e.getPlayer()), (EntityItem) EntityBridge.wrap(e.getItemEntity()));
             if (forge().post(legacy) || legacy.getResult() == Event.Result.DENY) e.setCanPickup(net.neoforged.neoforge.common.util.TriState.FALSE);
             else if (legacy.getResult() == Event.Result.ALLOW) e.setCanPickup(net.neoforged.neoforge.common.util.TriState.TRUE);

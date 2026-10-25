@@ -823,7 +823,7 @@ public class World implements IBlockAccess {
     public List selectEntitiesWithinAABB(Class type, AxisAlignedBB box, legacyconnector.v1_7_10.net.minecraft.command.IEntitySelector selector) {
         List<Entity> out = new ArrayList<>();
         AABB modern = box.mcc$modern();
-        for (var e : lvl().getEntities((net.minecraft.world.entity.Entity) null, modern, e -> true)) {
+        for (var e : lvl().getEntities((net.minecraft.world.entity.Entity) null, modern, World::visibleToLegacy)) {
             Entity legacy = EntityBridge.wrap(e);
             if (type.isInstance(legacy) && (selector == null || selector.isEntityApplicable(legacy))) out.add(legacy);
         }
@@ -833,8 +833,16 @@ public class World implements IBlockAccess {
     public List getEntitiesWithinAABBExcludingEntity(Entity except, AxisAlignedBB box) {
         List<Entity> out = new ArrayList<>();
         var exceptModern = except == null ? null : except.mcc$entity();
-        for (var e : lvl().getEntities(exceptModern, box.mcc$modern(), e -> true)) out.add(EntityBridge.wrap(e));
+        for (var e : lvl().getEntities(exceptModern, box.mcc$modern(), World::visibleToLegacy)) out.add(EntityBridge.wrap(e));
         return out;
+    }
+
+    /**
+     * Item entities whose stack is empty (merged into another stack, removed on the next tick) are not reported: in 1.7.10 an
+     * item entity always held a stack, and mods read {@code getEntityItem().getItem()} without a check.
+     */
+    private static boolean visibleToLegacy(net.minecraft.world.entity.Entity e) {
+        return !(e instanceof net.minecraft.world.entity.item.ItemEntity item) || !item.getItem().isEmpty();
     }
 
     public List getEntitiesWithinAABBExcludingEntity(Entity except, AxisAlignedBB box, legacyconnector.v1_7_10.net.minecraft.command.IEntitySelector selector) {
