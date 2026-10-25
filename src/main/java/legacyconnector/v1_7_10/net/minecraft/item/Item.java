@@ -214,6 +214,8 @@ public class Item {
     }
 
     public String getItemStackDisplayName(ItemStack stack) {
+        // vanilla wrappers have no legacy lang entries: their name is the modern item's (Thaumonomicon recipe tooltips)
+        if (mcc$vanilla != null && stack != null) return stack.mcc$modern().getHoverName().getString();
         return StatCollector.translateToLocal(getUnlocalizedNameInefficiently(stack) + ".name").trim();
     }
 

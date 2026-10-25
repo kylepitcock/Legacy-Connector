@@ -86,7 +86,7 @@ public final class LegacySprites {
                 Path p = file.getFile().findResource("assets", ns, rawPath);
                 if (p == null || !Files.isRegularFile(p)) p = file.getFile().findResource("assets", ns, path);
                 if (p != null && Files.isRegularFile(p)) {
-                    byte[] bytes = Files.readAllBytes(p);
+                    byte[] bytes = legacyFontPixels(ns, path, Files.readAllBytes(p));
                     String name = file.getFile().getFileName();
                     return new IResource() {
                         @Override
@@ -108,7 +108,7 @@ public final class LegacySprites {
             }
             byte[] fallback = modernResource(ns, path);
             if (fallback != null) {
-                byte[] bytes = fallback;
+                byte[] bytes = legacyFontPixels(ns, path, fallback);
                 return new IResource() {
                     @Override
                     public InputStream getInputStream() {
@@ -132,6 +132,35 @@ public final class LegacySprites {
                         location.getResourcePath(), ns, path, ModList.get().getModFiles().size());
             }
             throw new java.io.FileNotFoundException(location.getResourceDomain() + ":" + location.getResourcePath());
+        }
+
+        private static final java.util.Map<String, byte[]> LEGACY_FONTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+        /**
+         * 1.7.10's font textures were black where transparent; today's are transparent white. Mods with a copy of 1.7.10's
+         * FontRenderer (Thaumcraft's Thaumonomicon) measure glyphs by the blue channel, so every glyph measured 9 pixels and
+         * book text wrapped after a few words and ran off the page. Vanilla font textures are handed out the 1.7.10 way.
+         */
+        static byte[] legacyFontPixels(String ns, String path, byte[] png) {
+            if (!ns.equals("minecraft") || !path.startsWith("textures/font/") || !path.endsWith(".png")) return png;
+            return LEGACY_FONTS.computeIfAbsent(path + "#" + png.length, k -> {
+                try {
+                    var image = javax.imageio.ImageIO.read(new java.io.ByteArrayInputStream(png));
+                    if (image == null) return png;
+                    var out = new java.awt.image.BufferedImage(image.getWidth(), image.getHeight(), java.awt.image.BufferedImage.TYPE_INT_ARGB);
+                    for (int y = 0; y < image.getHeight(); y++) {
+                        for (int x = 0; x < image.getWidth(); x++) {
+                            int argb = image.getRGB(x, y);
+                            out.setRGB(x, y, (argb >>> 24) == 0 ? 0 : argb);
+                        }
+                    }
+                    var bytes = new java.io.ByteArrayOutputStream();
+                    javax.imageio.ImageIO.write(out, "png", bytes);
+                    return bytes.toByteArray();
+                } catch (IOException | RuntimeException e) {
+                    return png;
+                }
+            });
         }
 
         static byte[] readModern(String ns, String path) {
@@ -174,7 +203,9 @@ public final class LegacySprites {
             }
             // Mantle's book font and others read these when they start, before the generated pack is loaded.
             if (ns.equals("minecraft") && path.equals("font/glyph_sizes.bin")) return LegacyFontPages.glyphSizes();
-            if (ns.equals("minecraft") && path.equals("textures/font/unicode_page_00.png")) return LegacyFontPages.page0();
+            if (ns.equals("minecraft") && path.matches("textures/font/unicode_page_[0-9a-f]{2}\\.png")) {
+                return LegacyFontPages.page(Integer.parseInt(path.substring("textures/font/unicode_page_".length(), path.length() - 4), 16));
+            }
             return null;
         }
 

@@ -282,6 +282,7 @@ public class GL11 extends GL11Guard {
         switch (cap) {
             case 3553 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setTexture2d(on); // GL_TEXTURE_2D
             case 3042 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlend(on); // GL_BLEND
+            case 2929 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setDepthTest(on); // GL_DEPTH_TEST
             case 2896 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setLighting(on); // GL_LIGHTING
             default -> {
             }

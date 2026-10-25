@@ -182,6 +182,7 @@ public final class RenderContext {
 
     private static boolean texture2d = true;
     private static boolean blend;
+    private static boolean depthTest = true;
     private static boolean additive;
     private static boolean lighting = true;
     private static int forcedLight = -1;
@@ -192,6 +193,10 @@ public final class RenderContext {
 
     public static void setBlend(boolean on) {
         blend = on;
+    }
+
+    public static void setDepthTest(boolean on) {
+        depthTest = on;
     }
 
     public static void setBlendFunc(int src, int dst) {
@@ -213,6 +218,10 @@ public final class RenderContext {
 
     /** Buffer for raw legacy geometry (Tessellator, glBegin), chosen from the emulated texture and blend state. */
     public static VertexConsumer geometryBuffer() {
+        if (!depthTest && !additive) {
+            if (!texture2d) return buffers().getBuffer(LegacyRenderTypes.untexturedNoDepth());
+            return buffers().getBuffer(blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture));
+        }
         if (!texture2d) return buffers().getBuffer(additive ? RenderType.lightning() : RenderType.debugQuads());
         if (additive) return buffers().getBuffer(RenderType.eyes(texture));
         return buffers().getBuffer(blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
@@ -284,6 +293,7 @@ public final class RenderContext {
     public static void resetState() {
         texture2d = true;
         blend = false;
+        depthTest = true;
         additive = false;
         lighting = true;
         forcedLight = -1;
