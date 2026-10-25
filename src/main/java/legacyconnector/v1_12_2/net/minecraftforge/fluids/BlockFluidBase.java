@@ -5,6 +5,10 @@ import legacyconnector.v1_12_2.net.minecraft.block.material.Material;
 
 /** The blocks of placed fluids; the world behaviour is the modern fluid's. */
 public abstract class BlockFluidBase extends Block implements IFluidBlock {
+    /** The unlisted render properties of 1.12's fluid blocks (the layer renders fluids itself, so none are listed). */
+    public static final com.google.common.collect.ImmutableList<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<Float>> FLUID_RENDER_PROPS =
+            com.google.common.collect.ImmutableList.of();
+
     protected final String fluidName;
     protected int quantaPerBlock = 8;
     protected int densityDir = -1;

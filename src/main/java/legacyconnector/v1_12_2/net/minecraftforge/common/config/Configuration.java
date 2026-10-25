@@ -241,6 +241,11 @@ public class Configuration {
         return prop;
     }
 
+    public Property get(String category, String key, String[] defaultValues, String comment, boolean isListLengthFixed, int maxListLength, java.util.regex.Pattern validationPattern) {
+        Property prop = get(category, key, defaultValues, comment, Property.Type.STRING);
+        return prop;
+    }
+
     public Property get(String category, String key, String[] defaultValues, String comment, java.util.regex.Pattern validationPattern) {
         return get(category, key, defaultValues, comment, Property.Type.STRING);
     }

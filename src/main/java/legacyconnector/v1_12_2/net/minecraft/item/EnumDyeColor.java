@@ -52,6 +52,10 @@ public enum EnumDyeColor implements IStringSerializable {
         return dyeDamage;
     }
 
+    public String getTranslationKey() {
+        return unlocalizedName;
+    }
+
     public String getUnlocalizedName() {
         return unlocalizedName;
     }

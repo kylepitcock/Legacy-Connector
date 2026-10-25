@@ -41,4 +41,13 @@ public class ObfuscationReflectionHelper {
     public static <E> Method findMethod(Class<? super E> clazz, E instance, String[] methodNames, Class<?>... methodTypes) {
         return ReflectionHelper.findMethod(clazz, instance, methodNames, methodTypes);
     }
+
+    /** The 1.12.2 (build 2768+) form: SRG name, return type and parameter types. */
+    public static Method findMethod(Class<?> clazz, String methodName, Class<?> returnType, Class<?>... parameterTypes) {
+        return ReflectionHelper.findMethod((Class<Object>) clazz, null, new String[] {methodName}, parameterTypes);
+    }
+
+    public static Field findField(Class<?> clazz, String fieldName) {
+        return ReflectionHelper.findField(clazz, fieldName);
+    }
 }

@@ -109,13 +109,34 @@ public class FMLInterModComms {
         }
 
         public boolean isFunctionMessage() {
-            return value instanceof java.util.function.Function<?, ?>;
+            return value instanceof java.util.function.Function<?, ?> || functionClass() != null;
+        }
+
+        /** A function message names its class (the mod instantiates it on the receiving side). */
+        private Class<?> functionClass() {
+            if (!(value instanceof String name) || !key.toLowerCase(java.util.Locale.ROOT).contains("function") && !name.contains(".")) return null;
+            try {
+                Class<?> c = Class.forName(name, true, Thread.currentThread().getContextClassLoader());
+                return java.util.function.Function.class.isAssignableFrom(c) ? c : null;
+            } catch (ClassNotFoundException | LinkageError e) {
+                return null;
+            }
         }
 
         @SuppressWarnings("unchecked")
-        public <T, V> com.google.common.base.Optional<java.util.function.Function<T, V>> getFunctionValue(Class<T> inType, Class<V> outType) {
-            return value instanceof java.util.function.Function<?, ?> f
-                    ? com.google.common.base.Optional.of((java.util.function.Function<T, V>) f) : com.google.common.base.Optional.absent();
+        public <T, V> java.util.Optional<java.util.function.Function<T, V>> getFunctionValue(Class<T> inType, Class<V> outType) {
+            if (value instanceof java.util.function.Function<?, ?> f) return java.util.Optional.of((java.util.function.Function<T, V>) f);
+            Class<?> c = functionClass();
+            if (c != null) {
+                try {
+                    var ctor = c.getDeclaredConstructor();
+                    ctor.setAccessible(true);
+                    return java.util.Optional.of((java.util.function.Function<T, V>) ctor.newInstance());
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // absent
+                }
+            }
+            return java.util.Optional.empty();
         }
 
         public Class<?> getMessageType() {
