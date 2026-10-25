@@ -149,6 +149,8 @@ public final class Vanilla1122 {
      * made like the plain wrappers. Called by the synthesized static-field accessor on first read.
      */
     public static Object resolveStatic(String key, Class<?> accessor) {
+        // the accessor classes of the other legacy versions share these keys
+        if (!accessor.getName().startsWith("legacyconnector_synth.v1_12_2.")) return null;
         boolean blocks = key.startsWith("net.minecraft.init.Blocks.");
         boolean items = key.startsWith("net.minecraft.init.Items.");
         String field = key.substring(key.lastIndexOf('.') + 1);

@@ -154,7 +154,8 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Statistics counting | stats exist for mods to register against; the modern stats are not driven by them |
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
-| 1.8 - 1.12.2, 1.16.5, 1.20.1 (+ Sinytra) bridges | planned, in that order |
+| 1.12.2 bridges | started (server side only, see the status table and issue #64) |
+| 1.8 - 1.11.2, 1.16.5, 1.20.1 (+ Sinytra) bridges | planned, in that order |
 
 ### World generation
 
@@ -243,7 +244,8 @@ Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate
 | Legacy version | Status |
 |---|---|
 | 1.7.10 | **Alpha.** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game; Galacticraft with its addons runs with per-planet gravity. In the latest startup test of the 230-mod GTNH pack, 282 mods across the corpus load without errors and 52 fail during loading (see the [compatibility list](https://kylepitcock.github.io/Legacy-Connector/)). Mod biomes, world types and dimensions generate; mod entities spawn, tick, fight and save; entity rendering (including the player renderer), armour and held items, dimension fog/sky and Twilight Forest's portal are bridged, though not verified in game for every mod. All synthesized API classes pass JVM verification. |
-| 1.8 - 1.12.2 | Planned next. Version detection and SRG/MCP mappings exist; the shim does not. |
+| 1.12.2 | **Experimental groundwork (server side).** FML lifecycle, registry events, items, blocks and block states, tile entities, capabilities (items, fluids, energy), networking channels, recipes, ore dictionary, tools/armor, fluids data model and vanilla constants exist; in a server test of 29 of the big mods (Mekanism, Thermal, BuildCraft, AE2, Botania, Tinkers, Forestry, Twilight Forest, ...) 10 mods load without errors and the rest fail in preInit/init/postInit; 427 blocks and 1337 items register. Entities, GUIs, world access beyond the basics, client rendering and in-world fluids are missing, and nothing has been verified in a real game yet (issue #64). |
+| 1.8 - 1.11.2 | Planned (folded into the 1.12.2 shim where the API did not change). |
 | 1.16.5 | Planned. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
 
