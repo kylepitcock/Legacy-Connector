@@ -46,6 +46,23 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   the real `ServerLevel`; name lookups must stay O(1) (mods look up thousands of absent names); per-tick and per-chunk
   error logging must be throttled; mod dimensions' generators must never throw.
 
+## 1.12.2 (started, server side only; issue #64)
+
+- Shim: `src/main/java/legacyconnector/v1_12_2`; bridges and the platform: `src/main/java/org/kylepitcock/legacyconnector/v1_12_2` (`Platform1122`
+  runs FML's lifecycle and posts `RegistryEvent.Register<T>` after preInit; `bridge/*1122` turn legacy registrations into modern ones).
+- Design: a 1.12 block keeps its legacy state as ONE modern property `meta` (0-15, `Legacy1122Block.META`) mapped through the block's own
+  `getStateFromMeta`/`getMetaFromState`; `Assets1122` rewrites each mod blockstate file to `meta=N` variants. Items with subtypes become one modern item per
+  subtype (`mod:name`, `mod:name_1`, ...). Recipes registered in code become generated data pack recipes (`RecipeBridge1122`, JSON recipes of the jar
+  are converted by the loader). Tile entities are hosted by one modern block entity type. `Item.ToolMaterial`, `ArmorMaterial`, `EnumRarity`... are classes
+  with `values()` so `EnumHelper` can add constants.
+- Static constants of vanilla classes the shim does not have (typed with synthesized classes) are produced on first read by `Vanilla1122.resolveStatic`
+  (hooked into `Synth.getField`): `Blocks`/`Items` wrappers, enum constants, self-typed constants, state properties. `tools/gen_vanilla_1122.py` and
+  `tools/gen_constants_1122.py` generate `init/Blocks|Items|SoundEvents|MobEffects|Enchantments` from the legacy field list.
+- Test: put 1.12.2 jars in `run-subtest/mods` (keep the 1.7.10 ones in `mods-1710`), delete or move `run-subtest/.legacyconnector/cache` and `run-subtest/world`,
+  `./gradlew runServerSubTest`; the log prints "1.12.2 content registered: ..." and "1.12.2 items/blocks per mod: ..."; failing mods are listed under
+  "failed to load". A client smoke test is `./gradlew runClientTest` (mods in `run-clienttest/mods`).
+- The bash tool of this project's sessions rejects some large heredocs (unmatched quote); write files with the Write tool or a Python script file.
+
 ## Releases
 
 Pre-1.0 versioning: bump the PATCH for every release (0.0.1, 0.0.2, ...); bump the MINOR only for a milestone (a new legacy
