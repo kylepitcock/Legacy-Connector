@@ -21,4 +21,8 @@ public class PropertyDirection extends PropertyEnum<EnumFacing> {
     public static PropertyDirection create(String name, Collection<EnumFacing> values) {
         return new PropertyDirection(name, values);
     }
+
+    public static PropertyDirection mcc$synthDefault(String key) {
+        return create(key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT));
+    }
 }

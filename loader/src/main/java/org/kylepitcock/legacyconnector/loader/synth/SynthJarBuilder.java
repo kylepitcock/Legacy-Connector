@@ -638,7 +638,7 @@ public final class SynthJarBuilder {
         if (isStatic) mv.visitInsn(Opcodes.ACONST_NULL);
         else mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitLdcInsn(key);
-        if (Defaults.isCollection(desc) || t.getSort() != Type.OBJECT && t.getSort() != Type.ARRAY) {
+        if (Defaults.isCollection(desc) || Defaults.blankable(t) || t.getSort() != Type.OBJECT && t.getSort() != Type.ARRAY) {
             Defaults.pushDefault(mv, t);
             Defaults.box(mv, t);
         } else {

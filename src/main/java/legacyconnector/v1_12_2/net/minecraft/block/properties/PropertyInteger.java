@@ -38,4 +38,9 @@ public class PropertyInteger extends PropertyHelper<Integer> {
     public String getName(Integer value) {
         return value.toString();
     }
+
+    /** The vanilla property constants the synthesizer cannot know (BlockFarmland.MOISTURE, BlockCrops.AGE...): named after the field, over the widest range. */
+    public static PropertyInteger mcc$synthDefault(String key) {
+        return create(key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT), 0, 15);
+    }
 }

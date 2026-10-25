@@ -36,6 +36,13 @@ final class Defaults {
             "com/google/common/collect/ImmutableMultimap", "of",
             "com/google/common/collect/ImmutableSortedSet", "of");
 
+    /** A synthesized 1.12.2 client class: defaults of that type are blank instances, not null. */
+    static boolean blankable(Type t) {
+        if (t.getSort() != Type.OBJECT) return false;
+        String n = t.getInternalName();
+        return n.startsWith("legacyconnector_synth/v1_12_2/net/minecraft/client/") || n.startsWith("legacyconnector_synth/v1_12_2/net/minecraftforge/client/");
+    }
+
     static boolean isCollection(String desc) {
         return desc.startsWith("L") && COLLECTIONS.containsKey(desc.substring(1, desc.length() - 1));
     }
@@ -73,6 +80,11 @@ final class Defaults {
                     mv.visitTypeInsn(Opcodes.NEW, impl);
                     mv.visitInsn(Opcodes.DUP);
                     mv.visitMethodInsn(Opcodes.INVOKESPECIAL, impl, "<init>", "()V", false);
+                } else if (blankable(t)) {
+                    // 1.12.2 client singletons (Minecraft.getMinecraft().gameSettings, ...) are chained without null checks: an inert blank object
+                    mv.visitLdcInsn(t.getClassName());
+                    mv.visitMethodInsn(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/core/synth/Synth", "blank", "(Ljava/lang/String;)Ljava/lang/Object;", false);
+                    mv.visitTypeInsn(Opcodes.CHECKCAST, t.getInternalName());
                 } else {
                     // Strings stay null: lookups (EntityList.getStringFromID, ...) are probed in `!= null` loops.
                     mv.visitInsn(Opcodes.ACONST_NULL);

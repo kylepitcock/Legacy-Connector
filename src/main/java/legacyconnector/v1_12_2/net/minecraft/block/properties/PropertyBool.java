@@ -29,4 +29,8 @@ public class PropertyBool extends PropertyHelper<Boolean> {
     public String getName(Boolean value) {
         return value.toString();
     }
+
+    public static PropertyBool mcc$synthDefault(String key) {
+        return create(key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT));
+    }
 }

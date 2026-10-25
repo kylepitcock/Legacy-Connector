@@ -55,4 +55,47 @@ public class PropertyEnum<T extends Enum<T> & IStringSerializable> extends Prope
     public String getName(T value) {
         return value.getName() != null ? value.getName() : value.name().toLowerCase(java.util.Locale.ROOT);
     }
+
+    private static final java.util.Map<String, String> VANILLA = java.util.Map.ofEntries(
+            java.util.Map.entry("BlockLog.LOG_AXIS", "net.minecraft.block.BlockLog$EnumAxis"),
+            java.util.Map.entry("BlockRotatedPillar.AXIS", "net.minecraft.util.EnumFacing$Axis"),
+            java.util.Map.entry("BlockPlanks.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockOldLog.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockNewLog.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockOldLeaf.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockNewLeaf.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockStone.VARIANT", "net.minecraft.block.BlockStone$EnumType"),
+            java.util.Map.entry("BlockDirt.VARIANT", "net.minecraft.block.BlockDirt$DirtType"),
+            java.util.Map.entry("BlockSand.VARIANT", "net.minecraft.block.BlockSand$EnumType"),
+            java.util.Map.entry("BlockStoneBrick.VARIANT", "net.minecraft.block.BlockStoneBrick$EnumType"),
+            java.util.Map.entry("BlockSandStone.TYPE", "net.minecraft.block.BlockSandStone$EnumType"),
+            java.util.Map.entry("BlockQuartz.VARIANT", "net.minecraft.block.BlockQuartz$EnumType"),
+            java.util.Map.entry("BlockSlab.HALF", "net.minecraft.block.BlockSlab$EnumBlockHalf"),
+            java.util.Map.entry("BlockStairs.HALF", "net.minecraft.block.BlockStairs$EnumHalf"),
+            java.util.Map.entry("BlockStairs.SHAPE", "net.minecraft.block.BlockStairs$EnumShape"),
+            java.util.Map.entry("BlockDoor.HALF", "net.minecraft.block.BlockDoor$EnumDoorHalf"),
+            java.util.Map.entry("BlockDoor.HINGE", "net.minecraft.block.BlockDoor$EnumHingePosition"),
+            java.util.Map.entry("BlockColored.COLOR", "net.minecraft.item.EnumDyeColor"),
+            java.util.Map.entry("BlockRailBase.SHAPE", "net.minecraft.block.BlockRailBase$EnumRailDirection"),
+            java.util.Map.entry("BlockStoneSlab.VARIANT", "net.minecraft.block.BlockStoneSlab$EnumType"),
+            java.util.Map.entry("BlockWoodSlab.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"));
+
+    /** Vanilla enum properties (BlockLog.LOG_AXIS, ...): over the constants of the enum class they hold, which the synthesizer made. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static PropertyEnum mcc$synthDefault(String key) {
+        String field = key.substring(key.lastIndexOf('.', key.lastIndexOf('.') - 1) + 1);
+        String enumClass = VANILLA.get(field);
+        if (enumClass == null) return null;
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        for (String prefix : new String[] {"legacyconnector_synth.v1_12_2.", "legacyconnector.v1_12_2."}) {
+            try {
+                Class<?> cls = Class.forName(prefix + enumClass, true, loader);
+                if (!cls.isEnum() && cls.getSuperclass() != Enum.class) continue;
+                return create(key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT).replace("log_axis", "axis"), (Class) cls);
+            } catch (ClassNotFoundException | LinkageError | RuntimeException e) {
+                // try the other root
+            }
+        }
+        return null;
+    }
 }
