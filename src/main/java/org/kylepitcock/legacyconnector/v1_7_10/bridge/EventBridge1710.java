@@ -492,6 +492,14 @@ public final class EventBridge1710 {
         }
     }
 
+    private static legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer legacyRenderPlayer;
+
+    /** The one legacy player renderer handed to RenderPlayerEvent handlers. */
+    private static synchronized legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer legacyRenderPlayer() {
+        if (legacyRenderPlayer == null) legacyRenderPlayer = new legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer();
+        return legacyRenderPlayer;
+    }
+
     /** The legacy PlayerUseItemEvent (kind 0 start, 1 tick, 2 stop, 3 finish) for a player using an item, or null when nothing listens. */
     private static legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerUseItemEvent playerUse(
             net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent e, int kind) {
@@ -553,6 +561,34 @@ public final class EventBridge1710 {
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) mouse.xpos(), (int) mouse.ypos(), 0, 0, 0,
                     e.getButton(), e.getAction() != 0);
             if (forge().post(event)) e.setCanceled(true);
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)
+                    && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre.class)) return;
+            if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
+            var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+            double x = e.getEntity().getX() - camera.x;
+            double y = e.getEntity().getY() - camera.y;
+            double z = e.getEntity().getZ() - camera.z;
+            float partial = e.getPartialTick();
+            var pre = new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre(player, legacyRenderPlayer(), partial, x, y, z);
+            if (forge().post(pre)) {
+                e.setCanceled(true);
+                return;
+            }
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z));
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Post e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post.class)
+                    && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post.class)) return;
+            if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
+            var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+            double x = e.getEntity().getX() - camera.x;
+            double y = e.getEntity().getY() - camera.y;
+            double z = e.getEntity().getZ() - camera.z;
+            float partial = e.getPartialTick();
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z));
+            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z));
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
             var legacy = livingRenderEvent(e.getEntity(), true);
