@@ -281,6 +281,14 @@ public final class SynthJarBuilder {
                 mv.visitLabel(have);
                 mv.visitFieldInsn(Opcodes.GETSTATIC, name, "mcc$instance", "L" + name + ";");
                 mv.visitInsn(Opcodes.ARETURN);
+            } else if (enumType && !isStatic && m.desc().equals("()Ljava/lang/String;")
+                    && java.util.Set.of("getName", "getString", "getUnlocalizedName", "getTranslationKey", "getNameTranslationKey").contains(m.name())) {
+                // A vanilla enum's name (BlockPlanks.EnumType.OAK is "oak"): the lower-case constant name.
+                mv.visitVarInsn(Opcodes.ALOAD, 0);
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Enum", "name", "()Ljava/lang/String;", false);
+                mv.visitFieldInsn(Opcodes.GETSTATIC, "java/util/Locale", "ROOT", "Ljava/util/Locale;");
+                mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/String", "toLowerCase", "(Ljava/util/Locale;)Ljava/lang/String;", false);
+                mv.visitInsn(Opcodes.ARETURN);
             } else {
                 Defaults.returnDefault(mv, ret);
             }
