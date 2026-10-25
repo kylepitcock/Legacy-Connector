@@ -11,6 +11,18 @@
    "link": "",
    "date": "2026-10-24",
    "open": true
+  },
+  {
+   "issue": 67,
+   "mod": "Biome Wand 1.1.9",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "It loads and items are added, but applying a biome does not work. Item icons do not seem to have a dynamic color of the biome ID applied, either. (Note: the mod has a 1.8 version too which works a bit differently (and in my opinion is better), but I did not try that one since if I understand 1.8 isn't necessarily supported right now.)",
+   "lc": "0.1.7",
+   "neoforge": "21.1.265",
+   "link": "https://spacechase0.com/mods/minecraft/outdated/biome-wand/",
+   "date": "2026-10-25",
+   "open": true
   }
  ]
 }
