@@ -42,6 +42,15 @@ public final class RecipeBridge1122 {
         RECIPES.add(recipe);
     }
 
+    /** The result a mod registered for a smelting input (empty when none; vanilla's own smelting recipes are not listed here). */
+    public static synchronized Object[] smeltingFor(ItemStack stack) {
+        for (Object[] s : SMELTING) {
+            ItemStack in = (ItemStack) s[0];
+            if (in.getItem() == stack.getItem() && (in.getMetadata() == 32767 || in.getMetadata() == stack.getMetadata())) return s;
+        }
+        return null;
+    }
+
     public static synchronized void addSmelting(ItemStack input, ItemStack output, float xp) {
         SMELTING.add(new Object[] {input, output, xp});
     }

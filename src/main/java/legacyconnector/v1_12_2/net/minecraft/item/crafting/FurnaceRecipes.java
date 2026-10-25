@@ -25,10 +25,16 @@ public class FurnaceRecipes {
     }
 
     public ItemStack getSmeltingResult(ItemStack stack) {
-        return ItemStack.EMPTY;
+        Object[] s = RecipeBridge1122.smeltingFor(stack);
+        return s == null ? ItemStack.EMPTY : (ItemStack) s[1];
     }
 
     public float getSmeltingExperience(ItemStack stack) {
-        return 0.0F;
+        Object[] s = RecipeBridge1122.smeltingFor(stack);
+        return s == null ? 0.0F : (Float) s[2];
+    }
+
+    public java.util.Map<ItemStack, ItemStack> getSmeltingList() {
+        return new java.util.LinkedHashMap<>();
     }
 }
