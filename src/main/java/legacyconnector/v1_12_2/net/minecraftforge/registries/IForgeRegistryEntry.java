@@ -12,6 +12,33 @@ public interface IForgeRegistryEntry<V> {
 
     class Impl<V extends IForgeRegistryEntry<V>> implements IForgeRegistryEntry<V> {
         private ResourceLocation registryName;
+        /** Forge's handle to the entry that stays valid when the registry is rebuilt. */
+        public IRegistryDelegate<V> delegate = newDelegate();
+
+        /** For objects made without running constructors (placeholders): gives them their delegate. */
+        public final void mcc$initDelegate() {
+            if (delegate == null) delegate = newDelegate();
+        }
+
+        private IRegistryDelegate<V> newDelegate() {
+            return new IRegistryDelegate<V>() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public V get() {
+                return (V) Impl.this;
+            }
+
+            @Override
+            public ResourceLocation name() {
+                return registryName;
+            }
+
+            @Override
+            public Class<V> type() {
+                return getRegistryType();
+            }
+            };
+        }
 
         @SuppressWarnings("unchecked")
         @Override

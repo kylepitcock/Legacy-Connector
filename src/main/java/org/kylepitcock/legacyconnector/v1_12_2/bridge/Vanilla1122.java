@@ -364,7 +364,9 @@ public final class Vanilla1122 {
         try {
             Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            return ((sun.misc.Unsafe) f.get(null)).allocateInstance(type);
+            Object o = ((sun.misc.Unsafe) f.get(null)).allocateInstance(type);
+            if (o instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl<?> impl) impl.mcc$initDelegate();
+            return o;
         } catch (ReflectiveOperationException | RuntimeException e) {
             return null;
         }

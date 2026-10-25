@@ -39,6 +39,12 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
         this.waterColor = properties.waterColor;
         this.enableSnow = properties.enableSnow;
         this.enableRain = properties.enableRain;
+        try {
+            this.topBlock = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", "grass")).getDefaultState();
+            this.fillerBlock = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", "dirt")).getDefaultState();
+        } catch (RuntimeException | LinkageError e) {
+            // vanilla constants not available yet: mods set their own blocks
+        }
         this.decorator = createBiomeDecorator();
         spawnLists.put(EnumCreatureType.MONSTER, spawnableMonsterList);
         spawnLists.put(EnumCreatureType.CREATURE, spawnableCreatureList);

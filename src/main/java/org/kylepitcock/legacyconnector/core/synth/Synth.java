@@ -89,7 +89,9 @@ public final class Synth {
             if (c.isInterface() || java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return null;
             java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);
-            return ((sun.misc.Unsafe) f.get(null)).allocateInstance(c);
+            Object o = ((sun.misc.Unsafe) f.get(null)).allocateInstance(c);
+            if (o instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl<?> impl) impl.mcc$initDelegate();
+            return o;
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             return null;
         }
