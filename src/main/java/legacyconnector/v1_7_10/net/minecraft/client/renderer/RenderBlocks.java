@@ -151,46 +151,76 @@ public class RenderBlocks {
 
     // ------------------------------------------------------------------ blocks
 
-    /** Draws every face that is not hidden by an opaque neighbour (vanilla's standard block, without AO). */
+    /**
+     * Draws every face that is not hidden by an opaque neighbour (vanilla's standard block). An untinted block's faces carry no
+     * colour, so the modern pipeline shades them (with AO); a tinted one (colorMultiplier) gets 1.7.10's colour per face, its
+     * face shading included. Either way the colour a renderer set before is restored afterwards.
+     */
     public boolean renderStandardBlock(Block block, int x, int y, int z) {
+        int c = 0xFFFFFF;
+        if (blockAccess != null) {
+            try {
+                c = block.colorMultiplier(blockAccess, x, y, z);
+            } catch (RuntimeException e) {
+                c = 0xFFFFFF;
+            }
+        }
+        return renderStandardBlockWithColorMultiplier(block, x, y, z, (c >> 16 & 255) / 255.0F, (c >> 8 & 255) / 255.0F, (c & 255) / 255.0F);
+    }
+
+    public boolean renderStandardBlockWithColorMultiplier(Block block, int x, int y, int z, float r, float g, float b) {
+        Tessellator t = Tessellator.instance;
+        long saved = t.mcc$colorState();
+        boolean tinted = r < 1.0F || g < 1.0F || b < 1.0F;
         boolean any = false;
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y - 1, z, 0)) {
-            renderFaceYNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 0));
-            any = true;
-        }
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y + 1, z, 1)) {
-            renderFaceYPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 1));
-            any = true;
-        }
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y, z - 1, 2)) {
-            renderFaceZNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 2));
-            any = true;
-        }
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y, z + 1, 3)) {
-            renderFaceZPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 3));
-            any = true;
-        }
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x - 1, y, z, 4)) {
-            renderFaceXNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 4));
-            any = true;
-        }
-        if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x + 1, y, z, 5)) {
-            renderFaceXPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 5));
-            any = true;
+        try {
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y - 1, z, 0)) {
+                faceColor(t, tinted, r, g, b, 0.5F);
+                renderFaceYNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 0));
+                any = true;
+            }
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y + 1, z, 1)) {
+                faceColor(t, tinted, r, g, b, 1.0F);
+                renderFaceYPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 1));
+                any = true;
+            }
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y, z - 1, 2)) {
+                faceColor(t, tinted, r, g, b, 0.8F);
+                renderFaceZNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 2));
+                any = true;
+            }
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x, y, z + 1, 3)) {
+                faceColor(t, tinted, r, g, b, 0.8F);
+                renderFaceZPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 3));
+                any = true;
+            }
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x - 1, y, z, 4)) {
+                faceColor(t, tinted, r, g, b, 0.6F);
+                renderFaceXNeg(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 4));
+                any = true;
+            }
+            if (renderAllFaces || block.shouldSideBeRendered(blockAccess, x + 1, y, z, 5)) {
+                faceColor(t, tinted, r, g, b, 0.6F);
+                renderFaceXPos(block, x, y, z, getBlockIcon(block, blockAccess, x, y, z, 5));
+                any = true;
+            }
+        } finally {
+            t.mcc$setColorState(saved);
         }
         return any;
     }
 
-    public boolean renderStandardBlockWithColorMultiplier(Block block, int x, int y, int z, float r, float g, float b) {
-        return renderStandardBlock(block, x, y, z);
+    private static void faceColor(Tessellator t, boolean tinted, float r, float g, float b, float shade) {
+        if (tinted) t.setColorOpaque_F(r * shade, g * shade, b * shade);
+        else t.mcc$setColorState(-1L);
     }
 
     public boolean renderStandardBlockWithAmbientOcclusion(Block block, int x, int y, int z, float r, float g, float b) {
-        return renderStandardBlock(block, x, y, z);
+        return renderStandardBlockWithColorMultiplier(block, x, y, z, r, g, b);
     }
 
     public boolean renderStandardBlockWithAmbientOcclusionPartial(Block block, int x, int y, int z, float r, float g, float b) {
-        return renderStandardBlock(block, x, y, z);
+        return renderStandardBlockWithColorMultiplier(block, x, y, z, r, g, b);
     }
 
     public boolean renderBlockAllFaces(Block block, int x, int y, int z) {

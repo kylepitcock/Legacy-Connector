@@ -161,7 +161,12 @@ public final class RenderContext {
         return texture;
     }
 
+    /** glColor4f: components are clamped to [0, 1] as GL did (Thaumcraft's crystals pass 255 / 220; unclamped they wrapped dark). */
     public static void color(float red, float green, float blue, float alpha) {
+        red = Math.max(0.0F, Math.min(1.0F, red));
+        green = Math.max(0.0F, Math.min(1.0F, green));
+        blue = Math.max(0.0F, Math.min(1.0F, blue));
+        alpha = Math.max(0.0F, Math.min(1.0F, alpha));
         r = red;
         g = green;
         b = blue;

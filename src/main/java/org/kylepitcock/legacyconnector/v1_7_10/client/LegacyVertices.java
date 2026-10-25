@@ -64,6 +64,16 @@ public final class LegacyVertices {
         colorDisabled = true;
     }
 
+    /** The explicit colour (ARGB) or -1 when none is set, for {@link #setColorState}. */
+    public long colorState() {
+        return hasColor ? argb & 0xFFFFFFFFL : -1L;
+    }
+
+    public void setColorState(long state) {
+        hasColor = state >= 0;
+        if (hasColor) argb = (int) state;
+    }
+
     private static int clamp(float f) {
         return Math.max(0, Math.min(255, (int) (f * 255.0F)));
     }

@@ -71,6 +71,15 @@ public class Tessellator {
         setColorRGBA(rgb >> 16 & 255, rgb >> 8 & 255, rgb & 255, alpha);
     }
 
+    /** The explicit vertex colour (ARGB), or -1 when none is set (the emulation then lets the modern pipeline shade). */
+    public long mcc$colorState() {
+        return vertices.colorState();
+    }
+
+    public void mcc$setColorState(long state) {
+        vertices.setColorState(state);
+    }
+
     public void disableColor() {
         vertices.disableColor();
     }

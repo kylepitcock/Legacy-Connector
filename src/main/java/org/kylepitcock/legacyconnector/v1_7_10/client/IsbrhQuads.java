@@ -26,22 +26,32 @@ final class IsbrhQuads {
             double[][] c = capture.quads.get(q);
             float[] n = capture.normals.get(q);
             int[] data = new int[32];
+            // A colour the renderer set (Thaumcraft's aspect tint on infused stone) was the final colour in 1.7.10: kept, and
+            // the quad is not shaded again. Uncoloured quads stay white and get modern shading and AO.
+            boolean coloured = false;
+            for (double[] v : c) coloured |= v.length > 7 && v[7] != 0.0D;
             for (int i = 0; i < 4; i++) {
                 double[] v = c[i];
                 int o = i * 8;
                 data[o] = Float.floatToRawIntBits((float) (v[0] - bx));
                 data[o + 1] = Float.floatToRawIntBits((float) (v[1] - by));
                 data[o + 2] = Float.floatToRawIntBits((float) (v[2] - bz));
-                data[o + 3] = 0xFFFFFFFF;
+                data[o + 3] = coloured ? abgr((long) v[5]) : 0xFFFFFFFF;
                 data[o + 4] = Float.floatToRawIntBits((float) v[3]);
                 data[o + 5] = Float.floatToRawIntBits((float) v[4]);
                 data[o + 6] = 0;
                 data[o + 7] = pack(n);
             }
             Direction dir = Direction.getNearest(n[0], n[1], n[2]);
-            out.add(new BakedQuad(data, -1, dir, sprite, true));
+            out.add(coloured ? new BakedQuad(data, -1, dir, sprite, false, false) : new BakedQuad(data, -1, dir, sprite, true));
         }
         return out;
+    }
+
+    /** Captured ARGB to the vertex format's ABGR. */
+    private static int abgr(long argb) {
+        int c = (int) argb;
+        return c & 0xFF00FF00 | (c & 0xFF) << 16 | (c >> 16) & 0xFF;
     }
 
     private static int pack(float[] n) {
