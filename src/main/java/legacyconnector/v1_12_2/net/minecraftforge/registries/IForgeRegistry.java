@@ -1,0 +1,29 @@
+package legacyconnector.v1_12_2.net.minecraftforge.registries;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
+
+public interface IForgeRegistry<V extends IForgeRegistryEntry<V>> {
+    Class<V> getRegistrySuperType();
+
+    void register(V value);
+
+    @SuppressWarnings("unchecked")
+    void registerAll(V... values);
+
+    boolean containsKey(ResourceLocation key);
+
+    boolean containsValue(V value);
+
+    V getValue(ResourceLocation key);
+
+    ResourceLocation getKey(V value);
+
+    Set<ResourceLocation> getKeys();
+
+    Collection<V> getValues();
+
+    Set<Map.Entry<ResourceLocation, V>> getEntries();
+}

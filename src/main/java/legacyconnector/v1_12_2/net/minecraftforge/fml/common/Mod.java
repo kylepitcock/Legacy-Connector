@@ -37,6 +37,16 @@ public @interface Mod {
     @interface EventHandler {
     }
 
+    /** Registers the static {@code @SubscribeEvent} methods of the annotated class on the Forge event bus. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.TYPE)
+    @interface EventBusSubscriber {
+        legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side[] value() default {
+                legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.CLIENT, legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.SERVER};
+
+        String modid() default "";
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     @interface Instance {

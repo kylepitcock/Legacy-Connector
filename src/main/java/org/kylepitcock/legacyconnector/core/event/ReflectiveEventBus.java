@@ -41,7 +41,21 @@ public final class ReflectiveEventBus {
         boolean isCanceled(Object event);
     }
 
-    private record Listener(Object owner, Class<?> eventType, int priority, boolean receiveCanceled, MethodHandle handle, String name) {}
+    private record Listener(Object owner, Class<?> eventType, int priority, boolean receiveCanceled, MethodHandle handle, String name, Class<?> generic) {}
+
+    /** The type argument of a handler's event parameter ({@code Register<Item>} gives Item), or null for raw and wildcard parameters. */
+    private static Class<?> genericOf(Method m) {
+        try {
+            if (m.getGenericParameterTypes()[0] instanceof java.lang.reflect.ParameterizedType p && p.getActualTypeArguments().length == 1) {
+                java.lang.reflect.Type t = p.getActualTypeArguments()[0];
+                if (t instanceof Class<?> c) return c;
+                if (t instanceof java.lang.reflect.ParameterizedType pt && pt.getRawType() instanceof Class<?> c) return c;
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a synthesized event class has no type parameters, so its generic signature does not parse
+        }
+        return null;
+    }
 
     private final String name;
     private final Adapter adapter;
@@ -80,7 +94,7 @@ public final class ReflectiveEventBus {
                     MethodHandle h = MethodHandles.lookup().unreflect(m);
                     if (!statics) h = h.bindTo(target);
                     added.add(new Listener(target, m.getParameterTypes()[0], adapter.priority(sub), adapter.receiveCanceled(sub), h,
-                            m.getDeclaringClass().getName() + "." + m.getName()));
+                            m.getDeclaringClass().getName() + "." + m.getName(), genericOf(m)));
                 } catch (IllegalAccessException | RuntimeException e) {
                     LOG.error("[{}] Could not access event handler {}", name, m, e);
                 }
@@ -107,6 +121,7 @@ public final class ReflectiveEventBus {
         for (Listener l : targets) {
             boolean canceledBefore = adapter.isCanceled(event);
             if (!l.receiveCanceled && canceledBefore) continue;
+            if (l.generic != null && event instanceof GenericEventType g && g.mcc$genericType() != l.generic) continue;
             try {
                 l.handle.invoke(event);
                 if (!canceledBefore && adapter.isCanceled(event) && CANCELLERS.add(l.name + " " + event.getClass().getName())) {

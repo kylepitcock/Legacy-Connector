@@ -48,6 +48,7 @@ public final class Platform1122 implements LegacyPlatform {
             mod.instance = ctor.newInstance();
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
+            registerSubscribers(mod, loader);
         } finally {
             LegacyModContainer1122.setActive(null);
         }
@@ -110,6 +111,28 @@ public final class Platform1122 implements LegacyPlatform {
         }
     }
 
+    /** {@code @Mod.EventBusSubscriber} classes: their static handlers go on the Forge bus when the mod is constructed. */
+    private static void registerSubscribers(LegacyModRecord mod, ClassLoader loader) {
+        var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
+        if (scan == null) return;
+        String desc = Type.getDescriptor(Mod.EventBusSubscriber.class);
+        boolean client = FMLEnvironment.dist.isClient();
+        for (var a : scan.getAnnotations()) {
+            if (!a.annotationType().getDescriptor().equals(desc)) continue;
+            try {
+                Class<?> cls = Class.forName(a.clazz().getClassName(), true, loader);
+                Mod.EventBusSubscriber sub = cls.getAnnotation(Mod.EventBusSubscriber.class);
+                if (sub == null) continue;
+                boolean match = false;
+                for (var side : sub.value()) match |= client ? side == legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.CLIENT
+                        : side == legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.SERVER;
+                if (match) legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(cls);
+            } catch (ClassNotFoundException | LinkageError e) {
+                LOG.warn("{}: cannot register the event subscriber {}: {}", mod.legacyId, a.clazz().getClassName(), e.toString());
+            }
+        }
+    }
+
     /** Invokes every {@code @Mod.EventHandler} method of the mod whose parameter accepts {@code event}. */
     private static void dispatch(LegacyModRecord mod, FMLEvent event) throws Exception {
         LegacyModContainer1122 container = (LegacyModContainer1122) mod.platformData;
@@ -160,9 +183,23 @@ public final class Platform1122 implements LegacyPlatform {
         dispatch(mod, new FMLPostInitializationEvent());
     }
 
+    /** Forge 1.12 posted the registry events after preInit: blocks first, then items (item blocks look their block up). */
+    @Override
+    public void registryEvents() {
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS));
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS));
+    }
+
+    private static void post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+    }
+
     @Override
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122.registerTabs();
     }
 
     @Override
