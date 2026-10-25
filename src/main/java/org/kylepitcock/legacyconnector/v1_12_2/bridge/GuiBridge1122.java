@@ -11,7 +11,7 @@ public final class GuiBridge1122 {
     private GuiBridge1122() {}
 
     public static void register(Object mod, IGuiHandler handler) {
-        HANDLERS.put(mod, handler);
+        if (mod != null && handler != null) HANDLERS.put(mod, handler);
     }
 
     public static IGuiHandler handler(Object mod) {

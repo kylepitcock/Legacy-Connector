@@ -183,7 +183,7 @@ public final class Platform1122 implements LegacyPlatform {
         for (var a : scan.getAnnotations()) {
             if (!a.annotationType().getDescriptor().equals(desc)) continue;
             try {
-                Class<?> cls = Class.forName(a.clazz().getClassName(), true, loader);
+                Class<?> cls = Class.forName(a.clazz().getClassName(), false, loader);
                 Mod.EventBusSubscriber sub = cls.getAnnotation(Mod.EventBusSubscriber.class);
                 if (sub == null) continue;
                 boolean match = false;

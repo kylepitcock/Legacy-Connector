@@ -51,4 +51,14 @@ public class ModelLoader {
         }
         return null;
     }
+
+    /** Forge's multipart model wrapper; mods read its private part list by reflection (CTM). */
+    public static class MultipartModel {
+        private Map<Object, Object> partModels = new java.util.HashMap<>();
+    }
+
+    /** Forge's wrapper of a vanilla model; mods read the wrapped model by reflection (CTM). */
+    public static class VanillaModelWrapper {
+        private Object model;
+    }
 }

@@ -8,6 +8,7 @@ public class ItemBlock extends Item {
 
     public ItemBlock(Block block) {
         this.block = block;
+        legacyconnector.v1_12_2.net.minecraftforge.registries.GameData.mcc$blockItem(block, this);
     }
 
     public Block getBlock() {

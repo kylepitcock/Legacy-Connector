@@ -12,6 +12,11 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
         this.path = path.toLowerCase(Locale.ROOT);
     }
 
+    /** The constructor mods subclass through: the parts are namespace and path. */
+    protected ResourceLocation(int unused, String... parts) {
+        this(parts[0], parts[1]);
+    }
+
     public ResourceLocation(String location) {
         int colon = location.indexOf(':');
         if (colon >= 0) {
