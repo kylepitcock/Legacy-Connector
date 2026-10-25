@@ -39,9 +39,22 @@ public final class ReflectiveEventBus {
         boolean receiveCanceled(Annotation subscribe);
 
         boolean isCanceled(Object event);
+
+        /** The legacy mod the code registering a listener belongs to (FML kept that mod active while it ran its handlers), or null. */
+        default Object currentOwnerToken() {
+            return null;
+        }
+
+        /** Makes a listener's owner the active mod while its handler runs; returns what to restore. */
+        default Object enter(Object ownerToken) {
+            return null;
+        }
+
+        default void exit(Object previous) {
+        }
     }
 
-    private record Listener(Object owner, Class<?> eventType, int priority, boolean receiveCanceled, MethodHandle handle, String name, Class<?> generic) {}
+    private record Listener(Object owner, Class<?> eventType, int priority, boolean receiveCanceled, MethodHandle handle, String name, Class<?> generic, Object ownerToken) {}
 
     /** The type argument of a handler's event parameter ({@code Register<Item>} gives Item), or null for raw and wildcard parameters. */
     private static Class<?> genericOf(Method m) {
@@ -94,7 +107,7 @@ public final class ReflectiveEventBus {
                     MethodHandle h = MethodHandles.lookup().unreflect(m);
                     if (!statics) h = h.bindTo(target);
                     added.add(new Listener(target, m.getParameterTypes()[0], adapter.priority(sub), adapter.receiveCanceled(sub), h,
-                            m.getDeclaringClass().getName() + "." + m.getName(), genericOf(m)));
+                            m.getDeclaringClass().getName() + "." + m.getName(), genericOf(m), adapter.currentOwnerToken()));
                 } catch (IllegalAccessException | RuntimeException e) {
                     LOG.error("[{}] Could not access event handler {}", name, m, e);
                 }
@@ -122,6 +135,7 @@ public final class ReflectiveEventBus {
             boolean canceledBefore = adapter.isCanceled(event);
             if (!l.receiveCanceled && canceledBefore) continue;
             if (l.generic != null && event instanceof GenericEventType g && g.mcc$genericType() != l.generic) continue;
+            Object previousOwner = l.ownerToken == null ? null : adapter.enter(l.ownerToken);
             try {
                 l.handle.invoke(event);
                 if (!canceledBefore && adapter.isCanceled(event) && CANCELLERS.add(l.name + " " + event.getClass().getName())) {
@@ -137,6 +151,8 @@ public final class ReflectiveEventBus {
                             l.name, n, t.toString());
                 }
                 if (t instanceof Error err && !(t instanceof LinkageError)) throw err;
+            } finally {
+                if (l.ownerToken != null) adapter.exit(previousOwner);
             }
         }
         return adapter.isCanceled(event);

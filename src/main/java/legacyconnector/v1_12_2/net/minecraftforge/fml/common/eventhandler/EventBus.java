@@ -29,6 +29,23 @@ public class EventBus {
         public boolean isCanceled(Object event) {
             return ((Event) event).isCanceled();
         }
+
+        @Override
+        public Object currentOwnerToken() {
+            return org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();
+        }
+
+        @Override
+        public Object enter(Object ownerToken) {
+            var previous = org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.active();
+            org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) ownerToken);
+            return previous;
+        }
+
+        @Override
+        public void exit(Object previous) {
+            org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122.setActive((org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122) previous);
+        }
     };
 
     private final ReflectiveEventBus delegate;

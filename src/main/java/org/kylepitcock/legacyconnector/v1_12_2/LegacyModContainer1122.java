@@ -28,7 +28,7 @@ public final class LegacyModContainer1122 extends legacyconnector.v1_12_2.net.mi
         return active;
     }
 
-    static void setActive(LegacyModContainer1122 container) {
+    public static void setActive(LegacyModContainer1122 container) {
         active = container;
     }
 
