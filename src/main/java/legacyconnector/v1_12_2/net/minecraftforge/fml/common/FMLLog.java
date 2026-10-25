@@ -7,6 +7,9 @@ import org.apache.logging.log4j.Logger;
 public final class FMLLog {
     private static final Logger LOG = LogManager.getLogger("FML");
 
+    /** The logger 1.12 mods used as {@code FMLLog.log}. */
+    public static final Logger log = LOG;
+
     private FMLLog() {}
 
     public static void log(String targetLog, Level level, String format, Object... data) {

@@ -13,6 +13,12 @@ import legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper
 
 /** A shaped recipe whose ingredients may be ore dictionary names. */
 public class ShapedOreRecipe extends ShapedRecipes {
+    /** The 1.12 field names mods read. */
+    protected ItemStack output = ItemStack.EMPTY;
+    protected NonNullList<Ingredient> input = NonNullList.create();
+    protected int width;
+    protected int height;
+
     public ShapedOreRecipe(ResourceLocation group, Block result, Object... recipe) {
         this(group, new ItemStack(result), recipe);
     }
@@ -27,5 +33,9 @@ public class ShapedOreRecipe extends ShapedRecipes {
 
     public ShapedOreRecipe(ResourceLocation group, ItemStack result, CraftingHelper.ShapedPrimer primer) {
         super(group == null ? "" : group.toString(), primer.width, primer.height, primer.input, result);
+        this.output = result;
+        this.width = primer.width;
+        this.height = primer.height;
+        this.input = primer.input;
     }
 }

@@ -5,6 +5,15 @@ public class RegistryNamespacedDefaultedByKey<K, V> extends RegistryNamespaced<K
     private final K defaultValueKey;
     private V defaultValue;
 
+    /** Vanilla registries held in static fields of synthesized classes (PotionType.REGISTRY): views of the registries the layer keeps. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static RegistryNamespacedDefaultedByKey mcc$synthDefault(String key) {
+        if (key.equals("net.minecraft.potion.PotionType.REGISTRY")) {
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTION_TYPES, "empty");
+        }
+        return new RegistryNamespacedDefaultedByKey(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("air"));
+    }
+
     public RegistryNamespacedDefaultedByKey(K defaultValueKey) {
         this.defaultValueKey = defaultValueKey;
     }

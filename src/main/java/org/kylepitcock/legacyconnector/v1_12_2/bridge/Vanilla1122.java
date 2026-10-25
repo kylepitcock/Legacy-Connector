@@ -158,6 +158,7 @@ public final class Vanilla1122 {
         for (var m : accessor.getDeclaredMethods()) if (m.getName().equals("sget$" + field)) getter = m;
         if (getter == null) return null;
         Class<?> type = getter.getReturnType();
+        if (field.equals("REGISTRY") && key.equals("net.minecraft.potion.PotionType.REGISTRY")) return Registries1122.view(Registries1122.POTION_TYPES, "empty");
         if (type.getSuperclass() == Enum.class && type.getName().startsWith("legacyconnector_synth.v1_12_2.")) return enumConstant(type, field);
         if (accessor.getName().equals(type.getName() + "$$Missing") && !blocks && !items && type.getName().startsWith("legacyconnector_synth.v1_12_2.")
                 && !java.lang.reflect.Modifier.isAbstract(type.getModifiers())) {

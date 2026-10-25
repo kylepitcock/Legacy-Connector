@@ -10,6 +10,11 @@ public class RegistryNamespaced<K, V> extends RegistrySimple<K, V> {
     protected final List<V> underlyingIntegerMap = new ArrayList<>();
     protected final Map<V, K> inverseObjectRegistry = new IdentityHashMap<>();
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static RegistryNamespaced mcc$synthDefault(String key) {
+        return RegistryNamespacedDefaultedByKey.mcc$synthDefault(key);
+    }
+
     @Override
     public synchronized void putObject(K key, V value) {
         if (!registryObjects.containsKey(key)) underlyingIntegerMap.add(value);

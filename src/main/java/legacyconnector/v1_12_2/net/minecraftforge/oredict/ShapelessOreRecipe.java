@@ -10,6 +10,8 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 import legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper;
 
 public class ShapelessOreRecipe extends ShapelessRecipes {
+    protected ItemStack output = ItemStack.EMPTY;
+
     public ShapelessOreRecipe(ResourceLocation group, Block result, Object... recipe) {
         this(group, new ItemStack(result), recipe);
     }
@@ -20,10 +22,12 @@ public class ShapelessOreRecipe extends ShapelessRecipes {
 
     public ShapelessOreRecipe(ResourceLocation group, ItemStack result, Object... recipe) {
         super(group == null ? "" : group.toString(), result, ingredients(recipe));
+        this.output = result;
     }
 
     public ShapelessOreRecipe(ResourceLocation group, NonNullList<Ingredient> input, ItemStack result) {
         super(group == null ? "" : group.toString(), result, input);
+        this.output = result;
     }
 
     private static NonNullList<Ingredient> ingredients(Object[] recipe) {
