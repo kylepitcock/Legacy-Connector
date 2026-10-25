@@ -40,11 +40,29 @@ public final class GlPixels {
         return total > Integer.MAX_VALUE ? 0 : (int) total;
     }
 
+    /**
+     * Uploads copy through one growing direct buffer per thread. A fresh direct buffer per call (mods upload textures every
+     * frame: JourneyMap's minimap) is native memory freed only when the heap is collected; with a big heap that is rare, and
+     * native memory grew until the game swapped. GL reads client memory before the call returns, so reuse is safe.
+     */
+    private static final ThreadLocal<ByteBuffer> SCRATCH = new ThreadLocal<>();
+
+    public static ByteBuffer scratch(int bytes) {
+        ByteBuffer buf = SCRATCH.get();
+        if (buf == null || buf.capacity() < bytes) {
+            buf = ByteBuffer.allocateDirect(Math.max(bytes, buf == null ? 1 << 16 : buf.capacity() * 2)).order(ByteOrder.nativeOrder());
+            SCRATCH.set(buf);
+        }
+        buf.clear();
+        buf.limit(bytes);
+        return buf;
+    }
+
     public static ByteBuffer safe(ByteBuffer pixels, int width, int height, int format, int type) {
         if (pixels == null) return null;
         int need = bytesNeeded(width, height, format, type);
         if (pixels.isDirect() && pixels.remaining() >= need) return pixels;
-        ByteBuffer copy = ByteBuffer.allocateDirect(Math.max(need, pixels.remaining())).order(ByteOrder.nativeOrder());
+        ByteBuffer copy = scratch(Math.max(need, pixels.remaining()));
         copy.put(pixels.duplicate());
         copy.clear();
         return copy;
@@ -53,9 +71,16 @@ public final class GlPixels {
     public static ByteBuffer safe(IntBuffer pixels, int width, int height, int format, int type) {
         if (pixels == null) return null;
         int need = bytesNeeded(width, height, format, type);
-        ByteBuffer copy = ByteBuffer.allocateDirect(Math.max(need, pixels.remaining() * 4)).order(ByteOrder.nativeOrder());
+        ByteBuffer copy = scratch(Math.max(need, pixels.remaining() * 4));
         copy.asIntBuffer().put(pixels.duplicate());
         copy.clear();
         return copy;
+    }
+
+    /** {@code pixels} in the reused scratch buffer, as an int view ready for a GL upload. */
+    public static IntBuffer ints(int[] pixels) {
+        IntBuffer view = scratch(pixels.length * 4).asIntBuffer();
+        view.put(pixels).flip();
+        return view;
     }
 }

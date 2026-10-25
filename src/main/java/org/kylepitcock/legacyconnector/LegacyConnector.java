@@ -59,6 +59,7 @@ public final class LegacyConnector {
                     org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge::clientMenu));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
+        org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
         LegacyMods.registerPlatform(new Platform1710());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
 

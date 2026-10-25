@@ -126,13 +126,12 @@ public final class Registries1122 {
 
             @Override
             public synchronized int getIDForObject(V value) {
-                return new java.util.ArrayList<>(reg.getValues()).indexOf(value);
+                return reg.getID(value);
             }
 
             @Override
             public synchronized V getObjectById(int id) {
-                var all = new java.util.ArrayList<>(reg.getValues());
-                return id >= 0 && id < all.size() ? all.get(id) : null;
+                return reg.getValue(id);
             }
 
             @Override
@@ -196,26 +195,36 @@ public final class Registries1122 {
             }
         }
 
+        /** Numeric ids are registration order; the numbering is rebuilt after the registry grows, so lookups stay O(1). */
+        private java.util.List<V> byId;
+        private Map<V, Integer> idOf;
+
+        private void numbering() {
+            ensureVanilla();
+            if (byId != null && byId.size() == byName.size()) return;
+            byId = new ArrayList<>(byName.values());
+            idOf = new IdentityHashMap<>();
+            for (int i = 0; i < byId.size(); i++) idOf.putIfAbsent(byId.get(i), i);
+        }
+
         @Override
         public synchronized int getID(V value) {
-            return new java.util.ArrayList<>(byName.values()).indexOf(value);
+            numbering();
+            Integer id = idOf.get(value);
+            return id == null ? -1 : id;
         }
 
         @Override
         public synchronized int getID(ResourceLocation name) {
             ensureVanilla();
-            int i = 0;
-            for (ResourceLocation k : byName.keySet()) {
-                if (k.equals(name)) return i;
-                i++;
-            }
-            return -1;
+            V v = byName.get(name);
+            return v == null ? -1 : getID(v);
         }
 
         @Override
         public synchronized V getValue(int id) {
-            var all = new java.util.ArrayList<>(byName.values());
-            return id >= 0 && id < all.size() ? all.get(id) : null;
+            numbering();
+            return id >= 0 && id < byId.size() ? byId.get(id) : null;
         }
 
         @Override
@@ -231,6 +240,7 @@ public final class Registries1122 {
         public synchronized V remove(ResourceLocation key) {
             V v = byName.remove(key);
             if (v != null) byValue.remove(v);
+            byId = null;
             return v;
         }
 

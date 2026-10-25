@@ -2,7 +2,6 @@ package legacyconnector.v1_7_10.net.minecraft.client.renderer.texture;
 
 import java.awt.image.BufferedImage;
 import java.nio.IntBuffer;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11C;
 
 /** Texture upload helpers that mods use for textures they build themselves. All calls must be made on the render thread. */
@@ -55,8 +54,7 @@ public class TextureUtil {
 
     public static void uploadTextureSub(int id, int[] pixels, int width, int height, int x, int y, boolean blur, boolean clamp) {
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, id);
-        IntBuffer buffer = BufferUtils.createIntBuffer(pixels.length);
-        buffer.put(pixels).flip();
+        IntBuffer buffer = org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.ints(pixels);
         GL11C.glPixelStorei(GL11C.GL_UNPACK_ROW_LENGTH, 0);
         GL11C.glTexSubImage2D(GL11C.GL_TEXTURE_2D, 0, x, y, width, height, org.lwjgl.opengl.GL12C.GL_BGRA, GL11C.GL_UNSIGNED_BYTE, buffer);
         int filter = blur ? GL11C.GL_LINEAR : GL11C.GL_NEAREST;
@@ -72,8 +70,7 @@ public class TextureUtil {
         for (int level = 0; level < levels.length; level++) {
             int w = Math.max(1, width >> level);
             int h = Math.max(1, height >> level);
-            IntBuffer buffer = BufferUtils.createIntBuffer(levels[level].length);
-            buffer.put(levels[level]).flip();
+            IntBuffer buffer = org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.ints(levels[level]);
             GL11C.glTexSubImage2D(GL11C.GL_TEXTURE_2D, level, x >> level, y >> level, w, h, org.lwjgl.opengl.GL12C.GL_BGRA, GL11C.GL_UNSIGNED_BYTE, buffer);
         }
     }

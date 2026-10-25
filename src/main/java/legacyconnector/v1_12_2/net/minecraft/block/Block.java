@@ -178,14 +178,25 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib ? ib.getBlock() : null;
     }
 
+    /**
+     * 1.12 packs a state as {@code blockId + (meta << 12)}, which holds 4096 blocks; with more registered (big packs plus the vanilla
+     * wrappers) the higher ids use a range of their own above 65535, so every state survives the round trip (BuildCraft's facades
+     * check it).
+     */
+    private static final int MCC$WIDE_STATE_IDS = 65536;
+
     public static legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateById(int id) {
-        Block block = getBlockById(id & 4095);
-        return block == null ? null : block.getStateFromMeta(id >> 12 & 15);
+        int blockId = id >= MCC$WIDE_STATE_IDS ? (id - MCC$WIDE_STATE_IDS) >> 4 : id & 4095;
+        int meta = id >= MCC$WIDE_STATE_IDS ? (id - MCC$WIDE_STATE_IDS) & 15 : id >> 12 & 15;
+        Block block = getBlockById(blockId);
+        return block == null ? null : block.getStateFromMeta(meta);
     }
 
     public static int getStateId(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
         Block block = state.getBlock();
-        return getIdFromBlock(block) + (block.getMetaFromState(state) << 12);
+        int blockId = getIdFromBlock(block);
+        int meta = block.getMetaFromState(state) & 15;
+        return blockId < 4096 ? blockId + (meta << 12) : MCC$WIDE_STATE_IDS + (blockId << 4 | meta);
     }
 
     public Block setTranslationKey(String name) {
