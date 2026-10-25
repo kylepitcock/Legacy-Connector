@@ -11,16 +11,7 @@ import legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManagerRe
 public class Minecraft {
     private static final Minecraft INSTANCE = new Minecraft();
 
-    private final IReloadableResourceManager resourceManager = new IReloadableResourceManager() {
-        @Override
-        public void registerReloadListener(IResourceManagerReloadListener listener) {
-            try {
-                listener.onResourceManagerReload(this);
-            } catch (RuntimeException | LinkageError e) {
-                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Client").warn("A resource reload listener failed: {}", e.toString());
-            }
-        }
-    };
+    private final IReloadableResourceManager resourceManager = new legacyconnector.v1_12_2.net.minecraft.client.resources.SimpleReloadableResourceManager();
 
     public static Minecraft getMinecraft() {
         return INSTANCE;
