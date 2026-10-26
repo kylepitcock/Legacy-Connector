@@ -170,6 +170,20 @@ public final class LegacyVertices {
                 // points have no counterpart in the entity pipelines
             }
         }
+        // 1.7.10 drew immediately: in a screen, what comes later (blitted textures, items) must cover this draw, so it is
+        // not left batched until the end of the frame (Thaumonomicon lines showed over the research icons)
+        var gui = RenderContext.gui();
+        if (gui != null) {
+            // the vertices already carry glColor (or their own colour, which in 1.7.10 replaced it): the shader colour the
+            // screen applies would multiply it in a second time (Thaumcraft's aspects came out dark)
+            float[] shader = com.mojang.blaze3d.systems.RenderSystem.getShaderColor().clone();
+            com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            try {
+                gui.flush();
+            } finally {
+                com.mojang.blaze3d.systems.RenderSystem.setShaderColor(shader[0], shader[1], shader[2], shader[3]);
+            }
+        }
     }
 
     /**

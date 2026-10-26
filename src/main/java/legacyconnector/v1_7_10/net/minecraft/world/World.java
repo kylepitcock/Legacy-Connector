@@ -207,6 +207,25 @@ public class World implements IBlockAccess {
         return lvl() instanceof Level l ? l : null;
     }
 
+    /**
+     * Views of one level are the same world, as 1.7.10 had a single World object per dimension: generation hands out a
+     * region view per chunk, and mods caching per world in a HashMap (CustomOreGen's configs) reloaded their data for every
+     * chunk and kept every view.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof World other)) return false;
+        Level mine = mcc$fullLevel();
+        return mine != null && mine == other.mcc$fullLevel();
+    }
+
+    @Override
+    public int hashCode() {
+        Level level = mcc$fullLevel();
+        return level != null ? System.identityHashCode(level) : System.identityHashCode(this);
+    }
+
     private static Level mcc$fullLevel(LevelAccessor level) {
         if (level instanceof Level l) return l;
         if (level instanceof WorldGenLevel g) return g.getLevel();

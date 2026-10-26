@@ -78,6 +78,38 @@ public final class LegacyRenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)));
 
+    /**
+     * Additive (GL_SRC_ALPHA, GL_ONE) textured geometry in screens: the eyes shader applies the world's fog, which at GUI
+     * depths faded it to black (Thaumcraft's glowing aspect icons in the Thaumonomicon).
+     */
+    private static final Function<ResourceLocation, RenderType> GUI_ADDITIVE = Util.memoize(texture -> create(
+            "legacyconnector_gui_additive", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(new ShaderStateShard(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader))
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(LIGHTNING_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)));
+
+    /** Unlit textured geometry in screens with GL lighting off (alpha blended): no entity shading, no world fog. */
+    private static final Function<ResourceLocation, RenderType> GUI_UNLIT = Util.memoize(texture -> create(
+            "legacyconnector_gui_unlit", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(new ShaderStateShard(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader))
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .createCompositeState(false)));
+
+    public static RenderType guiUnlit(ResourceLocation texture) {
+        return GUI_UNLIT.apply(texture);
+    }
+
+    public static RenderType guiAdditive(ResourceLocation texture) {
+        return GUI_ADDITIVE.apply(texture);
+    }
+
     public static RenderType additiveAlpha(ResourceLocation texture, boolean depthTest) {
         return depthTest ? ADDITIVE_ALPHA.apply(texture) : ADDITIVE_ALPHA_NO_DEPTH.apply(texture);
     }

@@ -66,6 +66,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.Platform1710;
 public final class EventBridge1710 {
     private EventBridge1710() {}
 
+    /** Players whose data file NeoForge reported loading since they last logged in. */
+    private static final java.util.Set<String> LOADED_FROM_FILE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static EventBus forge() {
         return MinecraftForge.EVENT_BUS;
     }
@@ -96,8 +99,30 @@ public final class EventBridge1710 {
             if (wants(fml(), TickEvent.PlayerTickEvent.class)) fml().post(new TickEvent.PlayerTickEvent(TickEvent.Phase.END, player(e.getEntity())));
         });
 
+        // ---- Forge bus: player data files (Thaumcraft keeps research in <uuid>.thaum next to the player's .dat)
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.LoadFromFile e) -> {
+            LOADED_FROM_FILE.add(e.getPlayerUUID());
+            if (wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile.class)) {
+                forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile(player(e.getEntity()),
+                        e.getPlayerDirectory(), e.getPlayerUUID()));
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.SaveToFile e) -> {
+            if (wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.SaveToFile.class)) {
+                forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.SaveToFile(player(e.getEntity()),
+                        e.getPlayerDirectory(), e.getPlayerUUID()));
+            }
+        });
+
         // ---- FML bus: players
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent e) -> {
+            // The single-player host's data comes from level.dat, which fires no LoadFromFile; Forge 1.7.10 fired it for the host
+            // too, and mods load their own player files there (Thaumcraft's research and starting entries).
+            if (!LOADED_FROM_FILE.remove(e.getEntity().getStringUUID()) && e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp
+                    && wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile.class)) {
+                java.io.File dir = sp.server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
+                forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile(player(sp), dir, sp.getStringUUID()));
+            }
             if (wants(fml(), PlayerEvent.PlayerLoggedInEvent.class)) fml().post(new PlayerEvent.PlayerLoggedInEvent(player(e.getEntity())));
             notifyFailures(e.getEntity());
         });

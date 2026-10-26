@@ -226,6 +226,9 @@ public final class RenderContext {
 
     /** Buffer for raw legacy geometry (Tessellator, glBegin), chosen from the emulated texture and blend state. */
     public static VertexConsumer geometryBuffer() {
+        if (gui() != null && additive && texture2d) return buffers().getBuffer(LegacyRenderTypes.guiAdditive(texture));
+        // a screen drawing with GL lighting off (Thaumcraft's aspect icons): the lit entity shader dimmed it
+        if (gui() != null && !lighting && texture2d && depthTest) return buffers().getBuffer(LegacyRenderTypes.guiUnlit(texture));
         if (blend && additiveAlpha && texture2d) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
         if (!depthTest && !additive) {
             if (!texture2d) return buffers().getBuffer(LegacyRenderTypes.untexturedNoDepth());

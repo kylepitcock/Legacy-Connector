@@ -45,4 +45,41 @@ public class PlayerEvent extends LivingEvent {
             this.z = z;
         }
     }
+
+    /**
+     * The player's data was read from the playerdata directory: mods keep their own file next to it (Thaumcraft's research,
+     * {@code <uuid>.thaum}) and read it here.
+     */
+    public static class LoadFromFile extends PlayerEvent {
+        public final java.io.File playerDirectory;
+        public final String playerUUID;
+
+        public LoadFromFile(EntityPlayer player, java.io.File originDirectory, String playerUUID) {
+            super(player);
+            this.playerDirectory = originDirectory;
+            this.playerUUID = playerUUID;
+        }
+
+        public java.io.File getPlayerFile(String suffix) {
+            if ("dat".equals(suffix)) throw new IllegalArgumentException("The suffix 'dat' is reserved");
+            return new java.io.File(playerDirectory, playerUUID + "." + suffix);
+        }
+    }
+
+    /** The player's data is being written to the playerdata directory: mods save their own file next to it. */
+    public static class SaveToFile extends PlayerEvent {
+        public final java.io.File playerDirectory;
+        public final String playerUUID;
+
+        public SaveToFile(EntityPlayer player, java.io.File originDirectory, String playerUUID) {
+            super(player);
+            this.playerDirectory = originDirectory;
+            this.playerUUID = playerUUID;
+        }
+
+        public java.io.File getPlayerFile(String suffix) {
+            if ("dat".equals(suffix)) throw new IllegalArgumentException("The suffix 'dat' is reserved");
+            return new java.io.File(playerDirectory, playerUUID + "." + suffix);
+        }
+    }
 }
