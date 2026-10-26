@@ -104,4 +104,20 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
 
     public void getNextWindowId() {
     }
+
+    private legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer mcc$netHandler;
+
+    /**
+     * The player's connection handler, made on first use (nothing declared it, so it read as null: every mod sending a packet
+     * through {@code player.playerNetServerHandler} failed, the CodeChicken mods' and EnderIO's login packets among them).
+     * Mods' fake players assign their own.
+     */
+    public static legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer mcc$get$playerNetServerHandler(EntityPlayerMP p) {
+        if (p.mcc$netHandler == null) p.mcc$netHandler = new legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer(p);
+        return p.mcc$netHandler;
+    }
+
+    public static void mcc$set$playerNetServerHandler(EntityPlayerMP p, legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer handler) {
+        p.mcc$netHandler = handler;
+    }
 }

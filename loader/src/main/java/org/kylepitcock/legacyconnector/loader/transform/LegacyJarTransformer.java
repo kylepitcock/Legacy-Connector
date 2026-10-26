@@ -354,7 +354,35 @@ public final class LegacyJarTransformer {
             for (var e : resources.entrySet()) put(jos, e.getKey(), e.getValue());
             for (var e : classes.entrySet()) put(jos, e.getKey(), e.getValue());
         }
-        Files.move(tmp, output, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        moveIntoPlace(tmp, output);
+    }
+
+    /**
+     * Windows refuses the rename while another process holds the target or the new file (an antivirus scanning the fresh
+     * jar, a second game instance writing the same cache entry): retry for a few seconds; if another writer already put
+     * the same jar in place, keep theirs (the cache name is a content hash).
+     */
+    private static void moveIntoPlace(Path tmp, Path output) throws IOException {
+        IOException last = null;
+        for (int attempt = 0; attempt < 20; attempt++) {
+            try {
+                Files.move(tmp, output, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                return;
+            } catch (java.nio.file.FileSystemException e) {
+                last = e;
+                try {
+                    Thread.sleep(250);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        if (Files.isRegularFile(output) && Files.size(output) > 0) {
+            Files.deleteIfExists(tmp);
+            return;
+        }
+        throw last;
     }
 
     private static void put(JarOutputStream jos, String name, byte[] data) throws IOException {
