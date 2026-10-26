@@ -34,16 +34,35 @@ public class Keyboard {
         return false;
     }
 
+    /** The key event being handled (FML's KeyInputEvent handlers read it), in LWJGL 2 key codes. */
+    private static volatile int eventKey;
+    private static volatile boolean eventKeyState;
+    private static volatile char eventCharacter;
+
+    public static void mcc$setEvent(int key, boolean state, char character) {
+        eventKey = key;
+        eventKeyState = state;
+        eventCharacter = character;
+    }
+
     public static int getEventKey() {
-        return 0;
+        return eventKey;
     }
 
     public static boolean getEventKeyState() {
-        return false;
+        return eventKeyState;
     }
 
     public static char getEventCharacter() {
-        return '\0';
+        return eventCharacter;
+    }
+
+    public static boolean isRepeatEvent() {
+        return false;
+    }
+
+    public static long getEventNanoseconds() {
+        return System.nanoTime();
     }
 
     public static void poll() {

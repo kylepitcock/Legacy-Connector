@@ -90,9 +90,21 @@ public final class RemoteControl {
         waitTicks = Math.max(waitTicks, ticks);
     }
 
+    /** Keys pressed through the keyboard handler, as a player's would be (input events included); released when done. */
+    private final java.util.List<Integer> heldKeys = new java.util.ArrayList<>();
+
+    private void pressKey(Minecraft mc, int glfwKey, int ticks) {
+        mc.keyboardHandler.keyPress(mc.getWindow().getWindow(), glfwKey, 0, org.lwjgl.glfw.GLFW.GLFW_PRESS, 0);
+        heldKeys.add(glfwKey);
+        waitTicks = Math.max(waitTicks, ticks);
+    }
+
     private void finish(String text) {
         for (var key : held) key.setDown(false);
         held.clear();
+        var mc = Minecraft.getInstance();
+        for (int key : heldKeys) mc.keyboardHandler.keyPress(mc.getWindow().getWindow(), key, 0, org.lwjgl.glfw.GLFW.GLFW_RELEASE, 0);
+        heldKeys.clear();
         try {
             Files.writeString(new File(out, current + ".txt").toPath(), text + "\n");
         } catch (IOException ignored) {
@@ -212,8 +224,13 @@ public final class RemoteControl {
                 if (found == null) {
                     finishLater("holdkey: no key binding named " + name);
                 } else {
-                    net.minecraft.client.KeyMapping.click(found.getKey());
-                    hold(found, ticks);
+                    var key = found.getKey();
+                    if (key.getType() == com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM) {
+                        pressKey(mc, key.getValue(), ticks);
+                    } else {
+                        net.minecraft.client.KeyMapping.click(key);
+                        hold(found, ticks);
+                    }
                     finishLater("holdkey " + found.getName());
                 }
             }

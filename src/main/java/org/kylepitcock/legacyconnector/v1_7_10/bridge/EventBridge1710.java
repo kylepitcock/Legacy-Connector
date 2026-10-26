@@ -172,6 +172,13 @@ public final class EventBridge1710 {
             forge().post(legacy);
             if (legacy.isCanceled() || legacy.useItem == Event.Result.DENY) e.setCanceled(true);
         });
+        // 1.7.10 fired RIGHT_CLICK_AIR on the client for an empty hand too (Fisk's Heroes shoots Spider-Man's web lines on it)
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickEmpty e) -> {
+            if (e.getHand() != net.minecraft.world.InteractionHand.MAIN_HAND || !wants(forge(), PlayerInteractEvent.class)) return;
+            var p = e.getEntity().blockPosition();
+            forge().post(new PlayerInteractEvent(player(e.getEntity()), PlayerInteractEvent.Action.RIGHT_CLICK_AIR,
+                    p.getX(), p.getY(), p.getZ(), -1, World.mcc$wrap(e.getLevel())));
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock e) -> {
             if (!wants(forge(), PlayerInteractEvent.class)) return;
             var p = e.getPos();
@@ -600,6 +607,31 @@ public final class EventBridge1710 {
             e.setGreen(legacy.green);
             e.setBlue(legacy.blue);
         });
+        // 1.7.10 fired these from its input loop while no screen was open, after updating the key bindings (as InputEvent.Key
+        // and MouseButton.Post fire here): mods handle their key bindings in them (Fisk's Heroes' suit abilities)
+        gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.Key e) -> {
+            if (e.getAction() == org.lwjgl.glfw.GLFW.GLFW_REPEAT || net.minecraft.client.Minecraft.getInstance().screen != null) return;
+            legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(org.kylepitcock.legacyconnector.v1_7_10.client.KeyCodes.fromGlfw(e.getKey()),
+                    e.getAction() == org.lwjgl.glfw.GLFW.GLFW_PRESS, '\0');
+            try {
+                if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent.class)) {
+                    fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
+                }
+            } finally {
+                legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(0, false, '\0');
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseButton.Post e) -> {
+            if (net.minecraft.client.Minecraft.getInstance().screen != null) return;
+            legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$setEvent(e.getButton(), e.getAction() != 0);
+            try {
+                if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.MouseInputEvent.class)) {
+                    fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.MouseInputEvent());
+                }
+            } finally {
+                legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$setEvent(-1, false);
+            }
+        });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) e.getMouseX(), (int) e.getMouseY(), 0, 0,
@@ -611,7 +643,12 @@ public final class EventBridge1710 {
             var mouse = net.minecraft.client.Minecraft.getInstance().mouseHandler;
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) mouse.xpos(), (int) mouse.ypos(), 0, 0, 0,
                     e.getButton(), e.getAction() != 0);
-            if (forge().post(event)) e.setCanceled(true);
+            legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$setEvent(e.getButton(), e.getAction() != 0);
+            try {
+                if (forge().post(event)) e.setCanceled(true);
+            } finally {
+                legacyconnector.v1_7_10.org.lwjgl.input.Mouse.mcc$setEvent(-1, false);
+            }
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)

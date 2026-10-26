@@ -12,6 +12,14 @@ public interface ModContainer {
 
     String getModId();
 
+    /**
+     * The class of the pack serving the mod's assets (constructed with the container); null for the default, the mod's
+     * jar. A mod returns its own to serve more (Fisk's Heroes serves its downloaded sounds), see LegacyModPacks.
+     */
+    default Class<?> getCustomResourcePackClass() {
+        return null;
+    }
+
     String getName();
 
     String getVersion();

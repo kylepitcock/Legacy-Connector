@@ -91,5 +91,10 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
         RenderManager.renderPosZ = cam.z;
         if (mc.level != null) rm.worldObj = World.mcc$wrap(mc.level);
         if (mc.player != null && EntityBridge.wrap(mc.player) instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase p) rm.livingPlayer = p;
+        // renderers read the view settings through it (Fisk's Heroes' web lines start at the hand in first person)
+        if (rm.options == null) {
+            var legacy = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+            rm.options = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(legacy);
+        }
     }
 }

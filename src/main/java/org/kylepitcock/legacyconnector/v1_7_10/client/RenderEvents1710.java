@@ -38,6 +38,15 @@ public final class RenderEvents1710 {
             legacyconnector.v1_7_10.net.minecraft.client.renderer.ActiveRenderInfo.mcc$update(e.getCamera().getYRot(), e.getCamera().getXRot());
             legacyconnector.v1_7_10.net.minecraft.util.Timer.mcc$frame(e.getPartialTick().getGameTimeDeltaPartialTick(false));
             legacyconnector.v1_7_10.net.minecraft.client.Minecraft.debugFPS = Minecraft.getInstance().getFps();
+            // the camera, as 1.7.10 cached it every frame: legacy code draws world-space things relative to these (Fisk's
+            // Heroes' tentacles, beams and trails were drawn as far from the player as the player is from the world origin)
+            var cam = e.getCamera().getPosition();
+            RenderManager.renderPosX = cam.x;
+            RenderManager.renderPosY = cam.y;
+            RenderManager.renderPosZ = cam.z;
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerX = cam.x;
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerY = cam.y;
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerZ = cam.z;
         }
         if (e.getStage() != RenderLevelStageEvent.Stage.AFTER_LEVEL || !MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderWorldLastEvent.class)) return;
         Minecraft mc = Minecraft.getInstance();

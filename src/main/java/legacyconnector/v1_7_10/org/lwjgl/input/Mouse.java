@@ -108,12 +108,21 @@ public class Mouse {
         return false;
     }
 
+    /** The button event being handled (FML's MouseInputEvent and Forge's MouseEvent handlers read it); -1 for none. */
+    private static volatile int eventButton = -1;
+    private static volatile boolean eventButtonState;
+
+    public static void mcc$setEvent(int button, boolean state) {
+        eventButton = button;
+        eventButtonState = state;
+    }
+
     public static int getEventButton() {
-        return -1;
+        return eventButton;
     }
 
     public static boolean getEventButtonState() {
-        return false;
+        return eventButtonState;
     }
 
     public static int getEventDWheel() {

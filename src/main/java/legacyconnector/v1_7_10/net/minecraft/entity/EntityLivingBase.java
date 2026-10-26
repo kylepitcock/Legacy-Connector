@@ -123,6 +123,11 @@ public abstract class EntityLivingBase extends Entity {
     public static void mcc$set$prevHealth(EntityLivingBase e, float v) {
     }
 
+    /** How far the arm swing has got, 0..1 (renderers pose the arm with it). */
+    public float getSwingProgress(float partialTicks) {
+        return mcc$entity == null ? 0 : mcc$living().getAttackAnim(partialTicks);
+    }
+
     public float getHealth() {
         return mcc$entity == null ? 0 : mcc$living().getHealth();
     }
@@ -413,6 +418,12 @@ public abstract class EntityLivingBase extends Entity {
 
     public void setLastAttacker(Entity target) {
         if (mcc$entity instanceof LivingEntity l && target != null && target.mcc$entity instanceof LivingEntity t) l.setLastHurtMob(t);
+    }
+
+    /** The entity's team on its level's scoreboard (players and mobs a team lists by UUID). */
+    public legacyconnector.v1_7_10.net.minecraft.scoreboard.Team getTeam() {
+        if (mcc$entity == null || !(mcc$entity.getTeam() instanceof net.minecraft.world.scores.PlayerTeam team)) return null;
+        return legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.mcc$wrap(team.getScoreboard()).getTeam(team.getName());
     }
 
     public boolean isOnSameTeam(EntityLivingBase other) {

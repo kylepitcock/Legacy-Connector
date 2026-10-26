@@ -920,6 +920,11 @@ public abstract class Entity implements ICommandSender {
         }
     }
 
+    /** Speeds the entity up along its facing by the given input (1.7.10's movement and flight steering; Fisk's web swinging). */
+    public void moveFlying(float strafe, float forward, float friction) {
+        if (mcc$entity != null) mcc$entity.moveRelative(friction, new net.minecraft.world.phys.Vec3(strafe, 0, forward));
+    }
+
     public void moveEntity(double dx, double dy, double dz) {
         if (mcc$entity != null) mcc$entity.move(net.minecraft.world.entity.MoverType.SELF, new net.minecraft.world.phys.Vec3(dx, dy, dz));
         else setPosition(mcc$x() + dx, mcc$y() + dy, mcc$z() + dz);
@@ -953,6 +958,19 @@ public abstract class Entity implements ICommandSender {
     /** Standing in a portal block; the modern portal blocks handle the entity themselves, so nothing is needed here. */
     /** How far away the entity is still drawn, relative to the default (arrows and other small projectiles use a larger value). */
     public double renderDistanceWeight = 1.0D;
+
+    /** Whether the entity is near enough to the point (the camera) to be drawn (mods skip their own drawing on it). */
+    public boolean isInRangeToRender3d(double x, double y, double z) {
+        double dx = mcc$x() - x;
+        double dy = mcc$y() - y;
+        double dz = mcc$z() - z;
+        return isInRangeToRenderDist(dx * dx + dy * dy + dz * dz);
+    }
+
+    public boolean isInRangeToRenderDist(double distanceSq) {
+        double size = mcc$get$boundingBox(this).getAverageEdgeLength() * 64.0D * renderDistanceWeight;
+        return distanceSq < size * size;
+    }
 
     /** Applies the effects of the blocks the entity overlaps; the modern game does this for every entity itself. */
     public void doBlockCollisions() {

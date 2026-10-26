@@ -112,6 +112,10 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return mcc$player().getGameProfile();
     }
 
+    public legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard getWorldScoreboard() {
+        return mcc$entity == null ? null : legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.mcc$wrap(mcc$entity.level().getScoreboard());
+    }
+
     @Override
     public String getCommandSenderName() {
         return getGameProfile().getName();

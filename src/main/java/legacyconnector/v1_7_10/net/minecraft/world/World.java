@@ -194,6 +194,12 @@ public class World implements IBlockAccess {
         return lvl();
     }
 
+    /** The level's scoreboard (the server's, or the copy the server keeps a client in sync with). */
+    public legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard getScoreboard() {
+        Level full = mcc$fullLevel();
+        return full == null ? null : legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.mcc$wrap(full.getScoreboard());
+    }
+
     /** The full level, or null for a detached world-gen region without one. */
     public Level mcc$fullLevel() {
         return mcc$fullLevel(lvl());

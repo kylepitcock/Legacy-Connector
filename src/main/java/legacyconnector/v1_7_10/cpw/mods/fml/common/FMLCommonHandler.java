@@ -19,6 +19,14 @@ public class FMLCommonHandler {
         return bus;
     }
 
+    public void fireKeyInput() {
+        bus.post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.KeyInputEvent());
+    }
+
+    public void fireMouseInput() {
+        bus.post(new legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.InputEvent.MouseInputEvent());
+    }
+
     public Side getSide() {
         return FMLEnvironment.dist.isClient() ? Side.CLIENT : Side.SERVER;
     }
