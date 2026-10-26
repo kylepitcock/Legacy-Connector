@@ -11,11 +11,21 @@ import legacyconnector.v1_7_10.net.minecraft.world.gen.layer.IntCache;
 public class WorldChunkManager {
     public GenLayer genBiomes;
     public GenLayer biomeIndexLayer;
-    /** The biomes the player may spawn in. A vanilla biome that has no instance yet (null) is left out instead of failing every chunk of the world. */
-    public List<BiomeGenBase> biomesToSpawnIn = new ArrayList<>(java.util.stream.Stream.of(BiomeGenBase.forest, BiomeGenBase.plains, BiomeGenBase.taiga,
-            BiomeGenBase.taigaHills, BiomeGenBase.forestHills, BiomeGenBase.jungle, BiomeGenBase.jungleHills).filter(java.util.Objects::nonNull).toList());
+    /**
+     * Forge: the biomes every new biome provider lets the player spawn in (mods add theirs or remove vanilla ones while
+     * loading). A vanilla biome that has no instance yet (null) is left out instead of failing every chunk of the world.
+     */
+    public static ArrayList<BiomeGenBase> allowedBiomes = new ArrayList<>(java.util.stream.Stream.of(BiomeGenBase.forest, BiomeGenBase.plains,
+            BiomeGenBase.taiga, BiomeGenBase.taigaHills, BiomeGenBase.forestHills, BiomeGenBase.jungle, BiomeGenBase.jungleHills)
+            .filter(java.util.Objects::nonNull).toList());
+    /** The biomes the player may spawn in: a copy of {@link #allowedBiomes} when the provider was made. */
+    public List<BiomeGenBase> biomesToSpawnIn;
 
     protected WorldChunkManager() {
+        this.biomesToSpawnIn = new ArrayList<>();
+        for (BiomeGenBase biome : allowedBiomes) {
+            if (biome != null) biomesToSpawnIn.add(biome);
+        }
     }
 
     public WorldChunkManager(long seed, WorldType worldType) {

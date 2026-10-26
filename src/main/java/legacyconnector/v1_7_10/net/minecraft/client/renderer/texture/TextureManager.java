@@ -5,7 +5,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 import org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations;
 
 /** Binding a texture just records it in the render context; modern draw calls name their texture explicitly. */
-public class TextureManager {
+public class TextureManager implements ITickable {
     /** Textures by location (1.7.10's map; mods look it up by reflection to replace or drop a texture). */
     private final java.util.Map mapTextureObjects = new java.util.HashMap();
     public static final TextureManager INSTANCE = new TextureManager();
@@ -135,6 +135,7 @@ public class TextureManager {
     }
 
     /** Animated textures tick with the modern texture manager. */
+    @Override
     public void tick() {
     }
 

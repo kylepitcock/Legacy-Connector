@@ -62,6 +62,20 @@ public class TileEntityRendererDispatcher {
         worldObj = world;
     }
 
+    /** Caches the view for the frame: world, viewer, its interpolated look and position (the camera fields). */
+    public void cacheActiveRenderInfo(World world, TextureManager textures, FontRenderer font, EntityLivingBase viewer, float partialTicks) {
+        if (worldObj != world) func_147543_a(world);
+        renderEngine = textures;
+        field_147551_g = viewer;
+        var m = viewer == null ? null : viewer.mcc$entity;
+        if (m == null) return;
+        field_147562_h = net.minecraft.util.Mth.lerp(partialTicks, m.yRotO, m.getYRot());
+        field_147563_i = net.minecraft.util.Mth.lerp(partialTicks, m.xRotO, m.getXRot());
+        field_147560_j = net.minecraft.util.Mth.lerp(partialTicks, m.xOld, m.getX());
+        field_147561_k = net.minecraft.util.Mth.lerp(partialTicks, m.yOld, m.getY());
+        field_147558_l = net.minecraft.util.Mth.lerp(partialTicks, m.zOld, m.getZ());
+    }
+
     public void mcc$setCamera(double x, double y, double z) {
         staticPlayerX = x;
         staticPlayerY = y;
