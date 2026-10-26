@@ -14,6 +14,16 @@ public class EntityXPOrb extends Entity {
         super(modern);
     }
 
+    /** An orb worth nothing yet (mods' orb subclasses and spawn packets construct it this way); a view of a modern orb. */
+    public EntityXPOrb(World world) {
+        super(mcc$emptyOrb(world));
+    }
+
+    private static ExperienceOrb mcc$emptyOrb(World world) {
+        var level = world == null ? null : world.mcc$fullLevel();
+        return level == null ? null : new ExperienceOrb(net.minecraft.world.entity.EntityType.EXPERIENCE_ORB, level);
+    }
+
     public int getXpValue() {
         return ((ExperienceOrb) mcc$entity).getValue();
     }

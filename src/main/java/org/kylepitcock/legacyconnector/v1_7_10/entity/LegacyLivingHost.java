@@ -27,4 +27,7 @@ public interface LegacyLivingHost extends LegacyHost {
 
     /** Vanilla air loss under water (LivingEntity.decreaseAirSupply). */
     int mcc$superDecreaseAirSupply(int air);
+
+    /** Vanilla tick while dead (LivingEntity.tickDeath). */
+    void mcc$superTickDeath();
 }

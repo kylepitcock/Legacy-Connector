@@ -13,7 +13,7 @@ public final class BossStatus {
         float max = boss.getMaxHealth();
         healthScale = max <= 0 ? 0 : boss.getHealth() / max;
         statusBarTime = 100;
-        var name = boss.func_145748_c_();
+        var name = boss.getFormattedCommandSenderName();
         bossName = name == null ? "" : name.getFormattedText();
         hasColorModifier = colorModifier;
     }

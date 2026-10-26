@@ -29,6 +29,11 @@ public final class ModernAccess {
         static final Method MAGIC_ABSORB = find(LivingEntity.class, "getDamageAfterMagicAbsorb", DamageSource.class, float.class);
         static final Method ARMOR_ABSORB = find(LivingEntity.class, "getDamageAfterArmorAbsorb", DamageSource.class, float.class);
         static final Method DECREASE_AIR = find(LivingEntity.class, "decreaseAirSupply", int.class);
+        static final Method TICK_DEATH = find(LivingEntity.class, "tickDeath");
+    }
+
+    public static void tickDeath(LivingEntity entity) {
+        call(Living.TICK_DEATH, entity, null);
     }
 
     private static Object call(Method m, Object target, Object fallback, Object... args) {

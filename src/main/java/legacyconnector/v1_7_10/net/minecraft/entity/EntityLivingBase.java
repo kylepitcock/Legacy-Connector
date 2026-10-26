@@ -464,7 +464,8 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public boolean canBreatheUnderwater() {
-        return mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
+        // a hosted entity answers with the legacy default: the host asks this method itself
+        return !mcc$hosted() && mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
     }
 
     // ------------------------------------------------------------------ death, drops, sounds (bridged for the host)
@@ -629,5 +630,18 @@ public abstract class EntityLivingBase extends Entity {
 
     public final int mcc$decreaseAirSupply(int air) {
         return decreaseAirSupply(air);
+    }
+
+    /**
+     * One tick of lying dead: after 20 ticks the body disappears in a puff of smoke and drops its experience (the modern tickDeath).
+     * Hosts route the modern tickDeath here so mods' death animations run.
+     */
+    protected void onDeathUpdate() {
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) h.mcc$superTickDeath();
+        else if (mcc$entity instanceof LivingEntity l) org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.tickDeath(l);
+    }
+
+    public final void mcc$onDeathUpdate() {
+        onDeathUpdate();
     }
 }

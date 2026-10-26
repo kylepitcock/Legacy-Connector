@@ -73,6 +73,14 @@ final class VanillaMobViews {
         if (modern instanceof MagmaCube) return new EntityMagmaCube(modern);
         if (modern instanceof Slime) return new EntitySlime(modern);
         if (modern instanceof Blaze) return new EntityBlaze(modern);
+        if (modern instanceof net.minecraft.world.entity.monster.Ghast) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityGhast(modern);
+        if (modern instanceof net.minecraft.world.entity.monster.Silverfish) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySilverfish(modern);
+        if (modern instanceof net.minecraft.world.entity.monster.Giant) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityGiantZombie(modern);
+        if (modern instanceof net.minecraft.world.entity.monster.Witch) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityWitch(modern);
+        if (modern instanceof net.minecraft.world.entity.boss.wither.WitherBoss) return new legacyconnector.v1_7_10.net.minecraft.entity.boss.EntityWither(modern);
+        if (modern instanceof net.minecraft.world.entity.animal.IronGolem) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityIronGolem(modern);
+        if (modern instanceof net.minecraft.world.entity.animal.SnowGolem) return new legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySnowman(modern);
+        if (modern instanceof net.minecraft.world.entity.animal.Squid) return new legacyconnector.v1_7_10.net.minecraft.entity.passive.EntitySquid(modern);
         if (modern instanceof Animal) return new AnimalView(modern);
         if (modern instanceof Monster) return new MobView(modern);
         return null;

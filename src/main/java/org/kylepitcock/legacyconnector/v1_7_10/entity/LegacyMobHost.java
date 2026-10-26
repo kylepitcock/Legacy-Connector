@@ -416,6 +416,25 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     }
 
     @Override
+    public boolean canDrownInFluidType(net.neoforged.neoforge.fluids.FluidType type) {
+        EntityLivingBase l = living();
+        if (l != null && type == net.neoforged.neoforge.common.NeoForgeMod.WATER_TYPE.value() && l.canBreatheUnderwater()) return false;
+        return super.canDrownInFluidType(type);
+    }
+
+    @Override
+    protected void tickDeath() {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "onDeathUpdate")) l.mcc$onDeathUpdate();
+        else super.tickDeath();
+    }
+
+    @Override
+    public void mcc$superTickDeath() {
+        super.tickDeath();
+    }
+
+    @Override
     public boolean canBeAffected(net.minecraft.world.effect.MobEffectInstance effect) {
         EntityLivingBase l = living();
         if (l != null && LegacyHosts.overrides(legacy.getClass(), "isPotionApplicable", legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.class)) {

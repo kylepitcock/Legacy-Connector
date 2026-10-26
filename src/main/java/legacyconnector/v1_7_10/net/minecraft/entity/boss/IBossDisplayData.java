@@ -8,5 +8,11 @@ public interface IBossDisplayData {
 
     float getHealth();
 
-    IChatComponent func_145748_c_();
+    /** The boss bar's title (every entity has it). */
+    IChatComponent getFormattedCommandSenderName();
+
+    /** The SRG name of {@link #getFormattedCommandSenderName}. */
+    default IChatComponent func_145748_c_() {
+        return getFormattedCommandSenderName();
+    }
 }
