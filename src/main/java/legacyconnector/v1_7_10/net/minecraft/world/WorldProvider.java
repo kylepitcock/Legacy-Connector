@@ -78,8 +78,9 @@ public class WorldProvider {
         };
     }
 
+    /** 1.7.10: true unless overridden (the nether and the end said false); also decides whether sky and clouds are drawn. */
     public boolean isSurfaceWorld() {
-        return dimensionId == 0;
+        return dimensionId != -1 && dimensionId != 1;
     }
 
     public boolean canRespawnHere() {
