@@ -108,6 +108,23 @@ public final class LegacyVertices {
         vertices.add(new double[] {x + tx, y + ty, z + tz, u, v, color & 0xFFFFFFFFL, light >= 0 ? light : RenderContext.vertexLight(), hasColor ? 1.0D : 0.0D});
     }
 
+    /** The vertices added since {@link #begin} ({x, y, z, u, v, argb, light, own colour}); live list. */
+    public List<double[]> mcc$vertices() {
+        return vertices;
+    }
+
+    public double mcc$tx() {
+        return tx;
+    }
+
+    public double mcc$ty() {
+        return ty;
+    }
+
+    public double mcc$tz() {
+        return tz;
+    }
+
     /** A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). */
     public record Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {}
 

@@ -17,4 +17,32 @@ public class BlockCauldron extends legacyconnector.v1_7_10.net.minecraft.block.B
     public BlockCauldron() {
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.iron);
     }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon iconInner, iconTop, iconBottom;
+
+    @Override
+    public void registerBlockIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
+        iconInner = register.registerIcon(getTextureName() + "_inner");
+        iconTop = register.registerIcon(getTextureName() + "_top");
+        iconBottom = register.registerIcon(getTextureName() + "_bottom");
+        blockIcon = register.registerIcon(getTextureName() + "_side");
+    }
+
+    /** The height of the water surface for a fill level (0-3). */
+    public static float getRenderLiquidLevel(int level) {
+        int l = Math.max(0, Math.min(level, 3));
+        return (6 + 3 * l) / 16.0F;
+    }
+
+    public static int getPowerFromMeta(int meta) {
+        return meta;
+    }
+
+    /** The cauldron's "inner" and "bottom" textures. */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IIcon getCauldronIcon(String name) {
+        BlockCauldron cauldron = legacyconnector.v1_7_10.net.minecraft.init.Blocks.cauldron;
+        legacyconnector.v1_7_10.net.minecraft.util.IIcon icon = name.equals("inner") ? cauldron.iconInner : name.equals("bottom") ? cauldron.iconBottom : null;
+        if (icon != null) return icon;
+        return name.equals("inner") || name.equals("bottom") ? mcc$vanillaIcon("cauldron_" + name) : null;
+    }
 }

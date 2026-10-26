@@ -89,4 +89,82 @@ public class OpenGlHelper {
     public static String glGetProgramInfoLog(int program, int maxLength) {
         return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glGetProgramInfoLog(program, maxLength) : "";
     }
+
+    /**
+     * Deletes a shader program. Legacy GLSL programs never reach the driver on a core profile (see GlCompat), so only a real
+     * program is deleted.
+     */
+    public static void glDeleteProgram(int program) {
+        if (RenderSystem.isOnRenderThread() && org.lwjgl.opengl.GL20.glIsProgram(program)) org.lwjgl.opengl.GL20.glDeleteProgram(program);
+    }
+
+    public static void glDeleteShader(int shader) {
+        if (RenderSystem.isOnRenderThread() && org.lwjgl.opengl.GL20.glIsShader(shader)) org.lwjgl.opengl.GL20.glDeleteShader(shader);
+    }
+
+    /** The uniform's location in a real linked program; -1 otherwise (setting -1 is ignored, as in GL). */
+    public static int glGetUniformLocation(int program, CharSequence name) {
+        if (!RenderSystem.isOnRenderThread() || !org.lwjgl.opengl.GL20.glIsProgram(program)) return -1;
+        return org.lwjgl.opengl.GL20.glGetUniformLocation(program, name);
+    }
+
+    /**
+     * Binding a program does not affect the emulated pipeline: legacy geometry is batched into the modern renderer's buffers and
+     * drawn later with its own shaders, so switching programs here would only desynchronise the modern renderer's state.
+     */
+    public static void glUseProgram(int program) {
+    }
+
+    // ------------------------------------------------------------------ framebuffer objects (GL 3.0 on every modern context)
+
+    public static int func_153165_e() {
+        return RenderSystem.isOnRenderThread() ? com.mojang.blaze3d.platform.GlStateManager.glGenFramebuffers() : -1;
+    }
+
+    public static int func_153185_f() {
+        return RenderSystem.isOnRenderThread() ? com.mojang.blaze3d.platform.GlStateManager.glGenRenderbuffers() : -1;
+    }
+
+    public static int func_153167_i(int target) {
+        return RenderSystem.isOnRenderThread() ? com.mojang.blaze3d.platform.GlStateManager.glCheckFramebufferStatus(target) : -1;
+    }
+
+    /**
+     * Binds a framebuffer. Framebuffer 0 was the screen in 1.7.10; the modern game draws into its main render target instead, so
+     * a mod "returning to the screen" gets that target.
+     */
+    public static void func_153171_g(int target, int framebuffer) {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (framebuffer == 0) {
+            var main = net.minecraft.client.Minecraft.getInstance().getMainRenderTarget();
+            if (main != null) framebuffer = main.frameBufferId;
+        }
+        com.mojang.blaze3d.platform.GlStateManager._glBindFramebuffer(target, framebuffer);
+    }
+
+    public static void func_153174_h(int framebuffer) {
+        if (RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._glDeleteFramebuffers(framebuffer);
+    }
+
+    public static void func_153176_h(int target, int renderbuffer) {
+        if (RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._glBindRenderbuffer(target, renderbuffer);
+    }
+
+    public static void func_153184_g(int renderbuffer) {
+        if (RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._glDeleteRenderbuffers(renderbuffer);
+    }
+
+    public static void func_153186_a(int target, int internalFormat, int width, int height) {
+        if (RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._glRenderbufferStorage(target, internalFormat, width, height);
+    }
+
+    public static void func_153188_a(int target, int attachment, int textureTarget, int texture, int level) {
+        if (RenderSystem.isOnRenderThread()) com.mojang.blaze3d.platform.GlStateManager._glFramebufferTexture2D(target, attachment, textureTarget, texture, level);
+    }
+
+    public static void func_153190_b(int target, int attachment, int renderbufferTarget, int renderbuffer) {
+        if (RenderSystem.isOnRenderThread()) {
+            com.mojang.blaze3d.platform.GlStateManager._glFramebufferRenderbuffer(target, attachment, renderbufferTarget, renderbuffer);
+        }
+    }
 }

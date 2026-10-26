@@ -231,7 +231,27 @@ public class GL11 extends GL11Guard {
     public static void glMatrixMode(int mode) {
     }
 
+    /** Multiplies the emulated model-view matrix by a column-major 4x4 matrix (the buffer's next 16 values). */
     public static void glMultMatrix(FloatBuffer m) {
+        if (m == null || m.remaining() < 16) return;
+        org.joml.Matrix4f matrix = new org.joml.Matrix4f().set(m.position(), m);
+        mcc$multMatrix(matrix);
+    }
+
+    public static void glMultMatrix(java.nio.DoubleBuffer m) {
+        if (m == null || m.remaining() < 16) return;
+        org.joml.Matrix4f matrix = new org.joml.Matrix4f(new org.joml.Matrix4d().set(m.position(), m));
+        mcc$multMatrix(matrix);
+    }
+
+    private static void mcc$multMatrix(org.joml.Matrix4f matrix) {
+        if (DisplayLists.record(() -> mcc$multMatrix(matrix))) return;
+        var pose = RenderContext.pose();
+        if (pose == null) return;
+        var last = pose.last();
+        last.pose().mul(matrix);
+        org.joml.Matrix3f normal = new org.joml.Matrix3f(matrix);
+        if (Math.abs(normal.determinant()) > 1.0E-12F) last.normal().mul(normal.invert().transpose());
     }
 
     // ------------------------------------------------------------------ color

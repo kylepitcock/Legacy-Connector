@@ -27,4 +27,20 @@ public class BlockCocoa extends BlockDirectional implements IGrowable {
     public static int func_149987_c(int meta) {
         return (meta & 12) >> 2;
     }
+
+    /** The pod's icons by growth stage (field_149989_a). */
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon[] field_149989_a;
+
+    @Override
+    public void registerBlockIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
+        field_149989_a = new legacyconnector.v1_7_10.net.minecraft.util.IIcon[3];
+        for (int i = 0; i < field_149989_a.length; i++) field_149989_a[i] = register.registerIcon(getTextureName() + "_stage_" + i);
+    }
+
+    /** The pod's icon for a growth stage (0-2). */
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getCocoaIcon(int stage) {
+        int s = stage < 0 || stage >= 3 ? 2 : stage;
+        if (field_149989_a != null && s < field_149989_a.length && field_149989_a[s] != null) return field_149989_a[s];
+        return mcc$vanillaIcon("cocoa_stage_" + s);
+    }
 }

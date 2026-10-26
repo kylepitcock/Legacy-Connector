@@ -104,4 +104,86 @@ public class Tessellator {
     public void addVertex(double x, double y, double z) {
         vertices.vertex(x, y, z);
     }
+
+    /** Forge: set while the chunk renderer draws world geometry (mods check it to tell world from item rendering). */
+    public static boolean renderingWorldRenderer = false;
+    /** Forge: whether the draw uses the default (block atlas) texture. */
+    public boolean defaultTexture = false;
+
+    public void func_154352_a(byte r, byte g, byte b) {
+        setColorOpaque(r & 255, g & 255, b & 255);
+    }
+
+    /**
+     * Sorts the quads drawn so far back to front as seen from (x, y, z) (translucent geometry, as 1.7.10's chunk renderer did) and
+     * returns them as a vertex state in 1.7.10's raw format: 8 ints per vertex (x, y, z, u, v as float bits, colour ABGR, light,
+     * normal).
+     */
+    public legacyconnector.v1_7_10.net.minecraft.client.shader.TesselatorVertexState getVertexState(float x, float y, float z) {
+        java.util.List<double[]> list = vertices.mcc$vertices();
+        int quads = list.size() / 4;
+        double cx = x + vertices.mcc$tx(), cy = y + vertices.mcc$ty(), cz = z + vertices.mcc$tz();
+        Integer[] order = new Integer[quads];
+        double[] dist = new double[quads];
+        for (int q = 0; q < quads; q++) {
+            order[q] = q;
+            double mx = 0, my = 0, mz = 0;
+            for (int i = 0; i < 4; i++) {
+                double[] v = list.get(q * 4 + i);
+                mx += v[0] * 0.25D;
+                my += v[1] * 0.25D;
+                mz += v[2] * 0.25D;
+            }
+            mx -= cx;
+            my -= cy;
+            mz -= cz;
+            dist[q] = mx * mx + my * my + mz * mz;
+        }
+        java.util.Arrays.sort(order, (a, b) -> Double.compare(dist[b], dist[a]));
+        java.util.List<double[]> sorted = new java.util.ArrayList<>(list.size());
+        for (int q = 0; q < quads; q++) {
+            for (int i = 0; i < 4; i++) sorted.add(list.get(order[q] * 4 + i));
+        }
+        for (int i = quads * 4; i < list.size(); i++) sorted.add(list.get(i));
+        list.clear();
+        list.addAll(sorted);
+        int[] raw = new int[list.size() * 8];
+        boolean color = false;
+        for (int i = 0; i < list.size(); i++) {
+            double[] v = list.get(i);
+            int o = i * 8;
+            raw[o] = Float.floatToRawIntBits((float) v[0]);
+            raw[o + 1] = Float.floatToRawIntBits((float) v[1]);
+            raw[o + 2] = Float.floatToRawIntBits((float) v[2]);
+            raw[o + 3] = Float.floatToRawIntBits((float) v[3]);
+            raw[o + 4] = Float.floatToRawIntBits((float) v[4]);
+            int argb = (int) (long) v[5];
+            raw[o + 5] = argb & 0xFF00FF00 | (argb & 255) << 16 | (argb >> 16) & 255;
+            raw[o + 6] = (int) v[6];
+            color |= v.length > 7 && v[7] != 0.0D;
+        }
+        var state = new legacyconnector.v1_7_10.net.minecraft.client.shader.TesselatorVertexState(raw, raw.length, list.size(), true, true, false, color);
+        state.mcc$vertices = new java.util.ArrayList<>(list);
+        return state;
+    }
+
+    /** Replaces the vertices of the current draw with a saved state (one of {@link #getVertexState}, or built from raw data). */
+    public void setVertexState(legacyconnector.v1_7_10.net.minecraft.client.shader.TesselatorVertexState state) {
+        java.util.List<double[]> list = vertices.mcc$vertices();
+        list.clear();
+        if (state.mcc$vertices != null) {
+            list.addAll(state.mcc$vertices);
+            return;
+        }
+        int[] raw = state.getRawBuffer();
+        int n = Math.min(state.getVertexCount(), raw.length / 8);
+        for (int i = 0; i < n; i++) {
+            int o = i * 8;
+            int abgr = raw[o + 5];
+            long argb = (abgr & 0xFF00FF00 | (abgr & 255) << 16 | (abgr >> 16) & 255) & 0xFFFFFFFFL;
+            list.add(new double[] {Float.intBitsToFloat(raw[o]), Float.intBitsToFloat(raw[o + 1]), Float.intBitsToFloat(raw[o + 2]),
+                    Float.intBitsToFloat(raw[o + 3]), Float.intBitsToFloat(raw[o + 4]), argb, state.getHasBrightness() ? raw[o + 6] : -1,
+                    state.getHasColor() ? 1.0D : 0.0D});
+        }
+    }
 }

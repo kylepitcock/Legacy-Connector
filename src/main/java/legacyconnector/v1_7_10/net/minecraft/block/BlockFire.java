@@ -35,4 +35,29 @@ public class BlockFire extends legacyconnector.v1_7_10.net.minecraft.block.Block
         int[] info = FIRE_INFO.get(block);
         return info == null ? 0 : info[1];
     }
+
+    /** The two animated fire layers. */
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon[] field_149850_M;
+
+    @Override
+    public void registerBlockIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
+        field_149850_M = new legacyconnector.v1_7_10.net.minecraft.util.IIcon[] {register.registerIcon(getTextureName() + "_layer_0"), register.registerIcon(getTextureName() + "_layer_1")};
+        blockIcon = field_149850_M[0];
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.IIcon getFireIcon(int layer) {
+        if (field_149850_M != null && layer >= 0 && layer < field_149850_M.length && field_149850_M[layer] != null) return field_149850_M[layer];
+        return mcc$vanillaIcon("fire_layer_" + (layer == 1 ? 1 : 0));
+    }
+
+    /** Whether fire can spread onto the block at a position. */
+    public boolean canBlockCatchFire(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        Block block = world.getBlock(x, y, z);
+        return getEncouragement(block) > 0 || block.isFlammable(world, x, y, z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.UP);
+    }
+
+    /** Forge: whether the block at a position burns on the given face. */
+    public boolean canCatchFire(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection face) {
+        return world.getBlock(x, y, z).isFlammable(world, x, y, z, face);
+    }
 }

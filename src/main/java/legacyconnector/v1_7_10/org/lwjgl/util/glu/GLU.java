@@ -13,6 +13,16 @@ public class GLU {
         Project.gluPerspective(fovy, aspect, zNear, zFar);
     }
 
+    public static boolean gluProject(float objx, float objy, float objz, java.nio.FloatBuffer modelMatrix, java.nio.FloatBuffer projMatrix,
+            java.nio.IntBuffer viewport, java.nio.FloatBuffer winPos) {
+        return Project.gluProject(objx, objy, objz, modelMatrix, projMatrix, viewport, winPos);
+    }
+
+    public static boolean gluUnProject(float winx, float winy, float winz, java.nio.FloatBuffer modelMatrix, java.nio.FloatBuffer projMatrix,
+            java.nio.IntBuffer viewport, java.nio.FloatBuffer objPos) {
+        return Project.gluUnProject(winx, winy, winz, modelMatrix, projMatrix, viewport, objPos);
+    }
+
     public static void gluOrtho2D(float left, float right, float bottom, float top) {
         GL11.glOrtho(left, right, bottom, top, -1.0D, 1.0D);
     }

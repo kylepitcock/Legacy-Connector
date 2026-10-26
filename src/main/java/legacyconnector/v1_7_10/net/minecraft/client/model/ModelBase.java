@@ -13,7 +13,8 @@ public abstract class ModelBase {
     public boolean isRiding;
     public List boxList = new ArrayList();
     public boolean isChild = true;
-    private final Map<String, int[]> modelTextureMap = new HashMap<>();
+    /** Texture offsets of named boxes ("head.hair"), set by {@link #setTextureOffset} and read when the box is added. */
+    private final Map<String, TextureOffset> modelTextureMap = new HashMap<>();
     public int textureWidth = 64;
     public int textureHeight = 32;
 
@@ -31,10 +32,15 @@ public abstract class ModelBase {
     }
 
     protected void setTextureOffset(String name, int u, int v) {
-        modelTextureMap.put(name, new int[] {u, v});
+        modelTextureMap.put(name, new TextureOffset(u, v));
+    }
+
+    public TextureOffset getTextureOffset(String name) {
+        return modelTextureMap.get(name);
     }
 
     public int[] mcc$textureOffset(String name) {
-        return modelTextureMap.get(name);
+        TextureOffset offset = modelTextureMap.get(name);
+        return offset == null ? null : new int[] {offset.textureOffsetX, offset.textureOffsetY};
     }
 }

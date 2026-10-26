@@ -52,4 +52,22 @@ public class EntityWolf extends EntityTameable {
     public boolean isAIEnabled() {
         return true;
     }
+
+    /** The head tilt (radians) of a wolf begging for food. */
+    public float getInterestedAngle(float partialTicks) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getHeadRollAngle(partialTicks);
+        return 0.0F;
+    }
+
+    /** The roll (radians) of a body part while the wolf shakes itself dry; {@code offset} delays the part. */
+    public float getShakeAngle(float partialTicks, float offset) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getBodyRollAngle(partialTicks, offset);
+        return 0.0F;
+    }
+
+    /** How dark the wet fur is drawn (1 dry). */
+    public float getShadingWhileShaking(float partialTicks) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getWetShade(partialTicks);
+        return 1.0F;
+    }
 }

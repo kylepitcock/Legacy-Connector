@@ -17,4 +17,9 @@ public class BlockPistonExtension extends legacyconnector.v1_7_10.net.minecraft.
     public BlockPistonExtension() {
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.piston);
     }
+
+    /** The direction (0-5) the head faces. */
+    public static int getDirectionMeta(int meta) {
+        return Math.max(0, Math.min(meta & 7, 5));
+    }
 }
