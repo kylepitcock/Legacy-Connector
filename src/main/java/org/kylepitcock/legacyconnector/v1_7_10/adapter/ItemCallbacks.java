@@ -30,7 +30,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.FuelBridge;
  * translated into the 1.7.10 one, with a live legacy view of the stack so legacy mutations
  * ({@code stack.stackSize--}) land on the real modern stack.
  */
-final class ItemCallbacks {
+public final class ItemCallbacks {
     private ItemCallbacks() {}
 
     private static EntityPlayer player(Player p) {
@@ -126,10 +126,28 @@ final class ItemCallbacks {
         for (Object o : lines) out.add(Component.literal(String.valueOf(o)));
     }
 
+    /** The legacy {@code display.Name} in a stack's NBT, or null. */
+    public static String mcc$legacyDisplayName(net.minecraft.world.item.ItemStack stack) {
+        return legacyDisplayName(stack);
+    }
+
+    static String legacyDisplayName(net.minecraft.world.item.ItemStack stack) {
+        var data = stack.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
+        if (data == null) return null;
+        var tag = data.getUnsafe();
+        if (!tag.contains("display", 10)) return null;
+        var display = tag.getCompound("display");
+        return display.contains("Name", 8) ? display.getString("Name") : null;
+    }
+
     static Component name(Item legacy, net.minecraft.world.item.ItemStack stack, boolean customName) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null) return Component.empty();
         try {
+            // 1.7.10's ItemStack.getDisplayName read the stack's own display.Name first; legacy code writes it into the NBT
+            // (TConstruct names its tools there), which lives in custom_data rather than the modern custom name
+            String named = legacyDisplayName(stack);
+            if (named != null) return Component.literal(named);
             if (customName) return Component.literal(legacy.getItemStackDisplayName(view));
             return Component.translatable(legacy.getUnlocalizedName(view) + ".name");
         } catch (RuntimeException | LinkageError e) {

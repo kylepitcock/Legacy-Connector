@@ -342,6 +342,8 @@ public final class ItemStack {
 
     public String getDisplayName() {
         if (mcc$stack.has(DataComponents.CUSTOM_NAME)) return mcc$stack.getHoverName().getString();
+        String named = org.kylepitcock.legacyconnector.v1_7_10.adapter.ItemCallbacks.mcc$legacyDisplayName(mcc$stack);
+        if (named != null) return named;
         return mcc$item == null ? "" : mcc$item.getItemStackDisplayName(this);
     }
 

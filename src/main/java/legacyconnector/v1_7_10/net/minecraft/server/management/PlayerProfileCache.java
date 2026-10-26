@@ -14,13 +14,20 @@ public class PlayerProfileCache {
         this.mcc$server = server;
     }
 
+    /** Online players first: 1.7.10's cache always held them, the modern one misses offline-mode players (EnderIO's login). */
     public GameProfile getGameProfileForUsername(String name) {
-        if (mcc$server == null || mcc$server.getProfileCache() == null || name == null) return null;
+        if (mcc$server == null || name == null) return null;
+        var online = mcc$server.getPlayerList() == null ? null : mcc$server.getPlayerList().getPlayerByName(name);
+        if (online != null) return online.getGameProfile();
+        if (mcc$server.getProfileCache() == null) return null;
         return mcc$server.getProfileCache().get(name).orElse(null);
     }
 
     public GameProfile func_152652_a(UUID id) {
-        if (mcc$server == null || mcc$server.getProfileCache() == null || id == null) return null;
+        if (mcc$server == null || id == null) return null;
+        var online = mcc$server.getPlayerList() == null ? null : mcc$server.getPlayerList().getPlayer(id);
+        if (online != null) return online.getGameProfile();
+        if (mcc$server.getProfileCache() == null) return null;
         return mcc$server.getProfileCache().get(id).orElse(null);
     }
 

@@ -96,5 +96,12 @@
   "achievement.exploreAllBiomes": "Adventuring Time",
   "achievement.exploreAllBiomes.desc": "Discover all biomes",
   "achievement.diamondsToYou": "Diamonds to you!",
-  "achievement.diamondsToYou.desc": "Throw diamonds at another player."
+  "achievement.diamondsToYou.desc": "Throw diamonds at another player.",
+  "attribute.name.generic.maxHealth": "Max Health",
+  "attribute.name.generic.followRange": "Mob Follow Range",
+  "attribute.name.generic.knockbackResistance": "Knockback Resistance",
+  "attribute.name.generic.movementSpeed": "Speed",
+  "attribute.name.generic.attackDamage": "Attack Damage",
+  "attribute.name.horse.jumpStrength": "Horse Jump Strength",
+  "attribute.name.zombie.spawnReinforcements": "Zombie Reinforcements"
 }

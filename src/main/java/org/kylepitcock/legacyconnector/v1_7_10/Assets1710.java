@@ -396,6 +396,21 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return a;
     }
 
+    /** Whether a mod class overrides {@code getIcon(ItemStack, int)}: the icon then depends on the stack, not just its damage. */
+    private static boolean stackIcons(Item item) {
+        for (Class<?> c = item.getClass(); c != null && c != Item.class; c = c.getSuperclass()) {
+            if (c.getName().startsWith("legacyconnector.")) continue; // shim classes forward to the damage-based icons
+            try {
+                c.getDeclaredMethod("getIcon", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, int.class);
+                return true;
+            } catch (NoSuchMethodException ignored) {
+            } catch (LinkageError e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private static void itemModels(Item item, Map<String, Supplier<byte[]>> out) {
         for (var e : item.mcc$variants.entrySet()) {
             int meta = e.getKey();
@@ -406,8 +421,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 icon = item.getIconFromDamage(meta);
             } catch (RuntimeException ignored) {
             }
-            if (legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item)) {
-                // Forge IItemRenderer: LegacyItemRenderer draws it (item/generated transforms, see that class).
+            if (legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item) || stackIcons(item)) {
+                // Forge IItemRenderer, or icons that depend on the stack's NBT (TConstruct tools, Forestry saplings, BuildCraft
+                // gates: their damage-based icons are empty): LegacyItemRenderer draws it (item/generated transforms).
                 model.addProperty("parent", "minecraft:builtin/entity");
                 model.add("display", GENERATED_DISPLAY.deepCopy());
                 JsonObject tex = new JsonObject();
