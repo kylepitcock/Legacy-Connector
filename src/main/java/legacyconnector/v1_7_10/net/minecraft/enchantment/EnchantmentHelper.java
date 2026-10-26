@@ -145,6 +145,14 @@ public class EnchantmentHelper {
         return out;
     }
 
+    /** The level offered in one of the enchanting table's three slots, from the bookshelf power around it (capped at 15). */
+    public static int calcItemStackEnchantability(java.util.Random random, int slot, int power, ItemStack stack) {
+        if (stack == null || stack.getItem() == null || stack.getItem().getItemEnchantability() <= 0) return 0;
+        if (power > 15) power = 15;
+        int base = random.nextInt(8) + 1 + (power >> 1) + random.nextInt(power + 1);
+        return slot == 0 ? Math.max(base / 3, 1) : slot == 1 ? base * 2 / 3 + 1 : Math.max(base, power * 2);
+    }
+
     /** 1.7.10's enchanting-table roll: a random list of compatible {@link EnchantmentData} for the stack, or null. */
     public static java.util.List buildEnchantmentList(java.util.Random random, ItemStack stack, int level) {
         if (stack == null || stack.getItem() == null) return null;

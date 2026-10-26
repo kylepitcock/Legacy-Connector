@@ -83,6 +83,29 @@ public class InventoryCrafting implements IInventory {
         changed();
     }
 
+    /** The grid as a modern crafting input (for the modern recipe manager and the modern special recipes); null when it is empty. */
+    public net.minecraft.world.item.crafting.CraftingInput mcc$craftingInput() {
+        int w = inventoryWidth;
+        int h = inventoryHeight;
+        if (w <= 0 || h <= 0 || w * h != getSizeInventory()) return null;
+        java.util.List<net.minecraft.world.item.ItemStack> items = new java.util.ArrayList<>(w * h);
+        boolean any = false;
+        for (int i = 0; i < w * h; i++) {
+            net.minecraft.world.item.ItemStack s = ItemStack.mcc$toModern(getStackInSlot(i));
+            any |= !s.isEmpty();
+            items.add(s);
+        }
+        return any ? net.minecraft.world.item.crafting.CraftingInput.of(w, h, items) : null;
+    }
+
+    public int mcc$width() {
+        return inventoryWidth;
+    }
+
+    public int mcc$height() {
+        return inventoryHeight;
+    }
+
     private void changed() {
         if (eventHandler != null) eventHandler.onCraftMatrixChanged(this);
     }

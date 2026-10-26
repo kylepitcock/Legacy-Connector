@@ -77,8 +77,33 @@ public class CraftingManager {
             IRecipe r = (IRecipe) o;
             if (r.matches(inv, world)) return r.getCraftingResult(inv);
         }
-        return null;
+        return mcc$findModern(inv, world);
     }
+
+    /**
+     * The vanilla recipes (and tool repair) that 1.7.10's list held live in the modern recipe manager: a grid no legacy recipe
+     * matches is looked up there, so crafting tables built on {@code ContainerWorkbench} craft everything a vanilla table does.
+     */
+    private static ItemStack mcc$findModern(InventoryCrafting inv, World world) {
+        net.minecraft.world.level.Level level = world == null ? null : world.mcc$liveLevel();
+        if (level == null || inv == null) return null;
+        var input = inv.mcc$craftingInput();
+        if (input == null || MODERN_LOOKUP.get()) return null;
+        MODERN_LOOKUP.set(Boolean.TRUE);
+        try {
+            var found = level.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, input, level);
+            if (found.isEmpty()) return null;
+            net.minecraft.world.item.ItemStack result = found.get().value().assemble(input, level.registryAccess());
+            return result.isEmpty() ? null : ItemStack.mcc$wrap(result);
+        } catch (RuntimeException e) {
+            return null;
+        } finally {
+            MODERN_LOOKUP.set(Boolean.FALSE);
+        }
+    }
+
+    /** Set while the modern recipe manager is searched: a bridged legacy recipe that asks this manager again is not looped back. */
+    private static final ThreadLocal<Boolean> MODERN_LOOKUP = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     @SuppressWarnings({"rawtypes", "unchecked"})
     private void register(IRecipe recipe) {

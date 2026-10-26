@@ -649,6 +649,10 @@ public class Block {
     public void onBlockClicked(World world, int x, int y, int z, EntityPlayer player) {
     }
 
+    /** Called now and then while it rains on the block (cauldrons fill up). */
+    public void fillWithRain(World world, int x, int y, int z) {
+    }
+
     public void onBlockAdded(World world, int x, int y, int z) {
     }
 
@@ -772,7 +776,7 @@ public class Block {
 
     /** Forge: how much this block adds to an enchanting table's power (bookshelves: 1). */
     public float getEnchantPowerBonus(World world, int x, int y, int z) {
-        return 0.0F;
+        return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.bookshelf ? 1.0F : 0.0F;
     }
 
     /** Forge: whether the block can be part of a beacon pyramid (vanilla: emerald, gold, diamond and iron blocks). */
@@ -795,8 +799,10 @@ public class Block {
         return false;
     }
 
+    /** Vanilla: whether the block at the position (a neighbour, as liquids ask) is of a solid material. */
     public boolean isBlockSolid(IBlockAccess world, int x, int y, int z, int side) {
-        return getMaterial().isSolid();
+        Block block = world == null ? null : world.getBlock(x, y, z);
+        return (block != null ? block : this).getMaterial().isSolid();
     }
 
     public int getMixedBrightnessForBlock(IBlockAccess world, int x, int y, int z) {

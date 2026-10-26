@@ -127,6 +127,7 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
     /** Whether a leather (cloth) armor stack was dyed. */
     public boolean hasColor(ItemStack stack) {
         if (material != ArmorMaterial.CLOTH || stack == null) return false;
+        if (mcc$vanilla != null) return ItemStack.mcc$toModern(stack).has(net.minecraft.core.component.DataComponents.DYED_COLOR);
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         return tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3);
     }
@@ -134,6 +135,10 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
     /** Removes the dye of a leather armor stack. */
     public void removeColor(ItemStack stack) {
         if (material != ArmorMaterial.CLOTH || stack == null) return;
+        if (mcc$vanilla != null) {
+            ItemStack.mcc$toModern(stack).remove(net.minecraft.core.component.DataComponents.DYED_COLOR);
+            return;
+        }
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         if (tag != null && tag.hasKey("display", 10)) {
             legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound display = tag.getCompoundTag("display");
@@ -143,12 +148,21 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
 
     public int getColor(ItemStack stack) {
         if (material != ArmorMaterial.CLOTH) return -1;
+        if (mcc$vanilla != null) {
+            var dyed = ItemStack.mcc$toModern(stack).get(net.minecraft.core.component.DataComponents.DYED_COLOR);
+            return dyed != null ? dyed.rgb() & 0xFFFFFF : 10511680;
+        }
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         if (tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3)) return tag.getCompoundTag("display").getInteger("color");
         return 10511680;
     }
 
     public void func_82813_b(ItemStack stack, int color) {
+        if (mcc$vanilla != null) {
+            // vanilla leather armour keeps its dye in the modern component (what the client tints it by)
+            ItemStack.mcc$toModern(stack).set(net.minecraft.core.component.DataComponents.DYED_COLOR, new net.minecraft.world.item.component.DyedItemColor(color, true));
+            return;
+        }
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         if (tag == null) {
             tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();

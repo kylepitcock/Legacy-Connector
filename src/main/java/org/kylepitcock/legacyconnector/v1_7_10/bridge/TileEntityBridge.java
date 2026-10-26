@@ -121,7 +121,7 @@ public final class TileEntityBridge {
 
     public static TileEntity legacyAt(World world, BlockPos pos) {
         var be = blockEntityAt(world.mcc$level(), pos);
-        if (be == null) return null;
+        if (be == null) return stateView(world, pos);
         if (be instanceof LegacyBlockEntity l) {
             TileEntity te = l.legacy(world);
             // A tile entity placed while a chunk is generated has no level yet: it lives in the world it was asked through.
@@ -142,8 +142,35 @@ public final class TileEntityBridge {
             if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) {
                 chest.mcc$refresh();
                 chest.numPlayersUsing = net.minecraft.world.level.block.entity.ChestBlockEntity.getOpenCount(world.mcc$level(), pos);
+            } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign sign) {
+                sign.mcc$refresh();
+            } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace furnace) {
+                furnace.mcc$refresh();
             }
         }
+        return view;
+    }
+
+    /**
+     * 1.7.10 note blocks and flower pots had tile entities; their modern blocks keep that state in the block itself. Legacy code
+     * asking a live world for one gets a view over the block (a new one each time: it reads the block when made).
+     */
+    private static TileEntity stateView(World world, BlockPos pos) {
+        var level = world.mcc$liveLevel();
+        if (level == null) return null;
+        var block = level.getBlockState(pos).getBlock();
+        TileEntity view;
+        if (block instanceof net.minecraft.world.level.block.NoteBlock) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityNote(level, pos);
+        } else if (block instanceof net.minecraft.world.level.block.FlowerPotBlock) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFlowerPot(level, pos);
+        } else {
+            return null;
+        }
+        view.worldObj = world;
+        view.xCoord = pos.getX();
+        view.yCoord = pos.getY();
+        view.zCoord = pos.getZ();
         return view;
     }
 
@@ -161,6 +188,12 @@ public final class TileEntityBridge {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon(beacon);
         } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest(chest);
+        } else if (be instanceof net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity furnace) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace(furnace);
+        } else if (be instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign(sign);
+        } else if (be instanceof net.minecraft.world.level.block.entity.CommandBlockEntity command) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityCommandBlock(command);
         } else if (be instanceof net.minecraft.world.Container c) {
             view = new VanillaInventoryTile(c);
         }
@@ -174,6 +207,7 @@ public final class TileEntityBridge {
         if (be == null) return;
         TileEntity view = VIEWS.get(be);
         if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) chest.mcc$flush();
+        else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign sign) sign.mcc$flush();
     }
 
     /** Legacy setBlock with the same block and another metadata: the tile entity refreshes as in 1.7.10 (setBlockMetadata does not). */
