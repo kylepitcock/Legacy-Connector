@@ -42,7 +42,14 @@ public final class CommandBridge1710 {
     private static int run(CommandContext<CommandSourceStack> ctx, ICommand command, String[] args) {
         ICommandSender sender = sender(ctx.getSource());
         try {
-            command.processCommand(sender, args);
+            // like its world generators' state, a mod's commands ran on the server thread (CustomOreGen reloads its options)
+            var lock = org.kylepitcock.legacyconnector.core.LegacyModLocks.of(command);
+            lock.lock();
+            try {
+                command.processCommand(sender, args);
+            } finally {
+                lock.unlock();
+            }
             return 1;
         } catch (CommandException e) {
             ctx.getSource().sendFailure(Component.translatable(e.getMessage(), e.getErrorOjbects()));

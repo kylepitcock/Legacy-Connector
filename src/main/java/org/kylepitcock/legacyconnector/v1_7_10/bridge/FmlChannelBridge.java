@@ -53,8 +53,13 @@ public final class FmlChannelBridge {
 
     private static final Map<String, legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLEventChannel> EVENT_CHANNELS = new ConcurrentHashMap<>();
 
+    /** The monitor of the mod that created each event channel ({@link org.kylepitcock.legacyconnector.core.LegacyModLocks}). */
+    private static final Map<String, java.util.concurrent.locks.ReentrantLock> EVENT_CHANNEL_LOCKS = new ConcurrentHashMap<>();
+
     public static void registerEventChannel(legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLEventChannel channel) {
         EVENT_CHANNELS.put(channel.mcc$name(), channel);
+        var mod = org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
+        if (mod != null && mod.getMod() != null) EVENT_CHANNEL_LOCKS.put(channel.mcc$name(), org.kylepitcock.legacyconnector.core.LegacyModLocks.of(mod.getMod()));
     }
 
     private static LegacyPayload payload(FMLProxyPacket packet) {
@@ -105,7 +110,9 @@ public final class FmlChannelBridge {
                             (legacyconnector.v1_7_10.net.minecraft.network.INetHandler) netHandler)
                     : new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientCustomPacketEvent(null, packet);
             try {
-                eventChannel.mcc$bus().post(event);
+                // server-side handlers may touch what the mod's world generators use (CustomOreGen's debug wireframes)
+                org.kylepitcock.legacyconnector.core.LegacyModLocks.serverSide(side == Side.SERVER ? EVENT_CHANNEL_LOCKS.get(channelName) : null,
+                        () -> eventChannel.mcc$bus().post(event));
                 if (event.reply != null) {
                     if (netHandler instanceof NetHandlerPlayServer s) send(event.reply, FMLOutboundHandler.OutboundTarget.PLAYER, s.playerEntity);
                     else send(event.reply, FMLOutboundHandler.OutboundTarget.TOSERVER, null);

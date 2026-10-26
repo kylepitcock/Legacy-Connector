@@ -778,7 +778,10 @@ public class World implements IBlockAccess {
         boolean present = lvl() instanceof net.minecraft.server.level.WorldGenRegion region
                 ? region.getCenter().x == x >> 4 && region.getCenter().z == z >> 4
                 : lvl().hasChunk(x >> 4, z >> 4);
-        int y = present ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z) : lvl().getSeaLevel();
+        // full chunks drop the _WG heightmaps: reading one logs "Unprimed heightmap" (CustomOreGen's debug wireframes, per sample)
+        var heightmap = lvl() instanceof net.minecraft.server.level.WorldGenRegion
+                ? net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG : net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE;
+        int y = present ? lvl().getHeight(heightmap, x, z) : lvl().getSeaLevel();
         net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> holder;
         try {
             // outside a generation region, ask the generator directly: the region throws, after building a whole crash report

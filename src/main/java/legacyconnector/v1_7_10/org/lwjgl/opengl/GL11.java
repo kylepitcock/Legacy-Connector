@@ -449,32 +449,72 @@ public class GL11 extends GL11Guard {
         org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.setPointer(0x8078, size, 0x1406, stride, data);
     }
 
-    public static void glDrawArrays(int mode, int first, int count) {
-        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.draw(mode, first, count, new org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.Emitter() {
-            @Override
-            public void begin(int m) {
-                glBegin(m);
-            }
-
-            @Override
-            public void texCoord(float u, float v) {
-                glTexCoord2f(u, v);
-            }
-
-            @Override
-            public void normal(float x, float y, float z) {
-                glNormal3f(x, y, z);
-            }
-
-            @Override
-            public void vertex(float x, float y, float z) {
-                glVertex3f(x, y, z);
-            }
-
-            @Override
-            public void end() {
-                glEnd();
-            }
-        });
+    public static void glColorPointer(int size, boolean unsigned, int stride, java.nio.ByteBuffer data) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.setPointer(0x8076, size, unsigned ? 0x1401 : 0x1400, stride, data);
     }
+
+    public static void glColorPointer(int size, int type, int stride, java.nio.ByteBuffer data) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.setPointer(0x8076, size, type, stride, data);
+    }
+
+    public static void glColorPointer(int size, int stride, FloatBuffer data) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.setPointer(0x8076, size, 0x1406, stride, data);
+    }
+
+    public static void glDrawArrays(int mode, int first, int count) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.draw(mode, first, count, ARRAYS);
+    }
+
+    // Indexed draws read the emulated arrays too: the real core-profile call has no QUADS mode and no client arrays.
+    public static void glDrawElements(int mode, java.nio.IntBuffer indices) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.drawElements(mode, indices, 0x1405, ARRAYS);
+    }
+
+    public static void glDrawElements(int mode, java.nio.ShortBuffer indices) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.drawElements(mode, indices, 0x1403, ARRAYS);
+    }
+
+    public static void glDrawElements(int mode, java.nio.ByteBuffer indices) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.drawElements(mode, indices, 0x1401, ARRAYS);
+    }
+
+    public static void glDrawElements(int mode, int type, java.nio.ByteBuffer indices) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.drawElements(mode, indices, type, ARRAYS);
+    }
+
+    public static void glDrawElements(int mode, int count, int type, long offset) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.drawElements(mode, count, type, offset, ARRAYS);
+    }
+
+    private static final org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.Emitter ARRAYS = new org.kylepitcock.legacyconnector.v1_7_10.client.ClientArrays.Emitter() {
+        @Override
+        public void begin(int m) {
+            glBegin(m);
+        }
+
+        @Override
+        public void texCoord(float u, float v) {
+            glTexCoord2f(u, v);
+        }
+
+        @Override
+        public void color(float r, float g, float b, float a) {
+            glColor4f(r, g, b, a);
+        }
+
+        @Override
+        public void normal(float x, float y, float z) {
+            glNormal3f(x, y, z);
+        }
+
+        @Override
+        public void vertex(float x, float y, float z) {
+            glVertex3f(x, y, z);
+        }
+
+        @Override
+        public void end() {
+            glEnd();
+        }
+    };
 }

@@ -12,7 +12,7 @@ import org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature;
 
 /** Runs 1.7.10 IWorldGenerators with the exact per-chunk seeding FML used, so generation is reproducible. */
 public final class WorldGenBridge {
-    private record Entry(IWorldGenerator generator, int weight) {}
+    private record Entry(IWorldGenerator generator, int weight, java.util.concurrent.locks.ReentrantLock lock) {}
 
     private static final List<Entry> GENERATORS = new ArrayList<>();
     private static boolean hooked;
@@ -20,7 +20,7 @@ public final class WorldGenBridge {
     private WorldGenBridge() {}
 
     public static synchronized void register(IWorldGenerator generator, int weight) {
-        GENERATORS.add(new Entry(generator, weight));
+        GENERATORS.add(new Entry(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator)));
         GENERATORS.sort(Comparator.comparingInt(Entry::weight));
         if (!hooked) {
             hooked = true;
@@ -38,9 +38,11 @@ public final class WorldGenBridge {
         long xSeed = fmlRandom.nextLong() >> 2 + 1L;
         long zSeed = fmlRandom.nextLong() >> 2 + 1L;
         long chunkSeed = (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+        // 1.7.10 decorated one chunk at a time on the server thread, and generators keep their state in plain fields and
+        // HashMaps (CustomOreGen's per-world caches and geometry buffers): a mod's generators run on one thread at a time.
         for (Entry e : gens) {
             fmlRandom.setSeed(chunkSeed);
-            e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY);
+            org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
         }
         // 1.7.10 worlds ended at y=0; below that is the deep layer (deepslate, bedrock at -64). Generators run once more
         // with the world shifted so that legacy y=0 is the modern bottom: what spawned deep or in bedrock spawns there too.
@@ -52,7 +54,7 @@ public final class WorldGenBridge {
                 if (!org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerAllows(e.generator.getClass().getName())) continue;
                 fmlRandom.setSeed(chunkSeed ^ DEEP_SEED);
                 try {
-                    e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY);
+                    org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
                 } catch (RuntimeException | LinkageError ex) {
                     if (DEEP_FAILED.add(e.generator.getClass().getName())) {
                         LOG.warn("Legacy world generator {} failed in the deep layer (it keeps running above y=0): {}",
