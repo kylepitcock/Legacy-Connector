@@ -46,10 +46,11 @@ public class LaunchClassLoader extends URLClassLoader {
     }
 
     public byte[] getClassBytes(String name) throws IOException {
-        // In a production 1.7.10 game Minecraft's classes only existed under obfuscated names: mods probe for
-        // "net.minecraft.world.World" to detect a development environment (and then ask for MCP mappings).
+        // In a production game Minecraft's classes only existed under obfuscated names: mods probe for
+        // "net.minecraft.world.World" to detect a development environment (and then ask for MCP mappings). Other
+        // classes are read (CodeChickenLib builds multipart pass-through traits from ISidedInventory, IFluidHandler...).
         String plain = name.startsWith("legacyconnector.v1_7_10.") ? name.substring("legacyconnector.v1_7_10.".length()) : name;
-        if (plain.startsWith("net.minecraft.") && !plain.startsWith("net.minecraftforge.")) return null;
+        if (DEV_PROBES.contains(plain)) return null;
         for (String n : new String[] {name, relocate(name)}) {
             if (n == null) continue;
             try (InputStream in = game.getResourceAsStream(n.replace('.', '/') + ".class")) {
@@ -58,6 +59,9 @@ public class LaunchClassLoader extends URLClassLoader {
         }
         return null;
     }
+
+    private static final Set<String> DEV_PROBES = Set.of("net.minecraft.world.World", "net.minecraft.client.Minecraft",
+            "net.minecraft.server.MinecraftServer", "net.minecraft.entity.Entity", "net.minecraft.block.Block", "net.minecraft.item.Item");
 
     private static String relocate(String name) {
         if (name.startsWith("net.minecraft.") || name.startsWith("net.minecraftforge.") || name.startsWith("cpw.mods.fml.")) {

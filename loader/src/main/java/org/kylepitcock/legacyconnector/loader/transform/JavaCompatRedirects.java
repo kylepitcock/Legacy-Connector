@@ -28,6 +28,8 @@ public final class JavaCompatRedirects {
         // Java 12+: Field.modifiers is filtered from reflection, breaking the classic "remove final" hack.
         // Java 18+: static final fields can no longer be written through reflection at all.
         virtualToStatic("java/lang/Class", "getDeclaredField", "(Ljava/lang/String;)Ljava/lang/reflect/Field;", COMPAT + "ReflectionCompat");
+        // LaunchWrapper's private runTransformers, looked up on whatever loader loaded the mod (AE2's generated part classes).
+        virtualToStatic("java/lang/Class", "getDeclaredMethod", "(Ljava/lang/String;[Ljava/lang/Class;)Ljava/lang/reflect/Method;", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setInt", "(Ljava/lang/Object;I)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "set", "(Ljava/lang/Object;Ljava/lang/Object;)V", COMPAT + "ReflectionCompat");
         virtualToStatic("java/lang/reflect/Field", "setBoolean", "(Ljava/lang/Object;Z)V", COMPAT + "ReflectionCompat");

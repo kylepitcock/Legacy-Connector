@@ -42,12 +42,37 @@ public final class ReflectionCompat {
     /** Method.invoke that records what an InvocationTargetException wraps (callers often log only the wrapper). */
     public static Object invoke(java.lang.reflect.Method method, Object target, Object... args)
             throws IllegalAccessException, java.lang.reflect.InvocationTargetException {
+        // the stand-in for LaunchWrapper's runTransformers handed out by getDeclaredMethod: nothing is left to transform
+        if (method.equals(RUN_TRANSFORMERS) && !(method.getDeclaringClass().isInstance(target))) return args[2];
         try {
             return method.invoke(target, args);
         } catch (java.lang.reflect.InvocationTargetException e) {
             if (e.getCause() != null && INVOCATION_FAILURES.incrementAndGet() <= 40) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Reflection").info("{}.{} threw {}", method.getDeclaringClass().getName(), method.getName(), e.getCause().toString());
             }
+            throw e;
+        }
+    }
+
+    private static final java.lang.reflect.Method RUN_TRANSFORMERS = runTransformers();
+
+    private static java.lang.reflect.Method runTransformers() {
+        try {
+            return legacyconnector.v1_7_10.net.minecraft.launchwrapper.LaunchClassLoader.class.getDeclaredMethod("runTransformers", String.class, String.class, byte[].class);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Legacy mods found LaunchWrapper's class loader under their classes and called its private {@code runTransformers} on
+     * class bytes they generated (AE2's multipart layers); the modern loader has no such method, so ours stands in.
+     */
+    public static java.lang.reflect.Method getDeclaredMethod(Class<?> owner, String name, Class<?>... types) throws NoSuchMethodException {
+        try {
+            return owner.getDeclaredMethod(name, types);
+        } catch (NoSuchMethodException e) {
+            if (RUN_TRANSFORMERS != null && name.equals("runTransformers") && ClassLoader.class.isAssignableFrom(owner)) return RUN_TRANSFORMERS;
             throw e;
         }
     }
