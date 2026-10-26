@@ -6,7 +6,7 @@ Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar (
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
 runs Fabric mods on NeoForge. The original jar is never modified.
 
-> **Status: alpha (0.2.x).** 1.7.10 is the main target; 1.12.2 is experimental (loads and registers content, little verified in a real game; issue #64). Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
+> **Status: alpha (0.3.x).** 1.7.10 is the main target; 1.12.2 is experimental (loads and registers content, little verified in a real game; issue #64). Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
 > Plenty, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,
 > world generation and dimensions, and large tech packs load most of their mods; Galacticraft with its addons runs with per-planet gravity and silent space. Some features are still missing or
 > unverified (see [Known compatibility issues](#known-compatibility-issues)), so back up your worlds.
