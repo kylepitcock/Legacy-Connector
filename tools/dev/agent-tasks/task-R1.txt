@@ -12,16 +12,6 @@ net.minecraft.client.renderer.entity.RenderBiped.getArmorResource(Llegacyconnect
 net.minecraft.client.renderer.texture.TextureCompass.angleDelta:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
 net.minecraft.client.renderer.texture.TextureCompass.currentAngle:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
 org.lwjgl.opengl.GL11.glMultMatrix(Ljava/nio/DoubleBuffer;)V   # 3 user(s): codechicken.lib.vec.Matrix4, cofh.repack.codechicken.lib.vec.Matrix4, thaumcraft.codechicken.lib.vec.Matrix4
-net.minecraft.client.model.ModelBase.getTextureOffset(Ljava/lang/String;)Llegacyconnector_synth/v1_7_10/net/minecraft/client/model/TextureOffset;   # 2 user(s): com.xcompwiz.mystcraft.client.model.ModelRendererAdvanced, us.ichun.module.tabula.common.project.ProjectInfo
-net.minecraft.client.model.ModelBat.<init>()V   # 2 user(s): com.InfinityRaider.AgriCraft.renderers.player.renderhooks.PlayerEffectRendererEntityBat, thaumcraft.client.renderers.entity.RenderFireBat
-net.minecraft.client.model.ModelBlaze.<init>()V   # 2 user(s): com.hbm.render.entity.mob.RenderRADBeast, galaxyspace.systems.SolarSystem.moons.europa.render.entities.RenderEvolvedColdBlaze
-net.minecraft.client.model.ModelBlaze.func_78104_a()I   # 2 user(s): com.hbm.render.entity.mob.RenderRADBeast, galaxyspace.systems.SolarSystem.moons.europa.render.entities.RenderEvolvedColdBlaze
-net.minecraft.client.model.ModelDragon.<init>(F)V   # 2 user(s): com.InfinityRaider.AgriCraft.renderers.player.renderhooks.PlayerEffectRendererEntityDragon, com.brandon3055.draconicevolution.client.render.entity.RenderDragon
-net.minecraft.client.model.ModelMinecart.<init>()V   # 2 user(s): blusunrize.immersiveengineering.client.models.ModelShaderMinecart, mods.railcraft.client.render.carts.CartModelManager
-net.minecraft.client.model.ModelSilverfish.<init>()V   # 2 user(s): com.hbm.render.entity.mob.RenderMaggot, twilightforest.client.TFClientProxy
-net.minecraft.client.model.ModelWolf.<init>()V   # 2 user(s): com.emoniph.witchery.client.TransformWolf, twilightforest.client.TFClientProxy
-net.minecraft.client.model.TextureOffset.textureOffsetX:I   # 2 user(s): com.xcompwiz.mystcraft.client.model.ModelRendererAdvanced, us.ichun.module.tabula.common.project.ProjectInfo
-net.minecraft.client.model.TextureOffset.textureOffsetY:I   # 2 user(s): com.xcompwiz.mystcraft.client.model.ModelRendererAdvanced, us.ichun.module.tabula.common.project.ProjectInfo
 net.minecraft.client.renderer.EntityRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;Llegacyconnector/v1_7_10/net/minecraft/client/resources/IResourceManager;)V -> ()V   # 2 user(s): com.emoniph.witchery.client.RenderEntityViewer, com.fiskmods.heroes.client.render.entity.SHEntityRenderer
 net.minecraft.client.renderer.ItemRenderer.renderOverlays(F)V   # 2 user(s): com.emoniph.witchery.client.ClientEvents, com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase
 net.minecraft.client.renderer.OpenGlHelper.func_153165_e()I   # 2 user(s): logisticspipes.utils.FramebufferUtils, openmods.stencil.FramebufferBase
@@ -48,21 +38,6 @@ net.minecraft.client.renderer.texture.TextureCompass.<init>(Ljava/lang/String;)V
 org.lwjgl.input.Mouse.hasWheel()Z   # 2 user(s): galaxyspace.core.client.gui.book.Page_WithScroll, micdoodle8.mods.galacticraft.core.client.gui.screen.GuiCelestialSelection
 org.lwjgl.util.glu.GLU.gluProject(FFFLjava/nio/FloatBuffer;Ljava/nio/FloatBuffer;Ljava/nio/IntBuffer;Ljava/nio/FloatBuffer;)Z   # 2 user(s): journeymap.client.render.map.GridRenderer, openmods.utils.render.ProjectionHelper
 org.lwjgl.util.glu.GLU.gluUnProject(FFFLjava/nio/FloatBuffer;Ljava/nio/FloatBuffer;Ljava/nio/IntBuffer;Ljava/nio/FloatBuffer;)Z   # 2 user(s): journeymap.client.render.map.GridRenderer, openmods.utils.render.ProjectionHelper
-net.minecraft.client.model.ModelBiped.getTextureOffset(Ljava/lang/String;)Llegacyconnector_synth/v1_7_10/net/minecraft/client/model/TextureOffset;   # 1 user(s): cofh.thermaldynamics.duct.entity.ModelWrapper
-net.minecraft.client.model.ModelBoat.<init>()V   # 1 user(s): com.hbm.render.entity.item.RenderBoatRubber
-net.minecraft.client.model.ModelEnderCrystal.<init>(FZ)V   # 1 user(s): vazkii.botania.client.render.tile.RenderTileCorporeaIndex
-net.minecraft.client.model.ModelGhast.<init>()V   # 1 user(s): galaxyspace.systems.SolarSystem.moons.io.render.entities.RenderBossGhast
-net.minecraft.client.model.ModelLeashKnot.<init>()V   # 1 user(s): com.fiskmods.heroes.client.render.arrow.ArrowRendererVine
-net.minecraft.client.model.ModelMinecart.sideModels:[Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelRenderer;   # 1 user(s): blusunrize.immersiveengineering.client.models.ModelShaderMinecart
-net.minecraft.client.model.ModelOcelot.<init>()V   # 1 user(s): com.emoniph.witchery.client.ClientProxy
-net.minecraft.client.model.ModelSheep1.<init>()V   # 1 user(s): twilightforest.client.model.ModelTFBighorn
-net.minecraft.client.model.ModelSheep2.<init>()V   # 1 user(s): twilightforest.client.model.ModelTFBighornFur
-net.minecraft.client.model.ModelSkeletonHead.<init>(IIII)V   # 1 user(s): com.emoniph.witchery.client.renderer.RenderAlluringSkull
-net.minecraft.client.model.ModelSnowMan.<init>()V   # 1 user(s): team.chisel.client.render.RenderChiselSnowman
-net.minecraft.client.model.ModelSnowMan.head:Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelRenderer;   # 1 user(s): team.chisel.client.render.RenderChiselSnowman
-net.minecraft.client.model.ModelZombieVillager.<init>()V   # 1 user(s): thaumcraft.client.renderers.entity.RenderBrainyZombie
-net.minecraft.client.model.ModelZombieVillager.<init>(FFZ)V   # 1 user(s): thaumcraft.client.renderers.entity.RenderBrainyZombie
-net.minecraft.client.model.ModelZombieVillager.func_82897_a()I   # 1 user(s): thaumcraft.client.renderers.entity.RenderBrainyZombie
 net.minecraft.client.renderer.ActiveRenderInfo.updateRenderInfo(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): logisticspipes.ticks.RenderTickHandler
 net.minecraft.client.renderer.DestroyBlockProgress.getPartialBlockDamage()I   # 1 user(s): com.fiskmods.heroes.util.SHClientUtils
 net.minecraft.client.renderer.DestroyBlockProgress.getPartialBlockX()I   # 1 user(s): com.fiskmods.heroes.util.SHClientUtils

@@ -75,4 +75,16 @@ public class EntitySheep extends EntityAnimal {
     private World worldObj() {
         return mcc$world();
     }
+
+    /** How far the head is lowered while eating grass (0 up .. 1 down), for the sheep model. */
+    public float getHeadRotationPointY(float partialTicks) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.getHeadEatPositionScale(partialTicks);
+        return 0.0F;
+    }
+
+    /** The head's pitch (radians), nodding while eating grass. */
+    public float getHeadRotationAngleX(float partialTicks) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.getHeadEatAngleScale(partialTicks);
+        return legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$rotationPitch(this) / (180.0F / (float) Math.PI);
+    }
 }
