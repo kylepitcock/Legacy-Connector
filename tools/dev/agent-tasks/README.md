@@ -9,6 +9,7 @@ several agents can implement them at once, each in its own git worktree:
 | `task-A.txt` | entities (`net.minecraft.entity.*`) and client/rendering (`net.minecraft.client.*`, LWJGL, OpenGlHelper shaders) |
 | `task-B.txt` | world and world generation (`net.minecraft.world.*`, terrain-gen events, structure pieces) |
 | `task-C.txt` | everything else (items, blocks, FML/Forge registries and config, network, commands, Waila); mixes 1.7.10 and 1.12.2 entries |
+| `task-D.txt` | 1.12.2 only (signatures naming 1.12.2 classes: registries, `net.minecraftforge.fml`, `BlockPos`, `IBlockState`, ...) |
 
 Each line is `legacy.class.method(descriptor)`. A descriptor class under `legacyconnector_synth/...` is itself only
 synthesized so far.
