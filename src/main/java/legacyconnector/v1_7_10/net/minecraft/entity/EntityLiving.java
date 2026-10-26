@@ -7,6 +7,7 @@ import legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityLookHelper;
 import legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityMoveHelper;
 import legacyconnector.v1_7_10.net.minecraft.entity.ai.EntitySenses;
 import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_7_10.net.minecraft.init.Items;
 import legacyconnector.v1_7_10.net.minecraft.item.Item;
 import legacyconnector.v1_7_10.net.minecraft.pathfinding.PathNavigate;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
@@ -367,6 +368,31 @@ public abstract class EntityLiving extends EntityLivingBase {
     public Entity getLeashedToEntity() {
         Mob m = mcc$mob();
         return m == null || m.getLeashHolder() == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(m.getLeashHolder());
+    }
+
+    /**
+     * Drops the lead when its holder is gone (the modern mob pulls itself towards the holder and snaps the lead past 10 blocks
+     * in its own tick).
+     */
+    protected void updateLeashedState() {
+        Mob m = mcc$mob();
+        if (m == null || !m.isLeashed()) return;
+        var holder = m.getLeashHolder();
+        if (holder == null || !holder.isAlive()) m.dropLeash(true, true);
+    }
+
+    /** The armor piece for a slot (4 helmet, 3 chestplate, 2 leggings, 1 boots) of a tier (0 leather, 1 gold, 2 chain, 3 iron, 4 diamond). */
+    public static Item getArmorItemForSlot(int slot, int tier) {
+        if (tier < 0 || tier > 4) return null;
+        return switch (slot) {
+            case 4 -> new Item[] {Items.leather_helmet, Items.golden_helmet, Items.chainmail_helmet, Items.iron_helmet, Items.diamond_helmet}[tier];
+            case 3 -> new Item[] {Items.leather_chestplate, Items.golden_chestplate, Items.chainmail_chestplate, Items.iron_chestplate,
+                    Items.diamond_chestplate}[tier];
+            case 2 -> new Item[] {Items.leather_leggings, Items.golden_leggings, Items.chainmail_leggings, Items.iron_leggings,
+                    Items.diamond_leggings}[tier];
+            case 1 -> new Item[] {Items.leather_boots, Items.golden_boots, Items.chainmail_boots, Items.iron_boots, Items.diamond_boots}[tier];
+            default -> null;
+        };
     }
 
     public void setLeashedToEntity(Entity holder, boolean sendPacket) {

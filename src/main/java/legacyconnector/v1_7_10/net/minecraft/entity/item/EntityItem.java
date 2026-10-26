@@ -92,9 +92,20 @@ public class EntityItem extends Entity {
         mcc$item().setItem(ItemStack.mcc$toModern(stack));
     }
 
+    /** The name of the player who threw it (Thaumcraft's pech marks the items it trades away). */
     public String getThrower() {
         var t = mcc$item().getOwner();
-        return t == null ? null : t.getName().getString();
+        return t == null ? mcc$thrower : t.getName().getString();
+    }
+
+    private String mcc$thrower;
+
+    /** Records who threw it; an online player becomes the modern item's thrower too. */
+    public void setThrower(String name) {
+        this.mcc$thrower = name;
+        var server = mcc$server();
+        var player = name == null || server == null ? null : server.getPlayerList().getPlayerByName(name);
+        if (player != null) mcc$item().setThrower(player);
     }
 
     /** The player the item is reserved for, by name (1.7.10 compared names; the modern item keeps the player's id). */

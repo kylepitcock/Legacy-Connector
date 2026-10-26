@@ -47,6 +47,17 @@ public class EntityWolf extends EntityTameable {
         dataWatcher.updateObject(20, (byte) (color & 15));
     }
 
+    /** Begging: tilts its head at a player holding food (watcher slot 19; a modern wolf's own "interested" flag). */
+    public void func_70918_i(boolean begging) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) w.setIsInterested(begging);
+        else dataWatcher.updateObject(19, (byte) (begging ? 1 : 0));
+    }
+
+    public boolean func_70922_bv() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.isInterested();
+        return dataWatcher.getWatchableObjectByte(19) == 1;
+    }
+
     /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
     @Override
     public boolean isAIEnabled() {
