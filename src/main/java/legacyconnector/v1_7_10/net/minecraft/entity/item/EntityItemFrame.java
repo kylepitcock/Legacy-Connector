@@ -1,77 +1,154 @@
 package legacyconnector.v1_7_10.net.minecraft.entity.item;
 
 import legacyconnector.v1_7_10.net.minecraft.entity.Entity;
+import legacyconnector.v1_7_10.net.minecraft.entity.EntityHanging;
+import legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_7_10.net.minecraft.entity.player.PlayerCapabilities;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
+import legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound;
+import legacyconnector.v1_7_10.net.minecraft.util.DamageSource;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
+import net.minecraft.world.entity.decoration.ItemFrame;
 
-/** An item frame on a wall holding one displayed item. */
-public class EntityItemFrame extends Entity {
+/**
+ * An item frame on a wall holding one displayed item. Constructing this exact class makes a modern item frame (RFTools places
+ * them in its dimensions); its item and rotation (0-3, the modern frame's eighths halved) are the modern frame's.
+ */
+public class EntityItemFrame extends EntityHanging {
+    private float itemDropChance = 1.0F;
     private ItemStack displayed;
     private int itemRotation;
-    public final int hangingDirection;
-    public int field_146063_b;
-    public int field_146064_c;
-    public int field_146062_d;
 
     public EntityItemFrame(World world) {
         super(world);
-        this.hangingDirection = 0;
     }
 
     public EntityItemFrame(World world, int x, int y, int z, int direction) {
-        super(world);
-        this.field_146063_b = x;
-        this.field_146064_c = y;
-        this.field_146062_d = z;
-        this.hangingDirection = direction;
-        setPosition(x + 0.5D, y + 0.5D, z + 0.5D);
+        super(world, x, y, z, direction);
+        setDirection(direction);
+    }
+
+    /** View of a modern item frame. */
+    public EntityItemFrame(ItemFrame modern) {
+        super(modern);
+    }
+
+    private ItemFrame mcc$frame() {
+        return mcc$attached() instanceof ItemFrame f ? f : null;
     }
 
     public ItemStack getDisplayedItem() {
+        var frame = mcc$frame();
+        if (frame != null) return frame.getItem().isEmpty() ? null : ItemStack.mcc$wrap(frame.getItem());
         return displayed;
     }
 
+    /** Shows one of the stack (a copy). */
     public void setDisplayedItem(ItemStack stack) {
-        this.displayed = stack == null ? null : stack.copy();
+        ItemStack one = stack == null ? null : stack.copy();
+        if (one != null) one.mcc$setCount(1);
+        var frame = mcc$frame();
+        if (frame != null) {
+            frame.setItem(ItemStack.mcc$toModern(one));
+            return;
+        }
+        this.displayed = one;
     }
 
     public int getRotation() {
-        return itemRotation;
+        var frame = mcc$frame();
+        return frame != null ? frame.getRotation() / 2 : itemRotation;
     }
 
     public void setItemRotation(int rotation) {
-        this.itemRotation = rotation % 4;
+        var frame = mcc$frame();
+        if (frame != null) frame.setRotation((rotation % 4) * 2);
+        else this.itemRotation = rotation % 4;
     }
 
-    /**
-     * Whether the frame can stay: the block it hangs on is solid and no other hanging entity overlaps it (a modern item frame
-     * answers with its own survival check).
-     */
-    public boolean onValidSurface() {
-        if (mcc$entity instanceof net.minecraft.world.entity.decoration.HangingEntity hanging && !mcc$hosted()) return hanging.survives();
-        World world = mcc$world();
-        if (world == null) return false;
-        if (!world.getBlock(field_146063_b, field_146064_c, field_146062_d).getMaterial().isSolid()) return false;
-        for (Object o : world.getEntitiesWithinAABBExcludingEntity(this, mcc$get$boundingBox(this))) {
-            if (o instanceof EntityItemFrame
-                    || o instanceof Entity e && e.mcc$entity instanceof net.minecraft.world.entity.decoration.HangingEntity) return false;
+    @Override
+    public int getWidthPixels() {
+        return 9;
+    }
+
+    @Override
+    public int getHeightPixels() {
+        return 9;
+    }
+
+    @Override
+    public boolean isInRangeToRenderDist(double distanceSq) {
+        double d = 16.0D * 64.0D * renderDistanceWeight;
+        return distanceSq < d * d;
+    }
+
+    /** Hitting a frame with an item knocks the item out first. */
+    @Override
+    public boolean attackEntityFrom(DamageSource source, float amount) {
+        if (mcc$frame() != null) return super.attackEntityFrom(source, amount);
+        if (isEntityInvulnerable()) return false;
+        if (getDisplayedItem() != null) {
+            if (!mcc$world().isRemote) {
+                func_146065_b(source == null ? null : source.getEntity(), false);
+                setDisplayedItem(null);
+            }
+            return true;
+        }
+        return super.attackEntityFrom(source, amount);
+    }
+
+    @Override
+    public void onBroken(Entity breaker) {
+        func_146065_b(breaker, true);
+    }
+
+    /** Drops the frame (when {@code dropFrame}) and its item; a creative player gets nothing. */
+    public void func_146065_b(Entity breaker, boolean dropFrame) {
+        ItemStack item = getDisplayedItem();
+        if (breaker instanceof EntityPlayer p && PlayerCapabilities.mcc$get$isCreativeMode(p.capabilities)) return;
+        if (dropFrame) entityDropItem(new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.item_frame), 0.0F);
+        if (item != null && rand.nextFloat() < itemDropChance) entityDropItem(item.copy(), 0.0F);
+    }
+
+    /** An empty frame takes the held item; a full one turns its item a quarter. */
+    @Override
+    public boolean interactFirst(EntityPlayer player) {
+        if (mcc$frame() != null) return super.interactFirst(player);
+        if (getDisplayedItem() == null) {
+            ItemStack held = player.getHeldItem();
+            if (held != null && !mcc$world().isRemote) {
+                setDisplayedItem(held);
+                if (!PlayerCapabilities.mcc$get$isCreativeMode(player.capabilities)) {
+                    held.mcc$setCount(held.mcc$count() - 1);
+                    if (held.mcc$count() <= 0) {
+                        player.inventory.setInventorySlotContents(legacyconnector.v1_7_10.net.minecraft.entity.player.InventoryPlayer.mcc$get$currentItem(player.inventory), null);
+                    }
+                }
+            }
+        } else if (!mcc$world().isRemote) {
+            setItemRotation(getRotation() + 1);
         }
         return true;
     }
 
     @Override
-    protected void entityInit() {
+    public void readEntityFromNBT(NBTTagCompound tag) {
+        if (tag.hasKey("Item")) {
+            setDisplayedItem(ItemStack.loadItemStackFromNBT(tag.getCompoundTag("Item")));
+            setItemRotation(tag.getByte("ItemRotation"));
+            if (tag.hasKey("ItemDropChance", 99)) itemDropChance = tag.getFloat("ItemDropChance");
+        }
+        super.readEntityFromNBT(tag);
     }
 
     @Override
-    protected void readEntityFromNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
-        itemRotation = tag.getByte("ItemRotation");
-        if (tag.hasKey("Item")) displayed = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("Item"));
-    }
-
-    @Override
-    protected void writeEntityToNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
-        tag.setByte("ItemRotation", (byte) itemRotation);
-        if (displayed != null) tag.setTag("Item", displayed.writeToNBT(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound()));
+    public void writeEntityToNBT(NBTTagCompound tag) {
+        ItemStack item = getDisplayedItem();
+        if (item != null) {
+            tag.setTag("Item", item.writeToNBT(new NBTTagCompound()));
+            tag.setByte("ItemRotation", (byte) getRotation());
+            tag.setFloat("ItemDropChance", itemDropChance);
+        }
+        super.writeEntityToNBT(tag);
     }
 }

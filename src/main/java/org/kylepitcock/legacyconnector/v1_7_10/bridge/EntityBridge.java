@@ -102,6 +102,9 @@ public final class EntityBridge {
         if (modern instanceof net.minecraft.world.entity.vehicle.AbstractMinecartContainer cart) return new MinecartContainerView(cart);
         if (modern instanceof net.minecraft.world.entity.vehicle.AbstractMinecart cart) return new MinecartView(cart);
         if (modern instanceof net.minecraft.world.entity.vehicle.Boat boat) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityBoat(boat);
+        if (modern instanceof net.minecraft.world.entity.decoration.ItemFrame frame) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItemFrame(frame);
+        if (modern instanceof net.minecraft.world.entity.decoration.Painting painting) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityPainting(painting);
+        if (modern instanceof net.minecraft.world.entity.decoration.LeashFenceKnotEntity knot) return new legacyconnector.v1_7_10.net.minecraft.entity.EntityLeashKnot(knot);
         if (modern instanceof net.minecraft.world.entity.LightningBolt bolt) return new legacyconnector.v1_7_10.net.minecraft.entity.effect.EntityLightningBolt(bolt);
         if (modern instanceof net.minecraft.world.entity.projectile.FishingHook hook) return new legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook(hook);
         if (modern instanceof LivingEntity living) {

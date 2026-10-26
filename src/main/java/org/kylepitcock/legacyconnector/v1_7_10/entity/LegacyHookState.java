@@ -52,6 +52,8 @@ final class LegacyHookState {
     /** Whether the legacy class places its rider itself (updateRiderPosition or getMountedYOffset changed). */
     static boolean customRider(Entity legacy) {
         Class<?> c = legacy.getClass();
+        // legacy carts seat their rider by the 1.7.10 rule (the host's box sits lower than the legacy posY)
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart) return true;
         return LegacyHosts.overrides(c, "updateRiderPosition") || LegacyHosts.overrides(c, "getMountedYOffset");
     }
 
@@ -59,7 +61,9 @@ final class LegacyHookState {
         return LegacyHosts.overrides(legacy.getClass(), "playStepSound", int.class, int.class, int.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     }
 
+    /** Legacy carts interpolate the server position themselves (EntityMinecart's turnProgress). */
     static boolean customLerp(Entity legacy) {
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart) return true;
         return LegacyHosts.overrides(legacy.getClass(), "setPositionAndRotation2", double.class, double.class, double.class, float.class, float.class, int.class);
     }
 }

@@ -121,6 +121,24 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
         return legacy.interactFirst(p) ? InteractionResult.sidedSuccess(level().isClientSide()) : InteractionResult.PASS;
     }
 
+    /** Entity events from World.setEntityState (a TNT cart priming on the client); modern non-living entities have none of their own. */
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (legacy != null) legacy.handleHealthUpdate(id);
+        else super.handleEntityEvent(id);
+    }
+
+    /** Legacy carts push and are pushed by their own rule (EntityMinecart.applyEntityCollision). */
+    @Override
+    public void push(net.minecraft.world.entity.Entity other) {
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart) {
+            var wrapped = EntityBridge.wrap(other);
+            if (wrapped != null) legacy.applyEntityCollision(wrapped);
+        } else {
+            super.push(other);
+        }
+    }
+
     @Override
     public void playerTouch(Player player) {
         if (legacy != null) legacy.onCollideWithPlayer((legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer) EntityBridge.wrap(player));
@@ -197,7 +215,7 @@ public class LegacyEntityHost extends net.minecraft.world.entity.Entity implemen
 
     @Override
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
-        if (legacy != null && LegacyHookState.customLerp(legacy)) legacy.setPositionAndRotation2(x, y, z, yaw, pitch, steps);
+        if (legacy != null && LegacyHookState.customLerp(legacy)) legacy.setPositionAndRotation2(x, y + legacy.mcc$yShift(), z, yaw, pitch, steps);
         else super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 

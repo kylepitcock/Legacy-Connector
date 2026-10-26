@@ -283,6 +283,19 @@ public abstract class EntityPlayer extends EntityLivingBase {
                 (windowId, inv, p) -> new net.minecraft.world.inventory.ChestMenu(type, windowId, inv, view, rows), title));
     }
 
+    /** Shows the hopper window of a hopper cart (a vanilla one opens its own menu). */
+    public void displayGUIHopperMinecart(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecartHopper cart) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || cart == null) return;
+        if (cart.mcc$entity instanceof net.minecraft.world.entity.vehicle.MinecartHopper modern) {
+            sp.openMenu(modern);
+            return;
+        }
+        var view = org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyInventoryContainer.of(cart);
+        String name = cart.getInventoryName();
+        net.minecraft.network.chat.Component title = net.minecraft.network.chat.Component.translatableWithFallback(name, name);
+        sp.openMenu(new net.minecraft.world.SimpleMenuProvider((windowId, inv, p) -> new net.minecraft.world.inventory.HopperMenu(windowId, inv, view), title));
+    }
+
     public void closeScreen() {
         mcc$player().closeContainer();
     }
