@@ -27,7 +27,7 @@ lead's `make_tasks.py` (or grep game logs for `is not implemented yet`), and dro
 
 - Work in an isolated worktree, one list per agent. Lists are long: work from the top (most used first), commit
   every 20-40 entries so finished work survives an interruption, and skip entries that make no sense on 1.21.1 (say why).
-- Work in an isolated worktree, one list per agent. Never run the game, servers or clients: only one game instance may
+- Never run the game, servers or clients: only one game instance may
   run on a machine, and the lead agent verifies in game after merging.
 - Read `CLAUDE.md` and `README.md` first. Fix generically, never per mod.
 - For each entry, check which version declares it: `loader/src/main/resources/legacyconnector/legacy/<1.7.10|1.12.2>/methods.txt`
