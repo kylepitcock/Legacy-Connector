@@ -1,66 +1,27 @@
-net.minecraft.block.BlockBed.bedDirections:[[I   # 2 user(s): com.emoniph.witchery.item.ItemTaglockKit, mcjty.rftools.BedControl
-net.minecraft.block.BlockBed.isBlockHeadOfBed(I)Z   # 2 user(s): com.emoniph.witchery.item.ItemTaglockKit, mcjty.rftools.BedControl
-net.minecraft.block.BlockCarpet.<init>()V   # 2 user(s): crazypants.enderio.machine.painter.BlockPaintedCarpet, team.chisel.block.BlockCarvableCarpet
-net.minecraft.block.BlockCompressed.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/MapColor;)V   # 2 user(s): com.rwtema.extrautils.block.BlockBedrockium, twilightforest.block.BlockTFKnightmetalBlock
-net.minecraft.block.BlockDirt.<init>()V   # 2 user(s): biomesoplenty.common.blocks.BlockBOPNewDirt, com.hbm.blocks.generic.BlockNTMDirt
-net.minecraft.block.BlockDoublePlant.func_149887_c(I)Z   # 2 user(s): com.fiskmods.heroes.common.entity.projectile.EntityThrownShield, vazkii.botania.client.render.block.RenderDoubleFlower
-net.minecraft.block.BlockDoublePlant.func_149888_a(ZI)Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 2 user(s): com.carpentersblocks.renderer.helper.RenderHelperFlowerPot, journeymap.client.forge.helper.impl.ColorHelper_1_7_10
-net.minecraft.block.BlockDoublePlant.func_149890_d(I)I   # 2 user(s): com.fiskmods.heroes.common.entity.projectile.EntityThrownShield, vazkii.botania.client.render.block.RenderDoubleFlower
-net.minecraft.block.BlockFire.getFireIcon(I)Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 2 user(s): com.emoniph.witchery.brewing.potions.PotionHellishAura, com.fiskmods.heroes.client.SHRenderHooks
-net.minecraft.block.BlockFurnace.updateFurnaceBlockState(ZLlegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 2 user(s): blusunrize.immersiveengineering.api.tool.ExternalHeaterHandler$DefaultFurnaceAdapter, vazkii.botania.common.block.subtile.functional.SubTileExoflame
-net.minecraft.block.BlockHopper.getHopperIcon(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 2 user(s): galaxyspace.systems.SolarSystem.planets.overworld.render.block.BlockRendererAdvLandingPad, micdoodle8.mods.galacticraft.core.client.render.block.BlockRendererLandingPad
 net.minecraft.block.BlockLilyPad.<init>()V   # 2 user(s): com.emoniph.witchery.blocks.BlockLeapingLily, galaxyspace.systems.BarnardsSystem.planets.barnardaC.blocks.Barnarda_C_Water_Grass
-net.minecraft.block.BlockMushroom.fertilizeMushroom(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIILjava/util/Random;)Z   # 2 user(s): ic2.core.item.tfbp.ItemTFBPMushroom, mods.natura.items.BoneBag
-net.minecraft.block.BlockPistonBase.getPistonOrientation(I)I   # 2 user(s): blusunrize.immersiveengineering.common.items.ItemIETool, micdoodle8.mods.galacticraft.core.oxygen.OxygenPressureProtocol
-net.minecraft.block.BlockPistonBase.isExtended(I)Z   # 2 user(s): blusunrize.immersiveengineering.common.items.ItemIETool, micdoodle8.mods.galacticraft.core.oxygen.OxygenPressureProtocol
-net.minecraft.block.BlockPressurePlate.getPlateState(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)I   # 2 user(s): com.emoniph.witchery.blocks.BlockPerpetualIcePressurePlate, crazypants.enderio.block.BlockDarkSteelPressurePlate
 net.minecraft.block.BlockTNT.func_150114_a(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIIILlegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 2 user(s): appeng.items.tools.powered.ToolEntropyManipulator, cofh.thermalexpansion.item.tool.ItemIgniter
 net.minecraft.block.BlockWorkbench.<init>()V   # 2 user(s): danger.orespawn.CrystalWorkbench, mods.natura.blocks.overrides.AlternateWorkbench
-net.minecraft.block.material.MapColor.getMapColorForBlockColored(I)Llegacyconnector/v1_7_10/net/minecraft/block/material/MapColor;   # 2 user(s): cofh.thermalexpansion.block.simple.BlockRockwool, com.hbm.blocks.generic.BlockConcreteColored
 net.minecraft.inventory.ContainerWorkbench.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/InventoryPlayer;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 2 user(s): fox.spiteful.avaritia.gui.ContainerCustomWorkbench, vazkii.botania.client.gui.crafting.ContainerCraftingHalo
 net.minecraft.item.ItemBucket.tryPlaceContainedLiquid(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Z   # 2 user(s): buildcraft.transport.stripes.StripesHandlerBucket, cofh.core.util.fluid.BucketHandler
 net.minecraft.item.ItemColored.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;Z)V   # 2 user(s): biomesoplenty.common.itemblocks.ItemBlockFoliage, com.emoniph.witchery.item.ItemLeapingLily
 net.minecraft.item.ItemSoup.<init>(I)V   # 2 user(s): com.fiskmods.heroes.common.item.ItemSauce, com.hbm.items.ModItems
 net.minecraft.tileentity.TileEntity.addInfoToCrashReport(Llegacyconnector/v1_7_10/net/minecraft/crash/CrashReportCategory;)V   # 2 user(s): cofh.core.crash.CrashHelper, logisticspipes.blocks.LogisticsSecurityTileEntity
-net.minecraft.tileentity.TileEntityBeacon.getLevels()I   # 2 user(s): WayofTime.alchemicalWizardry.common.rituals.RitualEffectOmegaStalling, vazkii.botania.common.core.handler.TerrasteelCraftingHandler
-net.minecraft.tileentity.TileEntityDispenser.func_146019_a(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)I   # 2 user(s): cofh.core.util.fluid.DispenserEmptyBucketHandler, com.rwtema.extrautils.dispenser.DispenserStuff$1
-net.minecraft.tileentity.TileEntityHopper.func_145889_a(Llegacyconnector/v1_7_10/net/minecraft/inventory/IInventory;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;I)Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 2 user(s): com.xcompwiz.mystcraft.entity.EntityLinkbook, powercrystals.minefactoryreloaded.block.transport.BlockConveyor
-net.minecraft.tileentity.TileEntityHopper.setTransferCooldown(I)V   # 2 user(s): powercrystals.minefactoryreloaded.block.transport.BlockConveyor, thaumcraft.common.lib.utils.InventoryUtils
-net.minecraft.tileentity.TileEntityPiston.getPistonOrientation()I   # 2 user(s): codechicken.wirelessredstone.addons.EntityWirelessTracker, mods.natura.blocks.tech.NetherPistonBase
-net.minecraft.tileentity.TileEntityPiston.getStoredBlockID()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 2 user(s): codechicken.wirelessredstone.addons.EntityWirelessTracker, mods.natura.blocks.tech.NetherPistonBase
-net.minecraft.tileentity.TileEntityPiston.isExtending()Z   # 2 user(s): codechicken.wirelessredstone.addons.EntityWirelessTracker, mods.natura.blocks.tech.NetherPistonBase
 net.minecraftforge.fluids.BlockFluidBase.getFlowDirection(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;III)D   # 2 user(s): com.carpentersblocks.renderer.helper.RoutableFluidsHelper, thaumcraft.client.renderers.block.BlockGasRenderer
 net.minecraftforge.fluids.FluidEvent$FluidSpilledEvent.<init>(Llegacyconnector/v1_7_10/net/minecraftforge/fluids/FluidStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 2 user(s): buildcraft.factory.TileTank, ic2.core.block.generator.tileentity.TileEntityGeoGenerator
-net.minecraft.block.Block.setBedOccupied(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIILlegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): micdoodle8.mods.galacticraft.core.blocks.BlockMulti
-net.minecraft.block.BlockBed.isBedOccupied(I)Z   # 1 user(s): mcjty.rftools.BedControl
-net.minecraft.block.BlockBed.setBedOccupied(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIIZ)V   # 1 user(s): mcjty.rftools.BedControl
 net.minecraft.block.BlockBookshelf.<init>()V   # 1 user(s): mods.natura.blocks.overrides.AlternateBookshelf
 net.minecraft.block.BlockButton.<init>(Z)V   # 1 user(s): mods.natura.blocks.NButton
 net.minecraft.block.BlockCauldron.getCauldronIcon(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 1 user(s): blusunrize.immersiveengineering.client.ClientProxy
 net.minecraft.block.BlockCauldron.setWaterLevel(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIII)V   # 1 user(s): com.emoniph.witchery.item.ItemBrewEndlessWater
-net.minecraft.block.BlockChest.getInventory(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Llegacyconnector/v1_7_10/net/minecraft/inventory/IInventory;   # 1 user(s): twilightforest.block.BlockTFMagicLogSpecial
-net.minecraft.block.BlockContainer.setBedOccupied(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIILlegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): micdoodle8.mods.galacticraft.core.blocks.BlockMulti
-net.minecraft.block.BlockDoublePlant.func_149889_c(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIIII)V   # 1 user(s): biomesoplenty.common.world.features.WorldGenBOPDoubleFlora
 net.minecraft.block.BlockDynamicLiquid.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/Material;)V   # 1 user(s): cofh.asmhooks.block.BlockTickingWater
 net.minecraft.block.BlockEndPortal.field_149948_a:Z   # 1 user(s): com.brandon3055.draconicevolution.common.entity.EntityCustomDragon
 net.minecraft.block.BlockFarmland.<init>()V   # 1 user(s): biomesoplenty.common.blocks.BlockBOPNewFarmland
-net.minecraft.block.BlockFire.canCatchFire(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIILlegacyconnector/v1_7_10/net/minecraftforge/common/util/ForgeDirection;)Z   # 1 user(s): codechicken.core.featurehack.TweakTransformerHelper
-net.minecraft.block.BlockFire.getChanceToEncourageFire(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIIILlegacyconnector/v1_7_10/net/minecraftforge/common/util/ForgeDirection;)I   # 1 user(s): com.hbm.blocks.bomb.Balefire
 net.minecraft.block.BlockFlower.func_149856_f(Ljava/lang/String;)I   # 1 user(s): com.rwtema.extrautils.crafting.LawSwordCraftHandler
 net.minecraft.block.BlockFlower.func_149857_e(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/block/BlockFlower;   # 1 user(s): com.rwtema.extrautils.crafting.LawSwordCraftHandler
-net.minecraft.block.BlockHopper.getDirectionFromMetadata(I)I   # 1 user(s): mods.natura.client.HopperRender
 net.minecraft.block.BlockLever.<init>()V   # 1 user(s): mods.natura.blocks.overrides.NetherLever
 net.minecraft.block.BlockLiquid.getFlowDirection(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIILlegacyconnector/v1_7_10/net/minecraft/block/material/Material;)D   # 1 user(s): com.carpentersblocks.renderer.helper.RoutableFluidsHelper
 net.minecraft.block.BlockNetherrack.<init>()V   # 1 user(s): powercrystals.netherores.world.BlockHellfish
-net.minecraft.block.BlockNewLeaf.<init>()V   # 1 user(s): forestry.arboriculture.blocks.BlockForestryLeaves
-net.minecraft.block.BlockNewLeaf.onSheared(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIII)Ljava/util/ArrayList;   # 1 user(s): forestry.arboriculture.blocks.BlockForestryLeaves
 net.minecraft.block.BlockPane.canPaneConnectToBlock(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)Z   # 1 user(s): team.chisel.client.render.RendererCTMPane
 net.minecraft.block.BlockPane.func_150097_e()Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 1 user(s): powercrystals.minefactoryreloaded.render.block.FactoryGlassPaneRenderer
-net.minecraft.block.BlockPistonExtension.getDirectionMeta(I)I   # 1 user(s): mods.natura.blocks.tech.NetherPistonExtension
-net.minecraft.block.BlockPistonMoving.getTileEntity(Llegacyconnector/v1_7_10/net/minecraft/block/Block;IIZZ)Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;   # 1 user(s): mods.natura.blocks.tech.NetherPistonBase
-net.minecraft.block.BlockPressurePlate.getMetaFromPower(I)I   # 1 user(s): crazypants.enderio.block.BlockDarkSteelPressurePlate
-net.minecraft.block.BlockPressurePlate.getSensitiveAABB(III)Llegacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB;   # 1 user(s): com.emoniph.witchery.blocks.BlockPerpetualIcePressurePlate
-net.minecraft.block.BlockPressurePlate.updateNeighbors(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 1 user(s): crazypants.enderio.block.BlockDarkSteelPressurePlate
 net.minecraft.block.BlockPumpkin.<init>(Z)V   # 1 user(s): team.chisel.block.BlockCarvablePumpkin
 net.minecraft.block.BlockRedstoneWire.getRedstoneWireIcon(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 1 user(s): com.carpentersblocks.block.BlockCoverable
 net.minecraft.block.BlockReed.<init>()V   # 1 user(s): danger.orespawn.BlockCorn
@@ -74,8 +35,6 @@ net.minecraft.block.BlockStem.getStemIcon()Llegacyconnector/v1_7_10/net/minecraf
 net.minecraft.block.BlockStone.<init>()V   # 1 user(s): com.hbm.blocks.generic.BlockKeyhole
 net.minecraft.block.BlockWood.<init>()V   # 1 user(s): tconstruct.world.blocks.MeatBlock
 net.minecraft.block.BlockWood.field_150096_a:[Ljava/lang/String;   # 1 user(s): com.fiskmods.heroes.client.render.tile.RenderDisplayStand
-net.minecraft.block.material.MaterialLogic.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/MapColor;)V   # 1 user(s): com.hbm.blocks.ModBlocks$1
-net.minecraft.block.material.MaterialTransparent.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/MapColor;)V   # 1 user(s): powercrystals.minefactoryreloaded.block.BlockFakeLaser
 net.minecraft.enchantment.EnchantmentDurability.negateDamage(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;ILjava/util/Random;)Z   # 1 user(s): thaumcraft.common.lib.utils.InventoryUtils
 net.minecraft.inventory.ContainerEnchantment.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/InventoryPlayer;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 1 user(s): codechicken.nei.ContainerEnchantmentModifier
 net.minecraft.inventory.ContainerFurnace.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/InventoryPlayer;Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntityFurnace;)V   # 1 user(s): mods.natura.gui.FurnaceGui
@@ -102,18 +61,11 @@ net.minecraft.tileentity.TileEntity.getPreviousShape()Ljava/util/List;   # 1 use
 net.minecraft.tileentity.TileEntity.getShape()Ljava/util/List;   # 1 user(s): openblocks.client.renderer.tileentity.TileEntityGuideRenderer
 net.minecraft.tileentity.TileEntity.readMicroblocksFromNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 1 user(s): crazypants.enderio.conduit.TileConduitBundle
 net.minecraft.tileentity.TileEntity.writeMicroblocksToNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 1 user(s): crazypants.enderio.conduit.TileConduitBundle
-net.minecraft.tileentity.TileEntityBeacon.<init>()V   # 1 user(s): team.chisel.block.tileentity.TileEntityCarvableBeacon
-net.minecraft.tileentity.TileEntityBeacon.func_145999_a(Ljava/lang/String;)V   # 1 user(s): team.chisel.block.BlockCarvableBeacon
-net.minecraft.tileentity.TileEntityBeacon.shouldBeamRender()F   # 1 user(s): team.chisel.client.render.tile.RenderCarvableBeacon
 net.minecraft.tileentity.TileEntityCommandBlock.func_145993_a()Llegacyconnector/v1_7_10/net/minecraft/command/server/CommandBlockLogic;   # 1 user(s): dan200.computercraft.shared.peripheral.commandblock.CommandBlockPeripheral$1
 net.minecraft.tileentity.TileEntityFlowerPot.func_145964_a(Llegacyconnector/v1_7_10/net/minecraft/item/Item;I)V   # 1 user(s): forestry.apiculture.flowers.GrowthRuleFlowerPot
 net.minecraft.tileentity.TileEntityFlowerPot.getFlowerPotData()I   # 1 user(s): forestry.apiculture.flowers.FlowerRegistry
 net.minecraft.tileentity.TileEntityFlowerPot.getFlowerPotItem()Llegacyconnector/v1_7_10/net/minecraft/item/Item;   # 1 user(s): forestry.apiculture.flowers.FlowerRegistry
-net.minecraft.tileentity.TileEntityHopper.func_145893_b(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)Llegacyconnector/v1_7_10/net/minecraft/inventory/IInventory;   # 1 user(s): com.rwtema.extrautils.EventHandlerSiege
-net.minecraft.tileentity.TileEntityHopper.func_145897_a(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityItem;   # 1 user(s): mods.railcraft.common.blocks.machine.alpha.TileRockCrusher
-net.minecraft.tileentity.TileEntityHopper.isOnTransferCooldown()Z   # 1 user(s): powercrystals.minefactoryreloaded.block.transport.BlockConveyor
 net.minecraft.tileentity.TileEntityNote.note:B   # 1 user(s): thaumcraft.client.lib.RenderEventHandler
-net.minecraft.tileentity.TileEntityPiston.clearPistonTileEntity()V   # 1 user(s): mods.natura.blocks.tech.NetherPistonBase
 net.minecraft.tileentity.TileEntitySign.func_145912_a(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)V   # 1 user(s): vswe.stevesfactory.blocks.TileEntitySignUpdater
 net.minecraftforge.fluids.BlockFluidBase.getFlowVector(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;III)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 1 user(s): blusunrize.immersiveengineering.common.util.Utils
 net.minecraftforge.fluids.FluidEvent$FluidDrainingEvent.<init>(Llegacyconnector/v1_7_10/net/minecraftforge/fluids/FluidStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;IIILlegacyconnector/v1_7_10/net/minecraftforge/fluids/IFluidTank;)V -> (Llegacyconnector/v1_7_10/net/minecraftforge/fluids/FluidStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;IIILlegacyconnector/v1_7_10/net/minecraftforge/fluids/IFluidTank;I)V   # 1 user(s): WayofTime.alchemicalWizardry.common.tileEntity.TEAltar

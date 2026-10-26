@@ -17,4 +17,10 @@ public class BlockPistonMoving extends legacyconnector.v1_7_10.net.minecraft.blo
     public BlockPistonMoving() {
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.piston);
     }
+
+    /** The moving-piston tile entity carrying {@code block} with {@code meta} towards {@code orientation}. */
+    public static legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity getTileEntity(Block block, int meta, int orientation, boolean extending,
+            boolean renderHead) {
+        return new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityPiston(block, meta, orientation, extending, renderHead);
+    }
 }

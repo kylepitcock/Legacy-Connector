@@ -1,7 +1,7 @@
 package legacyconnector.v1_7_10.net.minecraft.block;
 
 /** 1.7.10 {@code BlockLeaves}: vanilla leaf icons and tints, and the fast/fancy graphics switch mods call. */
-public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.BlockLeavesBase {
+public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.BlockLeavesBase implements legacyconnector.v1_7_10.net.minecraftforge.common.IShearable {
     public BlockLeaves(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -47,5 +47,31 @@ public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         if (meta == 1) return 6396257;
         if (meta == 2) return 8431445;
         return world.mcc$blockTint(x, y, z, 1);
+    }
+
+    /** The wood names of the leaf types, by metadata bits 0-1 (subclasses list theirs). */
+    public String[] func_150125_e() {
+        return new String[] {"oak", "spruce", "birch", "jungle"};
+    }
+
+    @Override
+    public int damageDropped(int meta) {
+        return meta & 3;
+    }
+
+    /** Forge: leaves can always be sheared. */
+    @Override
+    public boolean isShearable(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y,
+            int z) {
+        return true;
+    }
+
+    /** Forge: shearing gives the leaf block itself (its type without the decay bits). */
+    @Override
+    public java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> onSheared(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int fortune) {
+        java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> ret = new java.util.ArrayList<>();
+        ret.add(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(this, 1, world.getBlockMetadata(x, y, z) & 3));
+        return ret;
     }
 }

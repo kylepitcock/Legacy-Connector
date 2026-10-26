@@ -51,6 +51,43 @@ public final class VanillaOps {
         return name == null ? null : Icons.BLOCKS.registerIcon("minecraft:" + name);
     }
 
+    private static final java.util.Map<String, java.util.Optional<java.lang.reflect.Field>> FIELDS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** A private field of a modern class by its (Mojang) name, made accessible; null when it is missing. */
+    public static java.lang.reflect.Field field(Class<?> owner, String name) {
+        return FIELDS.computeIfAbsent(owner.getName() + "." + name, k -> {
+            try {
+                var f = owner.getDeclaredField(name);
+                f.setAccessible(true);
+                return java.util.Optional.of(f);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return java.util.Optional.empty();
+            }
+        }).orElse(null);
+    }
+
+    /** Reads an int field of a modern object ({@code fallback} when it cannot be read). */
+    public static int getInt(Object target, Class<?> owner, String name, int fallback) {
+        var f = field(owner, name);
+        try {
+            return f == null ? fallback : f.getInt(target);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return fallback;
+        }
+    }
+
+    /** Writes an int field of a modern object; false when it cannot be written. */
+    public static boolean setInt(Object target, Class<?> owner, String name, int value) {
+        var f = field(owner, name);
+        try {
+            if (f == null) return false;
+            f.setInt(target, value);
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
     private static final class Icons {
         static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap ITEMS =
                 new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
