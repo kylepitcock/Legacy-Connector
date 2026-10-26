@@ -1,25 +1,33 @@
 # Parallel legacy-API work for subagents
 
-The game logs every legacy API a mod calls that the shim does not implement yet ("Legacy API X is not implemented yet;
-using a default"). These lists were collected from recent client and server logs (2026-10-26) and split by area so
-several agents can implement them at once, each in its own git worktree:
+Every legacy API that mods reference but the shim only links to a placeholder ("Synthesized legacy APIs (link, but have
+no behaviour yet)" in `checkLegacyMod` / the compatibility report) is a task. The 1.7.10 lists were generated on 2026-10-26
+from the link check of the 1.7.10 test set and a 100-mod user pack, split by area so several agents can work at once,
+each in its own git worktree, and sorted with the most-used APIs first:
 
 | List | Area |
 |---|---|
-| `task-A.txt` | entities (`net.minecraft.entity.*`) and client/rendering (`net.minecraft.client.*`, LWJGL, OpenGlHelper shaders) |
-| `task-B.txt` | world and world generation (`net.minecraft.world.*`, terrain-gen events, structure pieces) |
-| `task-C.txt` | everything else (items, blocks, FML/Forge registries and config, network, commands, Waila); mixes 1.7.10 and 1.12.2 entries |
-| `task-D.txt` | 1.12.2 only (signatures naming 1.12.2 classes: registries, `net.minecraftforge.fml`, `BlockPos`, `IBlockState`, ...) |
+| `task-E.txt` | 1.7.10 entities (`net.minecraft.entity.*`, potions, damage sources, AI) |
+| `task-R1.txt` | 1.7.10 rendering (`net.minecraft.client.renderer.*`, models, LWJGL) |
+| `task-R2.txt` | 1.7.10 rest of the client (GUI, particles, sounds, settings, `cpw.mods.fml.client`) |
+| `task-W.txt` | 1.7.10 world, chunks, biomes, world generation, villages |
+| `task-I.txt` | 1.7.10 blocks, items, tile entities, inventories, crafting, enchantments, ore dictionary, fluids |
+| `task-F.txt` | 1.7.10 everything else (FML, Forge, network, commands, NBT, utilities, server, stats) |
+| `task-C.txt` | APIs logged at runtime as "not implemented yet" (mixes 1.7.10 and 1.12.2) |
+| `task-D.txt` | 1.12.2 APIs logged at runtime |
 
-Each line is `legacy.class.method(descriptor)`. A descriptor class under `legacyconnector_synth/...` is itself only
-synthesized so far.
+Each line is `legacy.class.member(descriptor)` (fields: `class.field:type`), followed by `# n user(s): <mod classes>`.
+A descriptor class under `legacyconnector_synth/...` is itself only synthesized so far. Lines with ` -> (desc)` are
+constructors that link to a nearby shim constructor today.
 
-To refresh the lists, grep the logs (client `run-screenshots/logs`, server `run-subtest/logs`, a user instance's
-`logs/latest.log`) for `is not implemented yet` and drop what is already implemented.
+To refresh the lists, run `./gradlew checkLegacyMod -PlegacyJar=...` over the jars and feed the logs to a script like the
+lead's `make_tasks.py` (or grep game logs for `is not implemented yet`), and drop what is already implemented.
 
 ## Rules for the agents
 
-- Work in an isolated worktree, one list per agent. Never run the game, servers or clients: only one game instance may
+- Work in an isolated worktree, one list per agent. Lists are long: work from the top (most used first), commit
+  every 20-40 entries so finished work survives an interruption, and skip entries that make no sense on 1.21.1 (say why).
+- Never run the game, servers or clients: only one game instance may
   run on a machine, and the lead agent verifies in game after merging.
 - Read `CLAUDE.md` and `README.md` first. Fix generically, never per mod.
 - For each entry, check which version declares it: `loader/src/main/resources/legacyconnector/legacy/<1.7.10|1.12.2>/methods.txt`

@@ -26,7 +26,25 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         this.armorType = type;
         this.damageReduceAmount = defense;
         this.renderIndex = 0;
-        this.material = ArmorMaterial.IRON;
+        this.material = info.modern() instanceof net.minecraft.world.item.ArmorItem a ? mcc$material(a) : ArmorMaterial.IRON;
+    }
+
+    private static ArmorMaterial mcc$material(net.minecraft.world.item.ArmorItem a) {
+        var m = a.getMaterial().value();
+        if (m == net.minecraft.world.item.ArmorMaterials.LEATHER.value()) return ArmorMaterial.CLOTH;
+        if (m == net.minecraft.world.item.ArmorMaterials.CHAIN.value()) return ArmorMaterial.CHAIN;
+        if (m == net.minecraft.world.item.ArmorMaterials.GOLD.value()) return ArmorMaterial.GOLD;
+        if (m == net.minecraft.world.item.ArmorMaterials.DIAMOND.value()) return ArmorMaterial.DIAMOND;
+        return ArmorMaterial.IRON;
+    }
+
+    private static final String[] mcc$EMPTY_SLOTS = {"empty_armor_slot_helmet", "empty_armor_slot_chestplate", "empty_armor_slot_leggings",
+            "empty_armor_slot_boots"};
+
+    /** {@code func_94602_b}: the outline icon an empty armor slot of this type shows (0 helmet ... 3 boots). */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IIcon getBackgroundIcon(int armorType) {
+        if (armorType < 0 || armorType > 3) return null;
+        return org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaOps.itemIcon(mcc$EMPTY_SLOTS[armorType]);
     }
 
     protected ItemArmor() {
@@ -106,7 +124,25 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         }
     }
 
+    /** Whether a leather (cloth) armor stack was dyed. */
+    public boolean hasColor(ItemStack stack) {
+        if (material != ArmorMaterial.CLOTH || stack == null) return false;
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
+        return tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3);
+    }
+
+    /** Removes the dye of a leather armor stack. */
+    public void removeColor(ItemStack stack) {
+        if (material != ArmorMaterial.CLOTH || stack == null) return;
+        legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
+        if (tag != null && tag.hasKey("display", 10)) {
+            legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound display = tag.getCompoundTag("display");
+            if (display.hasKey("color")) display.removeTag("color");
+        }
+    }
+
     public int getColor(ItemStack stack) {
+        if (material != ArmorMaterial.CLOTH) return -1;
         legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag = stack.getTagCompound();
         if (tag != null && tag.hasKey("display", 10) && tag.getCompoundTag("display").hasKey("color", 3)) return tag.getCompoundTag("display").getInteger("color");
         return 10511680;

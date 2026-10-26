@@ -25,4 +25,9 @@ public class BlockFence extends Block {
     public static boolean func_149825_a(Block block) {
         return block instanceof BlockFence;
     }
+
+    /** Whether the block is a fence (pressure plates and landmines may stand on fences). */
+    public static boolean isFence(Block block) {
+        return block instanceof BlockFence;
+    }
 }
