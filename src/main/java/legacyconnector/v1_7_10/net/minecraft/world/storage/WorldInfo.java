@@ -135,4 +135,47 @@ public class WorldInfo {
     public int getSaveVersion() {
         return 19133;
     }
+
+    private boolean mcc$initialized;
+
+    /** Whether the world finished its first setup (spawn chosen): a loaded level always has; a mod's own world once it says so. */
+    public boolean isInitialized() {
+        return level() != null || mcc$initialized;
+    }
+
+    public void setServerInitialized(boolean initialized) {
+        this.mcc$initialized = initialized;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.GameRules getGameRulesInstance() {
+        return legacyconnector.v1_7_10.net.minecraft.world.GameRules.mcc$of(level());
+    }
+
+    /** Moves the world spawn (the server's shared spawn point). */
+    public void setSpawnPosition(int x, int y, int z) {
+        weather(l -> l.setDefaultSpawnPos(new net.minecraft.core.BlockPos(x, y, z), l.getSharedSpawnAngle()));
+    }
+
+    public void setSpawnX(int x) {
+        setSpawnPosition(x, getSpawnY(), getSpawnZ());
+    }
+
+    public void setSpawnY(int y) {
+        setSpawnPosition(getSpawnX(), y, getSpawnZ());
+    }
+
+    public void setSpawnZ(int z) {
+        setSpawnPosition(getSpawnX(), getSpawnY(), z);
+    }
+
+    /** Forge: extra level.dat compounds (FML's data); none are read from the modern save, mods may set their own. */
+    private java.util.Map<String, legacyconnector.v1_7_10.net.minecraft.nbt.NBTBase> mcc$additional;
+
+    public void setAdditionalProperties(java.util.Map<String, legacyconnector.v1_7_10.net.minecraft.nbt.NBTBase> properties) {
+        if (mcc$additional == null) this.mcc$additional = properties;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTBase getAdditionalProperty(String name) {
+        return mcc$additional == null ? null : mcc$additional.get(name);
+    }
 }

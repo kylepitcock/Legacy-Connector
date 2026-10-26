@@ -226,5 +226,80 @@ public class WorldProvider {
     }
 
     public void updateWeather() {
+        if (worldObj != null) worldObj.updateWeatherBody();
+    }
+
+    // ------------------------------------------------------------------ Forge's provider hooks: the defaults ask the world's *Body methods
+
+    /** A new provider for a dimension id (the registered provider class of that dimension). */
+    public static WorldProvider getProviderForDimension(int dimension) {
+        return legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.createProviderFor(dimension);
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.Vec3 getSkyColor(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partialTicks) {
+        return worldObj == null ? legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(0.47D, 0.65D, 1.0D)
+                : worldObj.getSkyColorBody(entity, partialTicks);
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.util.Vec3 drawClouds(float partialTicks) {
+        return worldObj == null ? legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(1.0D, 1.0D, 1.0D) : worldObj.drawCloudsBody(partialTicks);
+    }
+
+    public float getStarBrightness(float partialTicks) {
+        return worldObj == null ? 0.0F : worldObj.getStarBrightnessBody(partialTicks);
+    }
+
+    public float getSunBrightness(float partialTicks) {
+        return worldObj == null ? 1.0F : worldObj.getSunBrightnessBody(partialTicks);
+    }
+
+    /** The height the horizon is drawn at: the world type's (63, flat worlds 0). */
+    public double getHorizon() {
+        return terrainType == null ? 63.0D : terrainType.getHorizon(worldObj);
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
+        return worldObj == null ? legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains : worldObj.getBiomeGenForCoordsBody(x, z);
+    }
+
+    public boolean isBlockHighHumidity(int x, int y, int z) {
+        var biome = getBiomeGenForCoords(x, z);
+        return biome != null && biome.isHighHumidity();
+    }
+
+    public boolean canBlockFreeze(int x, int y, int z, boolean byWater) {
+        return worldObj != null && worldObj.canBlockFreezeBody(x, y, z, byWater);
+    }
+
+    public boolean canSnowAt(int x, int y, int z, boolean checkLight) {
+        return worldObj != null && worldObj.canSnowAtBody(x, y, z, checkLight);
+    }
+
+    public boolean canMineBlock(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, int x, int y, int z) {
+        return worldObj == null || worldObj.canMineBlockBody(player, x, y, z);
+    }
+
+    public void calculateInitialWeather() {
+        if (worldObj != null) worldObj.calculateInitialWeatherBody();
+    }
+
+    /** Clears the weather (sleeping through the night). */
+    public void resetRainAndThunder() {
+        if (worldObj == null) return;
+        var info = worldObj.getWorldInfo();
+        info.setRainTime(0);
+        info.setRaining(false);
+        info.setThunderTime(0);
+        info.setThundering(false);
+    }
+
+    /** Sets the time of day of this dimension's world. */
+    public void setWorldTime(long time) {
+        if (worldObj != null) worldObj.getWorldInfo().setWorldTime(time);
+    }
+
+    /** Where entities arrive from the end portal (the obsidian platform of the End; none elsewhere). */
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getEntrancePortalLocation() {
+        return dimensionId == 1 ? new legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates(100, 50, 0) : null;
     }
 }

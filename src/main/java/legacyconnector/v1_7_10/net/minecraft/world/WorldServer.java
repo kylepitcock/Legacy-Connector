@@ -36,7 +36,60 @@ public class WorldServer extends World {
     public void resetUpdateEntityTick() {
     }
 
-    public void removePlayerEntityDangerously(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+    /** Forge: the teleporters of mods registered for this world (kept so their portal caches are cleaned with the world's). */
+    public java.util.List<Teleporter> customTeleporters = new java.util.ArrayList<>();
+
+    /** Where entities arrive from an end portal in this world (the provider's: the End's platform). */
+    public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getEntrancePortalLocation() {
+        return mcc$get$provider(this).getEntrancePortalLocation();
+    }
+
+    /**
+     * A random spawn entry for the creature type at the position: the legacy biome's own list when it has one (mod biomes), else the
+     * modern biome's spawns of that category, as the legacy class of each vanilla mob. Null when nothing can spawn there.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.SpawnListEntry spawnRandomCreature(
+            legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType type, int x, int y, int z) {
+        if (type == null) return null;
+        var biome = getBiomeGenForCoords(x, z);
+        java.util.List<legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.SpawnListEntry> list =
+                biome == null ? java.util.List.of() : biome.getSpawnableList(type);
+        if (list != null && !list.isEmpty()) {
+            int total = 0;
+            for (var e : list) total += Math.max(0, e.itemWeight);
+            if (total > 0) {
+                int pick = rand.nextInt(total);
+                for (var e : list) {
+                    pick -= Math.max(0, e.itemWeight);
+                    if (pick < 0) return e;
+                }
+            }
+        }
+        if (!(mcc$fullLevel() instanceof ServerLevel level)) return null;
+        var p = new net.minecraft.core.BlockPos(x, y, z);
+        if (!level.hasChunkAt(p)) return null;
+        var mobs = level.getBiome(p).value().getMobSettings().getMobs(type.mcc$modern());
+        var picked = mobs.getRandom(level.random);
+        if (picked.isEmpty()) return null;
+        var data = picked.get();
+        Class<?> legacy = mcc$legacyMobClass(data.type);
+        if (legacy == null) return null;
+        return new legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.SpawnListEntry(legacy, data.getWeight().asInt(), data.minCount, data.maxCount);
+    }
+
+    /** Modern vanilla mob ids whose 1.7.10 entity names differ from the id. */
+    private static final java.util.Map<String, String> MCC_LEGACY_NAMES = java.util.Map.ofEntries(
+            java.util.Map.entry("mooshroom", "MushroomCow"), java.util.Map.entry("ocelot", "Ozelot"), java.util.Map.entry("horse", "EntityHorse"),
+            java.util.Map.entry("cave_spider", "CaveSpider"), java.util.Map.entry("zombified_piglin", "PigZombie"),
+            java.util.Map.entry("magma_cube", "LavaSlime"), java.util.Map.entry("iron_golem", "VillagerGolem"), java.util.Map.entry("snow_golem", "SnowMan"));
+
+    private static Class<?> mcc$legacyMobClass(net.minecraft.world.entity.EntityType<?> type) {
+        var key = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type);
+        if (key == null || !"minecraft".equals(key.getNamespace())) return null;
+        String path = key.getPath();
+        String name = MCC_LEGACY_NAMES.get(path);
+        if (name == null) name = Character.toUpperCase(path.charAt(0)) + path.substring(1);
+        return legacyconnector.v1_7_10.net.minecraft.entity.EntityList.stringToClassMapping.get(name);
     }
 
     public void func_147487_a(String particle, double x, double y, double z, int count, double offsetX, double offsetY, double offsetZ, double speed) {

@@ -18,6 +18,8 @@ public class ChunkProviderServer implements IChunkProvider {
     public Set<Long> chunksToUnload = new HashSet<>();
     public boolean loadChunkOnProvideRequest = true;
     public IChunkProvider currentChunkProvider;
+    /** The loader of the dimension's saved chunks (its folder of region files). */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.IChunkLoader currentChunkLoader;
 
     /** Phantom: redirected to {@link #mcc$get$loadedChunks}. */
     @Deprecated
@@ -31,6 +33,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public ChunkProviderServer(World world) {
         this.mcc$world = world;
+        this.currentChunkLoader = mcc$loader(world);
         this.loadedChunkHashMap = new legacyconnector.v1_7_10.net.minecraft.util.LongHashMap() {
             @Override
             public Object getValueByKey(long key) {
@@ -44,6 +47,39 @@ public class ChunkProviderServer implements IChunkProvider {
                 return getValueByKey(key) != null;
             }
         };
+    }
+
+    /** A chunk provider over the world with its own loader and generator (mods' dummy providers). */
+    public ChunkProviderServer(legacyconnector.v1_7_10.net.minecraft.world.WorldServer world,
+            legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.IChunkLoader loader, IChunkProvider generator) {
+        this(world);
+        this.currentChunkLoader = loader;
+        this.currentChunkProvider = generator;
+    }
+
+    /** The dimension folder's loader of a server world (null elsewhere). */
+    private static legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.IChunkLoader mcc$loader(World world) {
+        if (world == null || !(world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel level)) return null;
+        try {
+            var root = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
+            return new legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.AnvilChunkLoader(
+                    net.minecraft.world.level.dimension.DimensionType.getStorageFolder(level.dimension(), root).toFile());
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Forge: loads the chunk now, from its save or by generating it (on the server thread; elsewhere only a loaded chunk is
+     * returned, since a worker waiting for the main thread's chunk cache could deadlock).
+     */
+    public Chunk originalLoadChunk(int x, int z) {
+        Chunk loaded = provideChunk(x, z);
+        if (loaded != null) return loaded;
+        if (mcc$world.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level && level.getServer().isSameThread()) {
+            return new Chunk(mcc$world, level.getChunk(x, z));
+        }
+        return null;
     }
 
     public static List mcc$get$loadedChunks(ChunkProviderServer p) {

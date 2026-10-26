@@ -23,6 +23,64 @@ public class BiomeDecorator {
     public int bigMushroomsPerChunk;
     public boolean generateLakes = true;
 
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator dirtGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.dirt, 32);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gravelGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.gravel, 32);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator coalGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.coal_ore, 16);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator ironGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.iron_ore, 8);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator goldGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.gold_ore, 8);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator redstoneGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.redstone_ore, 7);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator diamondGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.diamond_ore, 7);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator lapisGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.lapis_ore, 6);
+
+    private static legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator minable(legacyconnector.v1_7_10.net.minecraft.block.Block block, int size) {
+        return new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable(block, size);
+    }
+
+    /** {@code count} veins at heights spread evenly between the bounds. */
+    protected void genStandardOre1(int count, legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gen, int minY, int maxY) {
+        if (maxY <= minY) return;
+        for (int i = 0; i < count; i++) {
+            int x = chunk_X + randomGenerator.nextInt(16);
+            int y = randomGenerator.nextInt(maxY - minY) + minY;
+            int z = chunk_Z + randomGenerator.nextInt(16);
+            gen.generate(currentWorld, randomGenerator, x, y, z);
+        }
+    }
+
+    /** {@code count} veins at heights clustered around {@code center} (a triangle of width 2 * spread). */
+    protected void genStandardOre2(int count, legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gen, int center, int spread) {
+        if (spread <= 0) return;
+        for (int i = 0; i < count; i++) {
+            int x = chunk_X + randomGenerator.nextInt(16);
+            int y = randomGenerator.nextInt(spread) + randomGenerator.nextInt(spread) + (center - spread);
+            int z = chunk_Z + randomGenerator.nextInt(16);
+            gen.generate(currentWorld, randomGenerator, x, y, z);
+        }
+    }
+
+    /**
+     * Vanilla's ore pass (dirt, gravel, coal, iron, gold, redstone, diamond and lapis veins), each gated by Forge's ore event. The
+     * modern overworld has its own ores; mods call this from their dimensions' decorators.
+     */
+    protected void generateOres() {
+        var bus = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.ORE_GEN_BUS;
+        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.Pre(currentWorld, randomGenerator, chunk_X, chunk_Z));
+        if (ore(dirtGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.DIRT)) genStandardOre1(20, dirtGen, 0, 256);
+        if (ore(gravelGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.GRAVEL)) genStandardOre1(10, gravelGen, 0, 256);
+        if (ore(coalGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.COAL)) genStandardOre1(20, coalGen, 0, 128);
+        if (ore(ironGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.IRON)) genStandardOre1(20, ironGen, 0, 64);
+        if (ore(goldGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.GOLD)) genStandardOre1(2, goldGen, 0, 32);
+        if (ore(redstoneGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.REDSTONE)) genStandardOre1(8, redstoneGen, 0, 16);
+        if (ore(diamondGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.DIAMOND)) genStandardOre1(1, diamondGen, 0, 16);
+        if (ore(lapisGen, legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType.LAPIS)) genStandardOre2(1, lapisGen, 16, 16);
+        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.Post(currentWorld, randomGenerator, chunk_X, chunk_Z));
+    }
+
+    private boolean ore(legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gen,
+            legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable.EventType type) {
+        return gen != null && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.generateOre(currentWorld, randomGenerator, gen, chunk_X, chunk_Z, type);
+    }
+
     public void decorateChunk(World world, Random random, BiomeGenBase biome, int chunkX, int chunkZ) {
         if (currentWorld != null) throw new RuntimeException("Already decorating!!");
         this.currentWorld = world;

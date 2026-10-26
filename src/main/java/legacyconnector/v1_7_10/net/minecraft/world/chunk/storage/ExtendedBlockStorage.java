@@ -145,6 +145,26 @@ public class ExtendedBlockStorage {
         return new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(data, 4);
     }
 
+    /** The low eight bits of each block's legacy id (index y << 8 | z << 4 | x), as a copy: writes to it change nothing. */
+    public byte[] getBlockLSBArray() {
+        byte[] out = new byte[4096];
+        for (int i = 0; i < 4096; i++) out[i] = (byte) (Block.getIdFromBlock(getBlockByExtId(i & 15, i >> 8, i >> 4 & 15)) & 255);
+        return out;
+    }
+
+    /** The high four bits of the legacy ids above 255 (null when every id fits in eight bits, as 1.7.10 left it); a copy. */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getBlockMSBArray() {
+        legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = null;
+        for (int i = 0; i < 4096; i++) {
+            int x = i & 15, y = i >> 8, z = i >> 4 & 15;
+            int id = Block.getIdFromBlock(getBlockByExtId(x, y, z));
+            if (id <= 255) continue;
+            if (out == null) out = new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(4096, 4);
+            out.set(x, y, z, id >> 8 & 15);
+        }
+        return out;
+    }
+
     public void setExtBlockID(int x, int y, int z, Block block) {
         func_150818_a(x, y, z, block);
     }

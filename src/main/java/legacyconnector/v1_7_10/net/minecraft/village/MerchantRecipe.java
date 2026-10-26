@@ -52,6 +52,14 @@ public class MerchantRecipe {
         return tag;
     }
 
+    /** Whether the other trade buys and sells the same items (ignoring counts): the same offer, maybe with other amounts. */
+    public boolean hasSameIDsAs(MerchantRecipe other) {
+        if (other == null || itemToBuy == null || itemToSell == null || other.itemToBuy == null || other.itemToSell == null) return false;
+        if (itemToBuy.getItem() != other.itemToBuy.getItem() || itemToSell.getItem() != other.itemToSell.getItem()) return false;
+        if (secondItemToBuy == null) return other.secondItemToBuy == null;
+        return other.secondItemToBuy != null && secondItemToBuy.getItem() == other.secondItemToBuy.getItem();
+    }
+
     public ItemStack getItemToBuy() {
         return itemToBuy;
     }
