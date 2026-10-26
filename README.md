@@ -256,6 +256,25 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 
 Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate` twin automatically: the same legacy block (drops, hardness, behaviour) with its stone background replaced by deepslate. Where a generator places an ore into deepslate (the deep layer, and the deepslate band just above y=0) the twin is placed instead. Ores with tile entities are not duplicated. The ore texture of the normal block can also sit on a deepslate background (`oreBackgrounds.stone=deepslate`).
 
+## Performance
+
+Measured on 2026-10-25 (0.2.7 plus fixes) in a real client: NeoForge 1.21.1, a 640x360 window, render distance 8, vsync off, the
+same seed and spot. Each setup ran three times, each with a fresh world:
+
+| | No legacy mods | Thaumcraft 4 (with Baubles, bridged to Curios) |
+|---|---|---|
+| Heap in use after a full GC | 595, 600, 596 MB | 640, 633, 632 MB (about +38 MB) |
+| Process private memory | 2831, 3334, 2844 MB | 2999, 3044, 2865 MB (same range) |
+| Frames per second (30 s average) | 1038, 1181, 1494 | 960, 1463, 955 |
+| Server tick time | 1.46, 1.68, 1.95 ms | 1.58, 1.82, 1.69 ms |
+| Extra startup | none | about 5.5 s to load Thaumcraft (45 blocks, 153 items, 148 recipes) on every launch; translating the jar adds about 0.5 s on the first launch only (the result is cached) |
+
+The only consistent difference is memory: Thaumcraft adds about 38 MB of heap. Frame rate and tick time vary more between
+identical runs than between the two setups, so no cost shows at this resolution. The harness that takes these
+measurements is part of Legacy Connector, so "no legacy mods" means Legacy Connector loaded with nothing to translate,
+not a NeoForge install without it. Translation costs about 0.4 to 0.7 s per large jar (AgriCraft, Applied Energistics 2,
+Botania) on first launch.
+
 ## Compatibility status
 
 | Legacy version | Status |

@@ -116,6 +116,12 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 
 If the modern mod isn't installed, the legacy library loads as usual. Each replacement can also be turned off in the config to load the legacy library instead.
 
+## Performance
+
+Thaumcraft 4 measured against no legacy mods in a real client: about +38 MB of heap after a full GC. Frame rate and tick
+time vary more between identical runs than between the two setups. Loading Thaumcraft takes about 5.5 s per launch;
+translating its jar adds about 0.5 s on the first launch only (the result is cached). Details are in the README on GitHub.
+
 ## Configuration
 
 Settings are in `config/legacyconnector.properties`, which is created with comments on first launch.
