@@ -22,6 +22,16 @@ public class EntityPlayerSP extends AbstractClientPlayer {
         mcc$player().closeContainer();
     }
 
+    /**
+     * 1.7.10 turned the keyboard input into the living entity's movement here every tick. The modern player already moves
+     * by its input; a mod calling it (a player subclass chaining to super) gets the input copied over again.
+     */
+    public void updateEntityActionState() {
+        mcc$syncInput();
+        mcc$set$moveStrafing(this, movementInput.moveStrafe);
+        mcc$set$moveForward(this, movementInput.moveForward);
+    }
+
     /** Copies the modern keyboard input into {@link #movementInput}, which legacy code reads as plain fields. */
     public void mcc$syncInput() {
         if (mcc$player() instanceof net.minecraft.client.player.LocalPlayer local) {

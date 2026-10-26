@@ -40,10 +40,15 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.util.Timer field_71428_T = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
     /** The game directory (mods build paths from it). */
     public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
-    /** Read reflectively by mods that add a resource pack (the modern game loads packs itself, so adding is a no-op). */
+    /** Read reflectively by mods that add a resource pack; what they add is served to the game (see LegacyResourcePacks). */
     private java.util.List defaultResourcePacks = new java.util.ArrayList();
+
+    public java.util.List mcc$defaultResourcePacks() {
+        return defaultResourcePacks;
+    }
     public final legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame ingameGUI = new legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame();
-    public final legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP playerController = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP();
+    /** Mods replace it with their own subclass (by reflection, as it was a plain field). */
+    public legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP playerController = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP();
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal renderGlobal = new legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal();
     public FontRenderer fontRenderer = FontRenderer.INSTANCE;
     public FontRenderer standardGalacticFontRenderer = FontRenderer.INSTANCE;
@@ -187,6 +192,14 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler getSoundHandler() {
         return legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler.INSTANCE;
     }
+
+    /** Downloads players' skins and capes the 1.7.10 way (see {@link legacyconnector.v1_7_10.net.minecraft.client.resources.SkinManager}). */
+    public legacyconnector.v1_7_10.net.minecraft.client.resources.SkinManager getSkinManager() {
+        return legacyconnector.v1_7_10.net.minecraft.client.resources.SkinManager.mcc$instance();
+    }
+
+    /** The loading screen; mods replace it with their own (nothing draws it: the modern game has its own loading screens). */
+    public legacyconnector.v1_7_10.net.minecraft.client.LoadingScreenRenderer loadingScreen = new legacyconnector.v1_7_10.net.minecraft.client.LoadingScreenRenderer(this);
 
     public com.mojang.authlib.minecraft.MinecraftSessionService getSessionService() {
         return mc().getMinecraftSessionService();

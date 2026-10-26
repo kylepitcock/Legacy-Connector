@@ -81,6 +81,9 @@ public final class LegacySprites {
             String ns = Ids.namespace(location.getResourceDomain());
             String path = Ids.normalizePath(location.getResourcePath());
             String rawPath = location.getResourcePath();
+            // packs mods added at run time come first (reloadResourcePack, defaultResourcePacks)
+            IResource added = LegacyResourcePacks.find(location);
+            if (added != null) return added;
             for (var file : ModList.get().getModFiles()) {
                 // Legacy resource names are case sensitive (structures/ntmruinsA.nbt); the generated pack lower-cases.
                 Path p = file.getFile().findResource("assets", ns, rawPath);
@@ -88,6 +91,8 @@ public final class LegacySprites {
                 if (p != null && Files.isRegularFile(p)) {
                     byte[] bytes = legacyFontPixels(ns, path, Files.readAllBytes(p));
                     String name = file.getFile().getFileName();
+                    Path metaPath = p.resolveSibling(p.getFileName() + ".mcmeta");
+                    byte[] meta = Files.isRegularFile(metaPath) ? Files.readAllBytes(metaPath) : null;
                     return new IResource() {
                         @Override
                         public InputStream getInputStream() {
@@ -96,7 +101,13 @@ public final class LegacySprites {
 
                         @Override
                         public boolean hasMetadata() {
-                            return false;
+                            return meta != null;
+                        }
+
+                        /** The .mcmeta next to the file ("animation", "texture"), as mods read it to animate their own sprites. */
+                        @Override
+                        public legacyconnector.v1_7_10.net.minecraft.client.resources.data.IMetadataSection getMetadata(String section) {
+                            return meta == null ? null : legacyconnector.v1_7_10.net.minecraft.client.resources.data.IMetadataSerializer.mcc$parse(meta, section);
                         }
 
                         @Override

@@ -135,18 +135,30 @@ public final class LegacyModPacks extends AbstractPackResources {
             } catch (RuntimeException | LinkageError e) {
                 continue;
             }
-            IResourcePack custom = pair[0];
-            boolean sounds = location.getPath().equals("sounds.json");
-            return () -> {
-                InputStream in = custom.getInputStream(legacy);
-                if (in == null) throw new IOException("No " + location);
-                if (!sounds) return in;
-                try (in) {
-                    return new ByteArrayInputStream(convertSounds(in.readAllBytes(), location.getNamespace()));
-                }
-            };
+            return serve(pair[0], legacy, location);
+        }
+        // packs mods added at run time (reloadResourcePack, Minecraft.defaultResourcePacks), newest first
+        List<IResourcePack> added = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.injected();
+        for (int i = added.size() - 1; i >= 0; i--) {
+            try {
+                if (added.get(i).resourceExists(legacy)) return serve(added.get(i), legacy, location);
+            } catch (RuntimeException | LinkageError ignored) {
+                // a broken pack serves nothing
+            }
         }
         return null;
+    }
+
+    private static IoSupplier<InputStream> serve(IResourcePack pack, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation legacy, ResourceLocation location) {
+        boolean sounds = location.getPath().equals("sounds.json");
+        return () -> {
+            InputStream in = pack.getInputStream(legacy);
+            if (in == null) throw new IOException("No " + location);
+            if (!sounds) return in;
+            try (in) {
+                return new ByteArrayInputStream(convertSounds(in.readAllBytes(), location.getNamespace()));
+            }
+        };
     }
 
     /**
@@ -224,6 +236,9 @@ public final class LegacyModPacks extends AbstractPackResources {
             } catch (RuntimeException | LinkageError ignored) {
                 // a broken pack serves nothing
             }
+        }
+        for (String d : org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.domains()) {
+            if (ResourceLocation.isValidNamespace(d)) out.add(d);
         }
         return out;
     }
