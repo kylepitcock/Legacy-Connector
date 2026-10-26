@@ -27,6 +27,28 @@ public class CrashReportCategory {
         return "(" + x + "," + y + "," + z + ")";
     }
 
+    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.Block block, int blockData) {
+        int id = legacyconnector.v1_12_2.net.minecraft.block.Block.getIdFromBlock(block);
+        category.addDetail("Block type", () -> {
+            try {
+                return String.format("ID #%d (%s // %s // %s)", id, block.getTranslationKey(), block.getClass().getName(), block.getRegistryName());
+            } catch (Throwable t) {
+                return "ID #" + id;
+            }
+        });
+        category.addDetail("Block data value", () -> {
+            if (blockData < 0) return "Unknown? (Got " + blockData + ")";
+            String bits = String.format("%4s", Integer.toBinaryString(blockData)).replace(' ', '0');
+            return String.format("%1$d / 0x%1$X / 0b%2$s", blockData, bits);
+        });
+        category.addDetail("Block location", () -> getCoordinateInfo(pos));
+    }
+
+    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        category.addDetail("Block", () -> String.valueOf(state));
+        category.addDetail("Block location", () -> getCoordinateInfo(pos));
+    }
+
     public void addCrashSection(String name, Object value) {
         details.put(name, String.valueOf(value));
     }

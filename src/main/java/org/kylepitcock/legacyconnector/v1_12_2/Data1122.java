@@ -6,11 +6,12 @@ import net.minecraft.server.packs.PackType;
 import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122;
 
-/** Generated data for 1.12.2 content: code-registered recipes and the ore dictionary as tags. */
+/** Generated data for 1.12.2 content: code-registered recipes, the ore dictionary as tags, enderman-carriable blocks. */
 public final class Data1122 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.SERVER_DATA) return;
         RecipeBridge1122.generate(out);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.generate(out);
     }
 }

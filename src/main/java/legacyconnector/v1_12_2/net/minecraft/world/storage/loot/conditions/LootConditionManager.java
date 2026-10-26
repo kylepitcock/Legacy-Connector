@@ -1,0 +1,36 @@
+package legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions;
+
+import java.util.HashMap;
+import java.util.Map;
+import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
+
+/**
+ * The loot condition types by name and by class. {@code testAllConditions(LootCondition[], Random, LootContext)} names the synthesized
+ * {@code LootContext} and is answered by the 1.12.2 runtime methods ({@code RuntimeApis1122}).
+ */
+public class LootConditionManager {
+    private static final Map<ResourceLocation, LootCondition.Serializer<?>> NAME_TO_SERIALIZER_MAP = new HashMap<>();
+    private static final Map<Class<?>, LootCondition.Serializer<?>> CLASS_TO_SERIALIZER_MAP = new HashMap<>();
+
+    public static synchronized <T extends LootCondition> void registerCondition(LootCondition.Serializer<? extends T> serializer) {
+        ResourceLocation name = serializer.getLootTableLocation();
+        Class<?> clazz = serializer.getConditionClass();
+        if (NAME_TO_SERIALIZER_MAP.containsKey(name)) throw new IllegalArgumentException("Can't re-register item condition name " + name);
+        if (CLASS_TO_SERIALIZER_MAP.containsKey(clazz)) throw new IllegalArgumentException("Can't re-register item condition class " + clazz.getName());
+        NAME_TO_SERIALIZER_MAP.put(name, serializer);
+        CLASS_TO_SERIALIZER_MAP.put(clazz, serializer);
+    }
+
+    public static synchronized LootCondition.Serializer<?> getSerializerForName(ResourceLocation location) {
+        LootCondition.Serializer<?> serializer = NAME_TO_SERIALIZER_MAP.get(location);
+        if (serializer == null) throw new IllegalArgumentException("Unknown loot item condition '" + location + "'");
+        return serializer;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static synchronized <T extends LootCondition> LootCondition.Serializer<T> getSerializerFor(T condition) {
+        LootCondition.Serializer<?> serializer = condition == null ? null : CLASS_TO_SERIALIZER_MAP.get(condition.getClass());
+        if (serializer == null) throw new IllegalArgumentException("Unknown loot item condition " + condition);
+        return (LootCondition.Serializer<T>) serializer;
+    }
+}
