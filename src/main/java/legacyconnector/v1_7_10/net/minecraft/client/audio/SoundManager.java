@@ -7,9 +7,19 @@ package legacyconnector.v1_7_10.net.minecraft.client.audio;
 public class SoundManager {
     public static final SoundManager INSTANCE = new SoundManager(SoundHandler.INSTANCE);
     private final SoundHandler sndHandler;
+    /** The sound library mods drive directly (IC2 takes it by reflection): its sources play on the modern engine. */
+    private final legacyconnector.v1_7_10.paulscode.sound.SoundSystem sndSystem = new legacyconnector.v1_7_10.paulscode.sound.SoundSystem();
+    /** Whether the engine is up (mods wait for it by reflection before using {@link #sndSystem}); kept by {@link #mcc$engineLoaded}. */
+    private boolean loaded;
 
     public SoundManager(SoundHandler handler) {
         this.sndHandler = handler;
+        if (handler != null) handler.sndManager = this;
+    }
+
+    /** The modern engine (re)loaded: legacy sources rebuild their buffers and {@code loaded} follows the engine. */
+    public void mcc$engineLoaded(boolean engineLoaded) {
+        this.loaded = engineLoaded;
     }
 
     public void reloadSoundSystem() {

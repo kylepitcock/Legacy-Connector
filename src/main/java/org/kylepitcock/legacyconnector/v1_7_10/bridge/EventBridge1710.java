@@ -123,11 +123,29 @@ public final class EventBridge1710 {
                 java.io.File dir = sp.server.getWorldPath(net.minecraft.world.level.storage.LevelResource.PLAYER_DATA_DIR).toFile();
                 forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile(player(sp), dir, sp.getStringUUID()));
             }
+            // FML 1.7.10 completed the connection's handshake (channel pipelines told) and fired the connection event just
+            // before the login event
+            if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp && sp.connection != null) {
+                var manager = legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(sp.connection.getConnection());
+                var handler = new legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer(
+                        (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP) player(sp));
+                FmlChannelBridge.fireHandshake(legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.SERVER,
+                        legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.get(manager), handler);
+                if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent.class)) {
+                    fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent(handler, manager));
+                }
+            }
             if (wants(fml(), PlayerEvent.PlayerLoggedInEvent.class)) fml().post(new PlayerEvent.PlayerLoggedInEvent(player(e.getEntity())));
             notifyFailures(e.getEntity());
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent e) -> {
             if (wants(fml(), PlayerEvent.PlayerLoggedOutEvent.class)) fml().post(new PlayerEvent.PlayerLoggedOutEvent(player(e.getEntity())));
+            if (e.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp && sp.connection != null
+                    && wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerDisconnectionFromClientEvent.class)) {
+                fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerDisconnectionFromClientEvent(
+                        new legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer((legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP) player(sp)),
+                        legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(sp.connection.getConnection())));
+            }
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerRespawnEvent e) -> {
             if (wants(fml(), PlayerEvent.PlayerRespawnEvent.class)) fml().post(new PlayerEvent.PlayerRespawnEvent(player(e.getEntity())));
@@ -610,6 +628,20 @@ public final class EventBridge1710 {
 
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
     public static void registerClient(IEventBus gameBus) {
+        gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingIn e) -> {
+            var manager = legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection());
+            if (wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent.class)) {
+                fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent(manager, "MODDED"));
+            }
+            FmlChannelBridge.fireHandshake(legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT,
+                    legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.get(manager),
+                    legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent.LoggingOut e) -> {
+            if (!wants(fml(), legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent.class)) return;
+            fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ClientDisconnectionFromServerEvent(
+                    legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection())));
+        });
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
         org.kylepitcock.legacyconnector.v1_7_10.client.LegacyHorizon.register(gameBus);
         org.kylepitcock.legacyconnector.v1_7_10.client.ClientEvents1710.register(gameBus);

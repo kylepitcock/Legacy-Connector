@@ -7,6 +7,10 @@ import legacyconnector.v1_7_10.net.minecraft.item.Item;
 
 /** FML's registry access point. */
 public class GameData {
+    /** FML's (deprecated) direct handles on the two registries, the same objects as {@link #getBlockRegistry}/{@link #getItemRegistry}. */
+    public static final FMLControlledNamespacedRegistry<Block> blockRegistry = getBlockRegistry();
+    public static final FMLControlledNamespacedRegistry<Item> itemRegistry = getItemRegistry();
+
     @SuppressWarnings("unchecked")
     public static FMLControlledNamespacedRegistry<Block> getBlockRegistry() {
         return (FMLControlledNamespacedRegistry<Block>) Block.blockRegistry;
