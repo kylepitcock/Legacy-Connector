@@ -32,6 +32,7 @@ public final class Platform1122 implements LegacyPlatform {
     static {
         org.kylepitcock.legacyconnector.core.synth.Synth.addStaticResolver(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122::resolveStatic);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.registerStaticMethods();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.SynthMethods1122.register();
     }
 
     @Override

@@ -7,10 +7,6 @@ net.minecraftforge.client.model.ModelLoaderRegistry.registerLoader(Llegacyconnec
 net.minecraft.world.storage.loot.functions.LootFunctionManager.registerFunction(Llegacyconnector_synth/v1_12_2/net/minecraft/world/storage/loot/functions/LootFunction$Serializer;)V
 net.minecraft.world.storage.loot.conditions.LootConditionManager.registerCondition(Llegacyconnector_synth/v1_12_2/net/minecraft/world/storage/loot/conditions/LootCondition$Serializer;)V
 net.minecraft.world.WorldType.enableInfoNotice()Llegacyconnector_synth/v1_12_2/net/minecraft/world/WorldType;
-net.minecraft.potion.PotionUtils.addPotionToItemStack(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;)Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;
-net.minecraft.potion.PotionHelper.addMix(Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;Llegacyconnector/v1_12_2/net/minecraft/item/crafting/Ingredient;Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;)V
-net.minecraft.potion.Potion.setIconIndex(II)Llegacyconnector/v1_12_2/net/minecraft/potion/Potion;
-net.minecraft.potion.Potion.setBeneficial()Llegacyconnector/v1_12_2/net/minecraft/potion/Potion;
 net.minecraft.network.datasync.EntityDataManager.createKey(Ljava/lang/Class;Llegacyconnector_synth/v1_12_2/net/minecraft/network/datasync/DataSerializer;)Llegacyconnector_synth/v1_12_2/net/minecraft/network/datasync/DataParameter;
 net.minecraft.item.ItemSword.addPropertyOverride(Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;Llegacyconnector_synth/v1_12_2/net/minecraft/item/IItemPropertyGetter;)V
 net.minecraft.item.ItemShears.addPropertyOverride(Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;Llegacyconnector_synth/v1_12_2/net/minecraft/item/IItemPropertyGetter;)V
@@ -25,7 +21,6 @@ net.minecraft.item.Item.addPropertyOverride(Llegacyconnector/v1_12_2/net/minecra
 net.minecraft.creativetab.CreativeTabs.setNoTitle()Llegacyconnector/v1_12_2/net/minecraft/creativetab/CreativeTabs;
 net.minecraft.client.resources.data.MetadataSerializer.registerMetadataSectionType(Llegacyconnector_synth/v1_12_2/net/minecraft/client/resources/data/IMetadataSectionSerializer;Ljava/lang/Class;)V
 net.minecraft.block.state.pattern.BlockMatcher.forBlock(Llegacyconnector/v1_12_2/net/minecraft/block/Block;)Llegacyconnector_synth/v1_12_2/net/minecraft/block/state/pattern/BlockMatcher;
-net.minecraft.block.BlockPlanks$EnumType.byMetadata(I)Llegacyconnector_synth/v1_12_2/net/minecraft/block/BlockPlanks$EnumType;
 net.minecraft.block.BlockFlower.getTypeProperty()Llegacyconnector/v1_12_2/net/minecraft/block/properties/IProperty;
 net.minecraft.advancements.CriteriaTriggers.register(Llegacyconnector_synth/v1_12_2/net/minecraft/advancements/ICriterionTrigger;)Llegacyconnector_synth/v1_12_2/net/minecraft/advancements/ICriterionTrigger;
 net.minecraftforge.fml.client.registry.RenderingRegistry.registerEntityRenderingHandler(Ljava/lang/Class;Llegacyconnector_synth/v1_12_2/net/minecraftforge/fml/client/registry/IRenderFactory;)V
@@ -35,7 +30,6 @@ net.minecraftforge.fluids.Fluid.getTemperature(Llegacyconnector/v1_12_2/net/mine
 net.minecraftforge.fluids.BlockFluidClassic.setFluidStack(Llegacyconnector/v1_12_2/net/minecraftforge/fluids/FluidStack;)Llegacyconnector/v1_12_2/net/minecraftforge/fluids/BlockFluidClassic;
 net.minecraftforge.common.util.EnumHelper.addSpawnPlacementType(Ljava/lang/String;Ljava/util/function/BiPredicate;)Llegacyconnector_synth/v1_12_2/net/minecraft/entity/EntityLiving$SpawnPlacementType;
 net.minecraftforge.common.util.EnumHelper.addHorseArmor(Ljava/lang/String;Ljava/lang/String;I)Llegacyconnector_synth/v1_12_2/net/minecraft/entity/passive/HorseArmorType;
-net.minecraftforge.common.brewing.BrewingRecipeRegistry.addRecipe(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;)Z
 net.minecraftforge.common.MinecraftForge.addGrassSeed(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;I)V
 net.minecraftforge.common.EnumPlantType.getPlantType(Ljava/lang/String;)Llegacyconnector_synth/v1_12_2/net/minecraftforge/common/EnumPlantType;
 net.minecraftforge.common.BiomeManager.getBiomes(Llegacyconnector_synth/v1_12_2/net/minecraftforge/common/BiomeManager$BiomeType;)Lcom/google/common/collect/ImmutableList;
@@ -44,20 +38,7 @@ net.minecraftforge.advancements.critereon.ItemPredicates.register(Llegacyconnect
 net.minecraft.util.DamageSource.setMagicDamage()Llegacyconnector_synth/v1_12_2/net/minecraft/util/DamageSource;
 net.minecraft.util.DamageSource.setDamageBypassesArmor()Llegacyconnector_synth/v1_12_2/net/minecraft/util/DamageSource;
 net.minecraft.stats.StatBasic.registerStat()Llegacyconnector_synth/v1_12_2/net/minecraft/stats/StatBase;
-net.minecraft.potion.PotionUtils.getPotionFromItem(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;)Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;
-net.minecraft.potion.PotionHelper.addMix(Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;Llegacyconnector/v1_12_2/net/minecraft/item/Item;Llegacyconnector_synth/v1_12_2/net/minecraft/potion/PotionType;)V
-net.minecraft.potion.Potion.setEffectiveness(D)Llegacyconnector/v1_12_2/net/minecraft/potion/Potion;
-net.minecraft.potion.Potion.registerPotionAttributeModifier(Llegacyconnector_synth/v1_12_2/net/minecraft/entity/ai/attributes/IAttribute;Ljava/lang/String;DI)Llegacyconnector/v1_12_2/net/minecraft/potion/Potion;
 net.minecraft.network.datasync.DataSerializers.registerSerializer(Llegacyconnector_synth/v1_12_2/net/minecraft/network/datasync/DataSerializer;)V
-net.minecraft.item.crafting.ShieldRecipes$Decoration.setRegistryName(Ljava/lang/String;Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraftforge/registries/IForgeRegistryEntry;
-net.minecraft.item.crafting.ShieldRecipes$Decoration.getRegistryName()Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;
-net.minecraft.item.crafting.RecipesMapCloning.setRegistryName(Ljava/lang/String;Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraftforge/registries/IForgeRegistryEntry;
-net.minecraft.item.crafting.RecipesMapCloning.getRegistryName()Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;
-net.minecraft.item.crafting.RecipesBanners$RecipeAddPattern.setRegistryName(Ljava/lang/String;Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraftforge/registries/IForgeRegistryEntry;
-net.minecraft.item.crafting.RecipesBanners$RecipeAddPattern.getRegistryName()Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;
-net.minecraft.item.crafting.RecipesArmorDyes.setRegistryName(Ljava/lang/String;Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraftforge/registries/IForgeRegistryEntry;
-net.minecraft.item.crafting.RecipesArmorDyes.setRegistryName(Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraftforge/registries/IForgeRegistryEntry;
-net.minecraft.item.crafting.RecipesArmorDyes.getRegistryName()Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;
 net.minecraft.item.ItemTool.addPropertyOverride(Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;Llegacyconnector_synth/v1_12_2/net/minecraft/item/IItemPropertyGetter;)V
 net.minecraft.item.ItemStack.setTranslatableName(Ljava/lang/String;)Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;
 net.minecraft.item.ItemStack.setTagInfo(Ljava/lang/String;Llegacyconnector/v1_12_2/net/minecraft/nbt/NBTBase;)V
@@ -67,9 +48,6 @@ net.minecraft.item.ItemEnchantedBook.getEnchantedItemStack(Llegacyconnector_synt
 net.minecraft.item.ItemColored.addPropertyOverride(Llegacyconnector/v1_12_2/net/minecraft/util/ResourceLocation;Llegacyconnector_synth/v1_12_2/net/minecraft/item/IItemPropertyGetter;)V
 net.minecraft.item.Item.hasContainerItem(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;)Z
 net.minecraft.entity.passive.EntityParrot.registerMimicSound(Ljava/lang/Class;Llegacyconnector/v1_12_2/net/minecraft/util/SoundEvent;)V
-net.minecraft.entity.ai.attributes.RangedAttribute.setShouldWatch(Z)Llegacyconnector_synth/v1_12_2/net/minecraft/entity/ai/attributes/BaseAttribute;
-net.minecraft.entity.ai.attributes.RangedAttribute.setDescription(Ljava/lang/String;)Llegacyconnector_synth/v1_12_2/net/minecraft/entity/ai/attributes/RangedAttribute;
-net.minecraft.entity.ai.attributes.AttributeModifier.setSaved(Z)Llegacyconnector_synth/v1_12_2/net/minecraft/entity/ai/attributes/AttributeModifier;
 net.minecraft.entity.EntitySpawnPlacementRegistry.setPlacementType(Ljava/lang/Class;Llegacyconnector_synth/v1_12_2/net/minecraft/entity/EntityLiving$SpawnPlacementType;)V
 net.minecraft.crash.CrashReportCategory.addBlockInfo(Llegacyconnector/v1_12_2/net/minecraft/crash/CrashReportCategory;Llegacyconnector/v1_12_2/net/minecraft/util/math/BlockPos;Llegacyconnector/v1_12_2/net/minecraft/block/state/IBlockState;)V
 net.minecraft.command.CommandHandler.registerCommand(Llegacyconnector_synth/v1_12_2/net/minecraft/command/ICommand;)Llegacyconnector_synth/v1_12_2/net/minecraft/command/ICommand;
@@ -80,7 +58,6 @@ net.minecraft.block.state.IBlockState.isFullBlock()Z
 net.minecraft.block.state.IBlockState.getRenderType()Llegacyconnector/v1_12_2/net/minecraft/util/EnumBlockRenderType;
 net.minecraft.block.state.IBlockState.getLightValue()I
 net.minecraft.block.state.IBlockState.getBlockFaceShape(Llegacyconnector_synth/v1_12_2/net/minecraft/world/IBlockAccess;Llegacyconnector/v1_12_2/net/minecraft/util/math/BlockPos;Llegacyconnector/v1_12_2/net/minecraft/util/EnumFacing;)Llegacyconnector_synth/v1_12_2/net/minecraft/block/state/BlockFaceShape;
-net.minecraft.block.BlockPlanks$EnumType.getMapColor()Llegacyconnector/v1_12_2/net/minecraft/block/material/MapColor;
 net.minecraft.block.Block.getExplosionResistance(Llegacyconnector/v1_12_2/net/minecraft/entity/Entity;)F
 net.minecraft.tileentity.TileEntityFurnace.getItemBurnTime(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;)I
 net.minecraft.enchantment.EnchantmentHelper.getEnchantments(Llegacyconnector/v1_12_2/net/minecraft/item/ItemStack;)Ljava/util/Map;

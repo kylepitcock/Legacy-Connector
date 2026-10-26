@@ -104,6 +104,21 @@ public class PotionEffect implements Comparable<PotionEffect> {
         return new PotionEffect(potion, tag.getInteger("Duration"), amplifier, tag.getBoolean("Ambient"), particles);
     }
 
+    /** The legacy effect of a modern one (vanilla effects by their shared names), or null when its potion has no legacy object. */
+    public static PotionEffect mcc$fromModern(net.minecraft.world.effect.MobEffectInstance e) {
+        var id = net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.getKey(e.getEffect().value());
+        if (id == null) return null;
+        Potion potion = Potion.getPotionFromResourceLocation(id.toString());
+        if (potion == null) return null;
+        return new PotionEffect(potion, e.getDuration(), e.getAmplifier(), e.isAmbient(), e.isVisible());
+    }
+
+    /** The modern effect, or null when the potion has no modern counterpart (mod potions are not bridged yet). */
+    public net.minecraft.world.effect.MobEffectInstance mcc$toModern() {
+        var modern = potion == null ? null : potion.mcc$modern();
+        return modern == null ? null : new net.minecraft.world.effect.MobEffectInstance(modern, duration, amplifier, isAmbient, showParticles);
+    }
+
     @Override
     public int compareTo(PotionEffect other) {
         if (duration > 32147 && other.duration > 32147 || isAmbient && other.isAmbient) {

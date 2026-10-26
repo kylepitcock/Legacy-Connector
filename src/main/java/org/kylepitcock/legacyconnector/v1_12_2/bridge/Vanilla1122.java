@@ -202,6 +202,30 @@ public final class Vanilla1122 {
         VanillaPotion() {
             super(false, 0);
         }
+
+        @Override
+        public int getLiquidColor() {
+            var modern = mcc$modern();
+            return modern == null ? 0 : modern.value().getColor();
+        }
+
+        @Override
+        public boolean isBadEffect() {
+            var modern = mcc$modern();
+            return modern != null && modern.value().getCategory() == net.minecraft.world.effect.MobEffectCategory.HARMFUL;
+        }
+
+        @Override
+        public boolean isBeneficial() {
+            var modern = mcc$modern();
+            return modern != null && modern.value().isBeneficial();
+        }
+
+        @Override
+        public boolean isInstant() {
+            var modern = mcc$modern();
+            return modern != null && modern.value().isInstantenous();
+        }
     }
 
     /** A vanilla enchantment as a legacy object. */
@@ -227,6 +251,9 @@ public final class Vanilla1122 {
         if (getter == null) return null;
         Class<?> type = getter.getReturnType();
         if (field.equals("REGISTRY") && key.equals("net.minecraft.potion.PotionType.REGISTRY")) return Registries1122.view(Registries1122.POTION_TYPES, "empty");
+        if (type == legacyconnector.v1_12_2.net.minecraft.potion.PotionType.class && key.startsWith("net.minecraft.init.PotionTypes.")) {
+            return legacyconnector.v1_12_2.net.minecraft.potion.PotionType.mcc$vanilla(field.toLowerCase(java.util.Locale.ROOT));
+        }
         if (type.getSuperclass() == Enum.class && type.getName().startsWith("legacyconnector_synth.v1_12_2.")) return enumConstant(type, field);
         if (accessor.getName().equals(type.getName() + "$$Missing") && !blocks && !items && type.getName().startsWith("legacyconnector_synth.v1_12_2.")
                 && !java.lang.reflect.Modifier.isAbstract(type.getModifiers())) {
@@ -311,7 +338,8 @@ public final class Vanilla1122 {
             }
         }
         String internal = type.getName().replace("legacyconnector_synth.v1_12_2.", "").replace('.', '/');
-        var names = enumFieldNames.get(internal);
+        var names = SynthMethods1122.enumOrder(internal.replace('/', '.'));
+        if (names == null) names = enumFieldNames.get(internal);
         if (names == null) return (T[]) java.lang.reflect.Array.newInstance(type, 0);
         T[] out = (T[]) java.lang.reflect.Array.newInstance(type, names.size());
         for (int i = 0; i < out.length; i++) out[i] = (T) enumConstant(type, names.get(i));
@@ -334,7 +362,8 @@ public final class Vanilla1122 {
     public static void registerPotionTypes(Class<?> type) {
         if (type == null) return;
         for (String name : POTION_TYPE_NAMES) {
-            Object o = enumConstant(type, name);
+            Object o = type == legacyconnector.v1_12_2.net.minecraft.potion.PotionType.class
+                    ? legacyconnector.v1_12_2.net.minecraft.potion.PotionType.mcc$vanilla(name.toLowerCase(java.util.Locale.ROOT)) : enumConstant(type, name);
             if (o instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl impl) {
                 if (impl.getRegistryName() == null) impl.setRegistryName("minecraft", name.toLowerCase(java.util.Locale.ROOT));
                 ((Registries1122.Reg) Registries1122.POTION_TYPES).registerVanilla(impl);
@@ -382,10 +411,24 @@ public final class Vanilla1122 {
         });
     }
 
-    private static synchronized Object enumConstant(Class<?> type, String name) {
+    static synchronized Object enumConstant(Class<?> type, String name) {
         Map<String, Object> constants = ENUM_CONSTANTS.computeIfAbsent(type, k -> new java.util.LinkedHashMap<>());
         Object existing = constants.get(name);
         if (existing != null) return existing;
+        try {
+            // the class's own constant when the synthesizer generated one (BlockPlanks.EnumType.OAK read directly), so identity holds
+            Field own = type.getDeclaredField(name);
+            if (java.lang.reflect.Modifier.isStatic(own.getModifiers()) && own.getType() == type) {
+                own.setAccessible(true);
+                Object v = own.get(null);
+                if (v != null) {
+                    constants.put(name, v);
+                    return v;
+                }
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            // not declared: made below
+        }
         try {
             Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
             f.setAccessible(true);

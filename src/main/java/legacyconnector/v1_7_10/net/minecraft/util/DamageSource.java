@@ -58,6 +58,12 @@ public class DamageSource {
         return new EntityDamageSourceIndirect("arrow", arrow, shooter).setProjectile();
     }
 
+    public static DamageSource causeFireballDamage(legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFireball fireball, Entity shooter) {
+        return shooter == null
+                ? new EntityDamageSourceIndirect("onFire", fireball, fireball).setFireDamage().setProjectile()
+                : new EntityDamageSourceIndirect("fireball", fireball, shooter).setFireDamage().setProjectile();
+    }
+
     public static DamageSource causeThrownDamage(Entity direct, Entity indirect) {
         return new EntityDamageSourceIndirect("thrown", direct, indirect).setProjectile();
     }

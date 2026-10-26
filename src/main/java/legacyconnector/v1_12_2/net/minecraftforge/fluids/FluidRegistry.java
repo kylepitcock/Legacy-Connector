@@ -10,6 +10,7 @@ public abstract class FluidRegistry {
     private static final Map<String, Fluid> FLUIDS = new LinkedHashMap<>();
     private static final Map<Fluid, Integer> IDS = new HashMap<>();
     private static boolean universalBucket;
+    private static final java.util.Set<Fluid> BUCKET_FLUIDS = new java.util.LinkedHashSet<>();
 
     public static final Fluid WATER = new Fluid("water", new ResourceLocation("blocks/water_still"), new ResourceLocation("blocks/water_flow"));
     public static final Fluid LAVA = new Fluid("lava", new ResourceLocation("blocks/lava_still"), new ResourceLocation("blocks/lava_flow"))
@@ -69,12 +70,20 @@ public abstract class FluidRegistry {
         return universalBucket;
     }
 
-    public static boolean addBucketForFluid(Fluid fluid) {
-        return true;
+    /** Gives the fluid a universal bucket variant (registering the fluid if needed). */
+    public static synchronized boolean addBucketForFluid(Fluid fluid) {
+        if (fluid == null) return false;
+        if (!isFluidRegistered(fluid.getName())) registerFluid(fluid);
+        return BUCKET_FLUIDS.add(fluid);
     }
 
-    public static boolean hasBucket(Fluid fluid) {
-        return false;
+    public static synchronized boolean hasBucket(Fluid fluid) {
+        return fluid != null && BUCKET_FLUIDS.contains(fluid);
+    }
+
+    /** The fluids that have a universal bucket. */
+    public static synchronized java.util.Set<Fluid> getBucketFluids() {
+        return java.util.Collections.unmodifiableSet(new java.util.LinkedHashSet<>(BUCKET_FLUIDS));
     }
 
     public static synchronized void registerFluidName(String name) {
