@@ -52,7 +52,10 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             type = ItemRenderType.ENTITY; // e.g. renderers that only draw dropped/held forms
             renderer = MinecraftForgeClient.getItemRenderer(view, type);
         }
-        if (renderer == null) return;
+        if (renderer == null) {
+            renderIcon(view, pose, buffers, light, overlay);
+            return;
+        }
         if (context == ItemDisplayContext.GUI && LOGGED.add("gui-pose:" + renderer.getClass().getName())) {
             // Diagnostic: the matrix a legacy renderer starts from in a slot (translation, scale) - items drawn away from their slot
             var m = pose.last().pose();
@@ -94,6 +97,37 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             // a broken legacy renderer must not take the inventory down
             logOnce(renderer.getClass().getName(), e);
         } finally {
+            RenderContext.end();
+            pose.popPose();
+        }
+    }
+
+    /**
+     * 1.7.10 drew an item as its icon wherever its IItemRenderer declined the type (Fisk's Heroes' suit pieces have a renderer
+     * for locked suits in slots only, and were invisible when dropped, worn on a stand or held): the icon as a sprite one pixel
+     * thick, where item/generated puts it.
+     */
+    private static void renderIcon(ItemStack view, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        var item = view.getItem();
+        pose.pushPose();
+        RenderContext.beginWorld(pose, buffers, light, overlay);
+        try {
+            var textures = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager();
+            textures.bindTexture(textures.getResourceLocation(view.getItemSpriteNumber()));
+            pose.translate(0, 0, 8.5F / 16F);
+            int passes = item.requiresMultipleRenderPasses() ? item.getRenderPasses(view.getItemDamage()) : 1;
+            for (int pass = 0; pass < passes; pass++) {
+                var icon = item.requiresMultipleRenderPasses() ? item.getIcon(view, pass) : view.getIconIndex();
+                if (icon == null) continue;
+                int color = item.getColorFromItemStack(view, pass);
+                legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F, 1F);
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer.renderItemIn2D(legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance,
+                        icon.getMinU(), icon.getMinV(), icon.getMaxU(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight(), 1F / 16F);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            logOnce(item.getClass().getName() + "#icon", e);
+        } finally {
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1F, 1F, 1F, 1F);
             RenderContext.end();
             pose.popPose();
         }

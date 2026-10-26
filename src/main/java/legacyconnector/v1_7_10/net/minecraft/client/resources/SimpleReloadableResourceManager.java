@@ -32,6 +32,11 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
         return List.of(getResource(location));
     }
 
+    /** Forgets the domain managers (the modern game owns resource loading; mods call this before reloading). */
+    private void clearResources() {
+        domainResourceManagers.clear();
+    }
+
     @Override
     public void reloadResources(List resourcePacks) {
     }

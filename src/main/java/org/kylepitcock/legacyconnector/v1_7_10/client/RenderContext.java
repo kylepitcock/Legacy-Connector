@@ -314,7 +314,17 @@ public final class RenderContext {
 
     /** Entity-style buffer for the bound texture, used by legacy models. */
     public static VertexConsumer modelBuffer() {
-        return buffers().getBuffer(RenderType.entityCutoutNoCull(texture));
+        return buffers().getBuffer(armorLayering ? RenderType.armorCutoutNoCull(texture) : RenderType.entityCutoutNoCull(texture));
+    }
+
+    /**
+     * Drawing legacy armor: models go in front of the body they lie on, as modern armor does (Fisk's Heroes' suits use the
+     * body's own boxes and lost to the skin at the same depth).
+     */
+    private static boolean armorLayering;
+
+    public static void setArmorLayering(boolean on) {
+        armorLayering = on;
     }
 
     // ------------------------------------------------------------------ matrix stack

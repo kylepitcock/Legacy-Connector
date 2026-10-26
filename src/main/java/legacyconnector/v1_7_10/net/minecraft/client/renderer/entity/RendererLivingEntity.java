@@ -90,6 +90,11 @@ public abstract class RendererLivingEntity extends Render {
         RenderContext.translate(x, y, z);
     }
 
+    /** Draws a name tag above the entity, offset (scoreboard lines under player names). */
+    protected void renderOffsetLivingLabel(EntityLivingBase entity, double x, double y, double z, String text, float scale, double distance) {
+        renderLivingLabel(entity, text, x, y, z, 64);
+    }
+
     protected void rotateCorpse(EntityLivingBase entity, float age, float bodyYaw, float partialTicks) {
         RenderContext.rotate(180.0F - bodyYaw, 0.0F, 1.0F, 0.0F);
         int deathTime = entity.mcc$entity instanceof LivingEntity l ? l.deathTime : 0;

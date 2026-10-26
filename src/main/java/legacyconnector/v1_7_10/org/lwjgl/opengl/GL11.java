@@ -116,7 +116,15 @@ public class GL11 extends GL11Guard {
     }
 
     public static boolean glGetBoolean(int pname) {
-        return !legacyOnly(pname) && GL11Guard.glGetBoolean(pname);
+        // for a capability GL answers like glIsEnabled: emulated ones come from the tracked state (Fisk's Heroes tells its texture
+        // pass from its hurt-overlay pass by GL_TEXTURE_2D, and drew suits as the overlay pass)
+        switch (pname) {
+            case 3553: case 2896: case 3008: case 2912: case 2977: case 32826: case 2903: case 3552: case 3168: case 3169: case 3170: case 3171:
+                return glIsEnabled(pname);
+            default:
+                if (pname >= 0x4000 && pname <= 0x4007) return false;
+                return !legacyOnly(pname) && GL11Guard.glGetBoolean(pname);
+        }
     }
 
     /** Fixed-function capabilities (lighting, alpha test, fog, texturing, normalization...) are not GL capabilities any more: the tracked emulated state answers. */

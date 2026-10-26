@@ -6,12 +6,24 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations;
 
 /** Binding a texture just records it in the render context; modern draw calls name their texture explicitly. */
 public class TextureManager {
+    /** Textures by location (1.7.10's map; mods look it up by reflection to replace or drop a texture). */
+    private final java.util.Map mapTextureObjects = new java.util.HashMap();
     public static final TextureManager INSTANCE = new TextureManager();
 
     public void bindTexture(ResourceLocation location) {
         if (location == null) return; // legacy renderers with an unset texture keep the previous one
         mcc$flush();
-        RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
+        var modern = TextureLocations.modern(location.getResourceDomain(), location.getResourcePath());
+        // a mod's own atlas: its sprites are in the modern block atlas
+        if (mcc$modAtlases.contains(modern)) modern = net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
+        RenderContext.bindTexture(modern);
+    }
+
+    private final java.util.Set<net.minecraft.resources.ResourceLocation> mcc$modAtlases = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** 1.7.10 loaded the texture right away; a mod's atlas registers its items' icons then (see TextureMap#loadTexture). */
+    public boolean loadTickableTexture(ResourceLocation location, ITickableTextureObject texture) {
+        return loadTexture(location, texture);
     }
 
     /** The block and item atlases (mods look sprites up by name through them); other textures are not tracked. */
@@ -20,7 +32,7 @@ public class TextureManager {
         String path = location.getResourcePath();
         if (path.equals("textures/atlas/blocks.png")) return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.blockAtlas();
         if (path.equals("textures/atlas/items.png")) return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.itemAtlas();
-        return null;
+        return (ITextureObject) mapTextureObjects.get(location);
     }
 
     public ResourceLocation getResourceLocation(int spriteIndex) {
@@ -31,6 +43,16 @@ public class TextureManager {
 
     /** Registers a dynamic texture under a location so legacy code can bind it; other texture objects are not tracked. */
     public boolean loadTexture(ResourceLocation location, ITextureObject texture) {
+        if (location != null && texture instanceof TextureMap map) {
+            mapTextureObjects.put(location, map);
+            mcc$modAtlases.add(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
+            try {
+                map.loadTexture(null);
+            } catch (RuntimeException e) {
+                TextureMap.logger.warn("Loading atlas {} failed: {}", location, e.toString());
+            }
+            return true;
+        }
         if (location == null || !(texture instanceof DynamicTexture dynamic)) return false;
         var modern = TextureLocations.modern(location.getResourceDomain(), location.getResourcePath());
         mcc$pending.put(modern, dynamic);

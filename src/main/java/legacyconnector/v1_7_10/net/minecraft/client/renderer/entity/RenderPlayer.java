@@ -38,6 +38,12 @@ public class RenderPlayer extends RendererLivingEntity {
     }
 
     @Override
+    protected void renderOffsetLivingLabel(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, double x, double y, double z,
+            String text, float scale, double distance) {
+        super.renderOffsetLivingLabel(entity, x, y, z, text, scale, distance);
+    }
+
+    @Override
     public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
     }
 

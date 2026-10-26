@@ -11,6 +11,10 @@ public abstract class AbstractClientPlayer extends EntityPlayer {
     /** Legacy mods created stand-in players (mannequins drawn by tile entity renderers): a modern remote player is the host. */
     public AbstractClientPlayer(legacyconnector.v1_7_10.net.minecraft.world.World world, com.mojang.authlib.GameProfile profile) {
         this(Remote.create(profile));
+        // the modern player's view is this object, and 1.7.10's Entity constructor fired EntityConstructing (Fisk's Heroes
+        // attaches its player data there and read null for its book's preview player)
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.bind(this, mcc$entity);
+        mcc$fireConstructing();
     }
 
     private static final class Remote {

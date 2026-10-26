@@ -30,6 +30,32 @@ public class LegacyArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         super(parent);
     }
 
+    /**
+     * 1.7.10 skins had no outer layer, so legacy armor was made to cover only the body: where a player wears it, the skin's
+     * outer layer (hat, jacket and sleeves, trousers) is hidden instead of poking through it (Fisk's Heroes' suits).
+     */
+    public static void registerOverlayHiding() {
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Pre e) -> {
+            var player = e.getEntity();
+            var model = e.getRenderer().getModel();
+            if (legacyArmor(player, EquipmentSlot.HEAD)) model.hat.visible = false;
+            if (legacyArmor(player, EquipmentSlot.CHEST)) {
+                model.jacket.visible = false;
+                model.leftSleeve.visible = false;
+                model.rightSleeve.visible = false;
+            }
+            if (legacyArmor(player, EquipmentSlot.LEGS)) {
+                model.leftPants.visible = false;
+                model.rightPants.visible = false;
+            }
+        });
+    }
+
+    private static boolean legacyArmor(LivingEntity entity, EquipmentSlot slot) {
+        var stack = entity.getItemBySlot(slot);
+        return !stack.isEmpty() && stack.getItem() instanceof LegacyItemAdapter adapter && adapter.legacyItem() instanceof ItemArmor;
+    }
+
     @Override
     public void render(PoseStack pose, MultiBufferSource buffers, int light, T entity, float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks,
             float netHeadYaw, float headPitch) {
@@ -64,10 +90,12 @@ public class LegacyArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
                 model.onGround = entity.getAttackAnim(partialTick);
                 model.heldItemRight = entity.getMainHandItem().isEmpty() ? 0 : 1;
                 RenderContext.bindTexture(texture);
+                RenderContext.setArmorLayering(true);
                 model.render(legacyEntity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch, 0.0625F);
             } catch (RuntimeException | LinkageError e) {
                 if (failures++ < 3) LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy armor {} failed to render", armor.getClass().getName(), e);
             } finally {
+                RenderContext.setArmorLayering(false);
                 RenderContext.end();
             }
         }

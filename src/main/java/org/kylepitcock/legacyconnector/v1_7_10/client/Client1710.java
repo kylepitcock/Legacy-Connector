@@ -34,6 +34,7 @@ public final class Client1710 {
         RenderEvents1710.register();
         FirstPersonPose.register();
         LegacyKeyConflicts.register();
+        LegacyArmorLayer.registerOverlayHiding();
         HudEvents1710.register();
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent e) ->
                 e.register(org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.EFFECTS, new LegacyDimensionEffects()));
@@ -64,6 +65,10 @@ public final class Client1710 {
             if (renderer instanceof net.minecraft.client.renderer.entity.HumanoidMobRenderer humanoid) {
                 humanoid.addLayer(new LegacyArmorLayer(humanoid));
                 LegacyArmorLayer.hideFromHeadLayer(humanoid);
+            } else if (renderer instanceof net.minecraft.client.renderer.entity.ArmorStandRenderer stand) {
+                // armor stands show legacy armor too (1.7.10 had none, but players put legacy suits and armor on them)
+                stand.addLayer(new LegacyArmorLayer(stand));
+                LegacyArmorLayer.hideFromHeadLayer(stand);
             }
         }
     }

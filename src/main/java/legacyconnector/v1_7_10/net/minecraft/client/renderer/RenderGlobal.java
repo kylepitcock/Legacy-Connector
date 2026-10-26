@@ -2,6 +2,11 @@ package legacyconnector.v1_7_10.net.minecraft.client.renderer;
 
 /** The world renderer; mods only ask it to redraw blocks after their tile entities changed. */
 public class RenderGlobal {
+    /** Block-breaking progress by breaker id (the modern renderer draws it; reflection finds the 1.7.10 field). */
+    private final java.util.Map damagedBlocks = new java.util.HashMap();
+    /** 1.7.10's chunk section renderers: the modern renderer has its own, so this is empty. */
+    private WorldRenderer[] worldRenderers = new WorldRenderer[0];
+    private java.util.List worldRenderersToUpdate = new java.util.ArrayList();
     public void markBlockForUpdate(int x, int y, int z) {
         markBlocksForUpdate(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
     }

@@ -152,8 +152,10 @@ public class ModelBiped extends ModelBase {
             bipedHeadwear.rotationPointY = 1.0F;
         } else {
             bipedBody.rotateAngleX = 0.0F;
-            bipedRightLeg.rotationPointZ = 0.1F;
-            bipedLeftLeg.rotationPointZ = 0.1F;
+            // 0.1 in 1.7.10, where the player's own legs stood there too; the modern player's legs are at 0, and legacy armor
+            // drawn over them a tenth of a pixel behind lost to them (Fisk's Heroes' suit legs and boots showed the skin)
+            bipedRightLeg.rotationPointZ = 0.0F;
+            bipedLeftLeg.rotationPointZ = 0.0F;
             bipedRightLeg.rotationPointY = 12.0F;
             bipedLeftLeg.rotationPointY = 12.0F;
             bipedHead.rotationPointY = 0.0F;
