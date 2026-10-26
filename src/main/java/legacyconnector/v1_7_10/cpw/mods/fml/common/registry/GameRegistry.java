@@ -149,6 +149,32 @@ public class GameRegistry {
         return item == null ? null : new ItemStack(item, stackSize, 0);
     }
 
+    /**
+     * A stack of the item registered as {@code itemName} ("modid:name") with metadata and size, its tag parsed from
+     * {@code nbtString} (Mojangson, as JsonToNBT reads it) when given; null when the item does not exist.
+     */
+    public static ItemStack makeItemStack(String itemName, int meta, int stackSize, String nbtString) {
+        if (itemName == null) throw new IllegalArgumentException("The itemName cannot be null");
+        Item item = ItemBridge.byName(itemName);
+        if (item == null) return null;
+        ItemStack stack = new ItemStack(item, stackSize, meta);
+        if (nbtString != null && !nbtString.isEmpty()) {
+            legacyconnector.v1_7_10.net.minecraft.nbt.NBTBase tag;
+            try {
+                tag = legacyconnector.v1_7_10.net.minecraft.nbt.JsonToNBT.func_150315_a(nbtString);
+            } catch (legacyconnector.v1_7_10.net.minecraft.nbt.NBTException e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Registry").warn("Encountered an exception parsing ItemStack NBT string {}", nbtString, e);
+                throw new RuntimeException(e);
+            }
+            if (!(tag instanceof legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound compound)) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Registry").warn("Unexpected NBT string - multiple values {}", nbtString);
+                throw new RuntimeException("Invalid NBT JSON");
+            }
+            stack.setTagCompound(compound);
+        }
+        return stack;
+    }
+
     public static void registerCustomItemStack(String name, ItemStack stack) {
         ItemBridge.registerCustomStack(name, stack);
     }

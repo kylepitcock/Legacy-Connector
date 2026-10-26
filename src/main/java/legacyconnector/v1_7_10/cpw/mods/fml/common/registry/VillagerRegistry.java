@@ -50,6 +50,13 @@ public class VillagerRegistry {
         return skin == null ? defaultSkin : new ResourceLocation(skin.getNamespace(), skin.getPath());
     }
 
+    /** Gives the villager a random profession: one of the five vanilla ones or one a mod registered, all equally likely. */
+    public static void applyRandomTrade(EntityVillager villager, Random random) {
+        java.util.List<Integer> extra = new java.util.ArrayList<>(getRegisteredVillagers());
+        int trade = random.nextInt(5 + extra.size());
+        villager.setProfession(trade < 5 ? trade : extra.get(trade - 5));
+    }
+
     public static Collection<Integer> getRegisteredVillagers() {
         return VillagerBridge.registeredIds();
     }

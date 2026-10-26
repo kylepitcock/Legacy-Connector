@@ -15,6 +15,14 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge;
  */
 public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.client.resources.IResourceManagerReloadListener {
     public static final SoundHandler INSTANCE = new SoundHandler();
+
+    static {
+        // 1.7.10 created its sound manager with the handler; mods find it in the handler's SoundManager field (IC2)
+        java.util.Objects.requireNonNull(SoundManager.INSTANCE);
+    }
+
+    /** The sound manager behind this handler (set by the manager; mods read it by reflection). */
+    SoundManager sndManager;
     private final Map<ISound, SoundInstance> playing = new WeakHashMap<>();
     /** 1.7.10's music events under their modern names. */
     private static final Map<String, String> MUSIC_RENAMES = Map.of("music.game.creative", "music.creative", "music.game.end", "music.end",

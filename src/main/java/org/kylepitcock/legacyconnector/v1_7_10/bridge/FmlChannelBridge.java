@@ -47,6 +47,25 @@ public final class FmlChannelBridge {
         return channels == null ? null : channels.get(side);
     }
 
+    /**
+     * A connection finished its handshake on {@code side}: as FML, every channel pipeline of that side gets the connection's
+     * handler and a {@code NetworkHandshakeEstablished} user event (mods send their initial sync from it, OpenMods' id maps).
+     */
+    public static void fireHandshake(Side side, legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher,
+            legacyconnector.v1_7_10.net.minecraft.network.INetHandler handler) {
+        var event = new legacyconnector.v1_7_10.cpw.mods.fml.common.network.NetworkHandshakeEstablished(dispatcher, handler, side);
+        for (var e : CHANNELS.entrySet()) {
+            FMLEmbeddedChannel channel = e.getValue().get(side);
+            if (channel == null) continue;
+            try {
+                channel.attr(legacyconnector.v1_7_10.cpw.mods.fml.common.network.NetworkRegistry.NET_HANDLER).set(handler);
+                channel.pipeline().fireUserEventTriggered(event);
+            } catch (RuntimeException | LinkageError ex) {
+                LOG.error("The handshake handler of channel {} failed", e.getKey(), ex);
+            }
+        }
+    }
+
     public static boolean has(String name) {
         return CHANNELS.containsKey(name) || EVENT_CHANNELS.containsKey(name);
     }

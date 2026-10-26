@@ -43,10 +43,13 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
         }
     }
 
-    /** A player connected to this (integrated or dedicated) server. */
+    /** A player connected to this (integrated or dedicated) server; {@link #isLocal} for the single-player host. */
     public static class ServerConnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
+        public final boolean isLocal;
+
         public ServerConnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
             super(handler, manager);
+            this.isLocal = this.manager.isLocalChannel();
         }
     }
 
@@ -54,6 +57,25 @@ public class FMLNetworkEvent<T extends INetHandler> extends Event {
     public static class ServerDisconnectionFromClientEvent extends FMLNetworkEvent<INetHandler> {
         public ServerDisconnectionFromClientEvent(INetHandler handler, legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
             super(handler, manager);
+        }
+    }
+
+    /** This client connected to a server: {@link #isLocal} for the integrated one; the type is "MODDED" (a server with mods). */
+    public static class ClientConnectedToServerEvent extends FMLNetworkEvent<INetHandler> {
+        public final boolean isLocal;
+        public final String connectionType;
+
+        public ClientConnectedToServerEvent(legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager, String connectionType) {
+            super(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE, manager);
+            this.isLocal = this.manager.isLocalChannel();
+            this.connectionType = connectionType;
+        }
+    }
+
+    /** This client left the server it was on. */
+    public static class ClientDisconnectionFromServerEvent extends FMLNetworkEvent<INetHandler> {
+        public ClientDisconnectionFromServerEvent(legacyconnector.v1_7_10.net.minecraft.network.NetworkManager manager) {
+            super(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE, manager);
         }
     }
 

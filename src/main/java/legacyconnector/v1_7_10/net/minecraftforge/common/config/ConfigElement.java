@@ -24,6 +24,11 @@ public class ConfigElement<T> implements IConfigElement<T> {
         this.isProperty = true;
     }
 
+    /** The element of a property, typed by its value type (Boolean, Double, Integer, else String: one class after erasure). */
+    public static ConfigElement<?> getTypedElement(Property prop) {
+        return new ConfigElement<>(prop);
+    }
+
     @Override
     public List<IConfigElement> getChildElements() {
         if (isProperty) return null;
