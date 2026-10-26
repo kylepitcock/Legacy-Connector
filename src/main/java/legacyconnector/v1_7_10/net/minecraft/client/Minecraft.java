@@ -250,6 +250,25 @@ public class Minecraft {
         return System.currentTimeMillis();
     }
 
+    /** The background music ticker; mods replace it by reflection with their own (ticked by LegacyMusic). */
+    public legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker mcMusicTicker = new legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker(this);
+
+    /** Which music fits now: credits, the menu, the Nether, the End (with the dragon), creative flight or the game. */
+    public legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType getAmbientMusicType() {
+        var mc = mc();
+        if (mc.screen instanceof net.minecraft.client.gui.screens.WinScreen) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.CREDITS;
+        if (mc.player == null || mc.level == null) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.MENU;
+        var dim = mc.level.dimension();
+        if (dim == net.minecraft.world.level.Level.NETHER) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.NETHER;
+        if (dim == net.minecraft.world.level.Level.END) {
+            return mc.gui.getBossOverlay().shouldPlayMusic() ? legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.END_BOSS
+                    : legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.END;
+        }
+        var abilities = mc.player.getAbilities();
+        return abilities.instabuild && abilities.mayfly ? legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.CREATIVE
+                : legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.GAME;
+    }
+
     /**
      * Starts the integrated server on a saved world (FML's old-save prompt, main menu mods' "load world" buttons). A folder
      * without a world opens the modern world creation screen, which takes over choosing the settings.

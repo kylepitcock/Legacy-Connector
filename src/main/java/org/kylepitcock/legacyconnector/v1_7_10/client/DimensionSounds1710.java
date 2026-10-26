@@ -32,12 +32,26 @@ public final class DimensionSounds1710 {
                     new legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation(location.getNamespace(), location.getPath()),
                     sound.getVolume(), sound.getPitch(), (float) sound.getX(), (float) sound.getY(), (float) sound.getZ());
             try {
-                var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundEvent17(location.getPath(), legacy);
+                var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundEvent17(location.getPath(), legacy,
+                        legacyconnector.v1_7_10.net.minecraft.client.audio.SoundCategory.mcc$of(sound.getSource()));
                 forge.post(event);
                 if (event.result == null) e.setSound(null);
             } catch (RuntimeException | LinkageError ex) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A PlaySoundEvent17 handler failed: {}", ex.toString());
             }
+        });
+        // 1.7.10's source events: a sound's channel started (uuid names it while it plays)
+        gameBus.addListener((net.neoforged.neoforge.client.event.sound.PlaySoundSourceEvent e) -> {
+            var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (!forge.mcc$hasListeners(legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundSourceEvent.class)) return;
+            postSource(forge, new legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlaySoundSourceEvent(
+                    legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE, legacy(e.getSound()), uuid(e.getChannel())));
+        });
+        gameBus.addListener((net.neoforged.neoforge.client.event.sound.PlayStreamingSourceEvent e) -> {
+            var forge = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (!forge.mcc$hasListeners(legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlayStreamingSourceEvent.class)) return;
+            postSource(forge, new legacyconnector.v1_7_10.net.minecraftforge.client.event.sound.PlayStreamingSourceEvent(
+                    legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE, legacy(e.getSound()), uuid(e.getChannel())));
         });
         gameBus.addListener((PlaySoundEvent e) -> {
             SoundInstance sound = e.getSound();
@@ -53,6 +67,24 @@ public final class DimensionSounds1710 {
                 e.setSound(new Scaled(sound, amount));
             }
         });
+    }
+
+    private static legacyconnector.v1_7_10.net.minecraft.client.audio.ISound legacy(SoundInstance sound) {
+        return legacyconnector.v1_7_10.net.minecraft.client.audio.SoundHandler.INSTANCE.mcc$legacy(sound);
+    }
+
+    /** A stable name for a playing channel (1.7.10 named sources by a random UUID). */
+    private static String uuid(Object channel) {
+        return channel == null ? "" : new java.util.UUID(0L, System.identityHashCode(channel)).toString();
+    }
+
+    private static void postSource(legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.EventBus forge,
+            legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event event) {
+        try {
+            forge.post(event);
+        } catch (RuntimeException | LinkageError ex) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sound").warn("A legacy sound source handler failed: {}", ex.toString());
+        }
     }
 
     private record Scaled(SoundInstance base, float divisor) implements SoundInstance {

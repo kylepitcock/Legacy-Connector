@@ -28,6 +28,7 @@ public final class Client1710 {
         });
         modBus.addListener(Client1710::onRegisterRenderers);
         LegacyParticles.register();
+        LegacyMusic.register();
         ClientSelfTest.register();
         WorldScreenshotTest.register();
         ScreenEvents1710.register();
