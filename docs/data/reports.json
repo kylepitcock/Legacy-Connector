@@ -23,6 +23,18 @@
    "link": "https://spacechase0.com/mods/minecraft/outdated/biome-wand/",
    "date": "2026-10-25",
    "open": false
+  },
+  {
+   "issue": 82,
+   "mod": "CustomOreGen 1.2.26",
+   "mc": "1.7.10",
+   "status": "crashes",
+   "details": "Creating a new world takes around an hour and leaving a world takes around 15 minutes after which point the player loses connection, then the server then seems to properly save. Both repeatedly have logs like `[Worker-Main-3/INFO,CustomOreGen/]: Loading config data for dimension '/<path>/./DIM0' ...` with different workers. While in the world worldgen appears to continue to take this long or long…",
+   "lc": "0.2.1",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/customoregen/files/2335337",
+   "date": "2026-10-26",
+   "open": true
   }
  ]
 }
