@@ -19,4 +19,14 @@ public class GameData {
     public static BiMap<Block, Item> getBlockItemMap() {
         return BLOCK_ITEM;
     }
+
+    /** {@code GameRegistry.register}'s implementation: the entry goes into the registry of its type (an unknown type is logged, not thrown). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static <V extends IForgeRegistryEntry<V>> V register_impl(V value) {
+        if (value == null) throw new IllegalArgumentException("Attempted to register a null object");
+        if (value.getRegistryName() == null) throw new IllegalArgumentException("Attempted to register an object without a registry name: " + value);
+        IForgeRegistry registry = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.findRegistry((Class) value.getRegistryType());
+        if (registry != null) registry.register(value); // findRegistry logged a registry the layer does not have
+        return value;
+    }
 }

@@ -8,8 +8,9 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 public class EntityEntry extends IForgeRegistryEntry.Impl<EntityEntry> {
     private final Class<? extends Entity> cls;
     private final String name;
-    private int eggPrimary = -1;
-    private int eggSecondary = -1;
+    private legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo egg;
+    /** The builder's factory ({@code EntityEntryBuilder.factory}); null makes instances through the World constructor. */
+    public java.util.function.Function<World, ? extends Entity> mcc$factory;
     /** Tracking settings given when the entry was built. */
     public int trackingRange;
     public int updateFrequency;
@@ -28,17 +29,21 @@ public class EntityEntry extends IForgeRegistryEntry.Impl<EntityEntry> {
         return name;
     }
 
-    public EntityEntry setEgg(int primary, int secondary) {
-        this.eggPrimary = primary;
-        this.eggSecondary = secondary;
-        return this;
+    public void setEgg(legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo egg) {
+        this.egg = egg;
+        if (egg != null && egg.spawnedID != null) legacyconnector.v1_12_2.net.minecraft.entity.EntityList.ENTITY_EGGS.put(egg.spawnedID, egg);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo getEgg() {
+        return egg;
     }
 
     public boolean hasEgg() {
-        return eggPrimary >= 0;
+        return egg != null;
     }
 
     public Entity newInstance(World world) {
+        if (mcc$factory != null) return mcc$factory.apply(world);
         try {
             var ctor = cls.getConstructor(World.class);
             return ctor.newInstance(world);

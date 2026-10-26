@@ -6,6 +6,22 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegis
 
 /** Entity names: registered entries by class, vanilla entity classes by their class name ("EntityCow" is "minecraft:cow"). */
 public class EntityList {
+    /** Spawn egg colours by entity name (filled when an entry gets its egg). */
+    public static final java.util.Map<ResourceLocation, EntityEggInfo> ENTITY_EGGS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** A spawn egg's entity and colours. */
+    public static class EntityEggInfo {
+        public final ResourceLocation spawnedID;
+        public final int primaryColor;
+        public final int secondaryColor;
+
+        public EntityEggInfo(ResourceLocation id, int primaryColor, int secondaryColor) {
+            this.spawnedID = id;
+            this.primaryColor = primaryColor;
+            this.secondaryColor = secondaryColor;
+        }
+    }
+
     public static ResourceLocation getKey(Class<? extends Entity> cls) {
         for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
             // vanilla entries stand on shared base classes (EntityLiving), which name no entity

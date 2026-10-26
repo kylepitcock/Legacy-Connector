@@ -18,6 +18,15 @@ public class ObfuscationReflectionHelper {
         return ReflectionHelper.getPrivateValue(classToAccess, instance, fieldNames);
     }
 
+    /** The 1.12.2 (build 2768+) form: one SRG field name. */
+    public static <T, E> T getPrivateValue(Class<? super E> classToAccess, E instance, String fieldName) {
+        return ReflectionHelper.getPrivateValue(classToAccess, instance, new String[] {fieldName});
+    }
+
+    public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, String fieldName) {
+        ReflectionHelper.setPrivateValue(classToAccess, instance, value, new String[] {fieldName});
+    }
+
     public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, String... fieldNames) {
         ReflectionHelper.setPrivateValue(classToAccess, instance, value, fieldNames);
     }

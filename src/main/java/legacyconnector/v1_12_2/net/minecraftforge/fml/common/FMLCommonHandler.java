@@ -31,7 +31,22 @@ public class FMLCommonHandler {
         return getSide();
     }
 
-    public void registerCrashCallable(Object callable) {
+    /** Becomes a section of the modern crash report's system details. */
+    public void registerCrashCallable(ICrashCallable callable) {
+        if (callable == null) return;
+        String label;
+        try {
+            label = callable.getLabel();
+        } catch (RuntimeException | LinkageError e) {
+            label = callable.getClass().getName();
+        }
+        net.neoforged.fml.CrashReportCallables.registerCrashCallable(label == null ? callable.getClass().getName() : label, () -> {
+            try {
+                return callable.call();
+            } catch (Throwable t) {
+                return "~~ERROR~~ " + t;
+            }
+        });
     }
 
     public String getModName() {

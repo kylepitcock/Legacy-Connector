@@ -299,6 +299,11 @@ public final class Platform1122 implements LegacyPlatform {
 
     private static final java.util.Set<String> MISSING_HOLDERS = new java.util.TreeSet<>();
 
+    /** {@code ObjectHolderRegistry.applyObjectHolders()}: mods refill their holders after registering late. */
+    public static void applyObjectHolders() {
+        injectObjectHolders();
+    }
+
     /** {@code @GameRegistry.ObjectHolder} fields (and classes with a mod id) receive the registered block or item of their name. */
     private static void injectObjectHolders() {
         String desc = Type.getDescriptor(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder.class);

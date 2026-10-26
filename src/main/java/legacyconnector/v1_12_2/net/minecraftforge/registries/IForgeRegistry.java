@@ -1,6 +1,7 @@
 package legacyconnector.v1_12_2.net.minecraftforge.registries;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
@@ -23,7 +24,12 @@ public interface IForgeRegistry<V extends IForgeRegistryEntry<V>> extends Iterab
 
     Set<ResourceLocation> getKeys();
 
-    Collection<V> getValues();
+    /** A copy of the values in registration order (deprecated in 1.12.2, still the most used). */
+    List<V> getValues();
+
+    default Collection<V> getValuesCollection() {
+        return getValues();
+    }
 
     Set<Map.Entry<ResourceLocation, V>> getEntries();
 

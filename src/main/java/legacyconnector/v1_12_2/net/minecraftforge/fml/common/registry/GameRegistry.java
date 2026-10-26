@@ -86,9 +86,35 @@ public class GameRegistry {
         addSmelting(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(input, 1, 32767), output, xp);
     }
 
-    public static void registerFuelHandler(Object handler) {
+    private static final java.util.List<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IFuelHandler> FUEL_HANDLERS = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final java.util.List<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator> WORLD_GENERATORS = new java.util.ArrayList<>();
+    private static final java.util.Map<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator, Integer> WORLD_GENERATOR_WEIGHTS = new java.util.IdentityHashMap<>();
+
+    /** The handler is asked for every fuel the modern furnaces look up (see {@code Fuel1122}). */
+    public static void registerFuelHandler(legacyconnector.v1_12_2.net.minecraftforge.fml.common.IFuelHandler handler) {
+        if (handler != null) FUEL_HANDLERS.add(handler);
     }
 
-    public static void registerWorldGenerator(Object generator, int modGenerationWeight) {
+    /** The highest burn time any registered fuel handler gives the stack. */
+    public static int getFuelValue(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        int value = 0;
+        for (var h : FUEL_HANDLERS) value = Math.max(value, h.getBurnTime(stack));
+        return value;
+    }
+
+    public static boolean mcc$hasFuelHandlers() {
+        return !FUEL_HANDLERS.isEmpty();
+    }
+
+    /** Kept in Forge's order (by weight, then registration); they run once the layer generates 1.12 chunks. */
+    public static synchronized void registerWorldGenerator(legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator generator, int modGenerationWeight) {
+        if (generator == null || WORLD_GENERATOR_WEIGHTS.containsKey(generator)) return;
+        WORLD_GENERATOR_WEIGHTS.put(generator, modGenerationWeight);
+        WORLD_GENERATORS.add(generator);
+        WORLD_GENERATORS.sort(java.util.Comparator.comparingInt(WORLD_GENERATOR_WEIGHTS::get));
+    }
+
+    public static synchronized java.util.List<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator> mcc$worldGenerators() {
+        return new java.util.ArrayList<>(WORLD_GENERATORS);
     }
 }

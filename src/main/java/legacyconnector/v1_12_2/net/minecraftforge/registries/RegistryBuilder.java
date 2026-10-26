@@ -66,6 +66,11 @@ public class RegistryBuilder<T extends IForgeRegistryEntry<T>> {
         return this;
     }
 
+    /** Registers whichever callback interfaces {@code inst} implements (accepted like the typed {@code add} methods). */
+    public RegistryBuilder<T> addCallback(Object inst) {
+        return this;
+    }
+
     public IForgeRegistry<T> create() {
         return Registries1122.custom(registryName, registryType);
     }

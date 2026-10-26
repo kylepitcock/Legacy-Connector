@@ -20,6 +20,15 @@ public class EntityRegistry {
         ForgeRegistries.ENTITIES.register(entry);
     }
 
+    public static void registerEgg(ResourceLocation name, int primary, int secondary) {
+        EntityEntry entry = ForgeRegistries.ENTITIES.getValue(name);
+        if (entry == null) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("Attempted to register a spawn egg for the unknown entity {}", name);
+            return;
+        }
+        entry.setEgg(new legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo(name, primary, secondary));
+    }
+
     public static void addSpawn(Class<? extends Entity> entityClass, int weightedProb, int min, int max, EnumCreatureType typeOfCreature, Biome... biomes) {
     }
 
