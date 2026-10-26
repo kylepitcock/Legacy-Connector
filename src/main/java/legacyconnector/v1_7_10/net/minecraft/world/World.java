@@ -835,11 +835,47 @@ public class World implements IBlockAccess {
                 ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE,
                 liquids ? net.minecraft.world.level.ClipContext.Fluid.ANY : net.minecraft.world.level.ClipContext.Fluid.NONE,
                 net.minecraft.world.phys.shapes.CollisionContext.empty()));
+        if (liquids) {
+            var source = mcc$legacyLiquidSource(start, end, hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? null : hit.getLocation());
+            if (source != null) return source;
+        }
         if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
         var pos = hit.getBlockPos();
         var at = hit.getLocation();
         return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(pos.getX(), pos.getY(), pos.getZ(), hit.getDirection().get3DDataValue(),
                 legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x, at.y, at.z));
+    }
+
+    /**
+     * The first source block (meta 0) of a legacy liquid on the ray before {@code before}: mod fluids have no modern fluid state,
+     * so the fluid clip does not see them, but 1.7.10's trace with stopOnLiquid stopped there (buckets, fluid pickers).
+     */
+    private legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition mcc$legacyLiquidSource(legacyconnector.v1_7_10.net.minecraft.util.Vec3 start,
+            legacyconnector.v1_7_10.net.minecraft.util.Vec3 end, net.minecraft.world.phys.Vec3 before) {
+        var from = start.mcc$modern();
+        var to = before != null ? before : end.mcc$modern();
+        double length = from.distanceTo(to);
+        if (length <= 0 || length > 512) return null;
+        var dir = to.subtract(from).normalize();
+        var cursor = new net.minecraft.core.BlockPos.MutableBlockPos();
+        long last = Long.MIN_VALUE;
+        for (double d = 0; d <= length; d += 0.05) {
+            var at = from.add(dir.scale(d));
+            cursor.set(at.x, at.y, at.z);
+            if (cursor.asLong() == last) continue;
+            last = cursor.asLong();
+            var state = lvl().getBlockState(cursor);
+            if (state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter && state.liquid()
+                    && org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state) == 0) {
+                // the face entered: the axis whose cell boundary was crossed last
+                var prev = from.add(dir.scale(Math.max(0, d - 0.05)));
+                int side = Math.floor(prev.y) != cursor.getY() ? (prev.y < cursor.getY() ? 0 : 1)
+                        : Math.floor(prev.z) != cursor.getZ() ? (prev.z < cursor.getZ() ? 2 : 3) : prev.x < cursor.getX() ? 4 : 5;
+                return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(cursor.getX(), cursor.getY(), cursor.getZ(), side,
+                        legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(at.x, at.y, at.z));
+            }
+        }
+        return null;
     }
 
     /** Boxes of the blocks colliding with {@code box} (entity colliders such as boats are not included). */

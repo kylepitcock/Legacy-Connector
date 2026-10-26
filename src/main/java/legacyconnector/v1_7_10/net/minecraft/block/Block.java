@@ -338,11 +338,34 @@ public class Block {
     }
 
     public boolean isOpaqueCube() {
+        if (mcc$plainVanilla()) return mcc$modernSolid(true);
         return org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149662_c", 1) != 0;
     }
 
     public boolean renderAsNormalBlock() {
+        if (mcc$plainVanilla()) return mcc$modernSolid(true);
         return org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaBlockConstants.get(getClass(), "func_149686_d", 1) != 0;
+    }
+
+    /** A vanilla block wrapped as a plain Block: the constant table only knows Block's own defaults for it. */
+    private boolean mcc$plainVanilla() {
+        return mcc$vanilla != null && getClass() == Block.class;
+    }
+
+    /**
+     * A vanilla block wrapped as a plain Block (air, water, torches, rails, crops...: 87 of them) has no constant: whether it is
+     * a solid opaque cube comes from the modern block (air read as opaque, so mods saw no room above anything).
+     */
+    private boolean mcc$modernSolid(boolean fallback) {
+        if (mcc$vanilla == null) return fallback;
+        try {
+            var state = mcc$modern != null ? mcc$modern.defaultBlockState()
+                    : org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state(mcc$vanilla.legacyId(), 0);
+            if (state == null) return fallback;
+            return state.isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
+        } catch (RuntimeException e) {
+            return fallback;
+        }
     }
 
     public boolean isNormalCube() {

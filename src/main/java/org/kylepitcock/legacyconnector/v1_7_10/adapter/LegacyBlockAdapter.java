@@ -438,7 +438,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        if (legacy.getMaterial() == Material.air) return Shapes.empty();
+        // air and liquids are never targeted (1.7.10's canCollideCheck): a mod fluid (Thaumcraft's purifying fluid) broke at a click
+        if (legacy.getMaterial() == Material.air || legacy.getMaterial().isLiquid()) return Shapes.empty();
         if (!dynamicBounds) {
             int m = meta(state);
             VoxelShape s = staticShapes[m];
