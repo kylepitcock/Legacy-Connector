@@ -3,101 +3,164 @@ package legacyconnector.v1_7_10.net.minecraftforge.common.config;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.ConfigGuiType;
+import legacyconnector.v1_7_10.cpw.mods.fml.client.config.ConfigGuiType;
+import legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries;
+import legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiEditArrayEntries;
 import legacyconnector.v1_7_10.cpw.mods.fml.client.config.IConfigElement;
 
-/** Adapts a {@link ConfigCategory} or a {@link Property} to the elements a config screen lists. */
+/**
+ * Adapts a {@link ConfigCategory} or a {@link Property} to the elements a config screen lists (Forge 1.7.10): single values are
+ * read as the property's string, lists as typed arrays, and written back through the typed setters.
+ */
 public class ConfigElement<T> implements IConfigElement<T> {
-    private final Property prop;
-    private final ConfigCategory category;
-    private final boolean isProperty;
+    private Property prop;
+    private Property.Type type;
+    private boolean isProperty;
+    private ConfigCategory ctgy;
+    private boolean categoriesFirst = true;
 
-    public ConfigElement(ConfigCategory category) {
-        this.category = category;
-        this.prop = null;
+    public ConfigElement(ConfigCategory ctgy) {
+        this.ctgy = ctgy;
         this.isProperty = false;
     }
 
     public ConfigElement(Property prop) {
         this.prop = prop;
-        this.category = null;
+        this.type = prop.getType();
         this.isProperty = true;
+    }
+
+    public ConfigElement<T> listCategoriesFirst(boolean categoriesFirst) {
+        this.categoriesFirst = categoriesFirst;
+        return this;
     }
 
     @Override
     public List<IConfigElement> getChildElements() {
         if (isProperty) return null;
         List<IConfigElement> elements = new ArrayList<>();
-        for (ConfigCategory child : category.getChildren()) {
-            if (child.showInGui()) elements.add(new ConfigElement(child));
+        List<IConfigElement> categories = new ArrayList<>();
+        for (ConfigCategory child : ctgy.getChildren()) {
+            if (child.showInGui()) categories.add(new ConfigElement(child));
         }
-        for (Property p : category.getOrderedValues()) {
+        if (categoriesFirst) elements.addAll(categories);
+        for (Property p : ctgy.getOrderedValues()) {
             if (p.showInGui()) elements.add(new ConfigElement(p));
         }
+        if (!categoriesFirst) elements.addAll(categories);
         return elements;
     }
 
-    @Override public boolean isProperty() { return isProperty; }
-    @Override public String getName() { return isProperty ? prop.getName() : category.getName(); }
-    @Override public String getQualifiedName() { return isProperty ? prop.getName() : category.getQualifiedName(); }
-    @Override public String getLanguageKey() { return isProperty ? prop.getLanguageKey() : category.getLanguagekey(); }
-    @Override public String getComment() { String c = isProperty ? prop.comment : category.getComment(); return c == null ? "" : c; }
-    @Override public boolean isList() { return isProperty && prop.isList(); }
-    @Override public boolean isListLengthFixed() { return isProperty && prop.isListLengthFixed(); }
-    @Override public int getMaxListLength() { return isProperty ? prop.getMaxListLength() : -1; }
-    @Override public boolean isDefault() { return !isProperty || prop.isDefault(); }
-    @Override public void setToDefault() { if (isProperty) prop.setToDefault(); }
-    @Override public boolean requiresWorldRestart() { return isProperty ? prop.requiresWorldRestart() : category.requiresWorldRestart(); }
-    @Override public boolean showInGui() { return isProperty ? prop.showInGui() : category.showInGui(); }
-    @Override public boolean requiresMcRestart() { return isProperty ? prop.requiresMcRestart() : category.requiresMcRestart(); }
-    @Override public String[] getValidValues() { return isProperty ? prop.getValidValues() : new String[0]; }
-
-    @Override
-    public ConfigGuiType getType() {
-        if (!isProperty) return ConfigGuiType.CONFIG_CATEGORY;
+    public static ConfigGuiType getType(Property prop) {
         return switch (prop.getType()) {
             case BOOLEAN -> ConfigGuiType.BOOLEAN;
-            case INTEGER -> ConfigGuiType.INTEGER;
             case DOUBLE -> ConfigGuiType.DOUBLE;
+            case INTEGER -> ConfigGuiType.INTEGER;
             case COLOR -> ConfigGuiType.COLOR;
             case MOD_ID -> ConfigGuiType.MOD_ID;
             default -> ConfigGuiType.STRING;
         };
     }
 
+    @Override public boolean isProperty() { return isProperty; }
+
     @Override
-    public Object get() {
-        if (!isProperty) return null;
-        return switch (prop.getType()) {
-            case BOOLEAN -> prop.getBoolean();
-            case INTEGER -> prop.getInt();
-            case DOUBLE -> prop.getDouble();
-            default -> prop.getString();
-        };
+    public Class<? extends GuiConfigEntries.IConfigEntry> getConfigEntryClass() {
+        return isProperty ? prop.getConfigEntryClass() : ctgy.getConfigEntryClass();
     }
+
+    @Override
+    public Class<? extends GuiEditArrayEntries.IArrayEntry> getArrayEntryClass() {
+        return isProperty ? prop.getArrayEntryClass() : null;
+    }
+
+    @Override public String getName() { return isProperty ? prop.getName() : ctgy.getName(); }
+    @Override public String getQualifiedName() { return isProperty ? prop.getName() : ctgy.getQualifiedName(); }
+    @Override public String getLanguageKey() { return isProperty ? prop.getLanguageKey() : ctgy.getLanguagekey(); }
+    @Override public String getComment() { return isProperty ? prop.comment : ctgy.getComment(); }
+    @Override public ConfigGuiType getType() { return isProperty ? getType(prop) : ConfigGuiType.CONFIG_CATEGORY; }
+    @Override public boolean isList() { return isProperty && prop.isList(); }
+    @Override public boolean isListLengthFixed() { return isProperty && prop.isListLengthFixed(); }
+    @Override public int getMaxListLength() { return isProperty ? prop.getMaxListLength() : -1; }
+    @Override public boolean isDefault() { return !isProperty || prop.isDefault(); }
+    @Override public void setToDefault() { if (isProperty) prop.setToDefault(); }
+    @Override public boolean requiresWorldRestart() { return isProperty ? prop.requiresWorldRestart() : ctgy.requiresWorldRestart(); }
+    @Override public boolean showInGui() { return isProperty ? prop.showInGui() : ctgy.showInGui(); }
+    @Override public boolean requiresMcRestart() { return isProperty ? prop.requiresMcRestart() : ctgy.requiresMcRestart(); }
+    @Override public String[] getValidValues() { return isProperty ? prop.getValidValues() : null; }
+    @Override public Pattern getValidationPattern() { return isProperty ? prop.getValidationPattern() : null; }
+    @Override public Object get() { return isProperty ? prop.getString() : null; }
 
     @Override
     public Object[] getList() {
         if (!isProperty) return null;
-        return prop.getStringList();
+        return typed(prop.getStringList());
     }
 
     @Override public Object getDefault() { return isProperty ? prop.getDefault() : null; }
-    @Override public Object[] getDefaults() { return isProperty ? prop.getDefaults() : null; }
 
     @Override
-    @SuppressWarnings("unchecked")
+    public Object[] getDefaults() {
+        if (!isProperty) return null;
+        return typed(prop.getDefaults());
+    }
+
+    /** A list's strings as the values the list editor works with (Boolean/Integer/Double for typed lists). */
+    private Object[] typed(String[] strings) {
+        if (strings == null) return null;
+        switch (type) {
+            case BOOLEAN -> {
+                Boolean[] out = new Boolean[strings.length];
+                for (int i = 0; i < strings.length; i++) out[i] = Boolean.valueOf(strings[i].trim());
+                return out;
+            }
+            case INTEGER -> {
+                Integer[] out = new Integer[strings.length];
+                for (int i = 0; i < strings.length; i++) {
+                    try {
+                        out[i] = Integer.valueOf(strings[i].trim());
+                    } catch (NumberFormatException e) {
+                        out[i] = 0;
+                    }
+                }
+                return out;
+            }
+            case DOUBLE -> {
+                Double[] out = new Double[strings.length];
+                for (int i = 0; i < strings.length; i++) {
+                    try {
+                        out[i] = Double.valueOf(strings[i].trim());
+                    } catch (NumberFormatException e) {
+                        out[i] = 0.0D;
+                    }
+                }
+                return out;
+            }
+            default -> {
+                return strings;
+            }
+        }
+    }
+
+    @Override
     public void set(T value) {
-        if (!isProperty) return;
-        if (value instanceof Boolean b) prop.set(b);
-        else if (value instanceof Integer i) prop.set(i);
-        else if (value instanceof Number n) prop.set(n.doubleValue());
-        else prop.set(String.valueOf(value));
+        if (!isProperty || value == null) return;
+        String s = value.toString();
+        try {
+            switch (type) {
+                case BOOLEAN -> prop.set(Boolean.parseBoolean(s));
+                case INTEGER -> prop.set(Integer.parseInt(s.trim()));
+                case DOUBLE -> prop.set(Double.parseDouble(s.trim()));
+                default -> prop.set(s);
+            }
+        } catch (NumberFormatException e) {
+            prop.set(s);
+        }
     }
 
     @Override
     public void set(T[] values) {
-        if (!isProperty) return;
+        if (!isProperty || values == null) return;
         String[] strings = new String[values.length];
         for (int i = 0; i < values.length; i++) strings[i] = String.valueOf(values[i]);
         prop.set(strings);
@@ -106,16 +169,12 @@ public class ConfigElement<T> implements IConfigElement<T> {
     @Override
     @SuppressWarnings("unchecked")
     public T getMinValue() {
-        if (!isProperty || prop.getMinValue() == null) return null;
-        return (T) (prop.getType() == Property.Type.INTEGER ? (Object) Integer.valueOf(prop.getMinValue()) : (Object) Double.valueOf(prop.getMinValue()));
+        return isProperty ? (T) prop.getMinValue() : null;
     }
 
     @Override
     @SuppressWarnings("unchecked")
     public T getMaxValue() {
-        if (!isProperty || prop.getMaxValue() == null) return null;
-        return (T) (prop.getType() == Property.Type.INTEGER ? (Object) Integer.valueOf(prop.getMaxValue()) : (Object) Double.valueOf(prop.getMaxValue()));
+        return isProperty ? (T) prop.getMaxValue() : null;
     }
-
-    @Override public Pattern getValidationPattern() { return null; }
 }

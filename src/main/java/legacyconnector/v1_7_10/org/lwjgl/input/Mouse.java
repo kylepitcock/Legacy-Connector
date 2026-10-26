@@ -125,8 +125,17 @@ public class Mouse {
         return eventButtonState;
     }
 
+    /** While a legacy screen handles one mouse event ({@code GuiScreen.handleMouseInput}), its own wheel movement (0 for clicks). */
+    private static volatile int eventWheel;
+    private static volatile boolean inScreenEvent;
+
+    public static void mcc$setEventWheel(int dwheel, boolean active) {
+        eventWheel = dwheel;
+        inScreenEvent = active;
+    }
+
     public static int getEventDWheel() {
-        return wheel;
+        return inScreenEvent ? eventWheel : wheel;
     }
 
     public static void setCursorPosition(int x, int y) {

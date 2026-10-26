@@ -1,60 +1,6 @@
 net.minecraft.client.gui.MapItemRenderer.func_148250_a(Llegacyconnector/v1_7_10/net/minecraft/world/storage/MapData;Z)V   # 5 user(s): WayofTime.alchemicalWizardry.client.ClientUtils, codechicken.wirelessredstone.addons.WirelessMapRenderer, com.xcompwiz.mystcraft.client.render.RenderLectern, jds.bibliocraft.rendering.ItemAtlasRendere
-cpw.mods.fml.client.FMLClientHandler.getResourcePackFor(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/client/resources/IResourcePack;   # 3 user(s): com.carpentersblocks.CarpentersBlocksCachedResources, com.rwtema.extrautils.modintegration.TConTextureResourcePackBase, fox.spiteful.avaritia.compat.ticon.TConTextureResourcePackBase
-cpw.mods.fml.client.FMLClientHandler.connectToServer(Llegacyconnector/v1_7_10/net/minecraft/client/gui/GuiScreen;Llegacyconnector/v1_7_10/net/minecraft/client/multiplayer/ServerData;)V   # 2 user(s): com.fiskmods.heroes.client.gui.GuiFiskServer, lumien.custommainmenu.lib.actions.ActionConnectToServer
-cpw.mods.fml.client.config.GuiUtils.drawContinuousTexturedBox(Llegacyconnector/v1_7_10/net/minecraft/util/ResourceLocation;IIIIIIIIIIIIF)V   # 2 user(s): ichun.client.gui.GuiSlider, journeymap.client.ui.component.CheckBox
-cpw.mods.fml.client.registry.RenderingRegistry.renderInventoryBlock(Llegacyconnector/v1_7_10/net/minecraft/client/renderer/RenderBlocks;Llegacyconnector/v1_7_10/net/minecraft/block/Block;II)V   # 2 user(s): powercrystals.minefactoryreloaded.render.item.ConveyorItemRenderer, tconstruct.smeltery.model.TankItemRenderer
-net.minecraft.client.gui.GuiLabel.drawLabel(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;II)V   # 2 user(s): lumien.custommainmenu.gui.GuiCustom, micdoodle8.mods.galacticraft.planets.mars.client.gui.GuiLaunchController
-net.minecraft.client.gui.GuiListExtended.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;IIIII)V   # 2 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList, com.hbm.inventory.gui.element.GuiFileList
-net.minecraft.client.gui.GuiListExtended.drawScreen(IIF)V   # 2 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList, com.hbm.blocks.generic.BlockWandStructure$GuiStructureLoad
-net.minecraft.client.gui.GuiListExtended.func_148179_a(III)Z   # 2 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList, com.hbm.blocks.generic.BlockWandStructure$GuiStructureLoad
-net.minecraft.client.gui.GuiSlot.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;IIIII)V   # 2 user(s): ichun.client.gui.config.GuiConfigBaseScroll, journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.bottom:I   # 2 user(s): ichun.client.gui.config.GuiConfigSetterScroll, journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.drawScreen(IIF)V   # 2 user(s): ichun.client.gui.config.GuiConfigBaseScroll, journeymap.client.ui.component.ScrollPane
-net.minecraft.client.gui.GuiSlot.left:I   # 2 user(s): ichun.client.gui.config.GuiConfigSetterScroll, journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.top:I   # 2 user(s): ichun.client.gui.config.GuiConfigSetterScroll, journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.width:I   # 2 user(s): ichun.client.gui.config.GuiConfigSetterScroll, journeymap.client.ui.component.ScrollListPane
 net.minecraft.client.gui.achievement.GuiAchievements.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/gui/GuiScreen;Llegacyconnector_synth/v1_7_10/net/minecraft/stats/StatFileWriter;)V   # 2 user(s): baubles.client.gui.GuiPlayerExpanded, vazkii.botania.client.gui.GuiAchievementsHacky
 net.minecraft.client.gui.inventory.GuiContainer.isMouseOverSlot(Llegacyconnector/v1_7_10/net/minecraft/inventory/Slot;II)Z   # 2 user(s): logisticspipes.utils.gui.LogisticsBaseGuiScreen, tconstruct.smeltery.gui.ActiveContainerGui
-cpw.mods.fml.client.FMLClientHandler.addModAsResource(Llegacyconnector/v1_7_10/cpw/mods/fml/common/ModContainer;)V   # 1 user(s): com.carpentersblocks.CarpentersBlocksCachedResources
-cpw.mods.fml.client.FMLClientHandler.getClientToServerNetworkManager()Llegacyconnector/v1_7_10/net/minecraft/network/NetworkManager;   # 1 user(s): journeymap.client.data.WorldData
-cpw.mods.fml.client.FMLClientHandler.getSavesDir()Ljava/io/File;   # 1 user(s): lumien.custommainmenu.lib.actions.ActionLoadWorld
-cpw.mods.fml.client.FMLClientHandler.getServer()Llegacyconnector/v1_7_10/net/minecraft/server/MinecraftServer;   # 1 user(s): com.InfinityRaider.AgriCraft.proxy.ClientProxy
-cpw.mods.fml.client.FMLClientHandler.handleLoadingScreen(Llegacyconnector/v1_7_10/net/minecraft/client/gui/ScaledResolution;)Z   # 1 user(s): com.hbm.inventory.gui.LoadingScreenRendererNT
-cpw.mods.fml.client.FMLClientHandler.setupServerList()V   # 1 user(s): lumien.custommainmenu.lib.actions.ActionConnectToServer
-cpw.mods.fml.client.GuiScrollingList.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;IIIIII)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.bottom:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.drawGradientRect(IIIIII)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.drawSlot(IIIILlegacyconnector/v1_7_10/net/minecraft/client/renderer/Tessellator;)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.elementClicked(IZ)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.func_27255_a(II)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiStringList
-cpw.mods.fml.client.GuiScrollingList.func_27257_b(II)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.func_27260_a(IILlegacyconnector/v1_7_10/net/minecraft/client/renderer/Tessellator;)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.isSelected(I)Z   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.left:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.listHeight:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.listWidth:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.mouseX:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.mouseY:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.slotHeight:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.GuiScrollingList.top:I   # 1 user(s): com.fiskmods.heroes.client.gui.GuiAbstractList
-cpw.mods.fml.client.config.ConfigGuiType.BOOLEAN:Llegacyconnector_synth/v1_7_10/cpw/mods/fml/client/config/ConfigGuiType;   # 1 user(s): openperipheral.ConfigGuiFactory$FeatureConfigElement
-cpw.mods.fml.client.config.DummyConfigElement$DummyCategoryElement.<init>(Ljava/lang/String;Ljava/lang/String;Ljava/util/List;Ljava/lang/Class;)V -> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/Class;)V   # 1 user(s): openmods.config.gui.OpenModsConfigScreen$CategoryElement
-cpw.mods.fml.client.config.GuiCheckBox.<init>(IIILjava/lang/String;Z)V   # 1 user(s): com.fiskmods.heroes.client.gui.marketplace.GuiScreenMarketplaceLicense
-cpw.mods.fml.client.config.GuiCheckBox.isChecked()Z   # 1 user(s): com.fiskmods.heroes.client.gui.marketplace.GuiScreenMarketplaceLicense
-cpw.mods.fml.client.config.GuiConfigEntries$CategoryEntry.<init>(Llegacyconnector/v1_7_10/cpw/mods/fml/client/config/GuiConfig;Llegacyconnector/v1_7_10/cpw/mods/fml/client/config/GuiConfigEntries;Llegacyconnector/v1_7_10/cpw/mods/fml/client/config/IConfigElement;)V   # 1 user(s): openmods.config.gui.OpenModsConfigScreen$EntryWithWarning
-cpw.mods.fml.client.config.GuiConfigEntries$CategoryEntry.configElement:Llegacyconnector/v1_7_10/cpw/mods/fml/client/config/IConfigElement;   # 1 user(s): openmods.config.gui.OpenModsConfigScreen$EntryWithWarning
-cpw.mods.fml.client.config.GuiConfigEntries$CategoryEntry.owningScreen:Llegacyconnector/v1_7_10/cpw/mods/fml/client/config/GuiConfig;   # 1 user(s): openmods.config.gui.OpenModsConfigScreen$EntryWithWarning
-cpw.mods.fml.client.registry.RenderingRegistry.renderWorldBlock(Llegacyconnector/v1_7_10/net/minecraft/client/renderer/RenderBlocks;Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;IIILlegacyconnector/v1_7_10/net/minecraft/block/Block;I)Z   # 1 user(s): com.InfinityRaider.AgriCraft.compatibility.growthcraft.CropPlantGrowthCraftRice
-net.minecraft.client.gui.GuiListExtended.bottom:I   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.field_148163_i:Z   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.func_148181_b(III)Z   # 1 user(s): com.hbm.blocks.generic.BlockWandStructure$GuiStructureLoad
-net.minecraft.client.gui.GuiListExtended.getSlotIndexFromScreenCoords(II)I   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.registerScrollButtons(II)V   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiScreenHeroPacks
-net.minecraft.client.gui.GuiListExtended.right:I   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.setHasListHeader(ZI)V   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.setSlotXBoundsFromLeft(I)V   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiScreenHeroPacks
-net.minecraft.client.gui.GuiListExtended.top:I   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
-net.minecraft.client.gui.GuiListExtended.width:I   # 1 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiHeroPackList
 net.minecraft.client.gui.GuiOptionButton.<init>(IIILjava/lang/String;)V   # 1 user(s): com.xcompwiz.mystcraft.world.profiling.GuiMystcraftProfiling
 net.minecraft.client.gui.GuiPlayerInfo.name:Ljava/lang/String;   # 1 user(s): cofh.core.gui.client.GuiFriendsList
 net.minecraft.client.gui.GuiScreen.access$1302(Lhardcorequesting/client/interfaces/GuiQuestBook;Lhardcorequesting/quests/Quest;)Lhardcorequesting/quests/Quest;   # 1 user(s): hardcorequesting.client.interfaces.GuiQuestBook$EditButton
@@ -62,19 +8,6 @@ net.minecraft.client.gui.GuiScreen.access$1402(Lhardcorequesting/client/interfac
 net.minecraft.client.gui.GuiScreen.access$800(Lhardcorequesting/client/interfaces/GuiQuestBook;)Lhardcorequesting/client/interfaces/GuiQuestBook$EditMode;   # 1 user(s): hardcorequesting.client.interfaces.GuiQuestBook$EditButton
 net.minecraft.client.gui.GuiScreen.access$802(Lhardcorequesting/client/interfaces/GuiQuestBook;Lhardcorequesting/client/interfaces/GuiQuestBook$EditMode;)Lhardcorequesting/client/interfaces/GuiQuestBook$EditMode;   # 1 user(s): hardcorequesting.client.interfaces.GuiQuestBook$EditButton
 net.minecraft.client.gui.GuiScreenRealmsProxy.func_154321_a()Llegacyconnector_synth/v1_7_10/net/minecraft/realms/RealmsScreen;   # 1 user(s): journeymap.client.forge.helper.impl.ForgeHelper_1_7_10
-net.minecraft.client.gui.GuiSlot.actionPerformed(Llegacyconnector/v1_7_10/net/minecraft/client/gui/GuiButton;)V   # 1 user(s): journeymap.client.ui.component.ScrollPane
-net.minecraft.client.gui.GuiSlot.getAmountScrolled()I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.getContentHeight()I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.getSlotIndexFromScreenCoords(II)I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.headerPadding:I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.height:I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.isMouseYWithinSlotBounds(I)Z   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.registerScrollButtons(II)V   # 1 user(s): ichun.client.gui.config.GuiConfigBase
-net.minecraft.client.gui.GuiSlot.scrollBy(I)V   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.setDimensions(IIII)V   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.setEnabled(Z)V   # 1 user(s): journeymap.client.ui.component.ScrollListPane
-net.minecraft.client.gui.GuiSlot.setShowSelectionBox(Z)V   # 1 user(s): journeymap.client.ui.waypoint.WaypointEditor
-net.minecraft.client.gui.GuiSlot.slotHeight:I   # 1 user(s): journeymap.client.ui.component.ScrollListPane
 net.minecraft.client.gui.IProgressMeter.doneLoading()V   # 1 user(s): com.fiskmods.heroes.common.network.MessageFabricator$Load
 net.minecraft.client.gui.MapItemRenderer.func_148246_a(Llegacyconnector/v1_7_10/net/minecraft/world/storage/MapData;)V   # 1 user(s): twilightforest.TFMapPacketHandler
 net.minecraft.client.gui.ServerListEntryNormal.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/gui/GuiMultiplayer;Llegacyconnector/v1_7_10/net/minecraft/client/multiplayer/ServerData;)V   # 1 user(s): com.fiskmods.heroes.client.gui.GuiFiskServer$ServerListEntryFisk

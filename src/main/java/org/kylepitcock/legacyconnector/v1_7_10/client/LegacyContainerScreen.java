@@ -48,6 +48,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
         if (legacy == null || failed) return;
+        legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen.mcc$beginFrame();
         RenderContext.beginGui(graphics);
         try {
             // Runs the mod's own drawScreen override (CoFH draws its tooltips and gauge hovers there); the base draws the buttons.
@@ -98,6 +99,12 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
     public boolean mouseReleased(double x, double y, int button) {
         if (legacy != null && !failed) failed = !ScreenGuard.run(this, () -> legacy.mcc$mouseReleased((int) x, (int) y, button));
         return super.mouseReleased(x, y, button);
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (legacy != null && !failed) failed = !ScreenGuard.run(this, () -> legacy.mcc$mouseScrolled((int) x, (int) y, scrollY));
+        return super.mouseScrolled(x, y, scrollX, scrollY);
     }
 
     @Override

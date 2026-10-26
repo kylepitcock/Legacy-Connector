@@ -28,6 +28,7 @@ public class LegacyScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         if (failed) return;
+        GuiScreen.mcc$beginFrame();
         RenderContext.beginGui(graphics);
         try {
             failed = !ScreenGuard.run(this, () -> legacy.drawScreen(mouseX, mouseY, partialTick));
@@ -56,6 +57,19 @@ public class LegacyScreen extends Screen {
     @Override
     public boolean mouseDragged(double x, double y, int button, double dx, double dy) {
         legacy.mcc$mouseDragged((int) x, (int) y, button);
+        return true;
+    }
+
+    @Override
+    public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+        if (!failed) failed = !ScreenGuard.run(this, () -> legacy.mcc$mouseScrolled((int) x, (int) y, scrollY));
+        return true;
+    }
+
+    @Override
+    public boolean keyReleased(int key, int scanCode, int modifiers) {
+        int legacyKey = LegacyKeys.toLegacy(key);
+        if (legacyKey != 0 && !failed) failed = !ScreenGuard.run(this, () -> legacy.mcc$keyReleased(legacyKey));
         return true;
     }
 

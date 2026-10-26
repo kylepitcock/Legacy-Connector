@@ -422,6 +422,39 @@ public class Property {
         values = v;
     }
 
+    // ------------------------------------------------------------------ what the config screen (GuiConfig) uses to edit the value
+
+    private java.util.regex.Pattern validationPattern;
+    private Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> configEntryClass;
+    private Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiEditArrayEntries.IArrayEntry> arrayEntryClass;
+
+    public Property setValidationPattern(java.util.regex.Pattern pattern) {
+        this.validationPattern = pattern;
+        return this;
+    }
+
+    public java.util.regex.Pattern getValidationPattern() {
+        return validationPattern;
+    }
+
+    public Property setConfigEntryClass(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> clazz) {
+        this.configEntryClass = clazz;
+        return this;
+    }
+
+    public Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> getConfigEntryClass() {
+        return configEntryClass;
+    }
+
+    public Property setArrayEntryClass(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiEditArrayEntries.IArrayEntry> clazz) {
+        this.arrayEntryClass = clazz;
+        return this;
+    }
+
+    public Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiEditArrayEntries.IArrayEntry> getArrayEntryClass() {
+        return arrayEntryClass;
+    }
+
     private static int parseInt(String s, int fallback) {
         try {
             return Integer.parseInt(s.trim());
