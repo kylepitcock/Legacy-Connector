@@ -45,6 +45,10 @@ public final class ClientGui {
             mc.setScreen(null);
             return;
         }
+        if (screen instanceof LegacyConfigScreens.ModernParent parent) {
+            mc.setScreen(parent.modern());
+            return;
+        }
         net.minecraft.client.gui.screens.Screen vanilla = vanillaEquivalent(mc, screen);
         mc.setScreen(vanilla != null ? vanilla : new LegacyScreen(screen));
     }

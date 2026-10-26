@@ -11,8 +11,9 @@ public class GuiButton extends Gui {
             net.minecraft.resources.ResourceLocation.withDefaultNamespace("widget/button_disabled"),
             net.minecraft.resources.ResourceLocation.withDefaultNamespace("widget/button_highlighted"));
 
-    protected int width;
-    protected int height;
+    /** Public as FML's access transformer made them (its config entries resize their buttons). */
+    public int width;
+    public int height;
     public int xPosition;
     public int yPosition;
     public String displayString;
@@ -35,6 +36,12 @@ public class GuiButton extends Gui {
         this.displayString = text;
     }
 
+    /** The button face for a hover state (0 disabled, 1 normal, 2 highlighted), nine-sliced to any size like the modern buttons. */
+    public static void mcc$drawBackground(int hoverState, int x, int y, int width, int height) {
+        var gui = RenderContext.gui();
+        if (gui != null) gui.blitSprite(SPRITES.get(hoverState != 0, hoverState == 2), x, y, width, height);
+    }
+
     public int getHoverState(boolean hovered) {
         return !enabled ? 0 : hovered ? 2 : 1;
     }
@@ -44,7 +51,7 @@ public class GuiButton extends Gui {
         var gui = RenderContext.gui();
         if (gui == null) return;
         hovered = mouseX >= xPosition && mouseY >= yPosition && mouseX < xPosition + width && mouseY < yPosition + height;
-        gui.blitSprite(SPRITES.get(enabled, hovered), xPosition, yPosition, width, height);
+        mcc$drawBackground(getHoverState(hovered), xPosition, yPosition, width, height);
         mouseDragged(mc, mouseX, mouseY);
         int color = packedFGColour != 0 ? packedFGColour : !enabled ? 10526880 : hovered ? 16777120 : 14737632;
         drawCenteredString(mc.fontRenderer, displayString, xPosition + width / 2, yPosition + (height - 8) / 2, color);

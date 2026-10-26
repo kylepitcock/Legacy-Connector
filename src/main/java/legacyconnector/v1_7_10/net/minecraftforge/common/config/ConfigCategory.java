@@ -207,4 +207,16 @@ public class ConfigCategory implements Map<String, Property> {
     public Set<Entry<String, Property>> entrySet() {
         return properties.entrySet();
     }
+
+    /** The entry the config screen shows for this category (null: the default button opening a sub-screen). */
+    private Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> configEntryClass;
+
+    public ConfigCategory setConfigEntryClass(Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> clazz) {
+        this.configEntryClass = clazz;
+        return this;
+    }
+
+    public Class<? extends legacyconnector.v1_7_10.cpw.mods.fml.client.config.GuiConfigEntries.IConfigEntry> getConfigEntryClass() {
+        return configEntryClass;
+    }
 }

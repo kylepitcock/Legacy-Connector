@@ -70,6 +70,8 @@ public final class Platform1710 implements LegacyPlatform {
             LegacyModContainer1710.setActive(null);
         }
         dispatch(mod, new legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLConstructionEvent());
+        // the mod list's Config button opens the mod's @Mod(guiFactory) screen
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyConfigScreens.register(mod);
     }
 
     private static void injectInstanceAndMetadata(LegacyModRecord mod, LegacyModContainer1710 container) throws IllegalAccessException {

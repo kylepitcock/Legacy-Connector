@@ -40,6 +40,26 @@ public class RenderingRegistry {
         return BLOCK_HANDLERS.get(renderId);
     }
 
+    /** Draws a block with the handler registered for a render type in the world (mods call it to reuse another mod's renderer). */
+    public boolean renderWorldBlock(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block,
+            int modelId) {
+        ISimpleBlockRenderingHandler handler = BLOCK_HANDLERS.get(modelId);
+        return handler != null && handler.renderWorldBlock(world, x, y, z, block, modelId, renderer);
+    }
+
+    /** Draws a block's item form with the handler registered for a render type. */
+    public void renderInventoryBlock(legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks renderer,
+            legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, int modelId) {
+        ISimpleBlockRenderingHandler handler = BLOCK_HANDLERS.get(modelId);
+        if (handler != null) handler.renderInventoryBlock(block, metadata, modelId, renderer);
+    }
+
+    public boolean renderItemAsFull3DBlock(int modelId) {
+        ISimpleBlockRenderingHandler handler = BLOCK_HANDLERS.get(modelId);
+        return handler != null && handler.shouldRender3DInInventory(modelId);
+    }
+
     public static int addNewArmourRendererPrefix(String prefix) {
         return 5 + prefix.hashCode() % 1000;
     }

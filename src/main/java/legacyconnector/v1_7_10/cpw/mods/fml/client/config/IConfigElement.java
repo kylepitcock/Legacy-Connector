@@ -7,6 +7,12 @@ import java.util.regex.Pattern;
 public interface IConfigElement<T> {
     boolean isProperty();
 
+    /** The entry class the config screen uses for this element (constructed with (GuiConfig, GuiConfigEntries, IConfigElement)); null for the default. */
+    Class<? extends GuiConfigEntries.IConfigEntry> getConfigEntryClass();
+
+    /** The entry class of a list's items in the list editor (constructed with (GuiEditArray, GuiEditArrayEntries, IConfigElement, Object)). */
+    Class<? extends GuiEditArrayEntries.IArrayEntry> getArrayEntryClass();
+
     String getName();
 
     String getQualifiedName();
@@ -17,7 +23,7 @@ public interface IConfigElement<T> {
 
     List<IConfigElement> getChildElements();
 
-    GuiConfigEntries.ConfigGuiType getType();
+    ConfigGuiType getType();
 
     boolean isList();
 
@@ -26,6 +32,10 @@ public interface IConfigElement<T> {
     int getMaxListLength();
 
     boolean isDefault();
+
+    Object getDefault();
+
+    Object[] getDefaults();
 
     void setToDefault();
 
@@ -38,10 +48,6 @@ public interface IConfigElement<T> {
     Object get();
 
     Object[] getList();
-
-    Object getDefault();
-
-    Object[] getDefaults();
 
     void set(T value);
 

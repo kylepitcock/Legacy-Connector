@@ -66,6 +66,22 @@ public class Gui {
         if (gui != null) gui.blit(RenderContext.texture(), x, y, u, v, width, height, (int) texW, (int) texH);
     }
 
+    /** 1.7.10's options background (the dirt tile); {@code textures/gui/options_background.png} is gone, the block texture is the same image. */
+    public static final net.minecraft.resources.ResourceLocation MCC_OPTIONS_BACKGROUND = net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/block/dirt.png");
+
+    /**
+     * Tiles the options background over a rectangle as 1.7.10's lists did with the Tessellator: 32 screen pixels per tile, the texture
+     * moved up by {@code vScroll} pixels, tinted with {@code rgb}.
+     */
+    public static void mcc$drawOptionsBackground(int x1, int y1, int x2, int y2, float vScroll, int rgb) {
+        var gui = RenderContext.gui();
+        if (gui == null || x2 <= x1 || y2 <= y1) return;
+        int saved = RenderContext.argb();
+        gui.setColor((rgb >> 16 & 255) / 255.0F, (rgb >> 8 & 255) / 255.0F, (rgb & 255) / 255.0F, 1.0F);
+        gui.blit(MCC_OPTIONS_BACKGROUND, x1, y1, x2 - x1, y2 - y1, x1, y1 + vScroll, x2 - x1, y2 - y1, 32, 32);
+        gui.setColor((saved >> 16 & 255) / 255.0F, (saved >> 8 & 255) / 255.0F, (saved & 255) / 255.0F, (saved >>> 24) / 255.0F);
+    }
+
     public static void drawScaledCustomSizeModalRect(int x, int y, float u, float v, int uW, int vH, int width, int height, float texW, float texH) {
         var gui = RenderContext.gui();
         if (gui != null) gui.blit(RenderContext.texture(), x, y, width, height, u, v, uW, vH, (int) texW, (int) texH);

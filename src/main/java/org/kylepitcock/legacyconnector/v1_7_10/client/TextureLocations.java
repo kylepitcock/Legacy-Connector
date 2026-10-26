@@ -11,6 +11,8 @@ import org.kylepitcock.legacyconnector.core.Ids;
 public final class TextureLocations {
     private static final Map<String, String> RENAMES = Map.ofEntries(
             Map.entry("textures/atlas/items.png", "textures/atlas/blocks.png"),
+            // the dirt tile behind 1.7.10's menus and lists (Gui.optionsBackground) is the dirt block texture
+            Map.entry("textures/gui/options_background.png", "textures/block/dirt.png"),
             Map.entry("textures/gui/container/generic_54.png", "textures/gui/container/generic_54.png"),
             Map.entry("textures/entity/chest/normal.png", "textures/entity/chest/normal.png"),
             Map.entry("textures/entity/steve.png", "textures/entity/player/wide/steve.png"),
@@ -35,6 +37,7 @@ public final class TextureLocations {
             }
         }
         if (ns.equals("minecraft") && p.equals("textures/gui/icons.png")) LegacyIcons.ensure();
+        if (ns.equals("minecraft") && p.equals("textures/gui/widgets.png")) LegacyWidgets.ensure();
         if (ns.equals("minecraft") && (p.startsWith("textures/particle/") || p.equals("textures/entity/explosion.png"))) {
             ResourceLocation sheet = LegacyParticleSheets.forPath(p);
             if (sheet != null) return sheet;

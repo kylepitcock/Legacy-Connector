@@ -1,103 +1,223 @@
 package legacyconnector.v1_7_10.cpw.mods.fml.client.config;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import legacyconnector.v1_7_10.net.minecraft.util.StatCollector;
 
-/** A free-standing element for mods that build their config screen without a Configuration file. */
+/** A free-standing element for mods that build their config screen without a Configuration file (Forge 1.7.10). */
 public class DummyConfigElement<T> implements IConfigElement<T> {
-    protected final String name;
-    protected final String langKey;
-    protected final boolean listFixed;
-    protected final int maxListLength;
-    protected final GuiConfigEntries.ConfigGuiType type;
-    protected final Object[] defaults;
-    protected final String[] validValues;
+    protected boolean isProperty = true;
+    protected boolean isList = false;
+    protected ConfigGuiType type;
+    protected String name;
+    protected String langKey;
+    protected Object value;
+    protected Object defaultValue;
     protected Object[] values;
-    protected final Object min;
-    protected final Object max;
-    protected final boolean list;
+    protected Object[] defaultValues;
+    protected String[] validValues;
+    protected Pattern validStringPattern;
+    protected T minValue;
+    protected T maxValue;
+    protected boolean requiresWorldRestart = false;
+    protected boolean requiresMcRestart = false;
+    protected boolean isListFixedLength = false;
+    protected int maxListLength = -1;
+    protected List<IConfigElement> childElements;
+    protected Class<? extends GuiConfigEntries.IConfigEntry> configEntryClass;
+    protected Class<? extends GuiEditArrayEntries.IArrayEntry> arrayEntryClass;
 
-    public DummyConfigElement(String name, Object defaultValue, GuiConfigEntries.ConfigGuiType type, String langKey) {
-        this(name, defaultValue, type, langKey, null, null);
+    /** A category made of other elements. */
+    public static class DummyCategoryElement<T> extends DummyConfigElement<T> {
+        public DummyCategoryElement(String name, String langKey, List<IConfigElement> childElements) {
+            this(name, langKey, childElements, null);
+        }
+
+        public DummyCategoryElement(String name, String langKey, Class<? extends GuiConfigEntries.IConfigEntry> customListEntryClass) {
+            this(name, langKey, new ArrayList<>(), customListEntryClass);
+        }
+
+        public DummyCategoryElement(String name, String langKey, List<IConfigElement> childElements,
+                Class<? extends GuiConfigEntries.IConfigEntry> customListEntryClass) {
+            super(name, null, ConfigGuiType.CONFIG_CATEGORY, langKey);
+            this.childElements = childElements;
+            this.configEntryClass = customListEntryClass;
+            this.isProperty = false;
+        }
     }
 
-    public DummyConfigElement(String name, Object defaultValue, GuiConfigEntries.ConfigGuiType type, String langKey, Object min, Object max) {
-        this(name, defaultValue, type, langKey, null, min, max);
+    /** A list of values, edited in its own screen. */
+    public static class DummyListElement<T> extends DummyConfigElement<T> {
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, boolean isListFixedLength, int maxListLength,
+                Pattern validStringPattern, T minValue, T maxValue) {
+            super(name, null, type, langKey, minValue, maxValue);
+            this.defaultValues = defaultValues;
+            this.values = defaultValues;
+            this.isListFixedLength = isListFixedLength;
+            this.maxListLength = maxListLength;
+            this.validStringPattern = validStringPattern;
+            this.isList = true;
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey) {
+            this(name, defaultValues, type, langKey, false, -1, null, null, null);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, boolean isListFixedLength) {
+            this(name, defaultValues, type, langKey, isListFixedLength, -1, null, null, null);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, int maxListLength) {
+            this(name, defaultValues, type, langKey, false, maxListLength, null, null, null);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, T minValue, T maxValue) {
+            this(name, defaultValues, type, langKey, false, -1, null, minValue, maxValue);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, boolean isListFixedLength, T minValue, T maxValue) {
+            this(name, defaultValues, type, langKey, isListFixedLength, -1, null, minValue, maxValue);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, int maxListLength, T minValue, T maxValue) {
+            this(name, defaultValues, type, langKey, false, maxListLength, null, minValue, maxValue);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, boolean isListFixedLength, int maxListLength,
+                T minValue, T maxValue) {
+            this(name, defaultValues, type, langKey, isListFixedLength, maxListLength, null, minValue, maxValue);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, Pattern validStringPattern) {
+            this(name, defaultValues, type, langKey, false, -1, validStringPattern, null, null);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, boolean isListFixedLength, Pattern validStringPattern) {
+            this(name, defaultValues, type, langKey, isListFixedLength, -1, validStringPattern, null, null);
+        }
+
+        public DummyListElement(String name, T[] defaultValues, ConfigGuiType type, String langKey, int maxListLength, Pattern validStringPattern) {
+            this(name, defaultValues, type, langKey, false, maxListLength, validStringPattern, null, null);
+        }
+
+        public DummyListElement setCustomEditListEntryClass(Class<? extends GuiEditArrayEntries.IArrayEntry> clazz) {
+            this.arrayEntryClass = clazz;
+            return this;
+        }
+
+        @Override
+        public Object getDefault() {
+            return Arrays.toString(this.defaultValues);
+        }
     }
 
-    public DummyConfigElement(String name, Object defaultValue, GuiConfigEntries.ConfigGuiType type, String langKey, String[] validValues) {
-        this(name, defaultValue, type, langKey, validValues, null, null);
-    }
-
-    private DummyConfigElement(String name, Object defaultValue, GuiConfigEntries.ConfigGuiType type, String langKey, String[] validValues, Object min, Object max) {
+    @SuppressWarnings("unchecked")
+    public DummyConfigElement(String name, T defaultValue, ConfigGuiType type, String langKey, String[] validValues, Pattern validStringPattern,
+            T minValue, T maxValue) {
         this.name = name;
-        this.langKey = langKey;
+        this.defaultValue = defaultValue;
+        this.value = defaultValue;
         this.type = type;
-        this.defaults = new Object[] {defaultValue};
-        this.values = new Object[] {defaultValue};
-        this.validValues = validValues == null ? new String[0] : validValues;
-        this.min = min;
-        this.max = max;
-        this.list = false;
-        this.listFixed = true;
-        this.maxListLength = -1;
+        this.langKey = langKey;
+        this.validValues = validValues;
+        this.validStringPattern = validStringPattern;
+        if (minValue == null) {
+            if (type == ConfigGuiType.INTEGER) this.minValue = (T) (Integer) Integer.MIN_VALUE;
+            else if (type == ConfigGuiType.DOUBLE) this.minValue = (T) (Double) (-Double.MAX_VALUE);
+        } else {
+            this.minValue = minValue;
+        }
+        if (maxValue == null) {
+            if (type == ConfigGuiType.INTEGER) this.maxValue = (T) (Integer) Integer.MAX_VALUE;
+            else if (type == ConfigGuiType.DOUBLE) this.maxValue = (T) (Double) Double.MAX_VALUE;
+        } else {
+            this.maxValue = maxValue;
+        }
     }
 
-    public DummyConfigElement(String name, Object[] defaultValues, GuiConfigEntries.ConfigGuiType type, String langKey, boolean isListFixedLength, int maxListLength) {
-        this.name = name;
-        this.langKey = langKey;
-        this.type = type;
-        this.defaults = defaultValues;
-        this.values = defaultValues.clone();
-        this.validValues = new String[0];
-        this.min = null;
-        this.max = null;
-        this.list = true;
-        this.listFixed = isListFixedLength;
-        this.maxListLength = maxListLength;
+    public DummyConfigElement(String name, T defaultValue, ConfigGuiType type, String langKey, Pattern validStringPattern) {
+        this(name, defaultValue, type, langKey, null, validStringPattern, null, null);
     }
 
-    @Override public boolean isProperty() { return true; }
+    public DummyConfigElement(String name, T defaultValue, ConfigGuiType type, String langKey, String[] validValues) {
+        this(name, defaultValue, type, langKey, validValues, null, null, null);
+    }
+
+    public DummyConfigElement(String name, T defaultValue, ConfigGuiType type, String langKey) {
+        this(name, defaultValue, type, langKey, null, null, null, null);
+    }
+
+    public DummyConfigElement(String name, T defaultValue, ConfigGuiType type, String langKey, T minValue, T maxValue) {
+        this(name, defaultValue, type, langKey, null, null, minValue, maxValue);
+    }
+
+    public DummyConfigElement setCustomListEntryClass(Class<? extends GuiConfigEntries.IConfigEntry> clazz) {
+        this.configEntryClass = clazz;
+        return this;
+    }
+
+    public IConfigElement setConfigEntryClass(Class<? extends GuiConfigEntries.IConfigEntry> clazz) {
+        this.configEntryClass = clazz;
+        return this;
+    }
+
+    public IConfigElement setArrayEntryClass(Class<? extends GuiEditArrayEntries.IArrayEntry> clazz) {
+        this.arrayEntryClass = clazz;
+        return this;
+    }
+
+    @Override public boolean isProperty() { return isProperty; }
+    @Override public Class<? extends GuiConfigEntries.IConfigEntry> getConfigEntryClass() { return configEntryClass; }
+    @Override public Class<? extends GuiEditArrayEntries.IArrayEntry> getArrayEntryClass() { return arrayEntryClass; }
     @Override public String getName() { return name; }
     @Override public String getQualifiedName() { return name; }
     @Override public String getLanguageKey() { return langKey; }
-    @Override public String getComment() { return ""; }
-    @Override public List<IConfigElement> getChildElements() { return null; }
-    @Override public GuiConfigEntries.ConfigGuiType getType() { return type; }
-    @Override public boolean isList() { return list; }
-    @Override public boolean isListLengthFixed() { return listFixed; }
+    @Override public String getComment() { return StatCollector.translateToLocal(langKey + ".tooltip"); }
+    @Override public List<IConfigElement> getChildElements() { return childElements; }
+    @Override public ConfigGuiType getType() { return type; }
+    @Override public boolean isList() { return isList; }
+    @Override public boolean isListLengthFixed() { return isListFixedLength; }
     @Override public int getMaxListLength() { return maxListLength; }
-    @Override public boolean isDefault() { return java.util.Arrays.equals(values, defaults); }
-    @Override public void setToDefault() { values = defaults.clone(); }
-    @Override public boolean requiresWorldRestart() { return false; }
-    @Override public boolean showInGui() { return true; }
-    @Override public boolean requiresMcRestart() { return false; }
-    @Override public Object get() { return values.length > 0 ? values[0] : null; }
-    @Override public Object[] getList() { return values; }
-    @Override public Object getDefault() { return defaults.length > 0 ? defaults[0] : null; }
-    @Override public Object[] getDefaults() { return defaults; }
-    @Override public void set(T value) { values = new Object[] {value}; }
-    @Override public void set(T[] newValues) { values = newValues.clone(); }
-    @Override public String[] getValidValues() { return validValues; }
-    @Override @SuppressWarnings("unchecked") public T getMinValue() { return (T) min; }
-    @Override @SuppressWarnings("unchecked") public T getMaxValue() { return (T) max; }
-    @Override public Pattern getValidationPattern() { return null; }
 
-    /** A category made of other elements. */
-    public static class DummyCategoryElement extends DummyConfigElement<Object> {
-        private final List<IConfigElement> children;
-
-        public DummyCategoryElement(String name, String langKey, List<IConfigElement> children) {
-            super(name, (Object) null, GuiConfigEntries.ConfigGuiType.CONFIG_CATEGORY, langKey);
-            this.children = children;
-        }
-
-        public DummyCategoryElement(String name, String langKey, Class<?> entryClass) {
-            this(name, langKey, new ArrayList<>());
-        }
-
-        @Override public boolean isProperty() { return false; }
-        @Override public List<IConfigElement> getChildElements() { return children; }
+    @Override
+    public boolean isDefault() {
+        if (!isProperty) return true;
+        if (isList) return Arrays.deepEquals(values, defaultValues);
+        return value != null ? value.equals(defaultValue) : defaultValue == null;
     }
+
+    @Override public Object getDefault() { return defaultValue; }
+    @Override public Object[] getDefaults() { return defaultValues; }
+
+    @Override
+    public void setToDefault() {
+        if (isList) this.values = Arrays.copyOf(defaultValues, defaultValues.length);
+        else this.value = defaultValue;
+    }
+
+    @Override public boolean requiresWorldRestart() { return requiresWorldRestart; }
+
+    public DummyConfigElement setRequiresWorldRestart(boolean requiresWorldRestart) {
+        this.requiresWorldRestart = requiresWorldRestart;
+        return this;
+    }
+
+    @Override public boolean showInGui() { return true; }
+    @Override public boolean requiresMcRestart() { return requiresMcRestart; }
+
+    public DummyConfigElement setRequiresMcRestart(boolean requiresMcRestart) {
+        this.requiresMcRestart = this.requiresWorldRestart = requiresMcRestart;
+        return this;
+    }
+
+    @Override public String[] getValidValues() { return validValues; }
+    @Override public Pattern getValidationPattern() { return validStringPattern; }
+    @Override public Object get() { return value; }
+    @Override public Object[] getList() { return values; }
+    @Override public void set(T value) { this.value = value; }
+    @Override public void set(T[] aVal) { this.values = aVal; }
+    @Override public T getMinValue() { return minValue; }
+    @Override public T getMaxValue() { return maxValue; }
 }
