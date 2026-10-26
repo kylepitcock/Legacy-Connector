@@ -78,6 +78,7 @@ public final class ClientGui {
             case "GuiModList" -> new net.neoforged.neoforge.client.gui.ModListScreen(parent);
             case "ScreenChatOptions" -> new net.minecraft.client.gui.screens.options.ChatOptionsScreen(parent, mc.options);
             case "GuiInventory" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player);
+            case "GuiStats" -> mc.player == null ? null : new net.minecraft.client.gui.screens.achievement.StatsScreen(parent, mc.player.getStats());
             case "GuiChat" -> screen instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.GuiChat chat
                     ? new net.minecraft.client.gui.screens.ChatScreen(chat.mcc$defaultText()) : null;
             case "GuiScreenAddServer" -> screen instanceof legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreenAddServer add

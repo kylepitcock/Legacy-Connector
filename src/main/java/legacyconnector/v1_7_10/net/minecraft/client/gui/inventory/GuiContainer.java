@@ -34,6 +34,21 @@ public abstract class GuiContainer extends GuiScreen {
 
     protected abstract void drawGuiContainerBackgroundLayer(float partialTicks, int mouseX, int mouseY);
 
+    /** The slots an item stack is being spread over while dragging (the hosting screen's quick-craft slots, kept in sync). */
+    protected final java.util.Set dragSplittingSlots = new java.util.HashSet();
+    protected boolean dragSplitting;
+
+    @SuppressWarnings("unchecked")
+    public void mcc$setDragSplitting(boolean active, Iterable<Slot> slots) {
+        dragSplitting = active;
+        dragSplittingSlots.clear();
+        if (active) for (Slot s : slots) dragSplittingSlots.add(s);
+    }
+
+    protected boolean isMouseOverSlot(Slot slot, int mouseX, int mouseY) {
+        return isPointInRegion(slot.xDisplayPosition, slot.yDisplayPosition, 16, 16, mouseX, mouseY);
+    }
+
     protected boolean isPointInRegion(int x, int y, int w, int h, int mouseX, int mouseY) {
         mouseX -= guiLeft;
         mouseY -= guiTop;
