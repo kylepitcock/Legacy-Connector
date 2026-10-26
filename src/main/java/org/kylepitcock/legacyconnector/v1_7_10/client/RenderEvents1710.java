@@ -46,7 +46,13 @@ public final class RenderEvents1710 {
         RenderManager.renderPosY = cam.y;
         RenderManager.renderPosZ = cam.z;
         var buffers = mc.renderBuffers().bufferSource();
-        RenderContext.beginWorld(e.getPoseStack(), buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        // Camera-relative and turned to the camera: at this stage neither the pose stack nor RenderSystem's model-view matrix
+        // holds the camera rotation (only the event's model-view does), so everything legacy code drew here was unrotated
+        // (Thaumcraft's particles and beams appeared turned by the camera's pitch and yaw, away from where they belong).
+        var pose = new com.mojang.blaze3d.vertex.PoseStack();
+        pose.last().pose().set(e.getModelViewMatrix());
+        pose.last().normal().set(new org.joml.Matrix3f(e.getModelViewMatrix()));
+        RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
         try {
             MinecraftForge.EVENT_BUS.post(new RenderWorldLastEvent(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().renderGlobal,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false)));
