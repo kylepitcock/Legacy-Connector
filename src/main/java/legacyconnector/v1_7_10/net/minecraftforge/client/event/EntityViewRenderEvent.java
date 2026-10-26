@@ -57,6 +57,22 @@ public abstract class EntityViewRenderEvent extends Event {
         }
     }
 
+    /**
+     * Fired after the fog of the frame is set up (outside fluids and blindness); handlers change it with
+     * {@code GL11.glFogf(GL_FOG_START / GL_FOG_END, ...)}. {@code fogMode} is -1 for the sky's fog and 0 for the terrain's,
+     * {@code farPlaneDistance} the render distance in blocks.
+     */
+    public static class RenderFogEvent extends EntityViewRenderEvent {
+        public final int fogMode;
+        public final float farPlaneDistance;
+
+        public RenderFogEvent(EntityLivingBase entity, double partialTicks, int fogMode, float farPlaneDistance) {
+            super(entity, partialTicks);
+            this.fogMode = fogMode;
+            this.farPlaneDistance = farPlaneDistance;
+        }
+    }
+
     public static class CameraSetup extends EntityViewRenderEvent {
         public float yaw;
         public float pitch;

@@ -30,6 +30,12 @@ import net.minecraft.server.packs.repository.Pack;
 public final class LegacyResourcePacks {
     private LegacyResourcePacks() {}
 
+    /**
+     * {@code Minecraft.defaultResourcePacks} (mods add to it by reflection). Kept here so lookups made before the client
+     * exists (or on a server) do not have to load the legacy Minecraft class.
+     */
+    public static final List DEFAULT_PACKS = java.util.Collections.synchronizedList(new ArrayList());
+
     /** Packs given to reloadResourcePack or addResourcePack, oldest first. */
     private static final List<IResourcePack> ADDED = new CopyOnWriteArrayList<>();
 
@@ -41,7 +47,7 @@ public final class LegacyResourcePacks {
     public static List<IResourcePack> injected() {
         List<IResourcePack> out = new ArrayList<>();
         try {
-            for (Object o : legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().mcc$defaultResourcePacks().toArray()) add(out, o);
+            for (Object o : DEFAULT_PACKS.toArray()) add(out, o);
             for (Object o : legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository.INSTANCE.mcc$modEntryPacks()) add(out, o);
         } catch (RuntimeException | LinkageError e) {
             // not on a client yet

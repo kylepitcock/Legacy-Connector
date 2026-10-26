@@ -41,11 +41,7 @@ public class Minecraft {
     /** The game directory (mods build paths from it). */
     public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
     /** Read reflectively by mods that add a resource pack; what they add is served to the game (see LegacyResourcePacks). */
-    private java.util.List defaultResourcePacks = new java.util.ArrayList();
-
-    public java.util.List mcc$defaultResourcePacks() {
-        return defaultResourcePacks;
-    }
+    private java.util.List defaultResourcePacks = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.DEFAULT_PACKS;
     public final legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame ingameGUI = new legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame();
     /** Mods replace it with their own subclass (by reflection, as it was a plain field). */
     public legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP playerController = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP();

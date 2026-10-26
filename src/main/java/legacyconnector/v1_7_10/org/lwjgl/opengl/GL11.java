@@ -165,6 +165,15 @@ public class GL11 extends GL11Guard {
     public static void glFog(int pname, FloatBuffer params) {
     }
 
+    /** Fog start, end, density and mode: applied to the frame's fog when set by a legacy fog event handler (see LegacyFog). */
+    public static void glFogf(int pname, float param) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFog.fog(pname, param);
+    }
+
+    public static void glFogi(int pname, int param) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFog.fog(pname, param);
+    }
+
     public static void glLoadMatrix(FloatBuffer m) {
     }
 
