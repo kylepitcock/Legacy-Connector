@@ -9,11 +9,11 @@ public abstract class BlockFlower extends Block {
         super(Material.PLANTS);
     }
 
+    protected legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyEnum<EnumFlowerType> type;
+
     public abstract EnumFlowerColor getBlockType();
 
-    private legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyEnum<EnumFlowerType> type;
-
-    /** The "type" property: the kinds of flower of this block's colour. */
+    /** The flower kinds of this block's color, as a state property (made on first use, as vanilla did). */
     public legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty<EnumFlowerType> getTypeProperty() {
         if (type == null) {
             type = legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyEnum.create("type", EnumFlowerType.class,

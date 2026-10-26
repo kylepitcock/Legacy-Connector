@@ -27,16 +27,25 @@ public class CrashReportCategory {
         return "(" + x + "," + y + "," + z + ")";
     }
 
-    /** The block, its state and its location as crash details (vanilla's block section). */
-    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
-        if (state != null) {
-            category.addDetail("Block", state::toString);
-            var block = state.getBlock();
-            if (block != null) {
-                int id = legacyconnector.v1_12_2.net.minecraft.block.Block.getIdFromBlock(block);
-                category.addDetail("Block type", () -> String.format("ID #%d (%s // %s)", id, block.getUnlocalizedName(), block.getClass().getName()));
+    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.Block block, int blockData) {
+        int id = legacyconnector.v1_12_2.net.minecraft.block.Block.getIdFromBlock(block);
+        category.addDetail("Block type", () -> {
+            try {
+                return String.format("ID #%d (%s // %s // %s)", id, block.getTranslationKey(), block.getClass().getName(), block.getRegistryName());
+            } catch (Throwable t) {
+                return "ID #" + id;
             }
-        }
+        });
+        category.addDetail("Block data value", () -> {
+            if (blockData < 0) return "Unknown? (Got " + blockData + ")";
+            String bits = String.format("%4s", Integer.toBinaryString(blockData)).replace(' ', '0');
+            return String.format("%1$d / 0x%1$X / 0b%2$s", blockData, bits);
+        });
+        category.addDetail("Block location", () -> getCoordinateInfo(pos));
+    }
+
+    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        category.addDetail("Block", () -> String.valueOf(state));
         category.addDetail("Block location", () -> getCoordinateInfo(pos));
     }
 
