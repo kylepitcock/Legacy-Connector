@@ -151,6 +151,14 @@ public final class TileEntityBridge {
         TileEntity view = null;
         if (be instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner(spawner);
+        } else if (be instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity moving) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityPiston(moving);
+        } else if (be instanceof net.minecraft.world.level.block.entity.HopperBlockEntity hopper) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityHopper(hopper);
+        } else if (be instanceof net.minecraft.world.level.block.entity.DispenserBlockEntity dispenser) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityDispenser(dispenser);
+        } else if (be instanceof net.minecraft.world.level.block.entity.BeaconBlockEntity beacon) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon(beacon);
         } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest(chest);
         } else if (be instanceof net.minecraft.world.Container c) {
@@ -185,6 +193,12 @@ public final class TileEntityBridge {
         if (be instanceof LegacyBlockEntity l) {
             l.replaceLegacy(te);
             if (te != null && te.worldObj == null) te.worldObj = world;
+        } else if (te instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityPiston piston && world.mcc$level() != null
+                && world.mcc$level().getBlockState(pos).getBlock() instanceof net.minecraft.world.level.block.piston.MovingPistonBlock) {
+            // a mod's piston moving a block: the legacy moving piston becomes the modern one
+            var level = world.mcc$level();
+            var modern = piston.mcc$toModern(pos, level.getBlockState(pos));
+            if (modern != null && modern != be && level instanceof net.minecraft.world.level.Level live) live.setBlockEntity(modern);
         } else if (te != null) {
             LOG.debug("Legacy setTileEntity at {} ignored: block there does not host legacy tile entities", pos);
         }
