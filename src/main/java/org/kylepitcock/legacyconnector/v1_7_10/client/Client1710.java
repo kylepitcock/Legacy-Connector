@@ -94,12 +94,15 @@ public final class Client1710 {
             } catch (RuntimeException | LinkageError e) {
                 continue;
             }
-            if (legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null) continue;
+            // a mod's handler, or 1.7.10's own renderer of a vanilla render type that no static model can show (panes)
+            var builtIn = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null
+                    ? VanillaBlockRenderers.forRenderType(renderId) : null;
+            if (builtIn == null && legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null) continue;
             for (var state : block.mcc$modern.getStateDefinition().getPossibleStates()) {
                 var location = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);
                 var original = models.get(location);
                 if (original == null || original instanceof IsbrhBlockModel) continue;
-                models.put(location, new IsbrhBlockModel(original, block, renderId));
+                models.put(location, new IsbrhBlockModel(original, block, renderId, builtIn));
                 replaced++;
             }
         }
