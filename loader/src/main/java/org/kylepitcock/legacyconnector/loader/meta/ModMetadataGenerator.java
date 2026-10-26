@@ -105,6 +105,7 @@ public final class ModMetadataGenerator {
             o.addProperty("dependencies", mod.dependencies);
             o.addProperty("clientSideOnly", mod.clientSideOnly);
             o.addProperty("serverSideOnly", mod.serverSideOnly);
+            o.addProperty("inCoreModJar", jar.coreModClass != null && !jar.coreModClass.isBlank());
             mods.add(o);
         }
         root.add("mods", mods);

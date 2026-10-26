@@ -44,6 +44,7 @@ public final class Platform1122 implements LegacyPlatform {
         Loader.mcc$setState(LoaderState.CONSTRUCTING);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CoreModPlugins1122.runAll(loader);
+        Loader.mcc$loadApiPackages(loader);
         LegacyModContainer1122 container = new LegacyModContainer1122(mod);
         mod.platformData = container;
         // the active container is set before the mod class loads: static initializers ask FML which mod they belong to

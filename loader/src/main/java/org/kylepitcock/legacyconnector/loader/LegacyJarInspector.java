@@ -88,6 +88,10 @@ public final class LegacyJarInspector {
                 if (pool.contains("cpw/mods/fml/common/SidedProxy") || pool.contains("net/minecraftforge/fml/common/SidedProxy")) {
                     collectSidedProxies(reader, jar);
                 }
+                if (entry.getName().endsWith("package-info.class")
+                        && (pool.contains("Lcpw/mods/fml/common/API;") || pool.contains("Lnet/minecraftforge/fml/common/API;"))) {
+                    collectApi(reader, jar, entry.getName());
+                }
             }
 
             if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
@@ -240,6 +244,34 @@ public final class LegacyJarInspector {
                             jar.sidedProxies.add(new String[] {className.replace('/', '.'), name});
                         }
                         return null;
+                    }
+                };
+            }
+        }, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+    }
+
+    private static void collectApi(ClassReader reader, LegacyJar jar, String entryName) {
+        String pkg = entryName.substring(0, entryName.length() - "/package-info.class".length()).replace('/', '.');
+        reader.accept(new ClassVisitor(Opcodes.ASM9) {
+            @Override
+            public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                if (!descriptor.equals("Lcpw/mods/fml/common/API;") && !descriptor.equals("Lnet/minecraftforge/fml/common/API;")) return null;
+                String[] found = new String[4];
+                found[3] = pkg;
+                return new AnnotationVisitor(Opcodes.ASM9) {
+                    @Override
+                    public void visit(String name, Object value) {
+                        switch (name) {
+                            case "provides" -> found[0] = String.valueOf(value);
+                            case "apiVersion" -> found[1] = String.valueOf(value);
+                            case "owner" -> found[2] = String.valueOf(value);
+                            default -> { }
+                        }
+                    }
+
+                    @Override
+                    public void visitEnd() {
+                        if (found[0] != null && !found[0].isBlank()) jar.apis.add(found);
                     }
                 };
             }

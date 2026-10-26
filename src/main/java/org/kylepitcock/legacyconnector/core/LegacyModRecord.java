@@ -37,6 +37,11 @@ public final class LegacyModRecord {
         this.logger = LogManager.getLogger(legacyId);
     }
 
+    /** The mod's jar also holds a coremod (FMLCorePluginContainsFMLMod); FML loaded those mods first. */
+    public boolean inCoreModJar() {
+        return metadata != null && metadata.has("inCoreModJar") && metadata.get("inCoreModJar").getAsBoolean();
+    }
+
     public String name() {
         return metadata != null && metadata.has("name") ? metadata.get("name").getAsString() : legacyId;
     }

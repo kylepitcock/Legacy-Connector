@@ -130,6 +130,18 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
             List<String> present = new ArrayList<>(legacy.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
             for (LibraryBridges.Bridge b : bridges) if (b.legacyModId() != null) present.add(b.legacyModId());
+            // APIs a jar declares (@API in a package-info) were mods to FML: @Optional and dependencies name them
+            // (Forestry's BuildCraft pipe code is @Optional.Method(modid = "BuildCraftAPI|transport")).
+            java.util.Map<String, String> apis = new java.util.LinkedHashMap<>();
+            java.util.Set<String> apiPackages = new java.util.LinkedHashSet<>();
+            for (LegacyJar j : legacy) for (String[] api : j.apis) {
+                apis.putIfAbsent(api[0], api[1] == null ? "" : api[1]);
+                apiPackages.add(api[3]);
+            }
+            present.addAll(apis.keySet());
+            System.setProperty("legacyconnector.legacyApis", apis.entrySet().stream().map(e -> e.getKey() + "@" + e.getValue())
+                    .collect(java.util.stream.Collectors.joining(",")));
+            System.setProperty("legacyconnector.legacyApiPackages", String.join(",", apiPackages));
             // Coremods decide what to strip while the jars are translated, before any mod is registered with the game.
             System.setProperty("legacyconnector.presentLegacyMods", String.join(",", present));
             // Read by the runtime's Loader.isModLoaded: bridged libraries count as loaded.

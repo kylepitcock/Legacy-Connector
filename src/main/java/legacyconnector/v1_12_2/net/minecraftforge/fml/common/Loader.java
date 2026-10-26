@@ -40,6 +40,26 @@ public class Loader {
         mcc$state = state;
     }
 
+    /**
+     * Mods find an API through its package ({@code Package.getPackage(name).getAnnotation(API.class)}), which only exists
+     * once a class of the package has loaded; the API's owner had usually loaded it by then in 1.7.10. Loading every
+     * API package-info first makes the check independent of the order mods load in.
+     */
+    private static volatile boolean mcc$apiPackagesLoaded;
+
+    public static void mcc$loadApiPackages(ClassLoader loader) {
+        if (mcc$apiPackagesLoaded) return;
+        mcc$apiPackagesLoaded = true;
+        for (String pkg : System.getProperty("legacyconnector.legacyApiPackages", "").split(",")) {
+            if (pkg.isEmpty()) continue;
+            try {
+                Class.forName(pkg + ".package-info", false, loader);
+            } catch (ClassNotFoundException | LinkageError ignored) {
+                // a stripped or absent package-info: the API is checked by mod id only
+            }
+        }
+    }
+
     public static boolean isModLoaded(String modname) {
         if (modname == null) return false;
         for (ModContainer c : MCC$CORE_CONTAINERS) if (modname.equals(c.getModId())) return true;

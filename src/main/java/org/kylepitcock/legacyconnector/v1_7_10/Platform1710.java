@@ -42,6 +42,7 @@ public final class Platform1710 implements LegacyPlatform {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.CONSTRUCTING);
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins.runAll(loader);
+        legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$loadApiPackages(loader);
         // FML's Scala adapter: an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$.
         Class<?> scalaModule = null;
         try {

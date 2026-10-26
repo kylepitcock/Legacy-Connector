@@ -22,6 +22,11 @@ public final class LegacyJar {
     public String mixinConfigs;
     public String accessTransformer;
     public final List<String> notes = new ArrayList<>();
+    /**
+     * {provides, apiVersion, owner, package} of every package-info {@code @API} in the jar (BuildCraft's "BuildCraftAPI|transport",
+     * ...): FML counted these as mods for {@code @Optional} and for dependency checks.
+     */
+    public final List<String[]> apis = new ArrayList<>();
     /** {class, field} of every @SidedProxy field in the jar. */
     public final List<String[]> sidedProxies = new ArrayList<>();
 

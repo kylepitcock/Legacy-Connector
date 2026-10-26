@@ -35,10 +35,16 @@ public final class LegacyMods {
         BY_LEGACY_ID.put(mod.legacyId.toLowerCase(Locale.ROOT), mod);
     }
 
-    /** All mods, sorted so that {@code after:X} / {@code required-after:X} dependencies come first. */
+    /**
+     * All mods, sorted so that {@code after:X} / {@code required-after:X} dependencies come first. Otherwise mods in
+     * coremod jars come first, as FML found them on the class path before it read the mods folder (ForgeMultipart
+     * registers its tile traits before AE2's integration adds pass-through interfaces), then by id.
+     */
     public static synchronized List<LegacyModRecord> ordered() {
         Map<String, LegacyModRecord> byId = new LinkedHashMap<>();
-        MODS.stream().sorted((a, b) -> a.legacyId.compareToIgnoreCase(b.legacyId)).forEach(m -> byId.put(m.legacyId.toLowerCase(Locale.ROOT), m));
+        MODS.stream().sorted(java.util.Comparator.comparing((LegacyModRecord m) -> !m.inCoreModJar())
+                        .thenComparing(m -> m.legacyId, String.CASE_INSENSITIVE_ORDER))
+                .forEach(m -> byId.put(m.legacyId.toLowerCase(Locale.ROOT), m));
         List<LegacyModRecord> out = new ArrayList<>();
         Map<LegacyModRecord, Integer> state = new HashMap<>();
         for (LegacyModRecord m : byId.values()) visit(m, byId, state, out);
