@@ -3,8 +3,6 @@ net.minecraft.block.BlockTNT.func_150114_a(Llegacyconnector/v1_7_10/net/minecraf
 net.minecraft.block.BlockWorkbench.<init>()V   # 2 user(s): danger.orespawn.CrystalWorkbench, mods.natura.blocks.overrides.AlternateWorkbench
 net.minecraft.inventory.ContainerWorkbench.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/InventoryPlayer;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 2 user(s): fox.spiteful.avaritia.gui.ContainerCustomWorkbench, vazkii.botania.client.gui.crafting.ContainerCraftingHalo
 net.minecraft.item.ItemBucket.tryPlaceContainedLiquid(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Z   # 2 user(s): buildcraft.transport.stripes.StripesHandlerBucket, cofh.core.util.fluid.BucketHandler
-net.minecraft.item.ItemColored.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;Z)V   # 2 user(s): biomesoplenty.common.itemblocks.ItemBlockFoliage, com.emoniph.witchery.item.ItemLeapingLily
-net.minecraft.item.ItemSoup.<init>(I)V   # 2 user(s): com.fiskmods.heroes.common.item.ItemSauce, com.hbm.items.ModItems
 net.minecraft.tileentity.TileEntity.addInfoToCrashReport(Llegacyconnector/v1_7_10/net/minecraft/crash/CrashReportCategory;)V   # 2 user(s): cofh.core.crash.CrashHelper, logisticspipes.blocks.LogisticsSecurityTileEntity
 net.minecraftforge.fluids.BlockFluidBase.getFlowDirection(Llegacyconnector/v1_7_10/net/minecraft/world/IBlockAccess;III)D   # 2 user(s): com.carpentersblocks.renderer.helper.RoutableFluidsHelper, thaumcraft.client.renderers.block.BlockGasRenderer
 net.minecraftforge.fluids.FluidEvent$FluidSpilledEvent.<init>(Llegacyconnector/v1_7_10/net/minecraftforge/fluids/FluidStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 2 user(s): buildcraft.factory.TileTank, ic2.core.block.generator.tileentity.TileEntityGeoGenerator
@@ -45,12 +43,7 @@ net.minecraft.item.Item.getMaxEnergyStored(Llegacyconnector/v1_7_10/net/minecraf
 net.minecraft.item.Item.receiveEnergy(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;IZ)I   # 1 user(s): tconstruct.library.tools.AbilityHelper
 net.minecraft.item.ItemDye.func_150918_a(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIII)V   # 1 user(s): com.carpentersblocks.tileentity.TECarpentersFlowerPot
 net.minecraft.item.ItemDye.func_150919_a(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Z   # 1 user(s): com.emoniph.witchery.brewing.WitcheryBrewRegistry$33
-net.minecraft.item.ItemEnderPearl.<init>()V   # 1 user(s): fox.spiteful.avaritia.items.ItemEndestPearl
 net.minecraft.item.ItemFishingRod.func_94597_g()Llegacyconnector/v1_7_10/net/minecraft/util/IIcon;   # 1 user(s): thaumcraft.client.renderers.entity.RenderGolemBase
-net.minecraft.item.ItemLeaves.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/BlockLeaves;)V   # 1 user(s): ic2.core.item.block.ItemRubLeaves
-net.minecraft.item.ItemLilyPad.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): twilightforest.item.ItemBlockTFHugeLilyPad
-net.minecraft.item.ItemMonsterPlacer.<init>()V   # 1 user(s): twilightforest.item.ItemTFSpawnEgg
-net.minecraft.item.ItemMonsterPlacer.spawnCreature(Llegacyconnector/v1_7_10/net/minecraft/world/World;IDDD)Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 1 user(s): tconstruct.mechworks.landmine.behavior.BehaviorSpawnEgg
 net.minecraft.item.ItemPotion.getColorFromDamage(I)I   # 1 user(s): com.fiskmods.heroes.common.arrowtype.ArrowTypeVial
 net.minecraft.item.ItemStack.setItemFrame(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityItemFrame;)V   # 1 user(s): jds.bibliocraft.tileentities.TileEntityMapFrame
 net.minecraft.item.crafting.RecipeFireworks.<init>()V   # 1 user(s): codechicken.nei.recipe.FireworkRecipeHandler
