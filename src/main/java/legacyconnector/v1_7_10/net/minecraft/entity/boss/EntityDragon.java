@@ -36,6 +36,27 @@ public class EntityDragon extends EntityLiving implements IBossDisplayData, IEnt
     public boolean forceNewTarget;
     public boolean slowed;
     public int deathTicks;
+    /** Phantom: the crystal healing the dragon (redirected to {@code mcc$get$healingEnderCrystal}). */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.entity.item.EntityEnderCrystal healingEnderCrystal;
+    private legacyconnector.v1_7_10.net.minecraft.entity.item.EntityEnderCrystal mcc$local_healingEnderCrystal;
+
+    /** A modern dragon's nearest crystal; a mod's dragon keeps its own. */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.item.EntityEnderCrystal mcc$get$healingEnderCrystal(EntityDragon d) {
+        if (d.mcc$entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon && !d.mcc$hosted()) {
+            return dragon.nearestCrystal == null ? null
+                    : org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(dragon.nearestCrystal) instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityEnderCrystal c ? c : null;
+        }
+        return d.mcc$local_healingEnderCrystal;
+    }
+
+    public static void mcc$set$healingEnderCrystal(EntityDragon d, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityEnderCrystal crystal) {
+        if (d.mcc$entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon dragon && !d.mcc$hosted()) {
+            dragon.nearestCrystal = crystal != null && crystal.mcc$entity instanceof net.minecraft.world.entity.boss.enderdragon.EndCrystal c ? c : null;
+            return;
+        }
+        d.mcc$local_healingEnderCrystal = crystal;
+    }
 
     /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
     public EntityDragon(net.minecraft.world.entity.LivingEntity modern) {

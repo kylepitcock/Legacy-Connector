@@ -1,15 +1,3 @@
-net.minecraft.util.DamageSource.causeFireballDamage(Llegacyconnector/v1_7_10/net/minecraft/entity/projectile/EntityFireball;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Llegacyconnector/v1_7_10/net/minecraft/util/DamageSource;   # 3 user(s): danger.orespawn.BetterFireball, micdoodle8.mods.galacticraft.planets.mars.entities.EntityProjectileTNT, twilightforest.entity.boss.EntityTFHydraMortar
-net.minecraft.entity.EntityTracker.sendToAllTrackingEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/network/Packet;)V   # 2 user(s): openblocks.common.item.ItemSleepingBag, twilightforest.entity.EntityTFTroll
-net.minecraft.entity.EntityBodyHelper.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
-net.minecraft.entity.EntityBodyHelper.updateRenderAngles()V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
-net.minecraft.entity.EntityTracker.getTrackingPlayers(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Ljava/util/Set;   # 1 user(s): buildcraft.BuildCraftMod$EntitySendRequest
-net.minecraft.entity.EntityTracker.updateTrackedEntities()V   # 1 user(s): com.fiskmods.fisktag.FTMapData
-net.minecraft.entity.EntityTrackerEntry.trackingPlayers:Ljava/util/Set;   # 1 user(s): openmods.utils.NetUtils
-net.minecraft.entity.EntityTrackerEntry.tryStartWachingThis(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayerMP;)V   # 1 user(s): com.fiskmods.fisktag.FTMapData
-net.minecraft.entity.boss.EntityDragon.healingEnderCrystal:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityEnderCrystal;   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
-net.minecraft.entity.item.EntityEnderCrystal.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): danger.orespawn.GenericDungeon
-net.minecraft.entity.item.EntityEnderCrystal.innerRotation:I   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
 net.minecraft.entity.item.EntityItem.deliverItemViaDrone(DDD)V   # 1 user(s): WayofTime.alchemicalWizardry.common.entity.mob.MailOrderEntityItem
-net.minecraft.entity.item.EntityItem.setThrower(Ljava/lang/String;)V   # 1 user(s): thaumcraft.common.entities.ContainerPech
 net.minecraft.entity.player.EntityPlayer.func_146104_a(Llegacyconnector_synth/v1_7_10/net/minecraft/tileentity/TileEntityBeacon;)V   # 1 user(s): team.chisel.block.BlockCarvableBeacon
 net.minecraft.entity.player.EntityPlayer.func_146104_a(Llegacyconnector_synth/v1_7_10/net/minecraft/tileentity/TileEntityBeacon;)V
