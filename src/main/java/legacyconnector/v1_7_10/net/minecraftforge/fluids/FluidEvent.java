@@ -33,6 +33,11 @@ public class FluidEvent extends Event {
         public final IFluidTank tank;
         public final int amount;
 
+        /** The 1.7.10 constructor: the amount moved is the stack's. */
+        public FluidFillingEvent(FluidStack fluid, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, IFluidTank tank) {
+            this(fluid, world, x, y, z, tank, fluid == null ? 0 : fluid.amount);
+        }
+
         public FluidFillingEvent(FluidStack fluid, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, IFluidTank tank, int amount) {
             super(fluid, world, x, y, z);
             this.tank = tank;
@@ -44,10 +49,22 @@ public class FluidEvent extends Event {
         public final IFluidTank tank;
         public final int amount;
 
+        /** The 1.7.10 constructor: the amount moved is the stack's. */
+        public FluidDrainingEvent(FluidStack fluid, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, IFluidTank tank) {
+            this(fluid, world, x, y, z, tank, fluid == null ? 0 : fluid.amount);
+        }
+
         public FluidDrainingEvent(FluidStack fluid, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, IFluidTank tank, int amount) {
             super(fluid, world, x, y, z);
             this.tank = tank;
             this.amount = amount;
+        }
+    }
+
+    /** A tank or container spilled its fluid into the world (a broken tank, an overfilled geothermal generator). */
+    public static class FluidSpilledEvent extends FluidEvent {
+        public FluidSpilledEvent(FluidStack fluid, legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+            super(fluid, world, x, y, z);
         }
     }
 }

@@ -159,6 +159,19 @@ public class TileEntity {
         return false;
     }
 
+    /** {@code func_145828_a}: the tile entity's section of a crash report (its id and class, position, block and metadata). */
+    public void addInfoToCrashReport(legacyconnector.v1_7_10.net.minecraft.crash.CrashReportCategory category) {
+        if (category == null) return;
+        category.addCrashSectionCallable("Name", () -> classToNameMap.get(getClass()) + " // " + getClass().getCanonicalName());
+        category.addCrashSection("Block location", legacyconnector.v1_7_10.net.minecraft.crash.CrashReportCategory.getCoordinateInfo(xCoord, yCoord, zCoord));
+        category.addCrashSectionCallable("Block type", () -> String.valueOf(getBlockType()));
+        category.addCrashSectionCallable("Block data value", () -> String.valueOf(getBlockMetadata()));
+        if (worldObj != null) {
+            category.addCrashSectionCallable("Actual block type", () -> String.valueOf(worldObj.getBlock(xCoord, yCoord, zCoord)));
+            category.addCrashSectionCallable("Actual block data value", () -> String.valueOf(worldObj.getBlockMetadata(xCoord, yCoord, zCoord)));
+        }
+    }
+
     public static final legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB INFINITE_EXTENT_AABB =
             legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB.getBoundingBox(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY,
                     Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);

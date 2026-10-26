@@ -501,7 +501,27 @@ public final class ItemStack {
         if (mcc$item != null) mcc$item.onBlockDestroyed(this, world, block, x, y, z, player);
     }
 
+    /** {@code field_82843_f}: the frame this stack is shown in (legacy frames that have no modern entity). */
+    private legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItemFrame itemFrame;
+
+    /** Whether the stack is shown in an item frame (map renderers draw a framed map differently). */
     public boolean isOnItemFrame() {
-        return false;
+        return itemFrame != null || mcc$stack.isFramed();
+    }
+
+    /** Records the frame the stack is shown in (the modern stack's entity representation when the frame is a real entity). */
+    public void setItemFrame(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItemFrame frame) {
+        this.itemFrame = frame;
+        if (frame == null) {
+            if (mcc$stack.isFramed()) mcc$stack.setEntityRepresentation(null);
+        } else if (frame.mcc$entity instanceof net.minecraft.world.entity.decoration.ItemFrame modern) {
+            mcc$stack.setEntityRepresentation(modern);
+        }
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItemFrame getItemFrame() {
+        if (itemFrame != null) return itemFrame;
+        var frame = mcc$stack.getFrame();
+        return frame == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(frame) instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItemFrame f ? f : null;
     }
 }

@@ -31,7 +31,7 @@ public class Enchantment {
     public static final Enchantment looting = vanilla(21, 2, EnumEnchantmentType.weapon, "lootBonus", 3);
     public static final Enchantment efficiency = vanilla(32, 10, EnumEnchantmentType.digger, "digging", 5);
     public static final Enchantment silkTouch = vanilla(33, 1, EnumEnchantmentType.digger, "untouching", 1);
-    public static final Enchantment unbreaking = vanilla(34, 5, EnumEnchantmentType.breakable, "durability", 3);
+    public static final Enchantment unbreaking = new EnchantmentDurability(34, 5);
     public static final Enchantment fortune = vanilla(35, 2, EnumEnchantmentType.digger, "lootBonusDigger", 3);
     public static final Enchantment power = vanilla(48, 10, EnumEnchantmentType.bow, "arrowDamage", 5);
     public static final Enchantment punch = vanilla(49, 2, EnumEnchantmentType.bow, "arrowKnockback", 2);

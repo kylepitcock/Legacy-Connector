@@ -39,7 +39,40 @@ public class FurnaceRecipes {
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
             if (func_151397_a(input, (ItemStack) e.getKey())) return (ItemStack) e.getValue();
         }
-        return null;
+        return mcc$modernResult(input);
+    }
+
+    private static volatile Object mcc$cacheOwner;
+    private static final Map<net.minecraft.world.item.Item, net.minecraft.world.item.ItemStack> MCC$MODERN = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The vanilla smelting recipes 1.7.10's table held live in the modern recipe manager: once a server runs, an input no legacy
+     * recipe takes is looked up there (cached per item, as smelting inputs are matched by item), so mod furnaces and machines
+     * built on {@code getSmeltingResult} smelt ores and food as before.
+     */
+    private static ItemStack mcc$modernResult(ItemStack input) {
+        if (input == null || input.getItem() == null) return null;
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return null;
+        var level = server.overworld();
+        if (level == null) return null;
+        var manager = server.getRecipeManager();
+        if (mcc$cacheOwner != manager) {
+            MCC$MODERN.clear();
+            mcc$cacheOwner = manager;
+        }
+        net.minecraft.world.item.ItemStack modern = ItemStack.mcc$toModern(input);
+        if (modern.isEmpty()) return null;
+        net.minecraft.world.item.ItemStack result = MCC$MODERN.computeIfAbsent(modern.getItem(), item -> {
+            try {
+                var in = new net.minecraft.world.item.crafting.SingleRecipeInput(new net.minecraft.world.item.ItemStack(item));
+                return manager.getRecipeFor(net.minecraft.world.item.crafting.RecipeType.SMELTING, in, level)
+                        .map(h -> h.value().getResultItem(level.registryAccess()).copy()).orElse(net.minecraft.world.item.ItemStack.EMPTY);
+            } catch (RuntimeException e) {
+                return net.minecraft.world.item.ItemStack.EMPTY;
+            }
+        });
+        return result.isEmpty() ? null : ItemStack.mcc$wrap(result.copy());
     }
 
     public boolean func_151397_a(ItemStack a, ItemStack b) {

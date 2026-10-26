@@ -601,4 +601,55 @@ public class Item {
     public IIcon getIcon(ItemStack stack, int renderPass, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack usingItem, int useRemaining) {
         return getIcon(stack, renderPass);
     }
+
+    // ------------------------------------------------------------------ RF on items without the RF interface
+
+    /**
+     * Mods call the CoFH {@code IEnergyContainerItem} methods on items whose own copies were stripped with the RF API's
+     * {@code @Optional} (Tinkers' tools): they answer from the stack's NeoForge energy capability (1 RF = 1 FE), 0 without one.
+     */
+    public int getEnergyStored(ItemStack stack) {
+        var storage = mcc$energy(stack);
+        return storage == null ? 0 : mcc$energyCall(() -> storage.getEnergyStored());
+    }
+
+    public int getMaxEnergyStored(ItemStack stack) {
+        var storage = mcc$energy(stack);
+        return storage == null ? 0 : mcc$energyCall(() -> storage.getMaxEnergyStored());
+    }
+
+    public int receiveEnergy(ItemStack stack, int maxReceive, boolean simulate) {
+        var storage = mcc$energy(stack);
+        return storage == null ? 0 : mcc$energyCall(() -> storage.receiveEnergy(maxReceive, simulate));
+    }
+
+    public int extractEnergy(ItemStack stack, int maxExtract, boolean simulate) {
+        var storage = mcc$energy(stack);
+        return storage == null ? 0 : mcc$energyCall(() -> storage.extractEnergy(maxExtract, simulate));
+    }
+
+    /** Set while a capability answers: an item whose capability calls these methods back gets 0 instead of looping. */
+    private static final ThreadLocal<Boolean> MCC$IN_ENERGY = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    private static net.neoforged.neoforge.energy.IEnergyStorage mcc$energy(ItemStack stack) {
+        if (stack == null || MCC$IN_ENERGY.get()) return null;
+        var modern = ItemStack.mcc$toModern(stack);
+        if (modern.isEmpty()) return null;
+        try {
+            return modern.getCapability(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static int mcc$energyCall(java.util.function.IntSupplier call) {
+        MCC$IN_ENERGY.set(Boolean.TRUE);
+        try {
+            return call.getAsInt();
+        } catch (RuntimeException e) {
+            return 0;
+        } finally {
+            MCC$IN_ENERGY.set(Boolean.FALSE);
+        }
+    }
 }

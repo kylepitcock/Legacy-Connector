@@ -94,9 +94,18 @@ public class OreDictionary {
         }
     }
 
-    /** 1.7.10.2+: {@code alwaysCreateEntry} registers the name when it is unknown. */
+    /** The shared empty result for unknown names ({@link #getOres(String, boolean)} without creating the entry). */
+    public static final ArrayList<ItemStack> EMPTY_LIST = new UnmodifiableArrayList<>(new ArrayList<>());
+
+    /**
+     * 1.7.10.2+: {@code alwaysCreateEntry} registers the name when it is unknown; otherwise an unknown name gives
+     * {@link #EMPTY_LIST} (unless modern items carry the equivalent tag) and is not registered.
+     */
     public static ArrayList<ItemStack> getOres(String name, boolean alwaysCreateEntry) {
-        return alwaysCreateEntry ? getOres(name) : getOres(name);
+        if (alwaysCreateEntry || name == null || nameToId.containsKey(name)) return getOres(name);
+        List<ItemStack> modern = OreDictBridge.modernItemsFor(name);
+        if (modern == null || modern.isEmpty()) return EMPTY_LIST;
+        return new UnmodifiableArrayList<>(new ArrayList<>(modern));
     }
 
     public static void rebakeMap() {

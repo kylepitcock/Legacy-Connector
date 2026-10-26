@@ -12,6 +12,9 @@ import legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess;
  * top and bottom, flowing texture on the sides, sides hidden against the same fluid.
  */
 public class RenderBlockFluid implements ISimpleBlockRenderingHandler {
+    /** Forge: the one registered instance (mods draw fluids in their own handlers through it). */
+    public static RenderBlockFluid instance = new RenderBlockFluid();
+
     @Override
     public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
     }

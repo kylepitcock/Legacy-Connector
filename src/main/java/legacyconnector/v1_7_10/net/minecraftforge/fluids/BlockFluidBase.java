@@ -9,6 +9,7 @@ import legacyconnector.v1_7_10.net.minecraft.entity.Entity;
 import legacyconnector.v1_7_10.net.minecraft.init.Blocks;
 import legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB;
 import legacyconnector.v1_7_10.net.minecraft.util.IIcon;
+import legacyconnector.v1_7_10.net.minecraft.util.Vec3;
 import legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 
@@ -214,6 +215,68 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
         double my = Entity.mcc$get$motionY(entity);
         if (my < 0) Entity.mcc$set$motionY(entity, my * drag);
         if (temperature >= 1000) entity.setFire(5);
+    }
+
+    // ------------------------------------------------------------------ flow direction (renderers and entity pushing)
+
+    /**
+     * The angle of the flow at a position (what fluid renderers rotate the flowing texture by), or -1000 where it is still or
+     * not a liquid. Vanilla liquids answer through {@link legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid}.
+     */
+    public static double getFlowDirection(IBlockAccess world, int x, int y, int z) {
+        Block block = world.getBlock(x, y, z);
+        if (block == null || !block.getMaterial().isLiquid()) return -1000.0D;
+        if (!(block instanceof BlockFluidBase fluid)) {
+            return legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid.getFlowDirection(world, x, y, z, block.getMaterial());
+        }
+        Vec3 vec = fluid.getFlowVector(world, x, y, z);
+        return vec.xCoord == 0.0D && vec.zCoord == 0.0D ? -1000.0D : Math.atan2(vec.zCoord, vec.xCoord) - Math.PI / 2.0D;
+    }
+
+    /** The normalised direction the fluid flows in at a position: towards lower quanta, and down along walls it falls past. */
+    public Vec3 getFlowVector(IBlockAccess world, int x, int y, int z) {
+        Vec3 vec = Vec3.createVectorHelper(0.0D, 0.0D, 0.0D);
+        int decay = quantaPerBlock - getQuantaValue(world, x, y, z);
+        for (int side = 0; side < 4; ++side) {
+            int x2 = x;
+            int z2 = z;
+            switch (side) {
+                case 0 -> --x2;
+                case 1 -> --z2;
+                case 2 -> ++x2;
+                default -> ++z2;
+            }
+            int otherDecay = quantaPerBlock - getQuantaValue(world, x2, y, z2);
+            if (otherDecay >= quantaPerBlock) {
+                if (!world.getBlock(x2, y, z2).getMaterial().blocksMovement()) {
+                    otherDecay = quantaPerBlock - getQuantaValue(world, x2, y - 1, z2);
+                    if (otherDecay >= 0) {
+                        int power = otherDecay - (decay - quantaPerBlock);
+                        vec = vec.addVector((x2 - x) * power, 0.0D, (z2 - z) * power);
+                    }
+                }
+            } else if (otherDecay >= 0) {
+                int power = otherDecay - decay;
+                vec = vec.addVector((x2 - x) * power, 0.0D, (z2 - z) * power);
+            }
+        }
+        if (world.getBlock(x, y + 1, z) == this) {
+            boolean wall = isBlockSolid(world, x, y, z - 1, 2) || isBlockSolid(world, x, y, z + 1, 3) || isBlockSolid(world, x - 1, y, z, 4)
+                    || isBlockSolid(world, x + 1, y, z, 5) || isBlockSolid(world, x, y + 1, z - 1, 2) || isBlockSolid(world, x, y + 1, z + 1, 3)
+                    || isBlockSolid(world, x - 1, y + 1, z, 4) || isBlockSolid(world, x + 1, y + 1, z, 5);
+            if (wall) vec = vec.normalize().addVector(0.0D, -6.0D, 0.0D);
+        }
+        return vec.normalize();
+    }
+
+    /** Entities in a falling (dense) fluid are pushed along its flow. */
+    @Override
+    public void velocityToAddToEntity(World world, int x, int y, int z, Entity entity, Vec3 vec) {
+        if (densityDir > 0 || vec == null) return;
+        Vec3 flow = getFlowVector(world, x, y, z);
+        vec.xCoord += flow.xCoord * (quantaPerBlock * 4);
+        vec.yCoord += flow.yCoord * (quantaPerBlock * 4);
+        vec.zCoord += flow.zCoord * (quantaPerBlock * 4);
     }
 
     // ------------------------------------------------------------------ helpers shared by the flows

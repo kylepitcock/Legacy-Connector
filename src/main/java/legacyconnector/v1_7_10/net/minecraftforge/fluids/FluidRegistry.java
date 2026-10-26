@@ -22,7 +22,7 @@ public abstract class FluidRegistry {
     public static int renderIdFluid = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.getNextAvailableRenderId();
 
     static {
-        legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(new RenderBlockFluid());
+        legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.registerBlockHandler(RenderBlockFluid.instance);
         registerFluid(WATER);
         registerFluid(LAVA);
     }
