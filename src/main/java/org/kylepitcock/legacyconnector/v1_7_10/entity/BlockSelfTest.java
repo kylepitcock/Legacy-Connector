@@ -202,12 +202,14 @@ public final class BlockSelfTest {
         checkFluids(level);
         int survived = 0, activated = 0;
         Map<String, Integer> vanished = new java.util.TreeMap<>();
+        java.util.List<String> goneNames = new java.util.ArrayList<>();
         for (int i = 0; i < PLACED.size(); i++) {
             BlockPos pos = PLACED.get(i);
             String name = NAMES.get(i);
             BlockState state = level.getBlockState(pos);
             if (state.isAir()) {
                 vanished.merge(name.contains(":") ? name.substring(0, name.indexOf(':')) : name, 1, Integer::sum);
+                goneNames.add(name);
                 continue;
             }
             survived++;
@@ -232,6 +234,7 @@ public final class BlockSelfTest {
             }
         }
         LOG.info("Blocks gone after 60 ticks, per mod: {}", vanished);
+        LOG.info("Blocks gone after 60 ticks: {}", goneNames);
         Map<String, String> itemProblems = itemTest(level, player);
         StringBuilder sb = new StringBuilder();
         PROBLEMS.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));
