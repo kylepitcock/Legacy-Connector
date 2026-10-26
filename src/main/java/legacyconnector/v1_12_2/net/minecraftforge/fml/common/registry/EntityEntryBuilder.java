@@ -16,6 +16,7 @@ public final class EntityEntryBuilder<E extends Entity> {
     private boolean sendsVelocityUpdates = true;
     private int eggPrimary = -1;
     private int eggSecondary = -1;
+    private java.util.function.Function<legacyconnector.v1_12_2.net.minecraft.world.World, ? extends E> factory;
 
     private EntityEntryBuilder() {
     }
@@ -39,6 +40,12 @@ public final class EntityEntryBuilder<E extends Entity> {
 
     public EntityEntryBuilder<E> id(String id, int network) {
         return id(new ResourceLocation(id), network);
+    }
+
+    /** Makes the entities with this function instead of the class's World constructor. */
+    public EntityEntryBuilder<E> factory(java.util.function.Function<legacyconnector.v1_12_2.net.minecraft.world.World, E> factory) {
+        this.factory = factory;
+        return this;
     }
 
     public EntityEntryBuilder<E> name(String name) {
@@ -73,7 +80,8 @@ public final class EntityEntryBuilder<E extends Entity> {
         entry.trackingRange = trackingRange;
         entry.updateFrequency = updateFrequency;
         entry.sendsVelocityUpdates = sendsVelocityUpdates;
-        if (eggPrimary >= 0) entry.setEgg(eggPrimary, eggSecondary);
+        entry.mcc$factory = factory;
+        if (eggPrimary >= 0) entry.setEgg(new legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo(id, eggPrimary, eggSecondary));
         return entry;
     }
 }

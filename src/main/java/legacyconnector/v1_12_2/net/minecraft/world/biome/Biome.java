@@ -166,15 +166,14 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     }
 
     /** A mob a biome can spawn. */
-    public static class SpawnListEntry {
+    public static class SpawnListEntry extends legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item {
         public Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity> entityClass;
-        public int itemWeight;
         public int minGroupCount;
         public int maxGroupCount;
 
         public SpawnListEntry(Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity> entityClass, int weight, int min, int max) {
+            super(weight);
             this.entityClass = entityClass;
-            this.itemWeight = weight;
             this.minGroupCount = min;
             this.maxGroupCount = max;
         }

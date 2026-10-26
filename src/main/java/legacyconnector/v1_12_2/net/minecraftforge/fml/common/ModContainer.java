@@ -57,6 +57,10 @@ public interface ModContainer {
         return new java.util.ArrayList<>();
     }
 
+    /** FML hands each container the jar's mcmod.info; the containers here already carry their metadata. */
+    default void bindMetadata(MetadataCollection mc) {
+    }
+
     default boolean shouldLoadInEnvironment() {
         return true;
     }

@@ -36,6 +36,11 @@ public final class BlockBridge1122 {
         Material m = block.getMaterialLegacy();
         if (m != null && !m.isOpaque()) p.noOcclusion();
         if (m != null && !m.blocksMovement()) p.noCollission();
+        if (m != null) {
+            p.pushReaction(m.mcc$pushReaction());
+            if (m.getCanBurn()) p.ignitedByLava();
+            if (m.isReplaceable()) p.replaceable();
+        }
         boolean entity = false;
         try {
             entity = block.hasTileEntity(block.getDefaultState());

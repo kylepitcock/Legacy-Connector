@@ -1,7 +1,6 @@
 package org.kylepitcock.legacyconnector.v1_12_2.bridge;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -309,7 +308,7 @@ public final class Registries1122 {
         }
 
         @Override
-        public synchronized Collection<V> getValues() {
+        public synchronized java.util.List<V> getValues() {
             ensureVanilla();
             return Collections.unmodifiableList(new ArrayList<>(byName.values()));
         }

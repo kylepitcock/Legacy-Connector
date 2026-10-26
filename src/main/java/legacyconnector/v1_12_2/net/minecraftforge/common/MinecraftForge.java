@@ -13,6 +13,6 @@ public class MinecraftForge {
     }
 
     public static String getBrandingVersion() {
-        return "Minecraft Forge 10.13.4.1614 (MC Compatibility)";
+        return "Minecraft Forge 14.23.5.2860";
     }
 }

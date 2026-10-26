@@ -97,9 +97,9 @@ public class Loader {
             md.modId = k;
             md.name = k;
             md.version = switch (k) {
-                case "Forge" -> "10.13.4.1614";
-                case "FML" -> "7.10.99.99";
-                case "mcp" -> "9.05";
+                case "Forge" -> "14.23.5.2860";
+                case "FML" -> "8.0.99.99";
+                case "mcp" -> "9.42";
                 case "Minecraft" -> "1.12.2";
                 default -> "1.0.0";
             };
@@ -137,12 +137,32 @@ public class Loader {
         return LegacyModContainer1122.active();
     }
 
+    /** Makes a container the one registrations are attributed to (null clears it); only the layer's own containers can be active. */
+    public void setActiveModContainer(ModContainer container) {
+        if (container == null) LegacyModContainer1122.setActive(null);
+        else if (container instanceof LegacyModContainer1122 c) LegacyModContainer1122.setActive(c);
+    }
+
+    private static volatile ModClassLoader mcc$modClassLoader;
+
+    /** The loader of mod classes: the game layer's, which holds every translated mod. */
+    public ModClassLoader getModClassLoader() {
+        ModClassLoader l = mcc$modClassLoader;
+        if (l == null) {
+            synchronized (Loader.class) {
+                if (mcc$modClassLoader == null) mcc$modClassLoader = new ModClassLoader(Loader.class.getClassLoader());
+                l = mcc$modClassLoader;
+            }
+        }
+        return l;
+    }
+
     public String getMCVersionString() {
         return "Minecraft " + MC_VERSION;
     }
 
     public String getMCPVersionString() {
-        return "MCP 9.05";
+        return "MCP 9.42";
     }
 
     public boolean hasReachedState(LoaderState state) {

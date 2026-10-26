@@ -98,6 +98,11 @@ public class ReflectionHelper {
         throw new UnableToFindFieldException(fieldNames, null);
     }
 
+    /** The 1.12.2 form: deobfuscated and SRG name. */
+    public static Field findField(Class<?> clazz, String fieldName, String fieldObfName) {
+        return findField(clazz, new String[] {fieldName, fieldObfName});
+    }
+
     public static Method findMethod(Class<?> clazz, String methodName, String methodObfName, Class<?>... parameterTypes) {
         return findMethod((Class<Object>) clazz, null, new String[] {methodName, methodObfName}, parameterTypes);
     }
