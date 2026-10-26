@@ -177,4 +177,9 @@ public final class WailaBridge implements IWailaRegistrar, IWailaConfigHandler {
     public boolean getConfig(String key) {
         return getConfig(key, true);
     }
+
+    /** Waila's {@code ConfigHandler.setConfig}: switches one option. */
+    public void mcc$setConfig(String key, boolean value) {
+        config.put(key, value);
+    }
 }

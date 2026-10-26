@@ -144,6 +144,16 @@ public class ForgeChunkManager {
         return config;
     }
 
+    /** Re-reads the chunk loading defaults (forgeChunkLoading.cfg, read live by this shim) and saves the file if a value changed. */
+    public static void syncConfigDefaults() {
+        Configuration c = getConfig();
+        c.get("defaults", "maximumTicketCount", 200);
+        c.get("defaults", "maximumChunksPerTicket", 25);
+        c.get("defaults", "playerTicketCount", 500);
+        c.get("defaults", "dormantChunkCacheSize", 0);
+        if (c.hasChanged()) c.save();
+    }
+
     public static int getMaxTicketLengthFor(String modId) {
         return getConfig().hasCategory(modId) ? getConfig().get(modId, "maximumTicketCount", 200).getInt()
                 : getConfig().get("defaults", "maximumTicketCount", 200).getInt();

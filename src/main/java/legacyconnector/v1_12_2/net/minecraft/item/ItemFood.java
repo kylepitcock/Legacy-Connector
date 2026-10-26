@@ -37,4 +37,22 @@ public class ItemFood extends Item {
     public boolean mcc$alwaysEdible() {
         return alwaysEdible;
     }
+
+    private legacyconnector.v1_12_2.net.minecraft.potion.PotionEffect potionId;
+    private float potionEffectProbability;
+
+    /** An effect eating gives, with a chance (rotten flesh's hunger). */
+    public ItemFood setPotionEffect(legacyconnector.v1_12_2.net.minecraft.potion.PotionEffect effect, float probability) {
+        this.potionId = effect;
+        this.potionEffectProbability = probability;
+        return this;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.potion.PotionEffect mcc$potionEffect() {
+        return potionId;
+    }
+
+    public float mcc$potionEffectProbability() {
+        return potionEffectProbability;
+    }
 }

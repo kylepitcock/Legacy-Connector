@@ -25,4 +25,9 @@ public class BlockFence extends Block {
     public static boolean func_149825_a(Block block) {
         return block instanceof BlockFence;
     }
+
+    /** Vanilla's check whether a block is a fence (fences connect to fences and to fence gates). */
+    public static boolean isFence(Block block) {
+        return func_149825_a(block);
+    }
 }

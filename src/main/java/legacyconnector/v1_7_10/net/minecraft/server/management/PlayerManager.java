@@ -35,6 +35,18 @@ public class PlayerManager {
                 FmlChannelBridge.sendToChunkWatchers(proxy, level, new ChunkPos(chunkX, chunkZ));
             }
         }
+
+        /** Queues a changed block (chunk-local x and z) for the next {@link #sendChunkUpdate}. */
+        public void flagChunkForUpdate(int x, int y, int z) {
+            level.getChunkSource().blockChanged(new net.minecraft.core.BlockPos((chunkX << 4) + x, y, (chunkZ << 4) + z));
+        }
+
+        /** Sends the chunk's queued block changes to its watchers now (the modern chunk map does it every tick anyway). */
+        public void sendChunkUpdate() {
+            var holder = level.getChunkSource().chunkMap.getVisibleChunkIfPresent(ChunkPos.asLong(chunkX, chunkZ));
+            var chunk = holder == null ? null : holder.getTickingChunk();
+            if (chunk != null) holder.broadcastChanges(chunk);
+        }
     }
 
     public boolean isPlayerWatchingChunk(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player, int chunkX, int chunkZ) {

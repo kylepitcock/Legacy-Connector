@@ -121,8 +121,9 @@ public class ConfigCategory implements Map<String, Property> {
         return properties.get(key);
     }
 
-    public List<ConfigCategory> getChildren() {
-        return children;
+    /** The sub-categories, in creation order (Forge returns an immutable copy). */
+    public java.util.Set<ConfigCategory> getChildren() {
+        return com.google.common.collect.ImmutableSet.copyOf(children);
     }
 
     public void removeChild(ConfigCategory child) {

@@ -100,6 +100,20 @@ public final class ItemBridge1122 {
         var p = new net.minecraft.world.item.Item.Properties();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
         else p.stacksTo(Math.max(1, Math.min(99, item.getItemStackLimit())));
+        if (item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemFood food) {
+            // 1.12 saturation is nutrition * modifier * 2, as the modern modifier is
+            try {
+                var b = new net.minecraft.world.food.FoodProperties.Builder()
+                        .nutrition(food.getHealAmount(legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY))
+                        .saturationModifier(food.getSaturationModifier(legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY));
+                if (food.mcc$alwaysEdible()) b.alwaysEdible();
+                var effect = food.mcc$potionEffect() == null ? null : food.mcc$potionEffect().mcc$toModern();
+                if (effect != null) b.effect(() -> new net.minecraft.world.effect.MobEffectInstance(effect), food.mcc$potionEffectProbability());
+                p.food(b.build());
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Could not read the food values of {}: {}", item.getRegistryName(), e.toString());
+            }
+        }
         return p;
     }
 }

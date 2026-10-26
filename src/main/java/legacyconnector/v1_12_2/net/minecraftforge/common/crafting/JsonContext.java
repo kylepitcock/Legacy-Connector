@@ -16,6 +16,11 @@ public class JsonContext {
         return modId;
     }
 
+    /** Prefixes a name without a domain with this context's mod id ("gear" becomes "modid:gear"). */
+    public String appendModId(String data) {
+        return data.indexOf(':') == -1 ? modId + ":" + data : data;
+    }
+
     public com.google.gson.JsonElement getConstant(String name) {
         return constants.get(name);
     }
