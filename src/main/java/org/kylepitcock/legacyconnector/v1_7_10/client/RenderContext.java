@@ -232,7 +232,9 @@ public final class RenderContext {
     public static VertexConsumer geometryBuffer() {
         if (gui() != null && additive && texture2d) return buffers().getBuffer(LegacyRenderTypes.guiAdditive(texture));
         // a screen drawing with GL lighting off (Thaumcraft's aspect icons): the lit entity shader dimmed it
-        if (gui() != null && !lighting && texture2d && depthTest) return buffers().getBuffer(LegacyRenderTypes.guiUnlit(texture));
+        // and a flat screen quad without a normal of its own, lighting or not: GUI item lighting left on by drawing items (the
+        // Thaumonomicon's frame after its research icons) made the lit shader draw it black
+        if (gui() != null && (!lighting || flatGuiQuad) && texture2d && depthTest) return buffers().getBuffer(LegacyRenderTypes.guiUnlit(texture));
         if (blend && additiveAlpha && texture2d) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
         if (!depthTest && !additive) {
             if (!texture2d) return buffers().getBuffer(LegacyRenderTypes.untexturedNoDepth());
@@ -257,6 +259,9 @@ public final class RenderContext {
 
     /** Diagnostics: min x,y,z / max x,y,z of the quads drawn while non-null. */
     public static double[] bounds;
+
+    /** Set while LegacyVertices emits a screen quad the legacy code gave no normal (see geometryBuffer). */
+    static boolean flatGuiQuad;
 
     public static void quad(double[][] v, float nx, float ny, float nz) {
         quadCount++;

@@ -18,6 +18,41 @@ public class EntityPlayerSP extends AbstractClientPlayer {
         return Float.isNaN(mcc$eyeHeightOverride) ? 0.12F : mcc$eyeHeightOverride;
     }
 
+    // 1.7.10's first-person arm sway (the lagging copy of the view angles the held item swings by), read from the modern
+    // player's xBob/yBob: Thaumcraft's Thaumometer undoes the sway with them, and with zeros it tilted by a tenth of the
+    // player's pitch and yaw
+    public static float mcc$get$renderArmPitch(EntityPlayerSP p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.xBob : 0.0F;
+    }
+
+    public static void mcc$set$renderArmPitch(EntityPlayerSP p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.xBob = v;
+    }
+
+    public static float mcc$get$prevRenderArmPitch(EntityPlayerSP p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.xBobO : 0.0F;
+    }
+
+    public static void mcc$set$prevRenderArmPitch(EntityPlayerSP p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.xBobO = v;
+    }
+
+    public static float mcc$get$renderArmYaw(EntityPlayerSP p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.yBob : 0.0F;
+    }
+
+    public static void mcc$set$renderArmYaw(EntityPlayerSP p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.yBob = v;
+    }
+
+    public static float mcc$get$prevRenderArmYaw(EntityPlayerSP p) {
+        return p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l ? l.yBobO : 0.0F;
+    }
+
+    public static void mcc$set$prevRenderArmYaw(EntityPlayerSP p, float v) {
+        if (p.mcc$player() instanceof net.minecraft.client.player.LocalPlayer l) l.yBobO = v;
+    }
+
     public void closeScreen() {
         mcc$player().closeContainer();
     }

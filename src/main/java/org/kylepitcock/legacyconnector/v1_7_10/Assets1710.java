@@ -110,6 +110,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 LOG.warn("Replacing ore backgrounds failed: {}", e.toString());
             }
             org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWater.contribute(out);
+            org.kylepitcock.legacyconnector.v1_7_10.client.LegacyGuiTextures.contribute(out);
         }
     }
 
@@ -423,6 +424,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
 
     /** Whether a mod class overrides {@code getIcon(ItemStack, int)}: the icon then depends on the stack, not just its damage. */
     private static boolean stackIcons(Item item) {
+        if (damageIcons(item)) return true;
         for (Class<?> c = item.getClass(); c != null && c != Item.class; c = c.getSuperclass()) {
             if (c.getName().startsWith("legacyconnector.")) continue; // shim classes forward to the damage-based icons
             try {
@@ -432,6 +434,23 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (LinkageError e) {
                 return false;
             }
+        }
+        return false;
+    }
+
+    /**
+     * A single registered variant whose icon still changes with the damage value (Thaumcraft's research notes turn into a
+     * discovery at damage 64): one static model cannot show it.
+     */
+    private static boolean damageIcons(Item item) {
+        if (item.mcc$variants.size() != 1) return false;
+        try {
+            IIcon base = item.getIconFromDamage(0);
+            for (int damage : new int[] {1, 2, 8, 16, 32, 64, 100}) {
+                IIcon other = item.getIconFromDamage(damage);
+                if (other != null && other != base) return true;
+            }
+        } catch (RuntimeException | LinkageError ignored) {
         }
         return false;
     }
@@ -451,6 +470,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 // gates: their damage-based icons are empty): LegacyItemRenderer draws it (item/generated transforms).
                 model.addProperty("parent", "minecraft:builtin/entity");
                 model.add("display", GENERATED_DISPLAY.deepCopy());
+                // flat sprites are lit from the front in slots, as item/generated is (side lighting left them dim)
+                if (!legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item)) model.addProperty("gui_light", "front");
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", nameOf(icon));
                 model.add("textures", tex);

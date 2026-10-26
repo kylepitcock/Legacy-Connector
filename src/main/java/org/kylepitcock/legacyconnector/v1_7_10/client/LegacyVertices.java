@@ -257,7 +257,13 @@ public final class LegacyVertices {
             return;
         }
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
-        if (!s.hasNormal()) {
+        if (!s.hasNormal() && RenderContext.gui() != null) {
+            // GL's default current normal, facing the viewer: a face normal of a quad wound for y-down screen space points
+            // away, and a screen drawn with GUI item lighting on came out black (the Thaumonomicon's frame)
+            fx = 0.0F;
+            fy = 0.0F;
+            fz = 1.0F;
+        } else if (!s.hasNormal()) {
             // Face normal from the first three corners.
             double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
             double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
@@ -269,6 +275,11 @@ public final class LegacyVertices {
                 fz = (float) (cz / len);
             }
         }
-        RenderContext.quad(new double[][] {a, b, c, d}, fx, fy, fz);
+        RenderContext.flatGuiQuad = !s.hasNormal() && RenderContext.gui() != null;
+        try {
+            RenderContext.quad(new double[][] {a, b, c, d}, fx, fy, fz);
+        } finally {
+            RenderContext.flatGuiQuad = false;
+        }
     }
 }
