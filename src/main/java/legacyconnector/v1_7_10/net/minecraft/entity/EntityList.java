@@ -136,7 +136,8 @@ public class EntityList {
     }
 
     private static Entity mcc$create(Class<?> cls, World world) {
-        if (cls == null || VANILLA.contains(cls)) return null;
+        // vanilla classes that are views of a modern entity can be created (MFR's safari nets, spawners); the others have no behaviour
+        if (cls == null || VANILLA.contains(cls) && !org.kylepitcock.legacyconnector.v1_7_10.entity.VanillaEntities.isVanilla(cls)) return null;
         try {
             return (Entity) cls.getConstructor(World.class).newInstance(world);
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {

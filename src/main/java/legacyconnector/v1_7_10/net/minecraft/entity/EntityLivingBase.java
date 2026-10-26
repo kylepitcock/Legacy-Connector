@@ -275,14 +275,14 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity == null || potion == null) return null;
         var holder = org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge.effectOrNull(potion.id);
         var modern = holder == null ? null : mcc$living().getEffect(holder);
-        return modern == null ? null : legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern);
+        return modern == null ? null : legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern, mcc$living());
     }
 
     public java.util.Collection<legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect> getActivePotionEffects() {
         java.util.List<legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect> out = new java.util.ArrayList<>();
         if (mcc$entity == null) return out;
         for (var modern : mcc$living().getActiveEffects()) {
-            var e = legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern);
+            var e = legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(modern, mcc$living());
             if (e != null) out.add(e);
         }
         return out;
@@ -469,7 +469,8 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public boolean canBreatheUnderwater() {
-        return mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
+        // a hosted entity answers with the legacy default: the host asks this method itself
+        return !mcc$hosted() && mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
     }
 
     // ------------------------------------------------------------------ death, drops, sounds (bridged for the host)
@@ -541,5 +542,111 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     protected void updateArmSwingProgress() {
+    }
+
+    // ------------------------------------------------------------------ collisions, pickups, teams
+
+    /** Pushes away an entity this one touches. Hosts route the modern push here so mods' overrides run. */
+    protected void collideWithEntity(Entity other) {
+        if (other == null) return;
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h && other.mcc$entity != null) {
+            h.mcc$superDoPush(other.mcc$entity);
+            return;
+        }
+        other.applyEntityCollision(this);
+    }
+
+    public final void mcc$collideWithEntity(Entity other) {
+        collideWithEntity(other);
+    }
+
+    /** Shows {@code entity} (an item or orb) flying into this entity as it is picked up. */
+    public void onItemPickup(Entity entity, int count) {
+        if (entity != null && entity.mcc$entity != null && mcc$entity instanceof LivingEntity l && !l.level().isClientSide()) l.take(entity.mcc$entity, count);
+    }
+
+    /** Credits {@code score} points for killing {@code killed}; only players keep a score. */
+    public void addToPlayerScore(Entity killed, int score) {
+    }
+
+    /** The tick the entity last hit another one (see {@link #setLastAttacker}). */
+    public int getLastAttackerTime() {
+        return mcc$entity instanceof LivingEntity l ? l.getLastHurtMobTimestamp() : 0;
+    }
+
+    public boolean isOnTeam(legacyconnector.v1_7_10.net.minecraft.scoreboard.Team team) {
+        var mine = getTeam();
+        return mine != null && mine.isSameTeam(team);
+    }
+
+    /** Whether the name tag is always drawn (mobs: when set with a name tag; never for others). */
+    public boolean getAlwaysRenderNameTagForRender() {
+        return false;
+    }
+
+    protected boolean isPlayer() {
+        return false;
+    }
+
+    // ------------------------------------------------------------------ potions
+
+    /** Forge: removes every effect {@code stack} cures (milk cures all vanilla effects). */
+    public void curePotionEffects(ItemStack stack) {
+        if (!(mcc$entity instanceof LivingEntity l) || l.level().isClientSide()) return;
+        var cure = legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$cureFor(stack);
+        if (cure != null) l.removeEffectsCuredBy(cure);
+    }
+
+    /** Whether the effect can be applied (the undead are immune to regeneration and poison). */
+    public boolean isPotionApplicable(legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect effect) {
+        if (effect == null) return false;
+        if (mcc$entity instanceof LivingEntity l && !mcc$hosted()) {
+            var holder = org.kylepitcock.legacyconnector.v1_7_10.bridge.PotionBridge.effectOrNull(effect.getPotionID());
+            return holder == null || l.canBeAffected(effect.mcc$modern());
+        }
+        if (getCreatureAttribute() == EnumCreatureAttribute.UNDEAD) {
+            int id = effect.getPotionID();
+            return id != legacyconnector.v1_7_10.net.minecraft.potion.Potion.regeneration.id && id != legacyconnector.v1_7_10.net.minecraft.potion.Potion.poison.id;
+        }
+        return true;
+    }
+
+    /**
+     * Damage after the Resistance effect and protection enchantments (the modern getDamageAfterMagicAbsorb). Hosts route the modern
+     * calculation here so mods' overrides run.
+     */
+    protected float applyPotionDamageCalculations(DamageSource source, float amount) {
+        if (!(mcc$entity instanceof LivingEntity l) || source == null) return amount;
+        var modern = source.mcc$modern(l.level());
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) return h.mcc$superMagicAbsorb(modern, amount);
+        return org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.damageAfterMagicAbsorb(l, modern, amount);
+    }
+
+    public final float mcc$applyPotionDamageCalculations(DamageSource source, float amount) {
+        return applyPotionDamageCalculations(source, amount);
+    }
+
+    /** Air left after one tick under water ({@code air - 1}, or {@code air} when Respiration saves the breath). */
+    protected int decreaseAirSupply(int air) {
+        if (!(mcc$entity instanceof LivingEntity l)) return air - 1;
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) return h.mcc$superDecreaseAirSupply(air);
+        return org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.decreaseAirSupply(l, air);
+    }
+
+    public final int mcc$decreaseAirSupply(int air) {
+        return decreaseAirSupply(air);
+    }
+
+    /**
+     * One tick of lying dead: after 20 ticks the body disappears in a puff of smoke and drops its experience (the modern tickDeath).
+     * Hosts route the modern tickDeath here so mods' death animations run.
+     */
+    protected void onDeathUpdate() {
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) h.mcc$superTickDeath();
+        else if (mcc$entity instanceof LivingEntity l) org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.tickDeath(l);
+    }
+
+    public final void mcc$onDeathUpdate() {
+        onDeathUpdate();
     }
 }

@@ -371,7 +371,153 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return true;
     }
 
-    public void setGameType(Object type) {
+    /** Changes the player's game mode (server players; the client follows). */
+    public void setGameType(legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType type) {
+        if (type == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        var mode = net.minecraft.world.level.GameType.byId(type.getID());
+        if (type.getID() >= 0) sp.setGameMode(mode);
+    }
+
+    // ------------------------------------------------------------------ fishing
+
+    /** Phantom: the player's fishing hook (a mod's legacy hook, or the vanilla hook the player cast), redirected to the accessors. */
+    @Deprecated
+    public legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook fishEntity;
+    private legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook mcc$fishEntity;
+
+    public static legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook mcc$get$fishEntity(EntityPlayer p) {
+        if (p.mcc$fishEntity != null) return p.mcc$fishEntity;
+        var hook = p.mcc$entity instanceof Player player ? player.fishing : null;
+        return hook != null && org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(hook) instanceof legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook h
+                ? h : null;
+    }
+
+    public static void mcc$set$fishEntity(EntityPlayer p, legacyconnector.v1_7_10.net.minecraft.entity.projectile.EntityFishHook hook) {
+        p.mcc$fishEntity = hook;
+    }
+
+    // ------------------------------------------------------------------ sleeping and respawning
+
+    /** Tries to sleep in the bed at the position (the modern checks: dimension, time, distance, monsters nearby). */
+    public EnumStatus sleepInBedAt(int x, int y, int z) {
+        var pos = new BlockPos(x, y, z);
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) {
+            mcc$player().startSleeping(pos);
+            return EnumStatus.OK;
+        }
+        var result = sp.startSleepInBed(pos);
+        if (result.right().isPresent()) return EnumStatus.OK;
+        return switch (result.left().get()) {
+            case NOT_POSSIBLE_HERE -> EnumStatus.NOT_POSSIBLE_HERE;
+            case NOT_POSSIBLE_NOW -> EnumStatus.NOT_POSSIBLE_NOW;
+            case TOO_FAR_AWAY -> EnumStatus.TOO_FAR_AWAY;
+            case NOT_SAFE -> EnumStatus.NOT_SAFE;
+            default -> EnumStatus.OTHER_PROBLEM;
+        };
+    }
+
+    /**
+     * Gets out of bed. {@code immediately}: no wake-up delay; {@code updateWorld}: the level re-checks whether everyone sleeps;
+     * {@code setSpawn}: the bed becomes the spawn point (the modern game set it when the player lay down).
+     */
+    public void wakeUpPlayer(boolean immediately, boolean updateWorld, boolean setSpawn) {
+        if (mcc$player().isSleeping()) mcc$player().stopSleepInBed(immediately, updateWorld);
+    }
+
+    /** Forge: the spawn point in the current dimension. */
+    public void setSpawnChunk(ChunkCoordinates coordinates, boolean forced) {
+        if (mcc$entity == null) return;
+        setSpawnChunk(coordinates, forced, mcc$get$dimension(this));
+    }
+
+    /**
+     * Where a player whose spawn point is {@code coordinates} respawns: beside the bed there, at the point itself when it is forced
+     * and free (two blocks of non-solid, non-liquid space), or null.
+     */
+    public static ChunkCoordinates verifyRespawnCoordinates(World world, ChunkCoordinates coordinates, boolean forced) {
+        if (world == null || coordinates == null) return null;
+        var level = world.mcc$fullLevel();
+        if (level == null) return null;
+        var pos = new BlockPos(coordinates.posX, coordinates.posY, coordinates.posZ);
+        var state = level.getBlockState(pos);
+        if (state.isBed(level, pos, null)) {
+            var spot = state.getRespawnPosition(net.minecraft.world.entity.EntityType.PLAYER, level, pos, 0.0F);
+            if (spot.isEmpty()) return null;
+            var v = spot.get().position();
+            return new ChunkCoordinates((int) Math.floor(v.x), (int) Math.floor(v.y), (int) Math.floor(v.z));
+        }
+        var above = level.getBlockState(pos.above());
+        boolean free = !state.isSolid() && !state.liquid() && !above.isSolid() && !above.liquid();
+        return forced && free ? coordinates : null;
+    }
+
+    /** Copies what a respawned (or returning) player keeps from its previous entity (all of it when {@code keepEverything}). */
+    public void clonePlayer(EntityPlayer old, boolean keepEverything) {
+        if (old != null && mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && old.mcc$player() instanceof net.minecraft.server.level.ServerPlayer o && sp != o) {
+            sp.restoreFrom(o, keepEverything);
+        }
+    }
+
+    /** The UUID of a profile: its own, or the offline-mode UUID derived from the name. */
+    public static java.util.UUID getUUID(GameProfile profile) {
+        java.util.UUID id = profile.getId();
+        return id != null ? id : net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(profile.getName());
+    }
+
+    // ------------------------------------------------------------------ interaction
+
+    /** How much of the body armour covers (worn pieces / 4); mobs see a well-armoured invisible player more easily. */
+    public float getArmorVisibility() {
+        return mcc$player().getArmorCoverPercentage();
+    }
+
+    /** Right-clicks an entity with the held item (the entity's own interaction first, then the item's). */
+    public boolean interactWith(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        if (entity == null || entity.mcc$entity == null) return false;
+        return mcc$player().interactOn(entity.mcc$entity, net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction();
+    }
+
+    /** Attacks an entity with the held item (criticals, sweeping, knockback and enchantments included). */
+    public void attackTargetEntityWithCurrentItem(legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+        if (target != null && target.mcc$entity != null) mcc$player().attack(target.mcc$entity);
+    }
+
+    /** Opens the trading screen of a merchant (a villager or a mod's trader). */
+    public void displayGUIMerchant(legacyconnector.v1_7_10.net.minecraft.entity.IMerchant merchant, String name) {
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.MerchantBridge.open(this, merchant, name);
+    }
+
+    /** Client: the command block editor; the base player has no screen to show (the client player's own class opens it). */
+    public void func_146095_a(legacyconnector.v1_7_10.net.minecraft.command.server.CommandBlockLogic logic) {
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.inventory.InventoryEnderChest mcc$enderChest;
+
+    /** The player's ender chest contents (shared with vanilla ender chests). */
+    public legacyconnector.v1_7_10.net.minecraft.inventory.InventoryEnderChest getInventoryEnderChest() {
+        if (mcc$enderChest == null) mcc$enderChest = new legacyconnector.v1_7_10.net.minecraft.inventory.InventoryEnderChest(mcc$player().getEnderChestInventory());
+        return mcc$enderChest;
+    }
+
+    @Override
+    public boolean isPushedByWater() {
+        return !mcc$player().getAbilities().flying;
+    }
+
+    @Override
+    protected boolean isPlayer() {
+        return true;
+    }
+
+    /** Players are offset half a block down when they ride (their legacy {@code yOffset} minus 0.5). */
+    @Override
+    public double getYOffset() {
+        return mcc$posYShift - 0.5D;
+    }
+
+    @Override
+    public void addToPlayerScore(legacyconnector.v1_7_10.net.minecraft.entity.Entity killed, int score) {
+        addScore(score);
     }
 
     @Override

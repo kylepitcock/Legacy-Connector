@@ -200,7 +200,10 @@ public abstract class Entity implements ICommandSender {
         dataWatcher.addObject(1, Short.valueOf((short) 300));
         // A host constructing this legacy entity, or a new host for an entity a mod constructs itself.
         org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHost host = org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.takeBinding();
-        if (host == null && world != null) host = org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.adopt(this, world);
+        // An exact vanilla class (new EntityGhast(world)) is a view of the real modern entity.
+        net.minecraft.world.entity.Entity vanilla = host == null ? org.kylepitcock.legacyconnector.v1_7_10.entity.VanillaEntities.create(this, world) : null;
+        if (vanilla != null) EntityBridge.bind(this, vanilla);
+        else if (host == null && world != null) host = org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.adopt(this, world);
         if (host != null) this.mcc$entity = host.mcc$self();
         entityInit();
         mcc$fireConstructing();
@@ -1184,7 +1187,8 @@ public abstract class Entity implements ICommandSender {
     public EntityItem entityDropItem(ItemStack stack, float offsetY) {
         if (stack == null || stack.mcc$count() == 0 || mcc$world().isRemote) return null;
         EntityItem item = new EntityItem(mcc$world(), mcc$x(), mcc$y() + offsetY, mcc$z(), stack);
-        mcc$get$worldObj(this).spawnEntityInWorld(item);
+        if (captureDrops) capturedDrops.add(item);
+        else mcc$get$worldObj(this).spawnEntityInWorld(item);
         return item;
     }
 
@@ -1374,5 +1378,223 @@ public abstract class Entity implements ICommandSender {
     /** Whether the entity's head is inside an opaque block (it suffocates). */
     public boolean isEntityInsideOpaqueBlock() {
         return false;
+    }
+
+    // ------------------------------------------------------------------ Forge drop capture
+
+    /** Forge: while set, {@link #entityDropItem} collects the drops in {@link #capturedDrops} instead of spawning them. */
+    public boolean captureDrops;
+    public java.util.ArrayList<EntityItem> capturedDrops = new java.util.ArrayList<>();
+
+    // ------------------------------------------------------------------ falling, the void, lightning
+
+    /**
+     * The entity landed after falling {@code distance} blocks: passes the fall on to the rider (living entities take damage).
+     * Hosts route the modern causeFallDamage here so mods' overrides run; the base hands it back to the vanilla handling.
+     */
+    protected void fall(float distance) {
+        var host = mcc$host();
+        if (host != null) host.mcc$superFall(distance);
+        else if (mcc$entity != null) mcc$entity.causeFallDamage(distance, 1.0F, mcc$entity.damageSources().fall());
+    }
+
+    public final void mcc$fall(float distance) {
+        fall(distance);
+    }
+
+    /** Fell out of the world: removed (living entities take 4 void damage per tick instead). */
+    protected void kill() {
+        var host = mcc$host();
+        if (host != null) {
+            host.mcc$superKill();
+        } else if (mcc$entity instanceof net.minecraft.world.entity.LivingEntity l) {
+            l.hurt(l.damageSources().fellOutOfWorld(), 4.0F);
+        } else {
+            setDead();
+        }
+    }
+
+    public final void mcc$kill() {
+        kill();
+    }
+
+    /** Struck by lightning: set on fire and hurt (creepers become charged, pigs turn into zombie pigmen, ...). */
+    public void onStruckByLightning(legacyconnector.v1_7_10.net.minecraft.entity.effect.EntityLightningBolt bolt) {
+        if (mcc$entity == null || !(mcc$entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        net.minecraft.world.entity.LightningBolt modern = bolt != null && bolt.mcc$entity instanceof net.minecraft.world.entity.LightningBolt b ? b : null;
+        if (modern == null) {
+            modern = net.minecraft.world.entity.EntityType.LIGHTNING_BOLT.create(level);
+            if (modern == null) return;
+            if (bolt != null) modern.moveTo(mcc$get$posX(bolt), mcc$get$posY(bolt), mcc$get$posZ(bolt));
+            else modern.moveTo(mcc$entity.position());
+        }
+        var host = mcc$host();
+        if (host != null) host.mcc$superThunderHit(level, modern);
+        else mcc$entity.thunderHit(level, modern);
+    }
+
+    // ------------------------------------------------------------------ riding
+
+    /** How high above this entity's position a rider sits (three quarters of the height). */
+    public double getMountedYOffset() {
+        return mcc$get$height(this) * 0.75D;
+    }
+
+    /**
+     * Places the rider on this entity. A class that changes {@link #getMountedYOffset} gets the 1.7.10 placement (rider's feet at
+     * this entity's y plus the mounted offset plus the rider's own {@link #getYOffset}); otherwise the vanilla seat is used.
+     */
+    public void updateRiderPosition() {
+        Entity rider = mcc$get$riddenByEntity(this);
+        if (rider == null || rider.mcc$entity == null || mcc$entity == null) return;
+        if (org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.overrides(getClass(), "getMountedYOffset")) {
+            rider.mcc$entity.setPos(mcc$entity.getX(), mcc$entity.getY() + getMountedYOffset() + rider.getYOffset() - rider.mcc$posYShift, mcc$entity.getZ());
+            return;
+        }
+        var host = mcc$host();
+        if (host != null) host.mcc$superPositionRider(rider.mcc$entity);
+        else mcc$entity.positionRider(rider.mcc$entity);
+    }
+
+    /** One tick while riding: the entity's own update, then its vehicle places it (the modern rideTick). */
+    public void updateRidden() {
+        var host = mcc$host();
+        if (host != null) host.mcc$superRideTick();
+        else if (mcc$entity != null) mcc$entity.rideTick();
+    }
+
+    /** Forge: whether the rider is drawn sitting. */
+    public boolean shouldRiderSit() {
+        return true;
+    }
+
+    /** Forge: whether the rider may interact with the world while riding (only through this entity otherwise). */
+    public boolean canRiderInteract() {
+        return false;
+    }
+
+    /** Moves an entity that is getting off {@code vehicle} to a free spot next to it. */
+    public void dismountEntity(Entity vehicle) {
+        if (mcc$entity == null) return;
+        if (vehicle != null && vehicle.mcc$entity != null && mcc$entity instanceof net.minecraft.world.entity.LivingEntity l) {
+            var spot = vehicle.mcc$entity.getDismountLocationForPassenger(l);
+            mcc$entity.dismountTo(spot.x, spot.y, spot.z);
+        } else if (vehicle != null) {
+            setPosition(mcc$get$posX(vehicle), mcc$get$boundingBox(vehicle).maxY + 0.001D, mcc$get$posZ(vehicle));
+        }
+    }
+
+    // ------------------------------------------------------------------ position and rotation
+
+    /** Takes the position and rotation of {@code other}. */
+    public void copyLocationAndAnglesFrom(Entity other) {
+        setLocationAndAngles(mcc$get$posX(other), mcc$get$posY(other), mcc$get$posZ(other), mcc$get$rotationYaw(other), mcc$get$rotationPitch(other));
+    }
+
+    /**
+     * Client: the position and rotation from the server, reached over {@code increments} ticks (the modern lerpTo). Hosts route
+     * the modern lerpTo here so mods' overrides run.
+     */
+    public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int increments) {
+        var host = mcc$host();
+        if (host != null) {
+            host.mcc$superLerpTo(x, y, z, yaw, pitch, increments);
+        } else if (mcc$entity != null) {
+            mcc$entity.lerpTo(x, y, z, yaw, pitch, increments);
+        } else {
+            setPosition(x, y, z);
+            setRotation(yaw, pitch);
+        }
+    }
+
+    /** Turns the entity by mouse movement (0.15 degrees per unit; the pitch is clamped to +-90). */
+    public void setAngles(float yaw, float pitch) {
+        if (mcc$entity != null) {
+            mcc$entity.turn(yaw, -pitch);
+            return;
+        }
+        float oldPitch = mcc$local_rotationPitch, oldYaw = mcc$local_rotationYaw;
+        mcc$local_rotationYaw = (float) (mcc$local_rotationYaw + yaw * 0.15D);
+        mcc$local_rotationPitch = Math.max(-90.0F, Math.min(90.0F, (float) (mcc$local_rotationPitch - pitch * 0.15D)));
+        mcc$local_prevRotationPitch += mcc$local_rotationPitch - oldPitch;
+        mcc$local_prevRotationYaw += mcc$local_rotationYaw - oldYaw;
+    }
+
+    /** The head's yaw; only living entities turn their head (0 for everything else). */
+    public float getRotationYawHead() {
+        return 0.0F;
+    }
+
+    /** Box another entity collides with when it touches this one (boats and carts are solid), or null. */
+    public AxisAlignedBB getCollisionBox(Entity other) {
+        return null;
+    }
+
+    /** Forge: whether the entity is drawn in render pass {@code pass} (0 opaque, 1 translucent). */
+    public boolean shouldRenderInPass(int pass) {
+        return pass == 0;
+    }
+
+    /** Client: watcher slot {@code id} received a new value from the server. */
+    public void func_145781_i(int id) {
+    }
+
+    /** Whether flowing water pushes the entity (flying players are not pushed). */
+    public boolean isPushedByWater() {
+        return true;
+    }
+
+    /** Saves this entity as a mount ("id" and its data); false when it is dead or has no name to be saved under. */
+    public boolean writeMountToNBT(NBTTagCompound tag) {
+        if (mcc$get$isDead(this) || mcc$entity == null || !mcc$entity.getType().canSerialize()) return false;
+        tag.setString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mcc$entity.getType()).toString());
+        writeToNBT(tag);
+        return true;
+    }
+
+    private boolean mcc$eating;
+
+    /** Eating flag (bit 4 of the shared flags: horses and mods' eating animations). */
+    public boolean isEating() {
+        return mcc$eating || getFlag(4);
+    }
+
+    public void setEating(boolean eating) {
+        mcc$eating = eating;
+        setFlag(4, eating);
+    }
+
+    /** Called after this entity killed {@code victim} (zombies infect villagers). */
+    public void onKillEntity(EntityLivingBase victim) {
+    }
+
+    /** Plays the step sound of the block walked on (snow on top of it wins; liquids are silent). */
+    protected void playStepSound(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        if (mcc$entity == null) return;
+        var level = mcc$entity.level();
+        var pos = new net.minecraft.core.BlockPos(x, y, z);
+        var above = level.getBlockState(pos.above());
+        var state = above.is(net.minecraft.world.level.block.Blocks.SNOW) ? above : level.getBlockState(pos);
+        if (!state.liquid()) {
+            var sound = state.getSoundType(level, pos, mcc$entity);
+            mcc$entity.playSound(sound.getStepSound(), sound.getVolume() * 0.15F, sound.getPitch());
+        }
+    }
+
+    public final void mcc$playStepSound(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        playStepSound(x, y, z, block);
+    }
+
+    /** Adds this entity's type, id, name, position and motion to a crash report section. */
+    public void addEntityCrashInfo(legacyconnector.v1_7_10.net.minecraft.crash.CrashReportCategory category) {
+        category.addCrashSection("Entity Type", EntityList.getEntityString(this) + " (" + getClass().getCanonicalName() + ")");
+        category.addCrashSection("Entity ID", getEntityId());
+        category.addCrashSection("Entity Name", getCommandSenderName());
+        double x = mcc$get$posX(this), y = mcc$get$posY(this), z = mcc$get$posZ(this);
+        category.addCrashSection("Entity's Exact location", String.format(java.util.Locale.ROOT, "%.2f, %.2f, %.2f", x, y, z));
+        category.addCrashSection("Entity's Block location", legacyconnector.v1_7_10.net.minecraft.crash.CrashReportCategory.getCoordinateInfo(
+                (int) Math.floor(x), (int) Math.floor(y), (int) Math.floor(z)));
+        category.addCrashSection("Entity's Momentum", String.format(java.util.Locale.ROOT, "%.2f, %.2f, %.2f", mcc$get$motionX(this),
+                mcc$get$motionY(this), mcc$get$motionZ(this)));
     }
 }

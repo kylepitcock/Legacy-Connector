@@ -48,6 +48,10 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         mcc$set$motionZ(this, MathHelper.cos(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * MathHelper.cos(mcc$get$rotationPitch(this) / 180.0F * (float) Math.PI) * f);
         mcc$set$motionY(this, -MathHelper.sin((mcc$get$rotationPitch(this) + getInaccuracy()) / 180.0F * (float) Math.PI) * f);
         setThrowableHeading(mcc$get$motionX(this), mcc$get$motionY(this), mcc$get$motionZ(this), func_70182_d(), 1.0F);
+        // a view of a vanilla projectile (snowball, pearl, ...) credits its thrower (kills, ender pearl teleports)
+        if (!mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.projectile.Projectile p && thrower != null && thrower.mcc$entity != null) {
+            p.setOwner(thrower.mcc$entity);
+        }
     }
 
     public EntityThrowable(World world, double x, double y, double z) {
