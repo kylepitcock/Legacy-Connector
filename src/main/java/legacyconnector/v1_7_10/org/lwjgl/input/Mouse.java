@@ -135,4 +135,26 @@ public class Mouse {
     public static int getButtonCount() {
         return 8;
     }
+
+    /** The mouse always has a wheel on GLFW. */
+    public static boolean hasWheel() {
+        return true;
+    }
+
+    /** The game owns the mouse (GLFW); mods that recreate it to change its mode get a no-op. */
+    public static void create() {
+    }
+
+    public static void destroy() {
+    }
+
+    /** LWJGL 2's button names: "BUTTON0", "BUTTON1", ... */
+    public static String getButtonName(int button) {
+        return button >= 0 && button < getButtonCount() ? "BUTTON" + button : null;
+    }
+
+    /** When the current event happened (System.nanoTime() clock; events are delivered as they occur). */
+    public static long getEventNanoseconds() {
+        return System.nanoTime();
+    }
 }

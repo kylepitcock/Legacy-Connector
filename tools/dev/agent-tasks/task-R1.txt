@@ -3,7 +3,6 @@ net.minecraft.client.renderer.RenderGlobal.drawOutlinedBoundingBox(Llegacyconnec
 net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.func_152674_a(FFFIFILcom/mojang/authlib/GameProfile;)V   # 5 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, com.emoniph.witchery.client.renderer.RenderWolfman, com.fiskmods.heroes.client.render.entity.player.RenderDisp
 net.minecraft.client.renderer.ActiveRenderInfo.getBlockAtEntityViewpoint(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;F)Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 4 user(s): biomesoplenty.client.fog.FogHandler, com.emoniph.witchery.client.ClientEvents, com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase, galaxyspace.core.handler.GSPlanetFogHandler
 net.minecraft.client.renderer.ItemRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;)V -> ()V   # 4 user(s): com.fiskmods.fisktag.util.FTRenderHelper, crazypants.enderio.material.MachinePartRenderer, openmods.gui.component.GuiComponentItemStackSpinner, vazkii.botania.client.render.item.RenderLens
-net.minecraft.client.renderer.Tessellator.getVertexState(FFF)Llegacyconnector_synth/v1_7_10/net/minecraft/client/shader/TesselatorVertexState;   # 4 user(s): com.InfinityRaider.AgriCraft.renderers.TessellatorV2, com.rwtema.funkylocomotion.rendering.TileEntityRenderMoving, fastcraft.ah, openblocks.client.renderer.tileentity.guide.MarkerRenderer
 net.minecraft.client.renderer.entity.RenderEntity.<init>()V   # 4 user(s): codechicken.wirelessredstone.addons.RenderTracker, cofh.thermaldynamics.duct.entity.RenderTransport, crazypants.enderio.item.darksteel.SoundRenderer, vazkii.botania.client.render.entity.RenderSparkBas
 net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.field_147536_b:Llegacyconnector_synth/v1_7_10/net/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;   # 4 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, com.emoniph.witchery.client.renderer.RenderWolfman, com.fiskmods.heroes.client.render.entity.player.RenderDisp
 net.minecraft.client.renderer.RenderGlobal.tileEntities:Ljava/util/List;   # 3 user(s): blusunrize.immersiveengineering.client.ClientEventHandler, fastcraft.ag, mrtjp.relocation.Utils$
@@ -11,7 +10,6 @@ net.minecraft.client.renderer.entity.RenderArrow.<init>()V   # 3 user(s): cofh.c
 net.minecraft.client.renderer.entity.RenderBiped.getArmorResource(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;ILjava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/util/ResourceLocation;   # 3 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, vswe.stevescarts.Modules.Hull.ModulePig
 net.minecraft.client.renderer.texture.TextureCompass.angleDelta:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
 net.minecraft.client.renderer.texture.TextureCompass.currentAngle:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
-org.lwjgl.opengl.GL11.glMultMatrix(Ljava/nio/DoubleBuffer;)V   # 3 user(s): codechicken.lib.vec.Matrix4, cofh.repack.codechicken.lib.vec.Matrix4, thaumcraft.codechicken.lib.vec.Matrix4
 net.minecraft.client.renderer.EntityRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;Llegacyconnector/v1_7_10/net/minecraft/client/resources/IResourceManager;)V -> ()V   # 2 user(s): com.emoniph.witchery.client.RenderEntityViewer, com.fiskmods.heroes.client.render.entity.SHEntityRenderer
 net.minecraft.client.renderer.ItemRenderer.renderOverlays(F)V   # 2 user(s): com.emoniph.witchery.client.ClientEvents, com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase
 net.minecraft.client.renderer.OpenGlHelper.func_153165_e()I   # 2 user(s): logisticspipes.utils.FramebufferUtils, openmods.stencil.FramebufferBase
@@ -26,7 +24,6 @@ net.minecraft.client.renderer.OpenGlHelper.func_153188_a(IIIII)V   # 2 user(s): 
 net.minecraft.client.renderer.OpenGlHelper.func_153190_b(IIII)V   # 2 user(s): logisticspipes.utils.FramebufferUtils, openmods.stencil.FramebufferBase
 net.minecraft.client.renderer.RenderGlobal.drawSelectionBox(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/util/MovingObjectPosition;IF)V   # 2 user(s): com.emoniph.witchery.brewing.potions.WitcheryPotions$ClientEventHooks, powercrystals.minefactoryreloaded.block.BlockFactory
 net.minecraft.client.renderer.RenderGlobal.renderSky(F)V   # 2 user(s): com.hbm.render.world.RenderNTMSkyboxChainloader, openblocks.client.StencilSkyRenderer
-net.minecraft.client.renderer.Tessellator.setVertexState(Llegacyconnector_synth/v1_7_10/net/minecraft/client/shader/TesselatorVertexState;)V   # 2 user(s): com.InfinityRaider.AgriCraft.renderers.TessellatorV2, com.rwtema.funkylocomotion.rendering.TileEntityRenderMoving
 net.minecraft.client.renderer.WorldRenderer.updateRenderer(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 2 user(s): com.rwtema.funkylocomotion.rendering.ChunkRerenderer, fastcraft.ah
 net.minecraft.client.renderer.entity.RenderBiped.renderEquippedItems(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLiving;F)V   # 2 user(s): galaxyspace.systems.SolarSystem.planets.venus.render.entities.RenderEvolvedFireSkeleton, micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedSkeleton
 net.minecraft.client.renderer.entity.RenderChicken.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): biomesoplenty.client.render.entities.RenderRosester, com.hbm.render.entity.mob.RenderDuck
@@ -35,9 +32,6 @@ net.minecraft.client.renderer.entity.RenderMinecart.<init>()V   # 2 user(s): com
 net.minecraft.client.renderer.entity.RenderSlime.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): powercrystals.minefactoryreloaded.render.entity.EntityPinkSlimeRenderer, twilightforest.client.renderer.entity.RenderTFMazeSlime
 net.minecraft.client.renderer.entity.RenderWolf.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): com.emoniph.witchery.client.TransformWolf, twilightforest.client.renderer.entity.RenderTFMistWolf
 net.minecraft.client.renderer.texture.TextureCompass.<init>(Ljava/lang/String;)V   # 2 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass
-org.lwjgl.input.Mouse.hasWheel()Z   # 2 user(s): galaxyspace.core.client.gui.book.Page_WithScroll, micdoodle8.mods.galacticraft.core.client.gui.screen.GuiCelestialSelection
-org.lwjgl.util.glu.GLU.gluProject(FFFLjava/nio/FloatBuffer;Ljava/nio/FloatBuffer;Ljava/nio/IntBuffer;Ljava/nio/FloatBuffer;)Z   # 2 user(s): journeymap.client.render.map.GridRenderer, openmods.utils.render.ProjectionHelper
-org.lwjgl.util.glu.GLU.gluUnProject(FFFLjava/nio/FloatBuffer;Ljava/nio/FloatBuffer;Ljava/nio/IntBuffer;Ljava/nio/FloatBuffer;)Z   # 2 user(s): journeymap.client.render.map.GridRenderer, openmods.utils.render.ProjectionHelper
 net.minecraft.client.renderer.ActiveRenderInfo.updateRenderInfo(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): logisticspipes.ticks.RenderTickHandler
 net.minecraft.client.renderer.DestroyBlockProgress.getPartialBlockDamage()I   # 1 user(s): com.fiskmods.heroes.util.SHClientUtils
 net.minecraft.client.renderer.DestroyBlockProgress.getPartialBlockX()I   # 1 user(s): com.fiskmods.heroes.util.SHClientUtils
@@ -57,9 +51,6 @@ net.minecraft.client.renderer.RenderGlobal.destroyBlockPartially(IIIII)V   # 1 u
 net.minecraft.client.renderer.RenderGlobal.onStaticEntitiesChanged()V   # 1 user(s): fastcraft.ak
 net.minecraft.client.renderer.RenderGlobal.spawnParticle(Ljava/lang/String;DDDDDD)V   # 1 user(s): thaumcraft.client.ClientProxy
 net.minecraft.client.renderer.RenderGlobal.updateRenderers(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;Z)Z   # 1 user(s): mrtjp.relocation.Utils$$anonfun$rerenderBlocks$1
-net.minecraft.client.renderer.Tessellator.defaultTexture:Z   # 1 user(s): com.InfinityRaider.AgriCraft.renderers.TessellatorV2
-net.minecraft.client.renderer.Tessellator.func_154352_a(BBB)V   # 1 user(s): com.InfinityRaider.AgriCraft.renderers.TessellatorV2
-net.minecraft.client.renderer.Tessellator.renderingWorldRenderer:Z   # 1 user(s): vazkii.botania.client.core.handler.BoundTileRenderer
 net.minecraft.client.renderer.WorldRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;Ljava/util/List;IIII)V -> ()V   # 1 user(s): fastcraft.ak
 net.minecraft.client.renderer.WorldRenderer.FCc:Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): fastcraft.ag
 net.minecraft.client.renderer.WorldRenderer.FCe:J   # 1 user(s): fastcraft.ag
@@ -110,16 +101,3 @@ net.minecraft.client.renderer.texture.TextureCompass.updateCompass(Llegacyconnec
 net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer.<init>()V   # 1 user(s): team.chisel.client.render.tile.RenderCarvableBeacon
 net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.cacheActiveRenderInfo(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/client/renderer/texture/TextureManager;Llegacyconnector/v1_7_10/net/minecraft/client/gui/FontRenderer;Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;F)V   # 1 user(s): fastcraft.ak
 net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.<init>()V   # 1 user(s): vazkii.botania.client.render.tile.RenderTileSkullOverride
-org.lwjgl.input.Mouse.create()V   # 1 user(s): invtweaks.InvTweaksHandlerShortcuts
-org.lwjgl.input.Mouse.destroy()V   # 1 user(s): invtweaks.InvTweaksHandlerShortcuts
-org.lwjgl.input.Mouse.getButtonName(I)Ljava/lang/String;   # 1 user(s): com.brandon3055.draconicevolution.common.items.tools.baseclasses.ToolBase
-org.lwjgl.input.Mouse.getEventNanoseconds()J   # 1 user(s): blusunrize.lib.manual.gui.GuiClickableList
-org.lwjgl.util.vector.Quaternion.<init>()V   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.<init>(FFFF)V   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.dot(Llegacyconnector_synth/v1_7_10/org/lwjgl/util/vector/Quaternion;Llegacyconnector_synth/v1_7_10/org/lwjgl/util/vector/Quaternion;)F   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.normalise()Llegacyconnector/v1_7_10/org/lwjgl/util/vector/Vector;   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.setFromMatrix(Llegacyconnector/v1_7_10/org/lwjgl/util/vector/Matrix4f;)Llegacyconnector_synth/v1_7_10/org/lwjgl/util/vector/Quaternion;   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.w:F   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.x:F   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.y:F   # 1 user(s): com.hbm.animloader.Transform
-org.lwjgl.util.vector.Quaternion.z:F   # 1 user(s): com.hbm.animloader.Transform
