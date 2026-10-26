@@ -29,6 +29,29 @@ public class MerchantRecipe {
         this.maxTradeUses = 7;
     }
 
+    public MerchantRecipe(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        readFromTags(tag);
+    }
+
+    /** Reads the 1.7.10 trade format: {@code buy}, optional {@code buyB}, {@code sell}, {@code uses}, {@code maxUses} (7 when absent). */
+    public void readFromTags(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        itemToBuy = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("buy"));
+        itemToSell = ItemStack.loadItemStackFromNBT(tag.getCompoundTag("sell"));
+        secondItemToBuy = tag.hasKey("buyB", 10) ? ItemStack.loadItemStackFromNBT(tag.getCompoundTag("buyB")) : null;
+        if (tag.hasKey("uses", 99)) toolUses = tag.getInteger("uses");
+        maxTradeUses = tag.hasKey("maxUses", 99) ? tag.getInteger("maxUses") : 7;
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound writeToTags() {
+        var tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        if (itemToBuy != null) tag.setTag("buy", itemToBuy.writeToNBT(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound()));
+        if (itemToSell != null) tag.setTag("sell", itemToSell.writeToNBT(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound()));
+        if (secondItemToBuy != null) tag.setTag("buyB", secondItemToBuy.writeToNBT(new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound()));
+        tag.setInteger("uses", toolUses);
+        tag.setInteger("maxUses", maxTradeUses);
+        return tag;
+    }
+
     public ItemStack getItemToBuy() {
         return itemToBuy;
     }

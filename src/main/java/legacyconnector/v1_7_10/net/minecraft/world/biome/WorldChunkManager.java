@@ -100,6 +100,33 @@ public class WorldChunkManager {
         return true;
     }
 
+    /**
+     * A random position (y 0) within {@code range} blocks whose biome is one of {@code biomes}, sampled every 4 blocks; each
+     * match replaces the previous one with probability 1/(matches so far + 1), as 1.7.10 chose village and stronghold spots.
+     * Null if none matches.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition findBiomePosition(int x, int z, int range, List biomes, java.util.Random random) {
+        IntCache.resetIntCache();
+        int x0 = x - range >> 2;
+        int z0 = z - range >> 2;
+        int x1 = x + range >> 2;
+        int z1 = z + range >> 2;
+        int w = x1 - x0 + 1;
+        int h = z1 - z0 + 1;
+        // without a layer stack (the world view, a mod's subclass) the biomes come from getBiomeGenAt
+        int[] ids = genBiomes == null ? null : genBiomes.getInts(x0, z0, w, h);
+        legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition found = null;
+        int matches = 0;
+        for (int i = 0; i < w * h; i++) {
+            BiomeGenBase biome = ids != null ? BiomeGenBase.mcc$biomeOrOcean(ids[i]) : getBiomeGenAt(x0 + i % w << 2, z0 + i / w << 2);
+            if (biomes.contains(biome) && (found == null || random.nextInt(matches + 1) == 0)) {
+                found = new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x0 + i % w << 2, 0, z0 + i / w << 2);
+                matches++;
+            }
+        }
+        return found;
+    }
+
     public void cleanupCache() {
     }
 

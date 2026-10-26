@@ -7,6 +7,25 @@ import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 public class MerchantRecipeList extends ArrayList {
     public MerchantRecipeList() {}
 
+    public MerchantRecipeList(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        readRecipiesFromTags(tag);
+    }
+
+    /** Adds the trades saved under {@code Recipes} (villagers' {@code Offers} tag). */
+    public void readRecipiesFromTags(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        var list = tag.getTagList("Recipes", 10);
+        for (int i = 0; i < list.tagCount(); i++) add(new MerchantRecipe(list.getCompoundTagAt(i)));
+    }
+
+    /** The trades as saved by 1.7.10: a {@code Recipes} list of {@link MerchantRecipe#writeToTags} compounds. */
+    public legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound getRecipiesAsTags() {
+        var tag = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+        var list = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList();
+        for (Object o : this) list.appendTag(((MerchantRecipe) o).writeToTags());
+        tag.setTag("Recipes", list);
+        return tag;
+    }
+
     public MerchantRecipe canRecipeBeUsed(ItemStack buy, ItemStack secondBuy, int index) {
         if (index > 0 && index < size()) {
             MerchantRecipe r = (MerchantRecipe) get(index);

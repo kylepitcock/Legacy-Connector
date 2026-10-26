@@ -14,6 +14,14 @@ public abstract class TerrainGen {
         return original;
     }
 
+    /** The noise generators a chunk provider uses: the originals unless a handler of {@link InitNoiseGensEvent} substitutes some. */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGenerator[] getModdedNoiseGenerators(World world, Random rand,
+            legacyconnector.v1_7_10.net.minecraft.world.gen.NoiseGenerator[] original) {
+        InitNoiseGensEvent event = new InitNoiseGensEvent(world, rand, original);
+        MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        return event.newNoiseGens;
+    }
+
     public static boolean decorate(World world, Random rand, int chunkX, int chunkZ, DecorateBiomeEvent.Decorate.EventType type) {
         DecorateBiomeEvent.Decorate event = new DecorateBiomeEvent.Decorate(world, rand, chunkX, chunkZ, type);
         MinecraftForge.TERRAIN_GEN_BUS.post(event);

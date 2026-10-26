@@ -61,7 +61,8 @@ public class WorldChunkManagerHell extends WorldChunkManager {
         return list;
     }
 
-    public Object findBiomePosition(int x, int z, int range, List<?> biomes, Random random) {
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition findBiomePosition(int x, int z, int range, List biomes, Random random) {
         return biomes.contains(biome) ? new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x - range + random.nextInt(range * 2 + 1), 0,
                 z - range + random.nextInt(range * 2 + 1)) : null;
     }

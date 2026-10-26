@@ -395,6 +395,26 @@ public class Chunk {
     public void removeEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
     }
 
+    /** How much light the block at local coordinates absorbs ({@code func_150808_b}). */
+    public int getBlockLightOpacity(int x, int y, int z) {
+        Block block = getBlock(x, y, z);
+        if (mcc$blocks != null || worldObj == null) return block.getLightOpacity();
+        return block.getLightOpacity(worldObj, wx(x), y, wz(z));
+    }
+
+    /**
+     * Adds the entity to the chunk's legacy entity lists. 1.7.10's {@code spawnEntityInWorld} called this; legacy code that
+     * calls it directly expects the entity to join the world with the chunk, so an entity added to a world chunk (not to a
+     * generator's own array chunk) is spawned (a no-op for one the world already has).
+     */
+    public void addEntity(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        if (entity == null) return;
+        hasEntities = true;
+        int section = (int) Math.floor(legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posY(entity) / 16.0D);
+        entityLists[Math.max(0, Math.min(entityLists.length - 1, section))].add(entity);
+        if (mcc$blocks == null && modern != null && worldObj != null) worldObj.spawnEntityInWorld(entity);
+    }
+
     public int getSavedLightValue(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock type, int x, int y, int z) {
         return worldObj.getSkyBlockTypeBrightness(type, wx(x), y, wz(z));
     }

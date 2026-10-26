@@ -1263,6 +1263,86 @@ public class World implements IBlockAccess {
     public void onEntityRemoved(Entity entity) {
     }
 
+    /** An entity joined the world: 1.7.10 told its world listeners; the modern level tracks entities itself (see {@link IWorldAccess}). */
+    public void onEntityAdded(Entity entity) {
+    }
+
+    /**
+     * Block-change notifications after a block was set ({@code setBlock} called this in Forge): clients with flag 2 (unless
+     * flag 4 on a client world), neighbours with flag 1, and comparators reading the new block.
+     */
+    public void markAndNotifyBlock(int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk chunk, Block oldBlock, Block newBlock,
+            int flags) {
+        if ((flags & 2) != 0 && (!isRemote || (flags & 4) == 0)) markBlockForUpdate(x, y, z);
+        if (!isRemote && (flags & 1) != 0) {
+            notifyBlockChange(x, y, z, oldBlock);
+            if (newBlock != null && newBlock.hasComparatorInputOverride()) func_147453_f(x, y, z, newBlock);
+        }
+    }
+
+    /**
+     * A path for the entity to the block, at most {@code distance} blocks long, found by a ground navigator with the given door
+     * and swimming abilities (water avoidance is the entity's own). Null for entities that cannot path (not mobs) or on clients.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.pathfinding.PathEntity getEntityPathToXYZ(Entity entity, int x, int y, int z, float distance,
+            boolean passOpenDoors, boolean openDoors, boolean avoidWater, boolean swim) {
+        if (entity == null || !(entity.mcc$entity instanceof net.minecraft.world.entity.Mob mob) || !(mob.level() instanceof ServerLevel level)) return null;
+        var navigation = new net.minecraft.world.entity.ai.navigation.GroundPathNavigation(mob, level) {
+            net.minecraft.world.level.pathfinder.Path mcc$find(BlockPos target, float range) {
+                return createPath(java.util.Set.of(target), 8, false, 0, range);
+            }
+        };
+        navigation.setCanPassDoors(passOpenDoors);
+        navigation.setCanOpenDoors(openDoors);
+        navigation.setCanFloat(swim);
+        var path = navigation.mcc$find(new BlockPos(x, y, z), distance);
+        return path == null ? null : new legacyconnector.v1_7_10.net.minecraft.pathfinding.PathEntity(path);
+    }
+
+    /**
+     * Pushes the entity along the flow of the liquid of {@code material} it overlaps (vanilla: water currents); true if it
+     * touches any. Vanilla liquids flow as the modern fluid does, mod liquids by their {@code velocityToAddToEntity}.
+     */
+    public boolean handleMaterialAcceleration(AxisAlignedBB box, legacyconnector.v1_7_10.net.minecraft.block.material.Material material, Entity entity) {
+        int x1 = (int) Math.floor(box.minX), x2 = (int) Math.floor(box.maxX + 1.0D);
+        int y1 = (int) Math.floor(box.minY), y2 = (int) Math.floor(box.maxY + 1.0D);
+        int z1 = (int) Math.floor(box.minZ), z2 = (int) Math.floor(box.maxZ + 1.0D);
+        if (!checkChunksExist(x1, y1, z1, x2, y2, z2)) return false;
+        boolean inside = false;
+        legacyconnector.v1_7_10.net.minecraft.util.Vec3 flow = legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(0.0D, 0.0D, 0.0D);
+        for (int x = x1; x < x2; x++) {
+            for (int y = y1; y < y2; y++) {
+                for (int z = z1; z < z2; z++) {
+                    Block block = getBlock(x, y, z);
+                    if (block == null || block.getMaterial() != material) continue;
+                    double surface = y + 1 - legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid.getLiquidHeightPercent(getBlockMetadata(x, y, z));
+                    if (y2 < surface) continue;
+                    inside = true;
+                    if (block.mcc$vanilla != null) {
+                        BlockPos p = pos(x, y, z);
+                        var fluid = lvl().getFluidState(p);
+                        if (!fluid.isEmpty()) {
+                            var v = fluid.getFlow(lvl(), p);
+                            flow.xCoord += v.x;
+                            flow.yCoord += v.y;
+                            flow.zCoord += v.z;
+                        }
+                    } else {
+                        block.velocityToAddToEntity(this, x, y, z, entity, flow);
+                    }
+                }
+            }
+        }
+        boolean pushed = entity == null || entity.mcc$entity == null || entity.mcc$entity.isPushedByFluid();
+        if (flow.lengthVector() > 0.0D && pushed && entity != null) {
+            flow = flow.normalize();
+            Entity.mcc$set$motionX(entity, Entity.mcc$get$motionX(entity) + flow.xCoord * 0.014D);
+            Entity.mcc$set$motionY(entity, Entity.mcc$get$motionY(entity) + flow.yCoord * 0.014D);
+            Entity.mcc$set$motionZ(entity, Entity.mcc$get$motionZ(entity) + flow.zCoord * 0.014D);
+        }
+        return inside;
+    }
+
     public void addTileEntity(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile) {
     }
 

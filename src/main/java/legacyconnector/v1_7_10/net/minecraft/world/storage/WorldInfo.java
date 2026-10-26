@@ -130,4 +130,9 @@ public class WorldInfo {
         if (current != null) return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(current.getDefaultGameType().getId());
         return legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL;
     }
+
+    /** The save format version of level.dat: 19133, the Anvil format every 1.7.10 world was saved in. */
+    public int getSaveVersion() {
+        return 19133;
+    }
 }
