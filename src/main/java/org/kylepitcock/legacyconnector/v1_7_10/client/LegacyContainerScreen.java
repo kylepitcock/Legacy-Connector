@@ -20,7 +20,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
     public LegacyContainerScreen(LegacyMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.legacy = (GuiContainer) menu.clientGui();
-        this.customKeys = legacy != null && ClientGui.overrides(legacy, "keyTyped", char.class, int.class);
+        this.customKeys = legacy != null && (ClientGui.overrides(legacy, "keyTyped", char.class, int.class) || ClientGui.overrides(legacy, "handleKeyboardInput"));
     }
 
     private boolean failed;
