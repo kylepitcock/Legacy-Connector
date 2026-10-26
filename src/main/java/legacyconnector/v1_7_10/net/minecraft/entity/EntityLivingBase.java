@@ -309,6 +309,39 @@ public abstract class EntityLivingBase extends Entity {
         return mcc$entity != null && target.mcc$entity != null && mcc$living().doHurtTarget(target.mcc$entity);
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.util.CombatTracker mcc$combatTracker;
+
+    public legacyconnector.v1_7_10.net.minecraft.util.CombatTracker getCombatTracker() {
+        if (mcc$combatTracker == null) mcc$combatTracker = new legacyconnector.v1_7_10.net.minecraft.util.CombatTracker(this);
+        return mcc$combatTracker;
+    }
+
+    /**
+     * Takes damage that got past invulnerability: armour, resistance and absorption reduce it, the rest comes off health
+     * (the modern actuallyHurt, which hosts route here so mods' overrides apply). Without a host only absorption is applied.
+     */
+    protected void damageEntity(DamageSource source, float amount) {
+        if (mcc$entity == null || source == null) return;
+        var modern = source.mcc$modern(mcc$entity.level());
+        if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) {
+            h.mcc$superActuallyHurt(modern, amount);
+            return;
+        }
+        if (isEntityInvulnerable()) return;
+        LivingEntity l = mcc$living();
+        float absorbed = Math.min(amount, l.getAbsorptionAmount());
+        l.setAbsorptionAmount(l.getAbsorptionAmount() - absorbed);
+        float rest = amount - absorbed;
+        if (rest > 0.0F) {
+            l.getCombatTracker().recordDamage(modern, rest);
+            l.setHealth(l.getHealth() - rest);
+        }
+    }
+
+    public final void mcc$damageEntity(DamageSource source, float amount) {
+        damageEntity(source, amount);
+    }
+
     public void onDeath(DamageSource source) {
         if (mcc$host() instanceof org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyLivingHost h) {
             h.mcc$superDie(source.mcc$modern(mcc$entity.level()));

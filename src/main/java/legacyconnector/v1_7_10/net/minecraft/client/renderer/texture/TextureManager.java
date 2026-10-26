@@ -35,8 +35,22 @@ public class TextureManager {
         return (ITextureObject) mapTextureObjects.get(location);
     }
 
+    /** Atlases loaded through {@link #loadTextureMap}, by texture type (0 blocks and 1 items always name the vanilla atlases). */
+    private final java.util.Map<Integer, ResourceLocation> mapTextureMapTypes = new java.util.HashMap<>();
+
     public ResourceLocation getResourceLocation(int spriteIndex) {
+        if (spriteIndex > 1) {
+            ResourceLocation custom = mapTextureMapTypes.get(spriteIndex);
+            if (custom != null) return custom;
+        }
         return new ResourceLocation(spriteIndex == 0 ? "textures/atlas/blocks.png" : "textures/atlas/items.png");
+    }
+
+    /** Loads a mod's own atlas and remembers it as the atlas of its texture type. */
+    public boolean loadTextureMap(ResourceLocation location, TextureMap map) {
+        if (!loadTickableTexture(location, map)) return false;
+        mapTextureMapTypes.put(map.getTextureType(), location);
+        return true;
     }
 
     private int mcc$dynamicCount;

@@ -188,6 +188,18 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     }
 
     @Override
+    protected void actuallyHurt(DamageSource source, float amount) {
+        EntityLivingBase l = living();
+        if (l == null) super.actuallyHurt(source, amount);
+        else l.mcc$damageEntity(legacyconnector.v1_7_10.net.minecraft.util.DamageSource.mcc$wrap(source), amount);
+    }
+
+    @Override
+    public void mcc$superActuallyHurt(DamageSource source, float amount) {
+        super.actuallyHurt(source, amount);
+    }
+
+    @Override
     public void die(DamageSource source) {
         EntityLivingBase l = living();
         if (l == null) super.die(source);

@@ -42,4 +42,51 @@ public class OpenGlHelper {
     public static boolean func_153193_b() {
         return true;
     }
+
+    // ------------------------------------------------------------------ GLSL programs (GL 2.0; 1.7.10 fell back to the ARB extension)
+    // GL calls are only made on the render thread; elsewhere they do nothing and creation returns 0 (no object).
+
+    public static int glCreateProgram() {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glCreateProgram() : 0;
+    }
+
+    public static int glCreateShader(int type) {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glCreateShader(type) : 0;
+    }
+
+    /** The source is the buffer's remaining bytes (1.7.10's ShaderLoader passes the file's bytes). */
+    public static void glShaderSource(int shader, java.nio.ByteBuffer source) {
+        if (!RenderSystem.isOnRenderThread() || source == null) return;
+        byte[] bytes = new byte[source.remaining()];
+        source.duplicate().get(bytes);
+        org.lwjgl.opengl.GL20.glShaderSource(shader, new String(bytes, java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    public static void glCompileShader(int shader) {
+        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL20.glCompileShader(shader);
+    }
+
+    public static void glAttachShader(int program, int shader) {
+        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL20.glAttachShader(program, shader);
+    }
+
+    public static void glLinkProgram(int program) {
+        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL20.glLinkProgram(program);
+    }
+
+    public static int glGetShaderi(int shader, int pname) {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glGetShaderi(shader, pname) : 0;
+    }
+
+    public static String glGetShaderInfoLog(int shader, int maxLength) {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glGetShaderInfoLog(shader, maxLength) : "";
+    }
+
+    public static int glGetProgrami(int program, int pname) {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glGetProgrami(program, pname) : 0;
+    }
+
+    public static String glGetProgramInfoLog(int program, int maxLength) {
+        return RenderSystem.isOnRenderThread() ? org.lwjgl.opengl.GL20.glGetProgramInfoLog(program, maxLength) : "";
+    }
 }

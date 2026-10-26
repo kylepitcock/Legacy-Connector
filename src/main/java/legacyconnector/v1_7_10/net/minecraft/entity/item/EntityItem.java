@@ -91,6 +91,43 @@ public class EntityItem extends Entity {
         return t == null ? null : t.getName().getString();
     }
 
+    /** The player the item is reserved for, by name (1.7.10 compared names; the modern item keeps the player's id). */
+    private String mcc$owner;
+
+    public String getOwner() {
+        if (mcc$owner != null) return mcc$owner;
+        java.util.UUID target = mcc$item().getTarget();
+        if (target == null) return null;
+        var server = mcc$server();
+        var player = server == null ? null : server.getPlayerList().getPlayer(target);
+        return player != null ? player.getGameProfile().getName() : net.neoforged.neoforge.common.UsernameCache.getLastKnownUsername(target);
+    }
+
+    /**
+     * Reserves the item for one player: only they can pick it up (1.7.10 also let anyone take it in its last ten seconds).
+     * The name is resolved to an online player, else to a name the server has seen before; an unknown name reserves nothing.
+     */
+    public void setOwner(String name) {
+        this.mcc$owner = name;
+        mcc$item().setTarget(name == null ? null : mcc$uuidOf(name));
+    }
+
+    private net.minecraft.server.MinecraftServer mcc$server() {
+        var level = mcc$item().level();
+        return level == null ? null : level.getServer();
+    }
+
+    private java.util.UUID mcc$uuidOf(String name) {
+        var server = mcc$server();
+        if (server == null) return null;
+        var online = server.getPlayerList().getPlayerByName(name);
+        if (online != null) return online.getUUID();
+        for (var e : net.neoforged.neoforge.common.UsernameCache.getMap().entrySet()) {
+            if (name.equalsIgnoreCase(e.getValue())) return e.getKey();
+        }
+        return null;
+    }
+
     public void setAgeToCreativeDespawnTime() {
         mcc$item().setExtendedLifetime();
     }

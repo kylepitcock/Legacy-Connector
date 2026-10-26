@@ -43,6 +43,22 @@ public class EntityItemFrame extends Entity {
         this.itemRotation = rotation % 4;
     }
 
+    /**
+     * Whether the frame can stay: the block it hangs on is solid and no other hanging entity overlaps it (a modern item frame
+     * answers with its own survival check).
+     */
+    public boolean onValidSurface() {
+        if (mcc$entity instanceof net.minecraft.world.entity.decoration.HangingEntity hanging && !mcc$hosted()) return hanging.survives();
+        World world = mcc$world();
+        if (world == null) return false;
+        if (!world.getBlock(field_146063_b, field_146064_c, field_146062_d).getMaterial().isSolid()) return false;
+        for (Object o : world.getEntitiesWithinAABBExcludingEntity(this, mcc$get$boundingBox(this))) {
+            if (o instanceof EntityItemFrame
+                    || o instanceof Entity e && e.mcc$entity instanceof net.minecraft.world.entity.decoration.HangingEntity) return false;
+        }
+        return true;
+    }
+
     @Override
     protected void entityInit() {
     }

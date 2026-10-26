@@ -823,7 +823,18 @@ public abstract class Entity implements ICommandSender {
     // ------------------------------------------------------------------ API
 
     public int getEntityId() {
-        return mcc$entity == null ? -1 : mcc$entity.getId();
+        return mcc$entity == null ? mcc$localId : mcc$entity.getId();
+    }
+
+    private int mcc$localId = -1;
+
+    /**
+     * Mods number client-side entities they build from their own spawn packets before adding them. The id of a modern entity
+     * already in a level is left alone: its level looks entities up by id and would lose it.
+     */
+    public void setEntityId(int id) {
+        if (mcc$entity == null) mcc$localId = id;
+        else if (!mcc$entity.isAddedToLevel()) mcc$entity.setId(id);
     }
 
     /** Forge: the id that persists across sessions (the player's profile id). */
@@ -1055,6 +1066,27 @@ public abstract class Entity implements ICommandSender {
         if (mcc$entity != null) mcc$entity.setInvisible(invisible);
     }
 
+    /** Invisible to this player: teammates who may see friendly invisibles (and spectators) still see it. */
+    public boolean isInvisibleToPlayer(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (mcc$entity == null || player == null || player.mcc$entity == null) return isInvisible();
+        return player.mcc$entity instanceof net.minecraft.world.entity.player.Player p ? mcc$entity.isInvisibleTo(p) : isInvisible();
+    }
+
+    /** Bit {@code flag} of the shared flags byte (watcher slot 0: 0 burning, 1 sneaking, 3 sprinting, 4 eating, 5 invisible). */
+    protected boolean getFlag(int flag) {
+        return (dataWatcher.getWatchableObjectByte(0) & 1 << flag) != 0;
+    }
+
+    protected void setFlag(int flag, boolean value) {
+        byte flags = dataWatcher.getWatchableObjectByte(0);
+        dataWatcher.updateObject(0, Byte.valueOf((byte) (value ? flags | 1 << flag : flags & ~(1 << flag))));
+    }
+
+    /** Ticks the entity must stand in a portal before it travels (0; players override it). */
+    public int getMaxInPortalTime() {
+        return 0;
+    }
+
     public boolean isBurning() {
         return mcc$entity != null && mcc$entity.isOnFire();
     }
@@ -1088,6 +1120,18 @@ public abstract class Entity implements ICommandSender {
 
     public boolean isInWater() {
         return mcc$entity != null && mcc$entity.isInWater();
+    }
+
+    /**
+     * Pushes the entity along flowing water and returns whether it is in water; in water it stops burning and its fall resets.
+     * Legacy entities whose onUpdate does not chain to the base tick (TNT, projectiles) call this themselves.
+     */
+    public boolean handleWaterMovement() {
+        if (mcc$entity == null) return false;
+        if (!mcc$entity.updateFluidHeightAndDoFluidPushing(net.minecraft.tags.FluidTags.WATER, 0.014D)) return false;
+        mcc$entity.resetFallDistance();
+        mcc$entity.clearFire();
+        return true;
     }
 
     public boolean isWet() {
