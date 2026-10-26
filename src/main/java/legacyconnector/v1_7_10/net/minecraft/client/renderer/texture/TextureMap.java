@@ -48,6 +48,7 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
     }
 
     private String id(String name) {
+        if ((textureType == 0 || textureType == 1) && name != null) name = mcc$derivedName(name, textureType == 0 ? "blocks/" : "items/");
         String sub = basePath == null ? "" : basePath.startsWith("textures/") ? basePath.substring("textures/".length()) : basePath;
         if (textureType == 0 || textureType == 1 || name == null || !(sub.startsWith("items/") || sub.startsWith("blocks/"))) {
             return Assets1710.texture(name, textureType == 0);
@@ -57,6 +58,27 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
         int colon = name.indexOf(':');
         String domain = colon < 0 ? "minecraft" : name.substring(0, colon);
         return Assets1710.texture(domain + ":" + folder + "/" + name.substring(colon + 1), sub.startsWith("blocks/"));
+    }
+
+    /**
+     * A name a mod built from {@code getIconName()} of one of its icons. 1.7.10 returned the registered name ("hbm:glass");
+     * here icons are named by their modern sprite id ("hbm:blocks/glass"), so a derived name ("hbm:blocks/glass_ct", HBM's
+     * connected textures) carries the atlas folder twice once it becomes a sprite id. When the mod has no texture under the
+     * doubled folder but has one without it, the folder is dropped.
+     */
+    private static String mcc$derivedName(String name, String folder) {
+        int colon = name.indexOf(':');
+        if (colon <= 0) return name;
+        String domain = name.substring(0, colon), path = name.substring(colon + 1);
+        if (!path.startsWith(folder) || domain.equals("minecraft")) return name;
+        try {
+            if (org.kylepitcock.legacyconnector.v1_7_10.client.LegacySprites.modTextureExists(domain, "textures/" + folder + path + ".png")) return name;
+            String bare = path.substring(folder.length());
+            return org.kylepitcock.legacyconnector.v1_7_10.client.LegacySprites.modTextureExists(domain, "textures/" + folder + bare + ".png")
+                    ? domain + ":" + bare : name;
+        } catch (RuntimeException | LinkageError e) {
+            return name;
+        }
     }
 
     @Override
