@@ -1,52 +1,9 @@
-net.minecraft.world.chunk.Chunk.addTileEntity(Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;)V   # 3 user(s): com.fiskmods.fisktag.schematic.SchematicAgent, com.rwtema.funkylocomotion.factory.DefaultMoveFactory, mrtjp.relocation.SaveLoadTileMover
-net.minecraft.world.chunk.Chunk.getBiomeGenForWorldCoords(IILlegacyconnector/v1_7_10/net/minecraft/world/biome/WorldChunkManager;)Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;   # 3 user(s): com.xcompwiz.mystcraft.world.BiomeWrapperManager, ic2.core.block.machine.tileentity.TileEntityTerra, journeymap.client.forge.helper.impl.ForgeHelper_1_7_10
-net.minecraft.world.chunk.Chunk.getBlockTileEntityInChunk(III)Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;   # 3 user(s): cofh.core.command.CommandFixMojangsShit, com.brandon3055.draconicevolution.common.utills.PortalHelper$PortalStructure, micdoodle8.mods.galacticraft.api.vector.BlockVec3
-net.minecraft.world.chunk.EmptyChunk.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)V   # 3 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy, fastcraft.u, ic2.core.uu.DropScan$DummyChunkProvider
 net.minecraft.world.biome.WorldChunkManager.allowedBiomes:Ljava/util/ArrayList;   # 2 user(s): biomesoplenty.common.core.BOPBiomes, thaumcraft.common.config.ConfigEntities
-net.minecraft.world.chunk.Chunk.populateChunk(Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;II)V   # 2 user(s): ic2.core.uu.DropScan, mcjty.rftools.dimension.world.WorldRefresher
-net.minecraft.world.chunk.Chunk.setLightValue(Llegacyconnector/v1_7_10/net/minecraft/world/EnumSkyBlock;IIII)V   # 2 user(s): com.xcompwiz.mystcraft.world.ChunkProviderMyst, fastcraft.u
-net.minecraft.world.chunk.storage.AnvilChunkLoader.<init>(Ljava/io/File;)V   # 2 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$AnvilChunkLoaderDummy, journeymap.client.io.nbt.RegionLoader
-net.minecraft.world.chunk.storage.AnvilChunkLoader.chunkExists(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Z   # 2 user(s): com.hbm.world.WorldUtil, journeymap.client.io.nbt.ChunkLoader
-net.minecraft.world.chunk.storage.ExtendedBlockStorage.getBlockLSBArray()[B   # 2 user(s): com.hbm.handler.radiation.ChunkRadiationHandlerPRISM, fastcraft.ah
-net.minecraft.world.gen.ChunkProviderServer.currentChunkLoader:Llegacyconnector_synth/v1_7_10/net/minecraft/world/chunk/storage/IChunkLoader;   # 2 user(s): com.hbm.commands.CommandDebugChunkLoad, com.xcompwiz.mystcraft.command.CommandRegenerateChunk
-net.minecraft.world.gen.ChunkProviderServer.originalLoadChunk(II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 2 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy, micdoodle8.mods.galacticraft.api.vector.BlockVec3
-net.minecraft.world.storage.MapData.func_82568_a(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/MapData$MapInfo;   # 2 user(s): com.xcompwiz.mystcraft.tileentity.TileEntityLectern, twilightforest.item.ItemTFMagicMap
-net.minecraft.world.storage.MapData.updateVisiblePlayers(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 2 user(s): jds.bibliocraft.items.ItemAtlas, twilightforest.item.ItemTFMagicMap
-net.minecraft.world.MinecraftException.<init>(Ljava/lang/String;)V   # 1 user(s): com.xcompwiz.mystcraft.world.storage.ExternalSaveHandler
-net.minecraft.world.SpawnerAnimals.canCreatureTypeSpawnAtLocation(Llegacyconnector/v1_7_10/net/minecraft/entity/EnumCreatureType;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Z   # 1 user(s): codechicken.nei.WorldOverlayRenderer
-net.minecraft.world.Teleporter$PortalPosition.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/Teleporter;IIIJ)V   # 1 user(s): thaumcraft.common.lib.world.dim.TeleporterThaumcraft
-net.minecraft.world.Teleporter$PortalPosition.lastUpdateTime:J   # 1 user(s): thaumcraft.common.lib.world.dim.TeleporterThaumcraft
 net.minecraft.world.World.FCpc:Lcom/google/common/collect/ImmutableSetMultimap;   # 1 user(s): fastcraft.u
 net.minecraft.world.chunk.Chunk.FCtt:I   # 1 user(s): fastcraft.u
-net.minecraft.world.chunk.Chunk.func_150802_k()Z   # 1 user(s): fastcraft.u
-net.minecraft.world.chunk.Chunk.getBlockLightValue(IIII)I   # 1 user(s): com.hbm.entity.mob.glyphid.EntityGlyphidScout
-net.minecraft.world.chunk.Chunk.getPrecipitationHeight(II)I   # 1 user(s): journeymap.client.forge.helper.impl.ForgeHelper_1_7_10
-net.minecraft.world.chunk.Chunk.propagateSkylightOcclusion(II)V   # 1 user(s): com.rwtema.funkylocomotion.helper.BlockHelper
-net.minecraft.world.chunk.Chunk.relightBlock(III)V   # 1 user(s): com.rwtema.funkylocomotion.helper.BlockHelper
-net.minecraft.world.chunk.Chunk.removeInvalidTileEntity(III)V   # 1 user(s): fastcraft.u
-net.minecraft.world.chunk.storage.AnvilChunkLoader.chunkSaveLocation:Ljava/io/File;   # 1 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy
-net.minecraft.world.chunk.storage.AnvilChunkLoader.loadChunk(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): journeymap.client.io.nbt.ChunkLoader
-net.minecraft.world.chunk.storage.AnvilChunkLoader.loadChunk__Async(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)[Ljava/lang/Object;   # 1 user(s): com.hbm.commands.CommandDebugChunkLoad
-net.minecraft.world.chunk.storage.AnvilSaveHandler.<init>(Ljava/io/File;Ljava/lang/String;Z)V   # 1 user(s): journeymap.client.io.nbt.AnvilSessionlessSaveHandler
-net.minecraft.world.chunk.storage.ExtendedBlockStorage.getBlockMSBArray()Llegacyconnector/v1_7_10/net/minecraft/world/chunk/NibbleArray;   # 1 user(s): fastcraft.ah
-net.minecraft.world.chunk.storage.IChunkLoader.loadChunk(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): com.xcompwiz.mystcraft.world.AgeController
 net.minecraft.world.demo.DemoWorldServer.demoWorldSettings:Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings;   # 1 user(s): galaxyspace.core.client.gui.GSGuiMainMenu
-net.minecraft.world.gen.ChunkProviderServer.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/WorldServer;Llegacyconnector_synth/v1_7_10/net/minecraft/world/chunk/storage/IChunkLoader;Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;)V -> (Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy
 net.minecraft.world.gen.MapGenRavine.func_151540_a(JII[Llegacyconnector/v1_7_10/net/minecraft/block/Block;DDDFFFIID)V   # 1 user(s): fox.spiteful.avaritia.compat.botania.alfheim.MapGenAlfheimRavines
 net.minecraft.world.gen.layer.GenLayer.nextLong(J)J   # 1 user(s): biomesoplenty.common.world.layer.hell.BiomeLayerHellBiomes
 net.minecraft.world.gen.structure.MapGenStructureData.func_143043_a(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;II)V   # 1 user(s): twilightforest.world.MapGenTFMajorFeature
 net.minecraft.world.gen.structure.StructureStrongholdPieces$Stairs2.field_75026_c:Ljava/util/List;   # 1 user(s): twilightforest.structures.StructureTFMajorFeatureStart
 net.minecraft.world.gen.structure.StructureVillagePieces$Church.func_74919_a(Llegacyconnector/v1_7_10/net/minecraft/world/gen/structure/StructureVillagePieces$Start;Ljava/util/List;Ljava/util/Random;IIIII)Llegacyconnector_synth/v1_7_10/net/minecraft/world/gen/structure/StructureVillagePieces$Church;   # 1 user(s): com.emoniph.witchery.worldgen.WorldHandlerVillageDistrict
-net.minecraft.world.storage.MapData$MapCoord.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/storage/MapData;BBBB)V   # 1 user(s): twilightforest.TFMagicMapData
-net.minecraft.world.storage.MapData$MapCoord.centerX:B   # 1 user(s): twilightforest.TFMagicMapData
-net.minecraft.world.storage.MapData$MapCoord.centerZ:B   # 1 user(s): twilightforest.TFMagicMapData
-net.minecraft.world.storage.MapData$MapCoord.iconRotation:B   # 1 user(s): twilightforest.client.renderer.TFMagicMapRenderer
-net.minecraft.world.storage.MapData$MapCoord.iconSize:B   # 1 user(s): twilightforest.TFMagicMapData
-net.minecraft.world.storage.MapData$MapInfo.field_82569_d:I   # 1 user(s): twilightforest.item.ItemTFMagicMap
-net.minecraft.world.storage.MapData.getUpdatePacketData(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)[B   # 1 user(s): twilightforest.item.ItemTFMagicMap
-net.minecraft.world.storage.MapData.updateMPMapData([B)V   # 1 user(s): twilightforest.TFMagicMapData
-net.minecraft.world.storage.SaveFormatComparator.getFileName()Ljava/lang/String;   # 1 user(s): codechicken.nei.NEIClientConfig
-net.minecraft.world.storage.SaveHandlerMP.<init>()V   # 1 user(s): com.hbm.wiaj.FauxWorld
-net.minecraft.world.storage.ThreadedFileIOBase.queueIO(Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/IThreadedFileIO;)V   # 1 user(s): journeymap.client.model.ImageHolder
-net.minecraft.world.storage.ThreadedFileIOBase.threadedIOInstance:Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/ThreadedFileIOBase;   # 1 user(s): journeymap.client.model.ImageHolder
-net.minecraft.world.storage.ThreadedFileIOBase.waitForFinish()V   # 1 user(s): journeymap.client.model.RegionImageCache

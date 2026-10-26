@@ -11,6 +11,10 @@ import legacyconnector.v1_7_10.net.minecraft.entity.Entity;
 public class Teleporter {
     protected final WorldServer worldServerInstance;
     protected final Random random;
+    /** Portals found or built, by chunk-coordinate key (mods cache their own portals here, as vanilla did). */
+    public final legacyconnector.v1_7_10.net.minecraft.util.LongHashMap destinationCoordinateCache = new legacyconnector.v1_7_10.net.minecraft.util.LongHashMap();
+    /** The keys of {@link #destinationCoordinateCache}, for removing stale portals. */
+    public final java.util.List destinationCoordinateKeys = new java.util.ArrayList();
 
     public Teleporter(WorldServer world) {
         this.worldServerInstance = world;
@@ -29,6 +33,28 @@ public class Teleporter {
         return false;
     }
 
+    /** Forgets cached portals no one used for 600 ticks (every 100 ticks). */
     public void removeStalePortalLocations(long worldTime) {
+        if (worldTime % 100L != 0L) return;
+        long stale = worldTime - 600L;
+        var it = destinationCoordinateKeys.iterator();
+        while (it.hasNext()) {
+            Long key = (Long) it.next();
+            Object position = destinationCoordinateCache.getValueByKey(key);
+            if (position == null || position instanceof PortalPosition p && p.lastUpdateTime < stale) {
+                it.remove();
+                destinationCoordinateCache.remove(key);
+            }
+        }
+    }
+
+    /** A cached portal position and the last time an entity used it. */
+    public class PortalPosition extends legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates {
+        public long lastUpdateTime;
+
+        public PortalPosition(int x, int y, int z, long time) {
+            super(x, y, z);
+            this.lastUpdateTime = time;
+        }
     }
 }

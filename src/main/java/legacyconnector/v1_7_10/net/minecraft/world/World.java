@@ -837,8 +837,13 @@ public class World implements IBlockAccess {
 
     /** The world's chunks as a 1.7.10 chunk provider (only chunks that are loaded or generating here are provided). */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider getChunkProvider() {
-        return new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer(this);
+        var provider = mcc$chunkProvider;
+        if (provider == null) mcc$chunkProvider = provider = new legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer(this);
+        return provider;
     }
+
+    /** One provider per world, as in 1.7.10 (mods keep it and read its fields). */
+    private legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer mcc$chunkProvider;
 
     public EntityPlayer func_152378_a(java.util.UUID id) {
         var p = id == null ? null : lvl().getPlayerByUUID(id);

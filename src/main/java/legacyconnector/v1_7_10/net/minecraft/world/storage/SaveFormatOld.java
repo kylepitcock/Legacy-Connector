@@ -26,10 +26,33 @@ public class SaveFormatOld implements ISaveFormat {
         return new SaveHandler(new File(savesDirectory, folder), folder);
     }
 
-    /** Summaries of the saved worlds; none are listed (the modern world list owns that screen). */
+    /** Summaries of the saved worlds (each folder with a level.dat), read from their level data; newest first. */
     @Override
     public List getSaveList() {
-        return new ArrayList();
+        List<SaveFormatComparator> out = new ArrayList<>();
+        File[] folders = savesDirectory == null ? null : savesDirectory.listFiles(File::isDirectory);
+        if (folders == null) return out;
+        for (File folder : folders) {
+            File level = new File(folder, "level.dat");
+            if (!level.isFile()) continue;
+            String name = folder.getName();
+            long lastPlayed = level.lastModified();
+            var gameType = legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.SURVIVAL;
+            boolean hardcore = false, cheats = false;
+            try {
+                var data = net.minecraft.nbt.NbtIo.readCompressed(level.toPath(), net.minecraft.nbt.NbtAccounter.unlimitedHeap()).getCompound("Data");
+                if (data.contains("LevelName")) name = data.getString("LevelName");
+                if (data.contains("LastPlayed")) lastPlayed = data.getLong("LastPlayed");
+                gameType = legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType.getByID(data.getInt("GameType"));
+                hardcore = data.getBoolean("hardcore");
+                cheats = data.getBoolean("allowCommands");
+            } catch (java.io.IOException | RuntimeException e) {
+                // an unreadable level.dat: listed by its folder
+            }
+            out.add(new SaveFormatComparator(folder.getName(), name, lastPlayed, 0L, gameType, false, hardcore, cheats));
+        }
+        java.util.Collections.sort(out);
+        return out;
     }
 
     @Override

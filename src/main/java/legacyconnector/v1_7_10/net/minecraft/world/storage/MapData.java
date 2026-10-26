@@ -66,8 +66,197 @@ public class MapData extends WorldSavedData {
         tag.setByteArray("colors", colors);
     }
 
-    /** A column of the map changed; it is saved with the map (the modern game syncs maps to players itself). */
+    /** A column of the map changed: saved with the map, and queued for every player's next update packet. */
     public void setColumnDirty(int x, int minZ, int maxZ) {
         markDirty();
+        for (Object o : playersArrayList) {
+            MapInfo info = (MapInfo) o;
+            if (info.field_76209_b[x] < 0 || info.field_76209_b[x] > minZ) info.field_76209_b[x] = minZ;
+            if (info.field_76210_c[x] < 0 || info.field_76210_c[x] < maxZ) info.field_76210_c[x] = maxZ;
+        }
+    }
+
+    /** The tracking record of a player holding this map (created on first use). */
+    @SuppressWarnings("unchecked")
+    public MapInfo func_82568_a(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        MapInfo info = (MapInfo) playersHashMap.get(player);
+        if (info == null) {
+            info = new MapInfo(player);
+            playersHashMap.put(player, info);
+            playersArrayList.add(info);
+        }
+        return info;
+    }
+
+    /** Updates the player markers: every player carrying the map in this dimension, players who dropped it leave. */
+    @SuppressWarnings("unchecked")
+    public void updateVisiblePlayers(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        func_82568_a(player);
+        if (!player.inventory.hasItemStack(stack)) playersVisibleOnMap.remove(player.getCommandSenderName());
+        for (int i = 0; i < playersArrayList.size(); i++) {
+            MapInfo info = (MapInfo) playersArrayList.get(i);
+            var holder = info.entityplayerObj;
+            boolean onFrame = stack != null && stack.isOnItemFrame();
+            if (!legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$isDead(holder) && (holder.inventory.hasItemStack(stack) || onFrame)) {
+                if (!onFrame && legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$dimension(holder) == dimension) {
+                    mcc$marker(0, legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$worldObj(holder), holder.getCommandSenderName(), holder.mcc$x(), holder.mcc$z(),
+                            legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$rotationYaw(holder));
+                }
+            } else {
+                playersHashMap.remove(holder);
+                playersArrayList.remove(info);
+                i--;
+            }
+        }
+    }
+
+    /** Places (or moves) a marker; off the map it becomes a small edge marker, far off it is dropped. In the nether it spins. */
+    @SuppressWarnings("unchecked")
+    private void mcc$marker(int type, legacyconnector.v1_7_10.net.minecraft.world.World world, String name, double x, double z, double rotation) {
+        int step = 1 << scale;
+        float fx = (float) (x - xCenter) / step;
+        float fz = (float) (z - zCenter) / step;
+        byte px = (byte) (int) (fx * 2.0F + 0.5D);
+        byte pz = (byte) (int) (fz * 2.0F + 0.5D);
+        final byte edge = 63;
+        byte rot;
+        if (fx >= -edge && fz >= -edge && fx <= edge && fz <= edge) {
+            rotation += rotation < 0.0D ? -8.0D : 8.0D;
+            rot = (byte) (int) (rotation * 16.0D / 360.0D);
+            if (dimension < 0 && world != null) {
+                int k = (int) (world.getWorldInfo().getWorldTime() / 10L);
+                rot = (byte) (k * k * 34187121 + k * 121 >> 15 & 15);
+            }
+        } else {
+            if (Math.abs(fx) >= 320.0F || Math.abs(fz) >= 320.0F) {
+                playersVisibleOnMap.remove(name);
+                return;
+            }
+            type = 6;
+            rot = 0;
+            if (fx <= -edge) px = (byte) (edge * 2 + 2.5D);
+            if (fz <= -edge) pz = (byte) (edge * 2 + 2.5D);
+            if (fx >= edge) px = (byte) (edge * 2 + 1);
+            if (fz >= edge) pz = (byte) (edge * 2 + 1);
+        }
+        playersVisibleOnMap.put(name, new MapCoord((byte) type, px, pz, rot));
+    }
+
+    /** The next update packet for the player (scale, markers or a changed colour column), or null when nothing changed. */
+    public byte[] getUpdatePacketData(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        MapInfo info = (MapInfo) playersHashMap.get(player);
+        return info == null ? null : info.getPlayersOnMap(stack);
+    }
+
+    /** Applies an update packet on the client: 0 a colour column, 1 the markers, 2 the scale. */
+    @SuppressWarnings("unchecked")
+    public void updateMPMapData(byte[] data) {
+        if (data == null || data.length == 0) return;
+        if (data[0] == 0 && data.length >= 3) {
+            int x = data[1] & 255;
+            int z = data[2] & 255;
+            for (int k = 0; k < data.length - 3; k++) {
+                int at = (k + z) * 128 + x;
+                if (at >= 0 && at < colors.length) colors[at] = data[k + 3];
+            }
+            markDirty();
+        } else if (data[0] == 1) {
+            playersVisibleOnMap.clear();
+            for (int i = 0; i < (data.length - 1) / 3; i++) {
+                byte size = (byte) (data[i * 3 + 1] >> 4);
+                byte cx = data[i * 3 + 2];
+                byte cz = data[i * 3 + 3];
+                byte rot = (byte) (data[i * 3 + 1] & 15);
+                playersVisibleOnMap.put("icon-" + i, new MapCoord(size, cx, cz, rot));
+            }
+        } else if (data[0] == 2 && data.length >= 2) {
+            scale = data[1];
+        }
+    }
+
+    /** A marker on the map: icon type, position (-128..127 from the centre in half pixels) and rotation (0..15). */
+    public class MapCoord {
+        public byte iconSize;
+        public byte centerX;
+        public byte centerZ;
+        public byte iconRotation;
+
+        public MapCoord(byte iconSize, byte centerX, byte centerZ, byte iconRotation) {
+            this.iconSize = iconSize;
+            this.centerX = centerX;
+            this.centerZ = centerZ;
+            this.iconRotation = iconRotation;
+        }
+    }
+
+    /** What one player was last sent of this map: the dirty column ranges and the markers. */
+    public class MapInfo {
+        public final legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer entityplayerObj;
+        public int[] field_76209_b = new int[128];
+        public int[] field_76210_c = new int[128];
+        private int field_76208_e;
+        private int field_76205_f;
+        private byte[] lastPlayerLocationOnMap;
+        /** How many ticks the player has held the map (updates are sent every few). */
+        public int field_82569_d;
+        private boolean field_82570_i;
+
+        public MapInfo(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+            this.entityplayerObj = player;
+            for (int i = 0; i < 128; i++) {
+                field_76209_b[i] = 0;
+                field_76210_c[i] = 127;
+            }
+        }
+
+        public byte[] getPlayersOnMap(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+            if (!field_82570_i) {
+                field_82570_i = true;
+                return new byte[] {2, scale};
+            }
+            if (--field_76205_f < 0) {
+                field_76205_f = 4;
+                byte[] markers = new byte[playersVisibleOnMap.size() * 3 + 1];
+                markers[0] = 1;
+                int i = 0;
+                for (Object o : playersVisibleOnMap.values()) {
+                    MapCoord c = (MapCoord) o;
+                    markers[i * 3 + 1] = (byte) (c.iconSize << 4 | c.iconRotation & 15);
+                    markers[i * 3 + 2] = c.centerX;
+                    markers[i * 3 + 3] = c.centerZ;
+                    i++;
+                }
+                boolean same = stack == null || !stack.isOnItemFrame();
+                if (lastPlayerLocationOnMap != null && lastPlayerLocationOnMap.length == markers.length) {
+                    for (int j = 0; j < markers.length; j++) {
+                        if (markers[j] != lastPlayerLocationOnMap[j]) {
+                            same = false;
+                            break;
+                        }
+                    }
+                } else {
+                    same = false;
+                }
+                if (!same) {
+                    lastPlayerLocationOnMap = markers;
+                    return markers;
+                }
+            }
+            int x = field_76208_e++ * 11 % 128;
+            if (field_76209_b[x] >= 0) {
+                int length = field_76210_c[x] - field_76209_b[x] + 1;
+                int z = field_76209_b[x];
+                byte[] column = new byte[length + 3];
+                column[0] = 0;
+                column[1] = (byte) x;
+                column[2] = (byte) z;
+                for (int k = 0; k < column.length - 3; k++) column[k + 3] = colors[(k + z) * 128 + x];
+                field_76210_c[x] = -1;
+                field_76209_b[x] = -1;
+                return column;
+            }
+            return null;
+        }
     }
 }

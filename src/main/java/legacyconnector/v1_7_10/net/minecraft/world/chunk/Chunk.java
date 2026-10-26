@@ -309,12 +309,128 @@ public class Chunk {
         level.getChunkSource().chunkMap.resendBiomesForChunks(java.util.List.of(chunk));
     }
 
-    public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForWorldCoords(int x, int z, Object chunkManager) {
+    /**
+     * The biome of a column (local coordinates): a generator's chunk answers from its biome array, filling an unset (255) entry from the
+     * chunk manager as 1.7.10 did; a world chunk answers from the world.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForWorldCoords(int x, int z,
+            legacyconnector.v1_7_10.net.minecraft.world.biome.WorldChunkManager chunkManager) {
+        if (mcc$blocks != null || modern == null) {
+            byte[] biomes = getBiomeArray();
+            int i = (z & 15) << 4 | (x & 15);
+            int id = biomes[i] & 255;
+            if (id == 255 && chunkManager != null) {
+                var biome = chunkManager.getBiomeGenAt(wx(x), wz(z));
+                if (biome != null) {
+                    biomes[i] = (byte) (biome.biomeID & 255);
+                    return biome;
+                }
+            }
+            if (id != 255 && legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.getBiomeGenArray()[id] != null) {
+                return legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.getBiomeGenArray()[id];
+            }
+            if (chunkManager != null) {
+                var biome = chunkManager.getBiomeGenAt(wx(x), wz(z));
+                if (biome != null) return biome;
+            }
+            return legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
+        }
         return worldObj.getBiomeGenForCoords(wx(x), wz(z));
     }
 
     public TileEntity func_150806_e(int x, int y, int z) {
+        if (mcc$blocks != null || modern == null) return chunkTileEntityMap.get(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, y, z & 15));
         return worldObj.getTileEntity(wx(x), y, wz(z));
+    }
+
+    /** The tile entity at local coordinates (the 1.7.2 name of {@link #func_150806_e}). */
+    public TileEntity getBlockTileEntityInChunk(int x, int y, int z) {
+        return func_150806_e(x, y, z);
+    }
+
+    /**
+     * Puts a tile entity into the chunk at its own coordinates: into the world for a world chunk, into the chunk's own map for a
+     * generator's chunk.
+     */
+    public void addTileEntity(TileEntity te) {
+        if (te == null) return;
+        int x = te.xCoord - (xPosition << 4);
+        int z = te.zCoord - (zPosition << 4);
+        if (mcc$blocks != null || modern == null) {
+            te.setWorldObj(worldObj);
+            chunkTileEntityMap.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, te.yCoord, z & 15), te);
+            return;
+        }
+        if (worldObj != null) worldObj.setTileEntity(te.xCoord, te.yCoord, te.zCoord, te);
+    }
+
+    /** Drops an invalidated tile entity from the chunk (a world chunk's own block entity handles this itself). */
+    public void removeInvalidTileEntity(int x, int y, int z) {
+        var key = new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, y, z & 15);
+        TileEntity te = chunkTileEntityMap.get(key);
+        if (te != null && te.isInvalid()) chunkTileEntityMap.remove(key);
+    }
+
+    /**
+     * Decorates the chunk once its neighbours to the south-east exist (vanilla populated a chunk from the corner of four): the
+     * generator's {@code populate} runs for each chunk of the square that is ready. World chunks are populated by the modern game.
+     */
+    public void populateChunk(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider,
+            legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider generator, int x, int z) {
+        if (provider == null || generator == null) return;
+        if (!isTerrainPopulated && provider.chunkExists(x + 1, z + 1) && provider.chunkExists(x, z + 1) && provider.chunkExists(x + 1, z)) {
+            provider.populate(generator, x, z);
+        }
+        if (provider.chunkExists(x - 1, z) && !populated(provider, x - 1, z) && provider.chunkExists(x - 1, z + 1) && provider.chunkExists(x, z + 1)
+                && provider.chunkExists(x - 1, z + 1)) {
+            provider.populate(generator, x - 1, z);
+        }
+        if (provider.chunkExists(x, z - 1) && !populated(provider, x, z - 1) && provider.chunkExists(x + 1, z - 1) && provider.chunkExists(x + 1, z)) {
+            provider.populate(generator, x, z - 1);
+        }
+        if (provider.chunkExists(x - 1, z - 1) && !populated(provider, x - 1, z - 1) && provider.chunkExists(x, z - 1) && provider.chunkExists(x - 1, z)) {
+            provider.populate(generator, x - 1, z - 1);
+        }
+    }
+
+    private static boolean populated(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, int x, int z) {
+        Chunk c = provider.provideChunk(x, z);
+        return c == null || c.isTerrainPopulated;
+    }
+
+    /** Whether the chunk is fully generated: populated and lit. */
+    public boolean func_150802_k() {
+        return isTerrainPopulated && isLightPopulated;
+    }
+
+    /**
+     * Light at local coordinates: sky light less {@code skylightSubtracted}, or block light if brighter. Generator chunks have no light
+     * yet: full sky light above their terrain.
+     */
+    public int getBlockLightValue(int x, int y, int z, int skylightSubtracted) {
+        if (worldObj == null || mcc$blocks != null || modern == null) return Math.max(0, 15 - skylightSubtracted);
+        int sky = worldObj.getSkyBlockTypeBrightness(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock.Sky, wx(x), y, wz(z));
+        int block = worldObj.getSkyBlockTypeBrightness(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock.Block, wx(x), y, wz(z));
+        return Math.max(sky - skylightSubtracted, block);
+    }
+
+    /** The height rain and snow fall to in the column (local coordinates). */
+    public int getPrecipitationHeight(int x, int z) {
+        if (mcc$blocks != null || worldObj == null) return getHeightValue(x, z);
+        return worldObj.getPrecipitationHeight(wx(x), wz(z));
+    }
+
+    /** Sky light of a column is propagated by the modern light engine. */
+    public void propagateSkylightOcclusion(int x, int z) {
+    }
+
+    /** The block's light is recomputed (the modern engine relights it and its column). */
+    public void relightBlock(int x, int y, int z) {
+        if (worldObj != null && modern != null) worldObj.updateLightByType(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock.Sky, wx(x), y, wz(z));
+    }
+
+    /** Light is stored by the modern light engine, which computes it from the blocks; a value set here is not kept. */
+    public void setLightValue(legacyconnector.v1_7_10.net.minecraft.world.EnumSkyBlock type, int x, int y, int z, int value) {
     }
 
     public TileEntity getTileEntityUnsafe(int x, int y, int z) {
