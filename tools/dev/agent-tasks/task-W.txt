@@ -1,0 +1,201 @@
+net.minecraft.world.WorldSettings.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/storage/WorldInfo;)V -> ()V   # 4 user(s): com.rwtema.funkylocomotion.fakes.FakeWorldClient, crazypants.enderio.waila.WailaCompat$WailaWorldWrapper, ic2.core.uu.DropScan$DummyWorld, skyboy.core.world.WorldProxy
+net.minecraft.village.Village.addOrRenewAgressor(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 3 user(s): com.emoniph.witchery.entity.EntityGoblin, micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager, thaumcraft.common.entities.monster.EntityTaintVillager
+net.minecraft.world.NextTickListEntry.xCoord:I   # 3 user(s): appeng.spatial.CachedPlane, com.rwtema.funkylocomotion.movers.MoveManager, mrtjp.relocation.Utils$$anonfun$rescheduleTicks$2
+net.minecraft.world.NextTickListEntry.yCoord:I   # 3 user(s): appeng.spatial.CachedPlane, com.rwtema.funkylocomotion.movers.MoveManager, mrtjp.relocation.Utils$$anonfun$rescheduleTicks$2
+net.minecraft.world.NextTickListEntry.zCoord:I   # 3 user(s): appeng.spatial.CachedPlane, com.rwtema.funkylocomotion.movers.MoveManager, mrtjp.relocation.Utils$$anonfun$rescheduleTicks$2
+net.minecraft.world.World.checkBlockCollision(Llegacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB;)Z   # 3 user(s): biomesoplenty.common.eventhandler.potions.PotionPossessionEventHandler, com.fiskmods.heroes.common.interaction.key.KeyPressTeleport, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.WorldProvider.getProviderForDimension(I)Llegacyconnector/v1_7_10/net/minecraft/world/WorldProvider;   # 3 user(s): com.emoniph.witchery.item.ItemMirror, ic2.core.uu.DropScan$DummyWorld, micdoodle8.mods.galacticraft.core.util.WorldUtil
+net.minecraft.world.WorldProviderSurface.<init>()V   # 3 user(s): biomesoplenty.common.world.WorldProviderSurfaceBOP, com.hbm.world.WorldProviderNTM, twilightforest.world.WorldProviderTwilightForest
+net.minecraft.world.WorldSettings.<init>(JLlegacyconnector/v1_7_10/net/minecraft/world/WorldSettings$GameType;ZZLlegacyconnector/v1_7_10/net/minecraft/world/WorldType;)V -> ()V   # 3 user(s): com.fiskmods.heroes.common.entity.player.FabricatorDummyWorld, com.xcompwiz.mystcraft.MystcraftFirstRun, mcjty.rftools.blocks.spaceprojector.ProxyBlockTERenderer
+net.minecraft.world.biome.BiomeGenBase.flowers:Ljava/util/List;   # 3 user(s): biomesoplenty.api.biome.BOPBiome, com.hbm.world.biome.BiomeGenNoMansLand, thaumcraft.common.lib.world.biomes.BiomeGenMagicalForest
+net.minecraft.world.chunk.Chunk.addTileEntity(Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;)V   # 3 user(s): com.fiskmods.fisktag.schematic.SchematicAgent, com.rwtema.funkylocomotion.factory.DefaultMoveFactory, mrtjp.relocation.SaveLoadTileMover
+net.minecraft.world.chunk.Chunk.getBiomeGenForWorldCoords(IILlegacyconnector/v1_7_10/net/minecraft/world/biome/WorldChunkManager;)Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;   # 3 user(s): com.xcompwiz.mystcraft.world.BiomeWrapperManager, ic2.core.block.machine.tileentity.TileEntityTerra, journeymap.client.forge.helper.impl.ForgeHelper_1_7_10
+net.minecraft.world.chunk.Chunk.getBlockTileEntityInChunk(III)Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;   # 3 user(s): cofh.core.command.CommandFixMojangsShit, com.brandon3055.draconicevolution.common.utills.PortalHelper$PortalStructure, micdoodle8.mods.galacticraft.api.vector.BlockVec3
+net.minecraft.world.chunk.EmptyChunk.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)V   # 3 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy, fastcraft.u, ic2.core.uu.DropScan$DummyChunkProvider
+net.minecraft.world.gen.feature.WorldGenForest.<init>(ZZ)V   # 3 user(s): biomesoplenty.common.biome.overridden.BiomeGenBOPRoofedForest, com.emoniph.witchery.brewing.WitcheryBrewRegistry$57, twilightforest.biomes.TFBiomeBase
+net.minecraft.world.gen.feature.WorldGenLiquids.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 3 user(s): biomesoplenty.common.world.generation.WorldGenFieldAssociation, com.hbm.world.biome.BiomeDecoratorNoMansLand, twilightforest.biomes.TFBiomeDecorator
+net.minecraft.world.gen.feature.WorldGenTaiga2.<init>(Z)V   # 3 user(s): biomesoplenty.common.biome.overworld.BiomeGenLandOfLakes, com.emoniph.witchery.brewing.WitcheryBrewRegistry$56, twilightforest.biomes.TFBiomeGlacier
+net.minecraft.world.gen.structure.MapGenNetherBridge.getSpawnList()Ljava/util/List;   # 3 user(s): biomesoplenty.common.world.ChunkProviderBOPHell, mcjty.rftools.dimension.world.GenericChunkProvider, mods.natura.dimension.NetheriteChunkProvider
+net.minecraft.village.Village.endMatingSeason()V   # 2 user(s): com.emoniph.witchery.entity.EntityGoblin, micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
+net.minecraft.village.Village.setDefaultPlayerReputation(I)V   # 2 user(s): com.emoniph.witchery.entity.EntityGoblin, micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
+net.minecraft.village.Village.setReputationForPlayer(Ljava/lang/String;I)I   # 2 user(s): com.emoniph.witchery.entity.EntityGoblin, micdoodle8.mods.galacticraft.core.entities.EntityAlienVillager
+net.minecraft.world.NextTickListEntry.func_151351_a()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 2 user(s): appeng.spatial.CachedPlane, com.rwtema.funkylocomotion.movers.MoveManager
+net.minecraft.world.NextTickListEntry.scheduledTime:J   # 2 user(s): appeng.spatial.CachedPlane, com.rwtema.funkylocomotion.movers.MoveManager
+net.minecraft.world.World.addWorldInfoToCrashReport(Llegacyconnector/v1_7_10/net/minecraft/crash/CrashReport;)Llegacyconnector/v1_7_10/net/minecraft/crash/CrashReportCategory;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, com.rwtema.funkylocomotion.fakes.FakeWorldClient
+net.minecraft.world.World.func_147446_b(IIILlegacyconnector/v1_7_10/net/minecraft/block/Block;II)V   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, powercrystals.minefactoryreloaded.block.BlockVineScaffold
+net.minecraft.world.World.func_147448_a(Ljava/util/Collection;)V   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, mcjty.rftools.dimension.RfToolsDimensionManager
+net.minecraft.world.World.getCloudColour(F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, mcjty.rftools.dimension.world.SkyRenderer
+net.minecraft.world.World.getFogColor(F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, micdoodle8.mods.galacticraft.core.util.WorldUtil
+net.minecraft.world.World.getLoadedEntityList()Ljava/util/List;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, mods.railcraft.common.commands.CommandAdmin$CommandAdminKillAnimals
+net.minecraft.world.World.getPathEntityToEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;FZZZZ)Llegacyconnector/v1_7_10/net/minecraft/pathfinding/PathEntity;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, crazypants.enderio.machine.obelisk.attractor.TileAttractor
+net.minecraft.world.World.getSkyColor(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, micdoodle8.mods.galacticraft.core.util.WorldUtil
+net.minecraft.world.World.getStarBrightness(F)F   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, com.xcompwiz.mystcraft.symbol.symbols.SymbolStarsNormal$SkyBackground
+net.minecraft.world.World.getStarBrightnessBody(F)F   # 2 user(s): com.hbm.world.WorldProviderNTM, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getSunBrightness(F)F   # 2 user(s): com.enderio.core.client.render.RenderUtil, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.markBlocksDirtyVertical(IIII)V   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, fastcraft.u
+net.minecraft.world.World.markTileEntityForRemoval(Llegacyconnector/v1_7_10/net/minecraft/tileentity/TileEntity;)V   # 2 user(s): codechicken.multipart.TileMultipart, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.playBroadcastSound(IIIII)V   # 2 user(s): com.emoniph.witchery.entity.EntityGoblinGulg, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.sendQuittingDisconnectingPacket()V   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, com.rwtema.funkylocomotion.fakes.FakeWorldClient
+net.minecraft.world.World.setRainStrength(F)V   # 2 user(s): WayofTime.alchemicalWizardry.common.block.ImperfectRitualStone, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.setThunderStrength(F)V   # 2 user(s): WayofTime.alchemicalWizardry.common.block.ImperfectRitualStone, com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.unloadEntities(Ljava/util/List;)V   # 2 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper, micdoodle8.mods.galacticraft.core.util.WorldUtil
+net.minecraft.world.WorldProvider.getBiomeGenForCoords(II)Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;   # 2 user(s): journeymap.client.forge.helper.impl.ForgeHelper_1_7_10$JmBlockAccess, mcjty.rftools.dimension.world.GenericWorldProvider
+net.minecraft.world.WorldProvider.getSkyColor(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 2 user(s): com.emoniph.witchery.dimension.WorldProviderMirror, mcjty.rftools.dimension.world.GenericWorldProvider
+net.minecraft.world.WorldProvider.getStarBrightness(F)F   # 2 user(s): galaxyspace.systems.BarnardsSystem.planets.barnardaC.dimension.WorldProviderBarnardaC_WE, mcjty.rftools.dimension.world.GenericWorldProvider
+net.minecraft.world.WorldProvider.setWorldTime(J)V   # 2 user(s): danger.orespawn.WorldProviderOreSpawn, micdoodle8.mods.galacticraft.core.util.WorldUtil
+net.minecraft.world.WorldProviderHell.<init>()V   # 2 user(s): biomesoplenty.common.world.WorldProviderBOPHell, mods.natura.dimension.NetheriteWorldProvider
+net.minecraft.world.biome.BiomeDecorator.generateOres()V   # 2 user(s): com.hbm.world.biome.BiomeDecoratorNoMansLand, twilightforest.biomes.TFBiomeDecorator
+net.minecraft.world.biome.BiomeGenBase.func_150559_j()Z   # 2 user(s): biomesoplenty.common.world.layer.GenLayerShoreBOP, com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraft.world.biome.BiomeGenBase.worldGeneratorSwamp:Llegacyconnector_synth/v1_7_10/net/minecraft/world/gen/feature/WorldGenSwamp;   # 2 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst, twilightforest.biomes.TFBiomeFireSwamp
+net.minecraft.world.biome.WorldChunkManager.allowedBiomes:Ljava/util/ArrayList;   # 2 user(s): biomesoplenty.common.core.BOPBiomes, thaumcraft.common.config.ConfigEntities
+net.minecraft.world.chunk.Chunk.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;[Llegacyconnector/v1_7_10/net/minecraft/block/Block;II)V -> (Llegacyconnector/v1_7_10/net/minecraft/world/World;[Llegacyconnector/v1_7_10/net/minecraft/block/Block;[BII)V   # 2 user(s): appeng.spatial.StorageChunkProvider, biomesoplenty.common.world.ChunkProviderBOPHell
+net.minecraft.world.chunk.Chunk.populateChunk(Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;II)V   # 2 user(s): ic2.core.uu.DropScan, mcjty.rftools.dimension.world.WorldRefresher
+net.minecraft.world.chunk.Chunk.setLightValue(Llegacyconnector/v1_7_10/net/minecraft/world/EnumSkyBlock;IIII)V   # 2 user(s): com.xcompwiz.mystcraft.world.ChunkProviderMyst, fastcraft.u
+net.minecraft.world.chunk.storage.AnvilChunkLoader.<init>(Ljava/io/File;)V   # 2 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$AnvilChunkLoaderDummy, journeymap.client.io.nbt.RegionLoader
+net.minecraft.world.chunk.storage.AnvilChunkLoader.chunkExists(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Z   # 2 user(s): com.hbm.world.WorldUtil, journeymap.client.io.nbt.ChunkLoader
+net.minecraft.world.chunk.storage.ExtendedBlockStorage.getBlockLSBArray()[B   # 2 user(s): com.hbm.handler.radiation.ChunkRadiationHandlerPRISM, fastcraft.ah
+net.minecraft.world.gen.ChunkProviderServer.currentChunkLoader:Llegacyconnector_synth/v1_7_10/net/minecraft/world/chunk/storage/IChunkLoader;   # 2 user(s): com.hbm.commands.CommandDebugChunkLoad, com.xcompwiz.mystcraft.command.CommandRegenerateChunk
+net.minecraft.world.gen.ChunkProviderServer.originalLoadChunk(II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 2 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy, micdoodle8.mods.galacticraft.api.vector.BlockVec3
+net.minecraft.world.gen.MapGenCavesHell.<init>()V   # 2 user(s): biomesoplenty.common.world.ChunkProviderBOPHell, mods.natura.dimension.NetheriteChunkProvider
+net.minecraft.world.gen.feature.WorldGenCanopyTree.<init>(Z)V   # 2 user(s): biomesoplenty.common.biome.overridden.BiomeGenBOPRoofedForest, com.emoniph.witchery.brewing.WitcheryBrewRegistry$60
+net.minecraft.world.gen.feature.WorldGenGlowStone1.<init>()V   # 2 user(s): biomesoplenty.common.world.ChunkProviderBOPHell, mods.natura.dimension.NetheriteChunkProvider
+net.minecraft.world.gen.feature.WorldGenGlowStone2.<init>()V   # 2 user(s): biomesoplenty.common.world.ChunkProviderBOPHell, mods.natura.dimension.NetheriteChunkProvider
+net.minecraft.world.gen.feature.WorldGenHellLava.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;Z)V   # 2 user(s): biomesoplenty.common.world.ChunkProviderBOPHell, mods.natura.dimension.NetheriteChunkProvider
+net.minecraft.world.gen.feature.WorldGenMegaPineTree.<init>(ZZ)V   # 2 user(s): com.emoniph.witchery.brewing.WitcheryBrewRegistry$56, twilightforest.biomes.TFBiomeHighlands
+net.minecraft.world.gen.feature.WorldGenShrub.<init>(II)V   # 2 user(s): biomesoplenty.common.biome.overworld.BiomeGenBambooForest, twilightforest.biomes.TFBiomeDarkForest
+net.minecraft.world.gen.structure.MapGenScatteredFeature.func_143030_a(III)Z   # 2 user(s): danger.orespawn.ChunkProviderOreSpawn3, mcjty.rftools.dimension.world.GenericChunkProvider
+net.minecraft.world.gen.structure.MapGenScatteredFeature.getScatteredFeatureSpawnList()Ljava/util/List;   # 2 user(s): danger.orespawn.ChunkProviderOreSpawn3, mcjty.rftools.dimension.world.GenericChunkProvider
+net.minecraft.world.storage.MapData.func_82568_a(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/MapData$MapInfo;   # 2 user(s): com.xcompwiz.mystcraft.tileentity.TileEntityLectern, twilightforest.item.ItemTFMagicMap
+net.minecraft.world.storage.MapData.updateVisiblePlayers(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 2 user(s): jds.bibliocraft.items.ItemAtlas, twilightforest.item.ItemTFMagicMap
+net.minecraft.village.MerchantRecipe.hasSameIDsAs(Llegacyconnector/v1_7_10/net/minecraft/village/MerchantRecipe;)Z   # 1 user(s): com.emoniph.witchery.entity.EntityGoblin
+net.minecraft.village.Village.findNearestDoorUnrestricted(III)Llegacyconnector_synth/v1_7_10/net/minecraft/village/VillageDoorInfo;   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAISleep
+net.minecraft.village.Village.findNearestVillageAggressor(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAIDefendVillageGeneric
+net.minecraft.village.Village.func_82685_c(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAIDefendVillageGeneric
+net.minecraft.village.Village.getReputationForPlayer(Ljava/lang/String;)I   # 1 user(s): com.emoniph.witchery.common.GenericEvents
+net.minecraft.village.Village.isMatingSeason()Z   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAIGoblinMate
+net.minecraft.village.VillageCollection.markDirty()V   # 1 user(s): micdoodle8.mods.galacticraft.api.prefab.world.gen.WorldProviderSpace
+net.minecraft.village.VillageDoorInfo.getInsidePosX()I   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAISleep
+net.minecraft.village.VillageDoorInfo.getInsidePosY()I   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAISleep
+net.minecraft.village.VillageDoorInfo.getInsidePosZ()I   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAISleep
+net.minecraft.world.MinecraftException.<init>(Ljava/lang/String;)V   # 1 user(s): com.xcompwiz.mystcraft.world.storage.ExternalSaveHandler
+net.minecraft.world.NextTickListEntry.<init>(IIILlegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): appeng.spatial.CachedPlane
+net.minecraft.world.NextTickListEntry.priority:I   # 1 user(s): com.rwtema.funkylocomotion.movers.MoveManager
+net.minecraft.world.SpawnerAnimals.canCreatureTypeSpawnAtLocation(Llegacyconnector/v1_7_10/net/minecraft/entity/EnumCreatureType;Llegacyconnector/v1_7_10/net/minecraft/world/World;III)Z   # 1 user(s): codechicken.nei.WorldOverlayRenderer
+net.minecraft.world.Teleporter$PortalPosition.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/Teleporter;IIIJ)V   # 1 user(s): thaumcraft.common.lib.world.dim.TeleporterThaumcraft
+net.minecraft.world.Teleporter$PortalPosition.lastUpdateTime:J   # 1 user(s): thaumcraft.common.lib.world.dim.TeleporterThaumcraft
+net.minecraft.world.World.FCpc:Lcom/google/common/collect/ImmutableSetMultimap;   # 1 user(s): fastcraft.u
+net.minecraft.world.World.MAX_ENTITY_RADIUS:D   # 1 user(s): com.hbm.main.MainRegistry
+net.minecraft.world.World.addLoadedEntities(Ljava/util/List;)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.calculateInitialSkylight()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.calculateInitialWeatherBody()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.calculateSkylightSubtracted(F)I   # 1 user(s): com.rwtema.extrautils.ActivationRitual
+net.minecraft.world.World.canBlockFreeze(IIIZ)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.canBlockFreezeBody(IIIZ)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.canMineBlockBody(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;III)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.canSnowAtBody(IIIZ)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.captureBlockSnapshots:Z   # 1 user(s): com.hbm.items.tool.ItemFertilizer
+net.minecraft.world.World.checkSessionLock()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.collidingBoundingBoxes:Ljava/util/ArrayList;   # 1 user(s): cofh.asmhooks.HooksCore
+net.minecraft.world.World.countEntities(Llegacyconnector/v1_7_10/net/minecraft/entity/EnumCreatureType;Z)I   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.drawCloudsBody(F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.extinguishFire(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;IIII)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.findClosestStructure(Ljava/lang/String;III)Llegacyconnector/v1_7_10/net/minecraft/world/ChunkPosition;   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.func_147450_X()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.func_147473_B(III)F   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.func_82738_a(J)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getBlockLightValue_do(IIIZ)I   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getChunkHeightMapMinimum(II)I   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getDebugLoadedEntities()Ljava/lang/String;   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getHorizon()D   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getSkyColorBody(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.getSunBrightnessFactor(F)F   # 1 user(s): com.hbm.world.WorldProviderNTM
+net.minecraft.world.World.isBlockFreezableNaturally(III)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.isBlockHighHumidity(III)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.joinEntityInSurroundings(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.removePlayerEntityDangerously(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.setAllowedSpawnTypes(ZZ)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.setSpawnLocation()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.setSpawnLocation(III)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.tick()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.tickUpdates(Z)Z   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.updateEntities()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.updateEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.World.updateWeatherBody()V   # 1 user(s): com.rwtema.extrautils.fakeplayer.FakeWorldWrapper
+net.minecraft.world.WorldProvider.getHorizon()D   # 1 user(s): mcjty.rftools.dimension.world.GenericWorldProvider
+net.minecraft.world.WorldProvider.getSunBrightness(F)F   # 1 user(s): mcjty.rftools.dimension.world.GenericWorldProvider
+net.minecraft.world.WorldProvider.resetRainAndThunder()V   # 1 user(s): codechicken.nei.NEIServerUtils
+net.minecraft.world.WorldProviderEnd.<init>()V   # 1 user(s): biomesoplenty.common.world.WorldProviderBOPEnd
+net.minecraft.world.WorldProviderSurface.drawClouds(F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 1 user(s): com.hbm.world.WorldProviderNTM
+net.minecraft.world.WorldProviderSurface.getBiomeGenForCoords(II)Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;   # 1 user(s): twilightforest.world.WorldProviderTwilightForest
+net.minecraft.world.WorldProviderSurface.getSkyColor(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;F)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 1 user(s): com.hbm.world.WorldProviderNTM
+net.minecraft.world.WorldServer.customTeleporters:Ljava/util/List;   # 1 user(s): skyboy.core.world.WorldServerProxy
+net.minecraft.world.WorldServer.getEntrancePortalLocation()Llegacyconnector/v1_7_10/net/minecraft/util/ChunkCoordinates;   # 1 user(s): com.rwtema.extrautils.worldgen.endoftime.TeleporterEndOfTime
+net.minecraft.world.WorldServer.spawnRandomCreature(Llegacyconnector/v1_7_10/net/minecraft/entity/EnumCreatureType;III)Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase$SpawnListEntry;   # 1 user(s): com.rwtema.extrautils.block.BlockCursedEarth
+net.minecraft.world.WorldServer.updateEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): crazypants.enderio.rail.EnderRailController
+net.minecraft.world.WorldSettings.enableCommands()Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings;   # 1 user(s): com.xcompwiz.mystcraft.MystcraftFirstRun
+net.minecraft.world.WorldSettings.setWorldName(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings;   # 1 user(s): com.xcompwiz.mystcraft.MystcraftFirstRun
+net.minecraft.world.biome.BiomeGenBase.func_150572_a(Ljava/util/Random;III)Ljava/lang/String;   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraft.world.biome.BiomeGenBase.getModdedBiomeFoliageColor(I)I   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraft.world.biome.BiomeGenBase.getModdedBiomeGrassColor(I)I   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraft.world.biome.BiomeGenBase.getWaterColorMultiplier()I   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraft.world.biome.BiomeGenDesert.<init>(I)V   # 1 user(s): buildcraft.energy.worldgen.BiomeGenOilDesert
+net.minecraft.world.biome.BiomeGenOcean.<init>(I)V   # 1 user(s): buildcraft.energy.worldgen.BiomeGenOilOcean
+net.minecraft.world.chunk.Chunk.FCtt:I   # 1 user(s): fastcraft.u
+net.minecraft.world.chunk.Chunk.func_150802_k()Z   # 1 user(s): fastcraft.u
+net.minecraft.world.chunk.Chunk.getBlockLightValue(IIII)I   # 1 user(s): com.hbm.entity.mob.glyphid.EntityGlyphidScout
+net.minecraft.world.chunk.Chunk.getPrecipitationHeight(II)I   # 1 user(s): journeymap.client.forge.helper.impl.ForgeHelper_1_7_10
+net.minecraft.world.chunk.Chunk.propagateSkylightOcclusion(II)V   # 1 user(s): com.rwtema.funkylocomotion.helper.BlockHelper
+net.minecraft.world.chunk.Chunk.relightBlock(III)V   # 1 user(s): com.rwtema.funkylocomotion.helper.BlockHelper
+net.minecraft.world.chunk.Chunk.removeInvalidTileEntity(III)V   # 1 user(s): fastcraft.u
+net.minecraft.world.chunk.storage.AnvilChunkLoader.chunkSaveLocation:Ljava/io/File;   # 1 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy
+net.minecraft.world.chunk.storage.AnvilChunkLoader.loadChunk(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): journeymap.client.io.nbt.ChunkLoader
+net.minecraft.world.chunk.storage.AnvilChunkLoader.loadChunk__Async(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)[Ljava/lang/Object;   # 1 user(s): com.hbm.commands.CommandDebugChunkLoad
+net.minecraft.world.chunk.storage.AnvilSaveHandler.<init>(Ljava/io/File;Ljava/lang/String;Z)V   # 1 user(s): journeymap.client.io.nbt.AnvilSessionlessSaveHandler
+net.minecraft.world.chunk.storage.ExtendedBlockStorage.getBlockMSBArray()Llegacyconnector/v1_7_10/net/minecraft/world/chunk/NibbleArray;   # 1 user(s): fastcraft.ah
+net.minecraft.world.chunk.storage.IChunkLoader.loadChunk(Llegacyconnector/v1_7_10/net/minecraft/world/World;II)Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): com.xcompwiz.mystcraft.world.AgeController
+net.minecraft.world.demo.DemoWorldServer.demoWorldSettings:Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings;   # 1 user(s): galaxyspace.core.client.gui.GSGuiMainMenu
+net.minecraft.world.gen.ChunkProviderHell.genNetherBridge:Llegacyconnector/v1_7_10/net/minecraft/world/gen/structure/MapGenNetherBridge;   # 1 user(s): com.emoniph.witchery.entity.EntitySpirit
+net.minecraft.world.gen.ChunkProviderServer.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/WorldServer;Llegacyconnector_synth/v1_7_10/net/minecraft/world/chunk/storage/IChunkLoader;Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;)V -> (Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): com.xcompwiz.mystcraft.world.profiling.WorldProviderMystDummy$ChunkProviderServerDummy
+net.minecraft.world.gen.MapGenRavine.func_151540_a(JII[Llegacyconnector/v1_7_10/net/minecraft/block/Block;DDDFFFIID)V   # 1 user(s): fox.spiteful.avaritia.compat.botania.alfheim.MapGenAlfheimRavines
+net.minecraft.world.gen.feature.WorldGenDeadBush.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): com.hbm.world.biome.BiomeDecoratorNoMansLand
+net.minecraft.world.gen.feature.WorldGenFire.<init>()V   # 1 user(s): biomesoplenty.common.biome.nether.BiomeGenPhantasmagoricInferno
+net.minecraft.world.gen.feature.WorldGenHugeTrees.<init>(ZIIII)V   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenHugeTrees.func_150533_a(Ljava/util/Random;)I   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenHugeTrees.func_150534_b(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIIILjava/util/Random;)V   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenHugeTrees.func_150535_a(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIIILjava/util/Random;)V   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenHugeTrees.func_150537_a(Llegacyconnector/v1_7_10/net/minecraft/world/World;Ljava/util/Random;IIII)Z   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenHugeTrees.woodMetadata:I   # 1 user(s): biomesoplenty.common.world.features.trees.WorldGenBOPJungle
+net.minecraft.world.gen.feature.WorldGenMegaJungle.<init>(ZIIII)V   # 1 user(s): com.emoniph.witchery.brewing.WitcheryBrewRegistry$58
+net.minecraft.world.gen.feature.WorldGenMelon.<init>()V   # 1 user(s): biomesoplenty.common.world.generation.WorldGenFieldAssociation
+net.minecraft.world.gen.feature.WorldGenPumpkin.<init>()V   # 1 user(s): twilightforest.biomes.TFBiomeFireflyForest
+net.minecraft.world.gen.feature.WorldGenSavannaTree.<init>(Z)V   # 1 user(s): com.emoniph.witchery.brewing.WitcheryBrewRegistry$59
+net.minecraft.world.gen.feature.WorldGenTaiga1.<init>()V   # 1 user(s): twilightforest.biomes.TFBiomeGlacier
+net.minecraft.world.gen.feature.WorldGenVines.<init>()V   # 1 user(s): twilightforest.biomes.TFBiomeEnchantedForest
+net.minecraft.world.gen.layer.GenLayer.nextLong(J)J   # 1 user(s): biomesoplenty.common.world.layer.hell.BiomeLayerHellBiomes
+net.minecraft.world.gen.structure.MapGenStructureData.func_143043_a(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;II)V   # 1 user(s): twilightforest.world.MapGenTFMajorFeature
+net.minecraft.world.gen.structure.StructureStrongholdPieces$Stairs2.field_75026_c:Ljava/util/List;   # 1 user(s): twilightforest.structures.StructureTFMajorFeatureStart
+net.minecraft.world.gen.structure.StructureVillagePieces$Church.func_74919_a(Llegacyconnector/v1_7_10/net/minecraft/world/gen/structure/StructureVillagePieces$Start;Ljava/util/List;Ljava/util/Random;IIIII)Llegacyconnector_synth/v1_7_10/net/minecraft/world/gen/structure/StructureVillagePieces$Church;   # 1 user(s): com.emoniph.witchery.worldgen.WorldHandlerVillageDistrict
+net.minecraft.world.storage.DerivedWorldInfo.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/storage/WorldInfo;)V   # 1 user(s): com.xcompwiz.mystcraft.world.storage.WorldInfoMyst
+net.minecraft.world.storage.DerivedWorldInfo.getAdditionalProperty(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTBase;   # 1 user(s): com.xcompwiz.mystcraft.world.storage.WorldInfoMyst
+net.minecraft.world.storage.DerivedWorldInfo.getGameRulesInstance()Llegacyconnector/v1_7_10/net/minecraft/world/GameRules;   # 1 user(s): com.xcompwiz.mystcraft.world.storage.WorldInfoMyst
+net.minecraft.world.storage.DerivedWorldInfo.setAdditionalProperties(Ljava/util/Map;)V   # 1 user(s): com.xcompwiz.mystcraft.world.storage.WorldInfoMyst
+net.minecraft.world.storage.MapData$MapCoord.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/storage/MapData;BBBB)V   # 1 user(s): twilightforest.TFMagicMapData
+net.minecraft.world.storage.MapData$MapCoord.centerX:B   # 1 user(s): twilightforest.TFMagicMapData
+net.minecraft.world.storage.MapData$MapCoord.centerZ:B   # 1 user(s): twilightforest.TFMagicMapData
+net.minecraft.world.storage.MapData$MapCoord.iconRotation:B   # 1 user(s): twilightforest.client.renderer.TFMagicMapRenderer
+net.minecraft.world.storage.MapData$MapCoord.iconSize:B   # 1 user(s): twilightforest.TFMagicMapData
+net.minecraft.world.storage.MapData$MapInfo.field_82569_d:I   # 1 user(s): twilightforest.item.ItemTFMagicMap
+net.minecraft.world.storage.MapData.getUpdatePacketData(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)[B   # 1 user(s): twilightforest.item.ItemTFMagicMap
+net.minecraft.world.storage.MapData.updateMPMapData([B)V   # 1 user(s): twilightforest.TFMagicMapData
+net.minecraft.world.storage.SaveFormatComparator.getFileName()Ljava/lang/String;   # 1 user(s): codechicken.nei.NEIClientConfig
+net.minecraft.world.storage.SaveHandlerMP.<init>()V   # 1 user(s): com.hbm.wiaj.FauxWorld
+net.minecraft.world.storage.ThreadedFileIOBase.queueIO(Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/IThreadedFileIO;)V   # 1 user(s): journeymap.client.model.ImageHolder
+net.minecraft.world.storage.ThreadedFileIOBase.threadedIOInstance:Llegacyconnector_synth/v1_7_10/net/minecraft/world/storage/ThreadedFileIOBase;   # 1 user(s): journeymap.client.model.ImageHolder
+net.minecraft.world.storage.ThreadedFileIOBase.waitForFinish()V   # 1 user(s): journeymap.client.model.RegionImageCache
+net.minecraft.world.storage.WorldInfo.getAdditionalProperty(Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTBase;   # 1 user(s): appeng.items.storage.ItemSpatialStorageCell
+net.minecraft.world.storage.WorldInfo.getGameRulesInstance()Llegacyconnector/v1_7_10/net/minecraft/world/GameRules;   # 1 user(s): com.brandon3055.draconicevolution.client.render.tile.RenderTileEnergyInfiser
+net.minecraft.world.storage.WorldInfo.isInitialized()Z   # 1 user(s): twilightforest.world.WorldProviderTwilightForest
+net.minecraft.world.storage.WorldInfo.setSpawnPosition(III)V   # 1 user(s): com.rwtema.extrautils.worldgen.endoftime.TeleporterEndOfTime
+net.minecraftforge.event.terraingen.BiomeEvent$GetWaterColor.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;I)V   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraftforge.event.terraingen.BiomeEvent$GetWaterColor.newColor:I   # 1 user(s): com.xcompwiz.mystcraft.world.biome.BiomeWrapperMyst
+net.minecraftforge.event.terraingen.ChunkProviderEvent$ReplaceBiomeBlocks.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;II[Llegacyconnector/v1_7_10/net/minecraft/block/Block;[Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;)V -> (Llegacyconnector/v1_7_10/net/minecraft/world/chunk/IChunkProvider;II[Llegacyconnector/v1_7_10/net/minecraft/block/Block;[B[Llegacyconnector/v1_7_10/net/minecraft/world/biome/BiomeGenBase;Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): twilightforest.world.ChunkProviderTwilightForest

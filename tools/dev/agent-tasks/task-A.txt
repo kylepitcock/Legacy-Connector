@@ -1,1 +1,0 @@
-net.minecraft.entity.player.EntityPlayer.func_146104_a(Llegacyconnector_synth/v1_7_10/net/minecraft/tileentity/TileEntityBeacon;)V

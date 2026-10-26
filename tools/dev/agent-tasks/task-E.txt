@@ -1,0 +1,260 @@
+net.minecraft.entity.player.EntityPlayer.fishEntity:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/projectile/EntityFishHook;   # 6 user(s): cofh.core.entity.EntityCoFHFishHook, cofh.redstonearsenal.item.tool.ItemFishingRodRF, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, com.hbm.main.ModEventHandlerRenderer, danger.orespawn.UltimateFi
+net.minecraft.entity.ai.EntityAINearestAttackableTarget.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityCreature;Ljava/lang/Class;IZZLlegacyconnector/v1_7_10/net/minecraft/command/IEntitySelector;)V -> (Llegacyconnector/v1_7_10/net/minecraft/entity/EntityCreature;Ljava/lang/Class;IZZ)V   # 4 user(s): com.emoniph.witchery.common.GenericEvents, com.fiskmods.heroes.common.entity.EntityCactus, com.hbm.entity.mob.EntityCyberCrab, danger.orespawn.Dragon
+net.minecraft.entity.monster.EntityMob.fall(F)V   # 4 user(s): com.fiskmods.heroes.common.entity.EntityCreetle, danger.orespawn.AttackSquid, thaumcraft.common.entities.monster.EntityTaintCreeper, twilightforest.entity.boss.EntityTFYetiAlpha
+net.minecraft.potion.PotionEffect.readCustomPotionEffectFromNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)Llegacyconnector/v1_7_10/net/minecraft/potion/PotionEffect;   # 4 user(s): codechicken.nei.ContainerPotionCreator, com.emoniph.witchery.common.ServerTickEvents, com.fiskmods.heroes.common.data.effect.EffectContainer, powercrystals.minefactoryreloaded.farmables.safarinethandl
+net.minecraft.entity.Entity.addEntityCrashInfo(Llegacyconnector/v1_7_10/net/minecraft/crash/CrashReportCategory;)V   # 3 user(s): com.hbm.entity.item.EntityFallingBlockNT, com.xcompwiz.mystcraft.entity.EntityFallingBlock, thaumcraft.common.entities.EntityFallingTaint
+net.minecraft.entity.Entity.canRiderInteract()Z   # 3 user(s): com.fiskmods.heroes.client.render.entity.SHEntityRenderer, com.hbm.util.EntityDamageUtil, danger.orespawn.OreSpawnMain
+net.minecraft.entity.Entity.kill()V   # 3 user(s): com.hbm.entity.item.EntityMinecartDeobf, micdoodle8.mods.galacticraft.api.prefab.entity.EntitySpaceshipBase, tconstruct.tools.entity.RotatingBase
+net.minecraft.entity.item.EntityMinecart.func_70489_a(DDD)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 3 user(s): com.hbm.render.entity.item.RenderMinecartTest, mods.railcraft.client.render.carts.RenderCart, vswe.stevescarts.Renders.RendererMinecart
+net.minecraft.entity.item.EntityMinecart.func_70495_a(DDDD)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 3 user(s): com.hbm.render.entity.item.RenderMinecartTest, mods.railcraft.client.render.carts.RenderCart, vswe.stevescarts.Renders.RendererMinecart
+net.minecraft.entity.item.EntityMinecart.getCartItem()Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 3 user(s): buildcraft.transport.stripes.StripesHandlerMinecartDestroy, com.hbm.entity.cart.EntityMinecartNTM, mods.railcraft.common.blocks.machine.gamma.TileDispenserCart
+net.minecraft.entity.monster.EntityCreeper.getCreeperFlashIntensity(F)F   # 3 user(s): com.hbm.render.entity.mob.RenderCreeperUniversal, galaxyspace.systems.SolarSystem.planets.venus.render.entities.RenderEvolvedFireCreeper, micdoodle8.mods.galacticraft.core.client.render.entities.Rende
+net.minecraft.entity.player.EntityPlayer.sleepInBedAt(III)Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer$EnumStatus;   # 3 user(s): com.carpentersblocks.block.BlockCarpentersBed, com.emoniph.witchery.blocks.BlockCoffin, mcjty.rftools.BedControl
+net.minecraft.entity.projectile.EntityFishHook.handleHookRetraction()I   # 3 user(s): cofh.core.item.tool.ItemFishingRodAdv, cofh.redstonearsenal.item.tool.ItemFishingRodRF, danger.orespawn.UltimateFishingRod
+net.minecraft.entity.projectile.EntitySnowball.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 3 user(s): WayofTime.alchemicalWizardry.common.spell.complex.effect.impactEffects.ice.MeleeEnvironmentalIce, openblocks.enchantments.flimflams.SnowballsFlimFlam, tconstruct.mechworks.landmine.behavior.BehaviorPr
+net.minecraft.potion.PotionEffect.writeCustomPotionEffectToNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;   # 3 user(s): codechicken.nei.ContainerPotionCreator, com.emoniph.witchery.brewing.potions.WitcheryPotions$EventHooks, com.fiskmods.heroes.common.data.effect.EffectContainer
+net.minecraft.util.DamageSource.causeFireballDamage(Llegacyconnector/v1_7_10/net/minecraft/entity/projectile/EntityFireball;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Llegacyconnector/v1_7_10/net/minecraft/util/DamageSource;   # 3 user(s): danger.orespawn.BetterFireball, micdoodle8.mods.galacticraft.planets.mars.entities.EntityProjectileTNT, twilightforest.entity.boss.EntityTFHydraMortar
+net.minecraft.entity.Entity.getMountedYOffset()D   # 2 user(s): cofh.thermaldynamics.duct.entity.EntityTransport, com.emoniph.witchery.client.TransformBat
+net.minecraft.entity.Entity.updateRiderPosition()V   # 2 user(s): cofh.thermaldynamics.duct.entity.EntityTransport, com.emoniph.witchery.entity.EntityBroom
+net.minecraft.entity.EntityFlying.onDeathUpdate()V   # 2 user(s): com.hbm.entity.mob.EntityUFO, twilightforest.entity.boss.EntityTFKnightPhantom
+net.minecraft.entity.EntityHanging.field_146062_d:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
+net.minecraft.entity.EntityHanging.field_146063_b:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
+net.minecraft.entity.EntityHanging.field_146064_c:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
+net.minecraft.entity.EntityLivingBase.captureDrops:Z   # 2 user(s): com.fiskmods.heroes.common.event.CommonEntityHandler, micdoodle8.mods.galacticraft.core.event.EventHandlerGC
+net.minecraft.entity.EntityLivingBase.curePotionEffects(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 2 user(s): powercrystals.minefactoryreloaded.farmables.drinkhandlers.DrinkHandlerMilk, vazkii.botania.common.brew.potion.PotionClear
+net.minecraft.entity.EntityTracker.sendToAllTrackingEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/network/Packet;)V   # 2 user(s): openblocks.common.item.ItemSleepingBag, twilightforest.entity.EntityTFTroll
+net.minecraft.entity.IMerchant.getCustomer()Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;   # 2 user(s): com.emoniph.witchery.entity.ai.EntityAILookAtTradePlayerGeneric, com.rwtema.extrautils.network.packets.PacketVillagerReturn
+net.minecraft.entity.ai.EntityAICreeperSwell.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/monster/EntityCreeper;)V   # 2 user(s): galaxyspace.systems.SolarSystem.planets.venus.entities.EntityEvolvedFireCreeper, micdoodle8.mods.galacticraft.core.entities.EntityEvolvedCreeper
+net.minecraft.entity.effect.EntityWeatherEffect.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 2 user(s): cofh.core.entity.EntityLightningBoltFake, twilightforest.entity.passive.EntityTFTinyFirefly
+net.minecraft.entity.item.EntityEnderPearl.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 2 user(s): openblocks.enchantments.flimflams.TeleportFlimFlam, tconstruct.mechworks.landmine.behavior.BehaviorProjectile
+net.minecraft.entity.item.EntityFallingBlock.setHurtEntities(Z)V   # 2 user(s): com.hbm.blocks.generic.BlockUberConcrete, powercrystals.minefactoryreloaded.item.gun.ammo.ItemNeedlegunAmmoAnvil
+net.minecraft.entity.item.EntityMinecart.canBeRidden()Z   # 2 user(s): mods.railcraft.common.blocks.detector.types.DetectorEmpty, powercrystals.minefactoryreloaded.block.transport.BlockRailPassengerPickup
+net.minecraft.entity.item.EntityMinecart.fall(F)V   # 2 user(s): com.hbm.entity.item.EntityMinecartTest, mods.railcraft.common.carts.CartExplosiveBase
+net.minecraft.entity.item.EntityMinecart.isPoweredCart()Z   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.blocks.detector.types.DetectorPowered
+net.minecraft.entity.item.EntityMinecart.kill()V   # 2 user(s): com.hbm.entity.item.EntityMinecartModBase, vswe.stevescarts.Carts.MinecartModular
+net.minecraft.entity.item.EntityMinecart.moveMinecartOnRail(IIID)V   # 2 user(s): vazkii.botania.common.entity.EntityPoolMinecart, vswe.stevescarts.Carts.MinecartModular
+net.minecraft.entity.item.EntityMinecart.setCanUseRail(Z)V   # 2 user(s): mods.railcraft.common.blocks.tracks.BlockTrackElevator, vswe.stevescarts.Modules.Realtimers.ModuleRocket
+net.minecraft.entity.item.EntityMinecartEmpty.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.carts.EntityCartBasic
+net.minecraft.entity.item.EntityMinecartFurnace.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.carts.EntityCartFurnace
+net.minecraft.entity.item.EntityPainting$EnumArt.sizeX:I   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityPainting$EnumArt.sizeY:I   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityPainting$EnumArt.values()[Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityPainting$EnumArt;   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.monster.EntityCreeper.func_146079_cb()V   # 2 user(s): cofh.thermalexpansion.item.tool.ItemIgniter, com.fiskmods.heroes.common.entity.arrow.EntityFireworkArrow
+net.minecraft.entity.monster.EntityGhast.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 2 user(s): com.emoniph.witchery.ritual.rites.RiteHellOnEarth, twilightforest.entity.EntityTFTowerGhast
+net.minecraft.entity.monster.EntityGolem.collideWithEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 2 user(s): com.emoniph.witchery.entity.EntityDemon, com.fiskmods.heroes.common.entity.EntityCactus
+net.minecraft.entity.monster.EntityMob.captureDrops:Z   # 2 user(s): galaxyspace.systems.SolarSystem.planets.ceres.entities.EntityBossBlaze, micdoodle8.mods.galacticraft.core.entities.EntitySkeletonBoss
+net.minecraft.entity.monster.EntityMob.capturedDrops:Ljava/util/ArrayList;   # 2 user(s): galaxyspace.systems.SolarSystem.planets.ceres.entities.EntityBossBlaze, micdoodle8.mods.galacticraft.core.entities.EntitySkeletonBoss
+net.minecraft.entity.monster.EntityMob.collideWithEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 2 user(s): com.emoniph.witchery.entity.EntityEnt, twilightforest.entity.EntityTFTowerGolem
+net.minecraft.entity.monster.EntitySilverfish.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 2 user(s): com.emoniph.witchery.blocks.BlockCritterSnare, powercrystals.netherores.entity.EntityHellfish
+net.minecraft.entity.monster.EntitySnowman.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 2 user(s): cofh.thermalfoundation.fluid.BlockFluidCryotheum, team.chisel.entity.EntityChiselSnowman
+net.minecraft.entity.monster.IMob.mobSelector:Llegacyconnector/v1_7_10/net/minecraft/command/IEntitySelector;   # 2 user(s): danger.orespawn.Boyfriend, micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp
+net.minecraft.entity.passive.EntityHorse.isChested()Z   # 2 user(s): powercrystals.minefactoryreloaded.farmables.spawnhandlers.SpawnableHorse, vswe.stevesfactory.wrappers.InventoryWrapperHorse
+net.minecraft.entity.player.EntityPlayer.getArmorVisibility()F   # 2 user(s): WayofTime.alchemicalWizardry.common.entity.mob.EntityElemental, com.fiskmods.heroes.asm.ASMHooks
+net.minecraft.entity.player.EntityPlayer.interactWith(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Z   # 2 user(s): buildcraft.transport.stripes.StripesHandlerEntityInteract, cofh.thermalexpansion.block.device.TileActivator
+net.minecraft.entity.player.EntityPlayer.wakeUpPlayer(ZZZ)V   # 2 user(s): com.emoniph.witchery.util.EntityUtil, micdoodle8.mods.galacticraft.core.event.EventHandlerGC
+net.minecraft.entity.projectile.EntityFishHook.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 2 user(s): cofh.core.entity.EntityCoFHFishHook, danger.orespawn.UltimateFishHook
+net.minecraft.entity.projectile.EntityFishHook.angler:Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;   # 2 user(s): cofh.core.entity.EntityCoFHFishHook, danger.orespawn.UltimateFishHook
+net.minecraft.entity.projectile.EntityFishHook.shake:I   # 2 user(s): cofh.core.entity.EntityCoFHFishHook, danger.orespawn.UltimateFishHook
+net.minecraft.potion.Potion.func_111183_a(ILlegacyconnector/v1_7_10/net/minecraft/entity/ai/attributes/AttributeModifier;)D   # 2 user(s): WayofTime.alchemicalWizardry.common.items.potion.AlchemyFlask, blusunrize.immersiveengineering.common.items.ItemBullet
+net.minecraft.potion.Potion.func_111186_k()Ljava/util/Map;   # 2 user(s): WayofTime.alchemicalWizardry.common.items.potion.AlchemyFlask, blusunrize.immersiveengineering.common.items.ItemBullet
+net.minecraft.potion.PotionEffect.combine(Llegacyconnector/v1_7_10/net/minecraft/potion/PotionEffect;)V   # 2 user(s): com.fiskmods.heroes.common.hero.modifier.ModifierPotionRetention, ic2.core.item.ItemMugCoffee
+net.minecraft.entity.DataWatcher.getWatchedObject(I)Llegacyconnector/v1_7_10/net/minecraft/entity/DataWatcher$WatchableObject;   # 1 user(s): micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedSkeleton
+net.minecraft.entity.Entity.captureDrops:Z   # 1 user(s): thaumcraft.common.lib.utils.EntityUtils
+net.minecraft.entity.Entity.capturedDrops:Ljava/util/ArrayList;   # 1 user(s): thaumcraft.common.lib.utils.EntityUtils
+net.minecraft.entity.Entity.fall(F)V   # 1 user(s): com.hbm.entity.item.EntityBoatRubber
+net.minecraft.entity.Entity.getCollisionBox(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Llegacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB;   # 1 user(s): com.fiskmods.heroes.common.hero.modifier.ModifierSuperSpeed
+net.minecraft.entity.Entity.getRotationYawHead()F   # 1 user(s): thaumcraft.client.fx.other.FXSonic
+net.minecraft.entity.Entity.onStruckByLightning(Llegacyconnector/v1_7_10/net/minecraft/entity/effect/EntityLightningBolt;)V   # 1 user(s): com.fiskmods.heroes.common.damage.property.DamagePropertyLightning
+net.minecraft.entity.Entity.setAngles(FF)V   # 1 user(s): tconstruct.tools.items.TitleIcon
+net.minecraft.entity.Entity.shouldRenderInPass(I)Z   # 1 user(s): fastcraft.ak
+net.minecraft.entity.Entity.shouldRiderSit()Z   # 1 user(s): com.hbm.main.ModEventHandlerClient
+net.minecraft.entity.EntityAgeable.updateLeashedState()V   # 1 user(s): com.emoniph.witchery.entity.EntityGoblin
+net.minecraft.entity.EntityBodyHelper.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
+net.minecraft.entity.EntityBodyHelper.updateRenderAngles()V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
+net.minecraft.entity.EntityCreature.collideWithEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.fiskmods.heroes.common.entity.EntityIronMan
+net.minecraft.entity.EntityCreature.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.entity.EntityVillageGuard
+net.minecraft.entity.EntityCreature.setPositionAndRotation2(DDDFFI)V   # 1 user(s): danger.orespawn.Cephadrome
+net.minecraft.entity.EntityCreature.updateRidden()V   # 1 user(s): com.emoniph.witchery.entity.EntityVampire
+net.minecraft.entity.EntityFlying.captureDrops:Z   # 1 user(s): galaxyspace.systems.SolarSystem.moons.io.entities.EntityBossGhast
+net.minecraft.entity.EntityFlying.capturedDrops:Ljava/util/ArrayList;   # 1 user(s): galaxyspace.systems.SolarSystem.moons.io.entities.EntityBossGhast
+net.minecraft.entity.EntityHanging.hangingDirection:I   # 1 user(s): buildcraft.builders.schematics.SchematicHanging
+net.minecraft.entity.EntityLeashKnot.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLeashKnot.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLeashKnot.field_146062_d:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLeashKnot.field_146063_b:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLeashKnot.field_146064_c:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLeashKnot.onValidSurface()Z   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
+net.minecraft.entity.EntityLiving.collideWithEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.xcompwiz.mystcraft.entity.EntityLinkbook
+net.minecraft.entity.EntityLiving.isPlayer()Z   # 1 user(s): twilightforest.entity.boss.EntityTFHydra
+net.minecraft.entity.EntityLiving.kill()V   # 1 user(s): tconstruct.world.entity.SlimeBase
+net.minecraft.entity.EntityLivingBase.addToPlayerScore(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;I)V   # 1 user(s): com.fiskmods.fisktag.FTPlayerData
+net.minecraft.entity.EntityLivingBase.collideWithEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.fiskmods.heroes.common.entity.effect.EntitySpellDuplicate
+net.minecraft.entity.EntityLivingBase.getAlwaysRenderNameTagForRender()Z   # 1 user(s): com.fiskmods.heroes.common.entity.effect.EntitySpellDuplicate
+net.minecraft.entity.EntityLivingBase.getCollisionBox(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Llegacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB;   # 1 user(s): com.fiskmods.heroes.common.entity.effect.EntitySpellDuplicate
+net.minecraft.entity.EntityLivingBase.getLastAttackerTime()I   # 1 user(s): com.fiskmods.heroes.common.entity.ai.EntityAIOwnerHurtTarget2
+net.minecraft.entity.EntityLivingBase.isEating()Z   # 1 user(s): com.emoniph.witchery.client.TransformWolfman
+net.minecraft.entity.EntityLivingBase.isOnTeam(Llegacyconnector/v1_7_10/net/minecraft/scoreboard/Team;)Z   # 1 user(s): com.fiskmods.fisktag.common.game.setup.ScoreTeam
+net.minecraft.entity.EntityLivingBase.isPushedByWater()Z   # 1 user(s): com.fiskmods.heroes.common.entity.effect.EntitySpellDuplicate
+net.minecraft.entity.EntityLivingBase.writeMountToNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)Z   # 1 user(s): com.rwtema.extrautils.item.ItemGoldenLasso
+net.minecraft.entity.EntityMinecartCommandBlock.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
+net.minecraft.entity.EntityTracker.getTrackingPlayers(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Ljava/util/Set;   # 1 user(s): buildcraft.BuildCraftMod$EntitySendRequest
+net.minecraft.entity.EntityTracker.updateTrackedEntities()V   # 1 user(s): com.fiskmods.fisktag.FTMapData
+net.minecraft.entity.EntityTrackerEntry.trackingPlayers:Ljava/util/Set;   # 1 user(s): openmods.utils.NetUtils
+net.minecraft.entity.EntityTrackerEntry.tryStartWachingThis(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayerMP;)V   # 1 user(s): com.fiskmods.fisktag.FTMapData
+net.minecraft.entity.IMerchant.getRecipes(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)Llegacyconnector/v1_7_10/net/minecraft/village/MerchantRecipeList;   # 1 user(s): com.rwtema.extrautils.tileentity.TileEntityTradingPost
+net.minecraft.entity.IMerchant.setCustomer(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)V   # 1 user(s): com.emoniph.witchery.entity.ai.EntityAITradePlayerGeneric
+net.minecraft.entity.IMerchant.useRecipe(Llegacyconnector/v1_7_10/net/minecraft/village/MerchantRecipe;)V   # 1 user(s): mods.railcraft.common.blocks.machine.alpha.TileTradeStation
+net.minecraft.entity.ai.EntityAINearestAttackableTarget$Sorter.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.hbm.entity.mob.ai.EntityAINearestAttackableTargetNT
+net.minecraft.entity.ai.EntityMinecartMobSpawner.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): powercrystals.minefactoryreloaded.net.EntityHandler
+net.minecraft.entity.ai.EntityMinecartMobSpawner.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
+net.minecraft.entity.boss.EntityDragon.healingEnderCrystal:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityEnderCrystal;   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
+net.minecraft.entity.boss.EntityWither.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): vazkii.botania.common.entity.EntityPinkWither
+net.minecraft.entity.boss.IBossDisplayData.getFormattedCommandSenderName()Llegacyconnector/v1_7_10/net/minecraft/util/IChatComponent;   # 1 user(s): vazkii.botania.client.core.handler.BossBarHandler
+net.minecraft.entity.item.EntityEnderCrystal.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): danger.orespawn.GenericDungeon
+net.minecraft.entity.item.EntityEnderCrystal.innerRotation:I   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
+net.minecraft.entity.item.EntityEnderPearl.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): tconstruct.mechworks.landmine.behavior.BehaviorProjectile
+net.minecraft.entity.item.EntityExpBottle.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): danger.orespawn.BlockExperienceLeaves
+net.minecraft.entity.item.EntityFallingBlock.getBlock()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 1 user(s): com.hbm.entity.effect.EntityBlackHole
+net.minecraft.entity.item.EntityItem.deliverItemViaDrone(DDD)V   # 1 user(s): WayofTime.alchemicalWizardry.common.entity.mob.MailOrderEntityItem
+net.minecraft.entity.item.EntityItem.setThrower(Ljava/lang/String;)V   # 1 user(s): thaumcraft.common.entities.ContainerPech
+net.minecraft.entity.item.EntityItemFrame.setDirection(I)V   # 1 user(s): mcjty.rftools.dimension.world.GenericWorldGenerator
+net.minecraft.entity.item.EntityMinecart.canUseRail()Z   # 1 user(s): vswe.stevescarts.Renders.RendererMinecart
+net.minecraft.entity.item.EntityMinecart.defaultDragAir:D   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
+net.minecraft.entity.item.EntityMinecart.defaultMaxSpeedAirLateral:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
+net.minecraft.entity.item.EntityMinecart.defaultMaxSpeedAirVertical:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
+net.minecraft.entity.item.EntityMinecart.func_145781_i(I)V   # 1 user(s): mods.railcraft.common.carts.EntityCartCommand
+net.minecraft.entity.item.EntityMinecart.func_145821_a(IIIDDLlegacyconnector/v1_7_10/net/minecraft/block/Block;I)V   # 1 user(s): vswe.stevescarts.Carts.MinecartModular
+net.minecraft.entity.item.EntityMinecart.getMountedYOffset()D   # 1 user(s): vswe.stevescarts.Carts.MinecartModular
+net.minecraft.entity.item.EntityMinecart.setDragAir(D)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
+net.minecraft.entity.item.EntityMinecart.setMaxSpeedAirLateral(F)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
+net.minecraft.entity.item.EntityMinecart.setMaxSpeedAirVertical(F)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
+net.minecraft.entity.item.EntityMinecartChest.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
+net.minecraft.entity.item.EntityMinecartContainer.func_145821_a(IIIDDLlegacyconnector/v1_7_10/net/minecraft/block/Block;I)V   # 1 user(s): mods.railcraft.common.carts.EntityCartTrackLayer
+net.minecraft.entity.item.EntityMinecartEmpty.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): mods.railcraft.common.carts.EntityCartBasic
+net.minecraft.entity.item.EntityMinecartFurnace.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
+net.minecraft.entity.item.EntityMinecartFurnace.pushX:D   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
+net.minecraft.entity.item.EntityMinecartFurnace.pushZ:D   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
+net.minecraft.entity.item.EntityMinecartHopper.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
+net.minecraft.entity.item.EntityMinecartTNT.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
+net.minecraft.entity.item.EntityPainting$EnumArt.offsetX:I   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
+net.minecraft.entity.item.EntityPainting$EnumArt.offsetY:I   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
+net.minecraft.entity.item.EntityPainting$EnumArt.title:Ljava/lang/String;   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
+net.minecraft.entity.item.EntityPainting.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIII)V   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityPainting.art:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityPainting$EnumArt;   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityPainting.hangingDirection:I   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityPainting.setDirection(I)V   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
+net.minecraft.entity.item.EntityXPOrb.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V -> (Llegacyconnector/v1_7_10/net/minecraft/world/World;DDDI)V   # 1 user(s): openblocks.common.entity.EntityXPOrbNoFly
+net.minecraft.entity.monster.EntityCreeper.fall(F)V   # 1 user(s): mods.natura.entity.NitroCreeper
+net.minecraft.entity.monster.EntityCreeper.onStruckByLightning(Llegacyconnector/v1_7_10/net/minecraft/entity/effect/EntityLightningBolt;)V   # 1 user(s): powercrystals.minefactoryreloaded.modhelpers.vanilla.VanillaMobProvider
+net.minecraft.entity.monster.EntityEnderman.getCarriedBlock()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 1 user(s): powercrystals.minefactoryreloaded.farmables.grindables.GrindableEnderman
+net.minecraft.entity.monster.EntityEnderman.isScreaming()Z   # 1 user(s): com.rwtema.extrautils.EventHandlerServer
+net.minecraft.entity.monster.EntityEnderman.setCarriedBlock(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): powercrystals.minefactoryreloaded.farmables.spawnhandlers.SpawnableEnderman
+net.minecraft.entity.monster.EntityGhast.attackCounter:I   # 1 user(s): twilightforest.client.renderer.entity.RenderTFTowerGhast
+net.minecraft.entity.monster.EntityGhast.courseChangeCooldown:I   # 1 user(s): twilightforest.entity.EntityTFTowerGhast
+net.minecraft.entity.monster.EntityGhast.onDeathUpdate()V   # 1 user(s): twilightforest.entity.boss.EntityTFUrGhast
+net.minecraft.entity.monster.EntityGhast.prevAttackCounter:I   # 1 user(s): twilightforest.client.renderer.entity.RenderTFTowerGhast
+net.minecraft.entity.monster.EntityGhast.waypointX:D   # 1 user(s): twilightforest.entity.EntityTFTowerGhast
+net.minecraft.entity.monster.EntityGhast.waypointY:D   # 1 user(s): twilightforest.entity.EntityTFTowerGhast
+net.minecraft.entity.monster.EntityGhast.waypointZ:D   # 1 user(s): twilightforest.entity.EntityTFTowerGhast
+net.minecraft.entity.monster.EntityGiantZombie.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): powercrystals.minefactoryreloaded.item.syringe.ItemSyringeGrowth
+net.minecraft.entity.monster.EntityGolem.fall(F)V   # 1 user(s): thaumcraft.common.entities.golems.EntityGolemBase
+net.minecraft.entity.monster.EntityIronGolem.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): team.chisel.block.BlockCarvablePumpkin
+net.minecraft.entity.monster.EntityIronGolem.setPlayerCreated(Z)V   # 1 user(s): team.chisel.block.BlockCarvablePumpkin
+net.minecraft.entity.monster.EntityMob.applyPotionDamageCalculations(Llegacyconnector/v1_7_10/net/minecraft/util/DamageSource;F)F   # 1 user(s): com.emoniph.witchery.entity.EntityBabaYaga
+net.minecraft.entity.monster.EntityMob.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.entity.EntityFollower
+net.minecraft.entity.monster.EntityMob.dismountEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): thaumcraft.common.entities.monster.EntityEldritchCrab
+net.minecraft.entity.monster.EntityMob.func_145781_i(I)V   # 1 user(s): thaumcraft.common.entities.monster.EntityWatcher
+net.minecraft.entity.monster.EntityMob.getArmorItemForSlot(II)Llegacyconnector/v1_7_10/net/minecraft/item/Item;   # 1 user(s): com.emoniph.witchery.entity.EntitySpectre
+net.minecraft.entity.monster.EntityMob.getMountedYOffset()D   # 1 user(s): micdoodle8.mods.galacticraft.core.entities.EntitySkeletonBoss
+net.minecraft.entity.monster.EntityMob.isPlayer()Z   # 1 user(s): twilightforest.entity.EntityTFIceExploder
+net.minecraft.entity.monster.EntityMob.isPotionApplicable(Llegacyconnector/v1_7_10/net/minecraft/potion/PotionEffect;)Z   # 1 user(s): thaumcraft.common.entities.monster.EntityEldritchCrab
+net.minecraft.entity.monster.EntityMob.onDeathUpdate()V   # 1 user(s): twilightforest.entity.EntityTFTroll
+net.minecraft.entity.monster.EntityMob.onItemPickup(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;I)V   # 1 user(s): com.fiskmods.heroes.common.entity.EntityCreetle
+net.minecraft.entity.monster.EntityMob.onKillEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): com.emoniph.witchery.entity.EntityWolfman
+net.minecraft.entity.monster.EntityMob.playStepSound(IIILlegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): com.emoniph.witchery.entity.EntityLeonard
+net.minecraft.entity.monster.EntityMob.setEating(Z)V   # 1 user(s): com.emoniph.witchery.client.TransformWolfman
+net.minecraft.entity.monster.EntityMob.updateRidden()V   # 1 user(s): twilightforest.entity.EntityTFGoblinKnightUpper
+net.minecraft.entity.monster.EntityPigZombie.becomeAngryAt(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): powercrystals.netherores.ores.BlockNetherOres
+net.minecraft.entity.monster.EntitySilverfish.allySummonCooldown:I   # 1 user(s): powercrystals.netherores.entity.EntityHellfish
+net.minecraft.entity.monster.EntitySkeleton.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): crazypants.enderio.entity.EntityWitherSkeleton
+net.minecraft.entity.monster.EntitySkeleton.setCombatTask()V   # 1 user(s): crazypants.enderio.entity.EntityWitherSkeleton
+net.minecraft.entity.monster.EntitySlime.getAttackStrength()I   # 1 user(s): twilightforest.entity.EntityTFMazeSlime
+net.minecraft.entity.monster.EntitySpider.fall(F)V   # 1 user(s): mods.natura.entity.BabyHeatscarSpider
+net.minecraft.entity.monster.EntityWitch.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): vazkii.botania.common.entity.EntityDoppleganger
+net.minecraft.entity.monster.EntityZombie.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.brewing.action.effect.BrewActionBlight
+net.minecraft.entity.monster.EntityZombie.getArmorItemForSlot(II)Llegacyconnector/v1_7_10/net/minecraft/item/Item;   # 1 user(s): twilightforest.entity.boss.EntityTFLichMinion
+net.minecraft.entity.monster.EntityZombie.isPlayer()Z   # 1 user(s): thaumcraft.common.entities.monster.EntityInhabitedZombie
+net.minecraft.entity.monster.EntityZombie.onKillEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): thaumcraft.common.entities.monster.EntityBrainyZombie
+net.minecraft.entity.monster.EntityZombie.startConversion(I)V   # 1 user(s): powercrystals.minefactoryreloaded.item.syringe.ItemSyringeCure
+net.minecraft.entity.passive.EntityChicken.updateRiderPosition()V   # 1 user(s): com.hbm.entity.mob.EntityQuackos
+net.minecraft.entity.passive.EntityHorse.canWearArmor()Z   # 1 user(s): vswe.stevesfactory.wrappers.InventoryWrapperHorse
+net.minecraft.entity.passive.EntityHorse.dropChestItems()V   # 1 user(s): com.xcompwiz.mystcraft.linking.LinkListenerBasic
+net.minecraft.entity.passive.EntityHorse.func_110241_cb()I   # 1 user(s): powercrystals.minefactoryreloaded.farmables.spawnhandlers.SpawnableHorse
+net.minecraft.entity.passive.EntityHorse.func_146085_a(Llegacyconnector/v1_7_10/net/minecraft/item/Item;)Z   # 1 user(s): vswe.stevesfactory.wrappers.InventoryWrapperHorse
+net.minecraft.entity.passive.EntityHorse.func_152119_ch()Ljava/lang/String;   # 1 user(s): journeymap.client.model.EntityDTO
+net.minecraft.entity.passive.EntityHorse.getHorseVariant()I   # 1 user(s): micdoodle8.mods.galacticraft.core.tile.TileEntityTelemetry
+net.minecraft.entity.passive.EntityHorse.getVariantTexturePaths()[Ljava/lang/String;   # 1 user(s): journeymap.client.model.EntityHelper
+net.minecraft.entity.passive.EntityHorse.setHorseVariant(I)V   # 1 user(s): micdoodle8.mods.galacticraft.core.client.gui.screen.GameScreenText
+net.minecraft.entity.passive.EntityMooshroom.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.brewing.action.effect.BrewActionBlight
+net.minecraft.entity.passive.EntitySquid.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): openblocks.enchantments.flimflams.SquidFilmFlam
+net.minecraft.entity.passive.EntityTameable.applyPotionDamageCalculations(Llegacyconnector/v1_7_10/net/minecraft/util/DamageSource;F)F   # 1 user(s): com.emoniph.witchery.entity.EntityCovenWitch
+net.minecraft.entity.passive.EntityTameable.decreaseAirSupply(I)I   # 1 user(s): com.emoniph.witchery.entity.EntityFollower
+net.minecraft.entity.passive.EntityTameable.setPositionAndRotation2(DDDFFI)V   # 1 user(s): danger.orespawn.Dragon
+net.minecraft.entity.passive.EntityTameable.setScale(F)V   # 1 user(s): micdoodle8.mods.galacticraft.planets.mars.entities.EntitySlimeling
+net.minecraft.entity.passive.EntityVillager.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.entity.EntityWolfman
+net.minecraft.entity.passive.EntityVillager.createChild(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityAgeable;)Llegacyconnector/v1_7_10/net/minecraft/entity/passive/EntityVillager;   # 1 user(s): com.emoniph.witchery.brewing.potions.EntityAIVillagerMateNow
+net.minecraft.entity.passive.EntityVillager.setLookingForHome()V   # 1 user(s): com.emoniph.witchery.entity.EntityWolfman
+net.minecraft.entity.passive.EntityVillager.setMating(Z)V   # 1 user(s): com.emoniph.witchery.brewing.potions.EntityAIVillagerMateNow
+net.minecraft.entity.passive.EntityWaterMob.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): com.hbm.entity.mob.EntityPlasticBag
+net.minecraft.entity.passive.EntityWaterMob.captureDrops:Z   # 1 user(s): com.hbm.entity.mob.EntityPlasticBag
+net.minecraft.entity.passive.EntityWaterMob.capturedDrops:Ljava/util/ArrayList;   # 1 user(s): com.hbm.entity.mob.EntityPlasticBag
+net.minecraft.entity.passive.EntityWolf.copyLocationAndAnglesFrom(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.emoniph.witchery.entity.EntityHellhound
+net.minecraft.entity.passive.EntityWolf.func_70918_i(Z)V   # 1 user(s): micdoodle8.mods.galacticraft.core.client.gui.screen.GameScreenText
+net.minecraft.entity.passive.EntityWolf.func_70922_bv()Z   # 1 user(s): micdoodle8.mods.galacticraft.core.tile.TileEntityTelemetry
+net.minecraft.entity.player.EntityPlayer.attackTargetEntityWithCurrentItem(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): cofh.thermalexpansion.block.device.TileActivator
+net.minecraft.entity.player.EntityPlayer.captureDrops:Z   # 1 user(s): tconstruct.armor.player.TPlayerHandler
+net.minecraft.entity.player.EntityPlayer.capturedDrops:Ljava/util/ArrayList;   # 1 user(s): tconstruct.armor.player.TPlayerHandler
+net.minecraft.entity.player.EntityPlayer.curePotionEffects(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 1 user(s): powercrystals.minefactoryreloaded.item.ItemMilkBottle
+net.minecraft.entity.player.EntityPlayer.displayGUIMerchant(Llegacyconnector_synth/v1_7_10/net/minecraft/entity/IMerchant;Ljava/lang/String;)V   # 1 user(s): com.emoniph.witchery.entity.EntityDemon
+net.minecraft.entity.player.EntityPlayer.func_146095_a(Llegacyconnector/v1_7_10/net/minecraft/command/server/CommandBlockLogic;)V   # 1 user(s): mods.railcraft.common.carts.EntityCartCommand
+net.minecraft.entity.player.EntityPlayer.func_146104_a(Llegacyconnector_synth/v1_7_10/net/minecraft/tileentity/TileEntityBeacon;)V   # 1 user(s): team.chisel.block.BlockCarvableBeacon
+net.minecraft.entity.player.EntityPlayer.getInventoryEnderChest()Llegacyconnector_synth/v1_7_10/net/minecraft/inventory/InventoryEnderChest;   # 1 user(s): vazkii.botania.common.item.ItemEnderHand
+net.minecraft.entity.player.EntityPlayer.getUUID(Lcom/mojang/authlib/GameProfile;)Ljava/util/UUID;   # 1 user(s): ichun.common.core.EntityHelperBase
+net.minecraft.entity.player.EntityPlayer.setGameType(Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings$GameType;)V   # 1 user(s): com.fiskmods.fisktag.util.FTHelper
+net.minecraft.entity.player.EntityPlayer.setSpawnChunk(Llegacyconnector/v1_7_10/net/minecraft/util/ChunkCoordinates;Z)V   # 1 user(s): micdoodle8.mods.galacticraft.core.event.EventHandlerGC
+net.minecraft.entity.player.EntityPlayer.verifyRespawnCoordinates(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/util/ChunkCoordinates;Z)Llegacyconnector/v1_7_10/net/minecraft/util/ChunkCoordinates;   # 1 user(s): com.fiskmods.heroes.common.hero.modifier.ModifierTeleportation
+net.minecraft.entity.player.EntityPlayerMP.clonePlayer(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): micdoodle8.mods.galacticraft.core.entities.player.GCEntityPlayerMP
+net.minecraft.entity.player.EntityPlayerMP.interactWith(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Z   # 1 user(s): com.rwtema.extrautils.network.packets.PacketVillagerReturn
+net.minecraft.entity.player.EntityPlayerMP.setSpawnChunk(Llegacyconnector/v1_7_10/net/minecraft/util/ChunkCoordinates;Z)V   # 1 user(s): vazkii.botania.common.world.SkyblockWorldEvents
+net.minecraft.entity.player.EntityPlayerMP.updateRidden()V   # 1 user(s): micdoodle8.mods.galacticraft.core.entities.player.GCEntityPlayerMP
+net.minecraft.entity.player.EntityPlayerMP.wakeUpPlayer(ZZZ)V   # 1 user(s): micdoodle8.mods.galacticraft.core.entities.player.GCEntityPlayerMP
+net.minecraft.entity.projectile.EntityArrow.kill()V   # 1 user(s): tconstruct.tools.entity.ArrowEntity
+net.minecraft.entity.projectile.EntityEgg.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): vswe.stevescarts.Helpers.EntityCake
+net.minecraft.entity.projectile.EntityEgg.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): vswe.stevescarts.Helpers.EntityCake
+net.minecraft.entity.projectile.EntityEgg.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): vswe.stevescarts.Helpers.EntityCake
+net.minecraft.entity.projectile.EntityFishHook.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDDLlegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)V   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;)V   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.caughtEntity:Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishApproachAngle:F   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishPitch:D   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishPosRotationIncrements:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishX:D   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishY:D   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishYaw:D   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.fishZ:D   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.inGround:Z   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.inTile:Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.ticksCatchable:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.ticksCatchableDelay:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.ticksCaughtDelay:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.ticksInAir:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.ticksInGround:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.xTile:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.yTile:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntityFishHook.zTile:I   # 1 user(s): cofh.core.entity.EntityCoFHFishHook
+net.minecraft.entity.projectile.EntitySnowball.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): vswe.stevescarts.Modules.Addons.Projectiles.ModuleSnowball
+net.minecraft.potion.Potion.applyAttributesModifiersToEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;Llegacyconnector/v1_7_10/net/minecraft/entity/ai/attributes/BaseAttributeMap;I)V   # 1 user(s): com.emoniph.witchery.brewing.potions.PotionBase
+net.minecraft.potion.Potion.removeAttributesModifiersFromEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;Llegacyconnector/v1_7_10/net/minecraft/entity/ai/attributes/BaseAttributeMap;I)V   # 1 user(s): com.emoniph.witchery.brewing.potions.PotionBase
+net.minecraft.potion.PotionEffect.addCurativeItem(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 1 user(s): thaumcraft.common.lib.WarpEvents
+net.minecraft.potion.PotionEffect.setSplashPotion(Z)V   # 1 user(s): com.fiskmods.heroes.common.potion.PotionHelperSH
+net.minecraft.entity.player.EntityPlayer.func_146104_a(Llegacyconnector_synth/v1_7_10/net/minecraft/tileentity/TileEntityBeacon;)V
