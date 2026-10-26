@@ -316,10 +316,24 @@ public class World implements IBlockAccess {
                 && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
     }
 
+    /**
+     * A block of a server level read from another thread (a world generator holding an entity of the real world, such as
+     * Immersive Engineering's village item frames): only a chunk that is fully loaded right now is read. The level itself
+     * would wait for the chunk on the server thread, which may be waiting for this very generation (the server hung).
+     * Null when the read happens on the server thread or in a generation region.
+     */
+    private BlockState mcc$offThreadState(int x, int y, int z) {
+        if (!(lvl() instanceof net.minecraft.server.level.ServerLevel sl) || sl.getServer().isSameThread()) return null;
+        var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(x >> 4, z >> 4));
+        var chunk = holder == null ? null : holder.getChunkIfPresent(net.minecraft.world.level.chunk.status.ChunkStatus.FULL);
+        return chunk == null ? Blocks.AIR.defaultBlockState() : chunk.getBlockState(pos(x, y, z));
+    }
+
     @Override
     public Block getBlock(int x, int y, int z) {
         if (unloaded(x, z)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
-        BlockState state = lvl().getBlockState(pos(x, y, z));
+        BlockState offThread = mcc$offThreadState(x, y, z);
+        BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         return BlockBridge.legacyBlock(state);
@@ -328,7 +342,8 @@ public class World implements IBlockAccess {
     @Override
     public int getBlockMetadata(int x, int y, int z) {
         if (unloaded(x, z)) return 0;
-        return BlockBridge.legacyMeta(lvl().getBlockState(pos(x, y, z)));
+        BlockState offThread = mcc$offThreadState(x, y, z);
+        return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(pos(x, y, z)));
     }
 
     /**
@@ -780,9 +795,14 @@ public class World implements IBlockAccess {
             var legacy = org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
             return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
         }
+        // a server level's chunk counts only when fully loaded now: hasChunk is also true for a chunk still being promoted,
+        // and reading its height waits for it (Thaumcraft's entity-join handler asks for the biome of an entity of the chunk
+        // being loaded, which hung the server)
         boolean present = lvl() instanceof net.minecraft.server.level.WorldGenRegion region
                 ? region.getCenter().x == x >> 4 && region.getCenter().z == z >> 4
-                : lvl().hasChunk(x >> 4, z >> 4);
+                : lvl() instanceof net.minecraft.server.level.ServerLevel sl
+                        ? sl.getChunkSource().getChunkNow(x >> 4, z >> 4) != null
+                        : lvl().hasChunk(x >> 4, z >> 4);
         // full chunks drop the _WG heightmaps: reading one logs "Unprimed heightmap" (CustomOreGen's debug wireframes, per sample)
         var heightmap = lvl() instanceof net.minecraft.server.level.WorldGenRegion
                 ? net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG : net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE;
@@ -1041,12 +1061,15 @@ public class World implements IBlockAccess {
         playSoundEffect(x, y, z, name, volume, pitch);
     }
 
+    /** A world effect by its 1.7.10 id; the ids (and some data values) changed, so it is translated to the modern level event. */
     public void playAuxSFX(int type, int x, int y, int z, int data) {
-        lvl().levelEvent(type, pos(x, y, z), data);
+        playAuxSFXAtEntity(null, type, x, y, z, data);
     }
 
     public void playAuxSFXAtEntity(EntityPlayer player, int type, int x, int y, int z, int data) {
-        lvl().levelEvent(player == null ? null : player.mcc$player(), type, pos(x, y, z), data);
+        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(type, data);
+        if (modern == null) return;
+        lvl().levelEvent(player == null ? null : player.mcc$player(), modern[0], pos(x, y, z), modern[1]);
     }
 
     public void spawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {

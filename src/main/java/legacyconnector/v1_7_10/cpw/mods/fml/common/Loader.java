@@ -105,6 +105,23 @@ public class Loader {
         return list != null && list.isLoaded(org.kylepitcock.legacyconnector.core.Ids.modernModId(modname));
     }
 
+    /** Minecraft's entry in the mod list. */
+    public MinecraftDummyContainer getMinecraftModContainer() {
+        return (MinecraftDummyContainer) pseudo("Minecraft");
+    }
+
+    private static volatile ModClassLoader mcc$modClassLoader;
+
+    /** The class loader of the legacy mods (mods load each other's classes by name through it). */
+    public ClassLoader getModClassLoader() {
+        if (mcc$modClassLoader == null) {
+            synchronized (Loader.class) {
+                if (mcc$modClassLoader == null) mcc$modClassLoader = new ModClassLoader(Loader.class.getClassLoader());
+            }
+        }
+        return mcc$modClassLoader;
+    }
+
     public File getConfigDir() {
         return FMLPaths.CONFIGDIR.get().toFile();
     }
@@ -121,6 +138,7 @@ public class Loader {
 
     private static ModContainer pseudo(String id) {
         return PSEUDO.computeIfAbsent(id, k -> {
+            if (k.equals("Minecraft")) return new MinecraftDummyContainer(MC_VERSION);
             ModMetadata md = new ModMetadata();
             md.modId = k;
             md.name = k;
@@ -158,6 +176,7 @@ public class Loader {
         for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
             if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
         }
+        ModMetadata.mcc$linkFamilies(out);
         return out;
     }
 

@@ -6,8 +6,19 @@ import net.minecraft.world.inventory.ClickType;
 
 /** The local player's game mode and container clicks ({@code Minecraft.playerController}). */
 public class PlayerControllerMP {
+    public PlayerControllerMP() {
+    }
+
+    /** Mods subclass the controller (longer reach) and construct it like the game did. */
+    public PlayerControllerMP(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler) {
+    }
+
     private static net.minecraft.client.multiplayer.MultiPlayerGameMode mode() {
         return net.minecraft.client.Minecraft.getInstance().gameMode;
+    }
+
+    private static net.minecraft.client.player.LocalPlayer local() {
+        return net.minecraft.client.Minecraft.getInstance().player;
     }
 
     public boolean isInCreativeMode() {
@@ -41,5 +52,57 @@ public class PlayerControllerMP {
     public float getBlockReachDistance() {
         var player = net.minecraft.client.Minecraft.getInstance().player;
         return player == null ? 4.5F : (float) player.blockInteractionRange();
+    }
+
+    /** Never true in 1.7.10 (the flag of a debug mode that did not ship). */
+    public boolean enableEverythingIsScrewedUpMode() {
+        return false;
+    }
+
+    /** Presses a button of the open container (the enchanting table's enchantments, a mod GUI's buttons). */
+    public void sendEnchantPacket(int windowId, int button) {
+        var m = mode();
+        if (m != null) m.handleInventoryButtonClick(windowId, button);
+    }
+
+    /** Sets the local game mode (what the client shows and allows; the server's game mode is unchanged). */
+    public void setGameType(legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType type) {
+        var m = mode();
+        if (m == null || type == null || type.getID() < 0) return;
+        m.setLocalMode(net.minecraft.world.level.GameType.byId(type.getID()));
+    }
+
+    /** Creative players reach further (5 blocks instead of 4.5). */
+    public boolean extendedReach() {
+        var m = mode();
+        return m != null && m.getPlayerMode().isCreative();
+    }
+
+    /** Attacks the entity as a left click would. */
+    public void attackEntity(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+        var m = mode();
+        var local = local();
+        if (m == null || local == null || target == null || target.mcc$entity() == null) return;
+        m.attack(local, target.mcc$entity());
+    }
+
+    /** Right-clicks the block at (x, y, z) on {@code side} with the held item; true when something happened. */
+    public boolean onPlayerRightClick(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.world.World world, ItemStack stack, int x, int y, int z,
+            int side, legacyconnector.v1_7_10.net.minecraft.util.Vec3 hit) {
+        var m = mode();
+        var local = local();
+        if (m == null || local == null) return false;
+        var pos = new net.minecraft.core.BlockPos(x, y, z);
+        var at = hit == null ? net.minecraft.world.phys.Vec3.atCenterOf(pos) : new net.minecraft.world.phys.Vec3(hit.xCoord, hit.yCoord, hit.zCoord);
+        var face = net.minecraft.core.Direction.from3DDataValue(side);
+        return m.useItemOn(local, net.minecraft.world.InteractionHand.MAIN_HAND, new net.minecraft.world.phys.BlockHitResult(at, face, pos, false)).consumesAction();
+    }
+
+    /** Uses the held item in the air; true when it did something. */
+    public boolean sendUseItem(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.world.World world, ItemStack stack) {
+        var m = mode();
+        var local = local();
+        if (m == null || local == null) return false;
+        return m.useItem(local, net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction();
     }
 }

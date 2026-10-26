@@ -33,6 +33,11 @@ public class BlockGrass extends legacyconnector.v1_7_10.net.minecraft.block.Bloc
         // the vanilla block's own bone meal handling runs on the modern block
     }
 
+    /** The tinted overlay drawn over the dirt of grass sides ({@code grass_side_overlay}). */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IIcon getIconSideOverlay() {
+        return mcc$vanillaIcon("grass_side_overlay");
+    }
+
     @Override
     public int getRenderColor(int meta) {
         return 0x7CBD6B;

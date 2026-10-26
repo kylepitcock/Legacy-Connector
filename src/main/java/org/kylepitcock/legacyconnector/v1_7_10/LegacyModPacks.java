@@ -33,12 +33,21 @@ import org.slf4j.LoggerFactory;
  * class instead of a plain one over its jar; mods use it to serve assets that are not in the jar (Fisk's Heroes serves the
  * sound files and sounds.json it downloads). The jar's own assets are already in the game, translated, so this pack serves
  * only what a custom pack has beyond them. It cannot list folders (legacy packs cannot either), so it serves files by name:
- * sounds.json, sounds and textures that are asked for by name.
+ * sounds.json, sounds and textures that are asked for by name. Packs mods add while running (see
+ * {@code LegacyResourcePacks}) are served here as well, whole.
  */
 public final class LegacyModPacks extends AbstractPackResources {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/ModPacks");
     /** Custom pack and the plain pack over the same jar, by container, kept across reloads. */
     private static final Map<ModContainer, IResourcePack[]> PACKS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Containers a mod added with {@code FMLCommonHandler.addModToResourcePack} (scripted mods): their whole source is served. */
+    private static final List<ModContainer> ADDED = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Serves the assets of {@code container}'s source (a jar or folder), as FML's {@code addModToResourcePack} did. */
+    public static void mcc$addContainer(ModContainer container) {
+        if (container != null && !ADDED.contains(container)) ADDED.add(container);
+    }
 
     private LegacyModPacks(PackLocationInfo location) {
         super(location);
@@ -95,15 +104,16 @@ public final class LegacyModPacks extends AbstractPackResources {
             });
             if (pair.length == 2) out.add(pair);
         }
-        for (IResourcePack extra : EXTRA) out.add(new IResourcePack[] {extra, null});
+        for (ModContainer container : ADDED) {
+            IResourcePack[] pair = PACKS.computeIfAbsent(container, c -> {
+                if (c.getSource() == null) return new IResourcePack[0];
+                IResourcePack plain = c.getSource().isDirectory() ? new legacyconnector.v1_7_10.cpw.mods.fml.client.FMLFolderResourcePack(c)
+                        : new legacyconnector.v1_7_10.cpw.mods.fml.client.FMLFileResourcePack(c);
+                return new IResourcePack[] {plain, null};
+            });
+            if (pair.length == 2) out.add(pair);
+        }
         return out;
-    }
-
-    /** Packs of containers that are not loaded mods, added with {@code FMLClientHandler.addModAsResource}; served as they are. */
-    private static final List<IResourcePack> EXTRA = new java.util.concurrent.CopyOnWriteArrayList<>();
-
-    public static void mcc$addExtraPack(IResourcePack pack) {
-        if (pack != null && !EXTRA.contains(pack)) EXTRA.add(pack);
     }
 
     @Override
@@ -126,18 +136,30 @@ public final class LegacyModPacks extends AbstractPackResources {
             } catch (RuntimeException | LinkageError e) {
                 continue;
             }
-            IResourcePack custom = pair[0];
-            boolean sounds = location.getPath().equals("sounds.json");
-            return () -> {
-                InputStream in = custom.getInputStream(legacy);
-                if (in == null) throw new IOException("No " + location);
-                if (!sounds) return in;
-                try (in) {
-                    return new ByteArrayInputStream(convertSounds(in.readAllBytes(), location.getNamespace()));
-                }
-            };
+            return serve(pair[0], legacy, location);
+        }
+        // packs mods added at run time (reloadResourcePack, Minecraft.defaultResourcePacks), newest first
+        List<IResourcePack> added = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.injected();
+        for (int i = added.size() - 1; i >= 0; i--) {
+            try {
+                if (added.get(i).resourceExists(legacy)) return serve(added.get(i), legacy, location);
+            } catch (RuntimeException | LinkageError ignored) {
+                // a broken pack serves nothing
+            }
         }
         return null;
+    }
+
+    private static IoSupplier<InputStream> serve(IResourcePack pack, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation legacy, ResourceLocation location) {
+        boolean sounds = location.getPath().equals("sounds.json");
+        return () -> {
+            InputStream in = pack.getInputStream(legacy);
+            if (in == null) throw new IOException("No " + location);
+            if (!sounds) return in;
+            try (in) {
+                return new ByteArrayInputStream(convertSounds(in.readAllBytes(), location.getNamespace()));
+            }
+        };
     }
 
     /**
@@ -215,6 +237,9 @@ public final class LegacyModPacks extends AbstractPackResources {
             } catch (RuntimeException | LinkageError ignored) {
                 // a broken pack serves nothing
             }
+        }
+        for (String d : org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.domains()) {
+            if (ResourceLocation.isValidNamespace(d)) out.add(d);
         }
         return out;
     }

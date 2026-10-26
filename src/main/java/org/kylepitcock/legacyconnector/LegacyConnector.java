@@ -97,6 +97,7 @@ public final class LegacyConnector {
 
         IEventBus game = NeoForge.EVENT_BUS;
         EventBridge1710.register(game);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;

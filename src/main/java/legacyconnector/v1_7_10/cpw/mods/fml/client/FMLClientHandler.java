@@ -97,7 +97,7 @@ public class FMLClientHandler {
         resourcePackList.add(pack);
         resourcePackMap.put(container.getModId(), pack);
         if (!(container instanceof org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710)) {
-            org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks.mcc$addExtraPack((legacyconnector.v1_7_10.net.minecraft.client.resources.IResourcePack) pack);
+            org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks.mcc$addContainer(container);
         }
     }
 

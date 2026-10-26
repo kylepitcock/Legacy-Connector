@@ -114,6 +114,75 @@ public class EnchantmentHelper {
         return total;
     }
 
+    /** Respiration level of the entity's worn and held items (longer breath under water, clearer fog). */
+    public static int getRespiration(EntityLivingBase entity) {
+        return entity == null ? 0 : getMaxEnchantmentLevel(Enchantment.respiration.effectId, entity.getLastActiveItems());
+    }
+
+    /** Whether the entity wears or holds Aqua Affinity (normal mining speed under water). */
+    public static boolean getAquaAffinityModifier(EntityLivingBase entity) {
+        return entity != null && getMaxEnchantmentLevel(Enchantment.aquaAffinity.effectId, entity.getLastActiveItems()) > 0;
+    }
+
+    /**
+     * The enchantments an enchanting table may roll for {@code stack} at enchantability {@code level}: effect id -> the highest
+     * applicable level's {@link EnchantmentData}; null when none applies (1.7.10's table logic over the legacy enchantment list).
+     */
+    public static Map mapEnchantmentData(int level, ItemStack stack) {
+        if (stack == null) return null;
+        boolean book = stack.getItem() == legacyconnector.v1_7_10.net.minecraft.init.Items.book;
+        Map<Integer, EnchantmentData> out = null;
+        for (Enchantment enchantment : Enchantment.enchantmentsList) {
+            if (enchantment == null) continue;
+            if (!enchantment.canApplyAtEnchantingTable(stack) && !(book && enchantment.isAllowedOnBooks())) continue;
+            for (int lvl = enchantment.getMinLevel(); lvl <= enchantment.getMaxLevel(); ++lvl) {
+                if (level >= enchantment.getMinEnchantability(lvl) && level <= enchantment.getMaxEnchantability(lvl)) {
+                    if (out == null) out = new java.util.HashMap<>();
+                    out.put(enchantment.effectId, new EnchantmentData(enchantment, lvl));
+                }
+            }
+        }
+        return out;
+    }
+
+    /** 1.7.10's enchanting-table roll: a random list of compatible {@link EnchantmentData} for the stack, or null. */
+    public static java.util.List buildEnchantmentList(java.util.Random random, ItemStack stack, int level) {
+        if (stack == null || stack.getItem() == null) return null;
+        int enchantability = stack.getItem().getItemEnchantability();
+        if (enchantability <= 0) return null;
+        enchantability /= 2;
+        enchantability = 1 + random.nextInt((enchantability >> 1) + 1) + random.nextInt((enchantability >> 1) + 1);
+        int total = enchantability + level;
+        float spread = (random.nextFloat() + random.nextFloat() - 1.0F) * 0.15F;
+        int modified = (int) (total * (1.0F + spread) + 0.5F);
+        if (modified < 1) modified = 1;
+        java.util.List<EnchantmentData> out = null;
+        Map<Integer, EnchantmentData> candidates = mapEnchantmentData(modified, stack);
+        if (candidates != null && !candidates.isEmpty()) {
+            EnchantmentData first = (EnchantmentData) legacyconnector.v1_7_10.net.minecraft.util.WeightedRandom.getRandomItem(random, candidates.values());
+            if (first != null) {
+                out = new java.util.ArrayList<>();
+                out.add(first);
+                for (int chance = modified; random.nextInt(50) <= chance; chance >>= 1) {
+                    var it = candidates.keySet().iterator();
+                    while (it.hasNext()) {
+                        Enchantment candidate = Enchantment.enchantmentsList[it.next()];
+                        for (EnchantmentData chosen : out) {
+                            if (!chosen.enchantmentobj.canApplyTogether(candidate)) {
+                                it.remove();
+                                break;
+                            }
+                        }
+                    }
+                    if (!candidates.isEmpty()) {
+                        out.add((EnchantmentData) legacyconnector.v1_7_10.net.minecraft.util.WeightedRandom.getRandomItem(random, candidates.values()));
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
     public static int getKnockbackModifier(EntityLivingBase attacker, EntityLivingBase target) {
         return held(Enchantment.knockback.effectId, attacker);
     }

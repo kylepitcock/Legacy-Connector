@@ -165,6 +165,15 @@ public class GL11 extends GL11Guard {
     public static void glFog(int pname, FloatBuffer params) {
     }
 
+    /** Fog start, end, density and mode: applied to the frame's fog when set by a legacy fog event handler (see LegacyFog). */
+    public static void glFogf(int pname, float param) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFog.fog(pname, param);
+    }
+
+    public static void glFogi(int pname, int param) {
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyFog.fog(pname, param);
+    }
+
     public static void glLoadMatrix(FloatBuffer m) {
     }
 
@@ -369,6 +378,33 @@ public class GL11 extends GL11Guard {
     public static void glCallList(int list) {
         if (DisplayLists.record(() -> glCallList(list))) return;
         DisplayLists.call(list);
+    }
+
+    private static int mcc$listBase;
+
+    /** Legacy geometry is drawn in batches later, so the real polygon mode would not apply to it: line mode is emulated. */
+    public static void glPolygonMode(int face, int mode) {
+        if (DisplayLists.record(() -> glPolygonMode(face, mode))) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices.mcc$lineMode = mode == 0x1B01; // GL_LINE
+    }
+
+    /** Offset added to every id {@code glCallLists} calls. */
+    public static void glListBase(int base) {
+        if (DisplayLists.record(() -> glListBase(base))) return;
+        mcc$listBase = base;
+    }
+
+    // Several emulated display lists at once (CustomOreGen's wireframes): the real call knows nothing of the emulated ids.
+    public static void glCallLists(java.nio.IntBuffer lists) {
+        for (int i = lists.position(); i < lists.limit(); i++) glCallList(mcc$listBase + lists.get(i));
+    }
+
+    public static void glCallLists(java.nio.ShortBuffer lists) {
+        for (int i = lists.position(); i < lists.limit(); i++) glCallList(mcc$listBase + (lists.get(i) & 0xFFFF));
+    }
+
+    public static void glCallLists(java.nio.ByteBuffer lists) {
+        for (int i = lists.position(); i < lists.limit(); i++) glCallList(mcc$listBase + (lists.get(i) & 0xFF));
     }
 
     public static int glGenLists(int range) {

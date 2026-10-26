@@ -27,6 +27,16 @@ public class BlockPistonBase extends legacyconnector.v1_7_10.net.minecraft.block
         return false;
     }
 
+    /** The facing (0-5) of a piston's metadata. */
+    public static int getPistonOrientation(int meta) {
+        return meta & 7;
+    }
+
+    /** Whether a piston's metadata says it is extended. */
+    public static boolean isExtended(int meta) {
+        return (meta & 8) != 0;
+    }
+
     public static int determineOrientation(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
             legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
         if (Math.abs((float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posX(entity) - x) < 2.0F && Math.abs((float) legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$posZ(entity) - z) < 2.0F) {
@@ -71,13 +81,5 @@ public class BlockPistonBase extends legacyconnector.v1_7_10.net.minecraft.block
 
     public void func_150070_b(float x1, float y1, float z1, float x2, float y2, float z2) {
         setBlockBounds(x1, y1, z1, x2, y2, z2);
-    }
-
-    public static int getPistonOrientation(int meta) {
-        return meta & 7;
-    }
-
-    public static boolean isExtended(int meta) {
-        return (meta & 8) != 0;
     }
 }

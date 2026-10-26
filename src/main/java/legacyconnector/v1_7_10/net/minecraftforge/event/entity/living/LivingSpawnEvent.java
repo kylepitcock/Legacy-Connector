@@ -27,6 +27,14 @@ public class LivingSpawnEvent extends LivingEvent {
         }
     }
 
+    /** A mob far from players may despawn: ALLOW forces it, DENY keeps the mob. */
+    @Event.HasResult
+    public static class AllowDespawn extends LivingSpawnEvent {
+        public AllowDespawn(EntityLivingBase entity) {
+            super(entity, entity.mcc$world(), (float) entity.mcc$x(), (float) entity.mcc$y(), (float) entity.mcc$z());
+        }
+    }
+
     /** A mob has been placed and is about to be initialised. */
     @Cancelable
     public static class SpecialSpawn extends LivingSpawnEvent {

@@ -18,8 +18,8 @@ public class BlockPistonExtension extends legacyconnector.v1_7_10.net.minecraft.
         this(legacyconnector.v1_7_10.net.minecraft.block.material.Material.piston);
     }
 
-    /** The direction (0-5) the head faces. */
+    /** The facing (0-5) of a piston head's metadata (bit 3 marks a sticky head). */
     public static int getDirectionMeta(int meta) {
-        return Math.max(0, Math.min(meta & 7, 5));
+        return meta & 7;
     }
 }

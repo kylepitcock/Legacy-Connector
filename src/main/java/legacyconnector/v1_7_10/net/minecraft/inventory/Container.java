@@ -22,6 +22,10 @@ public abstract class Container {
     protected List crafters = new ArrayList();
     private final Set<EntityPlayer> playerList = new HashSet<>();
     private short transactionID;
+    /** The drag (quick craft) in progress: its mode (0 split evenly, 1 one each, 2 full stacks), stage and slots. */
+    private int dragMode = -1;
+    private int dragEvent;
+    private final Set dragSlots = new HashSet();
 
     protected Slot addSlotToContainer(Slot slot) {
         slot.slotNumber = inventorySlots.size();
@@ -104,6 +108,8 @@ public abstract class Container {
     }
 
     public void resetDrag() {
+        dragEvent = 0;
+        dragSlots.clear();
     }
 
     public boolean enchantItem(EntityPlayer player, int id) {

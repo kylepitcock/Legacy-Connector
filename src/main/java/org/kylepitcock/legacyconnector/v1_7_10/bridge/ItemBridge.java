@@ -513,6 +513,11 @@ public final class ItemBridge {
             net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m
                     : VanillaFlattening.item(info.legacyName(), item.getHasSubtypes() ? meta : 0);
             var stack = new net.minecraft.world.item.ItemStack(modern, count);
+            if (modern instanceof net.minecraft.world.item.MapItem) {
+                // a filled map's legacy damage is its map id
+                if (meta >= 0 && meta != Short.MAX_VALUE) stack.set(net.minecraft.core.component.DataComponents.MAP_ID, new net.minecraft.world.level.saveddata.maps.MapId(meta));
+                return stack;
+            }
             if (stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
                 stack.setDamageValue(meta);
             } else if (!stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
@@ -597,6 +602,10 @@ public final class ItemBridge {
         Integer explicit = stack.get(CompatComponents.legacyMeta());
         if (explicit != null) return explicit;
         if (item == null) return 0;
+        if (stack.getItem() instanceof net.minecraft.world.item.MapItem) {
+            var id = stack.get(net.minecraft.core.component.DataComponents.MAP_ID);
+            return id == null ? 0 : id.id();
+        }
         if (stack.getItem() instanceof LegacyItemHolder h) {
             return item.isDamageable() ? stack.getDamageValue() : h.legacyMeta();
         }
@@ -606,6 +615,10 @@ public final class ItemBridge {
     }
 
     public static net.minecraft.world.item.ItemStack withLegacyDamage(Item item, net.minecraft.world.item.ItemStack stack, int damage) {
+        if (stack.getItem() instanceof net.minecraft.world.item.MapItem && stack.get(CompatComponents.legacyMeta()) == null) {
+            stack.set(net.minecraft.core.component.DataComponents.MAP_ID, new net.minecraft.world.level.saveddata.maps.MapId(Math.max(0, damage)));
+            return stack;
+        }
         if (stack.isDamageableItem()) {
             stack.setDamageValue(Math.max(0, damage));
             return stack;

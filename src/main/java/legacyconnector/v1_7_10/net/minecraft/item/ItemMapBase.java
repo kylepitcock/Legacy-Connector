@@ -1,10 +1,6 @@
 package legacyconnector.v1_7_10.net.minecraft.item;
 
-/**
- * Generated shell of the 1.7.10 class {@code net.minecraft.item.ItemMapBase}: correct type hierarchy for {@code instanceof} checks and
- * subclassing, legacy constructors, inherited default behaviour. Vanilla-specific logic is not ported yet.
- * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
- */
+/** Base of map items: {@link #isMap} is true, and a map can make the packet that sends its contents to a player. */
 public class ItemMapBase extends legacyconnector.v1_7_10.net.minecraft.item.Item {
     public ItemMapBase(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
@@ -12,5 +8,16 @@ public class ItemMapBase extends legacyconnector.v1_7_10.net.minecraft.item.Item
 
     protected ItemMapBase() {
         super();
+    }
+
+    @Override
+    public boolean isMap() {
+        return true;
+    }
+
+    /** {@code func_150911_c}: the packet with the map's contents for a player, or null (the base item sends nothing). */
+    public legacyconnector.v1_7_10.net.minecraft.network.Packet createMapDataPacket(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        return null;
     }
 }

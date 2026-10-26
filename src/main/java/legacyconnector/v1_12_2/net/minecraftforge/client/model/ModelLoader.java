@@ -34,7 +34,19 @@ public class ModelLoader {
         MESH.put(item, meshDefinition);
     }
 
-    public static void registerItemVariants(Item item, ResourceLocation... names) {
+    private static final Map<Item, java.util.Set<ResourceLocation>> VARIANTS = new java.util.IdentityHashMap<>();
+
+    /** Models an item may show besides its own (ModelBakery.registerItemVariants): loaded with the item's models. */
+    public static synchronized void registerItemVariants(Item item, ResourceLocation... names) {
+        if (item == null || names == null) return;
+        var set = VARIANTS.computeIfAbsent(item, k -> new java.util.LinkedHashSet<>());
+        for (ResourceLocation n : names) if (n != null) set.add(n);
+    }
+
+    /** The extra models registered for an item. */
+    public static synchronized java.util.Set<ResourceLocation> mcc$itemVariants(Item item) {
+        var set = VARIANTS.get(item);
+        return set == null ? java.util.Set.of() : java.util.Set.copyOf(set);
     }
 
     /** The model a registered item subtype was given, or null. */

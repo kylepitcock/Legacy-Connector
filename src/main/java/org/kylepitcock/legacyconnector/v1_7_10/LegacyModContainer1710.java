@@ -8,13 +8,14 @@ import legacyconnector.v1_7_10.cpw.mods.fml.common.ModMetadata;
 import org.kylepitcock.legacyconnector.core.LegacyModRecord;
 
 /** The legacy-facing ModContainer of a 1.7.10 mod, plus the "currently active mod" used to attribute registrations. */
-public final class LegacyModContainer1710 implements ModContainer {
+public final class LegacyModContainer1710 extends legacyconnector.v1_7_10.cpw.mods.fml.common.FMLModContainer implements ModContainer {
     private static volatile LegacyModContainer1710 active;
 
     private final LegacyModRecord record;
     private final ModMetadata metadata = new ModMetadata();
 
     public LegacyModContainer1710(LegacyModRecord record) {
+        super(record.mainClassName, null, new HashMap<>(Map.of("modid", record.legacyId)));
         this.record = record;
         metadata.modId = record.legacyId;
         metadata.name = record.name();
@@ -72,6 +73,18 @@ public final class LegacyModContainer1710 implements ModContainer {
     @Override
     public Map<String, String> getCustomModProperties() {
         return new HashMap<>();
+    }
+
+    /** Hands a lifecycle event to the mod's handlers with the mod active (as FML did), e.g. a missing-mappings event a mod builds. */
+    @Override
+    public void handleModStateEvent(legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLEvent event) {
+        LegacyModContainer1710 previous = active;
+        active = this;
+        try {
+            super.handleModStateEvent(event);
+        } finally {
+            active = previous;
+        }
     }
 
     @Override

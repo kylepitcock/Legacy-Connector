@@ -1,70 +1,20 @@
-net.minecraft.entity.item.EntityMinecart.func_70489_a(DDD)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 3 user(s): com.hbm.render.entity.item.RenderMinecartTest, mods.railcraft.client.render.carts.RenderCart, vswe.stevescarts.Renders.RendererMinecart
-net.minecraft.entity.item.EntityMinecart.func_70495_a(DDDD)Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;   # 3 user(s): com.hbm.render.entity.item.RenderMinecartTest, mods.railcraft.client.render.carts.RenderCart, vswe.stevescarts.Renders.RendererMinecart
-net.minecraft.entity.item.EntityMinecart.getCartItem()Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 3 user(s): buildcraft.transport.stripes.StripesHandlerMinecartDestroy, com.hbm.entity.cart.EntityMinecartNTM, mods.railcraft.common.blocks.machine.gamma.TileDispenserCart
 net.minecraft.util.DamageSource.causeFireballDamage(Llegacyconnector/v1_7_10/net/minecraft/entity/projectile/EntityFireball;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Llegacyconnector/v1_7_10/net/minecraft/util/DamageSource;   # 3 user(s): danger.orespawn.BetterFireball, micdoodle8.mods.galacticraft.planets.mars.entities.EntityProjectileTNT, twilightforest.entity.boss.EntityTFHydraMortar
-net.minecraft.entity.EntityHanging.field_146062_d:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
-net.minecraft.entity.EntityHanging.field_146063_b:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
-net.minecraft.entity.EntityHanging.field_146064_c:I   # 2 user(s): appeng.spatial.StorageHelper, buildcraft.builders.schematics.SchematicHanging
 net.minecraft.entity.EntityTracker.sendToAllTrackingEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/network/Packet;)V   # 2 user(s): openblocks.common.item.ItemSleepingBag, twilightforest.entity.EntityTFTroll
 net.minecraft.entity.item.EntityFallingBlock.setHurtEntities(Z)V   # 2 user(s): com.hbm.blocks.generic.BlockUberConcrete, powercrystals.minefactoryreloaded.item.gun.ammo.ItemNeedlegunAmmoAnvil
-net.minecraft.entity.item.EntityMinecart.canBeRidden()Z   # 2 user(s): mods.railcraft.common.blocks.detector.types.DetectorEmpty, powercrystals.minefactoryreloaded.block.transport.BlockRailPassengerPickup
-net.minecraft.entity.item.EntityMinecart.isPoweredCart()Z   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.blocks.detector.types.DetectorPowered
-net.minecraft.entity.item.EntityMinecart.moveMinecartOnRail(IIID)V   # 2 user(s): vazkii.botania.common.entity.EntityPoolMinecart, vswe.stevescarts.Carts.MinecartModular
-net.minecraft.entity.item.EntityMinecart.setCanUseRail(Z)V   # 2 user(s): mods.railcraft.common.blocks.tracks.BlockTrackElevator, vswe.stevescarts.Modules.Realtimers.ModuleRocket
-net.minecraft.entity.item.EntityMinecartEmpty.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.carts.EntityCartBasic
-net.minecraft.entity.item.EntityMinecartFurnace.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 2 user(s): com.hbm.entity.item.EntityMinecartDeobf, mods.railcraft.common.carts.EntityCartFurnace
-net.minecraft.entity.item.EntityPainting$EnumArt.sizeX:I   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
-net.minecraft.entity.item.EntityPainting$EnumArt.sizeY:I   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
-net.minecraft.entity.item.EntityPainting$EnumArt.values()[Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityPainting$EnumArt;   # 2 user(s): jds.bibliocraft.gui.GuiPaintPress, twilightforest.structures.lichtower.ComponentTFTowerWing
 net.minecraft.entity.passive.EntityHorse.isChested()Z   # 2 user(s): powercrystals.minefactoryreloaded.farmables.spawnhandlers.SpawnableHorse, vswe.stevesfactory.wrappers.InventoryWrapperHorse
 net.minecraft.entity.EntityAgeable.updateLeashedState()V   # 1 user(s): com.emoniph.witchery.entity.EntityGoblin
 net.minecraft.entity.EntityBodyHelper.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
 net.minecraft.entity.EntityBodyHelper.updateRenderAngles()V   # 1 user(s): mods.railcraft.common.blocks.machine.delta.TileCage
-net.minecraft.entity.EntityHanging.hangingDirection:I   # 1 user(s): buildcraft.builders.schematics.SchematicHanging
-net.minecraft.entity.EntityLeashKnot.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityLeashKnot.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityLeashKnot.field_146062_d:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityLeashKnot.field_146063_b:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityLeashKnot.field_146064_c:I   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityLeashKnot.onValidSurface()Z   # 1 user(s): com.InfinityRaider.AgriCraft.entity.EntityLeashKnotAgricraft
-net.minecraft.entity.EntityMinecartCommandBlock.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
 net.minecraft.entity.EntityTracker.getTrackingPlayers(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)Ljava/util/Set;   # 1 user(s): buildcraft.BuildCraftMod$EntitySendRequest
 net.minecraft.entity.EntityTracker.updateTrackedEntities()V   # 1 user(s): com.fiskmods.fisktag.FTMapData
 net.minecraft.entity.EntityTrackerEntry.trackingPlayers:Ljava/util/Set;   # 1 user(s): openmods.utils.NetUtils
 net.minecraft.entity.EntityTrackerEntry.tryStartWachingThis(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayerMP;)V   # 1 user(s): com.fiskmods.fisktag.FTMapData
-net.minecraft.entity.ai.EntityMinecartMobSpawner.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): powercrystals.minefactoryreloaded.net.EntityHandler
-net.minecraft.entity.ai.EntityMinecartMobSpawner.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
 net.minecraft.entity.boss.EntityDragon.healingEnderCrystal:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityEnderCrystal;   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
 net.minecraft.entity.item.EntityEnderCrystal.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): danger.orespawn.GenericDungeon
 net.minecraft.entity.item.EntityEnderCrystal.innerRotation:I   # 1 user(s): com.brandon3055.draconicevolution.client.render.entity.RenderDragon
 net.minecraft.entity.item.EntityFallingBlock.getBlock()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 1 user(s): com.hbm.entity.effect.EntityBlackHole
 net.minecraft.entity.item.EntityItem.deliverItemViaDrone(DDD)V   # 1 user(s): WayofTime.alchemicalWizardry.common.entity.mob.MailOrderEntityItem
 net.minecraft.entity.item.EntityItem.setThrower(Ljava/lang/String;)V   # 1 user(s): thaumcraft.common.entities.ContainerPech
-net.minecraft.entity.item.EntityItemFrame.setDirection(I)V   # 1 user(s): mcjty.rftools.dimension.world.GenericWorldGenerator
-net.minecraft.entity.item.EntityMinecart.canUseRail()Z   # 1 user(s): vswe.stevescarts.Renders.RendererMinecart
-net.minecraft.entity.item.EntityMinecart.defaultDragAir:D   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraft.entity.item.EntityMinecart.defaultMaxSpeedAirLateral:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraft.entity.item.EntityMinecart.defaultMaxSpeedAirVertical:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraft.entity.item.EntityMinecart.func_145821_a(IIIDDLlegacyconnector/v1_7_10/net/minecraft/block/Block;I)V   # 1 user(s): vswe.stevescarts.Carts.MinecartModular
-net.minecraft.entity.item.EntityMinecart.getMountedYOffset()D   # 1 user(s): vswe.stevescarts.Carts.MinecartModular
-net.minecraft.entity.item.EntityMinecart.setDragAir(D)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
-net.minecraft.entity.item.EntityMinecart.setMaxSpeedAirLateral(F)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
-net.minecraft.entity.item.EntityMinecart.setMaxSpeedAirVertical(F)V   # 1 user(s): mods.railcraft.common.blocks.tracks.TrackLauncher
-net.minecraft.entity.item.EntityMinecartChest.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
-net.minecraft.entity.item.EntityMinecartContainer.func_145821_a(IIIDDLlegacyconnector/v1_7_10/net/minecraft/block/Block;I)V   # 1 user(s): mods.railcraft.common.carts.EntityCartTrackLayer
-net.minecraft.entity.item.EntityMinecartEmpty.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): mods.railcraft.common.carts.EntityCartBasic
-net.minecraft.entity.item.EntityMinecartFurnace.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;)V   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
-net.minecraft.entity.item.EntityMinecartFurnace.pushX:D   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
-net.minecraft.entity.item.EntityMinecartFurnace.pushZ:D   # 1 user(s): mods.railcraft.common.carts.EntityCartFurnace
-net.minecraft.entity.item.EntityMinecartHopper.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
-net.minecraft.entity.item.EntityMinecartTNT.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDD)V   # 1 user(s): com.hbm.entity.item.EntityMinecartDeobf
-net.minecraft.entity.item.EntityPainting$EnumArt.offsetX:I   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
-net.minecraft.entity.item.EntityPainting$EnumArt.offsetY:I   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
-net.minecraft.entity.item.EntityPainting$EnumArt.title:Ljava/lang/String;   # 1 user(s): jds.bibliocraft.gui.GuiPaintPress
-net.minecraft.entity.item.EntityPainting.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;IIII)V   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
-net.minecraft.entity.item.EntityPainting.art:Llegacyconnector_synth/v1_7_10/net/minecraft/entity/item/EntityPainting$EnumArt;   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
-net.minecraft.entity.item.EntityPainting.hangingDirection:I   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
-net.minecraft.entity.item.EntityPainting.setDirection(I)V   # 1 user(s): twilightforest.structures.lichtower.ComponentTFTowerWing
 net.minecraft.entity.monster.EntityEnderman.getCarriedBlock()Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 1 user(s): powercrystals.minefactoryreloaded.farmables.grindables.GrindableEnderman
 net.minecraft.entity.monster.EntityEnderman.isScreaming()Z   # 1 user(s): com.rwtema.extrautils.EventHandlerServer
 net.minecraft.entity.monster.EntityEnderman.setCarriedBlock(Llegacyconnector/v1_7_10/net/minecraft/block/Block;)V   # 1 user(s): powercrystals.minefactoryreloaded.farmables.spawnhandlers.SpawnableEnderman

@@ -77,8 +77,10 @@ public class EntityRegistry {
             return modEntityId;
         }
 
-        public Object getContainer() {
-            return mod;
+        /** The mod that registered the entity (1.7.10 kept its container; the registration remembers the mod object it was given). */
+        public legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer getContainer() {
+            return mod instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer c ? c
+                    : legacyconnector.v1_7_10.cpw.mods.fml.common.FMLCommonHandler.instance().findContainerFor(mod);
         }
 
         public int getTrackingRange() {
@@ -101,8 +103,7 @@ public class EntityRegistry {
     /** The registration a mod made with the given mod entity id. */
     public EntityRegistration lookupModSpawn(legacyconnector.v1_7_10.cpw.mods.fml.common.ModContainer mod, int modEntityId) {
         for (EntityRegistration r : REGISTRATIONS.values()) {
-            if (r.getModEntityId() == modEntityId && (mod == null || r.getContainer() == null || r.getContainer() == mod
-                    || r.getContainer().equals(mod.getMod()))) {
+            if (r.getModEntityId() == modEntityId && (mod == null || r.mod == null || r.mod == mod || r.mod.equals(mod.getMod()))) {
                 return r;
             }
         }

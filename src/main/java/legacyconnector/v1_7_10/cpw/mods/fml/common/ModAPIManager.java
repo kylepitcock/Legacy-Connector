@@ -21,6 +21,14 @@ public class ModAPIManager {
     public void injectAPIModContainers(java.util.List<ModContainer> mods, java.util.Map<String, ModContainer> nameLookup) {
     }
 
+    /**
+     * The API containers FML made for {@code @API} packages. APIs are not mods here, so there are none (EnderIO's crash
+     * report and CoFH's ASM core list them).
+     */
+    public Iterable<? extends ModContainer> getAPIList() {
+        return java.util.List.of();
+    }
+
     public boolean hasAPI(String name) {
         if (name == null) return false;
         String lower = name.toLowerCase(Locale.ROOT);

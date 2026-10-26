@@ -29,7 +29,7 @@ public final class WorldGenBridge {
     }
 
     private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed) {
-        decorate(level, chunkX, chunkZ, worldSeed, DUMMY);
+        decorate(level, chunkX, chunkZ, worldSeed, DUMMY, false);
     }
 
     /**
@@ -39,10 +39,10 @@ public final class WorldGenBridge {
      * mod dimension's decoration, so its chunk generator calls this. A failing generator is logged (throttled) and skipped.
      */
     public static void decorateModDimension(WorldGenLevel level, int chunkX, int chunkZ, IChunkProvider chunkGenerator) {
-        decorate(level, chunkX, chunkZ, level.getSeed(), chunkGenerator == null ? DUMMY : chunkGenerator);
+        decorate(level, chunkX, chunkZ, level.getSeed(), chunkGenerator == null ? DUMMY : chunkGenerator, true);
     }
 
-    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed, IChunkProvider chunkGenerator) {
+    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed, IChunkProvider chunkGenerator, boolean modDimension) {
         List<Entry> gens;
         synchronized (WorldGenBridge.class) {
             gens = List.copyOf(GENERATORS);
@@ -56,7 +56,7 @@ public final class WorldGenBridge {
         // HashMaps (CustomOreGen's per-world caches and geometry buffers): a mod's generators run on one thread at a time.
         for (Entry e : gens) {
             fmlRandom.setSeed(chunkSeed);
-            if (chunkGenerator == DUMMY) {
+            if (!modDimension) {
                 org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
                 continue;
             }

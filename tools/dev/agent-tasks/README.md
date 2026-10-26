@@ -9,7 +9,8 @@ each in its own git worktree, and sorted with the most-used APIs first:
 |---|---|
 | `task-E.txt` | 1.7.10 entities (`net.minecraft.entity.*`, potions, damage sources, AI) |
 | `task-R1.txt` | 1.7.10 rendering (`net.minecraft.client.renderer.*`, models, LWJGL) |
-| `task-R2.txt` | 1.7.10 rest of the client (GUI, particles, sounds, settings, `cpw.mods.fml.client`) |
+| `task-R2a.txt` | 1.7.10 GUI screens and FML client (`net.minecraft.client.gui`, `cpw.mods.fml.client`) |
+| `task-R2b.txt` | 1.7.10 rest of the client (world client, network handler, player controller, skins, resource packs, Forge client events, settings) |
 | `task-W.txt` | 1.7.10 world, chunks, biomes, world generation, villages |
 | `task-I.txt` | 1.7.10 blocks, items, tile entities, inventories, crafting, enchantments, ore dictionary, fluids |
 | `task-F.txt` | 1.7.10 everything else (FML, Forge, network, commands, NBT, utilities, server, stats) |

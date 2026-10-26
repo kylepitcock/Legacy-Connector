@@ -88,14 +88,52 @@ public class ForgeHooks {
         return stack != null && stack.getItem() != null && stack.getItem().canHarvestBlock(block, stack);
     }
 
-    /** Fires the break event for a block a player is breaking: -1 when a handler cancelled it, else the experience to drop. */
-    public static int onBlockBreakEvent(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType,
+    /**
+     * The legacy break event {@link #onBlockBreakEvent} is firing; the bridge's listener for the modern break event posts
+     * this object to the legacy bus instead of a new one, so the caller gets back what the legacy handlers changed.
+     */
+    private static final ThreadLocal<legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent> mcc$pendingBreak = new ThreadLocal<>();
+
+    /** The legacy event to post for the modern break event being fired by {@link #onBlockBreakEvent}, or null. */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent mcc$takePendingBreak() {
+        var e = mcc$pendingBreak.get();
+        mcc$pendingBreak.remove();
+        return e;
+    }
+
+    /**
+     * Fires the break event for a block a player is about to break (tools that break several blocks call it for each
+     * extra block): the modern event, so protection mods on either side see it, and through it the legacy one. As
+     * Forge, the event starts cancelled when the player may not break blocks here (adventure mode, a held item that
+     * cannot break blocks) and the client is told the block is still there when it ends cancelled.
+     */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent onBlockBreakEvent(
+            legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType,
             legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player, int x, int y, int z) {
         legacyconnector.v1_7_10.net.minecraft.block.Block block = world.getBlock(x, y, z);
         legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent(
                 x, y, z, world, block, world.getBlockMetadata(x, y, z), player);
-        if (MinecraftForge.EVENT_BUS.post(event)) return -1;
-        return event.getExpToDrop();
+        net.minecraft.world.level.Level level = world.mcc$fullLevel();
+        if (level == null || player == null || !(player.mcc$entity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
+            MinecraftForge.EVENT_BUS.post(event);
+            return event;
+        }
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
+        net.minecraft.world.level.GameType type = gameType == null || gameType.getID() < 0 ? sp.gameMode.getGameModeForPlayer()
+                : net.minecraft.world.level.GameType.byId(gameType.getID());
+        mcc$pendingBreak.set(event);
+        try {
+            var modern = net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, type, sp, pos, level.getBlockState(pos));
+            if (mcc$pendingBreak.get() == event) {
+                // no legacy listener took it: report the modern outcome
+                if (modern.isCanceled()) event.setCanceled(true);
+            } else if (modern.isCanceled() && !event.isCanceled()) {
+                event.setCanceled(true);
+            }
+        } finally {
+            mcc$pendingBreak.remove();
+        }
+        return event;
     }
 
     /** Posts the attack event; false when a handler cancelled the attack. */
@@ -110,5 +148,79 @@ public class ForgeHooks {
         legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent event =
                 new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, amount);
         return MinecraftForge.EVENT_BUS.post(event) ? 0.0F : event.ammount;
+    }
+
+    /**
+     * Whether the player may keep the container open: {@code PlayerOpenContainerEvent} decides (ALLOW keeps it, DENY
+     * closes it), by default the container's own {@code canInteractWith}.
+     */
+    public static boolean canInteractWith(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.inventory.Container openContainer) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerOpenContainerEvent(player, openContainer);
+        MinecraftForge.EVENT_BUS.post(event);
+        return switch (event.getResult()) {
+            case ALLOW -> true;
+            case DENY -> false;
+            default -> event.canInteractWith;
+        };
+    }
+
+    /** Forge's URL pattern for chat links: an optional scheme, an IPv4 address or a domain, an optional port and a path. */
+    static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(
+            "((?:[a-z0-9]{2,}:\\/\\/)?(?:(?:[0-9]{1,3}\\.){3}[0-9]{1,3}|(?:[-\\w_\\.]{1,}\\.[a-z]{2,}?))(?::[0-9]{1,5})?.*?(?=[!\"§ \n]|$))",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /** A chat message whose URLs are clickable links (scheme-less ones open as {@code http://}). */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IChatComponent newChatWithLinks(String string) {
+        legacyconnector.v1_7_10.net.minecraft.util.IChatComponent chat = new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText("");
+        java.util.regex.Matcher matcher = URL_PATTERN.matcher(string);
+        int lastEnd = 0;
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            String part = string.substring(lastEnd, start);
+            if (!part.isEmpty()) chat.appendText(part);
+            lastEnd = end;
+            String url = string.substring(start, end);
+            legacyconnector.v1_7_10.net.minecraft.util.IChatComponent link = new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(url);
+            try {
+                if (new java.net.URI(url).getScheme() == null) url = "http://" + url;
+            } catch (java.net.URISyntaxException e) {
+                chat.appendText(url);
+                continue;
+            }
+            link.getChatStyle().setChatClickEvent(new legacyconnector.v1_7_10.net.minecraft.event.ClickEvent(
+                    legacyconnector.v1_7_10.net.minecraft.event.ClickEvent.Action.OPEN_URL, url));
+            chat.appendSibling(link);
+        }
+        String rest = string.substring(lastEnd);
+        if (!rest.isEmpty()) chat.appendText(rest);
+        return chat;
+    }
+
+    /**
+     * Posts {@code AnvilUpdateEvent} for an anvil's inputs. False when a handler cancelled (no output) or supplied its own
+     * output, which is then put in {@code outputSlot} with its costs; true lets the anvil compute the vanilla result.
+     */
+    public static boolean onAnvilChange(legacyconnector.v1_7_10.net.minecraft.inventory.ContainerRepair container, ItemStack left, ItemStack right,
+            legacyconnector.v1_7_10.net.minecraft.inventory.IInventory outputSlot, String name, int baseCost) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.AnvilUpdateEvent(left, right, name, baseCost);
+        if (MinecraftForge.EVENT_BUS.post(event)) return false;
+        if (event.output == null) return true;
+        outputSlot.setInventorySlotContents(0, event.output);
+        container.maximumCost = event.cost;
+        container.mcc$setMaterialCost(event.materialCost);
+        return false;
+    }
+
+    /**
+     * Posts {@code AnvilRepairEvent} when a player takes an anvil's result; the chance the anvil is damaged. As in Forge
+     * 1.7.10 the event is built as {@code (player, left, right, output)}, so its {@code output}, {@code left} and
+     * {@code right} fields hold the left input, the right input and the output: listeners written for 1.7.10 expect that.
+     */
+    public static float onAnvilRepair(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack output, ItemStack left, ItemStack right) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.AnvilRepairEvent(player, left, right, output);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.breakChance;
     }
 }

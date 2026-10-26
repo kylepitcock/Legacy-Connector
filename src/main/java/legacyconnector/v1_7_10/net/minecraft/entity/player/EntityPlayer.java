@@ -227,6 +227,25 @@ public abstract class EntityPlayer extends EntityLivingBase {
         mcc$player().stopUsingItem();
     }
 
+    /**
+     * Finishes using the held item now (eats the food, drinks the potion): the item's result replaces it in the hand,
+     * after the use-finish event (which the bridge also posts as the legacy {@code PlayerUseItemEvent.Finish}).
+     */
+    protected void onItemUseFinish() {
+        var p = mcc$player();
+        if (!p.isUsingItem()) return;
+        var hand = p.getUsedItemHand();
+        var using = p.getUseItem();
+        if (!net.minecraft.world.item.ItemStack.isSameItemSameComponents(using, p.getItemInHand(hand))) {
+            p.releaseUsingItem();
+            return;
+        }
+        var copy = using.copy();
+        var result = net.neoforged.neoforge.event.EventHooks.onItemUseFinish(p, copy, p.getUseItemRemainingTicks(), using.finishUsingItem(p.level(), p));
+        if (result != using) p.setItemInHand(hand, result);
+        p.stopUsingItem();
+    }
+
     public boolean isBlocking() {
         return mcc$player().isBlocking();
     }
@@ -281,6 +300,19 @@ public abstract class EntityPlayer extends EntityLivingBase {
                 : net.minecraft.network.chat.Component.translatableWithFallback(name, name);
         sp.openMenu(new net.minecraft.world.SimpleMenuProvider(
                 (windowId, inv, p) -> new net.minecraft.world.inventory.ChestMenu(type, windowId, inv, view, rows), title));
+    }
+
+    /** Shows the hopper window of a hopper cart (a vanilla one opens its own menu). */
+    public void displayGUIHopperMinecart(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecartHopper cart) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || cart == null) return;
+        if (cart.mcc$entity instanceof net.minecraft.world.entity.vehicle.MinecartHopper modern) {
+            sp.openMenu(modern);
+            return;
+        }
+        var view = org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyInventoryContainer.of(cart);
+        String name = cart.getInventoryName();
+        net.minecraft.network.chat.Component title = net.minecraft.network.chat.Component.translatableWithFallback(name, name);
+        sp.openMenu(new net.minecraft.world.SimpleMenuProvider((windowId, inv, p) -> new net.minecraft.world.inventory.HopperMenu(windowId, inv, view), title));
     }
 
     public void closeScreen() {

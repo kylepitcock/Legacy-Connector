@@ -46,6 +46,50 @@ public class PlayerEvent extends LivingEvent {
         }
     }
 
+    /** Whether the player can harvest a block (get its drops): handlers change {@link #success}. */
+    public static class HarvestCheck extends PlayerEvent {
+        public final legacyconnector.v1_7_10.net.minecraft.block.Block block;
+        public boolean success;
+
+        public HarvestCheck(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.block.Block block, boolean success) {
+            super(player);
+            this.block = block;
+            this.success = success;
+        }
+    }
+
+    /** The player starts seeing (tracking) an entity: the server sends it to their client now. */
+    public static class StartTracking extends PlayerEvent {
+        public final legacyconnector.v1_7_10.net.minecraft.entity.Entity target;
+
+        public StartTracking(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+            super(player);
+            this.target = target;
+        }
+    }
+
+    /** The player stops tracking an entity. */
+    public static class StopTracking extends PlayerEvent {
+        public final legacyconnector.v1_7_10.net.minecraft.entity.Entity target;
+
+        public StopTracking(EntityPlayer player, legacyconnector.v1_7_10.net.minecraft.entity.Entity target) {
+            super(player);
+            this.target = target;
+        }
+    }
+
+    /** The name shown for a player is being formed: handlers change {@link #displayname}. */
+    public static class NameFormat extends PlayerEvent {
+        public final String username;
+        public String displayname;
+
+        public NameFormat(EntityPlayer player, String username) {
+            super(player);
+            this.username = username;
+            this.displayname = username;
+        }
+    }
+
     /**
      * The player's data was read from the playerdata directory: mods keep their own file next to it (Thaumcraft's research,
      * {@code <uuid>.thaum}) and read it here.

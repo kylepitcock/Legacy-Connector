@@ -505,17 +505,24 @@ public class Block {
         return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.bed;
     }
 
+    /** Forge: as Forge had it, true for the half with the head bit (8) set. */
     public boolean isBedFoot(IBlockAccess world, int x, int y, int z) {
-        return false;
+        return BlockBed.isBlockHeadOfBed(world.getBlockMetadata(x, y, z));
     }
 
     public int getBedDirection(IBlockAccess world, int x, int y, int z) {
-        return 0;
+        return BlockDirectional.getDirection(world.getBlockMetadata(x, y, z));
     }
 
     public legacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates getBedSpawnPosition(IBlockAccess world, int x, int y, int z,
             legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
-        return null;
+        return world instanceof World w ? BlockBed.getSafeExitLocation(w, x, y, z, 0) : null;
+    }
+
+    /** Forge: marks the bed occupied (metadata bit 4) or free. */
+    public void setBedOccupied(IBlockAccess world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            boolean occupied) {
+        if (world instanceof World w) BlockBed.setBedOccupied(w, x, y, z, occupied);
     }
 
     public boolean isBurning(IBlockAccess world, int x, int y, int z) {
@@ -768,8 +775,10 @@ public class Block {
         return 0.0F;
     }
 
+    /** Forge: whether the block can be part of a beacon pyramid (vanilla: emerald, gold, diamond and iron blocks). */
     public boolean isBeaconBase(IBlockAccess world, int x, int y, int z, int beaconX, int beaconY, int beaconZ) {
-        return false;
+        return this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.emerald_block || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.gold_block
+                || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.diamond_block || this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.iron_block;
     }
 
     public boolean isFoliage(IBlockAccess world, int x, int y, int z) {

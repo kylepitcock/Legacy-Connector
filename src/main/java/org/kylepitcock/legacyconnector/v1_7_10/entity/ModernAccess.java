@@ -32,6 +32,15 @@ public final class ModernAccess {
         static final Method TICK_DEATH = find(LivingEntity.class, "tickDeath");
     }
 
+    private static final class Hanging {
+        static final Method SET_DIRECTION = find(net.minecraft.world.entity.decoration.HangingEntity.class, "setDirection", net.minecraft.core.Direction.class);
+    }
+
+    /** Turns a hanging entity (painting, item frame) to face {@code direction}, recomputing its box. */
+    public static void setHangingDirection(net.minecraft.world.entity.decoration.HangingEntity entity, net.minecraft.core.Direction direction) {
+        call(Hanging.SET_DIRECTION, entity, null, direction);
+    }
+
     public static void tickDeath(LivingEntity entity) {
         call(Living.TICK_DEATH, entity, null);
     }

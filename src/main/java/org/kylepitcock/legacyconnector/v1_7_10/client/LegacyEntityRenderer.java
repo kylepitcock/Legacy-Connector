@@ -52,7 +52,8 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
             updateRenderManager(cam, entity);
             double x = Mth.lerp(partialTicks, entity.xOld, entity.getX()) - cam.x;
-            double y = Mth.lerp(partialTicks, entity.yOld, entity.getY()) - cam.y;
+            // the legacy posY (mid-height for carts: 1.7.10 renderers draw the cart around it)
+            double y = Mth.lerp(partialTicks, entity.yOld, entity.getY()) + legacy.mcc$yShift() - cam.y;
             double z = Mth.lerp(partialTicks, entity.zOld, entity.getZ()) - cam.z;
             int overlay = entity instanceof LivingEntity l ? LivingEntityRenderer.getOverlayCoords(l, 0.0F) : OverlayTexture.NO_OVERLAY;
             RenderContext.beginWorld(pose, buffers, light, overlay);

@@ -9,13 +9,19 @@ public class ItemFluidContainer extends Item implements IFluidContainerItem {
     protected int capacity;
 
     public ItemFluidContainer() {
-        this(FluidContainerRegistry.BUCKET_VOLUME);
+        super();
+        this.capacity = FluidContainerRegistry.BUCKET_VOLUME;
+        this.setMaxStackSize(1);
     }
 
-    public ItemFluidContainer(int capacity) {
+    /** Forge 1.7.10 kept the pre-1.7 item id parameter: it is ignored, and the capacity stays 0 until {@link #setCapacity}. */
+    public ItemFluidContainer(int itemID) {
+        super();
+    }
+
+    public ItemFluidContainer(int itemID, int capacity) {
         super();
         this.capacity = capacity;
-        this.setMaxStackSize(1);
     }
 
     public ItemFluidContainer setCapacity(int capacity) {

@@ -12,8 +12,9 @@ public class FMLOutboundHandler extends ChannelOutboundHandlerAdapter {
     public static final AttributeKey<OutboundTarget> FML_MESSAGETARGET = AttributeKey.valueOf("fml:outboundTarget");
     public static final AttributeKey<Object> FML_MESSAGETARGETARGS = AttributeKey.valueOf("fml:outboundTargetArgs");
 
+    /** Where a packet goes: DISPATCHER to the dispatcher in the target args, REPLY to the sender of the message being handled. */
     public enum OutboundTarget {
-        NOWHERE, PLAYER, ALL, DIMENSION, ALLAROUNDPOINT, TOSERVER, DISPATCHER
+        NOWHERE, PLAYER, ALL, DIMENSION, ALLAROUNDPOINT, TOSERVER, DISPATCHER, REPLY
     }
 
     @Override
@@ -23,7 +24,13 @@ public class FMLOutboundHandler extends ChannelOutboundHandlerAdapter {
             ctx.write(msg, promise);
             return;
         }
-        FmlChannelBridge.send(packet, target, ctx.channel().attr(FML_MESSAGETARGETARGS).get());
+        Object args = target == OutboundTarget.REPLY
+                ? ctx.channel().attr(legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.FML_DISPATCHER).get()
+                : ctx.channel().attr(FML_MESSAGETARGETARGS).get();
+        if (packet.getDispatcher() == null && args instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher d) {
+            packet.setDispatcher(d);
+        }
+        FmlChannelBridge.send(packet, target, args);
         promise.setSuccess();
     }
 }

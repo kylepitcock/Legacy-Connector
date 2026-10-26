@@ -33,6 +33,44 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.core.synth.Synth.addStaticResolver(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122::resolveStatic);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.registerStaticMethods();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.SynthMethods1122.register();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.register();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.BlockFaces1122.register();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.ClientRegistrations1122.register();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.CommandBridge1122.registerCommandBase();
+        registerServerLifecycle();
+    }
+
+    /** The modern server's lifecycle as FML's server events, sent to every 1.12.2 mod's {@code @Mod.EventHandler} methods. */
+    private static void registerServerLifecycle() {
+        var bus = net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        var legacyServer = legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+        bus.addListener((net.neoforged.neoforge.event.server.ServerAboutToStartEvent e) -> dispatchAll(LoaderState.SERVER_ABOUT_TO_START,
+                () -> new legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLServerAboutToStartEvent(legacyServer)));
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStartingEvent e) -> dispatchAll(LoaderState.SERVER_STARTING,
+                () -> new legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLServerStartingEvent(legacyServer)));
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> dispatchAll(LoaderState.SERVER_STARTED,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLServerStartedEvent::new));
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppingEvent e) -> dispatchAll(LoaderState.SERVER_STOPPING,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLServerStoppingEvent::new));
+        bus.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> dispatchAll(LoaderState.SERVER_STOPPED,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLServerStoppedEvent::new));
+    }
+
+    private static void dispatchAll(LoaderState state, java.util.function.Supplier<FMLEvent> event) {
+        boolean any = false;
+        for (LegacyModRecord mod : LegacyMods.ordered()) {
+            if (!"1.12.2".equals(mod.version) || mod.instance == null || !(mod.platformData instanceof LegacyModContainer1122)) continue;
+            if (!any) {
+                Loader.mcc$setState(state);
+                any = true;
+            }
+            try {
+                dispatch(mod, event.get());
+            } catch (Exception | LinkageError e) {
+                LOG.error("{} failed handling a server lifecycle event", mod.legacyId, e);
+            }
+        }
+        if (any && state == LoaderState.SERVER_STOPPED) Loader.mcc$setState(LoaderState.AVAILABLE);
     }
 
     @Override

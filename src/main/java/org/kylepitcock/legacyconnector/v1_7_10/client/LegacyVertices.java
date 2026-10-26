@@ -241,7 +241,21 @@ public final class LegacyVertices {
         emit(s, v0, v1, v2, v3);
     }
 
+    /** {@code glPolygonMode(..., GL_LINE)}: filled primitives are drawn as their edges (CustomOreGen's wireframes). */
+    public static volatile boolean mcc$lineMode;
+
     private static void emit(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
+        if (mcc$lineMode) {
+            line(s, a, b);
+            line(s, b, c);
+            if (c != d) {
+                line(s, c, d);
+                line(s, d, a);
+            } else {
+                line(s, c, a);
+            }
+            return;
+        }
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
         if (!s.hasNormal()) {
             // Face normal from the first three corners.

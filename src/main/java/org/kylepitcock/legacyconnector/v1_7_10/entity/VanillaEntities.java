@@ -54,6 +54,8 @@ public final class VanillaEntities {
         put("item.EntityExpBottle", () -> EntityType.EXPERIENCE_BOTTLE);
         put("item.EntityEnderCrystal", () -> EntityType.END_CRYSTAL);
         put("EntityLeashKnot", () -> EntityType.LEASH_KNOT);
+        put("item.EntityItemFrame", () -> EntityType.ITEM_FRAME);
+        put("item.EntityPainting", () -> EntityType.PAINTING);
         put("item.EntityMinecartEmpty", () -> EntityType.MINECART);
         put("item.EntityMinecartChest", () -> EntityType.CHEST_MINECART);
         put("item.EntityMinecartFurnace", () -> EntityType.FURNACE_MINECART);

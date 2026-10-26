@@ -57,6 +57,8 @@ public class ContainerRepair extends Container {
             @Override
             public void onPickupFromSlot(EntityPlayer p, ItemStack stack) {
                 if (!creative(p)) p.addExperienceLevel(-maximumCost);
+                float breakChance = legacyconnector.v1_7_10.net.minecraftforge.common.ForgeHooks.onAnvilRepair(p, stack,
+                        inputSlots.getStackInSlot(0), inputSlots.getStackInSlot(1));
                 inputSlots.setInventorySlotContents(0, null);
                 if (stackSizeToBeUsedInRepair > 0) {
                     ItemStack material = inputSlots.getStackInSlot(1);
@@ -70,13 +72,31 @@ public class ContainerRepair extends Container {
                     inputSlots.setInventorySlotContents(1, null);
                 }
                 maximumCost = 0;
-                if (!world.isRemote) world.playAuxSFX(1021, x, y, z, 0);
+                if (!creative(p) && !world.isRemote && world.getBlock(x, y, z) == legacyconnector.v1_7_10.net.minecraft.init.Blocks.anvil
+                        && p.getRNG().nextFloat() < breakChance) {
+                    int meta = world.getBlockMetadata(x, y, z);
+                    int damage = (meta >> 2) + 1;
+                    if (damage > 2) {
+                        world.setBlockToAir(x, y, z);
+                        world.playAuxSFX(1020, x, y, z, 0);
+                    } else {
+                        world.setBlockMetadataWithNotify(x, y, z, (meta & 3) | damage << 2, 2);
+                        world.playAuxSFX(1021, x, y, z, 0);
+                    }
+                } else if (!world.isRemote) {
+                    world.playAuxSFX(1021, x, y, z, 0);
+                }
             }
         });
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 9; col++) addSlotToContainer(new Slot(inventory, col + row * 9 + 9, 8 + col * 18, 84 + row * 18));
         }
         for (int col = 0; col < 9; col++) addSlotToContainer(new Slot(inventory, col, 8 + col * 18, 142));
+    }
+
+    /** How many of the right-hand items the result uses up (Forge's {@code AnvilUpdateEvent.materialCost}). */
+    public void mcc$setMaterialCost(int count) {
+        stackSizeToBeUsedInRepair = count;
     }
 
     private static boolean creative(EntityPlayer p) {
@@ -106,6 +126,7 @@ public class ContainerRepair extends Container {
         int baseCost = input.getRepairCost() + (material == null ? 0 : material.getRepairCost());
         stackSizeToBeUsedInRepair = 0;
         if (material != null) {
+            if (!legacyconnector.v1_7_10.net.minecraftforge.common.ForgeHooks.onAnvilChange(this, input, material, outputSlot, repairedItemName, baseCost)) return;
             book = material.getItem() == Items.enchanted_book && storedEnchantments(material) > 0;
             if (result.isItemStackDamageable() && result.getItem().getIsRepairable(input, material)) {
                 int repair = Math.min(result.getItemDamageForDisplay(), result.getMaxDamage() / 4);

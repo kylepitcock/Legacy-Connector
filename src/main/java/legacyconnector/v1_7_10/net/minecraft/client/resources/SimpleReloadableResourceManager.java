@@ -32,6 +32,31 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
         return List.of(getResource(location));
     }
 
+    protected final java.util.Set setResourceDomains = new java.util.LinkedHashSet();
+
+    /**
+     * Puts a pack on top of its domains' managers: legacy lookups find its resources first, and the game is served them
+     * (from the next resource reload for domains it did not have).
+     */
+    public void reloadResourcePack(legacyconnector.v1_7_10.net.minecraft.client.resources.IResourcePack pack) {
+        if (pack == null) return;
+        Set domains = pack.getResourceDomains();
+        if (domains == null || domains.isEmpty()) {
+            org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.add(pack);
+            return;
+        }
+        for (Object o : domains) {
+            if (!(o instanceof String domain)) continue;
+            setResourceDomains.add(domain);
+            FallbackResourceManager fallback = domainResourceManagers.get(domain) instanceof FallbackResourceManager f ? f : null;
+            if (fallback == null) {
+                fallback = new FallbackResourceManager(new legacyconnector.v1_7_10.net.minecraft.client.resources.data.IMetadataSerializer());
+                domainResourceManagers.put(domain, fallback);
+            }
+            fallback.addResourcePack(pack);
+        }
+    }
+
     /** Forgets the domain managers (the modern game owns resource loading; mods call this before reloading). */
     private void clearResources() {
         domainResourceManagers.clear();
