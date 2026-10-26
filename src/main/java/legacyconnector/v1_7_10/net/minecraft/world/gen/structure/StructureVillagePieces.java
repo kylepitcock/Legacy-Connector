@@ -236,6 +236,178 @@ public class StructureVillagePieces {
         }
     }
 
+    // Vanilla's village buildings. Their factories (func_749xx_a) are what mods' own village layouts call to add a vanilla
+    // house; the vanilla houses are the modern jigsaw ones, so each factory answers as 1.7.10 did for a plot where the building
+    // does not fit (null: the caller tries another piece), and a building a mod constructs directly places nothing.
+
+    public static class House1 extends Village {
+        public House1() {
+        }
+
+        public House1(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static House1 func_74898_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class House2 extends Village {
+        public House2() {
+        }
+
+        public House2(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static House2 func_74915_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class House3 extends Village {
+        public House3() {
+        }
+
+        public House3(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static House3 func_74921_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class House4Garden extends Village {
+        public House4Garden() {
+        }
+
+        public House4Garden(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static House4Garden func_74912_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class WoodHut extends Village {
+        public WoodHut() {
+        }
+
+        public WoodHut(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static WoodHut func_74908_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class Hall extends Village {
+        public Hall() {
+        }
+
+        public Hall(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static Hall func_74906_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class Field1 extends Village {
+        public Field1() {
+        }
+
+        public Field1(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static Field1 func_74900_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
+    public static class Field2 extends Village {
+        public Field2() {
+        }
+
+        public Field2(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static Field2 func_74902_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
     /** Layout of vanilla villages is the modern jigsaw one: nothing continues from a legacy component. */
     private static StructureComponent getNextVillageStructureComponent(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
         return null;

@@ -12,4 +12,9 @@ public interface ISaveHandler {
     File getMapFileFromName(String name);
 
     String getWorldDirectoryName();
+
+    /** The players' data store; a save handler without players (a mod's fake world) has none. */
+    default IPlayerFileData getSaveHandler() {
+        return null;
+    }
 }

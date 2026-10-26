@@ -113,6 +113,38 @@ public class ExtendedBlockStorage {
     public void removeInvalidBlocks() {
     }
 
+    /**
+     * A copy of the section's sky light as the modern light engine computed it (same nibble layout, y << 8 | z << 4 | x):
+     * full light where the engine holds none (a section a mod built itself, or one above all terrain). Writes to it change nothing.
+     */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getSkylightArray() {
+        return mcc$light(net.minecraft.world.level.LightLayer.SKY, 15);
+    }
+
+    /** A copy of the section's block light (see {@link #getSkylightArray}); dark where the engine holds none. */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getBlocklightArray() {
+        return mcc$light(net.minecraft.world.level.LightLayer.BLOCK, 0);
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray mcc$light(net.minecraft.world.level.LightLayer layer, int fallback) {
+        byte[] data = null;
+        if (ownBlocks == null && chunk != null && chunk.worldObj != null && chunk.mcc$modern() != null) {
+            try {
+                var engine = chunk.worldObj.mcc$level().getLightEngine();
+                var section = engine == null ? null : engine.getLayerListener(layer)
+                        .getDataLayerData(net.minecraft.core.SectionPos.of(chunk.xPosition, yBase >> 4, chunk.zPosition));
+                if (section != null) data = section.getData().clone();
+            } catch (RuntimeException e) {
+                // no light data: the fallback below
+            }
+        }
+        if (data == null) {
+            data = new byte[2048];
+            java.util.Arrays.fill(data, (byte) (fallback | fallback << 4));
+        }
+        return new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(data, 4);
+    }
+
     public void setExtBlockID(int x, int y, int z, Block block) {
         func_150818_a(x, y, z, block);
     }
