@@ -29,6 +29,20 @@ public final class WorldGenBridge {
     }
 
     private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed) {
+        decorate(level, chunkX, chunkZ, worldSeed, DUMMY);
+    }
+
+    /**
+     * Runs the generators in a chunk of a mod dimension. 1.7.10 ran them from {@code Chunk.populateChunk} right after the
+     * dimension's own {@code IChunkProvider.populate}, in every dimension (generators check the dimension id themselves:
+     * Thaumcraft builds the Outer Lands maze this way); the modern biome feature that runs them elsewhere is not part of a
+     * mod dimension's decoration, so its chunk generator calls this. A failing generator is logged (throttled) and skipped.
+     */
+    public static void decorateModDimension(WorldGenLevel level, int chunkX, int chunkZ, IChunkProvider chunkGenerator) {
+        decorate(level, chunkX, chunkZ, level.getSeed(), chunkGenerator == null ? DUMMY : chunkGenerator);
+    }
+
+    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed, IChunkProvider chunkGenerator) {
         List<Entry> gens;
         synchronized (WorldGenBridge.class) {
             gens = List.copyOf(GENERATORS);
@@ -42,7 +56,19 @@ public final class WorldGenBridge {
         // HashMaps (CustomOreGen's per-world caches and geometry buffers): a mod's generators run on one thread at a time.
         for (Entry e : gens) {
             fmlRandom.setSeed(chunkSeed);
-            org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
+            if (chunkGenerator == DUMMY) {
+                org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
+                continue;
+            }
+            try {
+                org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, chunkGenerator, DUMMY));
+            } catch (RuntimeException | LinkageError ex) {
+                int n = DIMENSION_FAILURES.incrementAndGet();
+                if (n <= 3 || n % 200 == 0) {
+                    LOG.error("Legacy world generator {} failed in chunk {},{} of a mod dimension ({} failures so far)", e.generator.getClass().getName(),
+                            chunkX, chunkZ, n, ex);
+                }
+            }
         }
         // 1.7.10 worlds ended at y=0; below that is the deep layer (deepslate, bedrock at -64). Generators run once more
         // with the world shifted so that legacy y=0 is the modern bottom: what spawned deep or in bedrock spawns there too.
@@ -68,6 +94,7 @@ public final class WorldGenBridge {
     }
 
     private static final long DEEP_SEED = 0x5DEECE66DL;
+    private static final java.util.concurrent.atomic.AtomicInteger DIMENSION_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
     private static final java.util.Set<String> DEEP_FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/WorldGen");
 
