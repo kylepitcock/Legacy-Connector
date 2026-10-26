@@ -31,6 +31,26 @@ public class StringTranslate {
         }
     }
 
+    /**
+     * Forge's lang-file reader: {@code key=value} lines (not {@code #} comments) into a map, with {@code %d}/{@code %f}
+     * placeholders turned into {@code %s}. Unreadable input gives what was read so far.
+     */
+    public static java.util.HashMap<String, String> parseLangFile(java.io.InputStream in) {
+        java.util.HashMap<String, String> table = new java.util.HashMap<>();
+        try {
+            String text = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            for (String line : text.split("\r?\n|\r")) {
+                if (line.isEmpty() || line.charAt(0) == '#') continue;
+                int eq = line.indexOf('=');
+                if (eq < 0) continue;
+                table.put(line.substring(0, eq), numericVariablePattern.matcher(line.substring(eq + 1)).replaceAll("%$1s"));
+            }
+        } catch (Exception ignored) {
+            // as Forge: a broken stream leaves the table as far as it got
+        }
+        return table;
+    }
+
     public synchronized String translateKey(String key) {
         return StatCollector.translateToLocal(key);
     }

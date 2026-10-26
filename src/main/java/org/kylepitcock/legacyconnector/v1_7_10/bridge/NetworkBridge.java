@@ -76,6 +76,11 @@ public final class NetworkBridge {
             return new LegacyPayload(VERSION, name, d, data);
         }
 
+        /** The payload a message travels in (for {@code SimpleNetworkWrapper.getPacketFrom}). */
+        public LegacyPayload payload(IMessage message) {
+            return encode(message);
+        }
+
         void handle(LegacyPayload payload, IPayloadContext context) {
             boolean toServer = context.player() instanceof ServerPlayer;
             var handler = (toServer ? serverHandlers : clientHandlers).get(payload.discriminator());

@@ -24,6 +24,11 @@ public class HoverEvent {
         public String getCanonicalName() {
             return name;
         }
+
+        public static Action getValueByCanonicalName(String name) {
+            for (Action a : values()) if (a.name.equals(name)) return a;
+            return null;
+        }
     }
 
     private final Action action;

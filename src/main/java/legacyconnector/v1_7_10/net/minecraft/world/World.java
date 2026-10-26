@@ -1061,12 +1061,15 @@ public class World implements IBlockAccess {
         playSoundEffect(x, y, z, name, volume, pitch);
     }
 
+    /** A world effect by its 1.7.10 id; the ids (and some data values) changed, so it is translated to the modern level event. */
     public void playAuxSFX(int type, int x, int y, int z, int data) {
-        lvl().levelEvent(type, pos(x, y, z), data);
+        playAuxSFXAtEntity(null, type, x, y, z, data);
     }
 
     public void playAuxSFXAtEntity(EntityPlayer player, int type, int x, int y, int z, int data) {
-        lvl().levelEvent(player == null ? null : player.mcc$player(), type, pos(x, y, z), data);
+        int[] modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.LevelEvents1710.toModern(type, data);
+        if (modern == null) return;
+        lvl().levelEvent(player == null ? null : player.mcc$player(), modern[0], pos(x, y, z), modern[1]);
     }
 
     public void spawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
