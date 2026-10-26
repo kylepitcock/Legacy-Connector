@@ -44,7 +44,33 @@ public abstract class EntityAgeable extends EntityCreature {
         return getGrowingAge() < 0;
     }
 
+    /** The unscaled size (width, height) the entity set; {@link #setScale} multiplies it. */
+    public float field_98056_d;
+    public float field_98057_e;
+
+    /** A child is drawn and collides at half size. */
     public void setScaleForAge(boolean child) {
+        setScale(child ? 0.5F : 1.0F);
+    }
+
+    /** The scale last set (0: none yet, i.e. 1). */
+    private float mcc$scale;
+
+    /**
+     * Records the unscaled size and applies it at the current scale (1.7.10 applied a later size only with the next
+     * setScaleForAge, which its client tick called every tick).
+     */
+    @Override
+    public void setSize(float width, float height) {
+        field_98056_d = width;
+        field_98057_e = height;
+        setScale(mcc$scale > 0.0F ? mcc$scale : 1.0F);
+    }
+
+    /** Sizes the entity to its unscaled size times {@code scale}. */
+    protected void setScale(float scale) {
+        mcc$scale = scale;
+        super.setSize(field_98056_d * scale, field_98057_e * scale);
     }
 
     @Override

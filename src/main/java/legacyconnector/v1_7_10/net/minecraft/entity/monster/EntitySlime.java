@@ -26,6 +26,11 @@ public class EntitySlime extends EntityLiving implements IMob {
         return dataWatcher.getWatchableObjectByte(16);
     }
 
+    /** Damage it does to a player it touches: its size. */
+    protected int getAttackStrength() {
+        return getSlimeSize();
+    }
+
     public void setSlimeSize(int size) {
         if (mcc$entity instanceof net.minecraft.world.entity.monster.Slime s && !mcc$hosted()) {
             s.setSize(size, true);

@@ -13,4 +13,10 @@ public class EntityMagmaCube extends EntitySlime {
         super(world);
         this.isImmuneToFire = true;
     }
+
+    /** Magma cubes hit two harder than a slime of their size. */
+    @Override
+    protected int getAttackStrength() {
+        return super.getAttackStrength() + 2;
+    }
 }
