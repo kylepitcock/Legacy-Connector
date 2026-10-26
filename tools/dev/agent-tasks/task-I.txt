@@ -1,3 +1,0 @@
-net.minecraft.block.BlockDynamicLiquid.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/Material;)V   # 1 user(s): cofh.asmhooks.block.BlockTickingWater
-net.minecraft.block.BlockSourceImpl.<init>(Llegacyconnector/v1_7_10/net/minecraft/world/World;III)V   # 1 user(s): twilightforest.block.BlockTFTowerDevice
-net.minecraft.block.BlockStaticLiquid.<init>(Llegacyconnector/v1_7_10/net/minecraft/block/material/Material;)V   # 1 user(s): cofh.asmhooks.block.BlockWater

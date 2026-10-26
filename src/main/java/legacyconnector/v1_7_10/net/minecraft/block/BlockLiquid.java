@@ -89,4 +89,96 @@ public class BlockLiquid extends legacyconnector.v1_7_10.net.minecraft.block.Blo
         legacyconnector.v1_7_10.net.minecraft.util.Vec3 vec = liquid.mcc$flowVector(world, x, y, z);
         return vec.xCoord == 0.0D && vec.zCoord == 0.0D ? -1000.0D : Math.atan2(vec.zCoord, vec.xCoord) - Math.PI / 2.0D;
     }
+
+    // ------------------------------------------------------------------ 1.7.10 liquid behaviour (mod subclasses of the liquids)
+
+    /** {@code func_149804_e}: the raw level (metadata) of this liquid at a position, -1 for another material. */
+    protected int func_149804_e(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        return world.getBlock(x, y, z).getMaterial() == blockMaterial ? world.getBlockMetadata(x, y, z) : -1;
+    }
+
+    @Override
+    public int tickRate(legacyconnector.v1_7_10.net.minecraft.world.World world) {
+        if (blockMaterial == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water) return 5;
+        if (blockMaterial == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava) {
+            return world != null && legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(world).hasNoSky ? 10 : 30;
+        }
+        return 0;
+    }
+
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB getCollisionBoundingBoxFromPool(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public boolean isOpaqueCube() {
+        return false;
+    }
+
+    @Override
+    public boolean renderAsNormalBlock() {
+        return false;
+    }
+
+    @Override
+    public int getRenderType() {
+        return 4;
+    }
+
+    @Override
+    public int quantityDropped(java.util.Random random) {
+        return 0;
+    }
+
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.item.Item getItemDropped(int meta, java.util.Random random, int fortune) {
+        return null;
+    }
+
+    @Override
+    public boolean canCollideCheck(int meta, boolean includeLiquid) {
+        return includeLiquid && meta == 0;
+    }
+
+    /** Liquids push entities along their flow. */
+    @Override
+    public void velocityToAddToEntity(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, legacyconnector.v1_7_10.net.minecraft.util.Vec3 velocity) {
+        legacyconnector.v1_7_10.net.minecraft.util.Vec3 flow = mcc$flowVector(world, x, y, z);
+        velocity.xCoord += flow.xCoord;
+        velocity.yCoord += flow.yCoord;
+        velocity.zCoord += flow.zCoord;
+    }
+
+    @Override
+    public void onBlockAdded(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        func_149805_n(world, x, y, z);
+    }
+
+    @Override
+    public void onNeighborBlockChange(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z, Block neighbor) {
+        func_149805_n(world, x, y, z);
+    }
+
+    /** Lava touching water hardens: a source into obsidian, flowing lava (level 4 or less) into cobblestone. */
+    private void func_149805_n(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        if (world.getBlock(x, y, z) != this || blockMaterial != legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava) return;
+        legacyconnector.v1_7_10.net.minecraft.block.material.Material water = legacyconnector.v1_7_10.net.minecraft.block.material.Material.water;
+        boolean touches = world.getBlock(x, y, z - 1).getMaterial() == water || world.getBlock(x, y, z + 1).getMaterial() == water
+                || world.getBlock(x - 1, y, z).getMaterial() == water || world.getBlock(x + 1, y, z).getMaterial() == water
+                || world.getBlock(x, y + 1, z).getMaterial() == water;
+        if (!touches) return;
+        int meta = world.getBlockMetadata(x, y, z);
+        if (meta == 0) world.setBlock(x, y, z, legacyconnector.v1_7_10.net.minecraft.init.Blocks.obsidian);
+        else if (meta <= 4) world.setBlock(x, y, z, legacyconnector.v1_7_10.net.minecraft.init.Blocks.cobblestone);
+        else return;
+        func_149799_m(world, x, y, z);
+    }
+
+    /** The fizz (sound and smoke) of lava meeting water. */
+    protected void func_149799_m(legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
+        world.playSoundEffect(x + 0.5F, y + 0.5F, z + 0.5F, "random.fizz", 0.5F, 2.6F + (world.rand.nextFloat() - world.rand.nextFloat()) * 0.8F);
+        for (int i = 0; i < 8; ++i) world.spawnParticle("largesmoke", x + Math.random(), y + 1.2D, z + Math.random(), 0.0D, 0.0D, 0.0D);
+    }
 }

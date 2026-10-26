@@ -144,6 +144,8 @@ public final class TileEntityBridge {
                 chest.numPlayersUsing = net.minecraft.world.level.block.entity.ChestBlockEntity.getOpenCount(world.mcc$level(), pos);
             } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign sign) {
                 sign.mcc$refresh();
+            } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace furnace) {
+                furnace.mcc$refresh();
             }
         }
         return view;
@@ -186,6 +188,8 @@ public final class TileEntityBridge {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon(beacon);
         } else if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest(chest);
+        } else if (be instanceof net.minecraft.world.level.block.entity.AbstractFurnaceBlockEntity furnace) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace(furnace);
         } else if (be instanceof net.minecraft.world.level.block.entity.SignBlockEntity sign) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign(sign);
         } else if (be instanceof net.minecraft.world.level.block.entity.CommandBlockEntity command) {

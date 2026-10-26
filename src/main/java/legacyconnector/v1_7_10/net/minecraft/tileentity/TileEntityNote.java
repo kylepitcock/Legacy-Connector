@@ -16,6 +16,8 @@ public class TileEntityNote extends TileEntity {
     /** The modern note block this views; null for a standalone tile entity. */
     private final net.minecraft.world.level.Level mcc$level;
     private final net.minecraft.core.BlockPos mcc$pos;
+    /** The note read from the block: the block is only changed when a mod changed the note since. */
+    private byte mcc$seen;
 
     public TileEntityNote() {
         this.mcc$level = null;
@@ -28,6 +30,7 @@ public class TileEntityNote extends TileEntity {
         this.mcc$pos = pos.immutable();
         var state = level.getBlockState(pos);
         if (state.hasProperty(net.minecraft.world.level.block.NoteBlock.NOTE)) note = (byte) (int) state.getValue(net.minecraft.world.level.block.NoteBlock.NOTE);
+        mcc$seen = note;
         if (state.hasProperty(net.minecraft.world.level.block.NoteBlock.POWERED)) previousRedstoneState = state.getValue(net.minecraft.world.level.block.NoteBlock.POWERED);
     }
 
@@ -47,7 +50,8 @@ public class TileEntityNote extends TileEntity {
 
     @Override
     public void markDirty() {
-        if (mcc$level != null) {
+        if (mcc$level != null && note != mcc$seen) {
+            mcc$seen = note;
             var state = mcc$level.getBlockState(mcc$pos);
             var key = net.minecraft.world.level.block.NoteBlock.NOTE;
             int want = Math.max(0, Math.min(24, note));

@@ -27,21 +27,25 @@ public class TileEntitySign extends TileEntity {
         mcc$refresh();
     }
 
+    /** The lines last read from the modern sign: only lines a mod changed since are written back. */
+    private final String[] mcc$seen = {"", "", "", ""};
+
     /** Reads the modern sign's front lines into {@link #signText}. */
     public void mcc$refresh() {
         if (mcc$sign == null) return;
         var text = mcc$sign.getFrontText();
-        for (int i = 0; i < 4; i++) signText[i] = text.getMessage(i, false).getString();
+        for (int i = 0; i < 4; i++) signText[i] = mcc$seen[i] = text.getMessage(i, false).getString();
     }
 
-    /** Writes {@link #signText} back into the modern sign when a line changed. */
+    /** Writes the lines of {@link #signText} a mod changed back into the modern sign. */
     public void mcc$flush() {
         if (mcc$sign == null) return;
         var text = mcc$sign.getFrontText();
         boolean changed = false;
         for (int i = 0; i < 4; i++) {
             String line = signText[i] == null ? "" : signText[i];
-            if (!line.equals(text.getMessage(i, false).getString())) {
+            if (!line.equals(mcc$seen[i])) {
+                mcc$seen[i] = line;
                 text = text.setMessage(i, net.minecraft.network.chat.Component.literal(line));
                 changed = true;
             }
