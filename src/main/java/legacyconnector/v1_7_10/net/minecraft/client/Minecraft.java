@@ -249,4 +249,96 @@ public class Minecraft {
     public static long getSystemTime() {
         return System.currentTimeMillis();
     }
+
+    /** The background music ticker; mods replace it by reflection with their own (ticked by LegacyMusic). */
+    public legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker mcMusicTicker = new legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker(this);
+
+    /** Which music fits now: credits, the menu, the Nether, the End (with the dragon), creative flight or the game. */
+    public legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType getAmbientMusicType() {
+        var mc = mc();
+        if (mc.screen instanceof net.minecraft.client.gui.screens.WinScreen) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.CREDITS;
+        if (mc.player == null || mc.level == null) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.MENU;
+        var dim = mc.level.dimension();
+        if (dim == net.minecraft.world.level.Level.NETHER) return legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.NETHER;
+        if (dim == net.minecraft.world.level.Level.END) {
+            return mc.gui.getBossOverlay().shouldPlayMusic() ? legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.END_BOSS
+                    : legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.END;
+        }
+        var abilities = mc.player.getAbilities();
+        return abilities.instabuild && abilities.mayfly ? legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.CREATIVE
+                : legacyconnector.v1_7_10.net.minecraft.client.audio.MusicTicker.MusicType.GAME;
+    }
+
+    /**
+     * Starts the integrated server on a saved world (FML's old-save prompt, main menu mods' "load world" buttons). A folder
+     * without a world opens the modern world creation screen, which takes over choosing the settings.
+     */
+    public void launchIntegratedServer(String folder, String worldName, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings settings) {
+        var mc = mc();
+        if (getSaveLoader().canLoadWorld(folder)) {
+            mc.createWorldOpenFlows().openWorld(folder, () -> mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen()));
+        } else {
+            net.minecraft.client.gui.screens.worldselection.CreateWorldScreen.openFresh(mc, mc.screen);
+        }
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveFormat saveLoader;
+
+    /** The saves folder (1.7.10's AnvilSaveConverter); worlds are addressed by folder name. */
+    public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveFormat getSaveLoader() {
+        if (saveLoader == null) saveLoader = new legacyconnector.v1_7_10.net.minecraft.world.storage.SaveFormatOld(new java.io.File(mcDataDir, "saves"));
+        return saveLoader;
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.client.multiplayer.ServerData serverData;
+    private net.minecraft.client.multiplayer.ServerData serverDataSource;
+
+    /** The multiplayer server the client is connected to (null in single player), as a legacy server entry. */
+    public legacyconnector.v1_7_10.net.minecraft.client.multiplayer.ServerData getCurrentServerData() {
+        var modern = mc().getCurrentServer();
+        if (modern == null) return null;
+        if (modern != serverDataSource || serverData == null) {
+            serverDataSource = modern;
+            serverData = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.ServerData(modern.name, modern.ip);
+        }
+        serverData.serverMOTD = modern.motd == null ? null : modern.motd.getString();
+        serverData.pingToServer = modern.ping;
+        serverData.populationInfo = modern.status == null ? null : modern.status.getString();
+        return serverData;
+    }
+
+    public java.net.Proxy getProxy() {
+        return mc().getProxy();
+    }
+
+    /** The largest texture side the graphics driver takes (1.7.10 probed it with proxy textures). */
+    public static int getGLMaximumTextureSize() {
+        return com.mojang.blaze3d.systems.RenderSystem.maxSupportedTextureSize();
+    }
+
+    /** Twitch broadcasting is gone: the stream is always the inactive null stream. */
+    public legacyconnector.v1_7_10.net.minecraft.client.stream.IStream getTwitchStream() {
+        return legacyconnector.v1_7_10.net.minecraft.client.stream.NullStream.INSTANCE;
+    }
+
+    /** 1.7.10 checked the global keys (F1, F2 screenshot, F3, F11) after a screen took a key; the modern game handles them itself. */
+    public void dispatchKeypresses() {
+    }
+
+    /** Re-applies the window size to the game (after a mod changed the display mode). */
+    public void resetSize() {
+        mc().resizeDisplay();
+    }
+
+    /** {@code loadWorld(null)} leaves the world (back to the title screen); a client world cannot be swapped in. */
+    public void loadWorld(WorldClient world) {
+        if (world != null) return;
+        var mc = mc();
+        if (mc.level != null) mc.level.disconnect();
+        mc.disconnect(new net.minecraft.client.gui.screens.TitleScreen());
+    }
+
+    public void loadWorld(WorldClient world, String loadingMessage) {
+        loadWorld(world);
+    }
 }

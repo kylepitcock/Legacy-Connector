@@ -13,6 +13,8 @@ public class PositionedSoundRecord implements ISound {
     protected boolean repeat;
     protected int repeatDelay;
     protected ISound.AttenuationType attenuation = ISound.AttenuationType.LINEAR;
+    /** The volume slider the sound plays under (music and records have their own); null for the master volume. */
+    public SoundCategory mcc$category;
 
     public PositionedSoundRecord(ResourceLocation location, float volume, float pitch, float x, float y, float z) {
         this(location, volume, pitch, false, 0, ISound.AttenuationType.LINEAR, x, y, z);
@@ -42,6 +44,20 @@ public class PositionedSoundRecord implements ISound {
 
     public static PositionedSoundRecord createPositionedSoundRecord(ResourceLocation location, float volume, float pitch, float x, float y, float z) {
         return new PositionedSoundRecord(location, volume, pitch, false, 0, ISound.AttenuationType.LINEAR, x, y, z);
+    }
+
+    /** Background music: full volume, everywhere, under the music slider. */
+    public static PositionedSoundRecord func_147673_a(ResourceLocation location) {
+        PositionedSoundRecord r = new PositionedSoundRecord(location, 1.0F, 1.0F, false, 0, ISound.AttenuationType.NONE, 0.0F, 0.0F, 0.0F);
+        r.mcc$category = SoundCategory.MUSIC;
+        return r;
+    }
+
+    /** A record playing in a jukebox at the position (volume 4: heard 64 blocks away), under the records slider. */
+    public static PositionedSoundRecord createRecordSoundAtPosition(ResourceLocation location, float x, float y, float z) {
+        PositionedSoundRecord r = new PositionedSoundRecord(location, 4.0F, 1.0F, false, 0, ISound.AttenuationType.LINEAR, x, y, z);
+        r.mcc$category = SoundCategory.RECORDS;
+        return r;
     }
 
     @Override

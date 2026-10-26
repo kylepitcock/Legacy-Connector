@@ -35,6 +35,10 @@ public final class TextureLocations {
             }
         }
         if (ns.equals("minecraft") && p.equals("textures/gui/icons.png")) LegacyIcons.ensure();
+        if (ns.equals("minecraft") && (p.startsWith("textures/particle/") || p.equals("textures/entity/explosion.png"))) {
+            ResourceLocation sheet = LegacyParticleSheets.forPath(p);
+            if (sheet != null) return sheet;
+        }
         return ResourceLocation.fromNamespaceAndPath(ns, p);
     }
 }
