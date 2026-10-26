@@ -31,8 +31,8 @@ stone (the Terra aspect in its lens, research points gained in the corner):
 ![Scanning with the Thaumometer](docs/images/thaumometer.png)
 
 A Witchery ritual site: chalk ritual circle around a heart glyph, candelabras, the altar with a chalice and crystal ball, a witch's
-oven, kettle, distillery and spinning wheel, a crop patch of belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan,
-alder and hawthorn trees, and an owl, a coven witch, a mandrake and a toad:
+oven with its fume funnel, kettle, distillery and spinning wheel (all drawn by Witchery's own tile entity renderers), a crop patch of
+belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan saplings, a coven witch, a mandrake and a toad:
 
 ![A Witchery ritual site](docs/images/witchery-ritual.png)
 
@@ -40,13 +40,20 @@ Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI:
 
 ![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
 
-Twilight Forest and Witchery entities beside a vanilla cow and villager:
+Fisk's Superheroes: Doctor Octopus's suit with its tentacles deployed, and the suit's abilities (tentacle jab, grab and strike) on
+Fisk's own HUD:
 
-![Legacy and modern entities](docs/images/legacy-and-modern-entities.png)
+![Fisk's Superheroes Doctor Octopus](docs/images/fisk-doc-ock.png)
 
-A modern village with Witchery's watchtowers and AgriCraft's greenhouse built by their legacy code:
+A modern village enclosed by Witchery's town walls, with its gatehouses and watchtowers and AgriCraft's greenhouses, all built by
+their legacy village code:
 
 ![Legacy village components in a modern village](docs/images/legacy-village-components.png)
+
+A nuclear explosion from HBM's Nuclear Tech Mod: the fireball and mushroom cloud with its condensation rings, flying debris, the
+fallout-tinted sky and the scorched crater, all from HBM's own explosion and effect code:
+
+![An HBM nuclear explosion](docs/images/hbm-nuke.png)
 
 ## How it works
 
