@@ -51,4 +51,28 @@ public class SimpleNetworkWrapper {
     public void sendToServer(IMessage message) {
         channel.sendToServer(message);
     }
+
+    /** The message as a packet, for mods that send it through a vanilla path themselves (to a player's connection, chunk watchers). */
+    public legacyconnector.v1_7_10.net.minecraft.network.Packet getPacketFrom(IMessage message) {
+        return new MessagePacket(channel.payload(message));
+    }
+
+    /** A channel message wrapped as a packet: delivered to a player or the server as the channel's payload. */
+    private static final class MessagePacket extends legacyconnector.v1_7_10.net.minecraft.network.Packet {
+        private final org.kylepitcock.legacyconnector.core.network.LegacyPayload payload;
+
+        MessagePacket(org.kylepitcock.legacyconnector.core.network.LegacyPayload payload) {
+            this.payload = payload;
+        }
+
+        @Override
+        public void mcc$send(net.minecraft.server.level.ServerPlayer player) {
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayer(player, payload);
+        }
+
+        @Override
+        public void mcc$sendToServer() {
+            net.neoforged.neoforge.network.PacketDistributor.sendToServer(payload);
+        }
+    }
 }

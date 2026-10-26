@@ -149,4 +149,78 @@ public class ForgeHooks {
                 new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, amount);
         return MinecraftForge.EVENT_BUS.post(event) ? 0.0F : event.ammount;
     }
+
+    /**
+     * Whether the player may keep the container open: {@code PlayerOpenContainerEvent} decides (ALLOW keeps it, DENY
+     * closes it), by default the container's own {@code canInteractWith}.
+     */
+    public static boolean canInteractWith(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_7_10.net.minecraft.inventory.Container openContainer) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerOpenContainerEvent(player, openContainer);
+        MinecraftForge.EVENT_BUS.post(event);
+        return switch (event.getResult()) {
+            case ALLOW -> true;
+            case DENY -> false;
+            default -> event.canInteractWith;
+        };
+    }
+
+    /** Forge's URL pattern for chat links: an optional scheme, an IPv4 address or a domain, an optional port and a path. */
+    static final java.util.regex.Pattern URL_PATTERN = java.util.regex.Pattern.compile(
+            "((?:[a-z0-9]{2,}:\\/\\/)?(?:(?:[0-9]{1,3}\\.){3}[0-9]{1,3}|(?:[-\\w_\\.]{1,}\\.[a-z]{2,}?))(?::[0-9]{1,5})?.*?(?=[!\"§ \n]|$))",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /** A chat message whose URLs are clickable links (scheme-less ones open as {@code http://}). */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IChatComponent newChatWithLinks(String string) {
+        legacyconnector.v1_7_10.net.minecraft.util.IChatComponent chat = new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText("");
+        java.util.regex.Matcher matcher = URL_PATTERN.matcher(string);
+        int lastEnd = 0;
+        while (matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            String part = string.substring(lastEnd, start);
+            if (!part.isEmpty()) chat.appendText(part);
+            lastEnd = end;
+            String url = string.substring(start, end);
+            legacyconnector.v1_7_10.net.minecraft.util.IChatComponent link = new legacyconnector.v1_7_10.net.minecraft.util.ChatComponentText(url);
+            try {
+                if (new java.net.URI(url).getScheme() == null) url = "http://" + url;
+            } catch (java.net.URISyntaxException e) {
+                chat.appendText(url);
+                continue;
+            }
+            link.getChatStyle().setChatClickEvent(new legacyconnector.v1_7_10.net.minecraft.event.ClickEvent(
+                    legacyconnector.v1_7_10.net.minecraft.event.ClickEvent.Action.OPEN_URL, url));
+            chat.appendSibling(link);
+        }
+        String rest = string.substring(lastEnd);
+        if (!rest.isEmpty()) chat.appendText(rest);
+        return chat;
+    }
+
+    /**
+     * Posts {@code AnvilUpdateEvent} for an anvil's inputs. False when a handler cancelled (no output) or supplied its own
+     * output, which is then put in {@code outputSlot} with its costs; true lets the anvil compute the vanilla result.
+     */
+    public static boolean onAnvilChange(legacyconnector.v1_7_10.net.minecraft.inventory.ContainerRepair container, ItemStack left, ItemStack right,
+            legacyconnector.v1_7_10.net.minecraft.inventory.IInventory outputSlot, String name, int baseCost) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.AnvilUpdateEvent(left, right, name, baseCost);
+        if (MinecraftForge.EVENT_BUS.post(event)) return false;
+        if (event.output == null) return true;
+        outputSlot.setInventorySlotContents(0, event.output);
+        container.maximumCost = event.cost;
+        container.mcc$setMaterialCost(event.materialCost);
+        return false;
+    }
+
+    /**
+     * Posts {@code AnvilRepairEvent} when a player takes an anvil's result; the chance the anvil is damaged. As in Forge
+     * 1.7.10 the event is built as {@code (player, left, right, output)}, so its {@code output}, {@code left} and
+     * {@code right} fields hold the left input, the right input and the output: listeners written for 1.7.10 expect that.
+     */
+    public static float onAnvilRepair(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack output, ItemStack left, ItemStack right) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.AnvilRepairEvent(player, left, right, output);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event.breakChance;
+    }
 }

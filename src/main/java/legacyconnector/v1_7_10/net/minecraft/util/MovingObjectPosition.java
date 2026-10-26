@@ -14,6 +14,8 @@ public class MovingObjectPosition {
     public Entity entityHit;
     /** Forge: which sub-part of a multi-part block was hit. */
     public int subHit = -1;
+    /** Forge: whatever extra data the block's ray trace wants to pass along with the hit (multipart pieces). */
+    public Object hitInfo = null;
 
     public MovingObjectPosition(int x, int y, int z, int side, Vec3 hit) {
         this(x, y, z, side, hit, true);
