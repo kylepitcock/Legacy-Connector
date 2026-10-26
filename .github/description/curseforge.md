@@ -29,11 +29,23 @@ Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector.
 
 ## Screenshots
 
-All taken in game on NeoForge 1.21.1, with legacy 1.7.10 mods running next to modern content.
+All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods that have no modern version running next to modern content.
 
-**Blocks from Applied Energistics 2, Twilight Forest, Tinkers' Construct and BiblioCraft (front) beside vanilla 1.21 blocks (back)**
+**A Thaumcraft 4 workshop: infusion altar, crucible, alembics, essentia jars, research table, an aura node and magical trees**
 
-![Legacy and modern blocks](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-and-modern-blocks.png)
+![A Thaumcraft workshop](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumcraft-workshop.png)
+
+**The Thaumonomicon, drawn by Thaumcraft's own book and font code**
+
+![The Thaumonomicon](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumonomicon.png)
+
+**Scanning stone with the Thaumometer**
+
+![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
+
+**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery, crops, rowan, alder and hawthorn trees, and Witchery creatures**
+
+![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
 
 **Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI**
 

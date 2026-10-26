@@ -15,13 +15,28 @@ runs Fabric mods on NeoForge. The original jar is never modified.
 
 ## Screenshots
 
-All taken in the game (NeoForge 1.21.1, headless), with legacy 1.7.10 mods next to modern content.
+All taken in a real game client (NeoForge 1.21.1) with unmodified 1.7.10 mods that have no modern version, running next to modern content.
 
-Blocks of Applied Energistics 2, Twilight Forest, Tinkers' Construct and BiblioCraft (front row) beside vanilla 1.21 blocks (back row):
+A Thaumcraft 4 workshop: infusion altar with items on its pedestals, crucible over lava, alchemical furnace with alembics, essentia
+jars, arcane workbench, research table, an aura node over a stabiliser, infused stones with crystal clusters, and greatwood and
+silverwood trees grown by Thaumcraft's own generators:
 
-![Legacy and modern blocks side by side](docs/images/legacy-and-modern-blocks.png)
+![A Thaumcraft workshop](docs/images/thaumcraft-workshop.png)
 
-Thaumcraft's Arcane Workbench, a block's own 1.7.10 GUI code drawn in 1.21 next to JEI:
+The Thaumonomicon, drawn by Thaumcraft's own font renderer and book code, and the Thaumometer held in both hands after scanning
+stone (the Terra aspect in its lens, research points gained in the corner):
+
+![The Thaumonomicon](docs/images/thaumonomicon.png)
+
+![Scanning with the Thaumometer](docs/images/thaumometer.png)
+
+A Witchery ritual site: chalk ritual circle around a heart glyph, candelabras, the altar with a chalice and crystal ball, a witch's
+oven, kettle, distillery and spinning wheel, a crop patch of belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan,
+alder and hawthorn trees, and an owl, a coven witch, a mandrake and a toad:
+
+![A Witchery ritual site](docs/images/witchery-ritual.png)
+
+Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI:
 
 ![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
 

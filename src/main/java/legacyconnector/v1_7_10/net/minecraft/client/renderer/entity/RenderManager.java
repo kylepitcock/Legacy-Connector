@@ -39,6 +39,9 @@ public class RenderManager {
         }
         // 1.7.10 mapped EntityPlayer to RenderPlayer: mods fetch it to draw the first-person arm (Thaumcraft's Thaumometer)
         if (legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class.isAssignableFrom(cls)) return mcc$playerRenderer();
+        // vanilla's own: dropped items (pedestals and altars draw their item as an EntityItem), then anything with a modern entity
+        if (legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem.class.isAssignableFrom(cls)) return RenderItem.getInstance();
+        if (legacyconnector.v1_7_10.net.minecraft.entity.Entity.class.isAssignableFrom(cls)) return RenderModernEntity.INSTANCE;
         return null;
     }
 

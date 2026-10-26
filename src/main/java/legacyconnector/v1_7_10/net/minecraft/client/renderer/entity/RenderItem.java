@@ -28,7 +28,7 @@ public class RenderItem extends Render {
         pose.pushPose();
         pose.translate(x, y, z);
         if (!renderInFrame && shouldBob()) pose.translate(0, Math.sin(((entity.mcc$entity == null ? 0 : entity.mcc$entity.tickCount) + partialTicks) / 10.0F) * 0.1F + 0.1F, 0);
-        pose.scale(0.5F, 0.5F, 0.5F);
+        // the GROUND transform already has 1.7.10's dropped sizes (items half a block, blocks a quarter)
         var mc = Minecraft.getInstance();
         mc.getItemRenderer().renderStatic(stack.mcc$modern(), ItemDisplayContext.GROUND, RenderContext.light(), RenderContext.overlay(), pose,
                 RenderContext.buffers(), (net.minecraft.world.level.Level) (Object) mc.level, 0);

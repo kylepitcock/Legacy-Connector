@@ -27,6 +27,13 @@ public final class VanillaIcons {
             case "grass" -> {
                 return side == 1 ? "grass_top" : side == 0 ? "dirt" : "grass_side";
             }
+            // BlockLiquid: still on top and bottom, flowing on the sides (Thaumcraft's crucible draws its water with it)
+            case "water", "flowing_water" -> {
+                return side <= 1 ? "water_still" : "water_flow";
+            }
+            case "lava", "flowing_lava" -> {
+                return side <= 1 ? "lava_still" : "lava_flow";
+            }
             case "bookshelf" -> {
                 return side <= 1 ? "planks_oak" : "bookshelf";
             }

@@ -46,6 +46,7 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
     public void render(Entity entity, float yaw, float partialTicks, PoseStack pose, MultiBufferSource buffers, int light) {
         var legacy = entity instanceof LegacyHost h ? h.mcc$legacy() : null;
         Render renderer = legacy == null ? null : RenderManager.instance.getEntityRenderObject(legacy);
+        if (renderer instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderModernEntity) renderer = null;
         if (renderer != null && FAILURES.getOrDefault(renderer.getClass(), 0) < MAX_FAILURES) {
             this.shadowRadius = renderer.mcc$shadowSize();
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
