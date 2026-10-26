@@ -36,4 +36,34 @@ public class BiomeEvent extends Event {
             this.type = type;
         }
     }
+
+    /** A biome colour handlers may change: they set {@link #newColor}. */
+    public static class BiomeColor extends BiomeEvent {
+        public final int originalColor;
+        public int newColor;
+
+        public BiomeColor(BiomeGenBase biome, int original) {
+            super(biome);
+            this.originalColor = original;
+            this.newColor = original;
+        }
+    }
+
+    public static class GetGrassColor extends BiomeColor {
+        public GetGrassColor(BiomeGenBase biome, int original) {
+            super(biome, original);
+        }
+    }
+
+    public static class GetFoliageColor extends BiomeColor {
+        public GetFoliageColor(BiomeGenBase biome, int original) {
+            super(biome, original);
+        }
+    }
+
+    public static class GetWaterColor extends BiomeColor {
+        public GetWaterColor(BiomeGenBase biome, int original) {
+            super(biome, original);
+        }
+    }
 }

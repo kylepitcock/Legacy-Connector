@@ -144,6 +144,11 @@ public class BiomeGenBase {
         this.rainfall = 0.5F;
         this.theBiomeDecorator = createBiomeDecorator();
         if (register && id >= 0 && id < biomeList.length) biomeList[id] = this;
+        try {
+            addDefaultFlowers();
+        } catch (RuntimeException e) {
+            // a subclass's flowers that need its own fields: it adds them itself
+        }
     }
 
     public BiomeDecorator createBiomeDecorator() {
@@ -198,6 +203,11 @@ public class BiomeGenBase {
     }
 
     public boolean getEnableSnow() {
+        return func_150559_j();
+    }
+
+    /** Whether the biome is snowy (shores next to it become cold beaches). */
+    public boolean func_150559_j() {
         return enableSnow;
     }
 
@@ -210,16 +220,54 @@ public class BiomeGenBase {
         };
     }
 
-    /** Forge: the flowers bonemeal and the generator may place in the biome (block, metadata, weight). */
-    public final List<Object[]> mcc$flowers = new ArrayList<>();
+    /** Forge: the flowers bonemeal and the generator may place in the biome (mods clear and refill it). */
+    public List<FlowerEntry> flowers = new ArrayList<>();
 
     public void addFlower(legacyconnector.v1_7_10.net.minecraft.block.Block block, int meta, int weight) {
-        mcc$flowers.add(new Object[] {block, meta, weight});
+        flowers.add(new FlowerEntry(block, meta, weight));
     }
 
     public void addDefaultFlowers() {
         addFlower(legacyconnector.v1_7_10.net.minecraft.init.Blocks.yellow_flower, 0, 20);
         addFlower(legacyconnector.v1_7_10.net.minecraft.init.Blocks.red_flower, 0, 10);
+    }
+
+    /** Forge: one flower a biome may grow (block, metadata and weight). */
+    public static class FlowerEntry extends legacyconnector.v1_7_10.net.minecraft.util.WeightedRandom.Item {
+        public final legacyconnector.v1_7_10.net.minecraft.block.Block block;
+        public final int metadata;
+
+        public FlowerEntry(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, int weight) {
+            super(weight);
+            this.block = block;
+            this.metadata = metadata;
+        }
+    }
+
+    /** The flower bonemeal names for grass in this biome: a dandelion twice as often as a poppy. */
+    public String func_150572_a(Random rand, int x, int y, int z) {
+        return rand.nextInt(3) > 0 ? "dandelion" : "poppy";
+    }
+
+    /** Forge: the grass colour after {@code BiomeEvent.GetGrassColor} handlers. */
+    public int getModdedBiomeGrassColor(int original) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.BiomeEvent.GetGrassColor(this, original);
+        legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.newColor;
+    }
+
+    /** Forge: the foliage colour after {@code BiomeEvent.GetFoliageColor} handlers. */
+    public int getModdedBiomeFoliageColor(int original) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.BiomeEvent.GetFoliageColor(this, original);
+        legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.newColor;
+    }
+
+    /** Forge: the water tint after {@code BiomeEvent.GetWaterColor} handlers. */
+    public int getWaterColorMultiplier() {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.BiomeEvent.GetWaterColor(this, waterColorMultiplier);
+        legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.newColor;
     }
 
     public boolean canSpawnLightningBolt() {
@@ -317,6 +365,8 @@ public class BiomeGenBase {
             new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenTrees(false);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigTree worldGeneratorBigTree =
             new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigTree(false);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenSwamp worldGeneratorSwamp =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenSwamp();
 
     /** The tree generator for one tree of this biome (mods override this to grow their own trees). */
     public legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenAbstractTree func_150567_a(Random rand) {
@@ -424,15 +474,18 @@ public class BiomeGenBase {
         OCEAN, COLD, MEDIUM, WARM
     }
 
+    /** Forge: grows one of the biome's flowers (by weight) where it can stay. */
     public void plantFlower(legacyconnector.v1_7_10.net.minecraft.world.World world, Random rand, int x, int y, int z) {
-        if (mcc$flowers.isEmpty()) addDefaultFlowers();
+        if (flowers == null || flowers.isEmpty()) return;
         int total = 0;
-        for (Object[] f : mcc$flowers) total += (Integer) f[2];
-        int pick = rand.nextInt(Math.max(1, total));
-        for (Object[] f : mcc$flowers) {
-            pick -= (Integer) f[2];
+        for (FlowerEntry f : flowers) total += Math.max(0, f.itemWeight);
+        if (total <= 0) return;
+        int pick = rand.nextInt(total);
+        for (FlowerEntry f : flowers) {
+            pick -= Math.max(0, f.itemWeight);
             if (pick < 0) {
-                world.setBlock(x, y, z, (legacyconnector.v1_7_10.net.minecraft.block.Block) f[0], (Integer) f[1], 3);
+                if (f.block == null || !f.block.canBlockStay(world, x, y, z)) return;
+                world.setBlock(x, y, z, f.block, f.metadata, 3);
                 return;
             }
         }

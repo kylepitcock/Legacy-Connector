@@ -111,6 +111,11 @@ public class Chunk {
         this(world, modern.getPos().x, modern.getPos().z, modern);
     }
 
+    /** A chunk of column arrays without metadata (the nether generator's 128-high chunks). */
+    public Chunk(World world, Block[] blocks, int x, int z) {
+        this(world, blocks, null, x, z);
+    }
+
     /** A chunk of 256-high column arrays, as legacy terrain generators build them. */
     public Chunk(World world, Block[] blocks, byte[] meta, int x, int z) {
         this(world, x, z, null);

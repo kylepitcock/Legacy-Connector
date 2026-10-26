@@ -45,6 +45,15 @@ public class ChunkProviderEvent extends Event {
         public final BiomeGenBase[] biomeArray;
         public final World world;
 
+        /** The 1.7.2 form, without metadata or world (the nether generator posts this one). */
+        public ReplaceBiomeBlocks(IChunkProvider provider, int chunkX, int chunkZ, Block[] blockArray, BiomeGenBase[] biomeArray) {
+            this(provider, chunkX, chunkZ, blockArray, new byte[blockArray == null ? 0 : blockArray.length], biomeArray, null);
+        }
+
+        public ReplaceBiomeBlocks(IChunkProvider provider, int chunkX, int chunkZ, Block[] blockArray, byte[] metaArray, BiomeGenBase[] biomeArray) {
+            this(provider, chunkX, chunkZ, blockArray, metaArray, biomeArray, null);
+        }
+
         public ReplaceBiomeBlocks(IChunkProvider provider, int chunkX, int chunkZ, Block[] blockArray, byte[] metaArray, BiomeGenBase[] biomeArray, World world) {
             super(provider);
             this.chunkX = chunkX;
