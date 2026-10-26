@@ -58,7 +58,22 @@ public final class GlPixels {
         return buf;
     }
 
+    /**
+     * GL's default unpack state, which legacy uploads assume. The modern game sets the row length and skips for its own
+     * texture uploads and leaves them set, so a legacy upload of a narrower image made the driver read past the end of the
+     * pixels (JourneyMap's minimap crashed the JVM in the AMD driver); a bound pixel unpack buffer would turn the pointer
+     * into an offset. Called right before each legacy upload, on the render thread.
+     */
+    public static void unpackDefaults() {
+        org.lwjgl.opengl.GL15C.glBindBuffer(0x88EC, 0); // GL_PIXEL_UNPACK_BUFFER
+        org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_ROW_LENGTH, 0);
+        org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_SKIP_ROWS, 0);
+        org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_SKIP_PIXELS, 0);
+        org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_ALIGNMENT, 4);
+    }
+
     public static ByteBuffer safe(ByteBuffer pixels, int width, int height, int format, int type) {
+        unpackDefaults();
         if (pixels == null) return null;
         int need = bytesNeeded(width, height, format, type);
         if (pixels.isDirect() && pixels.remaining() >= need) return pixels;
@@ -69,6 +84,7 @@ public final class GlPixels {
     }
 
     public static ByteBuffer safe(IntBuffer pixels, int width, int height, int format, int type) {
+        unpackDefaults();
         if (pixels == null) return null;
         int need = bytesNeeded(width, height, format, type);
         ByteBuffer copy = scratch(Math.max(need, pixels.remaining() * 4));

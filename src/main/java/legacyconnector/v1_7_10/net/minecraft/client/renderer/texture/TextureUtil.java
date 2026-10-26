@@ -167,6 +167,7 @@ public class TextureUtil {
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, id);
         IntBuffer buffer = org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.ints(pixels);
         GL11C.glPixelStorei(GL11C.GL_UNPACK_ROW_LENGTH, 0);
+        org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.unpackDefaults();
         GL11C.glTexSubImage2D(GL11C.GL_TEXTURE_2D, 0, x, y, width, height, org.lwjgl.opengl.GL12C.GL_BGRA, GL11C.GL_UNSIGNED_BYTE, buffer);
         int filter = blur ? GL11C.GL_LINEAR : GL11C.GL_NEAREST;
         GL11C.glTexParameteri(GL11C.GL_TEXTURE_2D, GL11C.GL_TEXTURE_MIN_FILTER, filter);
@@ -182,6 +183,7 @@ public class TextureUtil {
             int w = Math.max(1, width >> level);
             int h = Math.max(1, height >> level);
             IntBuffer buffer = org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.ints(levels[level]);
+            org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.unpackDefaults();
             GL11C.glTexSubImage2D(GL11C.GL_TEXTURE_2D, level, x >> level, y >> level, w, h, org.lwjgl.opengl.GL12C.GL_BGRA, GL11C.GL_UNSIGNED_BYTE, buffer);
         }
     }
