@@ -10,7 +10,8 @@ public class BlockRailBase extends Block {
 
     public BlockRailBase(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
-        this.field_150053_a = false;
+        // golden, detector and activator rails were "powered" rails (their bit 8 is not part of the shape)
+        this.field_150053_a = info != null && !"minecraft:rail".equals(info.legacyName());
     }
 
     protected BlockRailBase(boolean powered) {
@@ -34,13 +35,19 @@ public class BlockRailBase extends Block {
         return true;
     }
 
-    public int getBasicRailMetadata(IBlockAccess world, Object cart, int x, int y, int z) {
+    /** Forge: the rail's shape (0-9) for this cart; {@code cart} may be null. */
+    public int getBasicRailMetadata(IBlockAccess world, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart cart, int x, int y, int z) {
         int meta = world.getBlockMetadata(x, y, z);
         return field_150053_a ? meta & 7 : meta;
     }
 
-    public float getRailMaxSpeed(World world, Object cart, int x, int y, int z) {
+    /** Forge: the highest speed a cart may have on this rail. */
+    public float getRailMaxSpeed(World world, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart cart, int x, int y, int z) {
         return 0.4F;
+    }
+
+    /** Forge: a cart rolls over this rail (once per tick); boosters and detectors act here. */
+    public void onMinecartPass(World world, legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart cart, int x, int y, int z) {
     }
 
     public static boolean isRailBlockAt(World world, int x, int y, int z) {

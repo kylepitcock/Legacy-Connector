@@ -363,7 +363,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     @Override
     public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
-        if (legacy != null && LegacyHookState.customLerp(legacy)) legacy.setPositionAndRotation2(x, y, z, yaw, pitch, steps);
+        if (legacy != null && LegacyHookState.customLerp(legacy)) legacy.setPositionAndRotation2(x, y + legacy.mcc$yShift(), z, yaw, pitch, steps);
         else super.lerpTo(x, y, z, yaw, pitch, steps);
     }
 
