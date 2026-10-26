@@ -146,6 +146,7 @@ public final class Client1710 {
     }
 
     private static void onRegisterExtensions(RegisterClientExtensionsEvent event) {
+        LegacyEffectIcons.register(event);
         IClientItemExtensions chest = new IClientItemExtensions() {
             private BlockEntityWithoutLevelRenderer renderer;
 
