@@ -594,6 +594,11 @@ public class Block {
         return getIcon(side, world.getBlockMetadata(x, y, z));
     }
 
+    /** The icon the block's item draws with (glass panes override it); the side's icon by default. */
+    public IIcon getItemIcon(int side, int meta) {
+        return getIcon(side, meta);
+    }
+
     public final IIcon getBlockTextureFromSide(int side) {
         return getIcon(side, 0);
     }

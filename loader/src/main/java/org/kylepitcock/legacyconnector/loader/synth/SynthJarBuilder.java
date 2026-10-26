@@ -261,6 +261,7 @@ public final class SynthJarBuilder {
                 continue;
             }
             if (isStatic) staticResolverCall(mv, legacyName(name) + "." + m.name(), m.desc());
+            else if (!itf) instanceResolverCall(mv, legacyName(name) + "." + m.name(), m.desc());
             stubCall(mv, legacyName(name) + "." + m.name() + m.desc());
             if (!isStatic && returnsSelf(name, ret)) {
                 // Builder-style setters (fluid.setDensity(..).setViscosity(..)) must keep the chain alive.
@@ -695,10 +696,23 @@ public final class SynthJarBuilder {
      * method (e.g. {@code PotionType.getPotionTypeForName}) answers it, otherwise the stub's default follows.
      */
     private static void staticResolverCall(MethodVisitor mv, String key, String desc) {
+        resolverCall(mv, key, desc, false);
+    }
+
+    /**
+     * An instance stub of a synthesized class first asks the runtime's instance method resolvers ({@code Synth.callInstance}):
+     * vanilla enums answer their names and metadata there, for example.
+     */
+    private static void instanceResolverCall(MethodVisitor mv, String key, String desc) {
+        resolverCall(mv, key, desc, true);
+    }
+
+    private static void resolverCall(MethodVisitor mv, String key, String desc, boolean instance) {
         Type[] args = Type.getArgumentTypes(desc);
         Type ret = Type.getReturnType(desc);
-        int[] slots = slots(args, 0);
+        int[] slots = slots(args, instance ? 1 : 0);
         mv.visitLdcInsn(key);
+        if (instance) mv.visitVarInsn(Opcodes.ALOAD, 0);
         mv.visitLdcInsn(args.length);
         mv.visitTypeInsn(Opcodes.ANEWARRAY, "java/lang/Object");
         for (int i = 0; i < args.length; i++) {
@@ -708,8 +722,12 @@ public final class SynthJarBuilder {
             Defaults.box(mv, args[i]);
             mv.visitInsn(Opcodes.AASTORE);
         }
-        mv.visitMethodInsn(Opcodes.INVOKESTATIC, RT, "callStatic", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;", false);
-        int local = slots.length == 0 ? 0 : slots[slots.length - 1] + args[args.length - 1].getSize();
+        if (instance) {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, RT, "callInstance", "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+        } else {
+            mv.visitMethodInsn(Opcodes.INVOKESTATIC, RT, "callStatic", "(Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;", false);
+        }
+        int local = slots.length == 0 ? (instance ? 1 : 0) : slots[slots.length - 1] + args[args.length - 1].getSize();
         mv.visitVarInsn(Opcodes.ASTORE, local);
         mv.visitVarInsn(Opcodes.ALOAD, local);
         mv.visitFieldInsn(Opcodes.GETSTATIC, RT, "NONE", "Ljava/lang/Object;");

@@ -14,6 +14,13 @@ public class ModAPIManager {
     private static final Set<String> PROVIDED = Set.of("cofhapi", "cofhapi|energy", "cofhapi|block", "cofhapi|item", "cofhapi|core", "cofhapi|transport",
             "cofhapi|tileentity", "cofhapi|inventory", "cofhapi|world", "cofhapi|fluid", "cofhapi|audio", "cofhapi|render", "cofhapi|client");
 
+    /**
+     * FML added a container per {@code @API} package to the mod list here. APIs are not mods on NeoForge (see
+     * {@link #hasAPI}), so there is nothing to inject.
+     */
+    public void injectAPIModContainers(java.util.List<ModContainer> mods, java.util.Map<String, ModContainer> nameLookup) {
+    }
+
     public boolean hasAPI(String name) {
         if (name == null) return false;
         String lower = name.toLowerCase(Locale.ROOT);

@@ -31,6 +31,18 @@ public class CreativeTabs {
         }
     }
 
+    /** Forge's form: tabs are appended in creation order here, so the index is always the next free one. */
+    public CreativeTabs(int index, String label) {
+        this(label);
+    }
+
+    /** The index the next tab gets. */
+    public static int getNextID() {
+        synchronized (CREATIVE_TAB_ARRAY) {
+            return CREATIVE_TAB_ARRAY.size();
+        }
+    }
+
     public int getTabIndex() {
         return index;
     }

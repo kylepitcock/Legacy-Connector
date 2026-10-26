@@ -26,6 +26,11 @@ public class BlockSnapshot {
         return new BlockSnapshot(world, x, y, z, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z));
     }
 
+    /** The block at the snapshot's position now. */
+    public Block getCurrentBlock() {
+        return world.getBlock(x, y, z);
+    }
+
     public boolean restore() {
         return world.setBlock(x, y, z, replacedBlock, meta, flag);
     }

@@ -164,6 +164,19 @@ public final class ItemStack {
         return item == null ? "" : item.getUnlocalizedName(this);
     }
 
+    public String getTranslationKey() {
+        return item == null ? "" : item.getTranslationKey(this);
+    }
+
+    public boolean getHasSubtypes() {
+        return getItem().getHasSubtypes();
+    }
+
+    /** Whether the stack carries a non-empty {@code ench} list. */
+    public boolean isItemEnchanted() {
+        return stackTagCompound != null && stackTagCompound.hasKey("ench", 9) && stackTagCompound.getTagList("ench", 10).tagCount() > 0;
+    }
+
     public String getDisplayName() {
         if (item == null) return "";
         String n = item.getItemStackDisplayName(this);

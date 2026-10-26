@@ -14,6 +14,42 @@ public class EntityVillager extends EntityAgeable {
         return f > 0.9F ? 0.9F - (f - 0.9F) : f;
     }
 
+    /** Item -> {@code Tuple(min, max)} count of the item a villager buys for one emerald. */
+    public static final java.util.Map villagersSellingList = new java.util.HashMap();
+    /** Item -> {@code Tuple(min, max)} emerald price (negative: items per emerald) of an item a villager sells. */
+    public static final java.util.Map blacksmithSellingList = new java.util.HashMap();
+
+    /** Adds, with {@code chance}, a trade where the villager buys {@code item} (count from {@link #villagersSellingList}) for an emerald. */
+    public static void func_146091_a(MerchantRecipeList list, legacyconnector.v1_7_10.net.minecraft.item.Item item, java.util.Random random,
+            float chance) {
+        if (random.nextFloat() < chance) {
+            list.add(new legacyconnector.v1_7_10.net.minecraft.village.MerchantRecipe(
+                    new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, mcc$roll(villagersSellingList, item, random), 0),
+                    legacyconnector.v1_7_10.net.minecraft.init.Items.emerald));
+        }
+    }
+
+    /** Adds, with {@code chance}, a trade where the villager sells {@code item} for emeralds (price from {@link #blacksmithSellingList}). */
+    public static void func_146089_b(MerchantRecipeList list, legacyconnector.v1_7_10.net.minecraft.item.Item item, java.util.Random random,
+            float chance) {
+        if (random.nextFloat() < chance) {
+            int price = mcc$roll(blacksmithSellingList, item, random);
+            var emerald = legacyconnector.v1_7_10.net.minecraft.init.Items.emerald;
+            var buy = new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(emerald, price < 0 ? 1 : price, 0);
+            var sell = new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, price < 0 ? -price : 1, 0);
+            list.add(new legacyconnector.v1_7_10.net.minecraft.village.MerchantRecipe(buy, sell));
+        }
+    }
+
+    /** A count in the item's {@code Tuple(min, max)} range of {@code table} (1 if the item has none), as vanilla rolls it. */
+    private static int mcc$roll(java.util.Map table, Object item, java.util.Random random) {
+        if (!(table.get(item) instanceof legacyconnector.v1_7_10.net.minecraft.util.Tuple t)
+                || !(t.getFirst() instanceof Integer min) || !(t.getSecond() instanceof Integer max)) {
+            return 1;
+        }
+        return min >= max ? min : min + random.nextInt(max - min);
+    }
+
     public EntityVillager(legacyconnector.v1_7_10.net.minecraft.world.World world) {
         super(world);
     }

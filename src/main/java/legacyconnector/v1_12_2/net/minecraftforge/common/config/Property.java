@@ -250,6 +250,33 @@ public class Property {
         }
     }
 
+    public long getLong() {
+        long fallback;
+        try {
+            fallback = Long.parseLong(defaultValue.trim());
+        } catch (NumberFormatException | NullPointerException e) {
+            fallback = 0L;
+        }
+        return getLong(fallback);
+    }
+
+    public long getLong(long fallback) {
+        try {
+            return Long.parseLong(value.trim());
+        } catch (NumberFormatException | NullPointerException e) {
+            return fallback;
+        }
+    }
+
+    public boolean isLongValue() {
+        try {
+            Long.parseLong(value);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
     public boolean getBoolean(boolean fallback) {
         return isBooleanValue() ? Boolean.parseBoolean(value) : fallback;
     }
@@ -434,9 +461,9 @@ public class Property {
         return comment == null ? "" : comment;
     }
 
-    public Property setComment(String comment) {
+    /** Forge 1.12 declares it void (mods link against {@code (Ljava/lang/String;)V}). */
+    public void setComment(String comment) {
         this.comment = comment;
-        return this;
     }
 
     private Object mcc$entryClass;

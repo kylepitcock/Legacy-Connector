@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Random;
 import legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager;
 import legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;
+import legacyconnector.v1_7_10.net.minecraft.util.Tuple;
 import legacyconnector.v1_7_10.net.minecraft.village.MerchantRecipeList;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge;
 
@@ -59,6 +60,20 @@ public class VillagerRegistry {
 
     public void registerVillageTradeHandler(int villagerId, IVillageTradeHandler handler) {
         VillagerBridge.registerTradeHandler(villagerId, handler);
+    }
+
+    /** Adds a trade where the villager buys {@code min}-{@code max} of {@code item} for one emerald. */
+    public static void addEmeraldBuyRecipe(EntityVillager villager, MerchantRecipeList list, Random random,
+            legacyconnector.v1_7_10.net.minecraft.item.Item item, float chance, int min, int max) {
+        if (min > 0 && max > 0) EntityVillager.villagersSellingList.put(item, new Tuple(min, max));
+        EntityVillager.func_146091_a(list, item, random, chance);
+    }
+
+    /** Adds a trade where the villager sells {@code item} for {@code min}-{@code max} emeralds. */
+    public static void addEmeraldSellRecipe(EntityVillager villager, MerchantRecipeList list, Random random,
+            legacyconnector.v1_7_10.net.minecraft.item.Item item, float chance, int min, int max) {
+        if (min > 0 && max > 0) EntityVillager.blacksmithSellingList.put(item, new Tuple(min, max));
+        EntityVillager.func_146089_b(list, item, random, chance);
     }
 
     public static void addExtraVillageComponents(ArrayList components, Random random, int size) {

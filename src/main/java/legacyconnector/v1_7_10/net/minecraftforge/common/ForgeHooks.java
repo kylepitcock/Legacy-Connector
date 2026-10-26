@@ -31,6 +31,16 @@ public class ForgeHooks {
         }
     }
 
+    /** A seed tall grass drops: wheat seeds (weight 10, Forge's default entry) or one a mod added, picked by weight. */
+    public static ItemStack getGrassSeed(legacyconnector.v1_7_10.net.minecraft.world.World world) {
+        List<SeedEntry> entries = new ArrayList<>(seedList.size() + 1);
+        entries.add(new SeedEntry(new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.wheat_seeds), 10));
+        entries.addAll(seedList);
+        java.util.Random random = world == null ? new java.util.Random() : world.rand;
+        SeedEntry entry = (SeedEntry) WeightedRandom.getRandomItem(random, entries);
+        return entry == null || entry.seed == null ? null : entry.getStack(random);
+    }
+
     /** Whether the tool in {@code stack} is the kind that breaks {@code block} (with this metadata) quickly. */
     public static boolean isToolEffective(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata) {
         if (stack == null || stack.getItem() == null) return false;

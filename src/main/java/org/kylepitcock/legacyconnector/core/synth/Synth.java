@@ -206,4 +206,22 @@ public final class Synth {
         StaticMethod m = STATIC_METHODS.get(key);
         return m == null ? NONE : m.call(args);
     }
+
+    /** Implements an instance method of a synthesized class ({@code args} boxed); returns {@link #NONE} to fall back to the default. */
+    public interface InstanceMethod {
+        Object call(Object self, Object[] args) throws Throwable;
+    }
+
+    private static final Map<String, InstanceMethod> INSTANCE_METHODS = new ConcurrentHashMap<>();
+
+    /** {@code key} is the legacy class and method name, e.g. {@code net.minecraft.block.BlockPlanks$EnumType.getMetadata}. */
+    public static void addInstanceMethod(String key, InstanceMethod method) {
+        INSTANCE_METHODS.put(key, method);
+    }
+
+    /** Called first by every synthesized instance method: the registered implementation's result, or {@link #NONE}. */
+    public static Object callInstance(String key, Object self, Object[] args) throws Throwable {
+        InstanceMethod m = INSTANCE_METHODS.get(key);
+        return m == null ? NONE : m.call(self, args);
+    }
 }

@@ -53,6 +53,8 @@ public class BlockEvent extends Event {
         public final ItemStack itemInHand;
         public final Block placedBlock;
         public final Block placedAgainst;
+        /** The block that was at the position before the placement (the placed block for events built without a snapshot). */
+        public final legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot blockSnapshot;
 
         public PlaceEvent(int x, int y, int z, World world, Block placedBlock, int meta, Block placedAgainst, EntityPlayer player, ItemStack itemInHand) {
             super(x, y, z, world, placedBlock, meta);
@@ -60,6 +62,18 @@ public class BlockEvent extends Event {
             this.itemInHand = itemInHand;
             this.placedBlock = placedBlock;
             this.placedAgainst = placedAgainst;
+            this.blockSnapshot = new legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot(world, x, y, z, placedBlock, meta);
+        }
+
+        /** Forge's form: the block now in the world was just placed over {@code snapshot}. */
+        public PlaceEvent(legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot snapshot, Block placedAgainst, EntityPlayer player) {
+            super(snapshot.x, snapshot.y, snapshot.z, snapshot.world, snapshot.getCurrentBlock(),
+                    snapshot.world.getBlockMetadata(snapshot.x, snapshot.y, snapshot.z));
+            this.player = player;
+            this.itemInHand = player == null ? null : player.getCurrentEquippedItem();
+            this.placedBlock = block;
+            this.placedAgainst = placedAgainst;
+            this.blockSnapshot = snapshot;
         }
     }
 

@@ -78,6 +78,18 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return new java.io.File(mcc$server.getServerDirectory().toFile(), name);
     }
 
+    /** The game's directory (the server directory; the client's game directory in single player). */
+    public java.io.File getDataDirectory() {
+        return mcc$server == null ? new java.io.File(".") : mcc$server.getServerDirectory().toFile();
+    }
+
+    /** The saves folder holding the running world (its parent folder). */
+    public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveFormat getActiveAnvilConverter() {
+        java.io.File saves = mcc$server == null ? new java.io.File(".")
+                : mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().getParent().toFile();
+        return new legacyconnector.v1_7_10.net.minecraft.world.chunk.storage.AnvilSaveConverter(saves);
+    }
+
     /** The name of the world (the level name; the folder name if there is none). */
     public String getWorldName() {
         String name = mcc$server.getWorldData().getLevelName();
