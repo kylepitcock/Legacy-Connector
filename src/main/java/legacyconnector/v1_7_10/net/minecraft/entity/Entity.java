@@ -1129,6 +1129,31 @@ public abstract class Entity implements ICommandSender {
     public void setSize(float width, float height) {
         var host = mcc$host();
         if (host != null) host.mcc$setSize(width, height);
+        // 1.7.10 picked the tracker's position rounding from the width (HBM's TrackerUtil reads it)
+        float f = width % 2.0F;
+        myEntitySize = f < 0.375D ? EnumEntitySize.SIZE_1 : f < 0.75D ? EnumEntitySize.SIZE_2 : f < 1.0D ? EnumEntitySize.SIZE_3
+                : f < 1.375D ? EnumEntitySize.SIZE_4 : f < 1.75D ? EnumEntitySize.SIZE_5 : EnumEntitySize.SIZE_6;
+    }
+
+    /** How the entity tracker rounds this entity's position to 1/32 block. */
+    public EnumEntitySize myEntitySize = EnumEntitySize.SIZE_2;
+
+    /** 1.7.10's tracker rounding per entity size. */
+    public static enum EnumEntitySize {
+        SIZE_1, SIZE_2, SIZE_3, SIZE_4, SIZE_5, SIZE_6;
+
+        public int multiplyBy32AndRound(double value) {
+            double frac = value - (Math.floor(value) + 0.5D);
+            int floor = (int) Math.floor(value * 32.0D), ceil = (int) Math.ceil(value * 32.0D);
+            return switch (this) {
+                case SIZE_1 -> (frac < 0.0D ? frac < -0.3125D : frac < 0.3125D) ? ceil : floor;
+                case SIZE_2 -> (frac < 0.0D ? frac < -0.3125D : frac < 0.3125D) ? floor : ceil;
+                case SIZE_3 -> frac > 0.0D ? floor : ceil;
+                case SIZE_4 -> (frac < 0.0D ? frac < -0.1875D : frac < 0.1875D) ? ceil : floor;
+                case SIZE_5 -> (frac < 0.0D ? frac < -0.1875D : frac < 0.1875D) ? floor : ceil;
+                case SIZE_6 -> frac > 0.0D ? ceil : floor;
+            };
+        }
     }
 
     protected boolean canTriggerWalking() {
