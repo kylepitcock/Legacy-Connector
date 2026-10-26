@@ -79,7 +79,13 @@ public class EntityItem extends Entity {
     }
 
     public ItemStack getEntityItem() {
-        return ItemStack.mcc$wrap(mcc$item().getItem());
+        ItemStack stack = ItemStack.mcc$wrap(mcc$item().getItem());
+        // 1.7.10 answered an item entity without an item with a stone stack (mods' item entities spawned bare: Botania's
+        // thrown items, AE2's growing crystals, and every mob that looks at them)
+        if (stack == null && !(mcc$entity instanceof ItemEntity)) {
+            return new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone);
+        }
+        return stack;
     }
 
     public void setEntityItemStack(ItemStack stack) {

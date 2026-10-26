@@ -21,7 +21,11 @@ public class DimensionManager {
     public static synchronized void registerDimension(int id, DimensionType type) {
         if (type == null) throw new IllegalArgumentException("Failed to register dimension for id " + id + ": no type");
         if (DIMENSIONS.containsKey(id)) {
-            throw new IllegalArgumentException("Failed to register dimension for id " + id + ", one is already registered");
+            // Forge threw here. Earlier Legacy Connector builds answered getNextFreeDimId() with 0, and mods saved that id in
+            // their configs (AE2's storageDimensionID=0): keep the first registration rather than disable the mod.
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/1.12.2").warn("Dimension id {} is already registered ({}); ignoring {} (fix the id in the mod's config)",
+                    id, DIMENSIONS.get(id).getName(), type.getName());
+            return;
         }
         DIMENSIONS.put(id, type);
     }

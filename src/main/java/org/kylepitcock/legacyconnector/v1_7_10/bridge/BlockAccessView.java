@@ -63,7 +63,10 @@ public final class BlockAccessView implements IBlockAccess {
 
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
-        return getter.getBlockEntity(new BlockPos(x, y, z)) instanceof LegacyBlockEntity l ? l.legacy() : null;
+        BlockPos pos = new BlockPos(x, y, z);
+        // shape queries during generation: a region warns for each block whose block entity is not created yet
+        var be = getter instanceof net.minecraft.world.level.LevelAccessor level ? TileEntityBridge.blockEntityAt(level, pos) : getter.getBlockEntity(pos);
+        return be instanceof LegacyBlockEntity l ? l.legacy() : null;
     }
 
     @Override

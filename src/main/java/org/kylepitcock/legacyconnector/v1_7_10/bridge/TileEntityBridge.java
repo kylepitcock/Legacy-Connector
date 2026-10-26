@@ -98,11 +98,23 @@ public final class TileEntityBridge {
      * for every block that will have one but has none yet (hundreds of thousands of lines), so it asks the chunk and
      * only falls back to the region when the chunk holds pending data for the position.
      */
-    private static net.minecraft.world.level.block.entity.BlockEntity blockEntityAt(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
+    static net.minecraft.world.level.block.entity.BlockEntity blockEntityAt(net.minecraft.world.level.LevelAccessor level, BlockPos pos) {
         if (level instanceof net.minecraft.server.level.WorldGenRegion region) {
             var chunk = region.getChunk(pos);
             var be = chunk.getBlockEntity(pos);
-            return be == null && chunk.getBlockEntityNbt(pos) != null ? region.getBlockEntity(pos) : be;
+            if (be != null) return be;
+            var pending = chunk.getBlockEntityNbt(pos);
+            if (pending == null) return null;
+            // the placeholder queued when an entity block was placed: build it here, as the region does, but quietly when
+            // the legacy block has no tile entity for this metadata (the region warns: Thaumcraft's hilltop stones, IE ores)
+            if ("DUMMY".equals(pending.getString("id"))) {
+                var state = chunk.getBlockState(pos);
+                if (!(state.getBlock() instanceof net.minecraft.world.level.block.EntityBlock eb)) return null;
+                be = eb.newBlockEntity(pos, state);
+                if (be != null) chunk.setBlockEntity(be);
+                return be;
+            }
+            return region.getBlockEntity(pos);
         }
         return level.getBlockEntity(pos);
     }
