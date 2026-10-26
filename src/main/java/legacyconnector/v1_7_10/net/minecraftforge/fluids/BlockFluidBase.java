@@ -134,6 +134,13 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
     // ------------------------------------------------------------------ the block
 
     @Override
+    public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
+        Block block = world.getBlock(x, y, z);
+        if (block != null && block.getMaterial() == this.getMaterial()) return false;
+        return super.shouldSideBeRendered(world, x, y, z, side);
+    }
+
+    @Override
     public boolean isOpaqueCube() {
         return false;
     }

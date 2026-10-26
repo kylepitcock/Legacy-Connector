@@ -40,7 +40,6 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             int light, int overlay) {
         ItemStack view = ItemStack.mcc$wrap(stack);
         if (view == null || view.getItem() == null) return;
-        if (view.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib && renderIsbrhItem(ib, view, context, pose, buffers, light, overlay)) return;
         ItemRenderType type = switch (context) {
             case GUI -> ItemRenderType.INVENTORY;
             case FIRST_PERSON_LEFT_HAND, FIRST_PERSON_RIGHT_HAND -> ItemRenderType.EQUIPPED_FIRST_PERSON;
@@ -48,6 +47,10 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
             default -> ItemRenderType.ENTITY;
         };
         IItemRenderer renderer = MinecraftForgeClient.getItemRenderer(view, type);
+        // 1.7.10 asked the item's IItemRenderer first and the block's rendering handler only without one (Thaumcraft's banner
+        // handler draws the plain crimson banner, its item renderer the stack's colour and aspect)
+        if (renderer == null && view.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib
+                && renderIsbrhItem(ib, view, context, pose, buffers, light, overlay)) return;
         if (renderer == null && type != ItemRenderType.ENTITY) {
             type = ItemRenderType.ENTITY; // e.g. renderers that only draw dropped/held forms
             renderer = MinecraftForgeClient.getItemRenderer(view, type);

@@ -226,10 +226,15 @@ public class FontRenderer implements IResourceManagerReloadListener {
         if (text == null) return 0;
         if (!mcc$bitmap) {
             var gui = RenderContext.gui();
-            if (gui == null) return x + getStringWidth(text);
             // Legacy colors had no alpha; 0 alpha meant opaque.
             int argb = (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
-            return gui.drawString(font(), text, x, y, argb, shadow);
+            if (gui != null) return gui.drawString(font(), text, x, y, argb, shadow);
+            var pose = RenderContext.pose();
+            if (pose == null) return x + getStringWidth(text);
+            // text in the world (Thaumcraft's aspect amounts over a jar, labels): drawn with the legacy matrix, as 1.7.10
+            // did; without depth testing it shows through blocks
+            return font().drawInBatch(text, x, y, argb, shadow, pose.last().pose(), RenderContext.buffers(),
+                    RenderContext.depthTest() ? Font.DisplayMode.NORMAL : Font.DisplayMode.SEE_THROUGH, 0, RenderContext.light());
         }
         enableAlpha();
         resetStyles();

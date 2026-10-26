@@ -614,8 +614,12 @@ public class Block {
         this.blockIcon = register.registerIcon(getTextureName());
     }
 
+    /** 1.7.10: a side shows unless it is flush with the block's cell and the neighbour (at x, y, z) is an opaque cube. */
     public boolean shouldSideBeRendered(IBlockAccess world, int x, int y, int z, int side) {
-        return true;
+        if (side == 0 && minY > 0.0D || side == 1 && maxY < 1.0D || side == 2 && minZ > 0.0D || side == 3 && maxZ < 1.0D
+                || side == 4 && minX > 0.0D || side == 5 && maxX < 1.0D) return true;
+        Block neighbour = world.getBlock(x, y, z);
+        return neighbour == null || !neighbour.isOpaqueCube();
     }
 
     public int getBlockColor() {

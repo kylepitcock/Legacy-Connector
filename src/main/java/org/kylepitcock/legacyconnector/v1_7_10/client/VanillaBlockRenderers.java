@@ -22,6 +22,52 @@ public final class VanillaBlockRenderers {
         return renderType == 18 || renderType == 41 ? PANE : null;
     }
 
+    /** The built-in handler for a block: its render type's, or the standard renderer for cubes whose icons depend on the world. */
+    public static ISimpleBlockRenderingHandler forBlock(Block block, int renderType) {
+        if (renderType == 0 && worldIcons(block)) return STANDARD;
+        return forRenderType(renderType);
+    }
+
+    /**
+     * Whether a mod class overrides {@code getIcon(IBlockAccess, x, y, z, side)}: the faces then depend on the neighbours
+     * (Thaumcraft's obsidian totem shows a face on its top block, connected textures), which no static model shows.
+     */
+    static boolean worldIcons(Block block) {
+        for (Class<?> c = block.getClass(); c != null && c != Block.class; c = c.getSuperclass()) {
+            if (c.getName().startsWith("legacyconnector.")) continue;
+            try {
+                c.getDeclaredMethod("getIcon", IBlockAccess.class, int.class, int.class, int.class, int.class);
+                return true;
+            } catch (NoSuchMethodException ignored) {
+            } catch (LinkageError e) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    /** 1.7.10's standard cube (render type 0), drawn per position so world-dependent icons show. */
+    private static final ISimpleBlockRenderingHandler STANDARD = new ISimpleBlockRenderingHandler() {
+        @Override
+        public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
+        }
+
+        @Override
+        public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
+            return renderer.renderStandardBlock(block, x, y, z);
+        }
+
+        @Override
+        public boolean shouldRender3DInInventory(int modelId) {
+            return true;
+        }
+
+        @Override
+        public int getRenderId() {
+            return 0;
+        }
+    };
+
     /**
      * Panes and bars (render types 18 and 41, RenderBlocks.renderBlockPane/renderBlockStainedGlassPane): a 2/16 thick arm
      * towards every connected side, both arms when nothing connects; the face texture on the broad sides, the edge texture

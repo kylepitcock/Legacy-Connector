@@ -112,7 +112,7 @@ public final class Client1710 {
             }
             // a mod's handler, or 1.7.10's own renderer of a vanilla render type that no static model can show (panes)
             var builtIn = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null
-                    ? VanillaBlockRenderers.forRenderType(renderId) : null;
+                    ? VanillaBlockRenderers.forBlock(block, renderId) : null;
             if (builtIn == null && legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null) continue;
             for (var state : block.mcc$modern.getStateDefinition().getPossibleStates()) {
                 var location = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);

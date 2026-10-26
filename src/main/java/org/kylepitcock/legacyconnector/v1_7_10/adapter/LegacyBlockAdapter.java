@@ -422,6 +422,40 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         }
     }
 
+    /**
+     * 1.7.10 dimmed light passing through a block by its light opacity (0 for every non-opaque block unless the mod set
+     * one) and shaded neighbours by its ambient occlusion value; the modern defaults derive both from the block's shape,
+     * so full-sized non-opaque blocks (Thaumcraft's crystals and banners) cast shadows.
+     */
+    @Override
+    protected int getLightBlock(BlockState state, BlockGetter level, BlockPos pos) {
+        if (legacy.isOpaqueCube()) return super.getLightBlock(state, level, pos);
+        try {
+            return Math.min(15, Math.max(0, legacy.getLightOpacity()));
+        } catch (RuntimeException | LinkageError e) {
+            return super.getLightBlock(state, level, pos);
+        }
+    }
+
+    @Override
+    protected boolean propagatesSkylightDown(BlockState state, BlockGetter level, BlockPos pos) {
+        if (legacy.isOpaqueCube() || !state.getFluidState().isEmpty()) return super.propagatesSkylightDown(state, level, pos);
+        try {
+            return legacy.getLightOpacity() == 0;
+        } catch (RuntimeException | LinkageError e) {
+            return super.propagatesSkylightDown(state, level, pos);
+        }
+    }
+
+    @Override
+    protected float getShadeBrightness(BlockState state, BlockGetter level, BlockPos pos) {
+        try {
+            return legacy.getAmbientOcclusionLightValue();
+        } catch (RuntimeException | LinkageError e) {
+            return super.getShadeBrightness(state, level, pos);
+        }
+    }
+
     @Override
     protected RenderShape getRenderShape(BlockState state) {
         int type;

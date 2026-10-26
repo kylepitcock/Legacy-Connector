@@ -202,6 +202,10 @@ public final class RenderContext {
         blend = on;
     }
 
+    public static boolean depthTest() {
+        return depthTest;
+    }
+
     public static void setDepthTest(boolean on) {
         depthTest = on;
     }
@@ -314,6 +318,8 @@ public final class RenderContext {
 
     /** Entity-style buffer for the bound texture, used by legacy models. */
     public static VertexConsumer modelBuffer() {
+        // model boxes count as drawn geometry too (an inventory block handler drawing a TESR model: Thaumcraft's crystals)
+        quadCount++;
         return buffers().getBuffer(armorLayering ? RenderType.armorCutoutNoCull(texture) : RenderType.entityCutoutNoCull(texture));
     }
 

@@ -84,6 +84,19 @@ public final class RenderEvents1710 {
         ItemStack held = ItemStack.mcc$wrap(Minecraft.getInstance().player.getMainHandItem());
         var legacy = new DrawBlockHighlightEvent(legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().renderGlobal, player, target, 0, held,
                 Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false));
-        if (MinecraftForge.EVENT_BUS.post(legacy)) e.setCanceled(true);
+        // Handlers draw in world space relative to the camera (Thaumcraft's goggles show the aspects of a jar or crucible
+        // over it): without a render context their drawing went nowhere.
+        var cam = e.getCamera().getPosition();
+        RenderManager.renderPosX = cam.x;
+        RenderManager.renderPosY = cam.y;
+        RenderManager.renderPosZ = cam.z;
+        RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY);
+        try {
+            if (MinecraftForge.EVENT_BUS.post(legacy)) e.setCanceled(true);
+        } catch (RuntimeException | LinkageError ex) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").warn("A DrawBlockHighlightEvent handler failed: {}", ex.toString());
+        } finally {
+            RenderContext.end();
+        }
     }
 }

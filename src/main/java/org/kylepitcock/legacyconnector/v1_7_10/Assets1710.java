@@ -109,6 +109,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Replacing ore backgrounds failed: {}", e.toString());
             }
+            org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWater.contribute(out);
         }
     }
 
@@ -165,6 +166,10 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             // Vanilla names may carry their folder ("blocks/stone") or not.
             String bare = name.startsWith("blocks/") || name.startsWith("items/") ? name.substring(name.indexOf('/') + 1) : name;
             String folder = name.startsWith("items/") ? "items/" : name.startsWith("blocks/") ? "blocks/" : block ? "blocks/" : "items/";
+            if (folder.equals("blocks/") && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+                String water = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyWater.sprite(bare);
+                if (water != null) return water;
+            }
             String renamed = VANILLA_RENAMES.get(folder + bare);
             if (renamed == null && !folder.equals(block ? "blocks/" : "items/")) renamed = null;
             if (renamed != null) return "minecraft:" + renamed;

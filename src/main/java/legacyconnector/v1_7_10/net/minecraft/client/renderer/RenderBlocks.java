@@ -302,9 +302,27 @@ public class RenderBlocks {
 
     /** The six faces of the current bounds at the origin, with the block's icons for metadata {@code meta}. */
     public void renderBlockAsItem(Block block, int meta, float brightness) {
+        // FML: a render type with a rendering handler is drawn by its renderInventoryBlock (Thaumcraft's filled jar item
+        // draws its glass this way); 1.7.10's cube renderer turned the block and centred it on the origin
+        int renderType = block.getRenderType();
+        var handler = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderType);
+        if (handler != null) {
+            handler.renderInventoryBlock(block, meta, renderType, this);
+            return;
+        }
         Tessellator t = Tessellator.instance;
         block.setBlockBoundsForItemRender();
         setRenderBoundsFromBlock(block);
+        legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
+        legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glTranslatef(-0.5F, -0.5F, -0.5F);
+        try {
+            mcc$itemFaces(block, meta, t);
+        } finally {
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glTranslatef(0.5F, 0.5F, 0.5F);
+        }
+    }
+
+    private void mcc$itemFaces(Block block, int meta, Tessellator t) {
         for (int side = 0; side < 6; side++) {
             t.startDrawingQuads();
             switch (side) {
