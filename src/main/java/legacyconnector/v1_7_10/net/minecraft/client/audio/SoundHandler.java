@@ -17,8 +17,11 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
     public static final SoundHandler INSTANCE = new SoundHandler();
 
     static {
-        // 1.7.10 created its sound manager with the handler; mods find it in the handler's SoundManager field (IC2)
-        java.util.Objects.requireNonNull(SoundManager.INSTANCE);
+        // 1.7.10 created its sound manager with the handler; mods find it in the handler's SoundManager field (IC2). Reading
+        // the manager initialises it, which sets that field (when the manager is the one initialising, it is null here and
+        // its constructor sets the field right after).
+        SoundManager manager = SoundManager.INSTANCE;
+        if (manager != null) INSTANCE.sndManager = manager;
     }
 
     /** The sound manager behind this handler (set by the manager; mods read it by reflection). */
