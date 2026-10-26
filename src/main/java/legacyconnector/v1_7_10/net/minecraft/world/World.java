@@ -795,9 +795,14 @@ public class World implements IBlockAccess {
             var legacy = org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
             return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
         }
+        // a server level's chunk counts only when fully loaded now: hasChunk is also true for a chunk still being promoted,
+        // and reading its height waits for it (Thaumcraft's entity-join handler asks for the biome of an entity of the chunk
+        // being loaded, which hung the server)
         boolean present = lvl() instanceof net.minecraft.server.level.WorldGenRegion region
                 ? region.getCenter().x == x >> 4 && region.getCenter().z == z >> 4
-                : lvl().hasChunk(x >> 4, z >> 4);
+                : lvl() instanceof net.minecraft.server.level.ServerLevel sl
+                        ? sl.getChunkSource().getChunkNow(x >> 4, z >> 4) != null
+                        : lvl().hasChunk(x >> 4, z >> 4);
         // full chunks drop the _WG heightmaps: reading one logs "Unprimed heightmap" (CustomOreGen's debug wireframes, per sample)
         var heightmap = lvl() instanceof net.minecraft.server.level.WorldGenRegion
                 ? net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG : net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE;
