@@ -225,4 +225,8 @@ public class BlockRailBase extends Block {
             }
         }
     }
+
+    public boolean isPowered() {
+        return field_150053_a;
+    }
 }
