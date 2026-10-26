@@ -213,7 +213,12 @@ public abstract class EntityHanging extends Entity {
      */
     public boolean onValidSurface() {
         BlockAttachedEntity a = mcc$attached();
-        if (a != null) return a.getPos() != null && a.survives();
+        if (a != null) {
+            // a world generator placing a frame (Immersive Engineering's village house) runs on a generation thread: the modern
+            // check reads the real level, which waits for the server thread while it waits for this generation (server hang)
+            if (a.level() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) return a.getPos() != null;
+            return a.getPos() != null && a.survives();
+        }
         World world = mcc$world();
         if (world == null) return false;
         if (!world.getCollidingBoundingBoxes(this, mcc$get$boundingBox(this)).isEmpty()) return false;

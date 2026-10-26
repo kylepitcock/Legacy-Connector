@@ -87,6 +87,23 @@ public class RenderItem extends Render {
         new legacyconnector.v1_7_10.net.minecraft.client.gui.Gui().drawTexturedModelRectFromIcon(x, y, icon, width, height);
     }
 
+    /**
+     * The enchantment glint over a GUI item at (x, y): a 20x20 quad (2 pixels of margin) in the modern glint render type,
+     * which scrolls the glint texture and only touches pixels the item drew at this depth (1.7.10 drew it with depth EQUAL).
+     */
+    public void renderEffect(TextureManager manager, int x, int y) {
+        var pose = RenderContext.pose();
+        var buffers = RenderContext.buffers();
+        if (pose == null || buffers == null) return;
+        var vc = buffers.getBuffer(net.minecraft.client.renderer.RenderType.glint());
+        var last = pose.last();
+        float x0 = x - 2, y0 = y - 2, x1 = x0 + 20, y1 = y0 + 20;
+        vc.addVertex(last, x0, y1, zLevel).setUv(0.0F, 1.0F);
+        vc.addVertex(last, x1, y1, zLevel).setUv(1.0F, 1.0F);
+        vc.addVertex(last, x1, y0, zLevel).setUv(1.0F, 0.0F);
+        vc.addVertex(last, x0, y0, zLevel).setUv(0.0F, 0.0F);
+    }
+
     public void renderItemIntoGUI(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y, boolean renderEffect) {
         renderItemIntoGUI(font, tm, stack, x, y);
     }

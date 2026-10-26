@@ -408,6 +408,32 @@ public class StructureVillagePieces {
         }
     }
 
+    public static class Church extends Village {
+        public Church() {
+        }
+
+        public Church(Start start, int type, Random rand, StructureBoundingBox box, int facing) {
+            super(start, type);
+            this.coordBaseMode = facing;
+            this.boundingBox = box;
+        }
+
+        @Override
+        public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
+            return true;
+        }
+
+        /** The church's villager is a priest. */
+        protected int getVillagerType(int existing) {
+            return 2;
+        }
+
+        /** Null: vanilla's answer when the building does not fit (see above). */
+        public static Church func_74919_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+            return null;
+        }
+    }
+
     /** Layout of vanilla villages is the modern jigsaw one: nothing continues from a legacy component. */
     private static StructureComponent getNextVillageStructureComponent(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
         return null;

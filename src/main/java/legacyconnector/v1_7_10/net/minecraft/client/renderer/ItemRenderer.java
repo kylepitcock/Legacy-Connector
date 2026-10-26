@@ -20,6 +20,92 @@ public class ItemRenderer {
         equippedProgress = prevEquippedProgress = progress;
     }
 
+    public ItemRenderer() {
+    }
+
+    /** Mods make their own to draw items into GUIs and models (the Minecraft is the one client either way). */
+    public ItemRenderer(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+    }
+
+    /** Starts the re-equip animation (the held item drops and comes back up), as the modern hand renderer does after use. */
+    public void resetEquippedProgress() {
+        equippedProgress = 0.0F;
+        var mc = Minecraft.getInstance();
+        if (mc.gameRenderer != null && mc.player != null) mc.gameRenderer.itemInHandRenderer.itemUsed(net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+
+    public void resetEquippedProgress2() {
+        resetEquippedProgress();
+    }
+
+    /** The modern hand renderer ticks the equip animation itself. */
+    public void updateEquippedItem() {
+    }
+
+    /**
+     * Fire, in-wall and underwater screen overlays. The modern game draws them after the hands whether or not a mod
+     * replaced the hand rendering (RenderHandEvent), so drawing them here would draw them twice.
+     */
+    public void renderOverlays(float partialTicks) {
+    }
+
+    private static java.lang.reflect.Method mcc$renderArm;
+    private static java.lang.reflect.Field mcc$mainItem, mcc$height, mcc$oHeight;
+    private static boolean mcc$reflected;
+    private static boolean mcc$inFirstPerson;
+
+    private static synchronized void mcc$reflect() {
+        if (mcc$reflected) return;
+        mcc$reflected = true;
+        try {
+            Class<?> c = net.minecraft.client.renderer.ItemInHandRenderer.class;
+            mcc$renderArm = c.getDeclaredMethod("renderArmWithItem", net.minecraft.client.player.AbstractClientPlayer.class, float.class, float.class,
+                    net.minecraft.world.InteractionHand.class, float.class, net.minecraft.world.item.ItemStack.class, float.class,
+                    com.mojang.blaze3d.vertex.PoseStack.class, net.minecraft.client.renderer.MultiBufferSource.class, int.class);
+            mcc$renderArm.setAccessible(true);
+            mcc$mainItem = c.getDeclaredField("mainHandItem");
+            mcc$mainItem.setAccessible(true);
+            mcc$height = c.getDeclaredField("mainHandHeight");
+            mcc$height.setAccessible(true);
+            mcc$oHeight = c.getDeclaredField("oMainHandHeight");
+            mcc$oHeight.setAccessible(true);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            mcc$renderArm = null;
+        }
+    }
+
+    /**
+     * Draws the local player's main hand (the held item, or the bare arm) in the current pose, as the modern hand renderer
+     * places it. Mods replacing the hand rendering call this after their own transforms (Witchery's transformed players);
+     * it does not post RenderHandEvent again, as 1.7.10 did not.
+     */
+    public void renderItemInFirstPerson(float partialTicks) {
+        var pose = RenderContext.pose();
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        if (pose == null || player == null || mc.gameRenderer == null || mcc$inFirstPerson) return;
+        mcc$reflect();
+        var hand = mc.gameRenderer.itemInHandRenderer;
+        int light = mc.getEntityRenderDispatcher().getPackedLightCoords(player, partialTicks);
+        float pitch = net.minecraft.util.Mth.lerp(partialTicks, player.xRotO, player.getXRot());
+        float swing = player.swingingArm == null || player.swingingArm == net.minecraft.world.InteractionHand.MAIN_HAND ? player.getAttackAnim(partialTicks) : 0.0F;
+        mcc$inFirstPerson = true;
+        try {
+            if (mcc$renderArm != null) {
+                var stack = (net.minecraft.world.item.ItemStack) mcc$mainItem.get(hand);
+                float equip = 1.0F - net.minecraft.util.Mth.lerp(partialTicks, mcc$oHeight.getFloat(hand), mcc$height.getFloat(hand));
+                mcc$renderArm.invoke(hand, player, partialTicks, pitch, net.minecraft.world.InteractionHand.MAIN_HAND, swing, stack, equip, pose,
+                        RenderContext.buffers(), light);
+            } else {
+                hand.renderItem(player, player.getMainHandItem(), ItemDisplayContext.FIRST_PERSON_RIGHT_HAND, false, pose, RenderContext.buffers(), light);
+            }
+        } catch (ReflectiveOperationException e) {
+            // nothing drawn this frame
+        } finally {
+            mcc$inFirstPerson = false;
+        }
+    }
+
     public void renderItem(EntityLivingBase entity, ItemStack stack, int pass) {
         var pose = RenderContext.pose();
         var modern = ItemStack.mcc$toModern(stack);

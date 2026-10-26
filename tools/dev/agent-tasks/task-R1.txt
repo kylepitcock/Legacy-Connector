@@ -1,48 +1,20 @@
-net.minecraft.client.renderer.EntityRenderer.getMapItemRenderer()Llegacyconnector_synth/v1_7_10/net/minecraft/client/gui/MapItemRenderer;   # 5 user(s): WayofTime.alchemicalWizardry.client.ClientUtils, codechicken.wirelessredstone.addons.WirelessMapRenderer, com.xcompwiz.mystcraft.client.render.RenderLectern, jds.bibliocraft.rendering.ItemAtlasRendere
-net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.func_152674_a(FFFIFILcom/mojang/authlib/GameProfile;)V   # 5 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, com.emoniph.witchery.client.renderer.RenderWolfman, com.fiskmods.heroes.client.render.entity.player.RenderDisp
-net.minecraft.client.renderer.ActiveRenderInfo.getBlockAtEntityViewpoint(Llegacyconnector/v1_7_10/net/minecraft/world/World;Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;F)Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 4 user(s): biomesoplenty.client.fog.FogHandler, com.emoniph.witchery.client.ClientEvents, com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase, galaxyspace.core.handler.GSPlanetFogHandler
-net.minecraft.client.renderer.ItemRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;)V -> ()V   # 4 user(s): com.fiskmods.fisktag.util.FTRenderHelper, crazypants.enderio.material.MachinePartRenderer, openmods.gui.component.GuiComponentItemStackSpinner, vazkii.botania.client.render.item.RenderLens
-net.minecraft.client.renderer.entity.RenderEntity.<init>()V   # 4 user(s): codechicken.wirelessredstone.addons.RenderTracker, cofh.thermaldynamics.duct.entity.RenderTransport, crazypants.enderio.item.darksteel.SoundRenderer, vazkii.botania.client.render.entity.RenderSparkBas
-net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.field_147536_b:Llegacyconnector_synth/v1_7_10/net/minecraft/client/renderer/tileentity/TileEntitySkullRenderer;   # 4 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, com.emoniph.witchery.client.renderer.RenderWolfman, com.fiskmods.heroes.client.render.entity.player.RenderDisp
-net.minecraft.client.renderer.entity.RenderArrow.<init>()V   # 3 user(s): cofh.core.ProxyClient, danger.orespawn.ClientProxyOreSpawn, fox.spiteful.avaritia.render.RenderHeavenArrow
-net.minecraft.client.renderer.entity.RenderBiped.getArmorResource(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;ILjava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/util/ResourceLocation;   # 3 user(s): buildcraft.robotics.render.RenderRobot, cofh.thermaldynamics.duct.entity.RenderPlayerAlt, vswe.stevescarts.Modules.Hull.ModulePig
-net.minecraft.client.renderer.texture.TextureCompass.angleDelta:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
-net.minecraft.client.renderer.texture.TextureCompass.currentAngle:D   # 3 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass, com.xcompwiz.mystcraft.client.render.RenderLectern
-net.minecraft.client.renderer.EntityRenderer.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/Minecraft;Llegacyconnector/v1_7_10/net/minecraft/client/resources/IResourceManager;)V -> ()V   # 2 user(s): com.emoniph.witchery.client.RenderEntityViewer, com.fiskmods.heroes.client.render.entity.SHEntityRenderer
-net.minecraft.client.renderer.ItemRenderer.renderOverlays(F)V   # 2 user(s): com.emoniph.witchery.client.ClientEvents, com.hbm.render.item.weapon.sedna.ItemRenderWeaponBase
-net.minecraft.client.renderer.WorldRenderer.updateRenderer(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;)V   # 2 user(s): com.rwtema.funkylocomotion.rendering.ChunkRerenderer, fastcraft.ah
-net.minecraft.client.renderer.entity.RenderBiped.renderEquippedItems(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLiving;F)V   # 2 user(s): galaxyspace.systems.SolarSystem.planets.venus.render.entities.RenderEvolvedFireSkeleton, micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedSkeleton
-net.minecraft.client.renderer.entity.RenderChicken.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): biomesoplenty.client.render.entities.RenderRosester, com.hbm.render.entity.mob.RenderDuck
-net.minecraft.client.renderer.entity.RenderCreeper.shouldRenderPass(Llegacyconnector/v1_7_10/net/minecraft/entity/monster/EntityCreeper;IF)I   # 2 user(s): galaxyspace.systems.SolarSystem.planets.venus.render.entities.RenderEvolvedFireCreeper, micdoodle8.mods.galacticraft.core.client.render.entities.RenderEvolvedCreeper
-net.minecraft.client.renderer.entity.RenderMinecart.<init>()V   # 2 user(s): com.hbm.main.ClientProxy, vazkii.botania.client.render.entity.RenderPoolMinecart
-net.minecraft.client.renderer.entity.RenderSlime.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): powercrystals.minefactoryreloaded.render.entity.EntityPinkSlimeRenderer, twilightforest.client.renderer.entity.RenderTFMazeSlime
-net.minecraft.client.renderer.entity.RenderWolf.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 2 user(s): com.emoniph.witchery.client.TransformWolf, twilightforest.client.renderer.entity.RenderTFMistWolf
-net.minecraft.client.renderer.texture.TextureCompass.<init>(Ljava/lang/String;)V   # 2 user(s): com.emoniph.witchery.item.ItemEntityLocatorTexture, com.hbm.items.tool.ItemColtanCompass$TextureColtass
-net.minecraft.client.renderer.ActiveRenderInfo.updateRenderInfo(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Z)V   # 1 user(s): logisticspipes.ticks.RenderTickHandler
-net.minecraft.client.renderer.EntityRenderer.getMouseOver(F)V   # 1 user(s): com.emoniph.witchery.client.RenderEntityViewer
-net.minecraft.client.renderer.EntityRenderer.setupCameraTransform(FI)V   # 1 user(s): logisticspipes.ticks.RenderTickHandler
-net.minecraft.client.renderer.ItemRenderer.renderItemInFirstPerson(F)V   # 1 user(s): com.emoniph.witchery.client.ClientEvents
-net.minecraft.client.renderer.ItemRenderer.resetEquippedProgress()V   # 1 user(s): com.hbm.packet.toclient.HbmAnimationPacket$Handler
-net.minecraft.client.renderer.ItemRenderer.resetEquippedProgress2()V   # 1 user(s): com.fiskmods.fisktag.common.event.CommonEventHandlerFT
-net.minecraft.client.renderer.entity.Render.renderAABB(Llegacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB;)V   # 1 user(s): powercrystals.minefactoryreloaded.render.entity.EntityDebugTrackerRenderer
-net.minecraft.client.renderer.entity.RenderBat.<init>()V   # 1 user(s): com.emoniph.witchery.client.ClientProxy
-net.minecraft.client.renderer.entity.RenderBat.doRender(Llegacyconnector/v1_7_10/net/minecraft/entity/passive/EntityBat;DDDFF)V   # 1 user(s): com.emoniph.witchery.client.TransformBat
-net.minecraft.client.renderer.entity.RenderBoat.<init>()V   # 1 user(s): ic2.core.item.RenderIC2Boat
-net.minecraft.client.renderer.entity.RenderFish.<init>()V   # 1 user(s): danger.orespawn.ClientProxyOreSpawn
-net.minecraft.client.renderer.entity.RenderItem.renderEffect(Llegacyconnector/v1_7_10/net/minecraft/client/renderer/texture/TextureManager;II)V   # 1 user(s): twilightforest.client.renderer.TFGiantItemRenderer
-net.minecraft.client.renderer.entity.RenderMinecart.func_147910_a(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityMinecart;FLlegacyconnector/v1_7_10/net/minecraft/block/Block;I)V   # 1 user(s): vazkii.botania.client.render.entity.RenderPoolMinecart
-net.minecraft.client.renderer.entity.RenderMinecart.modelMinecart:Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;   # 1 user(s): com.hbm.render.entity.item.RenderMinecartTest
-net.minecraft.client.renderer.entity.RenderOcelot.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 1 user(s): com.emoniph.witchery.client.renderer.RenderWitchCat
-net.minecraft.client.renderer.entity.RenderPlayer.func_82408_c(Llegacyconnector/v1_7_10/net/minecraft/client/entity/AbstractClientPlayer;IF)V   # 1 user(s): com.fiskmods.heroes.client.render.entity.player.RenderDisplayMannequin
-net.minecraft.client.renderer.entity.RenderPlayer.preRenderCallback(Llegacyconnector/v1_7_10/net/minecraft/client/entity/AbstractClientPlayer;F)V   # 1 user(s): com.fiskmods.heroes.client.render.entity.player.RenderDisplayMannequin
-net.minecraft.client.renderer.entity.RenderPlayer.rotateCorpse(Llegacyconnector/v1_7_10/net/minecraft/client/entity/AbstractClientPlayer;FFF)V   # 1 user(s): micdoodle8.mods.galacticraft.core.client.render.entities.RenderPlayerGC
-net.minecraft.client.renderer.entity.RenderPlayer.shouldRenderPass(Llegacyconnector/v1_7_10/net/minecraft/client/entity/AbstractClientPlayer;IF)I   # 1 user(s): com.fiskmods.heroes.client.render.entity.player.RenderDisplayMannequin
-net.minecraft.client.renderer.entity.RenderSheep.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;Llegacyconnector/v1_7_10/net/minecraft/client/model/ModelBase;F)V   # 1 user(s): twilightforest.client.renderer.entity.RenderTFBighorn
-net.minecraft.client.renderer.entity.RenderSilverfish.<init>()V   # 1 user(s): powercrystals.netherores.render.RenderHellfish
-net.minecraft.client.renderer.entity.RenderWither.<init>()V   # 1 user(s): vazkii.botania.client.render.entity.RenderPinkWither
-net.minecraft.client.renderer.entity.RenderWither.doRender(Llegacyconnector_synth/v1_7_10/net/minecraft/entity/boss/EntityWither;DDDFF)V   # 1 user(s): vazkii.botania.client.render.entity.RenderPinkWither
-net.minecraft.client.renderer.entity.RendererLivingEntity.renderArrowsStuckInEntity(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;F)V   # 1 user(s): cofh.thermaldynamics.duct.entity.RenderPlayerAlt
-net.minecraft.client.renderer.texture.ITickable.tick()V   # 1 user(s): cofh.asmhooks.HooksCore
-net.minecraft.client.renderer.texture.TextureCompass.updateCompass(Llegacyconnector/v1_7_10/net/minecraft/world/World;DDDZZ)V   # 1 user(s): com.xcompwiz.mystcraft.client.render.RenderLectern
-net.minecraft.client.renderer.tileentity.TileEntityBeaconRenderer.<init>()V   # 1 user(s): team.chisel.client.render.tile.RenderCarvableBeacon
-net.minecraft.client.renderer.tileentity.TileEntitySkullRenderer.<init>()V   # 1 user(s): vazkii.botania.client.render.tile.RenderTileSkullOverride
+net.minecraft.client.renderer.WorldRenderer.FCc:Llegacyconnector/v1_7_10/net/minecraft/world/chunk/Chunk;   # 1 user(s): fastcraft.ag
+net.minecraft.client.renderer.WorldRenderer.FCe:J   # 1 user(s): fastcraft.ag
+net.minecraft.client.renderer.WorldRenderer.FCv:B   # 1 user(s): fastcraft.ak
+net.minecraft.client.renderer.culling.ClippingHelper.FCa0:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.FCa1:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.FCa2:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.FCa3:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.FCa4:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.FCa5:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelper.frustum:[[F   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa0:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa1:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa2:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa3:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa4:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.FCa5:D   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.culling.ClippingHelperImpl.clippingMatrix:[F   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.texture.Stitcher$Holder.<init>(Llegacyconnector/v1_7_10/net/minecraft/client/renderer/texture/TextureAtlasSprite;I)V   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.texture.Stitcher$Slot.<init>(IIII)V   # 1 user(s): fastcraft.ah
+net.minecraft.client.renderer.texture.Stitcher.addSprite(Llegacyconnector/v1_7_10/net/minecraft/client/renderer/texture/TextureAtlasSprite;)V   # 1 user(s): fastcraft.HC

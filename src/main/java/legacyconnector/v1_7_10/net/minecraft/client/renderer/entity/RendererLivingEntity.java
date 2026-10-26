@@ -116,6 +116,41 @@ public abstract class RendererLivingEntity extends Render {
     protected void renderEquippedItems(EntityLivingBase entity, float partialTicks) {
     }
 
+    /**
+     * Draws the arrows stuck in the entity (players call it from their equipped items): each at a random point of a random
+     * box of the main model, pointing out of it (the same points every frame, seeded by the entity id).
+     */
+    protected void renderArrowsStuckInEntity(EntityLivingBase entity, float partialTicks) {
+        int count = entity.getArrowCountInEntity();
+        if (count <= 0 || mainModel == null || mainModel.boxList.isEmpty()) return;
+        java.util.Random random = new java.util.Random(entity.getEntityId());
+        bindTexture(RenderArrow.arrowTextures);
+        for (int i = 0; i < count; ++i) {
+            RenderContext.push();
+            try {
+                legacyconnector.v1_7_10.net.minecraft.client.model.ModelRenderer part = mainModel.getRandomModelBox(random);
+                if (part.cubeList.isEmpty()) continue;
+                var box = (legacyconnector.v1_7_10.net.minecraft.client.model.ModelBox) part.cubeList.get(random.nextInt(part.cubeList.size()));
+                part.postRender(0.0625F);
+                float fx = random.nextFloat(), fy = random.nextFloat(), fz = random.nextFloat();
+                RenderContext.translate((box.posX1 + (box.posX2 - box.posX1) * fx) / 16.0F, (box.posY1 + (box.posY2 - box.posY1) * fy) / 16.0F,
+                        (box.posZ1 + (box.posZ2 - box.posZ1) * fz) / 16.0F);
+                fx = -(fx * 2.0F - 1.0F);
+                fy = -(fy * 2.0F - 1.0F);
+                fz = -(fz * 2.0F - 1.0F);
+                float horizontal = (float) Math.sqrt(fx * fx + fz * fz);
+                float yaw = (float) (Math.atan2(fx, fz) * 180.0D / Math.PI);
+                float pitch = (float) (Math.atan2(fy, horizontal) * 180.0D / Math.PI);
+                // as RenderArrow places an arrow with these angles at the box point
+                RenderContext.rotate(yaw - 90.0F, 0.0F, 1.0F, 0.0F);
+                RenderContext.rotate(pitch, 0.0F, 0.0F, 1.0F);
+                RenderArrow.mcc$drawArrow();
+            } finally {
+                RenderContext.pop();
+            }
+        }
+    }
+
     protected int inheritRenderPass(EntityLivingBase entity, int pass, float partialTicks) {
         return shouldRenderPass(entity, pass, partialTicks);
     }

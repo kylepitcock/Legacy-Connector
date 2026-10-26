@@ -26,6 +26,7 @@ public abstract class MapGenStructure extends MapGenBase {
 
     @Override
     protected final void func_151538_a(World world, int cx, int cz, int p4, int p5, Block[] blocks) {
+        func_143027_a(world);
         if (!this.structureMap.containsKey(ChunkCoordIntPair.chunkXZ2Int(cx, cz))) {
             this.rand.nextInt();
             if (this.canSpawnStructureAtCoords(cx, cz)) {
@@ -122,10 +123,30 @@ public abstract class MapGenStructure extends MapGenBase {
         return null;
     }
 
+    /**
+     * The saved starts of this generator (mods read it by reflection to update a start, Twilight Forest marks conquered
+     * strongholds in it). It lives in memory with the generator: starts are decided again from the seed, see the class doc.
+     */
+    private volatile MapGenStructureData field_143029_e;
+
+    /** Prepares the structure data (1.7.10 loaded it from the world's saved data here). */
     protected void func_143027_a(World world) {
+        if (field_143029_e == null) {
+            synchronized (this) {
+                if (field_143029_e == null) field_143029_e = new MapGenStructureData(getStructureName());
+            }
+        }
     }
 
+    /** Records a start's current state (its pieces and the mod's own NBT) in the structure data. */
     protected void func_143026_a(int x, int z, StructureStart start) {
+        func_143027_a(worldObj);
+        try {
+            field_143029_e.func_143043_a(start.func_143021_a(x, z), x, z);
+            field_143029_e.markDirty();
+        } catch (RuntimeException e) {
+            // a start that cannot write itself is just not recorded
+        }
     }
 
     protected abstract boolean canSpawnStructureAtCoords(int x, int z);

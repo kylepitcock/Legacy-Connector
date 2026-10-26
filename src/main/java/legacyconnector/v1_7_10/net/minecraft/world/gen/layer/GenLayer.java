@@ -105,6 +105,15 @@ public abstract class GenLayer {
         return i;
     }
 
+    /** Forge: {@link #nextInt} for a long bound (weighted picks over a large total weight). */
+    protected long nextLong(long bound) {
+        long l = (chunkSeed >> 24) % bound;
+        if (l < 0) l += bound;
+        chunkSeed *= chunkSeed * MUL + ADD;
+        chunkSeed += worldGenSeed;
+        return l;
+    }
+
     public abstract int[] getInts(int x, int z, int width, int depth);
 
     protected static boolean compareBiomesById(int a, int b) {

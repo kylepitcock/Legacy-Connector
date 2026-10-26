@@ -15,6 +15,7 @@ public final class TextureLocations {
             Map.entry("textures/entity/chest/normal.png", "textures/entity/chest/normal.png"),
             Map.entry("textures/entity/steve.png", "textures/entity/player/wide/steve.png"),
             Map.entry("textures/entity/alex.png", "textures/entity/player/slim/alex.png"),
+            Map.entry("textures/entity/arrow.png", "textures/entity/projectiles/arrow.png"),
             Map.entry("textures/entity/zombie_villager/zombie_villager.png", "textures/entity/zombie_villager/zombie_villager.png"),
             Map.entry("textures/entity/villager/villager.png", "textures/entity/villager/villager.png"));
 

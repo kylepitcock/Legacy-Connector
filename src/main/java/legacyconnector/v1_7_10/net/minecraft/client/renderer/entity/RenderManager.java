@@ -28,6 +28,31 @@ public class RenderManager {
         return fontRenderer;
     }
 
+    /** The entity under the crosshair when the view was cached. */
+    public legacyconnector.v1_7_10.net.minecraft.entity.Entity field_147941_i;
+
+    /**
+     * Caches the view for the frame: world, viewer, its interpolated look (turned around in the front third-person view)
+     * and position. The layer refreshes these from the modern camera itself before legacy renderers run.
+     */
+    public void cacheActiveRenderInfo(World world, TextureManager textures, FontRenderer font, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase viewer,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity pointed, legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings, float partialTicks) {
+        this.worldObj = world;
+        this.renderEngine = textures;
+        this.options = settings;
+        this.livingPlayer = viewer;
+        this.field_147941_i = pointed;
+        this.fontRenderer = font;
+        var m = viewer == null ? null : viewer.mcc$entity;
+        if (m == null) return;
+        this.playerViewY = net.minecraft.util.Mth.lerp(partialTicks, m.yRotO, m.getYRot());
+        this.playerViewX = net.minecraft.util.Mth.lerp(partialTicks, m.xRotO, m.getXRot());
+        if (net.minecraft.client.Minecraft.getInstance().options.getCameraType() == net.minecraft.client.CameraType.THIRD_PERSON_FRONT) this.playerViewY += 180.0F;
+        this.viewerPosX = net.minecraft.util.Mth.lerp(partialTicks, m.xOld, m.getX());
+        this.viewerPosY = net.minecraft.util.Mth.lerp(partialTicks, m.yOld, m.getY());
+        this.viewerPosZ = net.minecraft.util.Mth.lerp(partialTicks, m.zOld, m.getZ());
+    }
+
     /** The renderer of a legacy entity class (the closest registered superclass). */
     public Render getEntityClassRenderObject(Class<?> cls) {
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
