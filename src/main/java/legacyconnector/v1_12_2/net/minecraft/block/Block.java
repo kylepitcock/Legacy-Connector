@@ -203,8 +203,33 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return setUnlocalizedName(name);
     }
 
+    /** Whether the block wants random ticks (recorded; mods read it back through {@link #getTickRandomly}). */
+    protected boolean needsRandomTick;
+    /** Friction of the block's top (0.6 normal, 0.98 ice). */
+    public float slipperiness = 0.6F;
+
     public Block setTickRandomly(boolean shouldTick) {
+        this.needsRandomTick = shouldTick;
         return this;
+    }
+
+    public boolean getTickRandomly() {
+        return needsRandomTick;
+    }
+
+    /** Forge: sets {@link #slipperiness}. */
+    public void setDefaultSlipperiness(float slipperiness) {
+        this.slipperiness = slipperiness;
+    }
+
+    /** Vanilla's form: whether the block is a tile entity provider (Forge asks {@link #hasTileEntity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState)}). */
+    @Deprecated
+    public boolean hasTileEntity() {
+        return this instanceof ITileEntityProvider;
+    }
+
+    public String getLocalizedName() {
+        return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getTranslationKey() + ".name");
     }
 
     public Block disableStats() {

@@ -191,6 +191,11 @@ public class NBTTagCompound extends NBTBase {
         return mcc$tag.isEmpty();
     }
 
+    /** {@link #hasNoTags} under the name later 1.12 mappings gave it. */
+    public boolean isEmpty() {
+        return hasNoTags();
+    }
+
     @Override
     public NBTTagCompound copy() {
         return new NBTTagCompound(mcc$tag.copy());

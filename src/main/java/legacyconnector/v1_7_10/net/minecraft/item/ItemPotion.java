@@ -19,6 +19,22 @@ public class ItemPotion extends legacyconnector.v1_7_10.net.minecraft.item.Item 
         return new java.util.ArrayList<>();
     }
 
+    /** Vanilla's potion icons by their short names ("bottle_drinkable", "bottle_splash", "overlay"); null for others. */
+    public static legacyconnector.v1_7_10.net.minecraft.util.IIcon func_94589_d(String name) {
+        String texture = switch (name) {
+            case "bottle_drinkable" -> "potion_bottle_drinkable";
+            case "bottle_splash" -> "potion_bottle_splash";
+            case "overlay" -> "potion_overlay";
+            default -> null;
+        };
+        return texture == null ? null : IconHolder.ICONS.registerIcon("minecraft:" + texture);
+    }
+
+    private static final class IconHolder {
+        static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap ICONS =
+                new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+    }
+
     protected ItemPotion() {
         super();
     }

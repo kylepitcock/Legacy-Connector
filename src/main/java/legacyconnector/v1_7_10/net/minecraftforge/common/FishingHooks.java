@@ -24,17 +24,17 @@ public class FishingHooks {
     private static synchronized void ensureDefaults() {
         if (defaults) return;
         defaults = true;
-        junk.add(new WeightedRandomFishable(new ItemStack(Items.leather_boots), 10).func_150709_a(0.9F));
+        junk.add(new WeightedRandomFishable(new ItemStack(Items.leather_boots), 10).setMaxDamagePercent(0.9F));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.leather), 10));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.bone), 10));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.string), 5));
-        junk.add(new WeightedRandomFishable(new ItemStack(Items.fishing_rod), 2).func_150709_a(0.9F));
+        junk.add(new WeightedRandomFishable(new ItemStack(Items.fishing_rod), 2).setMaxDamagePercent(0.9F));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.bowl), 10));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.stick), 5));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.dye, 10, 0), 1));
         junk.add(new WeightedRandomFishable(new ItemStack(Items.rotten_flesh), 10));
-        treasure.add(new WeightedRandomFishable(new ItemStack(Items.bow), 1).func_150709_a(0.25F).func_150707_a());
-        treasure.add(new WeightedRandomFishable(new ItemStack(Items.fishing_rod), 1).func_150709_a(0.25F).func_150707_a());
+        treasure.add(new WeightedRandomFishable(new ItemStack(Items.bow), 1).setMaxDamagePercent(0.25F).setEnchantable());
+        treasure.add(new WeightedRandomFishable(new ItemStack(Items.fishing_rod), 1).setMaxDamagePercent(0.25F).setEnchantable());
         treasure.add(new WeightedRandomFishable(new ItemStack(Items.name_tag), 1));
         treasure.add(new WeightedRandomFishable(new ItemStack(Items.saddle), 1));
         fish.add(new WeightedRandomFishable(new ItemStack(Items.fish, 1, 0), 60));
@@ -53,7 +53,7 @@ public class FishingHooks {
         List<WeightedRandomFishable> list = category.list();
         synchronized (FishingHooks.class) {
             if (list.isEmpty()) return null;
-            return ((WeightedRandomFishable) WeightedRandom.getRandomItem(rand, list)).func_150708_a(rand);
+            return ((WeightedRandomFishable) WeightedRandom.getRandomItem(rand, list)).getItemStack(rand);
         }
     }
 
@@ -102,7 +102,7 @@ public class FishingHooks {
     private static void remove(List<WeightedRandomFishable> list, ItemStack stack) {
         for (Iterator<WeightedRandomFishable> it = list.iterator(); it.hasNext();) {
             WeightedRandomFishable w = it.next();
-            ItemStack s = w.func_150708_a(new Random(0));
+            ItemStack s = w.getItemStack(new Random(0));
             if (ItemStack.areItemStacksEqual(s, stack) || s != null && stack != null && s.getItem() == stack.getItem() && s.getItemDamage() == stack.getItemDamage()) {
                 it.remove();
             }

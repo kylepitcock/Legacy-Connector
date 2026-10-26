@@ -27,4 +27,10 @@ public class MinecraftServer {
     public String getMinecraftVersion() {
         return "1.12.2";
     }
+
+    /** The game's directory (the server directory; the client's game directory in single player). */
+    public java.io.File getDataDirectory() {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null ? net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile() : server.getServerDirectory().toFile();
+    }
 }

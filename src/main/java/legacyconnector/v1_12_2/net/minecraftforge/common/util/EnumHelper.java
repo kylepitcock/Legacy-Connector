@@ -22,4 +22,21 @@ public class EnumHelper {
     public static legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType addEnchantmentType(String name, com.google.common.base.Predicate<Item> test) {
         return new legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType(name, test);
     }
+
+    /** Adds a constant to a real enum (a synthesized or the mod's own); parameter types inferred from the values. */
+    public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Object... paramValues) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(enumType, enumName, paramValues);
+    }
+
+    public static <T extends Enum<?>> T addEnum(Class<?>[][] map, Class<T> enumType, String enumName, Object... paramValues) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(map, enumType, enumName, paramValues);
+    }
+
+    public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Class<?>[] paramTypes, Object... paramValues) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(enumType, enumName, paramTypes, paramValues);
+    }
+
+    public static void setFailsafeFieldValue(java.lang.reflect.Field field, Object target, Object value) throws Exception {
+        org.kylepitcock.legacyconnector.core.LegacyEnums.setFailsafeFieldValue(field, target, value);
+    }
 }

@@ -52,6 +52,17 @@ public class FMLControlledNamespacedRegistry<I> extends RegistryNamespaced {
         return null;
     }
 
+    /** Writes name -> id with FML's discriminator prefix (char 1 for blocks, char 2 for items), as saved in level.dat. */
+    public void serializeInto(java.util.Map<String, Integer> idMapping) {
+        for (Iterator<Object> it = iterator(); it.hasNext(); ) {
+            Object o = it.next();
+            String name = getNameForObject(o);
+            if (name == null) continue;
+            char discriminator = o instanceof legacyconnector.v1_7_10.net.minecraft.block.Block ? '\u0001' : '\u0002';
+            idMapping.put(discriminator + name, getIDForObject(o));
+        }
+    }
+
     public RegistryDelegate<I> getDelegate(I thing, Class<I> type) {
         return new RegistryDelegate.Delegate<>(thing, type, this);
     }

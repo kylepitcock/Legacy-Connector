@@ -363,6 +363,14 @@ public final class EventBridge1710 {
                     new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk()),
                     new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound(e.getData())));
         });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ExplosionEvent.Start e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ExplosionEvent.Start.class)) return;
+            World world = World.mcc$wrap(e.getLevel());
+            if (forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ExplosionEvent.Start(world, legacyExplosion(world, e.getExplosion())))) {
+                e.setCanceled(true);
+            }
+        });
+        gameBus.addListener((net.neoforged.neoforge.event.level.ExplosionEvent.Detonate e) -> explosionDetonate(e));
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn.class)) return;
             var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn(
@@ -707,6 +715,31 @@ public final class EventBridge1710 {
                 for (String s : lines) e.getToolTip().add(Component.literal(s));
             }
         });
+    }
+
+    private static legacyconnector.v1_7_10.net.minecraft.world.Explosion legacyExplosion(World world, net.minecraft.world.level.Explosion modern) {
+        var source = modern.getDirectSourceEntity();
+        var center = modern.center();
+        return new legacyconnector.v1_7_10.net.minecraft.world.Explosion(world, source == null ? null : EntityBridge.wrap(source),
+                center.x, center.y, center.z, modern.radius());
+    }
+
+    /** Legacy listeners see the blocks and entities the explosion hits; what they remove is spared. */
+    private static void explosionDetonate(net.neoforged.neoforge.event.level.ExplosionEvent.Detonate e) {
+        if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ExplosionEvent.Detonate.class)) return;
+        World world = World.mcc$wrap(e.getLevel());
+        var explosion = legacyExplosion(world, e.getExplosion());
+        for (net.minecraft.core.BlockPos p : e.getAffectedBlocks()) {
+            explosion.affectedBlockPositions.add(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(p.getX(), p.getY(), p.getZ()));
+        }
+        List<legacyconnector.v1_7_10.net.minecraft.entity.Entity> entities = new ArrayList<>();
+        for (net.minecraft.world.entity.Entity entity : e.getAffectedEntities()) entities.add(EntityBridge.wrap(entity));
+        forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ExplosionEvent.Detonate(world, explosion, entities));
+        java.util.Set<Object> keptBlocks = new java.util.HashSet<>(explosion.affectedBlockPositions);
+        e.getAffectedBlocks().removeIf(p -> !keptBlocks.contains(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(p.getX(), p.getY(), p.getZ())));
+        java.util.Set<net.minecraft.world.entity.Entity> keptEntities = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (var entity : entities) if (entity != null) keptEntities.add(entity.mcc$entity());
+        e.getAffectedEntities().removeIf(entity -> !keptEntities.contains(entity));
     }
 
     private static void worldTick(net.minecraft.world.level.Level level, TickEvent.Phase phase) {
