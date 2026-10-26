@@ -84,9 +84,10 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return name == null || name.isEmpty() ? getFolderName() : name;
     }
 
+    /** The world's folder ("world"): the root path is "world/.", so it is the normalised path's own name, not its parent's. */
     public String getFolderName() {
-        return mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toFile().getParentFile() == null ? "world"
-                : mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize().getParent().getFileName().toString();
+        var root = mcc$server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).toAbsolutePath().normalize();
+        return root.getFileName() == null ? "world" : root.getFileName().toString();
     }
 
     public boolean isServerInOnlineMode() {
