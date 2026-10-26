@@ -132,13 +132,15 @@ dependencies {
     for (lib in ['net.sf.trove4j:trove4j:3.0.3', 'javax.vecmath:vecmath:1.5.2',
                  // Forge 1.7.10 shipped Scala 2.11 for Scala mods (ProjectRed, ForgeMultipart, ...).
                  'org.scala-lang:scala-library:2.11.1', 'org.scala-lang:scala-reflect:2.11.1',
-                 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1', 'org.scala-lang.modules:scala-xml_2.11:1.0.2',
-                 // Java 8 shipped Nashorn (legacy mods script with jdk.nashorn, relocated to the standalone engine); the dev
-                 // remote control evaluates JavaScript with it too (DevScript)
-                 'org.openjdk.nashorn:nashorn-core:15.4']) {
+                 'org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1', 'org.scala-lang.modules:scala-xml_2.11:1.0.2']) {
         jarJar(implementation(lib))
         additionalRuntimeClasspath lib
     }
+    // Java 8 shipped Nashorn (legacy mods script with jdk.nashorn, relocated to the standalone engine; the dev remote control
+    // evaluates JavaScript with it too). NeoForge ships the same engine for its coremods, so it is not embedded: a second
+    // copy in the game layer stops the game from starting ("Module scala.reflect reads more than one module named
+    // org.openjdk.nashorn").
+    implementation 'org.openjdk.nashorn:nashorn-core:15.4'
 }
 
 // The run configurations reference the loader's jar by path; without this they would launch a stale loader.
