@@ -46,4 +46,9 @@ public class BlockRailBase extends Block {
     public static boolean isRailBlockAt(World world, int x, int y, int z) {
         return isRailBlock(world.getBlock(x, y, z));
     }
+
+    /** Whether this is a powered rail type (golden, detector, activator: their metadata's bit 8 is power, not shape). */
+    public boolean isPowered() {
+        return field_150053_a;
+    }
 }

@@ -17,4 +17,9 @@ public class BlockRedstoneComparator extends legacyconnector.v1_7_10.net.minecra
     public BlockRedstoneComparator(boolean p0) {
         super(p0);
     }
+
+    /** Whether the comparator is in subtract mode. */
+    public boolean func_149969_d(int meta) {
+        return (meta & 4) == 4;
+    }
 }
