@@ -316,10 +316,24 @@ public class World implements IBlockAccess {
                 && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
     }
 
+    /**
+     * A block of a server level read from another thread (a world generator holding an entity of the real world, such as
+     * Immersive Engineering's village item frames): only a chunk that is fully loaded right now is read. The level itself
+     * would wait for the chunk on the server thread, which may be waiting for this very generation (the server hung).
+     * Null when the read happens on the server thread or in a generation region.
+     */
+    private BlockState mcc$offThreadState(int x, int y, int z) {
+        if (!(lvl() instanceof net.minecraft.server.level.ServerLevel sl) || sl.getServer().isSameThread()) return null;
+        var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(x >> 4, z >> 4));
+        var chunk = holder == null ? null : holder.getChunkIfPresent(net.minecraft.world.level.chunk.status.ChunkStatus.FULL);
+        return chunk == null ? Blocks.AIR.defaultBlockState() : chunk.getBlockState(pos(x, y, z));
+    }
+
     @Override
     public Block getBlock(int x, int y, int z) {
         if (unloaded(x, z)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
-        BlockState state = lvl().getBlockState(pos(x, y, z));
+        BlockState offThread = mcc$offThreadState(x, y, z);
+        BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         return BlockBridge.legacyBlock(state);
@@ -328,7 +342,8 @@ public class World implements IBlockAccess {
     @Override
     public int getBlockMetadata(int x, int y, int z) {
         if (unloaded(x, z)) return 0;
-        return BlockBridge.legacyMeta(lvl().getBlockState(pos(x, y, z)));
+        BlockState offThread = mcc$offThreadState(x, y, z);
+        return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(pos(x, y, z)));
     }
 
     /**
