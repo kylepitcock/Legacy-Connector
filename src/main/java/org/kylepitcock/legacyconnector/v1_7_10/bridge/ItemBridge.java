@@ -73,7 +73,31 @@ public final class ItemBridge {
 
     public static RegistryNamespaced legacyRegistry() {
         return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
-                () -> snapshot().iterator());
+                () -> snapshot().iterator(), ItemBridge::addDirect);
+    }
+
+    /**
+     * {@code Item.itemRegistry.addObject(id, name, item)} by a mod while it loads (Fisk's Superheroes registers its slabs' items
+     * so, after {@code registerBlock} with no item class): an ItemBlock of a block that has no item yet becomes that block's
+     * item, any other new mod item is registered as through GameRegistry. Returns false for writes left to the default.
+     */
+    static synchronized boolean addDirect(String name, Object obj) {
+        if (!(obj instanceof Item item) || NAMES.containsKey(item) || name == null) return false;
+        try {
+            if (item instanceof ItemBlock ib && ib.mcc$block() != null && BlockBridge.nameOf(ib.mcc$block()) != null && !BLOCK_ITEMS.containsKey(ib.mcc$block())) {
+                Block block = ib.mcc$block();
+                registerBlockItem(ib, block, BuiltInRegistries.BLOCK.getKey((net.minecraft.world.level.block.Block) block.mcc$modern), BlockBridge.nameOf(block));
+                return true;
+            }
+            int colon = name.indexOf(':');
+            String domain = colon < 0 ? null : name.substring(0, colon);
+            if (domain == null || domain.equals("minecraft") || item instanceof ItemBlock) return false;
+            register(item, name.substring(colon + 1), domain);
+            return true;
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("Could not register {} written directly to the item registry: {}", name, e.toString());
+            return false;
+        }
     }
 
     public static List<Item> modItems() {

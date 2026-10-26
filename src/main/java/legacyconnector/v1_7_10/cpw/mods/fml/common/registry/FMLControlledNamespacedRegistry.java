@@ -12,7 +12,22 @@ import legacyconnector.v1_7_10.net.minecraft.util.RegistryNamespaced;
 public class FMLControlledNamespacedRegistry<I> extends RegistryNamespaced {
     public FMLControlledNamespacedRegistry(Function<String, Object> byName, Function<Object, String> nameOf, IntFunction<Object> byId,
                                            ToIntFunction<Object> idOf, Supplier<Iterator<Object>> all) {
+        this(byName, nameOf, byId, idOf, all, null);
+    }
+
+    /** {@code direct} takes a mod's direct {@code addObject(id, name, object)} (true when it registered the object). */
+    public FMLControlledNamespacedRegistry(Function<String, Object> byName, Function<Object, String> nameOf, IntFunction<Object> byId,
+                                           ToIntFunction<Object> idOf, Supplier<Iterator<Object>> all, java.util.function.BiPredicate<String, Object> direct) {
         super(byName, nameOf, byId, idOf, all);
+        this.mcc$direct = direct;
+    }
+
+    private final java.util.function.BiPredicate<String, Object> mcc$direct;
+
+    @Override
+    public void addObject(int id, String name, Object obj) {
+        if (mcc$direct != null && mcc$direct.test(name, obj)) return;
+        super.addObject(id, name, obj);
     }
 
     public I get(int id) {
