@@ -11,16 +11,28 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.KeyCodes;
  */
 public class KeyBinding implements Comparable<KeyBinding> {
     private static final List<KeyBinding> ALL = new ArrayList<>();
+    /** Every binding made, vanilla and mods' (1.7.10 kept them for the controls screen and the key-code lookup). */
+    public static final List keybindArray = new ArrayList();
+    /** The categories of all bindings. */
+    private static final java.util.Set keybindSet = new java.util.HashSet();
 
     private final String description;
     private final String category;
     private int keyCode;
+    private final int keyCodeDefault;
     private KeyMapping modern;
 
     public KeyBinding(String description, int keyCode, String category) {
         this.description = description;
         this.keyCode = keyCode;
+        this.keyCodeDefault = keyCode;
         this.category = category;
+        mcc$listed(this);
+    }
+
+    private static synchronized void mcc$listed(KeyBinding key) {
+        keybindArray.add(key);
+        keybindSet.add(key.category);
     }
 
     /** A binding over an existing modern mapping (vanilla's). */
@@ -28,7 +40,9 @@ public class KeyBinding implements Comparable<KeyBinding> {
         this.description = existing.getName();
         this.category = existing.getCategory();
         this.keyCode = KeyCodes.fromGlfw(existing.getKey().getValue());
+        this.keyCodeDefault = KeyCodes.fromGlfw(existing.getDefaultKey().getValue());
         this.modern = existing;
+        mcc$listed(this);
     }
 
     public static synchronized List<KeyBinding> mcc$registered() {
@@ -78,6 +92,15 @@ public class KeyBinding implements Comparable<KeyBinding> {
 
     public int getKeyCode() {
         return keyCode;
+    }
+
+    /** The key the binding was made with. */
+    public int getKeyCodeDefault() {
+        return keyCodeDefault;
+    }
+
+    public static java.util.Set getKeybinds() {
+        return keybindSet;
     }
 
     public void setKeyCode(int keyCode) {

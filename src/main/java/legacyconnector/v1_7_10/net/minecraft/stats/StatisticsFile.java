@@ -7,7 +7,7 @@ import java.util.Map;
  * A player's statistics and achievements. The modern game keeps advancements instead; legacy achievements are tracked per player
  * in memory, so mods that unlock achievements and test for them see their own state during the session.
  */
-public class StatisticsFile {
+public class StatisticsFile extends StatFileWriter {
     private final Map<String, Integer> values = new HashMap<>();
 
     public boolean hasAchievementUnlocked(Achievement achievement) {
