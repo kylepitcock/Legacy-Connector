@@ -769,12 +769,18 @@ public class World implements IBlockAccess {
             var legacy = org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.legacyBiome(key);
             return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
         }
-        int y = lvl().hasChunk(x >> 4, z >> 4)
-                ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z)
-                : lvl().getSeaLevel();
+        boolean present = lvl() instanceof net.minecraft.server.level.WorldGenRegion region
+                ? region.getCenter().x == x >> 4 && region.getCenter().z == z >> 4
+                : lvl().hasChunk(x >> 4, z >> 4);
+        int y = present ? lvl().getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE_WG, x, z) : lvl().getSeaLevel();
         net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> holder;
         try {
-            holder = lvl().getBiome(pos(x, y, z));
+            // outside a generation region, ask the generator directly: the region throws, after building a whole crash report
+            // with a system report (CustomOreGen samples biomes far around each chunk: generation took an hour)
+            // (inside it, the chunk's own biome: getBiome's zoom samples neighbours, which may lie outside the region)
+            if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) holder = lvl().getBiome(pos(x, y, z));
+            // only the centre chunk is safe to read: hasChunk covers the whole cache, getChunk only the step's radius
+            else holder = present ? lvl().getNoiseBiome(x >> 2, y >> 2, z >> 2) : generatorBiome(x, y, z);
         } catch (RuntimeException e) {
             // A generation region only holds its own chunks: ask the generator's biome source (what vanilla
             // 1.7.10's chunk manager answered for any coordinate).
