@@ -19,4 +19,10 @@ public class EntityCow extends EntityAnimal {
     public EntityAgeable createChild(EntityAgeable mate) {
         return new EntityCow(mcc$world());
     }
+
+    /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
+    @Override
+    public boolean isAIEnabled() {
+        return true;
+    }
 }

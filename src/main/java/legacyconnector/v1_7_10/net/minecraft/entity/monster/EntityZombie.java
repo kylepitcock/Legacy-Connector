@@ -43,4 +43,10 @@ public class EntityZombie extends EntityMob {
         }
         dataWatcher.updateObject(12, (byte) (child ? 1 : 0));
     }
+
+    /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
+    @Override
+    public boolean isAIEnabled() {
+        return true;
+    }
 }

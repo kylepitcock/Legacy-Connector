@@ -31,4 +31,10 @@ public class EntitySkeleton extends EntityMob {
         if (type == 1) setSize(0.72F, 2.34F);
         else setSize(0.6F, 1.8F);
     }
+
+    /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
+    @Override
+    public boolean isAIEnabled() {
+        return true;
+    }
 }

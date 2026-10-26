@@ -56,4 +56,10 @@ public class EntityHorse extends EntityAnimal {
     public void setHorseType(int type) {
         dataWatcher.updateObject(19, (byte) type);
     }
+
+    /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
+    @Override
+    public boolean isAIEnabled() {
+        return true;
+    }
 }

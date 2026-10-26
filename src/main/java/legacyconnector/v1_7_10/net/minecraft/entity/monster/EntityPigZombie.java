@@ -13,4 +13,10 @@ public class EntityPigZombie extends EntityZombie {
         super(world);
         this.isImmuneToFire = true;
     }
+
+    /** 1.7.10: zombie pigmen keep the old AI (it walks at the fixed old-AI speed). */
+    @Override
+    public boolean isAIEnabled() {
+        return false;
+    }
 }

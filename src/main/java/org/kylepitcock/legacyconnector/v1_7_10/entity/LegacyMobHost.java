@@ -269,10 +269,24 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public void mcc$superTravel(float strafe, float forward) {
         inTravel = true;
+        // modern travel accelerates with getSpeed(); legacy walking used getAIMoveSpeed() (0.1 on the old AI, where the
+        // attribute is only the forward push: HBM's glyphids with speed 1.5 crossed 1.5 blocks per tick)
+        EntityLivingBase l = living();
+        float before = getSpeed();
+        float walk = l == null ? before : l.getAIMoveSpeed();
+        float zza = this.zza;
+        if (walk != before) {
+            setSpeed(walk);
+            this.zza = zza;
+        }
         try {
             super.travel(new net.minecraft.world.phys.Vec3(strafe, 0.0, forward));
         } finally {
             inTravel = false;
+            if (walk != before) {
+                setSpeed(before);
+                this.zza = zza;
+            }
         }
     }
 

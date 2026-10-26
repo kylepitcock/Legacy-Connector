@@ -407,4 +407,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
         var dropped = mcc$player().drop(modern, scatter, setThrower);
         return dropped == null ? null : (legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem) org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(dropped);
     }
+
+    /** 1.7.10: a player walks with its movement speed attribute (sprinting and potions included). */
+    @Override
+    public float getAIMoveSpeed() {
+        return mcc$entity instanceof net.minecraft.world.entity.LivingEntity l
+                ? (float) l.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED) : 0.1F;
+    }
 }

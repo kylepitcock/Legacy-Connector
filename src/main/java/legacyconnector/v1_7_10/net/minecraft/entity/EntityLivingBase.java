@@ -401,7 +401,12 @@ public abstract class EntityLivingBase extends Entity {
         if (mcc$entity != null) mcc$entity.moveRelative(friction, new net.minecraft.world.phys.Vec3(strafe, 0, forward));
     }
 
+    /**
+     * The speed walking accelerates with. Mobs on the old AI (isAIEnabled() false: HBM's glyphids) walked at 0.1 whatever their
+     * movement speed attribute, which only set how hard they pushed forward; the new AI's move helper sets it per move.
+     */
     public float getAIMoveSpeed() {
+        if (!isAIEnabled()) return 0.1F;
         return mcc$entity instanceof LivingEntity l ? l.getSpeed() : 0.1F;
     }
 

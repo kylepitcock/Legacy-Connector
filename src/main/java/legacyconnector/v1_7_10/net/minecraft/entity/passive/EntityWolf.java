@@ -46,4 +46,10 @@ public class EntityWolf extends EntityTameable {
     public void setCollarColor(int color) {
         dataWatcher.updateObject(20, (byte) (color & 15));
     }
+
+    /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
+    @Override
+    public boolean isAIEnabled() {
+        return true;
+    }
 }
