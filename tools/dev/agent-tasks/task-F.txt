@@ -41,7 +41,6 @@ net.minecraft.pathfinding.PathFinder.<init>(Llegacyconnector/v1_7_10/net/minecra
 net.minecraft.pathfinding.PathFinder.createEntityPathTo(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;IIIF)Llegacyconnector/v1_7_10/net/minecraft/pathfinding/PathEntity;   # 1 user(s): com.hbm.entity.pathfinder.PathFinderUtils
 net.minecraft.realms.RealmsBridge.<init>()V   # 1 user(s): galaxyspace.core.client.gui.GSGuiMainMenu
 net.minecraft.realms.RealmsBridge.switchToRealms(Llegacyconnector/v1_7_10/net/minecraft/client/gui/GuiScreen;)V   # 1 user(s): galaxyspace.core.client.gui.GSGuiMainMenu
-net.minecraft.server.MinecraftServer.tick()V   # 1 user(s): fastcraft.u
 net.minecraft.server.management.ServerConfigurationManager.addOp(Lcom/mojang/authlib/GameProfile;)V   # 1 user(s): buildcraft.core.command.SubCommandOp
 net.minecraft.server.management.ServerConfigurationManager.createPlayerForUser(Lcom/mojang/authlib/GameProfile;)Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayerMP;   # 1 user(s): journeymap.server.oldservercode.util.ForgePlayerUtil
 net.minecraft.server.management.ServerConfigurationManager.getBannedPlayers()Llegacyconnector_synth/v1_7_10/net/minecraft/server/management/UserListBans;   # 1 user(s): hardcorequesting.QuestingData

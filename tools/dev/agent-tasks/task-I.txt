@@ -48,12 +48,6 @@ net.minecraft.item.ItemPotion.getColorFromDamage(I)I   # 1 user(s): com.fiskmods
 net.minecraft.item.ItemStack.setItemFrame(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityItemFrame;)V   # 1 user(s): jds.bibliocraft.tileentities.TileEntityMapFrame
 net.minecraft.item.crafting.RecipeFireworks.<init>()V   # 1 user(s): codechicken.nei.recipe.FireworkRecipeHandler
 net.minecraft.item.crafting.RecipesArmorDyes.<init>()V   # 1 user(s): ic2.core.RecipeQArmorDye
-net.minecraft.tileentity.TileEntity.access$000(Lopenblocks/common/tileentity/TileEntityBlockPlacer;)Lopenmods/inventory/GenericInventory;   # 1 user(s): openblocks.common.tileentity.TileEntityBlockPlacer$1
-net.minecraft.tileentity.TileEntity.createCovers()V   # 1 user(s): crazypants.enderio.conduit.TileConduitBundle
-net.minecraft.tileentity.TileEntity.getPreviousShape()Ljava/util/List;   # 1 user(s): openblocks.client.renderer.tileentity.TileEntityGuideRenderer
-net.minecraft.tileentity.TileEntity.getShape()Ljava/util/List;   # 1 user(s): openblocks.client.renderer.tileentity.TileEntityGuideRenderer
-net.minecraft.tileentity.TileEntity.readMicroblocksFromNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 1 user(s): crazypants.enderio.conduit.TileConduitBundle
-net.minecraft.tileentity.TileEntity.writeMicroblocksToNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 1 user(s): crazypants.enderio.conduit.TileConduitBundle
 net.minecraft.tileentity.TileEntityCommandBlock.func_145993_a()Llegacyconnector/v1_7_10/net/minecraft/command/server/CommandBlockLogic;   # 1 user(s): dan200.computercraft.shared.peripheral.commandblock.CommandBlockPeripheral$1
 net.minecraft.tileentity.TileEntityFlowerPot.func_145964_a(Llegacyconnector/v1_7_10/net/minecraft/item/Item;I)V   # 1 user(s): forestry.apiculture.flowers.GrowthRuleFlowerPot
 net.minecraft.tileentity.TileEntityFlowerPot.getFlowerPotData()I   # 1 user(s): forestry.apiculture.flowers.FlowerRegistry
