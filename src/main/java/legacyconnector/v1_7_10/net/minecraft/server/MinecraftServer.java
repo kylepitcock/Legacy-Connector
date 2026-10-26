@@ -216,4 +216,54 @@ public class MinecraftServer implements ICommandSender, Runnable {
     public legacyconnector.v1_7_10.net.minecraft.server.management.PlayerProfileCache getPlayerProfileCache() {
         return new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerProfileCache(mcc$modern());
     }
+
+    /** Phantom: redirected to {@link #mcc$get$worldTickTimes} (dimension id to the last 100 tick times in nanoseconds). */
+    @Deprecated
+    public java.util.Hashtable worldTickTimes;
+
+    public static java.util.Hashtable mcc$get$worldTickTimes(MinecraftServer s) {
+        java.util.Hashtable<Integer, long[]> out = new java.util.Hashtable<>();
+        if (s.mcc$server == null) return out;
+        for (ServerLevel level : s.mcc$server.getAllLevels()) {
+            long[] times = s.mcc$server.getTickTime(level.dimension());
+            if (times != null) out.put(legacyconnector.v1_7_10.net.minecraft.world.WorldProvider.dimensionId(level.dimension()), times);
+        }
+        return out;
+    }
+
+    public com.mojang.authlib.GameProfileRepository getGameProfileRepository() {
+        return mcc$server == null ? null : mcc$server.getProfileRepository();
+    }
+
+    /** The address the server listens on ("" for all addresses and for the integrated server). */
+    public String getHostname() {
+        return mcc$server == null || mcc$server.getLocalIp() == null ? "" : mcc$server.getLocalIp();
+    }
+
+    /** Whether the player may not change the block because it is inside the spawn protection. */
+    public boolean isBlockProtected(World world, int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (mcc$server == null || world == null || !(world.mcc$fullLevel() instanceof ServerLevel level)) return false;
+        return mcc$server.isUnderSpawnProtection(level, new net.minecraft.core.BlockPos(x, y, z), player == null ? null : player.mcc$player());
+    }
+
+    public void logSevere(String message) {
+        org.slf4j.LoggerFactory.getLogger("Minecraft").error(message);
+    }
+
+    public void logWarning(String message) {
+        org.slf4j.LoggerFactory.getLogger("Minecraft").warn(message);
+    }
+
+    public void setAllowPvp(boolean allow) {
+        if (mcc$server != null) mcc$server.setPvpAllowed(allow);
+    }
+
+    /**
+     * Ends a hardcore game (Hardcore Questing Mode when the last life is lost): the server stops. The world folder is
+     * kept; the modern client offers to delete a hardcore world itself.
+     */
+    public void deleteWorldAndStopServer() {
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector").warn("A legacy mod ended the game (deleteWorldAndStopServer); stopping the server, the world is kept");
+        initiateShutdown();
+    }
 }

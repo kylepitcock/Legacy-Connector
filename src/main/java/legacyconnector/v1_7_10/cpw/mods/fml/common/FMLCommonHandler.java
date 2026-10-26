@@ -59,6 +59,11 @@ public class FMLCommonHandler {
         if (stopGame) throw new RuntimeException(message, exception);
     }
 
+    /** Adds a mod's source to the client's resources (mods that make containers at runtime: INpure's scripted mods). */
+    public void addModToResourcePack(ModContainer container) {
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks.mcc$addContainer(container);
+    }
+
     public java.io.File getSavesDirectory() {
         return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve("saves").toFile();
     }

@@ -158,6 +158,26 @@ public final class ReflectiveEventBus {
         return adapter.isCanceled(event);
     }
 
+    /** One listener as legacy code sees it (Forge's listener lists): its handler's name, priority and an invoker. */
+    public record ListenerView(String name, int priority, Object owner, java.util.function.Consumer<Object> invoker) {}
+
+    /** The listeners an event of {@code eventType} reaches, in dispatch order. */
+    public List<ListenerView> listenersFor(Class<?> eventType) {
+        List<ListenerView> out = new ArrayList<>();
+        for (Listener l : dispatchCache.computeIfAbsent(eventType, this::collect)) {
+            out.add(new ListenerView(l.name, l.priority, l.owner, event -> {
+                try {
+                    l.handle.invoke(event);
+                } catch (RuntimeException | Error e) {
+                    throw e;
+                } catch (Throwable t) {
+                    throw new RuntimeException(t);
+                }
+            }));
+        }
+        return out;
+    }
+
     public boolean hasListeners(Class<?> eventType) {
         return interest.computeIfAbsent(eventType, t -> !collect(t).isEmpty());
     }

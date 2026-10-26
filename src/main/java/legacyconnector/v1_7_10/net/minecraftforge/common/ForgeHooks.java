@@ -88,14 +88,52 @@ public class ForgeHooks {
         return stack != null && stack.getItem() != null && stack.getItem().canHarvestBlock(block, stack);
     }
 
-    /** Fires the break event for a block a player is breaking: -1 when a handler cancelled it, else the experience to drop. */
-    public static int onBlockBreakEvent(legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType,
+    /**
+     * The legacy break event {@link #onBlockBreakEvent} is firing; the bridge's listener for the modern break event posts
+     * this object to the legacy bus instead of a new one, so the caller gets back what the legacy handlers changed.
+     */
+    private static final ThreadLocal<legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent> mcc$pendingBreak = new ThreadLocal<>();
+
+    /** The legacy event to post for the modern break event being fired by {@link #onBlockBreakEvent}, or null. */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent mcc$takePendingBreak() {
+        var e = mcc$pendingBreak.get();
+        mcc$pendingBreak.remove();
+        return e;
+    }
+
+    /**
+     * Fires the break event for a block a player is about to break (tools that break several blocks call it for each
+     * extra block): the modern event, so protection mods on either side see it, and through it the legacy one. As
+     * Forge, the event starts cancelled when the player may not break blocks here (adventure mode, a held item that
+     * cannot break blocks) and the client is told the block is still there when it ends cancelled.
+     */
+    public static legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent onBlockBreakEvent(
+            legacyconnector.v1_7_10.net.minecraft.world.World world, legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType,
             legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player, int x, int y, int z) {
         legacyconnector.v1_7_10.net.minecraft.block.Block block = world.getBlock(x, y, z);
         legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent(
                 x, y, z, world, block, world.getBlockMetadata(x, y, z), player);
-        if (MinecraftForge.EVENT_BUS.post(event)) return -1;
-        return event.getExpToDrop();
+        net.minecraft.world.level.Level level = world.mcc$fullLevel();
+        if (level == null || player == null || !(player.mcc$entity() instanceof net.minecraft.server.level.ServerPlayer sp)) {
+            MinecraftForge.EVENT_BUS.post(event);
+            return event;
+        }
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
+        net.minecraft.world.level.GameType type = gameType == null || gameType.getID() < 0 ? sp.gameMode.getGameModeForPlayer()
+                : net.minecraft.world.level.GameType.byId(gameType.getID());
+        mcc$pendingBreak.set(event);
+        try {
+            var modern = net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, type, sp, pos, level.getBlockState(pos));
+            if (mcc$pendingBreak.get() == event) {
+                // no legacy listener took it: report the modern outcome
+                if (modern.isCanceled()) event.setCanceled(true);
+            } else if (modern.isCanceled() && !event.isCanceled()) {
+                event.setCanceled(true);
+            }
+        } finally {
+            mcc$pendingBreak.remove();
+        }
+        return event;
     }
 
     /** Posts the attack event; false when a handler cancelled the attack. */

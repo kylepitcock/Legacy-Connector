@@ -40,6 +40,14 @@ public final class LegacyModPacks extends AbstractPackResources {
     /** Custom pack and the plain pack over the same jar, by container, kept across reloads. */
     private static final Map<ModContainer, IResourcePack[]> PACKS = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** Containers a mod added with {@code FMLCommonHandler.addModToResourcePack} (scripted mods): their whole source is served. */
+    private static final List<ModContainer> ADDED = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Serves the assets of {@code container}'s source (a jar or folder), as FML's {@code addModToResourcePack} did. */
+    public static void mcc$addContainer(ModContainer container) {
+        if (container != null && !ADDED.contains(container)) ADDED.add(container);
+    }
+
     private LegacyModPacks(PackLocationInfo location) {
         super(location);
     }
@@ -92,6 +100,15 @@ public final class LegacyModPacks extends AbstractPackResources {
                     LOG.warn("The custom resource pack {} of {} could not be made: {}", cls.getName(), c.getModId(), e.toString());
                     return new IResourcePack[0];
                 }
+            });
+            if (pair.length == 2) out.add(pair);
+        }
+        for (ModContainer container : ADDED) {
+            IResourcePack[] pair = PACKS.computeIfAbsent(container, c -> {
+                if (c.getSource() == null) return new IResourcePack[0];
+                IResourcePack plain = c.getSource().isDirectory() ? new legacyconnector.v1_7_10.cpw.mods.fml.client.FMLFolderResourcePack(c)
+                        : new legacyconnector.v1_7_10.cpw.mods.fml.client.FMLFileResourcePack(c);
+                return new IResourcePack[] {plain, null};
             });
             if (pair.length == 2) out.add(pair);
         }

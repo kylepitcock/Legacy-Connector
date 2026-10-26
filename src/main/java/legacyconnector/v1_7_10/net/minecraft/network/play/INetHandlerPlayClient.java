@@ -4,4 +4,7 @@ import legacyconnector.v1_7_10.net.minecraft.network.INetHandler;
 
 /** Client-side play connection. */
 public interface INetHandlerPlayClient extends INetHandler {
+    /** The server ended the connection. */
+    default void handleDisconnect(legacyconnector.v1_7_10.net.minecraft.network.play.server.S40PacketDisconnect packet) {
+    }
 }
