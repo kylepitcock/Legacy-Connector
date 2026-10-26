@@ -43,7 +43,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
 
-**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery, crops, rowan, alder and hawthorn trees, and Witchery creatures**
+**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery and spinning wheel, crops and Witchery creatures**
 
 ![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
 
@@ -51,13 +51,17 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![Legacy block GUI](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-block-gui.png)
 
-**Twilight Forest and Witchery mobs beside a vanilla cow and villager**
+**Fisk's Superheroes: Doctor Octopus with his tentacles deployed and the suit's abilities**
 
-![Legacy and modern entities](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-and-modern-entities.png)
+![Fisk's Superheroes Doctor Octopus](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/fisk-doc-ock.png)
 
-**A modern village with Witchery's watchtowers and an AgriCraft greenhouse, built by their legacy code**
+**A modern village enclosed by Witchery's town walls and watchtowers, with AgriCraft greenhouses, built by their legacy code**
 
 ![Legacy village components](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-village-components.png)
+
+**A nuclear explosion from HBM's Nuclear Tech Mod, drawn by its own effect code**
+
+![An HBM nuclear explosion](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/hbm-nuke.png)
 
 ---
 
