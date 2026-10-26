@@ -3,7 +3,6 @@ net.minecraft.server.management.PreYggdrasilConverter.func_152719_a(Ljava/lang/S
 net.minecraft.command.PlayerSelector.matchOnePlayer(Llegacyconnector/v1_7_10/net/minecraft/command/ICommandSender;Ljava/lang/String;)Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayerMP;   # 3 user(s): WayofTime.alchemicalWizardry.api.command.SubCommandBase, com.xcompwiz.mystcraft.command.CommandBaseAdv, openmods.utils.CommandUtils
 net.minecraft.server.management.ServerConfigurationManager.getOppedPlayers()Llegacyconnector_synth/v1_7_10/net/minecraft/server/management/UserListOps;   # 3 user(s): ftb.lib.FTBLib, journeymap.server.oldservercode.util.ForgePlayerUtil, logisticspipes.commands.LogisticsPipesCommand
 net.minecraft.server.management.UserListOps.getKeys()[Ljava/lang/String;   # 3 user(s): ftb.lib.FTBLib, journeymap.server.oldservercode.util.ForgePlayerUtil, logisticspipes.commands.LogisticsPipesCommand
-net.minecraftforge.event.entity.item.ItemExpireEvent.extraLife:I   # 3 user(s): com.brandon3055.draconicevolution.common.entity.EntityPersistentItem, openblocks.common.LuggageDropHandler, powercrystals.minefactoryreloaded.net.EntityHandler
 cpw.mods.fml.common.network.simpleimpl.SimpleNetworkWrapper.getPacketFrom(Llegacyconnector/v1_7_10/cpw/mods/fml/common/network/simpleimpl/IMessage;)Llegacyconnector/v1_7_10/net/minecraft/network/Packet;   # 2 user(s): aroma1997.core.network.PacketHandler, com.rwtema.funkylocomotion.network.FLNetwork
 cpw.mods.fml.common.registry.EntityRegistry$EntityRegistration.getContainer()Llegacyconnector/v1_7_10/cpw/mods/fml/common/ModContainer;   # 2 user(s): mcp.mobius.waila.handlers.HUDHandlerEntities, powercrystals.minefactoryreloaded.modhelpers.twilightforest.TwilightForestEggHandler
 net.minecraft.command.CommandBase.clamp_coord(Llegacyconnector/v1_7_10/net/minecraft/command/ICommandSender;DLjava/lang/String;)D   # 2 user(s): cofh.core.command.CommandTPX, com.fiskmods.heroes.common.command.CommandFiskHeroes
@@ -11,7 +10,6 @@ net.minecraft.command.CommandBase.parseDoubleBounded(Llegacyconnector/v1_7_10/ne
 net.minecraft.command.CommandNotFoundException.<init>(Ljava/lang/String;[Ljava/lang/Object;)V   # 2 user(s): cofh.core.command.CommandHandler, hardcorequesting.commands.CommandHandler
 net.minecraft.server.management.ServerConfigurationManager.sendToAllNear(DDDDILlegacyconnector/v1_7_10/net/minecraft/network/Packet;)V   # 2 user(s): codechicken.lib.packet.PacketCustom, com.xcompwiz.mystcraft.effects.EffectLightning
 net.minecraft.server.management.ServerConfigurationManager.transferEntityToWorld(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;ILlegacyconnector/v1_7_10/net/minecraft/world/WorldServer;Llegacyconnector/v1_7_10/net/minecraft/world/WorldServer;Llegacyconnector/v1_7_10/net/minecraft/world/Teleporter;)V   # 2 user(s): com.emoniph.witchery.item.ItemGeneral, twilightforest.block.BlockTFPortal
-net.minecraft.stats.StatFileWriter.hasAchievementUnlocked(Llegacyconnector/v1_7_10/net/minecraft/stats/Achievement;)Z   # 2 user(s): twilightforest.biomes.TFBiomeBase, vazkii.botania.common.lexicon.RLexiconEntry
 net.minecraft.util.FoodStats.readNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 2 user(s): WayofTime.alchemicalWizardry.common.rituals.RitualEffectFullStomach, com.emoniph.witchery.dimension.WorldProviderDreamWorld
 net.minecraft.util.FoodStats.writeNBT(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;)V   # 2 user(s): WayofTime.alchemicalWizardry.common.rituals.RitualEffectFullStomach, com.emoniph.witchery.dimension.WorldProviderDreamWorld
 net.minecraft.util.MovingObjectPosition.hitInfo:Ljava/lang/Object;   # 2 user(s): com.fiskmods.fisktag.common.game.ShieldBarrier, crazypants.enderio.conduit.BlockConduitBundle
@@ -20,21 +18,6 @@ net.minecraft.util.Util$EnumOS.WINDOWS:Llegacyconnector_synth/v1_7_10/net/minecr
 net.minecraft.util.Util.getOSType()Llegacyconnector_synth/v1_7_10/net/minecraft/util/Util$EnumOS;   # 2 user(s): com.fiskmods.heroes.client.gui.heropacks.GuiScreenHeroPacks, journeymap.client.io.FileHandler
 net.minecraftforge.common.util.BlockSnapshot.restore(ZZ)Z   # 2 user(s): openmods.utils.BlockManipulator, twilightforest.item.ItemBlockTFHugeWaterLily
 net.minecraftforge.common.util.FakePlayer.attackTargetEntityWithCurrentItem(Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 2 user(s): com.rwtema.extrautils.block.BlockPeacefulTable, crazypants.enderio.machine.killera.TileKillerJoe
-net.minecraftforge.event.CommandEvent.command:Llegacyconnector/v1_7_10/net/minecraft/command/ICommand;   # 2 user(s): com.hbm.main.ModEventHandler, twilightforest.TFEventListener
-net.minecraftforge.event.CommandEvent.parameters:[Ljava/lang/String;   # 2 user(s): com.hbm.main.ModEventHandler, twilightforest.TFEventListener
-net.minecraftforge.event.FuelBurnTimeEvent.burnTime:I   # 2 user(s): biomesoplenty.common.eventhandler.misc.FurnaceBurnTimeEventHandler, forestry.plugins.PluginArboriculture
-net.minecraftforge.event.FuelBurnTimeEvent.fuel:Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 2 user(s): biomesoplenty.common.eventhandler.misc.FurnaceBurnTimeEventHandler, forestry.plugins.PluginArboriculture
-net.minecraftforge.event.entity.PlaySoundAtEntityEvent.name:Ljava/lang/String;   # 2 user(s): com.carpentersblocks.util.handler.EventHandler, crazypants.enderio.conduit.BlockConduitBundle
-net.minecraftforge.event.entity.item.ItemExpireEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityItem;I)V   # 2 user(s): com.brandon3055.draconicevolution.common.entity.EntityPersistentItem, openblocks.common.entity.EntityItemProjectile
-net.minecraftforge.event.entity.player.AchievementEvent.achievement:Llegacyconnector/v1_7_10/net/minecraft/stats/Achievement;   # 2 user(s): com.enderio.core.common.handlers.FireworkHandler, com.fiskmods.heroes.common.event.CommonEventHandler
-net.minecraftforge.event.entity.player.AttackEntityEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 2 user(s): buildcraft.robotics.EntityRobot, thaumcraft.common.items.equipment.ItemElementalSword
-net.minecraftforge.event.entity.player.PlayerEvent$HarvestCheck.block:Llegacyconnector/v1_7_10/net/minecraft/block/Block;   # 2 user(s): blusunrize.immersiveengineering.common.EventHandler, fox.spiteful.avaritia.LudicrousEvents
-net.minecraftforge.event.entity.player.PlayerEvent$HarvestCheck.success:Z   # 2 user(s): blusunrize.immersiveengineering.common.EventHandler, fox.spiteful.avaritia.LudicrousEvents
-net.minecraftforge.event.entity.player.PlayerEvent$StartTracking.target:Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 2 user(s): com.fiskmods.heroes.common.data.var.DataEventHandler, crazypants.enderio.item.darksteel.DarkSteelController
-net.minecraftforge.event.entity.player.PlayerSleepInBedEvent.result:Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer$EnumStatus;   # 2 user(s): com.emoniph.witchery.common.GenericEvents, openblocks.common.item.ItemSleepingBag
-net.minecraftforge.event.entity.player.PlayerSleepInBedEvent.x:I   # 2 user(s): com.emoniph.witchery.common.GenericEvents, com.hbm.handler.pollution.PollutionHandler
-net.minecraftforge.event.entity.player.PlayerSleepInBedEvent.y:I   # 2 user(s): com.emoniph.witchery.common.GenericEvents, com.hbm.handler.pollution.PollutionHandler
-net.minecraftforge.event.entity.player.PlayerSleepInBedEvent.z:I   # 2 user(s): com.emoniph.witchery.common.GenericEvents, com.hbm.handler.pollution.PollutionHandler
 paulscode.sound.SoundSystemConfig.setNumberNormalChannels(I)V   # 2 user(s): com.hbm.main.ClientProxy, ic2.core.audio.AudioManagerClient
 paulscode.sound.SoundSystemConfig.setNumberStreamingChannels(I)V   # 2 user(s): com.hbm.main.ClientProxy, ic2.core.audio.AudioManagerClient
 cpw.mods.fml.common.network.FMLNetworkEvent$ClientConnectedToServerEvent.isLocal:Z   # 1 user(s): micdoodle8.mods.galacticraft.core.network.ConnectionEvents
@@ -67,7 +50,6 @@ net.minecraft.server.management.ServerConfigurationManager.getViewDistance()I   
 net.minecraft.server.management.ServerConfigurationManager.removeOp(Lcom/mojang/authlib/GameProfile;)V   # 1 user(s): buildcraft.core.command.SubCommandDeop
 net.minecraft.server.management.UserListBans.addEntry(Llegacyconnector_synth/v1_7_10/net/minecraft/server/management/UserListEntry;)V   # 1 user(s): hardcorequesting.QuestingData
 net.minecraft.server.management.UserListBansEntry.<init>(Lcom/mojang/authlib/GameProfile;Ljava/util/Date;Ljava/lang/String;Ljava/util/Date;Ljava/lang/String;)V   # 1 user(s): hardcorequesting.QuestingData
-net.minecraft.stats.StatCrafting.<init>(Ljava/lang/String;Llegacyconnector/v1_7_10/net/minecraft/util/IChatComponent;Llegacyconnector/v1_7_10/net/minecraft/item/Item;)V   # 1 user(s): com.hbm.util.StatHelper
 net.minecraft.util.ChatStyle$Serializer.<init>()V   # 1 user(s): ftb.lib.JsonHelper
 net.minecraft.util.EnumTypeAdapterFactory.<init>()V   # 1 user(s): ftb.lib.JsonHelper
 net.minecraft.util.MinecraftError.<init>()V   # 1 user(s): com.hbm.inventory.gui.LoadingScreenRendererNT
@@ -86,7 +68,6 @@ net.minecraftforge.common.config.Property.setValue(Ljava/lang/String;)Llegacycon
 net.minecraftforge.common.util.FakePlayer.equipWithAndRightClick(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;Llegacyconnector/v1_7_10/net/minecraft/util/Vec3;Llegacyconnector/v1_7_10/net/minecraftforge/common/util/ForgeDirection;Z)Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 1 user(s): openblocks.common.tileentity.TileEntityBlockPlacer$1
 net.minecraftforge.common.util.FakePlayer.onItemUseFinish()V   # 1 user(s): cofh.core.entity.CoFHFakePlayer
 net.minecraftforge.common.util.RotationHelper.rotateVanillaBlock(Llegacyconnector/v1_7_10/net/minecraft/block/Block;Llegacyconnector/v1_7_10/net/minecraft/world/World;IIILlegacyconnector/v1_7_10/net/minecraftforge/common/util/ForgeDirection;)Z   # 1 user(s): vazkii.botania.common.block.BlockAvatar
-net.minecraftforge.event.CommandEvent.sender:Llegacyconnector/v1_7_10/net/minecraft/command/ICommandSender;   # 1 user(s): com.hbm.main.ModEventHandler
 net.minecraftforge.event.ForgeEventFactory.canEntityDespawn(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLiving;)Llegacyconnector/v1_7_10/cpw/mods/fml/common/eventhandler/Event$Result;   # 1 user(s): com.fiskmods.heroes.common.entity.EntityCreetle
 net.minecraftforge.event.ForgeEventFactory.canEntitySpawn(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLiving;Llegacyconnector/v1_7_10/net/minecraft/world/World;FFF)Llegacyconnector/v1_7_10/cpw/mods/fml/common/eventhandler/Event$Result;   # 1 user(s): com.hbm.handler.BossSpawnHandler
 net.minecraftforge.event.ForgeEventFactory.doSpecialSpawn(Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLiving;Llegacyconnector/v1_7_10/net/minecraft/world/World;FFF)Z   # 1 user(s): com.hbm.handler.BossSpawnHandler
@@ -95,29 +76,6 @@ net.minecraftforge.event.ForgeEventFactory.onEntityStruckByLightning(Llegacyconn
 net.minecraftforge.event.ForgeEventFactory.onItemTooltip(Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Ljava/util/List;Z)Llegacyconnector/v1_7_10/net/minecraftforge/event/entity/player/ItemTooltipEvent;   # 1 user(s): com.hbm.util.ArmorUtil
 net.minecraftforge.event.ForgeEventFactory.onItemUseTick(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;I)I   # 1 user(s): cofh.core.entity.CoFHFakePlayer
 net.minecraftforge.event.ForgeEventFactory.onPlayerDestroyItem(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;)V   # 1 user(s): ic2.core.item.tool.ItemDrill
-net.minecraftforge.event.entity.PlaySoundAtEntityEvent.volume:F   # 1 user(s): crazypants.enderio.item.darksteel.SoundDetector
-net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent.target:Llegacyconnector/v1_7_10/net/minecraft/entity/EntityLivingBase;   # 1 user(s): com.emoniph.witchery.brewing.potions.PotionEnslaved
-net.minecraftforge.event.entity.living.ZombieEvent$SummonAidEvent.customSummonedAid:Llegacyconnector/v1_7_10/net/minecraft/entity/monster/EntityZombie;   # 1 user(s): micdoodle8.mods.galacticraft.core.event.EventHandlerGC
-net.minecraftforge.event.entity.living.ZombieEvent$SummonAidEvent.getSummoner()Llegacyconnector/v1_7_10/net/minecraft/entity/monster/EntityZombie;   # 1 user(s): crazypants.enderio.machine.killera.TileKillerJoe$ZombieCache
-net.minecraftforge.event.entity.living.ZombieEvent$SummonAidEvent.world:Llegacyconnector/v1_7_10/net/minecraft/world/World;   # 1 user(s): micdoodle8.mods.galacticraft.core.event.EventHandlerGC
-net.minecraftforge.event.entity.minecart.MinecartCollisionEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityMinecart;Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;)V   # 1 user(s): com.hbm.entity.item.EntityMinecartModBase
-net.minecraftforge.event.entity.minecart.MinecartCollisionEvent.collider:Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityMinecart;FFF)V   # 1 user(s): com.hbm.entity.item.EntityMinecartModBase
-net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.entity:Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 1 user(s): vazkii.botania.common.block.BlockGhostRail
-net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.x:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.y:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.z:F   # 1 user(s): mods.railcraft.common.carts.MinecartHooks
-net.minecraftforge.event.entity.player.AnvilRepairEvent.left:Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 1 user(s): com.hbm.main.ModEventHandler
-net.minecraftforge.event.entity.player.AnvilRepairEvent.output:Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 1 user(s): com.hbm.main.ModEventHandler
-net.minecraftforge.event.entity.player.AnvilRepairEvent.right:Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 1 user(s): com.hbm.main.ModEventHandler
-net.minecraftforge.event.entity.player.AttackEntityEvent.target:Llegacyconnector/v1_7_10/net/minecraft/entity/Entity;   # 1 user(s): mods.railcraft.common.items.enchantment.EnchantmentDamageRailcraft
-net.minecraftforge.event.entity.player.PlayerEvent$NameFormat.displayname:Ljava/lang/String;   # 1 user(s): crazypants.enderio.machine.killera.BlockKillerJoe
-net.minecraftforge.event.entity.player.PlayerEvent$NameFormat.username:Ljava/lang/String;   # 1 user(s): crazypants.enderio.machine.killera.BlockKillerJoe
-net.minecraftforge.event.entity.player.PlayerPickupXpEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;Llegacyconnector/v1_7_10/net/minecraft/entity/item/EntityXPOrb;)V   # 1 user(s): com.brandon3055.draconicevolution.common.items.tools.Magnet
-net.minecraftforge.event.entity.player.PlayerSleepInBedEvent.<init>(Llegacyconnector/v1_7_10/net/minecraft/entity/player/EntityPlayer;III)V   # 1 user(s): openblocks.common.item.ItemSleepingBag
-net.minecraftforge.event.entity.player.PlayerUseItemEvent$Finish.result:Llegacyconnector/v1_7_10/net/minecraft/item/ItemStack;   # 1 user(s): com.fiskmods.heroes.common.event.CommonEventHandler
-net.minecraftforge.event.world.NoteBlockEvent$Play.getVanillaNoteId()I   # 1 user(s): thaumcraft.common.lib.events.EventHandlerWorld
-net.minecraftforge.event.world.NoteBlockEvent$Play.instrument:Llegacyconnector_synth/v1_7_10/net/minecraftforge/event/world/NoteBlockEvent$Instrument;   # 1 user(s): thaumcraft.common.lib.events.EventHandlerWorld
 net.minecraftforge.event.world.WorldEvent$PotentialSpawns.list:Ljava/util/List;   # 1 user(s): com.rwtema.extrautils.EventHandlerSiege
 net.minecraftforge.event.world.WorldEvent$PotentialSpawns.type:Llegacyconnector/v1_7_10/net/minecraft/entity/EnumCreatureType;   # 1 user(s): com.rwtema.extrautils.EventHandlerSiege
 net.minecraftforge.event.world.WorldEvent$PotentialSpawns.x:I   # 1 user(s): com.hbm.handler.pollution.PollutionHandler

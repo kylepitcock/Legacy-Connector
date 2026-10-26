@@ -22,10 +22,11 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
         return p.mcc$manager;
     }
 
-    private final legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile mcc$stats = new legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile();
+    private legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile mcc$stats;
 
-    /** The player's statistics and achievements. */
+    /** The player's statistics and achievements (its achievements are the player's own, see {@code addStat}). */
     public legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile getStatFile() {
+        if (mcc$stats == null) mcc$stats = new legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile(mcc$serverPlayer().getUUID());
         return mcc$stats;
     }
 

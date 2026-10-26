@@ -15,6 +15,14 @@ public class EntityClientPlayerMP extends EntityPlayerSP {
         else connection.sendChat(message);
     }
 
+    private legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter mcc$stats;
+
+    /** The player's statistics; achievements are read from the same player on the integrated server. */
+    public legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter getStatFileWriter() {
+        if (mcc$stats == null) mcc$stats = new legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter(mcc$player().getUUID());
+        return mcc$stats;
+    }
+
     public float getSwingProgress(float partial) {
         return mcc$player().getAttackAnim(partial);
     }
