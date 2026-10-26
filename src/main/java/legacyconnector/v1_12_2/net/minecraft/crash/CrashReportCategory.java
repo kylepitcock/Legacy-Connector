@@ -27,6 +27,19 @@ public class CrashReportCategory {
         return "(" + x + "," + y + "," + z + ")";
     }
 
+    /** The block, its state and its location as crash details (vanilla's block section). */
+    public static void addBlockInfo(CrashReportCategory category, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        if (state != null) {
+            category.addDetail("Block", state::toString);
+            var block = state.getBlock();
+            if (block != null) {
+                int id = legacyconnector.v1_12_2.net.minecraft.block.Block.getIdFromBlock(block);
+                category.addDetail("Block type", () -> String.format("ID #%d (%s // %s)", id, block.getUnlocalizedName(), block.getClass().getName()));
+            }
+        }
+        category.addDetail("Block location", () -> getCoordinateInfo(pos));
+    }
+
     public void addCrashSection(String name, Object value) {
         details.put(name, String.valueOf(value));
     }
