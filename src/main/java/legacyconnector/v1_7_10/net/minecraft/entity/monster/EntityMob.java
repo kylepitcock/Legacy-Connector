@@ -12,6 +12,11 @@ import net.minecraft.world.entity.monster.Monster;
 
 /** 1.7.10 EntityMob: hostile old-AI behaviour (target the nearest player, melee in reach, retaliate, prefer dark). */
 public abstract class EntityMob extends EntityCreature implements IMob {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    protected EntityMob(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityMob(World world) {
         super(world);
         this.experienceValue = 5;

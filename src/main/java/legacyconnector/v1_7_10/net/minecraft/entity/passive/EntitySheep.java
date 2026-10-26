@@ -10,6 +10,11 @@ public class EntitySheep extends EntityAnimal {
             {0.5F, 0.8F, 0.1F}, {0.95F, 0.5F, 0.65F}, {0.3F, 0.3F, 0.3F}, {0.6F, 0.6F, 0.6F}, {0.3F, 0.5F, 0.6F}, {0.5F, 0.25F, 0.7F}, {0.2F, 0.3F, 0.7F},
             {0.4F, 0.3F, 0.2F}, {0.4F, 0.5F, 0.2F}, {0.6F, 0.2F, 0.2F}, {0.1F, 0.1F, 0.1F}};
 
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntitySheep(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntitySheep(World world) {
         super(world);
         setSize(0.9F, 1.3F);
@@ -22,19 +27,29 @@ public class EntitySheep extends EntityAnimal {
     }
 
     public int getFleeceColor() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.getColor().getId();
         return dataWatcher.getWatchableObjectByte(16) & 15;
     }
 
     public void setFleeceColor(int color) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) {
+            s.setColor(net.minecraft.world.item.DyeColor.byId(color & 15));
+            return;
+        }
         byte flags = dataWatcher.getWatchableObjectByte(16);
         dataWatcher.updateObject(16, (byte) (flags & 240 | color & 15));
     }
 
     public boolean getSheared() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.isSheared();
         return (dataWatcher.getWatchableObjectByte(16) & 16) != 0;
     }
 
     public void setSheared(boolean sheared) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) {
+            s.setSheared(sheared);
+            return;
+        }
         byte flags = dataWatcher.getWatchableObjectByte(16);
         dataWatcher.updateObject(16, (byte) (sheared ? flags | 16 : flags & -17));
     }

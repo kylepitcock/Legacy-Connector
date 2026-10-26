@@ -66,8 +66,9 @@ public class ItemTool extends Item {
 
     /** Harvest level a block needs from its modern tier tags (0 = any tool of the right kind). */
     static int requiredLevel(Block block) {
-        if (block == null || block.mcc$modern == null) return 0;
-        var state = block.mcc$modern.defaultBlockState();
+        var modern = modernOf(block);
+        if (modern == null) return 0;
+        var state = modern.defaultBlockState();
         if (state.is(BlockTags.NEEDS_DIAMOND_TOOL)) return 3;
         if (state.is(BlockTags.NEEDS_IRON_TOOL)) return 2;
         if (state.is(BlockTags.NEEDS_STONE_TOOL)) return 1;
@@ -79,7 +80,19 @@ public class ItemTool extends Item {
         if (block == null || toolClass == null) return false;
         if (block.isToolEffective(toolClass, meta)) return true;
         TagKey<net.minecraft.world.level.block.Block> tag = mineable(toolClass);
-        return tag != null && block.mcc$modern != null && block.mcc$modern.defaultBlockState().is(tag);
+        var modern = modernOf(block);
+        return tag != null && modern != null && modern.defaultBlockState().is(tag);
+    }
+
+    /** The modern block, vanilla blocks included (their legacy wrappers have no mcc$modern: stone was mineable by no pickaxe). */
+    private static net.minecraft.world.level.block.Block modernOf(Block block) {
+        if (block == null) return null;
+        if (block.mcc$modern != null) return block.mcc$modern;
+        try {
+            return org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modernBlock(block);
+        } catch (RuntimeException e) {
+            return null;
+        }
     }
 
     @Override

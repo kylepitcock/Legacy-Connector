@@ -24,14 +24,20 @@ public abstract class EntityAnimal extends EntityAgeable implements IAnimals {
     }
 
     public boolean isInLove() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Animal a && !mcc$hosted()) return a.isInLove();
         return inLove > 0;
     }
 
     public void func_146082_f(EntityPlayer player) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Animal a && !mcc$hosted()) {
+            a.setInLove(player == null ? null : (net.minecraft.world.entity.player.Player) player.mcc$entity);
+            return;
+        }
         inLove = 600;
     }
 
     public void resetInLove() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Animal a && !mcc$hosted()) a.resetLove();
         inLove = 0;
     }
 

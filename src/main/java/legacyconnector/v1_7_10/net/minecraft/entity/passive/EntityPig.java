@@ -5,6 +5,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 pig: the saddle flag is watcher slot 16. */
 public class EntityPig extends EntityAnimal {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityPig(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityPig(World world) {
         super(world);
         setSize(0.9F, 0.9F);

@@ -99,7 +99,10 @@ public final class EntityBridge {
         if (modern instanceof ItemEntity item) return new EntityItem(item);
         if (modern instanceof net.minecraft.world.entity.ExperienceOrb orb) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityXPOrb(orb);
         if (modern instanceof net.minecraft.world.entity.npc.Villager villager) return new VillagerView(villager);
-        if (modern instanceof LivingEntity living) return new LivingView(living);
+        if (modern instanceof LivingEntity living) {
+            Entity typed = VanillaMobViews.create(living);
+            return typed != null ? typed : new LivingView(living);
+        }
         return new View(modern);
     }
 

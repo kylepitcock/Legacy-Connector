@@ -607,7 +607,16 @@ public class World implements IBlockAccess {
     }
 
     public void scheduleBlockUpdate(int x, int y, int z, Block block, int delay) {
-        lvl().scheduleTick(pos(x, y, z), BlockBridge.modernBlock(block), delay);
+        var modern = BlockBridge.modernBlock(block);
+        lvl().scheduleTick(pos(x, y, z), modern, delay);
+        // A vanilla plant's growth is its random tick now, which a scheduled tick does not run: legacy code scheduling one to
+        // grow it (Thaumcraft's Lamp of Growth) gets the 1.7.10 updateTick when the delay is up.
+        if (block != null && block.mcc$vanilla != null && modern.defaultBlockState().isRandomlyTicking()
+                && mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level) {
+            var server = level.getServer();
+            server.tell(new net.minecraft.server.TickTask(server.getTickCount() + Math.max(1, delay),
+                    () -> block.updateTick(this, x, y, z, rand)));
+        }
     }
 
     public void scheduleBlockUpdateWithPriority(int x, int y, int z, Block block, int delay, int priority) {

@@ -12,6 +12,11 @@ public class EntityChicken extends EntityAnimal {
     public float field_70889_i = 1.0F;
     public int timeUntilNextEgg;
 
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityChicken(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityChicken(World world) {
         super(world);
         setSize(0.3F, 0.7F);

@@ -5,6 +5,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 wolf: angry is bit 2 of watcher slot 16, collar colour is slot 20. */
 public class EntityWolf extends EntityTameable {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityWolf(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityWolf(World world) {
         super(world);
         setSize(0.6F, 0.8F);
@@ -24,6 +29,7 @@ public class EntityWolf extends EntityTameable {
     }
 
     public boolean isAngry() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.isAngry();
         return (dataWatcher.getWatchableObjectByte(16) & 2) != 0;
     }
 
@@ -33,6 +39,7 @@ public class EntityWolf extends EntityTameable {
     }
 
     public int getCollarColor() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getCollarColor().getId();
         return dataWatcher.getWatchableObjectByte(20) & 15;
     }
 

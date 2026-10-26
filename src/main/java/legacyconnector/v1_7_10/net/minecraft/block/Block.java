@@ -650,7 +650,17 @@ public class Block {
     public void onNeighborChange(IBlockAccess world, int x, int y, int z, int tileX, int tileY, int tileZ) {
     }
 
+    /**
+     * 1.7.10 had one update for scheduled and random ticks. For a vanilla block it runs the modern block's random tick (crop
+     * and sapling growth, which growth lamps and accelerators call it for) or, for blocks without one, its scheduled tick.
+     */
     public void updateTick(World world, int x, int y, int z, Random random) {
+        if (mcc$vanilla == null || world == null || !(world.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        var pos = new net.minecraft.core.BlockPos(x, y, z);
+        var state = level.getBlockState(pos);
+        if (state.getBlock() != org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modernBlock(this)) return;
+        if (state.isRandomlyTicking()) state.randomTick(level, pos, level.random);
+        else state.tick(level, pos, level.random);
     }
 
     public int onBlockPlaced(World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int meta) {

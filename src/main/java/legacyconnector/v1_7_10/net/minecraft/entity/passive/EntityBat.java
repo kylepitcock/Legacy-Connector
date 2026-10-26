@@ -4,6 +4,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 bat: the hanging flag is bit 0 of watcher slot 16. */
 public class EntityBat extends EntityAmbientCreature {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityBat(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityBat(World world) {
         super(world);
         setSize(0.5F, 0.9F);

@@ -5,6 +5,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 horse: status flags in watcher slot 16 (bit 2 tame, bit 4 saddled), type in slot 19, variant in slot 20. */
 public class EntityHorse extends EntityAnimal {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityHorse(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityHorse(World world) {
         super(world);
         setSize(1.4F, 1.6F);

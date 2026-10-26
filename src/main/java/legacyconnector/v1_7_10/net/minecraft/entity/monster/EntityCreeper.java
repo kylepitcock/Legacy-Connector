@@ -4,6 +4,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 creeper: fuse state in watcher slot 16 (-1 idle, 1 lit), charged flag in slot 17. */
 public class EntityCreeper extends EntityMob {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityCreeper(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityCreeper(World world) {
         super(world);
         setSize(0.6F, 1.8F);
@@ -17,14 +22,20 @@ public class EntityCreeper extends EntityMob {
     }
 
     public boolean getPowered() {
+        if (mcc$entity instanceof net.minecraft.world.entity.monster.Creeper c && !mcc$hosted()) return c.isPowered();
         return dataWatcher.getWatchableObjectByte(17) == 1;
     }
 
     public int getCreeperState() {
+        if (mcc$entity instanceof net.minecraft.world.entity.monster.Creeper c && !mcc$hosted()) return c.getSwellDir();
         return dataWatcher.getWatchableObjectByte(16);
     }
 
     public void setCreeperState(int state) {
+        if (mcc$entity instanceof net.minecraft.world.entity.monster.Creeper c && !mcc$hosted()) {
+            c.setSwellDir(state);
+            return;
+        }
         dataWatcher.updateObject(16, (byte) state);
     }
 

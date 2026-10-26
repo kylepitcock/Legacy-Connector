@@ -4,6 +4,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 blaze: the on-fire flag is bit 0 of watcher slot 16. */
 public class EntityBlaze extends EntityMob {
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityBlaze(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityBlaze(World world) {
         super(world);
         this.isImmuneToFire = true;

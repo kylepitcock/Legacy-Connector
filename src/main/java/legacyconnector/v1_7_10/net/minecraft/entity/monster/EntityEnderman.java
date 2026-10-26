@@ -7,6 +7,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 public class EntityEnderman extends EntityMob {
     private static final boolean[] carriable = new boolean[256];
 
+    /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
+    public EntityEnderman(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     public EntityEnderman(World world) {
         super(world);
         setSize(0.6F, 2.9F);
