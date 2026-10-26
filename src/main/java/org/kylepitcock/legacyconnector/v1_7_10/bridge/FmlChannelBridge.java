@@ -85,6 +85,10 @@ public final class FmlChannelBridge {
                     if (level != null) PacketDistributor.sendToPlayersNear(level, null, t.x, t.y, t.z, t.range, p);
                 }
             }
+            case DISPATCHER, REPLY -> {
+                if (args instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher d) d.sendProxy(packet);
+                else LOG.debug("Legacy outbound target {} on channel {} without a dispatcher", target, packet.channel());
+            }
             default -> LOG.debug("Unsupported legacy outbound target {} on channel {}", target, packet.channel());
         }
     }
@@ -96,15 +100,31 @@ public final class FmlChannelBridge {
 
     private static void receive(LegacyPayload payload, IPayloadContext context) {
         boolean server = context.player() instanceof ServerPlayer;
+        var dispatcher = legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.get(
+                legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(context.connection()));
         context.enqueueWork(() -> deliver(payload.channel(), payload.data(), server ? Side.SERVER : Side.CLIENT,
-                server ? new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())) : NetHandlerPlayClient.INSTANCE));
+                server ? new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())) : NetHandlerPlayClient.INSTANCE, dispatcher));
     }
 
     /** Feeds raw bytes into a side's pipeline (also used for tile entity description packets). */
     public static void deliver(String channelName, byte[] data, Side side, Object netHandler) {
+        deliver(channelName, data, side, netHandler, null);
+    }
+
+    /** A received packet, as FML handed it on: carrying the connection's handler and dispatcher. */
+    private static FMLProxyPacket inbound(byte[] data, String channelName, Object netHandler,
+            legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher) {
+        FMLProxyPacket packet = new FMLProxyPacket(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(data), channelName);
+        if (netHandler instanceof legacyconnector.v1_7_10.net.minecraft.network.INetHandler h) packet.mcc$setHandler(h);
+        packet.setDispatcher(dispatcher);
+        return packet;
+    }
+
+    public static void deliver(String channelName, byte[] data, Side side, Object netHandler,
+            legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher) {
         var eventChannel = EVENT_CHANNELS.get(channelName);
         if (eventChannel != null) {
-            FMLProxyPacket packet = new FMLProxyPacket(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(data), channelName);
+            FMLProxyPacket packet = inbound(data, channelName, netHandler, dispatcher);
             var event = side == Side.SERVER
                     ? new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent(null, packet,
                             (legacyconnector.v1_7_10.net.minecraft.network.INetHandler) netHandler)
@@ -124,13 +144,18 @@ public final class FmlChannelBridge {
         }
         EnumMap<Side, FMLEmbeddedChannel> channels = CHANNELS.get(channelName);
         if (channels == null) {
+            if (side == Side.SERVER && channelName.startsWith("MC|") && netHandler instanceof NetHandlerPlayServer s) {
+                VanillaPayloads1710.handleServer(channelName, data, s.playerEntity);
+                return;
+            }
             LOG.debug("Message for unknown legacy channel {}", channelName);
             return;
         }
         FMLEmbeddedChannel channel = channels.get(side);
         try {
             channel.attr(NetworkRegistry.NET_HANDLER).set(netHandler);
-            channel.writeInbound(new FMLProxyPacket(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(data), channelName));
+            channel.attr(legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.FML_DISPATCHER).set(dispatcher);
+            channel.writeInbound(inbound(data, channelName, netHandler, dispatcher));
             // Messages nobody consumed would accumulate in the embedded channel.
             while (channel.readInbound() != null) {
                 // drop

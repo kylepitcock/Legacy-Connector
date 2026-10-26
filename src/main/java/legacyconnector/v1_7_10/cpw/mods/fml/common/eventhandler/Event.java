@@ -50,6 +50,11 @@ public class Event {
         result = value;
     }
 
+    /** The listeners of this event's class (Forge kept one list per class, shared by all its instances). */
+    public ListenerList getListenerList() {
+        return new ListenerList(getClass());
+    }
+
     public EventPriority getPhase() {
         return phase;
     }

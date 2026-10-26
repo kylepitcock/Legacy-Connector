@@ -190,8 +190,15 @@ public final class EventBridge1710 {
 
         // ---- Forge bus: blocks and worlds
         gameBus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) -> {
+            BlockEvent.BreakEvent pending = legacyconnector.v1_7_10.net.minecraftforge.common.ForgeHooks.mcc$takePendingBreak();
             if (!wants(forge(), BlockEvent.BreakEvent.class)) return;
             var p = e.getPos();
+            if (pending != null) {
+                if (e.isCanceled()) pending.setCanceled(true);
+                if (forge().post(pending)) e.setCanceled(true);
+                else if (e.isCanceled()) pending.setCanceled(true);
+                return;
+            }
             BlockEvent.BreakEvent legacy = new BlockEvent.BreakEvent(p.getX(), p.getY(), p.getZ(), World.mcc$wrap(e.getLevel()),
                     BlockBridge.legacyBlock(e.getState()), BlockBridge.legacyMeta(e.getState()), player(e.getPlayer()));
             if (forge().post(legacy)) e.setCanceled(true);

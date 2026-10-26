@@ -36,9 +36,17 @@ public class PlayerUseItemEvent extends PlayerEvent {
         }
     }
 
+    /** The player finished using the item; {@link #result} is what replaces it in the hand (handlers may change it). */
     public static class Finish extends PlayerUseItemEvent {
-        public Finish(EntityPlayer player, ItemStack item, int duration) {
+        public ItemStack result;
+
+        public Finish(EntityPlayer player, ItemStack item, int duration, ItemStack result) {
             super(player, item, duration);
+            this.result = result;
+        }
+
+        public Finish(EntityPlayer player, ItemStack item, int duration) {
+            this(player, item, duration, item);
         }
     }
 }
