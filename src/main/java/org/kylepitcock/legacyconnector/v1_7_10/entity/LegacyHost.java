@@ -24,6 +24,24 @@ public interface LegacyHost {
     /** Server: legacy DataWatcher values changed. */
     void mcc$syncWatcher(CompoundTag values);
 
+    /** Vanilla landing (causeFallDamage, with the multiplier and source of the fall being processed). */
+    void mcc$superFall(float distance);
+
+    /** Vanilla handling of being below the world (onBelowWorld). */
+    void mcc$superKill();
+
+    /** Vanilla lightning hit (thunderHit). */
+    void mcc$superThunderHit(net.minecraft.server.level.ServerLevel level, net.minecraft.world.entity.LightningBolt bolt);
+
+    /** Vanilla placement of a passenger (positionRider). */
+    void mcc$superPositionRider(net.minecraft.world.entity.Entity passenger);
+
+    /** Vanilla tick while riding (rideTick). */
+    void mcc$superRideTick();
+
+    /** Vanilla client position interpolation (lerpTo). */
+    void mcc$superLerpTo(double x, double y, double z, float yaw, float pitch, int steps);
+
     default net.minecraft.world.entity.Entity mcc$self() {
         return (net.minecraft.world.entity.Entity) this;
     }

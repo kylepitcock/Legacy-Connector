@@ -7,7 +7,7 @@ import net.minecraft.world.entity.LivingEntity;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge;
 
 /** A modern villager as the 1.7.10 class: numeric professions (vanilla 0-4, mods' registered ids) and its trades. */
-public class EntityVillager extends EntityAgeable {
+public class EntityVillager extends EntityAgeable implements legacyconnector.v1_7_10.net.minecraft.entity.IMerchant {
     /** The trade chance curve vanilla uses when it builds trade offers (mods reflect it: FiskHeroes). */
     public static float adjustProbability(float probability) {
         float f = probability + 0.3F;
@@ -98,12 +98,55 @@ public class EntityVillager extends EntityAgeable {
         return true;
     }
 
-    @Override
-    public EntityAgeable createChild(EntityAgeable mate) {
-        return null;
+    public void setCustomer(EntityPlayer player) {
+        var v = villager();
+        if (v != null) v.setTradingPlayer(player == null ? null : player.mcc$player());
     }
 
+    /** Client: the offers the server sent (a vanilla villager receives them itself). */
+    public void setRecipes(MerchantRecipeList recipes) {
+    }
+
+    /** A trade was made: counts the use of the matching offer (the modern villager rewards it as usual). */
+    public void useRecipe(legacyconnector.v1_7_10.net.minecraft.village.MerchantRecipe recipe) {
+        var v = villager();
+        if (v == null || recipe == null) return;
+        recipe.incrementToolUses();
+        var sell = legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$toModern(recipe.getItemToSell());
+        for (var offer : v.getOffers()) {
+            if (sell != null && net.minecraft.world.item.ItemStack.isSameItemSameComponents(offer.getResult(), sell)) {
+                v.notifyTrade(offer);
+                return;
+            }
+        }
+    }
+
+    public void verifySellingItem(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        var v = villager();
+        if (v != null) v.notifyTradeUpdated(stack == null ? net.minecraft.world.item.ItemStack.EMPTY : stack.mcc$modern());
+    }
+
+    /** A child of the same (vanilla) kind. */
+    @Override
+    public EntityVillager createChild(EntityAgeable mate) {
+        EntityVillager child = new EntityVillager(mcc$world());
+        child.onSpawnWithEgg(null);
+        return child;
+    }
+
+    public boolean isMating;
+    public boolean isLookingForHome;
+
     public boolean isMating() {
-        return false;
+        return isMating;
+    }
+
+    public void setMating(boolean mating) {
+        this.isMating = mating;
+    }
+
+    /** The villager goes looking for a village house (the modern villager finds its own home). */
+    public void setLookingForHome() {
+        this.isLookingForHome = true;
     }
 }

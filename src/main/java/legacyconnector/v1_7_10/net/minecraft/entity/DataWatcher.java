@@ -230,9 +230,23 @@ public class DataWatcher {
             };
             if (value == null) continue;
             WatchableObject o = watched.get(id);
+            if (o != null && java.util.Objects.equals(o.object, value)) continue;
             if (o == null) watched.put(id, new WatchableObject(typeOf(value), id, value));
             else o.object = value;
+            // 1.7.10 told the entity about each value the server changed (minecarts and command carts react to it)
+            if (owner != null) {
+                try {
+                    owner.func_145781_i(id);
+                } catch (RuntimeException | LinkageError e) {
+                    // a mod's reaction to a value must not stop the others from being applied
+                }
+            }
         }
+    }
+
+    /** The slot {@code id} (null when it was never added). */
+    public WatchableObject getWatchedObject(int id) {
+        return watched.get(id);
     }
 
     private static byte mcc$flags(net.minecraft.world.entity.Entity m) {

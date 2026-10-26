@@ -288,6 +288,150 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         super.setTarget(target);
     }
 
+    // ------------------------------------------------------------------ falling, the void, lightning, riding
+
+    private final LegacyHookState hooks = new LegacyHookState();
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+        if (legacy == null || hooks.inFall) return super.causeFallDamage(distance, multiplier, source);
+        return hooks.fall(legacy, distance, multiplier, source);
+    }
+
+    @Override
+    public void mcc$superFall(float distance) {
+        hooks.superFall(distance, (d, m, s) -> super.causeFallDamage(d, m, s), damageSources().fall());
+    }
+
+    @Override
+    protected void onBelowWorld() {
+        if (legacy == null) super.onBelowWorld();
+        else legacy.mcc$kill();
+    }
+
+    @Override
+    public void mcc$superKill() {
+        super.onBelowWorld();
+    }
+
+    @Override
+    public void thunderHit(ServerLevel level, net.minecraft.world.entity.LightningBolt bolt) {
+        if (legacy == null) super.thunderHit(level, bolt);
+        else legacy.onStruckByLightning(LegacyHookState.wrapBolt(bolt));
+    }
+
+    @Override
+    public void mcc$superThunderHit(ServerLevel level, net.minecraft.world.entity.LightningBolt bolt) {
+        super.thunderHit(level, bolt);
+    }
+
+    @Override
+    protected void positionRider(net.minecraft.world.entity.Entity passenger, net.minecraft.world.entity.Entity.MoveFunction callback) {
+        if (legacy != null && LegacyHookState.customRider(legacy)) legacy.updateRiderPosition();
+        else super.positionRider(passenger, callback);
+    }
+
+    @Override
+    public void mcc$superPositionRider(net.minecraft.world.entity.Entity passenger) {
+        super.positionRider(passenger, net.minecraft.world.entity.Entity::setPos);
+    }
+
+    @Override
+    public void rideTick() {
+        if (legacy != null && LegacyHosts.overrides(legacy.getClass(), "updateRidden")) legacy.updateRidden();
+        else super.rideTick();
+    }
+
+    @Override
+    public void mcc$superRideTick() {
+        super.rideTick();
+    }
+
+    @Override
+    public void lerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
+        if (legacy != null && LegacyHookState.customLerp(legacy)) legacy.setPositionAndRotation2(x, y, z, yaw, pitch, steps);
+        else super.lerpTo(x, y, z, yaw, pitch, steps);
+    }
+
+    @Override
+    public void mcc$superLerpTo(double x, double y, double z, float yaw, float pitch, int steps) {
+        super.lerpTo(x, y, z, yaw, pitch, steps);
+    }
+
+    @Override
+    protected void playStepSound(net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+        if (legacy != null && LegacyHookState.customStepSound(legacy)) {
+            legacy.mcc$playStepSound(pos.getX(), pos.getY(), pos.getZ(), org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(state));
+        } else {
+            super.playStepSound(pos, state);
+        }
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        if (legacy != null && LegacyHosts.overrides(legacy.getClass(), "isPushedByWater")) return legacy.isPushedByWater();
+        return super.isPushedByFluid();
+    }
+
+    // ------------------------------------------------------------------ collisions, effects, kills
+
+    private static final Class<?>[] DAMAGE_PARAMS = {legacyconnector.v1_7_10.net.minecraft.util.DamageSource.class, float.class};
+
+    @Override
+    protected void doPush(net.minecraft.world.entity.Entity other) {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "collideWithEntity", Entity.class)) l.mcc$collideWithEntity(EntityBridge.wrap(other));
+        else super.doPush(other);
+    }
+
+    @Override
+    public void mcc$superDoPush(net.minecraft.world.entity.Entity other) {
+        super.doPush(other);
+    }
+
+    @Override
+    protected float getDamageAfterMagicAbsorb(DamageSource source, float amount) {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "applyPotionDamageCalculations", DAMAGE_PARAMS)) {
+            return l.mcc$applyPotionDamageCalculations(legacyconnector.v1_7_10.net.minecraft.util.DamageSource.mcc$wrap(source), amount);
+        }
+        return super.getDamageAfterMagicAbsorb(source, amount);
+    }
+
+    @Override
+    public float mcc$superMagicAbsorb(DamageSource source, float amount) {
+        return super.getDamageAfterMagicAbsorb(source, amount);
+    }
+
+    @Override
+    protected int decreaseAirSupply(int air) {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "decreaseAirSupply", int.class)) return l.mcc$decreaseAirSupply(air);
+        return super.decreaseAirSupply(air);
+    }
+
+    @Override
+    public int mcc$superDecreaseAirSupply(int air) {
+        return super.decreaseAirSupply(air);
+    }
+
+    @Override
+    public boolean canBeAffected(net.minecraft.world.effect.MobEffectInstance effect) {
+        EntityLivingBase l = living();
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "isPotionApplicable", legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.class)) {
+            var wrapped = legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(effect);
+            if (wrapped != null) return l.isPotionApplicable(wrapped);
+        }
+        return super.canBeAffected(effect);
+    }
+
+    @Override
+    public boolean killedEntity(ServerLevel level, LivingEntity victim) {
+        boolean result = super.killedEntity(level, victim);
+        if (legacy != null && EntityBridge.wrap(victim) instanceof EntityLivingBase v) legacy.onKillEntity(v);
+        return result;
+    }
+
     // ------------------------------------------------------------------ sounds
 
     @Override

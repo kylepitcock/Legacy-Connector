@@ -258,6 +258,32 @@ public final class LegacyHosts {
         }
     }
 
+    // ------------------------------------------------------------------ overrides
+
+    private static final Map<Class<?>, Map<String, Boolean>> OVERRIDES = new ConcurrentHashMap<>();
+
+    /**
+     * Whether a mod class (not the shim's own legacy classes) declares the no-argument method {@code name} somewhere between
+     * itself and the shim: hosts only hand a hook to the legacy object when a mod changed it, and keep the vanilla behaviour
+     * otherwise.
+     */
+    public static boolean overrides(Class<?> cls, String name, Class<?>... params) {
+        String key = params.length == 0 ? name : name + java.util.Arrays.toString(params);
+        return OVERRIDES.computeIfAbsent(cls, c -> new ConcurrentHashMap<>()).computeIfAbsent(key, k -> {
+            for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+                String cn = c.getName();
+                if (cn.startsWith("legacyconnector.") || cn.startsWith("legacyconnector_synth.") || cn.startsWith("org.kylepitcock.")) return false;
+                try {
+                    c.getDeclaredMethod(name, params);
+                    return true;
+                } catch (NoSuchMethodException | LinkageError e) {
+                    // look further up
+                }
+            }
+            return false;
+        });
+    }
+
     // ------------------------------------------------------------------ failures
 
     /** Construction failures (no legacy object can be made for this class). */

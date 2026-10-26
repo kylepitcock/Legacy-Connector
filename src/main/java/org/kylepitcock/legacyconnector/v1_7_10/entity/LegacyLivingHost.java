@@ -18,4 +18,13 @@ public interface LegacyLivingHost extends LegacyHost {
 
     /** Vanilla movement for one tick (LivingEntity.travel). */
     void mcc$superTravel(float strafe, float forward);
+
+    /** Vanilla push of an entity this one touches (LivingEntity.doPush). */
+    void mcc$superDoPush(net.minecraft.world.entity.Entity other);
+
+    /** Vanilla damage reduction by Resistance and enchantments (LivingEntity.getDamageAfterMagicAbsorb). */
+    float mcc$superMagicAbsorb(DamageSource source, float amount);
+
+    /** Vanilla air loss under water (LivingEntity.decreaseAirSupply). */
+    int mcc$superDecreaseAirSupply(int air);
 }
