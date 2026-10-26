@@ -607,6 +607,9 @@ public final class SynthJarBuilder {
                         mv.visitInsn(ret.getOpcode(Opcodes.IRETURN));
                     }
                     mv.visitLabel(fallback);
+                    // a runtime implementation of the missing method (its signature names synthesized classes, so the
+                    // hand-written class cannot declare it), then the default
+                    instanceResolverCall(mv, legacyOwner + "." + m.name(), original);
                     stubCall(mv, legacyOwner + "." + m.name() + original);
                     if (returnsSelf(owner, ret)) {
                         mv.visitVarInsn(Opcodes.ALOAD, 0);
@@ -622,6 +625,7 @@ public final class SynthJarBuilder {
                     if (!done.add(name + m.desc())) continue;
                     MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC | Opcodes.ACC_STATIC, name, m.desc(), null, null);
                     mv.visitCode();
+                    if (m.kind() == Kind.HELPER_STATIC) staticResolverCall(mv, legacyOwner + "." + m.name(), m.desc());
                     stubCall(mv, legacyOwner + "." + m.name() + m.desc());
                     Defaults.returnDefault(mv, Type.getReturnType(m.desc()));
                     mv.visitMaxs(0, 0);

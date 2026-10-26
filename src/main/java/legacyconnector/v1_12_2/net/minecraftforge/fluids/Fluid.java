@@ -135,16 +135,90 @@ public class Fluid {
         return overlay;
     }
 
-    public Fluid setRarity(Object rarity) {
+    protected legacyconnector.v1_12_2.net.minecraft.item.EnumRarity rarity = legacyconnector.v1_12_2.net.minecraft.item.EnumRarity.COMMON;
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent fillSound;
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent emptySound;
+
+    public Fluid setRarity(legacyconnector.v1_12_2.net.minecraft.item.EnumRarity rarity) {
+        this.rarity = rarity;
         return this;
     }
 
-    public Fluid setFillSound(Object sound) {
+    public Fluid setFillSound(legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound) {
+        this.fillSound = sound;
         return this;
     }
 
-    public Fluid setEmptySound(Object sound) {
+    public Fluid setEmptySound(legacyconnector.v1_12_2.net.minecraft.util.SoundEvent sound) {
+        this.emptySound = sound;
         return this;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.item.EnumRarity getRarity() {
+        return rarity;
+    }
+
+    /** The sound of filling a container with this fluid (vanilla's bucket sounds when unset: lava's for hot fluids). */
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getFillSound() {
+        if (fillSound == null) {
+            fillSound = getTemperature() > 1000 ? legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ITEM_BUCKET_FILL_LAVA
+                    : legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ITEM_BUCKET_FILL;
+        }
+        return fillSound;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getEmptySound() {
+        if (emptySound == null) {
+            emptySound = getTemperature() > 1000 ? legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ITEM_BUCKET_EMPTY_LAVA
+                    : legacyconnector.v1_12_2.net.minecraft.init.SoundEvents.ITEM_BUCKET_EMPTY;
+        }
+        return emptySound;
+    }
+
+    // Forge's per-stack variants: the fluid's own values unless a mod overrides them.
+
+    public int getLuminosity(FluidStack stack) {
+        return getLuminosity();
+    }
+
+    public int getDensity(FluidStack stack) {
+        return getDensity();
+    }
+
+    public int getTemperature(FluidStack stack) {
+        return getTemperature();
+    }
+
+    public int getViscosity(FluidStack stack) {
+        return getViscosity();
+    }
+
+    public boolean isGaseous(FluidStack stack) {
+        return isGaseous();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.item.EnumRarity getRarity(FluidStack stack) {
+        return getRarity();
+    }
+
+    public int getColor(FluidStack stack) {
+        return getColor();
+    }
+
+    public ResourceLocation getStill(FluidStack stack) {
+        return getStill();
+    }
+
+    public ResourceLocation getFlowing(FluidStack stack) {
+        return getFlowing();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getFillSound(FluidStack stack) {
+        return getFillSound();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getEmptySound(FluidStack stack) {
+        return getEmptySound();
     }
 
     public boolean doesVaporize(FluidStack stack) {

@@ -62,7 +62,7 @@ public final class CreativeTabBridge1122 {
         NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> raw = NonNullList.create();
         for (Item item : ItemBridge1122.modItems()) {
             try {
-                if (item.getCreativeTab() == tab) item.getSubItems(tab, raw);
+                if (java.util.Arrays.asList(item.getCreativeTabs()).contains(tab)) item.getSubItems(tab, raw);
             } catch (RuntimeException | LinkageError e) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Tabs").warn("Item {} failed to list its stacks", item.getRegistryName(), e);
             }

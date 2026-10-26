@@ -120,6 +120,32 @@ public final class ItemStack {
         this.stackTagCompound = tag;
     }
 
+    public void setTagInfo(String key, legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase value) {
+        if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
+        stackTagCompound.setTag(key, value);
+    }
+
+    /** The display name as a translation key (display.LocName), translated where it is shown. */
+    public ItemStack setTranslatableName(String key) {
+        getOrCreateSubCompound("display").setString("LocName", key);
+        return this;
+    }
+
+    /** The {@code ench} list: compounds of a numeric enchantment id and a level. */
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList getEnchantmentTagList() {
+        return stackTagCompound != null ? stackTagCompound.getTagList("ench", 10) : new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList();
+    }
+
+    public void addEnchantment(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment enchantment, int level) {
+        if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
+        if (!stackTagCompound.hasKey("ench", 9)) stackTagCompound.setTag("ench", new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList());
+        legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList list = stackTagCompound.getTagList("ench", 10);
+        NBTTagCompound e = new NBTTagCompound();
+        e.setShort("id", (short) legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.getEnchantmentID(enchantment));
+        e.setShort("lvl", (short) (byte) level);
+        list.appendTag(e);
+    }
+
     public NBTTagCompound getOrCreateSubCompound(String key) {
         if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
         if (!stackTagCompound.hasKey(key, 10)) stackTagCompound.setTag(key, new NBTTagCompound());

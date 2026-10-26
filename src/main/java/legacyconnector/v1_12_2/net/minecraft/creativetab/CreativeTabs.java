@@ -69,6 +69,28 @@ public class CreativeTabs {
         return this;
     }
 
+    private boolean drawTitle = true;
+    private boolean hasScrollbar = true;
+
+    /** Hides the tab's title in the creative inventory (tabs with a title drawn into their background). */
+    public CreativeTabs setNoTitle() {
+        this.drawTitle = false;
+        return this;
+    }
+
+    public boolean drawInForegroundOfTab() {
+        return drawTitle;
+    }
+
+    public CreativeTabs setNoScrollbar() {
+        this.hasScrollbar = false;
+        return this;
+    }
+
+    public boolean shouldHidePlayerInventory() {
+        return hasScrollbar;
+    }
+
     public String getBackgroundImageName() {
         return backgroundTexture;
     }

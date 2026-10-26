@@ -100,6 +100,55 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         return containerItem != null;
     }
 
+    /** Forge's stack-aware check (buckets keep their bucket, damaged tools themselves); the item-wide one by default. */
+    public boolean hasContainerItem(ItemStack stack) {
+        return hasContainerItem();
+    }
+
+    public ItemStack getContainerItem(ItemStack stack) {
+        if (!hasContainerItem(stack)) return ItemStack.EMPTY;
+        return new ItemStack(getContainerItem());
+    }
+
+    /** Forge: the capabilities a new stack of this item carries (fluid handlers of tanks and buckets, energy, ...); none by default. */
+    public legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities(ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound nbt) {
+        return null;
+    }
+
+    /** The tabs this item shows in (Forge: mods override it to list an item in several tabs). */
+    public CreativeTabs[] getCreativeTabs() {
+        return new CreativeTabs[] {getCreativeTab()};
+    }
+
+    private final java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, IItemPropertyGetter> properties = new java.util.LinkedHashMap<>();
+
+    /** A model property (bow pull, compass angle, ...) that item model overrides select on. */
+    public void addPropertyOverride(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IItemPropertyGetter getter) {
+        synchronized (properties) {
+            properties.put(key, getter);
+        }
+    }
+
+    public IItemPropertyGetter getPropertyGetter(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key) {
+        synchronized (properties) {
+            return properties.get(key);
+        }
+    }
+
+    public boolean hasCustomProperties() {
+        synchronized (properties) {
+            return !properties.isEmpty();
+        }
+    }
+
+    /** The registered model properties (client model bridging reads them). */
+    public java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, IItemPropertyGetter> mcc$properties() {
+        synchronized (properties) {
+            return new java.util.LinkedHashMap<>(properties);
+        }
+    }
+
     public Item setFull3D() {
         this.bFull3D = true;
         return this;
@@ -115,6 +164,7 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     }
 
     protected boolean isInCreativeTab(CreativeTabs targetTab) {
+        for (CreativeTabs t : getCreativeTabs()) if (t != null && t == targetTab) return true;
         CreativeTabs tab = getCreativeTab();
         return tab != null && (targetTab == CreativeTabs.SEARCH || targetTab == tab);
     }

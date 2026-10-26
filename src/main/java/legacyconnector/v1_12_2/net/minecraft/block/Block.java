@@ -284,6 +284,20 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return true;
     }
 
+    /** Vanilla: a block whose default state is an opaque cube is a full block. */
+    public boolean isFullBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return isOpaqueCube(getDefaultState());
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType getRenderType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.MODEL;
+    }
+
+    /** The resistance to explosions (a fifth of the value set with setResistance, which multiplied it by three). */
+    public float getExplosionResistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity exploder) {
+        return blockResistance / 5.0F;
+    }
+
     public void getSubBlocks(CreativeTabs tab, legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> items) {
         items.add(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(this));
     }

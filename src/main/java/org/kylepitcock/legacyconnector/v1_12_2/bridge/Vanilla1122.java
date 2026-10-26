@@ -587,6 +587,47 @@ public final class Vanilla1122 {
         VanillaBlock(Material material) {
             super(material);
         }
+
+        /** The default state of the modern block this one stands for (vanilla states map to it), or null. */
+        private net.minecraft.world.level.block.state.BlockState modernState() {
+            return mcc$modern instanceof net.minecraft.world.level.block.Block b ? b.defaultBlockState() : null;
+        }
+
+        @Override
+        public int getLightValue(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+            var m = modernState();
+            return m == null ? super.getLightValue(state) : m.getLightEmission();
+        }
+
+        @Override
+        public boolean isOpaqueCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+            var m = modernState();
+            return m == null ? super.isOpaqueCube(state)
+                    : m.canOcclude() && m.isSolidRender(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
+        }
+
+        @Override
+        public boolean isFullCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+            var m = modernState();
+            return m == null ? super.isFullCube(state) : m.isCollisionShapeFullBlock(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO);
+        }
+
+        @Override
+        public float getExplosionResistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity exploder) {
+            return mcc$modern instanceof net.minecraft.world.level.block.Block b ? b.getExplosionResistance() : super.getExplosionResistance(exploder);
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType getRenderType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+            var m = modernState();
+            if (m == null) return super.getRenderType(state);
+            if (m.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) return legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.LIQUID;
+            return switch (m.getRenderShape()) {
+                case INVISIBLE -> legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE;
+                case ENTITYBLOCK_ANIMATED -> legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+                default -> legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.MODEL;
+            };
+        }
     }
 
     /** A vanilla stairs block: mods check vanilla blocks with {@code instanceof BlockStairs} (EnderIO's painted stairs). */
