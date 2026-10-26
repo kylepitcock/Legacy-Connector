@@ -148,6 +148,24 @@ public final class Hierarchy {
         return searchMethod(start, name, desc, new java.util.HashSet<>());
     }
 
+    /** Access flags of the method a call resolves to (the nearest declaration), or null when it does not resolve. */
+    public Integer resolvedMethodAccess(String owner, String name, String desc) {
+        java.util.ArrayDeque<String> todo = new java.util.ArrayDeque<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        todo.add(owner);
+        while (!todo.isEmpty()) {
+            String n = todo.poll();
+            if (!seen.add(n)) continue;
+            ClassInfo c = find(n);
+            if (c == null) continue;
+            Integer access = c.methods.get(name + desc);
+            if (access != null) return access;
+            if (c.superName != null) todo.add(c.superName);
+            todo.addAll(c.interfaces);
+        }
+        return null;
+    }
+
     private Lookup searchMethod(ClassInfo c, String name, String desc, java.util.Set<String> seen) {
         if (!seen.add(c.name)) return Lookup.MISSING_MEMBER;
         if (c.hasMethod(name, desc)) return Lookup.FOUND;

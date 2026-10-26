@@ -76,8 +76,9 @@ public class Minecraft {
         return languageManager;
     }
 
-    public boolean isAmbientOcclusionEnabled() {
-        return true;
+    /** Static in 1.7.10 (block renderers ask it while choosing smooth lighting): the modern smooth lighting option. */
+    public static boolean isAmbientOcclusionEnabled() {
+        return net.minecraft.client.Minecraft.getInstance().options.ambientOcclusion().get();
     }
 
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap getTextureMapBlocks() {

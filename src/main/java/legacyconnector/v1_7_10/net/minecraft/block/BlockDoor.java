@@ -21,13 +21,13 @@ public class BlockDoor extends Block {
         world.setBlockMetadataWithNotify(x, lowerY, z, open ? lower | 4 : lower & ~4, 2);
     }
 
-    /** Whether the door is open, from the metadata of its lower half. */
-    public static boolean func_150015_f(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
-        return (world.getBlockMetadata(x, y, z) & 4) != 0;
+    /** Whether the door is open, from the metadata of its lower half (either half may be asked). */
+    public boolean func_150015_f(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return (getFullMetadata(world, x, y, z) & 4) != 0;
     }
 
     /** The lower half's facing and open bits, plus bit 8 for the upper half and bit 16 for a right-hinged door (as 1.7.10 combined both halves). */
-    public static int getFullMetadata(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+    public int getFullMetadata(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
         int meta = world.getBlockMetadata(x, y, z);
         boolean upper = (meta & 8) != 0;
         int lower = upper ? world.getBlockMetadata(x, y - 1, z) : meta;

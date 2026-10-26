@@ -48,13 +48,26 @@ public final class ReflectionCompat {
             return method.invoke(target, args);
         } catch (java.lang.reflect.InvocationTargetException e) {
             if (e.getCause() != null && INVOCATION_FAILURES.incrementAndGet() <= 40) {
-                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Reflection").info("{}.{} threw {}", method.getDeclaringClass().getName(), method.getName(), e.getCause().toString());
+                // mods' event dispatchers swallow these: name the root cause and where it happened
+                Throwable root = e.getCause();
+                while (root.getCause() != null && root.getCause() != root) root = root.getCause();
+                StringBuilder at = new StringBuilder();
+                int shown = 0;
+                for (StackTraceElement f : root.getStackTrace()) {
+                    String c = f.getClassName();
+                    if (shown > 0 && (c.startsWith("java.") || c.startsWith("jdk.") || c.startsWith("com.google."))) continue;
+                    at.append(" at ").append(f.getClassName()).append('.').append(f.getMethodName()).append(':').append(f.getLineNumber());
+                    if (++shown == 4) break;
+                }
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Reflection").info("{}.{} threw {}{}", method.getDeclaringClass().getName(), method.getName(),
+                        e.getCause().toString(), root == e.getCause() ? "" : " (root: " + root + at + ")");
             }
             throw e;
         }
     }
 
     private static final java.lang.reflect.Method RUN_TRANSFORMERS = runTransformers();
+    private static final java.util.concurrent.atomic.AtomicInteger NULLED_STATICS = new java.util.concurrent.atomic.AtomicInteger();
 
     private static java.lang.reflect.Method runTransformers() {
         try {
@@ -95,6 +108,12 @@ public final class ReflectionCompat {
     }
 
     public static void set(Field field, Object target, Object value) throws IllegalAccessException {
+        if (value == null && target == null && field.getDeclaringClass().getName().startsWith("legacyconnector.") && NULLED_STATICS.incrementAndGet() <= 5) {
+            // a mod clearing a game static (Biomes O' Plenty's vanilla biomes): name who did it
+            StackTraceElement[] st = new Throwable().getStackTrace();
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Reflection").info("{}.{} set to null by {}", field.getDeclaringClass().getName(), field.getName(),
+                    st.length > 1 ? st[1] : "?");
+        }
         try {
             field.set(target, value);
         } catch (IllegalAccessException e) {

@@ -178,7 +178,13 @@ public class BiomeGenBase {
     }
 
     public BiomeGenBase setColor(int color) {
+        return func_150557_a(color, false);
+    }
+
+    /** The biome's colour; {@code darkerMap} draws it half as bright on maps (field_150609_ah), as the variants did. */
+    public BiomeGenBase func_150557_a(int color, boolean darkerMap) {
         this.color = color;
+        this.field_150609_ah = darkerMap ? (color & 16711422) >> 1 : color;
         return this;
     }
 
@@ -432,9 +438,4 @@ public class BiomeGenBase {
         }
     }
 
-    /** The biome with the id; {@code fallback} true returns the ocean for an unknown id instead of null. */
-    public static BiomeGenBase func_150557_a(int id, boolean fallback) {
-        BiomeGenBase biome = getBiome(id);
-        return biome == null && fallback ? mcc$biomeOrOcean(id) : biome;
-    }
 }

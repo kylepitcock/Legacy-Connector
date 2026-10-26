@@ -186,6 +186,12 @@ public final class ShimLinker {
     private static AbstractInsnNode missingMethod(MethodNode method, MethodInsnNode m, Hierarchy h, SynthDemand demand, LinkReport report, String from) {
         if (!isLegacyApi(m.owner, h) && !isModClass(m.owner, h)) return null;
         Hierarchy.Lookup l = h.resolveMethod(m.owner, m.name, m.desc);
+        if (l == Hierarchy.Lookup.FOUND && staticMismatch(m, h)) {
+            // the shim declares it static where the call is virtual, or the other way round: the JVM would throw
+            // IncompatibleClassChangeError at the call, so it links like a missing method (a stub, reported)
+            report.missingMember(m.owner, m.name + m.desc + " (static/instance mismatch)", from, true);
+            l = Hierarchy.Lookup.MISSING_MEMBER;
+        }
         if (l != Hierarchy.Lookup.MISSING_MEMBER && l != Hierarchy.Lookup.MISSING_CLASS) return null;
 
         if (m.name.equals("<init>")) {
@@ -366,6 +372,13 @@ public final class ShimLinker {
 
     private static boolean isVanillaSingletonHolder(String owner) {
         return isShimNamespace(owner) && (owner.endsWith("/net/minecraft/init/Blocks") || owner.endsWith("/net/minecraft/init/Items"));
+    }
+
+    private static boolean staticMismatch(MethodInsnNode m, Hierarchy h) {
+        if (m.name.equals("<init>") || !h.isShim(m.owner)) return false;
+        Integer access = h.resolvedMethodAccess(m.owner, m.name, m.desc);
+        if (access == null) return false;
+        return ((access & Opcodes.ACC_STATIC) != 0) != (m.getOpcode() == Opcodes.INVOKESTATIC);
     }
 
     static boolean isShimNamespace(String internalName) {
