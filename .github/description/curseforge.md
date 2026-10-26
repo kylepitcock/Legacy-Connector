@@ -97,6 +97,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 - **Networking, IMC, coremod plugins** and the usual annotations (`@ObjectHolder`, `@SidedProxy`, `@EventBusSubscriber`)
 - **Models:** mod blockstates and item models are translated to 1.21 formats (only lightly tested)
 - **`@Config` classes** are filled from their config files
+- **Commands:** the commands mods register when the server starts become modern commands, with their permissions and tab completion
 - **Not yet:** entities and AI, containers and GUIs, in-world fluids, world generation, custom recipe classes and most client rendering
 
 ### Modern replacements for outdated libraries
