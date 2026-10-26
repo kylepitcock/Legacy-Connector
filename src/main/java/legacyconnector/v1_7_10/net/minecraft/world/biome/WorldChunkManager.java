@@ -11,9 +11,20 @@ import legacyconnector.v1_7_10.net.minecraft.world.gen.layer.IntCache;
 public class WorldChunkManager {
     public GenLayer genBiomes;
     public GenLayer biomeIndexLayer;
-    /** The biomes the player may spawn in. A vanilla biome that has no instance yet (null) is left out instead of failing every chunk of the world. */
-    public List<BiomeGenBase> biomesToSpawnIn = new ArrayList<>(java.util.stream.Stream.of(BiomeGenBase.forest, BiomeGenBase.plains, BiomeGenBase.taiga,
+    /**
+     * Forge: the biomes new chunk managers let the player spawn in (mods add theirs or replace the list). A vanilla biome that has no
+     * instance yet (null) is left out instead of failing every chunk of the world.
+     */
+    public static ArrayList<BiomeGenBase> allowedBiomes = new ArrayList<>(java.util.stream.Stream.of(BiomeGenBase.forest, BiomeGenBase.plains, BiomeGenBase.taiga,
             BiomeGenBase.taigaHills, BiomeGenBase.forestHills, BiomeGenBase.jungle, BiomeGenBase.jungleHills).filter(java.util.Objects::nonNull).toList());
+    /** The biomes the player may spawn in (a copy of {@link #allowedBiomes} when the manager is made). */
+    public List<BiomeGenBase> biomesToSpawnIn = mcc$allowed();
+
+    private static List<BiomeGenBase> mcc$allowed() {
+        List<BiomeGenBase> out = new ArrayList<>();
+        if (allowedBiomes != null) for (BiomeGenBase b : allowedBiomes) if (b != null) out.add(b);
+        return out;
+    }
 
     protected WorldChunkManager() {
     }

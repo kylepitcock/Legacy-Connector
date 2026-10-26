@@ -1,8 +1,5 @@
-net.minecraft.world.biome.WorldChunkManager.allowedBiomes:Ljava/util/ArrayList;   # 2 user(s): biomesoplenty.common.core.BOPBiomes, thaumcraft.common.config.ConfigEntities
 net.minecraft.world.World.FCpc:Lcom/google/common/collect/ImmutableSetMultimap;   # 1 user(s): fastcraft.u
 net.minecraft.world.chunk.Chunk.FCtt:I   # 1 user(s): fastcraft.u
-net.minecraft.world.demo.DemoWorldServer.demoWorldSettings:Llegacyconnector/v1_7_10/net/minecraft/world/WorldSettings;   # 1 user(s): galaxyspace.core.client.gui.GSGuiMainMenu
-net.minecraft.world.gen.MapGenRavine.func_151540_a(JII[Llegacyconnector/v1_7_10/net/minecraft/block/Block;DDDFFFIID)V   # 1 user(s): fox.spiteful.avaritia.compat.botania.alfheim.MapGenAlfheimRavines
 net.minecraft.world.gen.layer.GenLayer.nextLong(J)J   # 1 user(s): biomesoplenty.common.world.layer.hell.BiomeLayerHellBiomes
 net.minecraft.world.gen.structure.MapGenStructureData.func_143043_a(Llegacyconnector/v1_7_10/net/minecraft/nbt/NBTTagCompound;II)V   # 1 user(s): twilightforest.world.MapGenTFMajorFeature
 net.minecraft.world.gen.structure.StructureStrongholdPieces$Stairs2.field_75026_c:Ljava/util/List;   # 1 user(s): twilightforest.structures.StructureTFMajorFeatureStart
