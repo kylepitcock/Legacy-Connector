@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
  * class instead of a plain one over its jar; mods use it to serve assets that are not in the jar (Fisk's Heroes serves the
  * sound files and sounds.json it downloads). The jar's own assets are already in the game, translated, so this pack serves
  * only what a custom pack has beyond them. It cannot list folders (legacy packs cannot either), so it serves files by name:
- * sounds.json, sounds and textures that are asked for by name.
+ * sounds.json, sounds and textures that are asked for by name. Packs mods add while running (see
+ * {@code LegacyResourcePacks}) are served here as well, whole.
  */
 public final class LegacyModPacks extends AbstractPackResources {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/ModPacks");

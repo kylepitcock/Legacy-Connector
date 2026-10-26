@@ -605,6 +605,7 @@ public final class EventBridge1710 {
     public static void registerClient(IEventBus gameBus) {
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
         org.kylepitcock.legacyconnector.v1_7_10.client.LegacyHorizon.register(gameBus);
+        org.kylepitcock.legacyconnector.v1_7_10.client.ClientEvents1710.register(gameBus);
         gameBus.addListener((net.neoforged.neoforge.client.event.ViewportEvent.ComputeFogColor e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.EntityViewRenderEvent.FogColors.class)) return;
             if (!(EntityBridge.wrap(e.getCamera().getEntity()) instanceof EntityLivingBase living)) return;

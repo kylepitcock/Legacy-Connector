@@ -63,6 +63,7 @@ public class LegacyArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
         for (int slot = 0; slot < 4; slot++) {
             var stack = entity.getItemBySlot(SLOTS[slot]);
             if (stack.isEmpty() || !(stack.getItem() instanceof LegacyItemAdapter adapter) || !(adapter.legacyItem() instanceof ItemArmor armor) || armor.armorType != slot) continue;
+            if (!ClientEvents1710.armorPiece(entity, slot, stack, partialTick)) continue;
             RenderContext.beginWorld(pose, buffers, light, LivingEntityRenderer.getOverlayCoords(entity, 0.0F));
             try {
                 var legacyEntity = EntityBridge.wrap(entity);
