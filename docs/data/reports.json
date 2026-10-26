@@ -35,6 +35,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/customoregen/files/2335337",
    "date": "2026-10-26",
    "open": true
+  },
+  {
+   "issue": 85,
+   "mod": "Portal Gun",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "None of the items work but the mod loads",
+   "lc": "0.30",
+   "neoforge": "1.21.1",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/portal-gun",
+   "date": "2026-10-26",
+   "open": true
   }
  ]
 }
