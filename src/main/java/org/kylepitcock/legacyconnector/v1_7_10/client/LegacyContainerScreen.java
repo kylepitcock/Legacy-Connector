@@ -20,7 +20,7 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
     public LegacyContainerScreen(LegacyMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
         this.legacy = (GuiContainer) menu.clientGui();
-        this.customKeys = legacy != null && ClientGui.overrides(legacy, "keyTyped", char.class, int.class);
+        this.customKeys = legacy != null && (ClientGui.overrides(legacy, "keyTyped", char.class, int.class) || ClientGui.overrides(legacy, "handleKeyboardInput"));
     }
 
     private boolean failed;
@@ -46,6 +46,13 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
 
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        if (legacy != null) {
+            java.util.List<legacyconnector.v1_7_10.net.minecraft.inventory.Slot> dragged = new java.util.ArrayList<>();
+            for (var slot : quickCraftSlots) {
+                if (slot instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacySlot ls) dragged.add(ls.legacy());
+            }
+            legacy.mcc$setDragSplitting(isQuickCrafting, dragged);
+        }
         super.render(graphics, mouseX, mouseY, partialTick);
         if (legacy == null || failed) return;
         legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen.mcc$beginFrame();

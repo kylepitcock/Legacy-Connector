@@ -113,15 +113,7 @@ public final class LegacyModPacks extends AbstractPackResources {
             });
             if (pair.length == 2) out.add(pair);
         }
-        for (IResourcePack extra : EXTRA) out.add(new IResourcePack[] {extra, null});
         return out;
-    }
-
-    /** Packs of containers that are not loaded mods, added with {@code FMLClientHandler.addModAsResource}; served as they are. */
-    private static final List<IResourcePack> EXTRA = new java.util.concurrent.CopyOnWriteArrayList<>();
-
-    public static void mcc$addExtraPack(IResourcePack pack) {
-        if (pack != null && !EXTRA.contains(pack)) EXTRA.add(pack);
     }
 
     @Override

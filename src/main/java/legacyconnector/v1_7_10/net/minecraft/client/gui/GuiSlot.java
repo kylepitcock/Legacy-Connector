@@ -108,8 +108,9 @@ public abstract class GuiSlot {
         int max = func_148135_f();
         if (max < 0) max /= 2;
         if (!field_148163_i && max < 0) max = 0;
-        if (amountScrolled > max) amountScrolled = max;
+        // a list shorter than the view ends at a negative offset: it is drawn centred
         if (amountScrolled < 0.0F) amountScrolled = 0.0F;
+        if (amountScrolled > max) amountScrolled = max;
     }
 
     /** How far the list can scroll (the content height minus the view). */
