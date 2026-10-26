@@ -57,6 +57,27 @@ public final class PotionBridge {
         return isVanilla(id) ? BY_ID.get(id) : CUSTOM.get(id);
     }
 
+    /** The modern effects of mod potions (the client draws their icons, see LegacyEffectIcons). */
+    public static java.util.List<MobEffect> legacyEffects() {
+        java.util.List<MobEffect> out = new java.util.ArrayList<>();
+        for (Holder<MobEffect> h : CUSTOM.values()) out.add(h.value());
+        return out;
+    }
+
+    /** The legacy potion behind a modern effect of a mod potion, or null. */
+    public static Potion legacyOf(MobEffect effect) {
+        return effect instanceof LegacyMobEffect l ? l.potion : null;
+    }
+
+    /** The modern effect of a vanilla potion whose 1.7.10 status icon had this index, or null. */
+    public static Holder<MobEffect> vanillaWithIcon(int iconIndex) {
+        for (int i = 1; i < BY_ID.size(); i++) {
+            Potion p = Potion.potionTypes[i];
+            if (p != null && p.getStatusIconIndex() == iconIndex) return BY_ID.get(i);
+        }
+        return null;
+    }
+
     /** Legacy id of a modern effect, or -1. */
     public static int idOf(Holder<MobEffect> effect) {
         for (int i = 1; i < BY_ID.size(); i++) if (BY_ID.get(i).equals(effect)) return i;

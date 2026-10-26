@@ -242,6 +242,19 @@ public final class LegacySprites {
     private record Built(byte[] png, byte[] meta) {}
 
     /** The bytes of a texture file in the mod files (e.g. {@code textures/blocks/oreCopper.png} of "IC2"), or null if there is none. */
+    /** Whether a mod file has the legacy resource {@code assets/<domain>/<path>} (names as given, or normalised). */
+    public static boolean modTextureExists(String domain, String path) {
+        String ns = Ids.namespace(domain);
+        String normalized = Ids.normalizePath(path);
+        for (var file : ModList.get().getModFiles()) {
+            Path p = file.getFile().findResource("assets", ns, path);
+            if (p != null && Files.isRegularFile(p)) return true;
+            p = file.getFile().findResource("assets", ns, normalized);
+            if (p != null && Files.isRegularFile(p)) return true;
+        }
+        return false;
+    }
+
     static byte[] modTexture(String domain, String path) {
         try (InputStream in = new ModResources().getResource(new ResourceLocation(domain, path)).getInputStream()) {
             return in.readAllBytes();

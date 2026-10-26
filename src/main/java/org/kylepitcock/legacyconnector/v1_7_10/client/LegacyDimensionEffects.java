@@ -58,10 +58,23 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         return p != null && p.hasNoSky ? SkyType.NONE : SkyType.NORMAL;
     }
 
+    /**
+     * 1.7.10 drew vanilla clouds only in surface worlds ({@code RenderGlobal.renderClouds}); NaN tells the game (and Sodium)
+     * to draw none. Thaumcraft's Outer Lands puts its cloud height at 1 and relies on that: its clouds floated under the maze.
+     */
+    private static boolean vanillaCloudsHidden(WorldProvider p) {
+        try {
+            return p.getCloudRenderer() == null && !p.isSurfaceWorld();
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     @Override
     public float getCloudHeight() {
         WorldProvider p = provider();
         if (p == null) return super.getCloudHeight();
+        if (vanillaCloudsHidden(p)) return Float.NaN;
         try {
             return p.getCloudHeight();
         } catch (RuntimeException | LinkageError e) {
@@ -113,7 +126,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
             Matrix4f projection) {
         WorldProvider p = provider();
         IRenderHandler handler = p == null || FAILED.contains(p.getClass().getName() + ":clouds") ? null : p.getCloudRenderer();
-        if (handler == null) return false;
+        if (handler == null) return p != null && vanillaCloudsHidden(p);
         return draw(p, "clouds", handler, level, partialTick, modelView);
     }
 

@@ -236,6 +236,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
     }
 
+    /** Whether 1.7.10 drew the block's item as a 3D block (RenderItem: RenderBlocks.renderItemIn3d, FML for ISBRH ids). */
+    private static boolean inventory3d(Block b) {
+        try {
+            int rt = b.getRenderType();
+            if (legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderBlocks.renderItemIn3d(rt)) return true;
+            var h = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(rt);
+            return h != null && h.shouldRender3DInInventory(rt);
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
     /** An icon's sprite name; mods' own icon classes can be half-initialised (wrapping a sprite that never registered). */
     private static String nameOf(IIcon icon) {
         try {
@@ -419,6 +431,13 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.addProperty("parent", "minecraft:item/chest");
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
+                model.add("textures", tex);
+            } else if (item instanceof ItemBlock ib && icon != null && ib.mcc$block().getItemIconName() == null && !inventory3d(ib.mcc$block())) {
+                // 1.7.10 drew an ItemBlock as a block only for the render types RenderBlocks.renderItemIn3d lists (and block
+                // renderers that ask for it); the others (panes, bars, torches, plants, rails) were their flat icon.
+                model.addProperty("parent", "minecraft:item/generated");
+                JsonObject tex = new JsonObject();
+                tex.addProperty("layer0", nameOf(icon));
                 model.add("textures", tex);
             } else if (item instanceof ItemBlock ib && (icon == null || ib.mcc$block().getItemIconName() == null)) {
                 Block block = ib.mcc$block();

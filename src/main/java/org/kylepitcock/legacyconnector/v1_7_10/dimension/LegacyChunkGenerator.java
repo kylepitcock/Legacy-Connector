@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.WorldGenBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,16 +123,22 @@ public class LegacyChunkGenerator extends ChunkGenerator {
     @Override
     public void applyBiomeDecoration(WorldGenLevel level, ChunkAccess chunk, StructureManager structures) {
         IChunkProvider provider = legacy();
-        if (provider == null) return;
         LevelAccessor previous = World.mcc$enterRegion(level);
         try {
-            synchronized (provider) {
-                synchronized (biomeLock(provider)) {
-                    provider.populate(provider, chunk.getPos().x, chunk.getPos().z);
+            if (provider != null) {
+                try {
+                    synchronized (provider) {
+                        synchronized (biomeLock(provider)) {
+                            provider.populate(provider, chunk.getPos().x, chunk.getPos().z);
+                        }
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    LOG.error("Dimension {} failed to populate chunk {}", dimension, chunk.getPos(), e);
                 }
             }
-        } catch (RuntimeException | LinkageError e) {
-            LOG.error("Dimension {} failed to populate chunk {}", dimension, chunk.getPos(), e);
+            // Chunk.populateChunk ran the mods' IWorldGenerators right after the provider's populate, in every dimension
+            // (Thaumcraft's Outer Lands maze, ores and structures other mods add to a mod's dimension).
+            WorldGenBridge.decorateModDimension(level, chunk.getPos().x, chunk.getPos().z, provider);
         } finally {
             World.mcc$leaveRegion(previous);
         }

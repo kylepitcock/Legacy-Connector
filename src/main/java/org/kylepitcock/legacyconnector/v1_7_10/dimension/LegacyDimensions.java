@@ -91,11 +91,13 @@ public final class LegacyDimensions {
         for (var e : DimensionManager.mcc$modDimensions().entrySet()) {
             int id = e.getKey();
             boolean sky = true;
+            float ambient = 0.0F;
             try {
                 var ctor = e.getValue().getDeclaredConstructor();
                 ctor.setAccessible(true);
                 WorldProvider p = (WorldProvider) ctor.newInstance();
                 sky = !p.hasNoSky;
+                ambient = p.mcc$ambientLight();
             } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
                 // keep the overworld-like defaults
             }
@@ -105,7 +107,7 @@ public final class LegacyDimensions {
             type.addProperty("coordinate_scale", 1.0);
             type.addProperty("has_skylight", sky);
             type.addProperty("has_ceiling", false);
-            type.addProperty("ambient_light", 0.0);
+            type.addProperty("ambient_light", ambient);
             type.addProperty("monster_spawn_light_level", 7);
             type.addProperty("monster_spawn_block_light_limit", 0);
             type.addProperty("piglin_safe", false);

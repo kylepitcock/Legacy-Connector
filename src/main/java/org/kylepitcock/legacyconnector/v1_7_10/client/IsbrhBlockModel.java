@@ -33,14 +33,21 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
 
     private final Block block;
     private final int renderId;
+    /** A built-in handler of a vanilla render type (see VanillaBlockRenderers); null: the mod's handler of the render id. */
+    private final ISimpleBlockRenderingHandler builtIn;
     /** Forge world passes the block is drawn in: 0 cut out, 1 translucent (pipes draw in both). */
     private final boolean pass0, pass1;
     private final ChunkRenderTypeSet renderTypes;
 
     public IsbrhBlockModel(BakedModel original, Block block, int renderId) {
+        this(original, block, renderId, null);
+    }
+
+    public IsbrhBlockModel(BakedModel original, Block block, int renderId, ISimpleBlockRenderingHandler builtIn) {
         super(original);
         this.block = block;
         this.renderId = renderId;
+        this.builtIn = builtIn;
         boolean p0 = true, p1 = false;
         try {
             p0 = block.canRenderInPass(0);
@@ -58,7 +65,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
 
     @Override
     public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData base) {
-        ISimpleBlockRenderingHandler handler = RenderingRegistry.mcc$blockHandler(renderId);
+        ISimpleBlockRenderingHandler handler = builtIn != null ? builtIn : RenderingRegistry.mcc$blockHandler(renderId);
         if (handler == null || FAILED.contains(block.getClass().getName())) return base;
         List<BakedQuad> solid = pass0 ? capture(handler, level, pos, 0) : List.of();
         if (solid == null) return base;
