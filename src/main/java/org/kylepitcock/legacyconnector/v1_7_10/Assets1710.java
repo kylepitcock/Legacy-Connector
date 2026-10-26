@@ -321,11 +321,31 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         }
     }
 
+    /**
+     * Whether a standard block refuses every side even next to air: 1.7.10 then drew nothing for it, while its icon (often the
+     * TESR's model texture) as a cube hid the real model.
+     */
+    private static boolean noSides(Block b) {
+        if (b.getRenderType() != 0) return false;
+        try {
+            var air = org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockAccessView.of(net.minecraft.world.level.EmptyBlockGetter.INSTANCE);
+            for (int side = 0; side < 6; side++) {
+                int x = side == 4 ? -1 : side == 5 ? 1 : 0, y = 64 + (side == 0 ? -1 : side == 1 ? 1 : 0), z = side == 2 ? -1 : side == 3 ? 1 : 0;
+                if (b.shouldSideBeRendered(air, x, y, z, side)) return false;
+            }
+            return true;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     private static JsonObject model(Block b, String[] faces) {
         JsonObject model = new JsonObject();
         JsonObject tex = new JsonObject();
-        if (b.getRenderType() == 22 || b.getRenderType() == -1 || org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.drawnByNobody(b.getRenderType())) {
-            // 22: chest; -1: not drawn as a block at all (a TileEntitySpecialRenderer draws it, e.g. BiblioCraft).
+        if (b.getRenderType() == 22 || b.getRenderType() == -1 || org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.drawnByNobody(b.getRenderType())
+                || noSides(b)) {
+            // 22: chest; -1: not drawn as a block at all (a TileEntitySpecialRenderer draws it, e.g. BiblioCraft); a standard
+            // block that draws none of its sides is the same (Witchery's oven, distillery, candelabra: TESR models).
             // Chest-style: no geometry, the tile entity renderer draws it; keep the particle texture for breaking.
             tex.addProperty("particle", faces[1]);
             model.add("textures", tex);

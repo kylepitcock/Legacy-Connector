@@ -49,7 +49,10 @@ public class EntityItemFrame extends EntityHanging {
         if (one != null) one.mcc$setCount(1);
         var frame = mcc$frame();
         if (frame != null) {
-            frame.setItem(ItemStack.mcc$toModern(one));
+            // village pieces (Immersive Engineering's house) fill frames on a worldgen thread, where the neighbour update
+            // would wait on the server thread for the chunk being generated
+            boolean serverThread = frame.level().getServer() == null || frame.level().getServer().isSameThread();
+            frame.setItem(ItemStack.mcc$toModern(one), serverThread);
             return;
         }
         this.displayed = one;
