@@ -30,6 +30,33 @@ public class EntityOcelot extends EntityTameable {
     }
 
     @Override
+    protected void entityInit() {
+        super.entityInit();
+        dataWatcher.addObject(18, Byte.valueOf((byte) 0));
+    }
+
+    /** The cat skin (0 wild ocelot, 1 black, 2 red, 3 siamese), kept in watcher slot 18 as in 1.7.10. */
+    public int getTameSkin() {
+        return dataWatcher.getWatchableObjectByte(18);
+    }
+
+    public void setTameSkin(int skin) {
+        dataWatcher.updateObject(18, Byte.valueOf((byte) skin));
+    }
+
+    @Override
+    protected void writeEntityToNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        super.writeEntityToNBT(tag);
+        tag.setInteger("CatType", getTameSkin());
+    }
+
+    @Override
+    protected void readEntityFromNBT(legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound tag) {
+        super.readEntityFromNBT(tag);
+        setTameSkin(tag.getInteger("CatType"));
+    }
+
+    @Override
     public boolean isAIEnabled() {
         return true;
     }

@@ -24,6 +24,12 @@ public class RenderGlobal {
         if (renderer != null) renderer.setBlocksDirty(x1, y1, z1, x2, y2, z2);
     }
 
+    /** Rebuilds every chunk's geometry (mods call it after changing how their blocks draw, e.g. a config toggle). */
+    public void loadRenderers() {
+        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        if (renderer != null) renderer.allChanged();
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.client.particle.EntityFX doSpawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
         return null;
     }

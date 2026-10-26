@@ -157,6 +157,16 @@ public class EntityList {
         return entity == null ? null : classToStringMapping.get(entity.getClass());
     }
 
+    /** Names of every registered entity (the live key set, as in 1.7.10). */
+    public static java.util.Set<String> func_151515_b() {
+        return stringToClassMapping.keySet();
+    }
+
+    /** {@link #func_151515_b} under the name later mappings gave it (mods built against them call this). */
+    public static java.util.Set<String> getEntityNameList() {
+        return func_151515_b();
+    }
+
     public static String getStringFromID(int id) {
         Class<?> cls = getClassFromID(id);
         return cls == null ? null : classToStringMapping.get(cls);

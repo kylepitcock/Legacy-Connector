@@ -13,6 +13,9 @@ public interface LegacyLivingHost extends LegacyHost {
 
     void mcc$superSetTarget(net.minecraft.world.entity.LivingEntity target);
 
+    /** Vanilla damage application after armour and absorption (LivingEntity.actuallyHurt). */
+    void mcc$superActuallyHurt(DamageSource source, float amount);
+
     /** Vanilla movement for one tick (LivingEntity.travel). */
     void mcc$superTravel(float strafe, float forward);
 }

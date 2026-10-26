@@ -99,6 +99,9 @@ public final class EntityBridge {
         if (modern instanceof ItemEntity item) return new EntityItem(item);
         if (modern instanceof net.minecraft.world.entity.ExperienceOrb orb) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityXPOrb(orb);
         if (modern instanceof net.minecraft.world.entity.npc.Villager villager) return new VillagerView(villager);
+        if (modern instanceof net.minecraft.world.entity.vehicle.AbstractMinecartContainer cart) return new MinecartContainerView(cart);
+        if (modern instanceof net.minecraft.world.entity.vehicle.AbstractMinecart cart) return new MinecartView(cart);
+        if (modern instanceof net.minecraft.world.entity.vehicle.Boat boat) return new legacyconnector.v1_7_10.net.minecraft.entity.item.EntityBoat(boat);
         if (modern instanceof LivingEntity living) {
             Entity typed = VanillaMobViews.create(living);
             return typed != null ? typed : new LivingView(living);
@@ -180,6 +183,35 @@ public final class EntityBridge {
     public static final class VillagerView extends legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager {
         VillagerView(net.minecraft.world.entity.npc.Villager modern) {
             super(modern);
+        }
+    }
+
+    /** View for modern minecarts; the legacy cart types are numbered like the modern ones. */
+    public static final class MinecartView extends legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart {
+        MinecartView(net.minecraft.world.entity.vehicle.AbstractMinecart modern) {
+            super(modern);
+        }
+
+        @Override
+        public int getMinecartType() {
+            return ((net.minecraft.world.entity.vehicle.AbstractMinecart) mcc$entity).getMinecartType().ordinal();
+        }
+    }
+
+    /** View for modern chest and hopper carts. */
+    public static final class MinecartContainerView extends legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecartContainer {
+        MinecartContainerView(net.minecraft.world.entity.vehicle.AbstractMinecartContainer modern) {
+            super(modern);
+        }
+
+        @Override
+        public int getMinecartType() {
+            return ((net.minecraft.world.entity.vehicle.AbstractMinecart) mcc$entity).getMinecartType().ordinal();
+        }
+
+        @Override
+        public int getSizeInventory() {
+            return ((net.minecraft.world.entity.vehicle.AbstractMinecartContainer) mcc$entity).getContainerSize();
         }
     }
 

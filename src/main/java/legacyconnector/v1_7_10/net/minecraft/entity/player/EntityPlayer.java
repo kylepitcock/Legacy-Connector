@@ -337,6 +337,22 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return 0.12F;
     }
 
+    /** Whether the player turned their cape off in the skin customisation options. */
+    public boolean getHideCape() {
+        return getHideCape(1);
+    }
+
+    /** Bit {@code bit} of 1.7.10's hidden-parts byte; only bit 1 (the cape) existed, read from the modern model-part settings. */
+    protected boolean getHideCape(int bit) {
+        return bit == 1 && mcc$entity != null && !mcc$player().isModelPartShown(net.minecraft.world.entity.player.PlayerModelPart.CAPE);
+    }
+
+    /** Players wait 80 ticks in a portal before travelling, or none when they cannot take damage (creative). */
+    @Override
+    public int getMaxInPortalTime() {
+        return PlayerCapabilities.mcc$get$disableDamage(capabilities) ? 0 : 80;
+    }
+
     public void setSpawnChunk(ChunkCoordinates coordinates, boolean forced, int dimension) {
         if (coordinates == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
         var target = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(sp.server, dimension);
