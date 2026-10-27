@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.world.border;
 import legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB;
 import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
 
-/** 1.12.2 world border: a view over a level's modern border (a detached one when a mod creates its own). */
+/** 1.12.2 world border: a view over a level's modern border (one a mod builds itself is its own modern border). */
 public class WorldBorder {
     private final net.minecraft.world.level.border.WorldBorder modern;
 
@@ -11,8 +11,15 @@ public class WorldBorder {
         this(new net.minecraft.world.level.border.WorldBorder());
     }
 
-    public WorldBorder(net.minecraft.world.level.border.WorldBorder modern) {
+    private WorldBorder(net.minecraft.world.level.border.WorldBorder modern) {
         this.modern = modern;
+    }
+
+    private static final java.util.Map<net.minecraft.world.level.border.WorldBorder, WorldBorder> VIEWS =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    public static WorldBorder mcc$of(net.minecraft.world.level.border.WorldBorder modern) {
+        return modern == null ? new WorldBorder() : VIEWS.computeIfAbsent(modern, WorldBorder::new);
     }
 
     public net.minecraft.world.level.border.WorldBorder mcc$modern() {
@@ -20,7 +27,7 @@ public class WorldBorder {
     }
 
     public boolean contains(BlockPos pos) {
-        return modern.isWithinBounds(pos.getX(), pos.getZ()) && pos.getX() + 1 <= maxX() && pos.getZ() + 1 <= maxZ();
+        return pos.getX() + 1 > minX() && pos.getX() < maxX() && pos.getZ() + 1 > minZ() && pos.getZ() < maxZ();
     }
 
     public boolean contains(legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos range) {
@@ -32,8 +39,7 @@ public class WorldBorder {
     }
 
     public double getClosestDistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
-        return getClosestDistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(entity),
-                legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(entity));
+        return getClosestDistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(entity), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(entity));
     }
 
     public double getClosestDistance(double x, double z) {
@@ -113,8 +119,7 @@ public class WorldBorder {
     }
 
     public double getResizeSpeed() {
-        long t = modern.getLerpRemainingTime();
-        return t <= 0 ? 0.0D : Math.abs(modern.getLerpTarget() - modern.getSize()) / (t / 1000.0D);
+        return modern.getLerpSpeed();
     }
 
     public int getWarningTime() {
@@ -131,5 +136,9 @@ public class WorldBorder {
 
     public void setWarningDistance(int distance) {
         modern.setWarningBlocks(distance);
+    }
+
+    public java.util.List<Object> getListeners() {
+        return new java.util.ArrayList<>();
     }
 }

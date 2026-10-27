@@ -1,14 +1,13 @@
 package legacyconnector.v1_12_2.net.minecraft.util;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 
 /**
- * 1.12.2 particle types (names, ids, argument counts as in vanilla), each mapped to the modern particle it became
- * ({@link #mcc$options}): colours of dust and mob spells come from the legacy velocity arguments, block and item particles
- * from the legacy state/item ids.
+ * The 1.12 particle kinds, with their names, network ids and argument counts. {@link #mcc$modern} turns one (and its
+ * arguments) into the modern particle that looks the same.
  */
 public enum EnumParticleTypes {
     EXPLOSION_NORMAL("explode", 0, true),
@@ -61,25 +60,33 @@ public enum EnumParticleTypes {
     TOTEM("totem", 47, false),
     SPIT("spit", 48, true);
 
+    private static final Map<Integer, EnumParticleTypes> PARTICLES = new java.util.HashMap<>();
+    private static final Map<String, EnumParticleTypes> BY_NAME = new java.util.HashMap<>();
+
+    static {
+        for (EnumParticleTypes t : values()) {
+            PARTICLES.put(t.particleID, t);
+            BY_NAME.put(t.particleName, t);
+        }
+    }
+
     private final String particleName;
     private final int particleID;
     private final boolean shouldIgnoreRange;
     private final int argumentCount;
-    private static final Map<Integer, EnumParticleTypes> PARTICLES = new HashMap<>();
-    private static final Map<String, EnumParticleTypes> BY_NAME = new HashMap<>();
 
-    EnumParticleTypes(String name, int id, boolean ignoreRange, int argumentCount) {
-        this.particleName = name;
-        this.particleID = id;
-        this.shouldIgnoreRange = ignoreRange;
-        this.argumentCount = argumentCount;
+    EnumParticleTypes(String particleNameIn, int particleIDIn, boolean shouldIgnoreRangeIn, int argumentCountIn) {
+        this.particleName = particleNameIn;
+        this.particleID = particleIDIn;
+        this.shouldIgnoreRange = shouldIgnoreRangeIn;
+        this.argumentCount = argumentCountIn;
     }
 
-    EnumParticleTypes(String name, int id, boolean ignoreRange) {
-        this(name, id, ignoreRange, 0);
+    EnumParticleTypes(String particleNameIn, int particleIDIn, boolean shouldIgnoreRangeIn) {
+        this(particleNameIn, particleIDIn, shouldIgnoreRangeIn, 0);
     }
 
-    public static java.util.Set<String> getParticleNames() {
+    public static Set<String> getParticleNames() {
         return BY_NAME.keySet();
     }
 
@@ -99,101 +106,97 @@ public enum EnumParticleTypes {
         return shouldIgnoreRange;
     }
 
-    public static EnumParticleTypes getParticleFromId(int id) {
-        return PARTICLES.get(id);
+    public static EnumParticleTypes getParticleFromId(int particleId) {
+        return PARTICLES.get(particleId);
     }
 
-    public static EnumParticleTypes getByName(String name) {
-        return BY_NAME.get(name);
-    }
-
-    static {
-        for (EnumParticleTypes t : values()) {
-            PARTICLES.put(t.particleID, t);
-            BY_NAME.put(t.particleName, t);
-        }
+    public static EnumParticleTypes getByName(String nameIn) {
+        return BY_NAME.get(nameIn);
     }
 
     /**
-     * The modern particle for a legacy spawn, or null when it has none (footstep, item pickup). {@code velocity} may be
-     * adjusted in place: dust and mob spell colours were passed as the velocity, which the modern particle does not use.
+     * The modern particle for this kind. {@code speedX..Z} are the legacy spawn's speeds, which coloured kinds (reddust, mob
+     * spells) read as red, green and blue; {@code args} are the legacy arguments (item id and damage for iconcrack, a block
+     * state id for blockcrack/blockdust/fallingdust). Null when the modern game has no such particle (footstep, take).
      */
-    public ParticleOptions mcc$options(double[] velocity, int... args) {
-        try {
-            return switch (this) {
-                case EXPLOSION_NORMAL -> ParticleTypes.POOF;
-                case EXPLOSION_LARGE -> ParticleTypes.EXPLOSION;
-                case EXPLOSION_HUGE -> ParticleTypes.EXPLOSION_EMITTER;
-                case FIREWORKS_SPARK -> ParticleTypes.FIREWORK;
-                case WATER_BUBBLE -> ParticleTypes.BUBBLE;
-                case WATER_SPLASH -> ParticleTypes.SPLASH;
-                case WATER_WAKE -> ParticleTypes.FISHING;
-                case SUSPENDED -> ParticleTypes.UNDERWATER;
-                case SUSPENDED_DEPTH, TOWN_AURA -> ParticleTypes.MYCELIUM;
-                case CRIT -> ParticleTypes.CRIT;
-                case CRIT_MAGIC -> ParticleTypes.ENCHANTED_HIT;
-                case SMOKE_NORMAL -> ParticleTypes.SMOKE;
-                case SMOKE_LARGE -> ParticleTypes.LARGE_SMOKE;
-                case SPELL -> ParticleTypes.EFFECT;
-                case SPELL_INSTANT -> ParticleTypes.INSTANT_EFFECT;
-                case SPELL_MOB, SPELL_MOB_AMBIENT -> {
-                    float r = (float) velocity[0], g = (float) velocity[1], b = (float) velocity[2];
-                    velocity[0] = velocity[1] = velocity[2] = 0;
-                    yield net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, this == SPELL_MOB_AMBIENT ? 0.15F : 1.0F,
-                            r, g, b);
+    public ParticleOptions mcc$modern(double speedX, double speedY, double speedZ, int... args) {
+        return switch (this) {
+            case EXPLOSION_NORMAL -> ParticleTypes.POOF;
+            case EXPLOSION_LARGE -> ParticleTypes.EXPLOSION;
+            case EXPLOSION_HUGE -> ParticleTypes.EXPLOSION_EMITTER;
+            case FIREWORKS_SPARK -> ParticleTypes.FIREWORK;
+            case WATER_BUBBLE -> ParticleTypes.BUBBLE;
+            case WATER_SPLASH -> ParticleTypes.SPLASH;
+            case WATER_WAKE -> ParticleTypes.FISHING;
+            case SUSPENDED, SUSPENDED_DEPTH -> ParticleTypes.UNDERWATER;
+            case CRIT -> ParticleTypes.CRIT;
+            case CRIT_MAGIC -> ParticleTypes.ENCHANTED_HIT;
+            case SMOKE_NORMAL -> ParticleTypes.SMOKE;
+            case SMOKE_LARGE -> ParticleTypes.LARGE_SMOKE;
+            case SPELL -> ParticleTypes.EFFECT;
+            case SPELL_INSTANT -> ParticleTypes.INSTANT_EFFECT;
+            case SPELL_MOB, SPELL_MOB_AMBIENT -> net.minecraft.core.particles.ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT,
+                    (this == SPELL_MOB_AMBIENT ? 0x26 : 0xFF) << 24 | (int) (unit(speedX) * 255) << 16 | (int) (unit(speedY) * 255) << 8 | (int) (unit(speedZ) * 255));
+            case SPELL_WITCH -> ParticleTypes.WITCH;
+            case DRIP_WATER -> ParticleTypes.DRIPPING_WATER;
+            case DRIP_LAVA -> ParticleTypes.DRIPPING_LAVA;
+            case VILLAGER_ANGRY -> ParticleTypes.ANGRY_VILLAGER;
+            case VILLAGER_HAPPY -> ParticleTypes.HAPPY_VILLAGER;
+            case TOWN_AURA -> ParticleTypes.MYCELIUM;
+            case NOTE -> ParticleTypes.NOTE;
+            case PORTAL -> ParticleTypes.PORTAL;
+            case ENCHANTMENT_TABLE -> ParticleTypes.ENCHANT;
+            case FLAME -> ParticleTypes.FLAME;
+            case LAVA -> ParticleTypes.LAVA;
+            case CLOUD -> ParticleTypes.CLOUD;
+            case REDSTONE -> {
+                // a red of 0 meant "default red" in 1.12 (the speed is the colour)
+                float r = speedX == 0.0D ? 1.0F : unit(speedX);
+                yield new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(r, unit(speedY), unit(speedZ)), 1.0F);
+            }
+            case SNOWBALL, SNOW_SHOVEL -> ParticleTypes.ITEM_SNOWBALL;
+            case SLIME -> ParticleTypes.ITEM_SLIME;
+            case HEART -> ParticleTypes.HEART;
+            case BARRIER -> new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK_MARKER,
+                    net.minecraft.world.level.block.Blocks.BARRIER.defaultBlockState());
+            case ITEM_CRACK -> {
+                net.minecraft.world.item.ItemStack stack = net.minecraft.world.item.ItemStack.EMPTY;
+                if (args.length > 0) {
+                    legacyconnector.v1_12_2.net.minecraft.item.Item item = legacyconnector.v1_12_2.net.minecraft.item.Item.getItemById(args[0]);
+                    if (item != null) {
+                        stack = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(
+                                new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, 1, args.length > 1 ? args[1] : 0));
+                    }
                 }
-                case SPELL_WITCH -> ParticleTypes.WITCH;
-                case DRIP_WATER -> ParticleTypes.DRIPPING_WATER;
-                case DRIP_LAVA -> ParticleTypes.DRIPPING_LAVA;
-                case VILLAGER_ANGRY -> ParticleTypes.ANGRY_VILLAGER;
-                case VILLAGER_HAPPY -> ParticleTypes.HAPPY_VILLAGER;
-                case NOTE -> ParticleTypes.NOTE;
-                case PORTAL -> ParticleTypes.PORTAL;
-                case ENCHANTMENT_TABLE -> ParticleTypes.ENCHANT;
-                case FLAME -> ParticleTypes.FLAME;
-                case LAVA -> ParticleTypes.LAVA;
-                case CLOUD -> ParticleTypes.CLOUD;
-                case REDSTONE -> {
-                    // 1.12 reddust: the velocity is the colour (red when 0)
-                    float r = (float) velocity[0], g = (float) velocity[1], b = (float) velocity[2];
-                    if (r == 0.0F) r = 1.0F;
-                    velocity[0] = velocity[1] = velocity[2] = 0;
-                    yield new net.minecraft.core.particles.DustParticleOptions(new org.joml.Vector3f(clamp(r), clamp(g), clamp(b)), 1.0F);
+                yield stack.isEmpty() ? ParticleTypes.ITEM_SLIME : new net.minecraft.core.particles.ItemParticleOption(ParticleTypes.ITEM, stack);
+            }
+            case BLOCK_CRACK, BLOCK_DUST, FALLING_DUST -> {
+                net.minecraft.world.level.block.state.BlockState state = net.minecraft.world.level.block.Blocks.STONE.defaultBlockState();
+                if (args.length > 0) {
+                    var legacy = legacyconnector.v1_12_2.net.minecraft.block.Block.getStateById(args[0]);
+                    var modern = legacy == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(legacy);
+                    if (modern != null) state = modern;
                 }
-                case SNOWBALL, SNOW_SHOVEL -> ParticleTypes.ITEM_SNOWBALL;
-                case SLIME -> ParticleTypes.ITEM_SLIME;
-                case HEART -> ParticleTypes.HEART;
-                case BARRIER -> new net.minecraft.core.particles.BlockParticleOption(ParticleTypes.BLOCK_MARKER,
-                        net.minecraft.world.level.block.Blocks.BARRIER.defaultBlockState());
-                case ITEM_CRACK -> {
-                    var item = legacyconnector.v1_12_2.net.minecraft.item.Item.getItemById(args.length > 0 ? args[0] : 0);
-                    var stack = item == null ? net.minecraft.world.item.ItemStack.EMPTY
-                            : org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, 1,
-                                    args.length > 1 ? args[1] : 0));
-                    yield stack.isEmpty() ? ParticleTypes.POOF : new net.minecraft.core.particles.ItemParticleOption(ParticleTypes.ITEM, stack);
-                }
-                case BLOCK_CRACK, BLOCK_DUST, FALLING_DUST -> {
-                    var state = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(
-                            legacyconnector.v1_12_2.net.minecraft.block.Block.getStateById(args.length > 0 ? args[0] : 0));
-                    if (state.isAir()) yield null;
-                    yield new net.minecraft.core.particles.BlockParticleOption(this == FALLING_DUST ? ParticleTypes.FALLING_DUST : ParticleTypes.BLOCK, state);
-                }
-                case WATER_DROP -> ParticleTypes.RAIN;
-                case MOB_APPEARANCE -> ParticleTypes.ELDER_GUARDIAN;
-                case DRAGON_BREATH -> ParticleTypes.DRAGON_BREATH;
-                case END_ROD -> ParticleTypes.END_ROD;
-                case DAMAGE_INDICATOR -> ParticleTypes.DAMAGE_INDICATOR;
-                case SWEEP_ATTACK -> ParticleTypes.SWEEP_ATTACK;
-                case TOTEM -> ParticleTypes.TOTEM_OF_UNDYING;
-                case SPIT -> ParticleTypes.SPIT;
-                case FOOTSTEP, ITEM_TAKE -> null;
-            };
-        } catch (RuntimeException | LinkageError e) {
-            return null;
-        }
+                yield new net.minecraft.core.particles.BlockParticleOption(this == FALLING_DUST ? ParticleTypes.FALLING_DUST : ParticleTypes.BLOCK, state);
+            }
+            case WATER_DROP -> ParticleTypes.RAIN;
+            case MOB_APPEARANCE -> ParticleTypes.ELDER_GUARDIAN;
+            case DRAGON_BREATH -> ParticleTypes.DRAGON_BREATH;
+            case END_ROD -> ParticleTypes.END_ROD;
+            case DAMAGE_INDICATOR -> ParticleTypes.DAMAGE_INDICATOR;
+            case SWEEP_ATTACK -> ParticleTypes.SWEEP_ATTACK;
+            case TOTEM -> ParticleTypes.TOTEM_OF_UNDYING;
+            case SPIT -> ParticleTypes.SPIT;
+            case FOOTSTEP, ITEM_TAKE -> null;
+        };
     }
 
-    private static float clamp(float v) {
-        return v < 0 ? 0 : Math.min(v, 1);
+    /** Whether the legacy speeds of this kind are a colour, not a motion (the modern particle then gets no speed). */
+    public boolean mcc$speedIsColor() {
+        return this == REDSTONE || this == SPELL_MOB || this == SPELL_MOB_AMBIENT;
+    }
+
+    private static float unit(double v) {
+        return (float) Math.max(0.0D, Math.min(1.0D, v));
     }
 }

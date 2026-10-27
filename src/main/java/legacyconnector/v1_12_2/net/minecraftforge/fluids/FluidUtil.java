@@ -4,6 +4,7 @@ import legacyconnector.v1_12_2.net.minecraft.init.Items;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.FluidTankProperties;
+import legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.IFluidHandler;
 import legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.IFluidHandlerItem;
 import legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.IFluidTankProperties;
 
@@ -22,6 +23,143 @@ public class FluidUtil {
         }
         if (copy.getItem() == Items.BUCKET || copy.getItem() == Items.WATER_BUCKET || copy.getItem() == Items.LAVA_BUCKET) return new VanillaBucket(copy);
         return null;
+    }
+
+    /** The fluid handler a legacy tile entity at the position offers on a side (its fluid capability), or null. */
+    public static IFluidHandler getFluidHandler(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        if (world == null || pos == null) return null;
+        var te = world.getTileEntity(pos);
+        var cap = CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY;
+        if (te != null && cap != null) {
+            try {
+                if (te.hasCapability(cap, side)) return te.getCapability(cap, side);
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    /** Moves up to maxAmount from source to destination (simulated first, as Forge did); the moved fluid or null. */
+    public static FluidStack tryFluidTransfer(IFluidHandler fluidDestination, IFluidHandler fluidSource, int maxAmount, boolean doTransfer) {
+        FluidStack drainable = fluidSource.drain(maxAmount, false);
+        if (drainable == null || drainable.amount <= 0) return null;
+        int fillable = fluidDestination.fill(drainable, false);
+        if (fillable <= 0) return null;
+        FluidStack drained = fluidSource.drain(fillable, doTransfer);
+        if (drained == null) return null;
+        if (doTransfer) drained.amount = fluidDestination.fill(drained, true);
+        return drained;
+    }
+
+    public static FluidStack tryFluidTransfer(IFluidHandler fluidDestination, IFluidHandler fluidSource, FluidStack resource, boolean doTransfer) {
+        FluidStack drainable = fluidSource.drain(resource, false);
+        if (drainable == null || drainable.amount <= 0 || !resource.isFluidEqual(drainable)) return null;
+        int fillable = fluidDestination.fill(drainable, false);
+        if (fillable <= 0) return null;
+        FluidStack toDrain = new FluidStack(drainable, fillable);
+        FluidStack drained = fluidSource.drain(toDrain, doTransfer);
+        if (drained == null) return null;
+        if (doTransfer) drained.amount = fluidDestination.fill(drained, true);
+        return drained;
+    }
+
+    /** Fills one item of the container stack from the handler; the filled container (count 1) on success. */
+    public static FluidActionResult tryFillContainer(ItemStack container, IFluidHandler fluidSource, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean doFill) {
+        IFluidHandlerItem containerHandler = getFluidHandler(container);
+        if (containerHandler == null || fluidSource == null) return FluidActionResult.FAILURE;
+        FluidStack simulated = tryFluidTransfer(containerHandler, fluidSource, maxAmount, false);
+        if (simulated == null) return FluidActionResult.FAILURE;
+        if (doFill) {
+            tryFluidTransfer(containerHandler, fluidSource, maxAmount, true);
+        } else {
+            containerHandler.fill(simulated, true);
+        }
+        return new FluidActionResult(containerHandler.getContainer());
+    }
+
+    /** Empties one item of the container stack into the handler; the emptied container (count 1) on success. */
+    public static FluidActionResult tryEmptyContainer(ItemStack container, IFluidHandler fluidDestination, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean doDrain) {
+        IFluidHandlerItem containerHandler = getFluidHandler(container);
+        if (containerHandler == null || fluidDestination == null) return FluidActionResult.FAILURE;
+        FluidStack transfer = tryFluidTransfer(fluidDestination, containerHandler, maxAmount, doDrain);
+        if (transfer == null) return FluidActionResult.FAILURE;
+        if (!doDrain) containerHandler.drain(transfer, true);
+        return new FluidActionResult(containerHandler.getContainer());
+    }
+
+    /** Fills or empties the container and puts the result into the inventory (or the player's), one item at a time. */
+    public static FluidActionResult tryFillContainerAndStow(ItemStack container, IFluidHandler fluidSource,
+            legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean doFill) {
+        return stow(container, tryFillContainer(container, fluidSource, maxAmount, player, false), inventory, player, doFill,
+                () -> tryFillContainer(container, fluidSource, maxAmount, player, true));
+    }
+
+    public static FluidActionResult tryEmptyContainerAndStow(ItemStack container, IFluidHandler fluidDestination,
+            legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean doDrain) {
+        return stow(container, tryEmptyContainer(container, fluidDestination, maxAmount, player, false), inventory, player, doDrain,
+                () -> tryEmptyContainer(container, fluidDestination, maxAmount, player, true));
+    }
+
+    public static FluidActionResult tryEmptyContainerAndStow(ItemStack container, IFluidHandler fluidDestination,
+            legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return tryEmptyContainerAndStow(container, fluidDestination, inventory, maxAmount, player, true);
+    }
+
+    private static FluidActionResult stow(ItemStack container, FluidActionResult simulated,
+            legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            boolean doIt, java.util.function.Supplier<FluidActionResult> real) {
+        if (container.isEmpty() || !simulated.isSuccess()) return FluidActionResult.FAILURE;
+        boolean creative = player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player p && p.getAbilities().instabuild;
+        if (creative) {
+            if (doIt) real.get();
+            return new FluidActionResult(container);
+        }
+        if (container.getCount() == 1) {
+            return doIt ? real.get() : simulated;
+        }
+        ItemStack result = simulated.getResult();
+        ItemStack rest = inventory == null ? result : legacyconnector.v1_12_2.net.minecraftforge.items.ItemHandlerHelper.insertItemStacked(inventory, result, true);
+        if (!rest.isEmpty() && player == null) return FluidActionResult.FAILURE;
+        if (!doIt) {
+            ItemStack left = container.copy();
+            left.shrink(1);
+            return new FluidActionResult(left);
+        }
+        FluidActionResult done = real.get();
+        ItemStack out = done.getResult();
+        ItemStack leftOver = inventory == null ? out : legacyconnector.v1_12_2.net.minecraftforge.items.ItemHandlerHelper.insertItemStacked(inventory, out, false);
+        if (!leftOver.isEmpty()) legacyconnector.v1_12_2.net.minecraftforge.items.ItemHandlerHelper.giveItemToPlayer(player, leftOver);
+        ItemStack left = container.copy();
+        left.shrink(1);
+        return new FluidActionResult(left);
+    }
+
+    /** A player using the held container on a fluid handler (a tank): empties it into the handler, or fills it from it. */
+    public static boolean interactWithFluidHandler(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, IFluidHandler handler) {
+        if (player == null || handler == null || !(player.mcc$entity instanceof net.minecraft.world.entity.player.Player p)) return false;
+        var modernHand = hand == legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND
+                : net.minecraft.world.InteractionHand.MAIN_HAND;
+        ItemStack held = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(p.getItemInHand(modernHand));
+        if (held.isEmpty()) return false;
+        FluidActionResult result = tryFillContainerAndStow(held, handler, null, Integer.MAX_VALUE, player, true);
+        if (!result.isSuccess()) result = tryEmptyContainerAndStow(held, handler, null, Integer.MAX_VALUE, player, true);
+        if (!result.isSuccess()) return false;
+        p.setItemInHand(modernHand, org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(result.getResult()));
+        return true;
+    }
+
+    public static boolean interactWithFluidHandler(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return interactWithFluidHandler(player, hand, getFluidHandler(world, pos, side));
     }
 
     public static FluidStack getFluidContained(ItemStack container) {

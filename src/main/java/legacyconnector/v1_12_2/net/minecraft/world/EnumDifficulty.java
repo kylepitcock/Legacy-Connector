@@ -1,6 +1,6 @@
 package legacyconnector.v1_12_2.net.minecraft.world;
 
-/** 1.12.2 difficulty; ids and keys match the modern {@link net.minecraft.world.Difficulty}. */
+/** 1.12.2 difficulty; the same four levels with the same ids as the modern {@link net.minecraft.world.Difficulty}. */
 public enum EnumDifficulty {
     PEACEFUL(0, "options.difficulty.peaceful"),
     EASY(1, "options.difficulty.easy"),
@@ -20,16 +20,24 @@ public enum EnumDifficulty {
         return id;
     }
 
-    public String getTranslationKey() {
-        return translationKey;
-    }
-
     public static EnumDifficulty byId(int id) {
         return ID_MAPPING[Math.floorMod(id, ID_MAPPING.length)];
     }
 
-    public static EnumDifficulty mcc$of(net.minecraft.world.Difficulty difficulty) {
-        return difficulty == null ? NORMAL : byId(difficulty.getId());
+    public static EnumDifficulty getDifficultyEnum(int id) {
+        return byId(id);
+    }
+
+    public String getTranslationKey() {
+        return translationKey;
+    }
+
+    public String getDifficultyResourceKey() {
+        return translationKey;
+    }
+
+    public static EnumDifficulty mcc$of(net.minecraft.world.Difficulty d) {
+        return d == null ? NORMAL : byId(d.getId());
     }
 
     public net.minecraft.world.Difficulty mcc$modern() {

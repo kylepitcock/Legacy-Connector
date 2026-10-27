@@ -112,7 +112,13 @@ public class FluidTank implements IFluidTank, IFluidHandler {
 
     @Override
     public int fill(FluidStack resource, boolean doFill) {
-        if (resource == null || resource.amount <= 0 || !canFillFluidType(resource)) return 0;
+        if (resource == null || !canFillFluidType(resource)) return 0;
+        return fillInternal(resource, doFill);
+    }
+
+    /** Fills ignoring canFill (the tile entity's own filling). */
+    public int fillInternal(FluidStack resource, boolean doFill) {
+        if (resource == null || resource.amount <= 0) return 0;
         if (!doFill) {
             if (fluid == null) return Math.min(capacity, resource.amount);
             if (!fluid.isFluidEqual(resource)) return 0;
@@ -137,12 +143,23 @@ public class FluidTank implements IFluidTank, IFluidHandler {
 
     @Override
     public FluidStack drain(FluidStack resource, boolean doDrain) {
-        if (resource == null || !resource.isFluidEqual(fluid)) return null;
-        return drain(resource.amount, doDrain);
+        if (resource == null || !canDrainFluidType(getFluid())) return null;
+        return drainInternal(resource, doDrain);
     }
 
     @Override
     public FluidStack drain(int maxDrain, boolean doDrain) {
+        if (!canDrainFluidType(fluid)) return null;
+        return drainInternal(maxDrain, doDrain);
+    }
+
+    /** Drains ignoring canDrain (the tile entity's own draining). */
+    public FluidStack drainInternal(FluidStack resource, boolean doDrain) {
+        if (resource == null || !resource.isFluidEqual(fluid)) return null;
+        return drainInternal(resource.amount, doDrain);
+    }
+
+    public FluidStack drainInternal(int maxDrain, boolean doDrain) {
         if (fluid == null || maxDrain <= 0) return null;
         int drained = Math.min(fluid.amount, maxDrain);
         FluidStack stack = new FluidStack(fluid, drained);

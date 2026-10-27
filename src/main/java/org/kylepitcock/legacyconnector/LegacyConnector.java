@@ -71,12 +71,14 @@ public final class LegacyConnector {
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
             if (e.getRegistryKey().equals(Registries.MENU)) org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
         modBus.addListener(EventPriority.LOWEST, LegacyLifecycle::onRegister);
         modBus.addListener(LegacyLifecycle::onCommonSetup);
@@ -99,6 +101,7 @@ public final class LegacyConnector {
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
+        org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.

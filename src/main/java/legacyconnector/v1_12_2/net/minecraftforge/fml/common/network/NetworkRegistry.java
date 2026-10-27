@@ -4,6 +4,12 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.simpleimpl.
 
 public class NetworkRegistry {
     public static final NetworkRegistry INSTANCE = new NetworkRegistry();
+    public static final io.netty.util.AttributeKey<String> FML_CHANNEL = io.netty.util.AttributeKey.valueOf("fml:channelName");
+    public static final io.netty.util.AttributeKey<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side> CHANNEL_SOURCE =
+            io.netty.util.AttributeKey.valueOf("fml:channelSource");
+    public static final io.netty.util.AttributeKey<legacyconnector.v1_12_2.net.minecraft.network.INetHandler> NET_HANDLER =
+            io.netty.util.AttributeKey.valueOf("fml:netHandler");
+    public static final io.netty.util.AttributeKey<Boolean> FML_MARKER = io.netty.util.AttributeKey.valueOf("fml:hasMarker");
 
     public SimpleNetworkWrapper newSimpleChannel(String name) {
         return new SimpleNetworkWrapper(name);
@@ -16,6 +22,7 @@ public class NetworkRegistry {
         var map = new java.util.EnumMap<legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side, FMLEmbeddedChannel>(legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.class);
         for (var side : legacyconnector.v1_12_2.net.minecraftforge.fml.relauncher.Side.values()) map.put(side, new FMLEmbeddedChannel(name, side, handlers));
         channels.put(name, map);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.FmlChannelBridge1122.register(name, map);
         return map;
     }
 
@@ -29,7 +36,7 @@ public class NetworkRegistry {
     }
 
     public FMLEventChannel newEventDrivenChannel(String name) {
-        return new FMLEventChannel();
+        return new FMLEventChannel(name);
     }
 
     public void registerGuiHandler(Object mod, IGuiHandler handler) {

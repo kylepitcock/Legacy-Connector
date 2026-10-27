@@ -105,4 +105,38 @@ public class PlayerControllerMP {
         if (m == null || local == null) return false;
         return m.useItem(local, net.minecraft.world.InteractionHand.MAIN_HAND).consumesAction();
     }
+
+    /**
+     * Cancels the block the player is breaking. Mods whose items take the left click call it every frame so holding the
+     * button never breaks blocks (Portal Gun shoots its blue portal with it).
+     */
+    public void resetBlockRemoving() {
+        var m = mode();
+        if (m != null && m.isDestroying()) m.stopDestroyBlock();
+    }
+
+    /** True while the player is breaking a block. */
+    public boolean getIsHittingBlock() {
+        var m = mode();
+        return m != null && m.isDestroying();
+    }
+
+    /** Starts breaking the block at (x, y, z) from {@code side}, as a left click would. */
+    public void clickBlock(int x, int y, int z, int side) {
+        var m = mode();
+        if (m != null) m.startDestroyBlock(new net.minecraft.core.BlockPos(x, y, z), net.minecraft.core.Direction.from3DDataValue(side));
+    }
+
+    /** Continues breaking the block at (x, y, z) (called every tick while the button is held). */
+    public void onPlayerDamageBlock(int x, int y, int z, int side) {
+        var m = mode();
+        if (m != null) m.continueDestroyBlock(new net.minecraft.core.BlockPos(x, y, z), net.minecraft.core.Direction.from3DDataValue(side));
+    }
+
+    /** Releases the item in use (a drawn bow fires). */
+    public void onStoppedUsingItem(EntityPlayer player) {
+        var m = mode();
+        var local = local();
+        if (m != null && local != null) m.releaseUsingItem(local);
+    }
 }

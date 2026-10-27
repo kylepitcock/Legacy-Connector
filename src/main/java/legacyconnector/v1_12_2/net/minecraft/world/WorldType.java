@@ -1,11 +1,12 @@
 package legacyconnector.v1_12_2.net.minecraft.world;
 
 /**
- * 1.12.2 world type: the vanilla presets plus mod types made with {@code new WorldType(name)} (they take the next free id, as in
- * Forge). A world's type is derived from its modern generator ({@link #mcc$of}).
+ * A 1.12.2 world type (generator preset). The vanilla ones keep their ids and names; mods' types take the next free id as Forge
+ * did ({@code new WorldType(name)}). The modern world reports the type it was created with through {@link #mcc$of}.
  */
 public class WorldType {
     public static WorldType[] WORLD_TYPES = new WorldType[16];
+
     public static final WorldType DEFAULT = new WorldType(0, "default", 1).setVersioned();
     public static final WorldType FLAT = new WorldType(1, "flat");
     public static final WorldType LARGE_BIOMES = new WorldType(2, "largeBiomes");
@@ -21,25 +22,29 @@ public class WorldType {
     private boolean versioned;
     private boolean hasInfoNotice;
 
+    /** Forge: a mod's world type, at the next free id. */
+    public WorldType(String name) {
+        this(getNextID(), name);
+    }
+
     private WorldType(int id, String name) {
         this(id, name, 0);
     }
 
     private WorldType(int id, String name, int version) {
-        if (name.length() > 16 && !"debug_all_block_states".equals(name)) throw new IllegalArgumentException("World type names must not be longer than 16: " + name);
         this.name = name;
         this.version = version;
         this.id = id;
-        WORLD_TYPES[id] = this;
+        synchronized (WorldType.class) {
+            if (id >= WORLD_TYPES.length) WORLD_TYPES = java.util.Arrays.copyOf(WORLD_TYPES, Math.max(id + 1, WORLD_TYPES.length + 16));
+            WORLD_TYPES[id] = this;
+        }
     }
 
-    /** A mod world type (Forge): the next free id, the array grows when all 16 are taken. */
-    public WorldType(String name) {
-        this(getNextID(), name);
-    }
-
-    private static int getNextID() {
-        for (int i = 0; i < WORLD_TYPES.length; i++) if (WORLD_TYPES[i] == null) return i;
+    private static synchronized int getNextID() {
+        for (int x = 0; x < WORLD_TYPES.length; x++) {
+            if (WORLD_TYPES[x] == null) return x;
+        }
         int old = WORLD_TYPES.length;
         WORLD_TYPES = java.util.Arrays.copyOf(WORLD_TYPES, old + 16);
         return old;
@@ -65,7 +70,7 @@ public class WorldType {
         return this == DEFAULT && version == 0 ? DEFAULT_1_1 : this;
     }
 
-    public WorldType setCanBeCreated(boolean enable) {
+    private WorldType setCanBeCreated(boolean enable) {
         this.canBeCreated = enable;
         return this;
     }
@@ -84,7 +89,9 @@ public class WorldType {
     }
 
     public static WorldType byName(String type) {
-        for (WorldType t : WORLD_TYPES) if (t != null && t.name.equalsIgnoreCase(type)) return t;
+        for (WorldType t : WORLD_TYPES) {
+            if (t != null && t.name.equalsIgnoreCase(type)) return t;
+        }
         return null;
     }
 
@@ -101,7 +108,7 @@ public class WorldType {
         return this;
     }
 
-    // ------------------------------------------------------------------ Forge
+    // Forge hooks with plain types (the ones naming generator classes are left to the mod's own overrides)
 
     public int getMinimumSpawnHeight(World world) {
         return this == FLAT ? 4 : world.getSeaLevel() + 1;
@@ -119,9 +126,7 @@ public class WorldType {
         return this == FLAT && random.nextInt(4) != 1;
     }
 
-    public int getSpawnFuzz(WorldServer world, legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server) {
-        var level = world == null ? null : world.mcc$level();
-        return level == null ? 10 : Math.max(0, level.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_SPAWN_RADIUS));
+    public void onGUICreateWorldPress() {
     }
 
     public float getCloudHeight() {
@@ -132,32 +137,23 @@ public class WorldType {
         return this == FLAT || this == CUSTOMIZED;
     }
 
-    public void onGUICreateWorldPress() {
+    public boolean hasVoidParticles(boolean flag) {
+        return this != FLAT && !flag;
     }
 
-    public void onCustomizeButton(Object mc, Object guiCreateWorld) {
-    }
-
-    public legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider getBiomeProvider(World world) {
-        return world.getBiomeProvider();
-    }
-
-    public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator getChunkGenerator(World world, String generatorOptions) {
-        return null;
-    }
-
-    /** The type standing in for a modern level's generator: flat, amplified, large biomes, debug, else default. */
+    /** The type a modern level was generated with: flat and debug worlds are recognised from their chunk generator. */
     public static WorldType mcc$of(net.minecraft.world.level.LevelAccessor level) {
-        net.minecraft.server.level.ServerLevel server = level instanceof net.minecraft.server.level.ServerLevel s ? s
+        net.minecraft.world.level.Level full = level instanceof net.minecraft.world.level.Level l ? l
                 : level instanceof net.minecraft.world.level.WorldGenLevel g ? g.getLevel() : null;
-        if (server == null) return DEFAULT;
-        var generator = server.getChunkSource().getGenerator();
-        if (generator instanceof net.minecraft.world.level.levelgen.FlatLevelSource) return FLAT;
-        if (generator instanceof net.minecraft.world.level.levelgen.DebugLevelSource) return DEBUG_ALL_BLOCK_STATES;
-        if (generator instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noise) {
-            if (noise.generatorSettings().is(net.minecraft.world.level.levelgen.NoiseGeneratorSettings.AMPLIFIED)) return AMPLIFIED;
-            if (noise.generatorSettings().is(net.minecraft.world.level.levelgen.NoiseGeneratorSettings.LARGE_BIOMES)) return LARGE_BIOMES;
-        }
+        if (full == null) return DEFAULT;
+        if (full.isDebug()) return DEBUG_ALL_BLOCK_STATES;
+        if (full instanceof net.minecraft.server.level.ServerLevel s
+                && s.getChunkSource().getGenerator() instanceof net.minecraft.world.level.levelgen.FlatLevelSource) return FLAT;
         return DEFAULT;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

@@ -106,13 +106,33 @@ public final class NetworkBridge1122 {
 
         public void sendToDimension(IMessage message, int dimension) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
             if (level != null) PacketDistributor.sendToPlayersInDimension(level, encode(message));
+        }
+
+        /** To every player tracking the entity (and the entity itself when it is a player). */
+        public void sendToAllTracking(IMessage message, net.minecraft.world.entity.Entity entity) {
+            if (entity != null) PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, encode(message));
+        }
+
+        /** To every player tracking the chunk the point is in. */
+        public void sendToAllTracking(IMessage message, int dimension, double x, double z) {
+            var server = ServerLifecycleHooks.getCurrentServer();
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
+            if (level != null) {
+                PacketDistributor.sendToPlayersTrackingChunk(level, new net.minecraft.world.level.ChunkPos(net.minecraft.util.Mth.floor(x) >> 4,
+                        net.minecraft.util.Mth.floor(z) >> 4), encode(message));
+            }
+        }
+
+        /** The message as a modern packet (server to client). */
+        public net.minecraft.network.protocol.Packet<?> packet(IMessage message) {
+            return new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(encode(message));
         }
 
         public void sendToAllAround(IMessage message, int dimension, double x, double y, double z, double range) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
             if (level != null) PacketDistributor.sendToPlayersNear(level, null, x, y, z, range, encode(message));
         }
     }

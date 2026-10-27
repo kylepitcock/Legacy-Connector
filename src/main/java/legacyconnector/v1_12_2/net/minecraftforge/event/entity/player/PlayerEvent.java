@@ -1,13 +1,19 @@
 package legacyconnector.v1_12_2.net.minecraftforge.event.entity.player;
 
-import legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState;
 import legacyconnector.v1_12_2.net.minecraft.entity.Entity;
+import legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
+import legacyconnector.v1_12_2.net.minecraft.util.DamageSource;
+import legacyconnector.v1_12_2.net.minecraft.util.EnumFacing;
+import legacyconnector.v1_12_2.net.minecraft.util.EnumHand;
 import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
-import legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent;
+import legacyconnector.v1_12_2.net.minecraft.world.World;
+import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Cancelable;
+import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event;
 
-/** Base of Forge's player events (FML's login and tick events are in {@code fml.common.gameevent}). */
-public class PlayerEvent extends LivingEvent {
+/** An event about a player. */
+public class PlayerEvent extends legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent {
     private final EntityPlayer entityPlayer;
 
     public PlayerEvent(EntityPlayer player) {
@@ -19,34 +25,39 @@ public class PlayerEvent extends LivingEvent {
         return entityPlayer;
     }
 
-    /** A player was copied into a new entity on respawn or on returning from the End. */
-    public static class Clone extends PlayerEvent {
-        private final EntityPlayer original;
-        private final boolean wasDeath;
+    /** Whether the player can harvest the block (the result can be changed). */
+    public static class HarvestCheck extends PlayerEvent {
+        private final legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state;
+        private boolean success;
 
-        public Clone(EntityPlayer player, EntityPlayer original, boolean wasDeath) {
+        public HarvestCheck(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, boolean success) {
             super(player);
-            this.original = original;
-            this.wasDeath = wasDeath;
+            this.state = state;
+            this.success = success;
         }
 
-        public EntityPlayer getOriginal() {
-            return original;
+        public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getTargetBlock() {
+            return state;
         }
 
-        public boolean isWasDeath() {
-            return wasDeath;
+        public boolean canHarvest() {
+            return success;
+        }
+
+        public void setCanHarvest(boolean success) {
+            this.success = success;
         }
     }
 
-    @legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Cancelable
+    /** How fast the player breaks a block (cancel to not break it; the speed can be changed). */
+    @Cancelable
     public static class BreakSpeed extends PlayerEvent {
-        private final IBlockState state;
+        private final legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state;
         private final float originalSpeed;
         private float newSpeed;
         private final BlockPos pos;
 
-        public BreakSpeed(EntityPlayer player, IBlockState state, float original, BlockPos pos) {
+        public BreakSpeed(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, float original, BlockPos pos) {
             super(player);
             this.state = state;
             this.originalSpeed = original;
@@ -54,7 +65,7 @@ public class PlayerEvent extends LivingEvent {
             this.pos = pos;
         }
 
-        public IBlockState getState() {
+        public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getState() {
             return state;
         }
 
@@ -75,6 +86,51 @@ public class PlayerEvent extends LivingEvent {
         }
     }
 
+    /** The player's display name (it can be changed). */
+    public static class NameFormat extends PlayerEvent {
+        private final String username;
+        private String displayname;
+
+        public NameFormat(EntityPlayer player, String username) {
+            super(player);
+            this.username = username;
+            this.displayname = username;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getDisplayname() {
+            return displayname;
+        }
+
+        public void setDisplayname(String displayname) {
+            this.displayname = displayname;
+        }
+    }
+
+    /** A new player object replaces the old one (respawn after death, or return from the End): copy data from the original. */
+    public static class Clone extends PlayerEvent {
+        private final EntityPlayer original;
+        private final boolean wasDeath;
+
+        public Clone(EntityPlayer newPlayer, EntityPlayer oldPlayer, boolean wasDeath) {
+            super(newPlayer);
+            this.original = oldPlayer;
+            this.wasDeath = wasDeath;
+        }
+
+        public EntityPlayer getOriginal() {
+            return original;
+        }
+
+        public boolean isWasDeath() {
+            return wasDeath;
+        }
+    }
+
+    /** The player starts seeing an entity (it is sent to the player's client). */
     public static class StartTracking extends PlayerEvent {
         private final Entity target;
 
@@ -88,6 +144,7 @@ public class PlayerEvent extends LivingEvent {
         }
     }
 
+    /** The player stops seeing an entity. */
     public static class StopTracking extends PlayerEvent {
         private final Entity target;
 

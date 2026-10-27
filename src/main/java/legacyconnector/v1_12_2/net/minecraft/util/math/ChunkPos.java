@@ -1,6 +1,5 @@
 package legacyconnector.v1_12_2.net.minecraft.util.math;
 
-/** 1.12.2 chunk coordinates. */
 public class ChunkPos {
     public final int x;
     public final int z;
@@ -32,8 +31,8 @@ public class ChunkPos {
     }
 
     public double getDistanceSq(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
-        double dx = (x << 4) + 8 - legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(entity);
-        double dz = (z << 4) + 8 - legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(entity);
+        Vec3d p = entity.getPositionVector();
+        double dx = (x << 4) + 8 - p.x, dz = (z << 4) + 8 - p.z;
         return dx * dx + dz * dz;
     }
 
@@ -53,8 +52,8 @@ public class ChunkPos {
         return (z << 4) + 15;
     }
 
-    public BlockPos getBlock(int dx, int y, int dz) {
-        return new BlockPos((x << 4) + dx, y, (z << 4) + dz);
+    public BlockPos getBlock(int xIn, int yIn, int zIn) {
+        return new BlockPos((x << 4) + xIn, yIn, (z << 4) + zIn);
     }
 
     @Override
@@ -67,6 +66,6 @@ public class ChunkPos {
     }
 
     public static ChunkPos mcc$of(net.minecraft.world.level.ChunkPos pos) {
-        return pos == null ? null : new ChunkPos(pos.x, pos.z);
+        return new ChunkPos(pos.x, pos.z);
     }
 }

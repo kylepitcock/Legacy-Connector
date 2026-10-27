@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.nbt;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.Tag;
 
-public class NBTTagShort extends NBTBase.NBTPrimitive {
+public class NBTTagShort extends NBTPrimitive {
     private final short data;
 
     public NBTTagShort(short data) {

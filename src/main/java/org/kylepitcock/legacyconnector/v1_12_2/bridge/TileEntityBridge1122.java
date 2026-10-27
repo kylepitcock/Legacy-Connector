@@ -29,6 +29,20 @@ public final class TileEntityBridge1122 {
 
     public static synchronized void registerClass(Class<? extends TileEntity> cls, String name) {
         BY_NAME.put(name, cls);
+        BY_CLASS.putIfAbsent(cls, name);
+    }
+
+    private static final Map<Class<?>, String> BY_CLASS = new HashMap<>();
+
+    /** The registered name of a tile entity class (as it was registered, e.g. "modid:machine"), or null. */
+    public static synchronized String nameOf(Class<?> cls) {
+        return BY_CLASS.get(cls);
+    }
+
+    public static synchronized Class<? extends TileEntity> classOf(String name) {
+        var c = BY_NAME.get(name);
+        if (c == null && name != null && name.indexOf(':') < 0) c = BY_NAME.get("minecraft:" + name);
+        return c;
     }
 
     public static synchronized void addBlock(Legacy1122EntityBlock block) {

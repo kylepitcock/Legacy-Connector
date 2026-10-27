@@ -16,4 +16,8 @@ public class ActionResult<T> {
     public T getResult() {
         return result;
     }
+
+    public static <T> ActionResult<T> newResult(EnumActionResult result, T value) {
+        return new ActionResult<>(result, value);
+    }
 }

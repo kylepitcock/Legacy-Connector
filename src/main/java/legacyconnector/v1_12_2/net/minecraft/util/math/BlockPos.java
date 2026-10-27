@@ -209,6 +209,11 @@ public class BlockPos extends Vec3i {
             return setPos(MathHelper.floor(xIn), MathHelper.floor(yIn), MathHelper.floor(zIn));
         }
 
+        public MutableBlockPos setPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+            Vec3d v = entity.getPositionVector();
+            return setPos(v.x, v.y, v.z);
+        }
+
         public MutableBlockPos setPos(Vec3i vec) {
             return setPos(vec.getX(), vec.getY(), vec.getZ());
         }
@@ -228,6 +233,71 @@ public class BlockPos extends Vec3i {
         @Override
         public BlockPos toImmutable() {
             return new BlockPos(this);
+        }
+    }
+
+    /**
+     * Vanilla kept up to 100 released positions for reuse; a fresh position per {@code retain} behaves the same for callers
+     * and needs no locking, so released ones are simply dropped.
+     */
+    public static final class PooledMutableBlockPos extends MutableBlockPos {
+        private PooledMutableBlockPos(int x, int y, int z) {
+            super(x, y, z);
+        }
+
+        public static PooledMutableBlockPos retain() {
+            return retain(0, 0, 0);
+        }
+
+        public static PooledMutableBlockPos retain(double xIn, double yIn, double zIn) {
+            return retain(MathHelper.floor(xIn), MathHelper.floor(yIn), MathHelper.floor(zIn));
+        }
+
+        public static PooledMutableBlockPos retain(Vec3i vec) {
+            return retain(vec.getX(), vec.getY(), vec.getZ());
+        }
+
+        public static PooledMutableBlockPos retain(int xIn, int yIn, int zIn) {
+            return new PooledMutableBlockPos(xIn, yIn, zIn);
+        }
+
+        public void release() {
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(int xIn, int yIn, int zIn) {
+            super.setPos(xIn, yIn, zIn);
+            return this;
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(double xIn, double yIn, double zIn) {
+            super.setPos(xIn, yIn, zIn);
+            return this;
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(Vec3i vec) {
+            super.setPos(vec);
+            return this;
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+            super.setPos(entity);
+            return this;
+        }
+
+        @Override
+        public PooledMutableBlockPos move(EnumFacing facing) {
+            super.move(facing);
+            return this;
+        }
+
+        @Override
+        public PooledMutableBlockPos move(EnumFacing facing, int n) {
+            super.move(facing, n);
+            return this;
         }
     }
 }
