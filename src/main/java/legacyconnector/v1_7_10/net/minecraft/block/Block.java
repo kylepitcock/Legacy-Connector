@@ -585,8 +585,13 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
-        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaIcon(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaIcons.name(textureName, side, meta));
+        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
         return this.blockIcon;
+    }
+
+    /** The icon of a vanilla block's face under its 1.7.10 name (see {@code VanillaIcons}). */
+    protected final IIcon mcc$vanillaBlockIcon(int side, int meta) {
+        return mcc$vanillaIcon(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaIcons.name(this, textureName, side, meta));
     }
 
     private static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap VANILLA_ICONS =

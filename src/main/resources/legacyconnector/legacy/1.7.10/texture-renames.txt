@@ -2,6 +2,12 @@ blocks/anvil_base block/anvil
 blocks/anvil_top_damaged_0 block/anvil_top
 blocks/anvil_top_damaged_1 block/chipped_anvil_top
 blocks/anvil_top_damaged_2 block/damaged_anvil_top
+blocks/bed_feet_end block/oak_planks
+blocks/bed_feet_side block/red_wool
+blocks/bed_feet_top block/red_wool
+blocks/bed_head_end block/oak_planks
+blocks/bed_head_side block/red_wool
+blocks/bed_head_top block/red_wool
 blocks/brick block/bricks
 blocks/carrots_stage_0 block/carrots_stage0
 blocks/carrots_stage_1 block/carrots_stage1
@@ -177,7 +183,9 @@ blocks/rail_golden_powered block/powered_rail_on
 blocks/rail_normal block/rail
 blocks/rail_normal_turned block/rail_corner
 blocks/redstone_dust_cross block/redstone_dust_dot
+blocks/redstone_dust_cross_overlay block/redstone_dust_overlay
 blocks/redstone_dust_line block/redstone_dust_line0
+blocks/redstone_dust_line_overlay block/redstone_dust_overlay
 blocks/redstone_lamp_off block/redstone_lamp
 blocks/redstone_torch_on block/redstone_torch
 blocks/reeds block/sugar_cane
@@ -229,8 +237,10 @@ blocks/wool_colored_silver block/light_gray_wool
 blocks/wool_colored_white block/white_wool
 blocks/wool_colored_yellow block/yellow_wool
 items/apple_golden item/golden_apple
+items/bed block/red_wool
 items/beef_cooked item/cooked_beef
 items/beef_raw item/beef
+items/boat item/oak_boat
 items/book_enchanted item/enchanted_book
 items/book_normal item/book
 items/book_writable item/writable_book
@@ -263,8 +273,10 @@ items/dye_powder_red item/red_dye
 items/dye_powder_silver item/light_gray_dye
 items/dye_powder_white item/bone_meal
 items/dye_powder_yellow item/yellow_dye
+items/fireball item/fire_charge
 items/fireworks item/firework_rocket
 items/fireworks_charge item/firework_star
+items/fireworks_charge_overlay item/firework_star_overlay
 items/fish_clownfish_raw item/tropical_fish
 items/fish_cod_cooked item/cooked_cod
 items/fish_cod_raw item/cod
@@ -277,6 +289,7 @@ items/gold_boots item/golden_boots
 items/gold_chestplate item/golden_chestplate
 items/gold_helmet item/golden_helmet
 items/gold_hoe item/golden_hoe
+items/gold_horse_armor item/golden_horse_armor
 items/gold_leggings item/golden_leggings
 items/gold_pickaxe item/golden_pickaxe
 items/gold_shovel item/golden_shovel
@@ -299,6 +312,7 @@ items/potato_poisonous item/poisonous_potato
 items/potion_bottle_drinkable item/potion
 items/potion_bottle_empty item/glass_bottle
 items/potion_bottle_splash item/splash_potion
+items/quiver item/arrow
 items/record_11 item/music_disc_11
 items/record_13 item/music_disc_13
 items/record_blocks item/music_disc_blocks
@@ -313,6 +327,7 @@ items/record_wait item/music_disc_wait
 items/record_ward item/music_disc_ward
 items/redstone_dust item/redstone
 items/reeds item/sugar_cane
+items/ruby item/emerald
 items/seeds_melon item/melon_seeds
 items/seeds_pumpkin item/pumpkin_seeds
 items/seeds_wheat item/wheat_seeds

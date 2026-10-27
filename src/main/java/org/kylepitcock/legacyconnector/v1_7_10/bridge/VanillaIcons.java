@@ -12,8 +12,32 @@ public final class VanillaIcons {
 
     /** Name without namespace ("log_oak_top"); the block's own legacy name where nothing special is known. */
     public static String name(String legacyName, int side, int meta) {
+        String name = rule(legacyName, side, meta);
+        return name != null || legacyName == null ? name : bare(legacyName);
+    }
+
+    /**
+     * The icon of a vanilla block: the rules below, else (in the client, once the models are loaded) the sprite of the modern
+     * model its metadata maps to (saplings, flowers, leaves, slabs, carpets...), else the block's own legacy name.
+     */
+    public static String name(legacyconnector.v1_7_10.net.minecraft.block.Block block, String legacyName, int side, int meta) {
+        String name = rule(legacyName, side, meta);
+        if (name != null) return name;
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            name = org.kylepitcock.legacyconnector.v1_7_10.client.VanillaModelIcons.name(BlockBridge.toModern(block, meta), side);
+            if (name != null) return name;
+        }
+        return legacyName == null ? null : bare(legacyName);
+    }
+
+    private static String bare(String legacyName) {
+        return legacyName.startsWith("minecraft:") ? legacyName.substring("minecraft:".length()) : legacyName;
+    }
+
+    /** The hand-written rule for the block, null where there is none. */
+    private static String rule(String legacyName, int side, int meta) {
         if (legacyName == null) return null;
-        if (legacyName.startsWith("minecraft:")) legacyName = legacyName.substring("minecraft:".length());
+        legacyName = bare(legacyName);
         switch (legacyName) {
             case "log", "log2" -> {
                 String wood = legacyName.equals("log") ? LOGS[meta & 3] : LOGS2[Math.min(meta & 1, 1)];
@@ -33,6 +57,9 @@ public final class VanillaIcons {
             }
             case "lava", "flowing_lava" -> {
                 return side <= 1 ? "lava_still" : "lava_flow";
+            }
+            case "brick_block" -> {
+                return "brick";
             }
             case "bookshelf" -> {
                 return side <= 1 ? "planks_oak" : "bookshelf";
@@ -68,12 +95,12 @@ public final class VanillaIcons {
                 return side == 1 ? "quartz_block_top" : side == 0 ? "quartz_block_bottom" : "quartz_block_side";
             }
             case "glass", "stone", "cobblestone", "dirt", "sand", "gravel", "iron_block", "gold_block", "diamond_block", "emerald_block",
-                    "lapis_block", "obsidian", "netherrack", "soul_sand", "clay", "brick_block", "coal_block", "redstone_block", "hardened_clay",
+                    "lapis_block", "obsidian", "netherrack", "soul_sand", "clay", "coal_block", "redstone_block", "hardened_clay",
                     "glowstone", "ice", "snow", "bedrock" -> {
                 return legacyName.equals("snow") ? "snow" : legacyName;
             }
             default -> {
-                return legacyName;
+                return null;
             }
         }
     }

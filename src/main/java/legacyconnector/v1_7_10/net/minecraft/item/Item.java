@@ -432,11 +432,30 @@ public class Item {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIconFromDamage(int damage) {
+        if (itemIcon == null && mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
         return itemIcon;
     }
 
     public IIcon getIconFromDamageForRenderPass(int damage, int pass) {
+        if (pass > 0 && itemIcon == null && mcc$vanilla != null) {
+            IIcon icon = mcc$vanillaItemIcon(damage, pass);
+            if (icon != null) return icon;
+        }
         return getIconFromDamage(damage);
+    }
+
+    private static final legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap VANILLA_ICONS =
+            new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+
+    /**
+     * A vanilla item's icon under its 1.7.10 name, read from the modern model of the item its damage maps to (mods draw
+     * vanilla items' icons: {@code Items.dye.getIconFromDamage(4)} is lapis lazuli).
+     */
+    protected final IIcon mcc$vanillaItemIcon(int damage, int pass) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
+        var modern = new ItemStack(this, 1, damage).mcc$modern();
+        String name = org.kylepitcock.legacyconnector.v1_7_10.client.VanillaModelIcons.itemName(modern.getItem(), pass);
+        return name == null ? null : VANILLA_ICONS.registerIcon("minecraft:" + name);
     }
 
     public final IIcon getIconIndex(ItemStack stack) {

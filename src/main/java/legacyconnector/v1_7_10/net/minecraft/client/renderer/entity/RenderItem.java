@@ -41,8 +41,18 @@ public class RenderItem extends Render {
     }
 
     public void renderItemIntoGUI(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y) {
+        drawInGui(stack, x, y, renderWithColor);
+    }
+
+    /**
+     * Draws a stack in the active screen. 1.7.10 set glColor to the item's colour first when drawing in colour, so the colour
+     * left by earlier text does not tint it (Tinkers' manual drew its recipe items black after its black captions).
+     */
+    public static void drawInGui(ItemStack stack, int x, int y, boolean inColor) {
         var gui = RenderContext.gui();
-        if (gui != null && stack != null) gui.renderItem(stack.mcc$modern(), x, y);
+        if (gui == null || stack == null) return;
+        if (inColor) RenderContext.color(1.0F, 1.0F, 1.0F, 1.0F);
+        gui.renderItem(stack.mcc$modern(), x, y);
     }
 
     public void renderItemAndEffectIntoGUI(FontRenderer font, TextureManager tm, ItemStack stack, int x, int y) {

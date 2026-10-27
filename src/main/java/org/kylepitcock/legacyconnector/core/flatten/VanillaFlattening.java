@@ -87,7 +87,8 @@ public final class VanillaFlattening {
         initBlocks();
         if (legacyId < 0 || legacyId > 255) return Blocks.AIR.defaultBlockState();
         BlockState s = states[(legacyId << 4) | (meta & 15)];
-        if (s == null) s = states[legacyId << 4];
+        // a metadata the block never used reads as its first valid one (the skull's meta 0, a facing it never had)
+        for (int m = 0; legacyId != 0 && (s == null || s.isAir()) && m < 16; m++) s = states[legacyId << 4 | m];
         return s == null ? Blocks.AIR.defaultBlockState() : s;
     }
 

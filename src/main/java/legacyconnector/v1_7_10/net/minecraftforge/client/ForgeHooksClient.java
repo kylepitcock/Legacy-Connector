@@ -23,7 +23,7 @@ public class ForgeHooksClient {
             legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager textures,
             legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, boolean inColor, float zLevel, float x, float y) {
         if (stack == null || stack.getItem() == null) return false;
-        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderItem.getInstance().renderItemIntoGUI(null, textures, stack, (int) x, (int) y);
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderItem.drawInGui(stack, (int) x, (int) y, inColor);
         return true;
     }
 

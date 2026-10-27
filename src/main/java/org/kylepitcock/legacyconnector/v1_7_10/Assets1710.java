@@ -157,6 +157,29 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return out;
     }
 
+    private static volatile Map<String, String> legacyVanillaNames;
+
+    /**
+     * The 1.7.10 name of a modern vanilla texture ({@code minecraft:block/oak_sapling} -> {@code sapling_oak}), one that
+     * {@link #texture} maps back to it: bare in its own atlas ({@code block}: the blocks one), else with its legacy folder
+     * ({@code blocks/sapling_oak} for an item drawn with a block texture); null for other namespaces and folders.
+     */
+    public static String legacyVanillaTexture(ResourceLocation modern, boolean block) {
+        String path = modern.getPath();
+        boolean isBlock = path.startsWith("block/");
+        if (!modern.getNamespace().equals("minecraft") || !isBlock && !path.startsWith("item/")) return null;
+        Map<String, String> names = legacyVanillaNames;
+        if (names == null) {
+            names = new java.util.HashMap<>();
+            for (var e : VANILLA_RENAMES.entrySet()) names.putIfAbsent(e.getValue(), e.getKey());
+            legacyVanillaNames = names;
+        }
+        String folder = isBlock ? "blocks/" : "items/";
+        String legacy = names.get(path);
+        if (legacy == null || !legacy.startsWith(folder)) legacy = folder + path.substring(path.indexOf('/') + 1);
+        return isBlock == block ? legacy.substring(folder.length()) : legacy;
+    }
+
     /** {@code "modid:name"} -> {@code modid:blocks/name}; bare vanilla names map to the modern vanilla textures. */
     public static String texture(String legacy, boolean block) {
         if (legacy == null) return "minecraft:missingno";
@@ -174,7 +197,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             String renamed = VANILLA_RENAMES.get(folder + bare);
             if (renamed == null && !folder.equals(block ? "blocks/" : "items/")) renamed = null;
             if (renamed != null) return "minecraft:" + renamed;
-            String n = VANILLA_TEXTURE_RENAMES.getOrDefault(bare, bare);
+            String n = folder.equals("blocks/") ? VANILLA_TEXTURE_RENAMES.getOrDefault(bare, bare) : bare;
             return "minecraft:" + (folder.equals("items/") ? "item/" : "block/") + Ids.normalizePath(n);
         }
         return domain + ":" + (block ? "blocks/" : "items/") + Ids.normalizePath(name);

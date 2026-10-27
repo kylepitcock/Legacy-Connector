@@ -81,6 +81,7 @@ public class BlockCrops extends BlockBush implements IGrowable {
 
     @Override
     public IIcon getIcon(int side, int meta) {
+        if (icons == null && mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
         if (meta < 0 || meta > 7) meta = 7;
         return icons == null ? null : icons[meta];
     }

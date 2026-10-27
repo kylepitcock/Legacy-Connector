@@ -293,13 +293,22 @@ public final class ItemBridge {
         }
     }
 
+    /**
+     * The modern item of a 1.7.10 vanilla name and damage: the game's own 1.12 upgrade tables, except where 1.7.10 differed from
+     * 1.12 (beds had no colours and were red; 1.12 reads damage 0 as white).
+     */
+    static net.minecraft.world.item.Item vanillaItem(String legacyName, int meta) {
+        if ("bed".equals(legacyName) || "minecraft:bed".equals(legacyName)) return Items.RED_BED;
+        return VanillaFlattening.item(legacyName, meta);
+    }
+
     public static void initVanilla(Item item, VanillaInfo info) {
-        net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : VanillaFlattening.item(info.legacyName(), 0);
+        net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : vanillaItem(info.legacyName(), 0);
         boolean subtypes = false;
         if (info.modern() == null && info.legacyId() >= 0) {
-            net.minecraft.world.item.Item first = VanillaFlattening.item(info.legacyName(), 0);
+            net.minecraft.world.item.Item first = vanillaItem(info.legacyName(), 0);
             for (int meta = 1; meta < 16 && !subtypes; meta++) {
-                net.minecraft.world.item.Item other = VanillaFlattening.item(info.legacyName(), meta);
+                net.minecraft.world.item.Item other = vanillaItem(info.legacyName(), meta);
                 subtypes = other != Items.AIR && other != first;
             }
         }
@@ -511,7 +520,7 @@ public final class ItemBridge {
         if (item.mcc$vanilla != null) {
             VanillaInfo info = item.mcc$vanilla;
             net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m
-                    : VanillaFlattening.item(info.legacyName(), item.getHasSubtypes() ? meta : 0);
+                    : vanillaItem(info.legacyName(), item.getHasSubtypes() ? meta : 0);
             var stack = new net.minecraft.world.item.ItemStack(modern, count);
             if (modern instanceof net.minecraft.world.item.MapItem) {
                 // a filled map's legacy damage is its map id
@@ -589,7 +598,7 @@ public final class ItemBridge {
                 if (b == null || b.mcc$vanilla == null) continue;
                 String n = b.mcc$vanilla.legacyName();
                 for (int meta = 0; meta < 16; meta++) {
-                    net.minecraft.world.item.Item it = VanillaFlattening.item(n, meta);
+                    net.minecraft.world.item.Item it = vanillaItem(n, meta);
                     if (it == Items.AIR || VANILLA_REVERSE.containsKey(it)) continue;
                     VANILLA_REVERSE.put(it, new Object[] {fromBlock(b), meta});
                 }
