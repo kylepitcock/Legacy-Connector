@@ -108,6 +108,10 @@ public class BiomeDecorator {
         Random rand = randomGenerator;
         int cx = chunk_X, cz = chunk_Z;
         bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Pre(world, rand, cx, cz));
+        // vanilla's ore pass came next; the modern biome makes the ores, but mods generate theirs from its events (Fisk's ores)
+        var ores = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.ORE_GEN_BUS;
+        ores.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.Pre(world, rand, cx, cz));
+        ores.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.OreGenEvent.Post(world, rand, cx, cz));
         int trees = treesPerChunk;
         if (rand.nextInt(10) == 0) trees++;
         if (trees > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(world, rand, cx, cz,
