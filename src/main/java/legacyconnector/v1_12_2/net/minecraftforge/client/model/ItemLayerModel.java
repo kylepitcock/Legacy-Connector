@@ -41,6 +41,17 @@ public final class ItemLayerModel implements IModel {
         this.overrides = overrides;
     }
 
+    /** The layers ("layer0", "layer1"... resolved through the parents) and overrides of a JSON item model. */
+    public ItemLayerModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock model) {
+        this(layers(model), model.createOverrides());
+    }
+
+    private static ImmutableList<ResourceLocation> layers(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock model) {
+        ImmutableList.Builder<ResourceLocation> builder = ImmutableList.builder();
+        for (int i = 0; model.isTexturePresent("layer" + i); i++) builder.add(new ResourceLocation(model.resolveTextureName("layer" + i)));
+        return builder.build();
+    }
+
     @Override
     public Collection<ResourceLocation> getTextures() {
         return textures;
