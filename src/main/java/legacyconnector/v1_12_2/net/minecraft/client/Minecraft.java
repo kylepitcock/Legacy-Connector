@@ -411,8 +411,8 @@ public class Minecraft {
     public final java.io.File fileResourcepacks = new java.io.File(gameDir, "resourcepacks");
     public final legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager languageManager = !CLIENT ? null :
             legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
-    /** The vanilla pack as a legacy pack is not provided (resources of the game are found through the resource manager). */
-    public final legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack defaultResourcePack = null;
+    /** The game's own assets as a legacy pack. */
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.DefaultResourcePack defaultResourcePack = CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.resources.DefaultResourcePack() : null;
     /** Packs mods add by reflection, then {@code refreshResources()}: they are served to legacy resource lookups. */
     private final java.util.List<legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack> defaultResourcePacks = new java.util.ArrayList<>();
     public final legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository resourcePackRepository =
