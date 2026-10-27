@@ -1,19 +1,110 @@
 package legacyconnector.v1_12_2.net.minecraft.server;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import legacyconnector.v1_12_2.net.minecraft.command.CommandHandler;
 import legacyconnector.v1_12_2.net.minecraft.command.ICommandManager;
 
-/** The running server as 1.12 mods see it: what exists here is what needs no 1.12 world or player classes. */
-public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.command.ICommandSender {
+/**
+ * The running server as 1.12 mods see it: one object for the game's life, answering from the modern server that is running
+ * (worlds are reached through {@code DimensionManager}).
+ */
+public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.command.ICommandSender,
+        legacyconnector.v1_12_2.net.minecraft.util.IThreadListener {
     private static final MinecraftServer INSTANCE = new MinecraftServer();
     private final CommandHandler commandManager = new CommandHandler();
+    private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList playerList =
+            new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList(this);
+    private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache =
+            new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache();
+    /** The section profiler mods report to (it records nothing until enabled). */
+    public final legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler = new legacyconnector.v1_12_2.net.minecraft.profiler.Profiler();
+
+    /** Phantom fields: accesses are redirected to the accessors below. */
+    @Deprecated
+    public long[] tickTimeArray;
+    @Deprecated
+    public java.io.File anvilFile;
+    @Deprecated
+    public java.util.Hashtable<Integer, long[]> worldTickTimes;
 
     public static MinecraftServer mcc$instance() {
         return INSTANCE;
     }
 
+    private static net.minecraft.server.MinecraftServer modern() {
+        return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+    }
+
+    /** The last 100 tick lengths in nanoseconds. */
+    public static long[] mcc$get$tickTimeArray(MinecraftServer s) {
+        var m = modern();
+        return m == null ? new long[100] : m.getTickTimesNanos();
+    }
+
+    public static java.io.File mcc$get$anvilFile(MinecraftServer s) {
+        var m = modern();
+        return m == null ? new java.io.File("saves") : m.getServerDirectory().resolve("saves").toFile();
+    }
+
+    /** The tick lengths of each dimension (by legacy id) in nanoseconds. */
+    public static java.util.Hashtable<Integer, long[]> mcc$get$worldTickTimes(MinecraftServer s) {
+        java.util.Hashtable<Integer, long[]> out = new java.util.Hashtable<>();
+        var m = modern();
+        if (m == null) return out;
+        for (var level : m.getAllLevels()) {
+            long[] times = m.getTickTime(level.dimension());
+            out.put(org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.dimensionId(level.dimension()), times == null ? new long[100] : times);
+        }
+        return out;
+    }
+
     public ICommandManager getCommandManager() {
         return commandManager;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList getPlayerList() {
+        return playerList;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache getPlayerProfileCache() {
+        return profileCache;
+    }
+
+    // the main thread
+
+    @Override
+    public ListenableFuture<Object> addScheduledTask(Runnable runnableToSchedule) {
+        var m = modern();
+        if (m == null) {
+            try {
+                runnableToSchedule.run();
+                return com.google.common.util.concurrent.Futures.immediateFuture(null);
+            } catch (Throwable t) {
+                return com.google.common.util.concurrent.Futures.immediateFailedFuture(t);
+            }
+        }
+        return legacyconnector.v1_12_2.net.minecraft.util.IThreadListener.mcc$of(m).addScheduledTask(runnableToSchedule);
+    }
+
+    public <V> ListenableFuture<V> callFromMainThread(java.util.concurrent.Callable<V> callable) {
+        com.google.common.util.concurrent.SettableFuture<V> f = com.google.common.util.concurrent.SettableFuture.create();
+        Runnable task = () -> {
+            try {
+                f.set(callable.call());
+            } catch (Throwable t) {
+                f.setException(t);
+            }
+        };
+        var m = modern();
+        if (m == null || m.isSameThread()) task.run();
+        else m.execute(task);
+        return f;
+    }
+
+    @Override
+    public boolean isCallingFromMinecraftThread() {
+        var m = modern();
+        return m == null || m.isSameThread();
     }
 
     // the server as a command sender (the console)
@@ -35,7 +126,7 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
 
     @Override
     public legacyconnector.v1_12_2.net.minecraft.world.World getEntityWorld() {
-        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        var server = modern();
         return server == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(server.overworld());
     }
 
@@ -43,6 +134,8 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
     public MinecraftServer getServer() {
         return this;
     }
+
+    // state
 
     public boolean isDedicatedServer() {
         return !net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
@@ -56,9 +149,100 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return "1.12.2";
     }
 
+    public boolean isServerRunning() {
+        var m = modern();
+        return m != null && m.isRunning();
+    }
+
+    public int getTickCounter() {
+        var m = modern();
+        return m == null ? 0 : m.getTickCount();
+    }
+
+    public static long getCurrentTimeMillis() {
+        return System.currentTimeMillis();
+    }
+
+    public boolean isHardcore() {
+        var m = modern();
+        return m != null && m.isHardcore();
+    }
+
+    public boolean isPVPEnabled() {
+        var m = modern();
+        return m == null || m.isPvpAllowed();
+    }
+
+    public void setAllowPvp(boolean allowPvp) {
+        var m = modern();
+        if (m != null) m.setPvpAllowed(allowPvp);
+    }
+
+    public boolean isServerInOnlineMode() {
+        var m = modern();
+        return m != null && m.usesAuthentication();
+    }
+
+    public boolean isSnooperEnabled() {
+        return false;
+    }
+
+    public int getOpPermissionLevel() {
+        var m = modern();
+        return m == null ? 4 : m.getOperatorUserPermissionLevel();
+    }
+
+    /** The single player world's owner (null on a dedicated server). */
+    public String getServerOwner() {
+        var m = modern();
+        if (m == null || !m.isSingleplayer() || m.getSingleplayerProfile() == null) return null;
+        return m.getSingleplayerProfile().getName();
+    }
+
+    public String[] getOnlinePlayerNames() {
+        return playerList.getOnlinePlayerNames();
+    }
+
+    public String getFolderName() {
+        var m = modern();
+        return m == null ? "world" : m.getWorldData().getLevelName();
+    }
+
+    public com.mojang.authlib.minecraft.MinecraftSessionService getMinecraftSessionService() {
+        var m = modern();
+        return m == null ? null : m.getSessionService();
+    }
+
+    /** Whether spawn protection stops the player from changing the block. */
+    public boolean isBlockProtected(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn) {
+        var m = modern();
+        if (m == null || worldIn == null || !(worldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel level) || playerIn == null
+                || playerIn.mcc$player() == null) {
+            return false;
+        }
+        return m.isUnderSpawnProtection(level, new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()), playerIn.mcc$player());
+    }
+
+    /** An entity in any loaded world by its UUID. */
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity getEntityFromUuid(java.util.UUID uuid) {
+        var m = modern();
+        if (m == null || uuid == null) return null;
+        for (var level : m.getAllLevels()) {
+            var e = level.getEntity(uuid);
+            if (e != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e);
+        }
+        return null;
+    }
+
+    /** A file in the server's directory. */
+    public java.io.File getFile(String fileName) {
+        return new java.io.File(getDataDirectory(), fileName);
+    }
+
     /** The game's directory (the server directory; the client's game directory in single player). */
     public java.io.File getDataDirectory() {
-        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        var server = modern();
         return server == null ? net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile() : server.getServerDirectory().toFile();
     }
 
@@ -66,49 +250,10 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
     }
 
-    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList mcc$playerList;
-    private net.minecraft.server.MinecraftServer mcc$playerListServer;
-
-    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList getPlayerList() {
-        var server = mcc$modern();
-        if (server == null) return null;
-        if (mcc$playerListServer != server) {
-            mcc$playerList = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList(server);
-            mcc$playerListServer = server;
-        }
-        return mcc$playerList;
-    }
-
     public legacyconnector.v1_12_2.net.minecraft.world.WorldServer getWorld(int dimension) {
         var level = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.levelOf(mcc$modern(), dimension);
         if (level == null) level = mcc$modern() == null ? null : mcc$modern().overworld();
         return (legacyconnector.v1_12_2.net.minecraft.world.WorldServer) org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level);
-    }
-
-    public com.google.common.util.concurrent.ListenableFuture<Object> addScheduledTask(Runnable task) {
-        var future = com.google.common.util.concurrent.ListenableFutureTask.<Object>create(task, null);
-        var server = mcc$modern();
-        if (server == null || server.isSameThread()) future.run();
-        else server.execute(future);
-        return future;
-    }
-
-    public <V> com.google.common.util.concurrent.ListenableFuture<V> callFromMainThread(java.util.concurrent.Callable<V> task) {
-        var future = com.google.common.util.concurrent.ListenableFutureTask.create(task);
-        var server = mcc$modern();
-        if (server == null || server.isSameThread()) future.run();
-        else server.execute(future);
-        return future;
-    }
-
-    public boolean isCallingFromMinecraftThread() {
-        var server = mcc$modern();
-        return server == null || server.isSameThread();
-    }
-
-    public boolean isServerRunning() {
-        var server = mcc$modern();
-        return server != null && server.isRunning();
     }
 
     public int getCurrentPlayerCount() {
@@ -121,29 +266,9 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return server == null ? 0 : server.getMaxPlayers();
     }
 
-    public String[] getOnlinePlayerNames() {
-        var server = mcc$modern();
-        return server == null ? new String[0] : server.getPlayerNames();
-    }
-
-    public int getTickCounter() {
-        var server = mcc$modern();
-        return server == null ? 0 : server.getTickCount();
-    }
-
     public String getMOTD() {
         var server = mcc$modern();
         return server == null ? "" : server.getMotd();
-    }
-
-    public String getFolderName() {
-        var server = mcc$modern();
-        return server == null ? "world" : server.getWorldData().getLevelName();
-    }
-
-    public boolean isHardcore() {
-        var server = mcc$modern();
-        return server != null && server.isHardcore();
     }
 
     public boolean getAllowNether() {
@@ -151,33 +276,8 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return server == null || server.getLevel(net.minecraft.world.level.Level.NETHER) != null;
     }
 
-    public boolean isPVPEnabled() {
-        var server = mcc$modern();
-        return server == null || server.isPvpAllowed();
-    }
-
     public boolean isFlightAllowed() {
         var server = mcc$modern();
         return server != null && server.isFlightAllowed();
-    }
-
-    public int getOpPermissionLevel() {
-        var server = mcc$modern();
-        return server == null ? 4 : server.getOperatorUserPermissionLevel();
-    }
-
-    public com.mojang.authlib.minecraft.MinecraftSessionService getMinecraftSessionService() {
-        var server = mcc$modern();
-        return server == null ? null : server.getSessionService();
-    }
-
-    public legacyconnector.v1_12_2.net.minecraft.entity.Entity getEntityFromUuid(java.util.UUID uuid) {
-        var server = mcc$modern();
-        if (server == null || uuid == null) return null;
-        for (var level : server.getAllLevels()) {
-            var e = level.getEntity(uuid);
-            if (e != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e);
-        }
-        return null;
     }
 }

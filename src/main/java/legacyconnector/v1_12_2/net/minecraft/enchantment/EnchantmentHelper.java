@@ -22,6 +22,8 @@ public class EnchantmentHelper {
 
     public static int getEnchantmentLevel(Enchantment enchantment, ItemStack stack) {
         if (stack.isEmpty() || enchantment == null) return 0;
+        int modern = mcc$modernLevel(enchantment, stack);
+        if (modern > 0) return modern;
         NBTTagList list = stack.getEnchantmentTagList();
         int id = Enchantment.getEnchantmentID(enchantment);
         for (int i = 0; i < list.tagCount(); i++) {
@@ -56,6 +58,85 @@ public class EnchantmentHelper {
         } else {
             stack.setTagInfo(isBook(stack) ? "StoredEnchantments" : "ench", list);
         }
+    }
+
+    /** 1.12 names of vanilla enchantments the modern game renamed. */
+    private static final Map<String, String> RENAMED = Map.of("sweeping", "sweeping_edge");
+
+    /**
+     * The level of a vanilla enchantment on the modern stack a view stands for (modern stacks keep enchantments in a component, not
+     * the {@code ench} tag); 0 for mod enchantments and plain stacks.
+     */
+    private static int mcc$modernLevel(Enchantment enchantment, ItemStack stack) {
+        var backing = stack.mcc$backing();
+        var name = enchantment.getRegistryName();
+        if (backing == null || name == null || !"minecraft".equals(name.getNamespace())) return 0;
+        String path = RENAMED.getOrDefault(name.getPath(), name.getPath());
+        var enchants = backing.getItem() == net.minecraft.world.item.Items.ENCHANTED_BOOK
+                ? backing.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS, net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY)
+                : backing.getEnchantments();
+        for (var e : enchants.entrySet()) {
+            var key = e.getKey().unwrapKey();
+            if (key.isPresent() && key.get().location().getNamespace().equals("minecraft") && key.get().location().getPath().equals(path)) return e.getIntValue();
+        }
+        return 0;
+    }
+
+    /** The highest level of the enchantment on the entity's equipment that it applies to. */
+    public static int getMaxEnchantmentLevel(Enchantment enchantment, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if (enchantment == null) return 0;
+        int max = 0;
+        for (ItemStack s : enchantment.getEntityEquipment(entity)) max = Math.max(max, getEnchantmentLevel(enchantment, s));
+        return max;
+    }
+
+    private static int mcc$level(String name, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return getMaxEnchantmentLevel(Enchantment.getEnchantmentByLocation(name), entity);
+    }
+
+    public static int getKnockbackModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("knockback", entity);
+    }
+
+    public static int getFireAspectModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("fire_aspect", entity);
+    }
+
+    public static int getEfficiencyModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("efficiency", entity);
+    }
+
+    public static int getLootingModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("looting", entity);
+    }
+
+    public static int getRespirationModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("respiration", entity);
+    }
+
+    public static int getDepthStriderModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("depth_strider", entity);
+    }
+
+    public static boolean getAquaAffinityModifier(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("aqua_affinity", entity) > 0;
+    }
+
+    public static boolean hasFrostWalkerEnchantment(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return mcc$level("frost_walker", entity) > 0;
+    }
+
+    public static float getSweepingDamageRatio(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        int i = mcc$level("sweeping", entity);
+        return i > 0 ? 1.0F - 1.0F / (float) (i + 1) : 0.0F;
+    }
+
+    public static boolean hasBindingCurse(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("binding_curse"), stack) > 0;
+    }
+
+    public static boolean hasVanishingCurse(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("vanishing_curse"), stack) > 0;
     }
 
     /** {@code ItemEnchantedBook.getEnchantedItemStack}: an enchanted book storing the enchantment. */

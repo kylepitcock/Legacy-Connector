@@ -50,7 +50,7 @@ public class TickEvent extends Event {
         public final EntityPlayer player;
 
         public PlayerTickEvent(Phase phase, EntityPlayer player) {
-            super(Type.PLAYER, player.world != null && player.world.isRemote ? Side.CLIENT : Side.SERVER, phase);
+            super(Type.PLAYER, legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(player) != null && legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(player).isRemote ? Side.CLIENT : Side.SERVER, phase);
             this.player = player;
         }
     }

@@ -13,4 +13,18 @@ public enum SoundCategory {
     public String getName() {
         return name;
     }
+
+    /** The modern source (same constants in the same order). */
+    public net.minecraft.sounds.SoundSource mcc$modern() {
+        return net.minecraft.sounds.SoundSource.values()[ordinal()];
+    }
+
+    public static SoundCategory mcc$of(net.minecraft.sounds.SoundSource source) {
+        return values()[source.ordinal()];
+    }
+
+    public static SoundCategory getByName(String name) {
+        for (SoundCategory c : values()) if (c.name.equals(name)) return c;
+        return null;
+    }
 }

@@ -20,6 +20,29 @@ public class BiomeDecorator {
     public boolean generateFalls = true;
     public int waterlilyPerChunk;
 
+    public java.util.Random decorationRandom;
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos chunkPos;
+
     public BiomeDecorator() {
+    }
+
+    /**
+     * Decorates a chunk. Vanilla's ores, trees and plants are the modern game's features, so the base pass only records the chunk
+     * (mod decorators extending this class add their own features in {@code genDecorations}).
+     */
+    public void decorate(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random random, Biome biome,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (decorating) return;
+        decorating = true;
+        try {
+            chunkPos = pos;
+            decorationRandom = random;
+            genDecorations(biome, worldIn, random);
+        } finally {
+            decorating = false;
+        }
+    }
+
+    protected void genDecorations(Biome biomeIn, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random random) {
     }
 }

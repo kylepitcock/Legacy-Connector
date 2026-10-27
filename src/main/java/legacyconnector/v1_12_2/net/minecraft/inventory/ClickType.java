@@ -1,6 +1,6 @@
 package legacyconnector.v1_12_2.net.minecraft.inventory;
 
-/** The kinds of container clicks (same order as the modern {@code ClickType}). */
+/** 1.12.2 click kinds; same constants in the same order as the modern {@code ClickType}. */
 public enum ClickType {
     PICKUP,
     QUICK_MOVE,
@@ -14,7 +14,7 @@ public enum ClickType {
         return net.minecraft.world.inventory.ClickType.values()[ordinal()];
     }
 
-    public static ClickType mcc$of(net.minecraft.world.inventory.ClickType type) {
-        return values()[type.ordinal()];
+    public static ClickType mcc$of(net.minecraft.world.inventory.ClickType modern) {
+        return modern == null ? PICKUP : values()[modern.ordinal()];
     }
 }

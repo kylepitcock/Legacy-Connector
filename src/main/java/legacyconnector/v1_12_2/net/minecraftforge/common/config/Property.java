@@ -478,6 +478,18 @@ public class Property {
         return (Class<?>) mcc$entryClass;
     }
 
+    private Class<?> mcc$arrayEntryClass;
+
+    /** The list editor's entry class for this property's items (Forge's config GUI). */
+    public Property setArrayEntryClass(Class<?> clazz) {
+        this.mcc$arrayEntryClass = clazz;
+        return this;
+    }
+
+    public Class<?> getArrayEntryClass() {
+        return mcc$arrayEntryClass;
+    }
+
     public Property setValidationPattern(java.util.regex.Pattern validationPattern) {
         this.mcc$validation = validationPattern;
         return this;

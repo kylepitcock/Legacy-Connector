@@ -85,6 +85,66 @@ public final class Stacks1122 {
         if (!tag.isEmpty()) out.setTagCompound(tag);
     }
 
+    /** Live views by the modern stack they stand for (modern stacks compare by identity). */
+    private static final java.util.Map<net.minecraft.world.item.ItemStack, ItemStack> VIEWS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    /** Views whose tag legacy code may have changed since the last flush. */
+    private static final java.util.Set<ItemStack> TOUCHED = java.util.Collections.synchronizedSet(java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>()));
+
+    /**
+     * A live view of a modern stack: the same legacy object for the same modern stack, so a mod that changes the count, damage or tag
+     * of a held or stored stack changes the real one (counts and damage at once, tags at the next {@link #flushViews}).
+     */
+    public static ItemStack view(net.minecraft.world.item.ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack view = VIEWS.get(stack);
+        if (view != null && view.getItem() == legacyOf(stack.getItem())) return view;
+        view = fromModern(stack);
+        if (view.isEmpty()) return view;
+        view.mcc$bind(stack);
+        VIEWS.put(stack, view);
+        return view;
+    }
+
+    /** The legacy item a modern item stands for (null when it has none). */
+    private static Item legacyOf(net.minecraft.world.item.Item item) {
+        if (item instanceof Legacy1122Item i) return i.legacy();
+        if (item instanceof Legacy1122BlockItem b) return b.legacy();
+        Object[] variant = Vanilla1122.legacyVariant(item);
+        return variant != null ? (Item) variant[0] : Vanilla1122.legacyOf(item);
+    }
+
+    /** The modern stack for a legacy one: a view's own modern stack (its tag written back first), a new stack otherwise. */
+    public static net.minecraft.world.item.ItemStack toModernLive(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return net.minecraft.world.item.ItemStack.EMPTY;
+        var backing = stack.mcc$backing();
+        if (backing != null && !backing.isEmpty()) {
+            stack.mcc$commit();
+            return backing;
+        }
+        return toModern(stack);
+    }
+
+    public static void touched(ItemStack view) {
+        TOUCHED.add(view);
+    }
+
+    /** Writes the tags of the views legacy code read since the last flush back into their modern stacks. */
+    public static void flushViews() {
+        if (TOUCHED.isEmpty()) return;
+        ItemStack[] views;
+        synchronized (TOUCHED) {
+            views = TOUCHED.toArray(new ItemStack[0]);
+            TOUCHED.clear();
+        }
+        for (ItemStack v : views) {
+            try {
+                v.mcc$commit();
+            } catch (RuntimeException e) {
+                // a tag a modern component cannot hold stays with the legacy view
+            }
+        }
+    }
+
     public static ItemStack fromModern(net.minecraft.world.item.ItemStack stack) {
         if (stack == null || stack.isEmpty()) return ItemStack.EMPTY;
         Item legacy;

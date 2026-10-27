@@ -1,15 +1,11 @@
 package legacyconnector.v1_12_2.net.minecraft.inventory;
 
-import java.util.ArrayList;
 import java.util.List;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
-import legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent;
-import legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString;
-import legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation;
 
-/** A plain inventory of a fixed size, with a name and change listeners (backpacks, temporary grids). */
+/** A plain inventory of a fixed number of slots with a title and change listeners. */
 public class InventoryBasic implements IInventory {
     private String inventoryTitle;
     private final int slotsCount;
@@ -24,12 +20,12 @@ public class InventoryBasic implements IInventory {
         this.inventoryContents = NonNullList.withSize(slotCount, ItemStack.EMPTY);
     }
 
-    public InventoryBasic(ITextComponent title, int slotCount) {
+    public InventoryBasic(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent title, int slotCount) {
         this(title.getUnformattedText(), true, slotCount);
     }
 
     public void addInventoryChangeListener(IInventoryChangedListener listener) {
-        if (changeListeners == null) changeListeners = new ArrayList<>();
+        if (changeListeners == null) changeListeners = new java.util.ArrayList<>();
         changeListeners.add(listener);
     }
 
@@ -44,26 +40,26 @@ public class InventoryBasic implements IInventory {
 
     @Override
     public ItemStack decrStackSize(int index, int count) {
-        ItemStack itemstack = ItemStackHelper.getAndSplit(inventoryContents, index, count);
-        if (!itemstack.isEmpty()) markDirty();
-        return itemstack;
+        ItemStack out = ItemStackHelper.getAndSplit(inventoryContents, index, count);
+        if (!out.isEmpty()) markDirty();
+        return out;
     }
 
-    /** Merges the stack into matching and then empty slots; returns what did not fit. */
+    /** Adds a stack, onto matching stacks first, then into empty slots; what did not fit is returned. */
     public ItemStack addItem(ItemStack stack) {
         ItemStack itemstack = stack.copy();
-        for (int i = 0; i < slotsCount; ++i) {
-            ItemStack itemstack1 = getStackInSlot(i);
-            if (itemstack1.isEmpty()) {
+        for (int i = 0; i < slotsCount; i++) {
+            ItemStack here = getStackInSlot(i);
+            if (here.isEmpty()) {
                 setInventorySlotContents(i, itemstack);
                 markDirty();
                 return ItemStack.EMPTY;
             }
-            if (ItemStack.areItemsEqual(itemstack1, itemstack)) {
-                int j = Math.min(getInventoryStackLimit(), itemstack1.getMaxStackSize());
-                int k = Math.min(itemstack.getCount(), j - itemstack1.getCount());
+            if (ItemStack.areItemsEqual(here, itemstack)) {
+                int j = Math.min(getInventoryStackLimit(), here.getMaxStackSize());
+                int k = Math.min(itemstack.getCount(), j - here.getCount());
                 if (k > 0) {
-                    itemstack1.grow(k);
+                    here.grow(k);
                     itemstack.shrink(k);
                     if (itemstack.isEmpty()) {
                         markDirty();
@@ -78,10 +74,10 @@ public class InventoryBasic implements IInventory {
 
     @Override
     public ItemStack removeStackFromSlot(int index) {
-        ItemStack itemstack = inventoryContents.get(index);
-        if (itemstack.isEmpty()) return ItemStack.EMPTY;
+        ItemStack s = getStackInSlot(index);
+        if (s.isEmpty()) return ItemStack.EMPTY;
         inventoryContents.set(index, ItemStack.EMPTY);
-        return itemstack;
+        return s;
     }
 
     @Override
@@ -98,7 +94,7 @@ public class InventoryBasic implements IInventory {
 
     @Override
     public boolean isEmpty() {
-        for (ItemStack itemstack : inventoryContents) if (!itemstack.isEmpty()) return false;
+        for (ItemStack s : inventoryContents) if (!s.isEmpty()) return false;
         return true;
     }
 
@@ -112,14 +108,14 @@ public class InventoryBasic implements IInventory {
         return hasCustomName;
     }
 
-    public void setCustomName(String inventoryTitleIn) {
+    public void setCustomName(String name) {
         this.hasCustomName = true;
-        this.inventoryTitle = inventoryTitleIn;
+        this.inventoryTitle = name;
     }
 
-    @Override
-    public ITextComponent getDisplayName() {
-        return hasCustomName() ? new TextComponentString(getName()) : new TextComponentTranslation(getName());
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+        return hasCustomName ? new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(getName())
+                : new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation(getName());
     }
 
     @Override

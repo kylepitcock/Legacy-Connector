@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.inventory;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.EnumFacing;
 
-/** An inventory whose slots depend on the face it is accessed from (furnaces, machines). */
+/** An inventory that exposes different slots on each side (furnaces: input on top, fuel on the sides, output below). */
 public interface ISidedInventory extends IInventory {
     int[] getSlotsForFace(EnumFacing side);
 

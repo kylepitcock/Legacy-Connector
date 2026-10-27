@@ -5,6 +5,8 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
 /** A fluid: its name, textures and physical properties (the modern fluid type is made from these when it is registered). */
 public class Fluid {
+    /** One bucket: 1000 millibuckets. */
+    public static final int BUCKET_VOLUME = 1000;
     protected final String fluidName;
     protected final ResourceLocation still;
     protected final ResourceLocation flowing;

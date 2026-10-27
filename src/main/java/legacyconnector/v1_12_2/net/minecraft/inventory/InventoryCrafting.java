@@ -9,6 +9,7 @@ public class InventoryCrafting implements IInventory {
     private final NonNullList<ItemStack> stackList;
     private final int inventoryWidth;
     private final int inventoryHeight;
+    /** The container told when the grid changes (it recomputes the result); null for grids made by recipe code. */
     private final Container eventHandler;
 
     public InventoryCrafting(Container eventHandler, int width, int height) {

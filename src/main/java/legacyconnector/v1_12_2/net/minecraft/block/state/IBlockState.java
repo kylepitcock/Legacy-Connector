@@ -45,6 +45,82 @@ public interface IBlockState {
         return getBlock().getRenderType(this);
     }
 
+    default float getBlockHardness(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getBlockHardness(this, world, pos);
+    }
+
+    default float getPlayerRelativeBlockHardness(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getPlayerRelativeBlockHardness(this, player, world, pos);
+    }
+
+    default IBlockState withRotation(legacyconnector.v1_12_2.net.minecraft.util.Rotation rot) {
+        return getBlock().withRotation(this, rot);
+    }
+
+    default IBlockState withMirror(legacyconnector.v1_12_2.net.minecraft.util.Mirror mirror) {
+        return getBlock().withMirror(this, mirror);
+    }
+
+    default void neighborChanged(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            Block block, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos fromPos) {
+        getBlock().neighborChanged(this, world, pos, block, fromPos);
+    }
+
+    default boolean canProvidePower() {
+        return getBlock().canProvidePower(this);
+    }
+
+    default boolean hasComparatorInputOverride() {
+        return getBlock().hasComparatorInputOverride(this);
+    }
+
+    default int getComparatorInputOverride(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getComparatorInputOverride(this, world, pos);
+    }
+
+    default boolean isTopSolid() {
+        return getBlock().isTopSolid(this);
+    }
+
+    default boolean isBlockNormalCube() {
+        return getBlock().isBlockNormalCube(this);
+    }
+
+    default boolean isTranslucent() {
+        return getBlock().isTranslucent(this);
+    }
+
+    default int getLightOpacity() {
+        return getBlock().getLightOpacity(this);
+    }
+
+    default boolean useNeighborBrightness() {
+        return getBlock().getUseNeighborBrightness(this);
+    }
+
+    default float getAmbientOcclusionLightValue() {
+        return getBlock().getAmbientOcclusionLightValue(this);
+    }
+
+    default boolean causesSuffocation() {
+        return getBlock().causesSuffocation(this);
+    }
+
+    default boolean canEntitySpawn(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return getBlock().canEntitySpawn(this, entity);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction getPushReaction() {
+        return getBlock().getPushReaction(this);
+    }
+
+    default void addCollisionBoxToList(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB entityBox, java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, boolean isActualState) {
+        getBlock().addCollisionBoxToList(this, world, pos, entityBox, boxes, entity, isActualState);
+    }
+
     default boolean isNormalCube() {
         Material m = getMaterial();
         return m != null && m.isOpaque() && isFullCube();

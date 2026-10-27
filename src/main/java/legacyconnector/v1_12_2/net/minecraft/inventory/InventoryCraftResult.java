@@ -5,7 +5,7 @@ import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
-/** The one-slot result inventory of a crafting grid, remembering the recipe that made it. */
+/** The one-slot output of a crafting grid, remembering the recipe that made it. */
 public class InventoryCraftResult implements IInventory {
     private final NonNullList<ItemStack> stackResult = NonNullList.withSize(1, ItemStack.EMPTY);
     private IRecipe recipeUsed;
@@ -17,8 +17,7 @@ public class InventoryCraftResult implements IInventory {
 
     @Override
     public boolean isEmpty() {
-        for (ItemStack itemstack : stackResult) if (!itemstack.isEmpty()) return false;
-        return true;
+        return stackResult.get(0).isEmpty();
     }
 
     @Override
@@ -26,12 +25,10 @@ public class InventoryCraftResult implements IInventory {
         return stackResult.get(0);
     }
 
-    @Override
     public String getName() {
         return "Result";
     }
 
-    @Override
     public boolean hasCustomName() {
         return false;
     }

@@ -29,6 +29,33 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     protected List<SpawnListEntry> spawnableWaterCreatureList = new ArrayList<>();
     protected List<SpawnListEntry> spawnableCaveCreatureList = new ArrayList<>();
     private final Map<EnumCreatureType, List<SpawnListEntry>> spawnLists = new EnumMap<>(EnumCreatureType.class);
+    private final String baseBiomeRegName;
+    /** Forge: the flowers bonemeal and the decorator pick from. */
+    protected List<Object> flowers = new ArrayList<>();
+
+    protected static final IBlockState STONE = mcc$state("stone");
+    protected static final IBlockState AIR = mcc$state("air");
+    protected static final IBlockState BEDROCK = mcc$state("bedrock");
+    protected static final IBlockState GRAVEL = mcc$state("gravel");
+    protected static final IBlockState RED_SANDSTONE = mcc$state("red_sandstone");
+    protected static final IBlockState SANDSTONE = mcc$state("sandstone");
+    protected static final IBlockState ICE = mcc$state("ice");
+    protected static final IBlockState WATER = mcc$state("water");
+
+    /** A vanilla block's default state by its 1.12 name (air when it cannot be made yet). */
+    private static IBlockState mcc$state(String name) {
+        try {
+            var block = org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.blockByName(name);
+            if (block != null) return block.getDefaultState();
+        } catch (RuntimeException | LinkageError e) {
+            // below
+        }
+        try {
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
 
     public Biome(BiomeProperties properties) {
         this.biomeName = properties.biomeName;
@@ -39,6 +66,7 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
         this.waterColor = properties.waterColor;
         this.enableSnow = properties.enableSnow;
         this.enableRain = properties.enableRain;
+        this.baseBiomeRegName = properties.baseBiome;
         try {
             this.topBlock = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", "grass")).getDefaultState();
             this.fillerBlock = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", "dirt")).getDefaultState();
@@ -106,6 +134,190 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
 
     public static Biome getBiome(int id) {
         return getBiomeForId(id);
+    }
+
+    // ------------------------------------------------------------------ decoration and terrain
+
+    /** Decorates a chunk: the decorator's own pass (vanilla features are placed by the modern game). */
+    public void decorate(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (decorator != null) decorator.decorate(worldIn, rand, this, pos);
+    }
+
+    public void genTerrainBlocks(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random rand,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal) {
+        generateBiomeTerrain(worldIn, rand, chunkPrimerIn, x, z, noiseVal);
+    }
+
+    private static boolean is(IBlockState state, String name) {
+        if (state == null || state.getBlock() == null) return false;
+        var id = state.getBlock().getRegistryName();
+        return id != null && "minecraft".equals(id.getNamespace()) && name.equals(id.getPath());
+    }
+
+    private static boolean isAir(IBlockState state) {
+        return state == null || state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.AIR;
+    }
+
+    /** Vanilla's surface pass over a primer column: top and filler blocks over stone, water or ice below sea level, bedrock floor. */
+    public final void generateBiomeTerrain(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.Random rand,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.ChunkPrimer chunkPrimerIn, int x, int z, double noiseVal) {
+        int sea = worldIn.getSeaLevel();
+        IBlockState top = topBlock;
+        IBlockState filler = fillerBlock;
+        int j = -1;
+        int k = (int) (noiseVal / 3.0D + 3.0D + rand.nextDouble() * 0.25D);
+        int l = x & 15;
+        int i1 = z & 15;
+        legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.MutableBlockPos pos = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.MutableBlockPos();
+        for (int y = 255; y >= 0; --y) {
+            if (y <= rand.nextInt(5)) {
+                chunkPrimerIn.setBlockState(i1, y, l, BEDROCK);
+                continue;
+            }
+            IBlockState current = chunkPrimerIn.getBlockState(i1, y, l);
+            if (isAir(current)) {
+                j = -1;
+            } else if (is(current, "stone")) {
+                if (j == -1) {
+                    if (k <= 0) {
+                        top = AIR;
+                        filler = STONE;
+                    } else if (y >= sea - 4 && y <= sea + 1) {
+                        top = topBlock;
+                        filler = fillerBlock;
+                    }
+                    if (y < sea && isAir(top)) top = getTemperature(pos.setPos(x, y, z)) < 0.15F ? ICE : WATER;
+                    j = k;
+                    if (y >= sea - 1) {
+                        chunkPrimerIn.setBlockState(i1, y, l, top);
+                    } else if (y < sea - 7 - k) {
+                        top = AIR;
+                        filler = STONE;
+                        chunkPrimerIn.setBlockState(i1, y, l, GRAVEL);
+                    } else {
+                        chunkPrimerIn.setBlockState(i1, y, l, filler);
+                    }
+                } else if (j > 0) {
+                    --j;
+                    chunkPrimerIn.setBlockState(i1, y, l, filler);
+                    if (j == 0 && is(filler, "sand") && k > 1) {
+                        j = rand.nextInt(4) + Math.max(0, y - 63);
+                        filler = SANDSTONE;
+                    }
+                }
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------ climate and colours
+
+    /** The temperature at a height: it falls above y=64 as in 1.12. */
+    public final float getTemperature(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (pos.getY() > 64) return getDefaultTemperature() - (pos.getY() - 64) * 0.05F / 30.0F;
+        return getDefaultTemperature();
+    }
+
+    public TempCategory getTempCategory() {
+        if (getDefaultTemperature() < 0.2D) return TempCategory.COLD;
+        return getDefaultTemperature() < 1.0D ? TempCategory.MEDIUM : TempCategory.WARM;
+    }
+
+    public boolean isHighHumidity() {
+        return getRainfall() > 0.85F;
+    }
+
+    public float getSpawningChance() {
+        return 0.1F;
+    }
+
+    public boolean ignorePlayerSpawnSuitability() {
+        return false;
+    }
+
+    public int getSkyColorByTemp(float currentTemperature) {
+        float f = currentTemperature / 3.0F;
+        f = Math.max(-1.0F, Math.min(1.0F, f));
+        return java.awt.Color.HSBtoRGB(0.62222224F - f * 0.05F, 0.5F + f * 0.1F, 1.0F) & 0xFFFFFF;
+    }
+
+    public int getGrassColorAtPos(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        double t = Math.max(0.0D, Math.min(1.0D, getTemperature(pos)));
+        double r = Math.max(0.0D, Math.min(1.0D, getRainfall()));
+        return getModdedBiomeGrassColor(net.minecraft.world.level.GrassColor.get(t, r));
+    }
+
+    public int getFoliageColorAtPos(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        double t = Math.max(0.0D, Math.min(1.0D, getTemperature(pos)));
+        double r = Math.max(0.0D, Math.min(1.0D, getRainfall()));
+        return getModdedBiomeFoliageColor(net.minecraft.world.level.FoliageColor.get(t, r));
+    }
+
+    public int getModdedBiomeGrassColor(int original) {
+        return original;
+    }
+
+    public int getModdedBiomeFoliageColor(int original) {
+        return original;
+    }
+
+    public int getWaterColorMultiplier() {
+        return getWaterColor();
+    }
+
+    public BiomeDecorator getModdedBiomeDecorator(BiomeDecorator original) {
+        return original;
+    }
+
+    // ------------------------------------------------------------------ identity
+
+    public Class<? extends Biome> getBiomeClass() {
+        return getClass();
+    }
+
+    public boolean isMutation() {
+        return baseBiomeRegName != null;
+    }
+
+    public static Biome getBiome(int id, Biome fallback) {
+        Biome b = getBiomeForId(id);
+        return b == null ? fallback : b;
+    }
+
+    public static Biome getMutationForBiome(Biome biome) {
+        return null;
+    }
+
+    // ------------------------------------------------------------------ flowers
+
+    public void addFlower(IBlockState state, int weight) {
+        flowers.add(new FlowerEntry(state, weight));
+    }
+
+    /** Places a flower (bonemeal on grass): a weighted pick from {@link #flowers}, else a dandelion. */
+    public void plantFlower(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        List<FlowerEntry> entries = new ArrayList<>();
+        for (Object o : flowers) if (o instanceof FlowerEntry f) entries.add(f);
+        IBlockState state = entries.isEmpty() ? mcc$state("yellow_flower")
+                : legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.getRandomItem(rand, entries).state;
+        if (state != null && world.isAirBlock(pos)) world.setBlockState(pos, state, 3);
+    }
+
+    /** Forge's weighted flower entry. */
+    public static class FlowerEntry extends legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item {
+        public final IBlockState state;
+
+        public FlowerEntry(IBlockState state, int weight) {
+            super(weight);
+            this.state = state;
+        }
+    }
+
+    /** Coarse climate class of a biome. */
+    public enum TempCategory {
+        OCEAN,
+        COLD,
+        MEDIUM,
+        WARM
     }
 
     /** The properties a biome is built from. */

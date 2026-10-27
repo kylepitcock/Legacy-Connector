@@ -6,14 +6,17 @@ import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
-/** 1.12.2's helpers for inventories kept as a {@code NonNullList<ItemStack>}: splitting slots and the "Items" NBT list. */
+/** Inventory list helpers: splitting a slot and saving/loading stacks as an {@code Items} list of {@code Slot}-indexed compounds. */
 public class ItemStackHelper {
     public static ItemStack getAndSplit(List<ItemStack> stacks, int index, int amount) {
         return index >= 0 && index < stacks.size() && !stacks.get(index).isEmpty() && amount > 0 ? stacks.get(index).splitStack(amount) : ItemStack.EMPTY;
     }
 
     public static ItemStack getAndRemove(List<ItemStack> stacks, int index) {
-        return index >= 0 && index < stacks.size() ? stacks.set(index, ItemStack.EMPTY) : ItemStack.EMPTY;
+        if (index < 0 || index >= stacks.size()) return ItemStack.EMPTY;
+        ItemStack s = stacks.get(index);
+        stacks.set(index, ItemStack.EMPTY);
+        return s;
     }
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, NonNullList<ItemStack> list) {
@@ -21,26 +24,26 @@ public class ItemStackHelper {
     }
 
     public static NBTTagCompound saveAllItems(NBTTagCompound tag, NonNullList<ItemStack> list, boolean saveEmpty) {
-        NBTTagList nbttaglist = new NBTTagList();
-        for (int i = 0; i < list.size(); ++i) {
-            ItemStack itemstack = list.get(i);
-            if (!itemstack.isEmpty()) {
-                NBTTagCompound nbttagcompound = new NBTTagCompound();
-                nbttagcompound.setByte("Slot", (byte) i);
-                itemstack.writeToNBT(nbttagcompound);
-                nbttaglist.appendTag(nbttagcompound);
+        NBTTagList items = new NBTTagList();
+        for (int i = 0; i < list.size(); i++) {
+            ItemStack s = list.get(i);
+            if (!s.isEmpty()) {
+                NBTTagCompound c = new NBTTagCompound();
+                c.setByte("Slot", (byte) i);
+                s.writeToNBT(c);
+                items.appendTag(c);
             }
         }
-        if (!nbttaglist.isEmpty() || saveEmpty) tag.setTag("Items", nbttaglist);
+        if (items.tagCount() > 0 || saveEmpty) tag.setTag("Items", items);
         return tag;
     }
 
     public static void loadAllItems(NBTTagCompound tag, NonNullList<ItemStack> list) {
-        NBTTagList nbttaglist = tag.getTagList("Items", 10);
-        for (int i = 0; i < nbttaglist.tagCount(); ++i) {
-            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(i);
-            int j = nbttagcompound.getByte("Slot") & 255;
-            if (j >= 0 && j < list.size()) list.set(j, new ItemStack(nbttagcompound));
+        NBTTagList items = tag.getTagList("Items", 10);
+        for (int i = 0; i < items.tagCount(); i++) {
+            NBTTagCompound c = items.getCompoundTagAt(i);
+            int j = c.getByte("Slot") & 255;
+            if (j < list.size()) list.set(j, new ItemStack(c));
         }
     }
 }

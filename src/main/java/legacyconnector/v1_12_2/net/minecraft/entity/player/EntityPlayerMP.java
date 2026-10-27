@@ -2,25 +2,28 @@ package legacyconnector.v1_12_2.net.minecraft.entity.player;
 
 import legacyconnector.v1_12_2.net.minecraft.world.World;
 
+/** 1.12.2 server player: a view over a modern server player. */
 public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_12_2.net.minecraft.inventory.IContainerListener {
-    /** Phantom field: accesses are redirected to {@code mcc$get$connection}. */
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer connection;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server;
+    @Deprecated
+    public int currentWindowId;
+    @Deprecated
+    public boolean isChangingQuantityOnly;
+    @Deprecated
+    public boolean invulnerableDimensionChange;
+    @Deprecated
+    public int ping;
     private legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer mcc$connection;
 
     public EntityPlayerMP(World world) {
-        super(world);
+        super(world, null);
     }
 
-    public static legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer mcc$get$connection(EntityPlayerMP p) {
-        if (p.mcc$serverPlayer() == null) return null;
-        if (p.mcc$connection == null) p.mcc$connection = new legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer(p);
-        return p.mcc$connection;
-    }
-
-    public int getPing() {
-        var player = mcc$serverPlayer();
-        return player == null || player.connection == null ? 0 : player.connection.latency();
+    public EntityPlayerMP(net.minecraft.server.level.ServerPlayer modern) {
+        super(modern);
     }
 
     public void setGameType(legacyconnector.v1_12_2.net.minecraft.world.GameType type) {
@@ -28,16 +31,36 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         if (player != null && type != null) player.setGameMode(type.mcc$modern());
     }
 
-    /** Moves the player to another dimension through the modern teleport (no portal is placed, as Forge's teleporter-less call). */
-    public void changeDimension(int dimension) {
-        var player = mcc$serverPlayer();
-        if (player == null) return;
-        var level = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.levelOf(player.server, dimension);
-        if (level != null) player.teleportTo(level, player.getX(), player.getY(), player.getZ(), player.getYRot(), player.getXRot());
-    }
-
     public net.minecraft.server.level.ServerPlayer mcc$serverPlayer() {
         return (net.minecraft.server.level.ServerPlayer) mcc$entity;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer mcc$get$connection(EntityPlayerMP p) {
+        if (p.mcc$connection == null) p.mcc$connection = new legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer(p);
+        return p.mcc$connection;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer mcc$get$server(EntityPlayerMP p) {
+        return legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
+    }
+
+    public static int mcc$get$currentWindowId(EntityPlayerMP p) {
+        var player = p.mcc$serverPlayer();
+        return player == null ? 0 : player.containerMenu.containerId;
+    }
+
+    public static boolean mcc$get$invulnerableDimensionChange(EntityPlayerMP p) {
+        var player = p.mcc$serverPlayer();
+        return player != null && player.isChangingDimension();
+    }
+
+    public static void mcc$set$invulnerableDimensionChange(EntityPlayerMP p, boolean v) {
+        // the modern flag is managed by the teleport itself
+    }
+
+    public static int mcc$get$ping(EntityPlayerMP p) {
+        var player = p.mcc$serverPlayer();
+        return player == null || player.connection == null ? 0 : player.connection.latency();
     }
 
     /** Operators of the needed level may use a command (single player's host and cheats-enabled worlds included). */
@@ -53,29 +76,74 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         if (player != null && component != null) player.sendSystemMessage(component.mcc$modern());
     }
 
-    // ------------------------------------------------------------------ IContainerListener (1.12.2 players listen to their open container)
+    @Override
+    public boolean isSpectator() {
+        return mcc$serverPlayer().isSpectator();
+    }
 
-    /** Slots of a container hosted by a modern menu are synced by the menu; otherwise each slot goes out as a set-slot packet. */
+    @Override
+    public boolean isCreative() {
+        return mcc$serverPlayer().isCreative();
+    }
+
+    public String getPlayerIP() {
+        return mcc$serverPlayer().getIpAddress();
+    }
+
+    public boolean hasDisconnected() {
+        return mcc$serverPlayer().hasDisconnected();
+    }
+
+    public void closeContainer() {
+        mcc$serverPlayer().doCloseContainer();
+    }
+
+    public void getNextWindowId() {
+        // the modern player numbers its containers when it opens them
+    }
+
+    public void updateHeldItem() {
+        var player = mcc$serverPlayer();
+        player.containerMenu.broadcastChanges();
+    }
+
+    public void setPlayerHealthUpdated() {
+        mcc$serverPlayer().resetSentInfo();
+    }
+
+    public void mountEntityAndWakeUp() {
+        var player = mcc$serverPlayer();
+        player.ejectPassengers();
+        if (player.isSleeping()) player.stopSleepInBed(true, false);
+    }
+
+    @Override
+    public void setPositionAndUpdate(double x, double y, double z) {
+        var player = mcc$serverPlayer();
+        player.connection.teleport(x, y, z, player.getYRot(), player.getXRot());
+    }
+
+    public int getPing() {
+        return mcc$get$ping(this);
+    }
+
+    // the player as a listener of the container it has open (progress bars, forced slot updates)
+
     @Override
     public void sendAllContents(legacyconnector.v1_12_2.net.minecraft.inventory.Container container,
             legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> items) {
-        if (container.mcc$menu != null) return;
-        for (int i = 0; i < items.size(); i++) sendSlotContents(container, i, items.get(i));
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.sendAllContents(mcc$serverPlayer(), container);
     }
 
     @Override
     public void sendSlotContents(legacyconnector.v1_12_2.net.minecraft.inventory.Container container, int slot,
             legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
-        var player = mcc$serverPlayer();
-        if (player == null || container.mcc$menu != null) return;
-        player.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(container.windowId, 0, slot,
-                org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack)));
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.sendSlotContents(mcc$serverPlayer(), container, slot, stack);
     }
 
     @Override
     public void sendWindowProperty(legacyconnector.v1_12_2.net.minecraft.inventory.Container container, int id, int value) {
-        var player = mcc$serverPlayer();
-        if (player != null) org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyMenu1122.sendProperty(player, container, id, value);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.sendWindowProperty(mcc$serverPlayer(), container, id, value);
     }
 
     @Override

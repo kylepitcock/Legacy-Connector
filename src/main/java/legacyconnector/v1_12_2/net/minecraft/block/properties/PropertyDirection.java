@@ -22,7 +22,20 @@ public class PropertyDirection extends PropertyEnum<EnumFacing> {
         return new PropertyDirection(name, values);
     }
 
+    /** Vanilla classes whose FACING holds the four horizontal sides only (BlockHorizontal and the blocks built like it in 1.12). */
+    private static final java.util.Set<String> HORIZONTAL = java.util.Set.of("BlockHorizontal", "BlockChest", "BlockFurnace", "BlockEnderChest", "BlockBed",
+            "BlockDoor", "BlockFenceGate", "BlockLadder", "BlockTrapDoor", "BlockStairs", "BlockCocoa", "BlockTripWireHook", "BlockWallSign", "BlockAnvil",
+            "BlockPumpkin", "BlockRedstoneDiode", "BlockRedstoneRepeater", "BlockRedstoneComparator", "BlockBanner", "BlockBanner$BlockBannerHanging",
+            "BlockEndPortalFrame", "BlockGlazedTerracotta");
+
+    /** Vanilla FACING constants with the sides the vanilla property allows (torches never face down, hoppers never up). */
     public static PropertyDirection mcc$synthDefault(String key) {
-        return create(key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT));
+        String name = key.substring(key.lastIndexOf('.') + 1).toLowerCase(java.util.Locale.ROOT);
+        String owner = key.substring(0, Math.max(0, key.lastIndexOf('.')));
+        owner = owner.substring(owner.lastIndexOf('.') + 1);
+        if (HORIZONTAL.contains(owner)) return create(name, EnumFacing.Plane.HORIZONTAL);
+        if (owner.equals("BlockTorch") || owner.equals("BlockRedstoneTorch")) return create(name, f -> f != EnumFacing.DOWN);
+        if (owner.equals("BlockHopper")) return create(name, f -> f != EnumFacing.UP);
+        return create(name);
     }
 }

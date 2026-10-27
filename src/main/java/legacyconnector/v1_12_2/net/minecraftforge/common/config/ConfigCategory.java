@@ -207,4 +207,16 @@ public class ConfigCategory implements Map<String, Property> {
     public Set<Entry<String, Property>> entrySet() {
         return properties.entrySet();
     }
+
+    private Class<?> mcc$entryClass;
+
+    /** The config GUI's entry class for this category (Forge's config GUI). */
+    public ConfigCategory setConfigEntryClass(Class<?> clazz) {
+        this.mcc$entryClass = clazz;
+        return this;
+    }
+
+    public Class<?> getConfigEntryClass() {
+        return mcc$entryClass;
+    }
 }

@@ -294,10 +294,24 @@ public class World implements IBlockAccess {
         return out;
     }
 
+    /** The entity list of this server tick (see {@link #mcc$get$loadedEntityList}). */
+    private List<Entity> mcc$entityList;
+    private int mcc$entityListTick = -1;
+
+    /**
+     * The loaded entities, built once per server tick. Mods loop over it by index and read the field on every step
+     * ({@code for (i < world.loadedEntityList.size()) world.loadedEntityList.get(i)}: Portal Gun every tick), so building it on each
+     * read cost entities squared per tick. Entities legacy code spawns or removes through this world are added or dropped at once.
+     */
     public static List mcc$get$loadedEntityList(World w) {
-        List<Entity> out = new ArrayList<>();
         Level level = w.mcc$fullLevel();
-        if (level instanceof ServerLevel s) for (var e : s.getAllEntities()) out.add(EntityBridge.wrap(e));
+        if (!(level instanceof ServerLevel s)) return new ArrayList<>();
+        int tick = s.getServer().getTickCount();
+        if (w.mcc$entityList != null && w.mcc$entityListTick == tick) return w.mcc$entityList;
+        List<Entity> out = new ArrayList<>();
+        for (var e : s.getAllEntities()) out.add(EntityBridge.wrap(e));
+        w.mcc$entityList = out;
+        w.mcc$entityListTick = tick;
         return out;
     }
 
@@ -730,7 +744,9 @@ public class World implements IBlockAccess {
     public boolean spawnEntityInWorld(Entity entity) {
         if (inDeepPass()) return false; // entity positions are not shifted
         if (entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.effect.EntityLightningBolt) return addWeatherEffect(entity);
-        return EntityBridge.spawn(this, entity);
+        boolean spawned = EntityBridge.spawn(this, entity);
+        if (spawned && mcc$entityList != null) mcc$entityList.add(entity);
+        return spawned;
     }
 
     public void removeEntity(Entity entity) {

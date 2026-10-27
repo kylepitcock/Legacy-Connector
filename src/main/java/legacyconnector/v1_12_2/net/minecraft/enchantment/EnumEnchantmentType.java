@@ -36,7 +36,41 @@ public class EnumEnchantmentType {
     }
 
     public boolean canEnchantItem(Item item) {
-        return delegate == null || delegate.apply(item);
+        if (delegate != null) return delegate.apply(item);
+        return mcc$vanilla(item);
+    }
+
+    /** The vanilla types' rules (1.12's anonymous enum bodies). */
+    private boolean mcc$vanilla(Item item) {
+        if (item == null) return false;
+        var path = item.getRegistryName() == null ? "" : item.getRegistryName().getPath();
+        var armor = item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemArmor a ? a.armorType : null;
+        return switch (name) {
+            case "ALL" -> {
+                for (EnumEnchantmentType t : values()) if (t != this && t.canEnchantItem(item)) yield true;
+                yield false;
+            }
+            case "ARMOR" -> armor != null;
+            case "ARMOR_FEET" -> armor == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.FEET;
+            case "ARMOR_LEGS" -> armor == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.LEGS;
+            case "ARMOR_CHEST" -> armor == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.CHEST;
+            case "ARMOR_HEAD" -> armor == legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.HEAD;
+            case "WEAPON" -> item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemSword;
+            case "DIGGER" -> item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemTool;
+            case "FISHING_ROD" -> path.equals("fishing_rod") || mcc$isa(item, "ItemFishingRod");
+            case "BREAKABLE" -> item.isDamageable();
+            case "BOW" -> path.equals("bow") || mcc$isa(item, "ItemBow");
+            case "WEARABLE" -> armor != null || path.equals("elytra") || path.equals("pumpkin") || path.equals("skull") || mcc$isa(item, "ItemElytra");
+            default -> true;
+        };
+    }
+
+    /** Whether the item's class extends the vanilla class of that simple name (synthesized vanilla classes such as ItemBow). */
+    private static boolean mcc$isa(Item item, String simpleName) {
+        for (Class<?> c = item.getClass(); c != null && c != Item.class; c = c.getSuperclass()) {
+            if (c.getName().endsWith("net.minecraft.item." + simpleName)) return true;
+        }
+        return false;
     }
 
     @Override
