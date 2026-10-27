@@ -11,4 +11,9 @@ public interface IResource extends java.io.Closeable {
     boolean hasMetadata();
 
     String getResourcePackName();
+
+    /** A section of the resource's {@code .mcmeta} file, or null (resources of the game's own packs answer null). */
+    default <T extends legacyconnector.v1_12_2.net.minecraft.client.resources.data.IMetadataSection> T getMetadata(String sectionName) {
+        return null;
+    }
 }

@@ -18,6 +18,12 @@ public class Language implements Comparable<Language> {
         return languageCode;
     }
 
+    /** The Java locale of the language code (en_us: en_US). */
+    public java.util.Locale getJavaLocale() {
+        String[] parts = languageCode.split("_", 2);
+        return parts.length == 2 ? new java.util.Locale(parts[0], parts[1].toUpperCase(java.util.Locale.ROOT)) : new java.util.Locale(languageCode);
+    }
+
     public boolean isBidirectional() {
         return bidirectional;
     }

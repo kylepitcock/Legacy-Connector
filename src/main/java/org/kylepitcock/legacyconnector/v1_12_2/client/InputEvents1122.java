@@ -119,7 +119,10 @@ final class InputEvents1122 {
         // the message as formatted text (handlers read its text; an unchanged message keeps its modern form, click events included)
         legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent original =
                 new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(ClientGui1122.legacyText(e.getMessage()));
-        ClientChatReceivedEvent legacy = new ClientChatReceivedEvent(original);
+        var type = e instanceof net.neoforged.neoforge.client.event.ClientChatReceivedEvent.System sys
+                ? (sys.isOverlay() ? legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.GAME_INFO : legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.SYSTEM)
+                : e.isSystem() ? legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.SYSTEM : legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.CHAT;
+        ClientChatReceivedEvent legacy = new ClientChatReceivedEvent(type, original);
         if (ScreenEvents1122.post(legacy) || legacy.getMessage() == null) {
             e.setCanceled(true);
         } else if (legacy.getMessage() != original) {

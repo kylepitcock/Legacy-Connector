@@ -104,4 +104,42 @@ public class ForgeHooksClient {
         if (from == null || to == null || from.isEmpty() || to.isEmpty()) return from != to;
         return from.getItem() != to.getItem() || from.getMetadata() != to.getMetadata();
     }
+
+    // ------------------------------------------------------------------ area R2b: hooks that post Forge's client events
+
+    /** Draws a screen between its DrawScreenEvent Pre (cancelling skips the drawing) and Post. */
+    public static void drawScreen(legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen screen, int mouseX, int mouseY, float partialTicks) {
+        var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+        if (!bus.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent.Pre(screen, mouseX, mouseY, partialTicks))) {
+            screen.drawScreen(mouseX, mouseY, partialTicks);
+        }
+        bus.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent.Post(screen, mouseX, mouseY, partialTicks));
+    }
+
+    /** Posts ScreenshotEvent for an image about to be saved and returns it (cancelled, or with a changed file or message). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.client.event.ScreenshotEvent onScreenshot(java.awt.image.BufferedImage image, java.io.File file) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.client.event.ScreenshotEvent(image, file);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event;
+    }
+
+    /** Posts PlaySoundEvent; returns the sound to play instead (null: nothing). */
+    public static legacyconnector.v1_12_2.net.minecraft.client.audio.ISound playSound(legacyconnector.v1_12_2.net.minecraft.client.audio.SoundManager manager,
+            legacyconnector.v1_12_2.net.minecraft.client.audio.ISound sound) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.client.event.sound.PlaySoundEvent(manager, sound);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        return event.getResultSound();
+    }
+
+    /** Posts RenderHandEvent; true when a handler cancelled the hands. */
+    public static boolean renderFirstPersonHand(legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal context, float partialTicks, int renderPass) {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderHandEvent(context, partialTicks, renderPass));
+    }
+
+    /** Forge drew its version lines on the title screen here; the game's title screen shows NeoForge's. Returns the splash text. */
+    public static String renderMainMenu(legacyconnector.v1_12_2.net.minecraft.client.gui.GuiMainMenu gui, legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer font,
+            int width, int height, String splashText) {
+        return splashText;
+    }
 }

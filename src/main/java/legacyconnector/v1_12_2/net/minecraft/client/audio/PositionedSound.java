@@ -16,6 +16,8 @@ public abstract class PositionedSound implements ISound {
     protected boolean repeat;
     protected int repeatDelay;
     protected ISound.AttenuationType attenuationType = ISound.AttenuationType.LINEAR;
+    protected Sound sound;
+    private SoundEventAccessor soundEvent;
 
     protected PositionedSound(SoundEvent soundIn, SoundCategory categoryIn) {
         this(soundIn.getSoundName(), categoryIn);
@@ -24,6 +26,18 @@ public abstract class PositionedSound implements ISound {
     protected PositionedSound(ResourceLocation soundId, SoundCategory categoryIn) {
         this.positionedSoundLocation = soundId;
         this.category = categoryIn;
+    }
+
+    @Override
+    public SoundEventAccessor createAccessor(SoundHandler handler) {
+        soundEvent = handler.getAccessor(positionedSoundLocation);
+        sound = soundEvent == null ? SoundHandler.MISSING_SOUND : soundEvent.cloneEntry();
+        return soundEvent;
+    }
+
+    @Override
+    public Sound getSound() {
+        return sound;
     }
 
     @Override

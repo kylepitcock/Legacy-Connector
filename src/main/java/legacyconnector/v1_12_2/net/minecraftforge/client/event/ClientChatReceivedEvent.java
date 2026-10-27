@@ -9,8 +9,20 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event;
 public class ClientChatReceivedEvent extends Event {
     private ITextComponent message;
 
+    private final legacyconnector.v1_12_2.net.minecraft.util.text.ChatType type;
+
     public ClientChatReceivedEvent(ITextComponent message) {
+        this(legacyconnector.v1_12_2.net.minecraft.util.text.ChatType.CHAT, message);
+    }
+
+    public ClientChatReceivedEvent(legacyconnector.v1_12_2.net.minecraft.util.text.ChatType type, ITextComponent message) {
+        this.type = type;
         this.message = message;
+    }
+
+    /** Chat from a player, a system message, or action bar text. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ChatType getType() {
+        return type;
     }
 
     public ITextComponent getMessage() {
