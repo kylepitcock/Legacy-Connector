@@ -20,6 +20,9 @@ public class Loader {
         return INSTANCE;
     }
 
+    /** FML's load controller; libraries read its per-mod lifecycle buses by reflection (SuperMartijn642's Core Lib). */
+    private final LoadController modController = new LoadController();
+
     /**
      * True for legacy mods (by legacy id), for platform ids legacy code probes for, and for modern NeoForge mods
      * whose id equals the normalized legacy id (so {@code isModLoaded("Baubles")} finds a modern "baubles").

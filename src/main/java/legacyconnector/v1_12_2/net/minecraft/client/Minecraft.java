@@ -297,7 +297,6 @@ public class Minecraft {
 
     private legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer entityRendererObject;
     private legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal renderGlobalObject;
-    private legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer framebufferObject;
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager getRenderManager() {
         return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager.mcc$instance() : null;
@@ -342,12 +341,8 @@ public class Minecraft {
     }
 
     /** The main framebuffer the world and screens draw into. */
-    public synchronized legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer getFramebuffer() {
-        if (framebufferObject == null && CLIENT) {
-            framebufferObject = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
-                    legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer.class, mcc$get$displayWidth(this), mcc$get$displayHeight(this), true);
-        }
-        return framebufferObject;
+    public legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer getFramebuffer() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer.mcc$main() : null;
     }
 
     /** Phantom: what the crosshair is on. */

@@ -29,7 +29,15 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 public final class ScreenEvents1122 {
     private ScreenEvents1122() {}
 
-    private static final Map<Screen, View> VIEWS = new WeakHashMap<>();
+    private static final Map<Screen, GuiScreen> VIEWS = new WeakHashMap<>();
+
+    /** A legacy stand-in of a modern screen. */
+    public interface Modern {
+        Screen mcc$modern();
+
+        /** Copies the modern screen's size and state into the stand-in. */
+        void mcc$sync();
+    }
 
     public static void register() {
         NeoForge.EVENT_BUS.addListener(ScreenEvents1122::onOpening);
@@ -57,15 +65,18 @@ public final class ScreenEvents1122 {
         if (s instanceof LegacyScreen1122 ls) return ls.legacy();
         if (s instanceof LegacyContainerScreen1122 cs && cs.legacy() != null) return cs.legacy();
         if (s == null) return null;
+        GuiScreen view;
         synchronized (VIEWS) {
-            return VIEWS.computeIfAbsent(s, View::new);
+            view = VIEWS.computeIfAbsent(s, ModernScreens1122::viewOf);
         }
+        if (view instanceof Modern m) m.mcc$sync();
+        return view;
     }
 
     /** The GuiOpenEvent of legacy screens is posted when they are displayed ({@code ClientGui1122.display}); this one is for the game's screens. */
     private static void onOpening(ScreenEvent.Opening e) {
         if (legacyHost(e.getNewScreen()) || !wants(GuiOpenEvent.class)) return;
-        GuiScreen original = e.getNewScreen() instanceof TitleScreen ? new GuiMainMenu() : legacyOf(e.getNewScreen());
+        GuiScreen original = legacyOf(e.getNewScreen());
         GuiOpenEvent legacy = new GuiOpenEvent(original);
         if (MinecraftForge.EVENT_BUS.post(legacy)) {
             e.setCanceled(true);
@@ -88,8 +99,9 @@ public final class ScreenEvents1122 {
         Screen screen = e.getScreen();
         if (legacyHost(screen)) return; // their InitGuiEvents are posted by GuiScreen.setWorldAndResolution
         if (!wants(GuiScreenEvent.InitGuiEvent.class)) return;
-        View view = (View) legacyOf(screen);
-        view.mcc$resize(screen.width, screen.height);
+        GuiScreen view = legacyOf(screen);
+        view.setGuiSize(screen.width, screen.height);
+        if (view instanceof Modern m) m.mcc$sync();
         List<GuiButton> buttons = view.mcc$buttons();
         buttons.clear();
         post(new GuiScreenEvent.InitGuiEvent.Pre(view, buttons));
@@ -137,21 +149,23 @@ public final class ScreenEvents1122 {
     }
 
     /** A modern screen as a GuiScreen: its size, the buttons mods add to it. */
-    public static final class View extends GuiScreen {
+    public static final class View extends GuiScreen implements Modern {
         private final java.lang.ref.WeakReference<Screen> modern;
 
         View(Screen modern) {
             this.modern = new java.lang.ref.WeakReference<>(modern);
-            this.mc = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
-            this.fontRenderer = mc.fontRenderer;
+            mcc$initView(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft(), modern.width, modern.height);
         }
 
+        @Override
         public Screen mcc$modern() {
             return modern.get();
         }
 
-        void mcc$resize(int w, int h) {
-            setGuiSize(w, h);
+        @Override
+        public void mcc$sync() {
+            Screen s = modern.get();
+            if (s != null) setGuiSize(s.width, s.height);
         }
 
         @Override
@@ -163,10 +177,10 @@ public final class ScreenEvents1122 {
 
     /** A legacy button added to a modern screen: drawn by the legacy code, its press announced as ActionPerformedEvent. */
     private static final class ButtonWidget extends AbstractWidget {
-        private final View view;
+        private final GuiScreen view;
         private final GuiButton button;
 
-        ButtonWidget(View view, GuiButton button) {
+        ButtonWidget(GuiScreen view, GuiButton button) {
             super(button.x, button.y, button.width, button.height, Component.literal(button.displayString == null ? "" : button.displayString));
             this.view = view;
             this.button = button;

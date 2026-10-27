@@ -21,6 +21,8 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
     protected List<GuiLabel> labelList = new ArrayList<>();
     public boolean allowUserInput;
     protected FontRenderer fontRenderer;
+    /** The game's item renderer (screens draw stacks with it). */
+    protected legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem itemRender;
     protected GuiButton selectedButton;
     private int eventButton;
     private long lastMouseEvent;
@@ -76,7 +78,15 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         drawHoveringText(java.util.Arrays.asList(text), x, y);
     }
 
+    private boolean focused;
+
+    /** Whether a control of the screen (a text field) has the keyboard; key bindings are not handled while it has. */
     public void setFocused(boolean hasFocusedControlIn) {
+        this.focused = hasFocusedControlIn;
+    }
+
+    public boolean isFocused() {
+        return focused;
     }
 
     public void drawHoveringText(List<String> textLines, int x, int y) {
@@ -144,6 +154,7 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
 
     public void setWorldAndResolution(Minecraft mc, int width, int height) {
         this.mc = mc;
+        this.itemRender = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
         this.fontRenderer = mc.fontRenderer;
         this.width = width;
         this.height = height;
@@ -158,6 +169,15 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
     public static boolean mcc$post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
         var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
         return bus.mcc$hasListeners(event.getClass()) && bus.post(event);
+    }
+
+    /** Sets up a stand-in of a modern screen (no init events: the modern screen was set up by the game). */
+    public void mcc$initView(Minecraft mc, int w, int h) {
+        this.mc = mc;
+        this.fontRenderer = mc.fontRenderer;
+        this.itemRender = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
+        this.width = w;
+        this.height = h;
     }
 
     public void setGuiSize(int w, int h) {

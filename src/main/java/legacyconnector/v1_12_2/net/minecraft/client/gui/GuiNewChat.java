@@ -88,4 +88,59 @@ public class GuiNewChat extends Gui {
     public int getLineCount() {
         return chat().getLinesPerPage();
     }
+
+    // ------------------------------------------------------------------ 1.12 fields over the modern chat
+
+    /** Phantom: the wrapped lines shown, newest first (a snapshot of the modern chat's lines). */
+    @Deprecated
+    public java.util.List<ChatLine> drawnChatLines;
+    /** Phantom: the chat was scrolled up and a message arrived since. */
+    @Deprecated
+    public boolean isScrolled;
+    /** Phantom: how many lines the chat is scrolled up. */
+    @Deprecated
+    public int scrollPos;
+
+    private static Class<?> chatClass() {
+        return net.minecraft.client.gui.components.ChatComponent.class;
+    }
+
+    public static java.util.List<ChatLine> mcc$get$drawnChatLines(GuiNewChat chat) {
+        java.util.List<ChatLine> out = new java.util.ArrayList<>();
+        Object lines = org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.get(chatClass(), chat(), "trimmedMessages");
+        if (lines instanceof java.util.List<?> list) {
+            for (Object o : list) {
+                if (o instanceof net.minecraft.client.GuiMessage.Line line) {
+                    out.add(new ChatLine(line.addedTime(), org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.legacy(
+                            org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.component(line.content())), 0));
+                }
+            }
+        }
+        return out;
+    }
+
+    public static boolean mcc$get$isScrolled(GuiNewChat chat) {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.getBoolean(chatClass(), chat(), "newMessageSinceScroll");
+    }
+
+    public static void mcc$set$isScrolled(GuiNewChat chat, boolean value) {
+        org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.set(chatClass(), chat(), "newMessageSinceScroll", value);
+    }
+
+    public static int mcc$get$scrollPos(GuiNewChat chat) {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.getInt(chatClass(), chat(), "chatScrollbarPos");
+    }
+
+    public static void mcc$set$scrollPos(GuiNewChat chat, int value) {
+        org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.set(chatClass(), chat(), "chatScrollbarPos", value);
+    }
+
+    /** Draws the chat as the HUD does (mods that move or redraw the chat call this). */
+    public void drawChat(int updateCounter) {
+        var gui = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.gui();
+        if (gui == null) return;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        double scale = mc.getWindow().getGuiScale();
+        chat().render(gui, updateCounter, (int) (mc.mouseHandler.xpos() / scale), (int) (mc.mouseHandler.ypos() / scale), getChatOpen());
+    }
 }
