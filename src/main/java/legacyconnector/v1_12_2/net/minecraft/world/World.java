@@ -1751,4 +1751,11 @@ public class World implements IBlockAccess {
     public legacyconnector.v1_12_2.net.minecraft.crash.CrashReportCategory addWorldInfoToCrashReport(legacyconnector.v1_12_2.net.minecraft.crash.CrashReport report) {
         return report.makeCategoryDepth("Affected level", 1);
     }
+
+
+    /** The world's scoreboard (area F; the server's on a server, the client's on a client). */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getScoreboard() {
+        var level = mcc$level();
+        return level == null ? null : legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(level.getScoreboard());
+    }
 }
