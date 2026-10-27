@@ -367,7 +367,15 @@ public final class RenderContext {
     public static VertexConsumer modelBuffer() {
         // model boxes count as drawn geometry too (an inventory block handler drawing a TESR model: Thaumcraft's crystals)
         quadCount++;
-        return buffers().getBuffer(armorLayering ? RenderType.armorCutoutNoCull(texture) : RenderType.entityCutoutNoCull(texture));
+        if (armorLayering) return buffers().getBuffer(RenderType.armorCutoutNoCull(texture));
+        // blended models keep their blending, as raw geometry does: Thaumcraft's infusion matrix draws its glowing runes as
+        // a second additive cube over the stone one, which drew opaque
+        if (blend && texture2d && gui() == null) {
+            if (additiveAlpha) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
+            if (additive) return buffers().getBuffer(RenderType.eyes(texture));
+            return buffers().getBuffer(RenderType.entityTranslucent(texture));
+        }
+        return buffers().getBuffer(RenderType.entityCutoutNoCull(texture));
     }
 
     /**
