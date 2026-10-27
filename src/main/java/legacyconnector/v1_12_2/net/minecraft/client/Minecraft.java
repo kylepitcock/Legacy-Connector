@@ -41,4 +41,17 @@ public class Minecraft {
     public static long getSystemTime() {
         return System.currentTimeMillis();
     }
+
+    // ------------------------------------------------------------------ rendering objects (area R: client.renderer)
+
+    public final legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager renderEngine =
+            new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager(resourceManager);
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager getTextureManager() {
+        return renderEngine;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap getTextureMapBlocks() {
+        return legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks();
+    }
 }

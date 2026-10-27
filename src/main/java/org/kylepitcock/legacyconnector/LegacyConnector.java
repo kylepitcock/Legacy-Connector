@@ -77,6 +77,7 @@ public final class LegacyConnector {
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
         modBus.addListener(EventPriority.LOWEST, LegacyLifecycle::onRegister);
         modBus.addListener(LegacyLifecycle::onCommonSetup);
