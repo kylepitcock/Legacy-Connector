@@ -54,7 +54,8 @@ public final class EntitySelfTest {
         for (LegacyHosts.Info info : LegacyHosts.all()) {
             String name = info.id().toString();
             try {
-                int x = spawn.getX() + (i % 16) * 3 - 24;
+                // away from the block self test, which runs at the same time around spawn (mobs broke its blocks)
+                int x = spawn.getX() + 1000 + (i % 16) * 3 - 24;
                 int z = spawn.getZ() + (i / 16) * 3 - 24;
                 i++;
                 // forced for the test: an unticketed chunk unloads whenever the server lags, and its entities counted as removed

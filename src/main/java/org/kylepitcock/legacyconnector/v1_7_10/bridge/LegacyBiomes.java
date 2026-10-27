@@ -61,8 +61,16 @@ public final class LegacyBiomes {
         if (!hooked) {
             hooked = true;
             LegacyBiomeFeature.addHook(LegacyBiomes::decorate);
+            WorldGenBridge.hook();
         }
         return out;
+    }
+
+    /** Whether the chunk is decorated as a legacy biome (by the biome at its centre, as {@link #decorate} picks it). */
+    static boolean isLegacyChunk(WorldGenLevel level, int chunkX, int chunkZ) {
+        if (byId.isEmpty()) return false;
+        BlockPos center = new BlockPos((chunkX << 4) + 8, level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, (chunkX << 4) + 8, (chunkZ << 4) + 8), (chunkZ << 4) + 8);
+        return level.getBiome(center).unwrapKey().map(k -> byModernId(k.location()) != null).orElse(false);
     }
 
     public static BiomeGenBase byModernId(ResourceLocation id) {

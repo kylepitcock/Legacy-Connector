@@ -22,6 +22,11 @@ public final class WorldGenBridge {
     public static synchronized void register(IWorldGenerator generator, int weight) {
         GENERATORS.add(new Entry(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator)));
         GENERATORS.sort(Comparator.comparingInt(Entry::weight));
+        hook();
+    }
+
+    /** Runs per chunk from now on (also with no generators: the terrain events still go out). */
+    static synchronized void hook() {
         if (!hooked) {
             hooked = true;
             LegacyWorldGenFeature.addDecorator(WorldGenBridge::decorate);
@@ -52,6 +57,8 @@ public final class WorldGenBridge {
         long xSeed = fmlRandom.nextLong() >> 2 + 1L;
         long zSeed = fmlRandom.nextLong() >> 2 + 1L;
         long chunkSeed = (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+        // the chunk provider's populate came first in 1.7.10, with its terrain events
+        if (!modDimension) TerrainEvents1710.populate(level, world, chunkX, chunkZ, DUMMY);
         // 1.7.10 decorated one chunk at a time on the server thread, and generators keep their state in plain fields and
         // HashMaps (CustomOreGen's per-world caches and geometry buffers): a mod's generators run on one thread at a time.
         for (Entry e : gens) {

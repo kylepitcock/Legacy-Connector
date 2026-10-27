@@ -1,0 +1,2634 @@
+[
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "!!!CrashAssistant-forge-1.12.2-1.11.12.jar",
+  "sha1": "8a71f76d8c71dbfb4b8f17f659114e4daec47e8d",
+  "slug": "crash-assistant",
+  "title": "Crash Assistant",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.11.12",
+  "url": "https://cdn.modrinth.com/data/ix1qq8Ux/versions/1EzA3xZ5/%21%21%21CrashAssistant-forge-1.12.2-1.11.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "3dSkinLayers-forge-mc1.12.2-1.2.0.jar",
+  "sha1": "332db9675de67c5f84b1b0e4f398b5fbe9b6ed56",
+  "slug": "3dskinlayers",
+  "title": "3D Skin Layers",
+  "categories": [
+   "adventure",
+   "decoration"
+  ],
+  "version": "1.2.0-forge-1.12.2",
+  "url": "https://cdn.modrinth.com/data/zV5r3pPn/versions/1.2.0-forge-1.12.2/3dSkinLayers-forge-mc1.12.2-1.2.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AIImprovements-1.12-0.0.1b3.jar",
+  "sha1": "ef4b64cd4fc10522ead1f659b81e471af455c3fe",
+  "slug": "ai-improvements",
+  "title": "AI Improvements: Performance Tuning",
+  "categories": [
+   "optimization"
+  ],
+  "version": "0.0.1b3",
+  "url": "https://cdn.modrinth.com/data/DSVgwcji/versions/kOyZhvg3/AIImprovements-1.12-0.0.1b3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AdvancementPlaques-1.12.2-1.4.10.jar",
+  "sha1": "37e1f4d871669df0b9bd0a9d80cc9fa8f9ac0665",
+  "slug": "advancement-plaques",
+  "title": "Advancement Plaques",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "1.4.10",
+  "url": "https://cdn.modrinth.com/data/9NM0dXub/versions/3uNMYsgw/AdvancementPlaques-1.12.2-1.4.10.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AgeingSpawners-1.12.2-1.0.0.jar",
+  "sha1": "28f65838da4fafedabe558e457b563cb15999048",
+  "slug": "ageing-spawners",
+  "title": "Ageing Spawners",
+  "categories": [
+   "game-mechanics"
+  ],
+  "version": "1.0.0",
+  "url": "https://cdn.modrinth.com/data/npA68nxC/versions/OmuVWSmW/AgeingSpawners-1.12.2-1.0.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AmbientEnvironment-1.0.2.jar",
+  "sha1": "6959d9f89b3b9bd0b0c16949b111370f5158d647",
+  "slug": "ambient-environment",
+  "title": "Ambient Environment",
+  "categories": [],
+  "version": "3",
+  "url": "https://cdn.modrinth.com/data/DyTvM1dv/versions/Zm6W1zjA/AmbientEnvironment-1.0.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AmbientSounds_v3.1.5_mc1.12.2.jar",
+  "sha1": "9357964cdbfbe97fb16cbfc33eab8c847a03ccb4",
+  "slug": "ambientsounds",
+  "title": "AmbientSounds",
+  "categories": [
+   "decoration"
+  ],
+  "version": "3.1.5",
+  "url": "https://cdn.modrinth.com/data/fM515JnW/versions/3.1.5/AmbientSounds_v3.1.5_mc1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AppleSkin-mc1.12-1.0.14.jar",
+  "sha1": "d798af79de48be0f00c772943e5ec5a2fb5659fa",
+  "slug": "appleskin",
+  "title": "AppleSkin",
+  "categories": [
+   "food",
+   "utility"
+  ],
+  "version": "1.0.14+mc1.12",
+  "url": "https://cdn.modrinth.com/data/EsAfCjCV/versions/Tsz4BT2X/AppleSkin-mc1.12-1.0.14.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "AttributeFix-Forge-1.12.2-1.0.12.jar",
+  "sha1": "d293e08f5b11aa0afa1ad6be5864b85e4266dfde",
+  "slug": "attributefix",
+  "title": "AttributeFix",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.0.12",
+  "url": "https://cdn.modrinth.com/data/lOOpEntO/versions/ip7KQeBK/AttributeFix-Forge-1.12.2-1.0.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "BHMenu-Forge-1.12.2-2.4.8.jar",
+  "sha1": "fcda60e82008a8c91fac25a50a3594365e58bc4e",
+  "slug": "bisect-mod",
+  "title": "BisectHosting Server Integration Menu",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "2.4.8",
+  "url": "https://cdn.modrinth.com/data/yWSAtnfH/versions/Czpihdus/BHMenu-Forge-1.12.2-2.4.8.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "BetterAdvancements-1.12.2-0.1.0.77.jar",
+  "sha1": "13948f45e69059c3714266a1549bf643fee6ebc3",
+  "slug": "better-advancements",
+  "title": "Better Advancements",
+  "categories": [
+   "utility"
+  ],
+  "version": "0.1.0.77",
+  "url": "https://cdn.modrinth.com/data/Q2OqKxDG/versions/TanCG0k3/BetterAdvancements-1.12.2-0.1.0.77.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "BiomesOPlenty-1.12.2-7.0.1.2445-universal.jar",
+  "sha1": "13c1e58ffec2a550b9698e25cda93b8d155007b0",
+  "slug": "biomes-o-plenty",
+  "title": "Biomes O' Plenty",
+  "categories": [
+   "adventure",
+   "decoration",
+   "worldgen"
+  ],
+  "version": "7.0.1.2445",
+  "url": "https://cdn.modrinth.com/data/HXF82T3G/versions/e5wgKLKS/BiomesOPlenty-1.12.2-7.0.1.2445-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Bookshelf-1.12.2-2.3.590.jar",
+  "sha1": "83a1864dd78f48102609849dd36866d6cf32b907",
+  "slug": "bookshelf-lib",
+  "title": "Bookshelf",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "2.3.590",
+  "url": "https://cdn.modrinth.com/data/uy4Cnpcm/versions/VdfPMCPQ/Bookshelf-1.12.2-2.3.590.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "ClientTweaks_1.12.2-3.1.11.jar",
+  "sha1": "c6c31bc3e10fe8da49cb37088ec3d0e8d481ad46",
+  "slug": "client-tweaks",
+  "title": "Client Tweaks",
+  "categories": [
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "3.1.11+forge-1.21.2",
+  "url": "https://cdn.modrinth.com/data/vPNqo58Q/versions/DZ52fdjc/ClientTweaks_1.12.2-3.1.11.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Clumps-3.1.2.jar",
+  "sha1": "6ea78bea8006e3924bc37c2aef0115134c8af07b",
+  "slug": "clumps",
+  "title": "Clumps",
+  "categories": [
+   "storage",
+   "utility"
+  ],
+  "version": "3.1.2",
+  "url": "https://cdn.modrinth.com/data/Wnxd13zP/versions/nZvGITpT/Clumps-3.1.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Controlling-3.0.12.2.jar",
+  "sha1": "64e791db7eaf3577223a708df0325f07762bd059",
+  "slug": "controlling",
+  "title": "Controlling",
+  "categories": [
+   "utility"
+  ],
+  "version": "3.0.12.2",
+  "url": "https://cdn.modrinth.com/data/xv94TkTM/versions/buGCYKY1/Controlling-3.0.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "CraftPresence-2.7.1+1.12.2-forge.jar",
+  "sha1": "1c0955ade87d7f340a0b00eb5570ed42dd93019c",
+  "slug": "craftpresence",
+  "title": "CraftPresence",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "2.7.1+1.12.2-forge",
+  "url": "https://cdn.modrinth.com/data/DFqQfIBR/versions/IjzBfkpi/CraftPresence-2.7.1%2B1.12.2-forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "CraftingTweaks_1.12.2-8.1.9.jar",
+  "sha1": "be42bf244d4864f6832890ef2a2ade59f44a3f8b",
+  "slug": "crafting-tweaks",
+  "title": "Crafting Tweaks",
+  "categories": [
+   "management",
+   "utility"
+  ],
+  "version": "8.1.9+forge-1.12.2",
+  "url": "https://cdn.modrinth.com/data/DMu0oBKf/versions/wTjRHejU/CraftingTweaks_1.12.2-8.1.9.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "CreativeCore_v1.10.62_mc1.12.2.jar",
+  "sha1": "ffc8e5ac94598c65917cdba235ce6dff1a2e3ada",
+  "slug": "creativecore",
+  "title": "CreativeCore",
+  "categories": [
+   "library"
+  ],
+  "version": "1.10.62",
+  "url": "https://cdn.modrinth.com/data/OsZiaDHq/versions/1.10.62/CreativeCore_v1.10.62_mc1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "CustomSkinLoader_Universal-15.1.jar",
+  "sha1": "324e6921ecd576e44875981466e7f22170b6541a",
+  "slug": "customskinloader",
+  "title": "CustomSkinLoader",
+  "categories": [
+   "decoration"
+  ],
+  "version": "15.1-Universal",
+  "url": "https://cdn.modrinth.com/data/idMHQ4n2/versions/yyYvYfZI/CustomSkinLoader_Universal-15.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "DistantHorizons-3.3.3-1.12.2-forge.jar",
+  "sha1": "ffe0a2b83c9b1870fa48b8c5295bb3688fe2a9be",
+  "slug": "distanthorizons",
+  "title": "Distant Horizons",
+  "categories": [
+   "optimization",
+   "utility"
+  ],
+  "version": "3.3.3-1.12.2",
+  "url": "https://cdn.modrinth.com/data/uCdwusMi/versions/1PczaQGZ/DistantHorizons-3.3.3-1.12.2-forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "EnchantmentDescriptions-1.12.2-1.1.20.jar",
+  "sha1": "d82e9d326b9d40904edb189077fabe0f5f47557a",
+  "slug": "enchantment-descriptions",
+  "title": "Enchantment Descriptions",
+  "categories": [
+   "magic",
+   "utility"
+  ],
+  "version": "1.1.20",
+  "url": "https://cdn.modrinth.com/data/UVtY3ZAC/versions/XtD5InVd/EnchantmentDescriptions-1.12.2-1.1.20.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Essential_1-5-1_forge_1-12-2.jar",
+  "sha1": "63631e4e708e453762648791f21226cc870047bf",
+  "slug": "essential",
+  "title": "Essential Mod",
+  "categories": [
+   "management",
+   "social",
+   "utility"
+  ],
+  "version": "1.5.1",
+  "url": "https://cdn.modrinth.com/data/k2ZPuTBm/versions/5T1hrsYV/Essential_1-5-1_forge_1-12-2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "EuphoriaPatcher-1.10.5-r5.9.3-forgeLegacy.jar",
+  "sha1": "33ddeaa112839ea33f5b0f588483f437037d587e",
+  "slug": "euphoria-patches",
+  "title": "Euphoria Patches",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.10.5-r5.9.3-forgeLegacy",
+  "url": "https://cdn.modrinth.com/data/4H6sumDB/versions/swYsBD0X/EuphoriaPatcher-1.10.5-r5.9.3-forgeLegacy.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "FpsReducer-mc1.12.2-1.20.jar",
+  "sha1": "50c323de01f2235d351bf5417da6d4ef494b12e6",
+  "slug": "fps-reducer",
+  "title": "FPS Reducer",
+  "categories": [
+   "optimization"
+  ],
+  "version": "1.12.2-1.20",
+  "url": "https://cdn.modrinth.com/data/iZ10HXDj/versions/UX5XQGgU/FpsReducer-mc1.12.2-1.20.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "FullscreenWindowed-1.12-1.6.0-1.jar",
+  "sha1": "7c528e8846de3985ec1f32583e8fe2467c8fced5",
+  "slug": "borderless-mining",
+  "title": "Borderless Mining",
+  "categories": [
+   "utility"
+  ],
+  "version": "0.0.0-1.6.0+1.12",
+  "url": "https://cdn.modrinth.com/data/kYq5qkSL/versions/0.0.0-1.6.0%2B1.12/FullscreenWindowed-1.12-1.6.0-1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "GPUTape-1.12.2-1.0.4.jar",
+  "sha1": "fd1d675231bf5ed3f5348c7af07f12944d2ff233",
+  "slug": "gputape",
+  "title": "GPUBooster",
+  "categories": [
+   "library",
+   "optimization",
+   "utility"
+  ],
+  "version": "1.0.4-1.12",
+  "url": "https://cdn.modrinth.com/data/5CTSrY8X/versions/Kml7i540/GPUTape-1.12.2-1.0.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Highlighter-1.12.2-forge-1.1.7.jar",
+  "sha1": "5260bc0f2d4a27adf6409e707fb385899065982e",
+  "slug": "item-highlighter",
+  "title": "Item Highlighter",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.1.7",
+  "url": "https://cdn.modrinth.com/data/cVNW5lr6/versions/9rqjmdxp/Highlighter-1.12.2-forge-1.1.7.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "I18nUpdateMod-3.7.0-all.jar",
+  "sha1": "d9c217b569345ae30a5271baa5e9482080c2e41d",
+  "slug": "i18nupdatemod",
+  "title": "I18nUpdateMod",
+  "categories": [
+   "utility"
+  ],
+  "version": "3.7.0",
+  "url": "https://cdn.modrinth.com/data/PWERr14M/versions/4ihDUjWs/I18nUpdateMod-3.7.0-all.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "InventoryHUD-1.12.2.forge-3.4.4.jar",
+  "sha1": "b2ce2d6fdb0842139b892b27af08b3aaec7f2d19",
+  "slug": "inventoryhudplus",
+  "title": "InventoryHUD+",
+  "categories": [
+   "adventure",
+   "management",
+   "storage"
+  ],
+  "version": "3.4.4",
+  "url": "https://cdn.modrinth.com/data/Kp2uclYl/versions/7jtQLO3B/InventoryHUD-1.12.2.forge-3.4.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "ItemBorders-1.12.2-forge-1.2.0.jar",
+  "sha1": "200188ff9b477a615ed556a11a386e3cf816ce5f",
+  "slug": "item-borders",
+  "title": "Item Borders",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "1.2.0",
+  "url": "https://cdn.modrinth.com/data/b1fMg6sH/versions/DtmGTm3s/ItemBorders-1.12.2-forge-1.2.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Ksyxis-1.4.6.jar",
+  "sha1": "6de6271329e0c83e3ccc0512a0d3cfcc3e790d3f",
+  "slug": "ksyxis",
+  "title": "Ksyxis",
+  "categories": [
+   "optimization",
+   "utility",
+   "worldgen"
+  ],
+  "version": "1.4.6",
+  "url": "https://cdn.modrinth.com/data/2ecVyZ49/versions/kzLBJQLn/Ksyxis-1.4.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "LegendaryTooltips-1.12.2-1.1.11.jar",
+  "sha1": "f174a9ccf33df0bc1594713ef40dc8c0fce32205",
+  "slug": "legendary-tooltips",
+  "title": "Legendary Tooltips",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.1.11",
+  "url": "https://cdn.modrinth.com/data/atHH8NyV/versions/8rjxinu8/LegendaryTooltips-1.12.2-1.1.11.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "NaturesCompass-1.12.2-1.8.5-forge.jar",
+  "sha1": "60bcf179cab708f67bbce98d201e82f3e7be9266",
+  "slug": "natures-compass",
+  "title": "Nature's Compass",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.12.2-1.8.5-forge",
+  "url": "https://cdn.modrinth.com/data/fPetb5Kh/versions/kMPLisZs/NaturesCompass-1.12.2-1.8.5-forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Neat+1.4-17.jar",
+  "sha1": "831c286d99fe78503e966ef80ad27f54ae6a81cb",
+  "slug": "neat",
+  "title": "Neat",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.4-17",
+  "url": "https://cdn.modrinth.com/data/Ins7SzzR/versions/1.4-17/Neat%2B1.4-17.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "NetherPortalFix_1.12.1-5.3.17.jar",
+  "sha1": "c89d0046a1473293338cb5bb1d3f765ae497bcd6",
+  "slug": "netherportalfix",
+  "title": "NetherPortalFix",
+  "categories": [
+   "game-mechanics",
+   "social",
+   "utility"
+  ],
+  "version": "5.3.17+forge-1.12.2",
+  "url": "https://cdn.modrinth.com/data/nPZr02ET/versions/BrV6KDNp/NetherPortalFix_1.12.1-5.3.17.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "PacketFixer-forge-2.1.0-1.12.2.jar",
+  "sha1": "87300e503c045fbf93ec1de6574e9b1c34f87293",
+  "slug": "packet-fixer",
+  "title": "Packet Fixer",
+  "categories": [
+   "optimization",
+   "utility"
+  ],
+  "version": "2.1.0",
+  "url": "https://cdn.modrinth.com/data/c7m1mi73/versions/z8AimD45/PacketFixer-forge-2.1.0-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Patchouli-1.0-23.6.jar",
+  "sha1": "0febe14bdd007b13f6089a16a57d90e44646f041",
+  "slug": "patchouli",
+  "title": "Patchouli",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "1.0-23.6-forge",
+  "url": "https://cdn.modrinth.com/data/nU0bVIaL/versions/1.0-23.6/Patchouli-1.0-23.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Quark-r1.6-179.jar",
+  "sha1": "35521fd8911b6ef893afbfe7d0d5d04962b3360d",
+  "slug": "quark",
+  "title": "Quark",
+  "categories": [
+   "game-mechanics",
+   "technology",
+   "utility"
+  ],
+  "version": "r1.6-179",
+  "url": "https://cdn.modrinth.com/data/qnQsVE2z/versions/MPJKDJmI/Quark-r1.6-179.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Resourcify (1.12.2-forge)-1.6.2.jar",
+  "sha1": "57b9cf6bd3d5e336050e0d8b5b486d983ba8b025",
+  "slug": "resourcify",
+  "title": "Resourcify",
+  "categories": [
+   "management",
+   "utility"
+  ],
+  "version": "1.6.2",
+  "url": "https://cdn.modrinth.com/data/RLzHAoZe/versions/sl8MXedu/Resourcify%20%281.12.2-forge%29-1.6.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "SereneSeasons-1.12.2-1.2.18-universal.jar",
+  "sha1": "05acc4faf6f5ca31215599c0ebf778ba18a9121b",
+  "slug": "serene-seasons",
+  "title": "Serene Seasons",
+  "categories": [
+   "food",
+   "game-mechanics"
+  ],
+  "version": "1.2.18",
+  "url": "https://cdn.modrinth.com/data/e0bNACJD/versions/BMsrDMPq/SereneSeasons-1.12.2-1.2.18-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "ShoulderSurfing-1.12.2-2.9.6.jar",
+  "sha1": "eaea5760358ef7448f978c3a953a4286511768fe",
+  "slug": "shoulder-surfing-reloaded",
+  "title": "Shoulder Surfing Reloaded",
+  "categories": [
+   "adventure",
+   "utility"
+  ],
+  "version": "1.12.2-2.9.6",
+  "url": "https://cdn.modrinth.com/data/kepjj2sy/versions/9BBcQeo4/ShoulderSurfing-1.12.2-2.9.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "SpartanShields-1.12.2-1.5.5.jar",
+  "sha1": "89faa64364dfaa6799392e8f71da95e7b5af1144",
+  "slug": "spartan-shields",
+  "title": "Spartan Shields",
+  "categories": [
+   "equipment",
+   "game-mechanics"
+  ],
+  "version": "1.12.2-1.5.5",
+  "url": "https://cdn.modrinth.com/data/W5rjEyqs/versions/1.5.5/SpartanShields-1.12.2-1.5.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "SpartanWeaponry-1.12.2-1.6.1.jar",
+  "sha1": "0f4c533dbd1a9f6e9383bac0f6fef4cb80354fc3",
+  "slug": "spartan-weaponry",
+  "title": "Spartan Weaponry",
+  "categories": [
+   "equipment",
+   "game-mechanics"
+  ],
+  "version": "1.12.2-1.6.1",
+  "url": "https://cdn.modrinth.com/data/icU5P2Mk/versions/x2dB3EKv/SpartanWeaponry-1.12.2-1.6.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "Tips-1.12.2-1.0.9.jar",
+  "sha1": "9790e6083bbeab78e045c027c964495133507efa",
+  "slug": "tips",
+  "title": "Tips",
+  "categories": [
+   "adventure",
+   "utility"
+  ],
+  "version": "1.0.9",
+  "url": "https://cdn.modrinth.com/data/AMCbgyVw/versions/pPMwq1zD/Tips-1.12.2-1.0.9.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "TravelersBackpack-1.12.2-1.0.35.jar",
+  "sha1": "5c9157582cc081f0d3b4090f3a2dbc5cfbe70cc6",
+  "slug": "travelersbackpack",
+  "title": "Traveler's Backpack",
+  "categories": [
+   "adventure",
+   "equipment",
+   "storage"
+  ],
+  "version": "1.12.2-1.0.35",
+  "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/1.12.2-1.0.35/TravelersBackpack-1.12.2-1.0.35.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "UniLib-1.2.1+1.12.2-forge.jar",
+  "sha1": "c09a8f8b0e191cddbe629d2e5b19bf571a3ccd18",
+  "slug": "unilib",
+  "title": "UniLib",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "1.2.1+1.12.2-forge",
+  "url": "https://cdn.modrinth.com/data/nT86WUER/versions/uTDaGwk5/UniLib-1.2.1%2B1.12.2-forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "XaeroPlus-200+forge-1.12.2-WM1.47.0-MM26.6.0.jar",
+  "sha1": "1b5cbe7ec00b1e7371bf052c0c133f4cfefca1a1",
+  "slug": "xaeroplus",
+  "title": "XaeroPlus",
+  "categories": [
+   "adventure",
+   "transportation",
+   "utility"
+  ],
+  "version": "200",
+  "url": "https://cdn.modrinth.com/data/EnPUzSTg/versions/v2fUhgIf/XaeroPlus-200%2Bforge-1.12.2-WM1.47.0-MM26.6.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "_supermartijn642corelib-1.1.25-forge-mc1.12.jar",
+  "sha1": "2bc86ee8b6e9034953284af36feb82f45a641875",
+  "slug": "supermartijn642s-core-lib",
+  "title": "SuperMartijn642's Core Lib",
+  "categories": [
+   "library"
+  ],
+  "version": "1.1.25-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/rOUBggPv/versions/koYVoHm6/_supermartijn642corelib-1.1.25-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "aether-1.12.2-v1.5.4.1.jar",
+  "sha1": "22509d36e97a0d5c180fa7481609dce600068283",
+  "slug": "aether",
+  "title": "The Aether",
+  "categories": [
+   "adventure",
+   "equipment",
+   "worldgen"
+  ],
+  "version": "1.12.2-v1.5.4.1",
+  "url": "https://cdn.modrinth.com/data/YhmgMVyu/versions/y1tzlBx9/aether-1.12.2-v1.5.4.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "azurelib-forge-1.12.2-1.1.3.jar",
+  "sha1": "6244e181dee7328bd3c535c99b106b6b8795c0e3",
+  "slug": "azurelib",
+  "title": "AzureLib",
+  "categories": [
+   "game-mechanics",
+   "library",
+   "utility"
+  ],
+  "version": "1.1.3",
+  "url": "https://cdn.modrinth.com/data/7zlUOZvb/versions/8rjduZ58/azurelib-forge-1.12.2-1.1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "badwithernocookiereloaded-1.12.2-3.4.18.jar",
+  "sha1": "11ab53b71d86a7da97e5fa1a1705b62aa8da2b9c",
+  "slug": "bad-wither-no-cookie",
+  "title": "Bad Wither No Cookie - Reloaded",
+  "categories": [
+   "game-mechanics"
+  ],
+  "version": "3.4.18",
+  "url": "https://cdn.modrinth.com/data/lL2MtE37/versions/3.4.18/badwithernocookiereloaded-1.12.2-3.4.18.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "carryon-1.12.2-1.12.7.23.jar",
+  "sha1": "6b48020b113f227d92a2d5ea3d763c9bf6196554",
+  "slug": "carry-on",
+  "title": "Carry On",
+  "categories": [
+   "game-mechanics",
+   "storage",
+   "transportation"
+  ],
+  "version": "1.12.7.23",
+  "url": "https://cdn.modrinth.com/data/joEfVgkn/versions/uGbxgawj/carryon-1.12.2-1.12.7.23.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "cherishedworlds-1.12.2-1.0.1.jar",
+  "sha1": "ea5fd7e61fb7c8ab6a546e2a17a6f4929e904ec0",
+  "slug": "cherished-worlds",
+  "title": "Cherished Worlds",
+  "categories": [
+   "management",
+   "utility"
+  ],
+  "version": "1.12.2-1.0.1",
+  "url": "https://cdn.modrinth.com/data/3azQ6p0W/versions/NKPlBLC1/cherishedworlds-1.12.2-1.0.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "comforts-1.12.2-1.4.1.3.jar",
+  "sha1": "30528a47630935ba8517dcd5a28263a8be117b5f",
+  "slug": "comforts",
+  "title": "Comforts",
+  "categories": [
+   "adventure",
+   "decoration"
+  ],
+  "version": "1.12.2-1.4.1.3",
+  "url": "https://cdn.modrinth.com/data/SaCpeal4/versions/dHrSKL4J/comforts-1.12.2-1.4.1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "durabilitytooltip-1.2.0-forge-mc1.12.jar",
+  "sha1": "4b930d54c27150fc30e72a71a75a4eb3a97ef3c0",
+  "slug": "durability-tooltip",
+  "title": "Durability Tooltip",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.2.0-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/smUP7V3r/versions/l7ru4STg/durabilitytooltip-1.2.0-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "entityculling-1.12.2-1.6.3.jar",
+  "sha1": "fb22f03b297ca7b1bb7c6d5948e46c12e0a24446",
+  "slug": "entityculling",
+  "title": "Entity Culling",
+  "categories": [
+   "optimization"
+  ],
+  "version": "1.6.3-1.12.2",
+  "url": "https://cdn.modrinth.com/data/NNAgCjsB/versions/knltv3Vh/entityculling-1.12.2-1.6.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "fancymenu_forge_2.14.9_MC_1.12-1.12.2.jar",
+  "sha1": "b85302e855530f799697b2850e70293111f0cdbe",
+  "slug": "fancymenu",
+  "title": "FancyMenu",
+  "categories": [
+   "utility"
+  ],
+  "version": "2.14.9-1.12-1.12.2-forge",
+  "url": "https://cdn.modrinth.com/data/Wq5SjeWM/versions/VCIrxpB6/fancymenu_forge_2.14.9_MC_1.12-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "fusion-1.3.16-forge-mc1.12.jar",
+  "sha1": "68716c4306352b7456a920b739e7b39d088cba01",
+  "slug": "fusion-connected-textures",
+  "title": "Fusion (Connected Textures)",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.3.16-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/p19vrgc2/versions/CphnYxP4/fusion-1.3.16-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "geckolib-forge-1.12.2-3.0.31.jar",
+  "sha1": "abab17e7e19cba9ab575425a32419eb9db9cb876",
+  "slug": "geckolib",
+  "title": "Geckolib",
+  "categories": [
+   "game-mechanics",
+   "library",
+   "utility"
+  ],
+  "version": "3.0.31",
+  "url": "https://cdn.modrinth.com/data/8BmcQJ2H/versions/PePYVhnE/geckolib-forge-1.12.2-3.0.31.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "ironchest-netherite-1.12.2-1.0.2.jar",
+  "sha1": "5a0a523ce7357d8a320f6edeb89228218cf06bb8",
+  "slug": "iron-chests-with-netherite-chest",
+  "title": "Iron Chests (with Netherite Chest)",
+  "categories": [
+   "storage"
+  ],
+  "version": "1.0.2",
+  "url": "https://cdn.modrinth.com/data/7tPBdiPp/versions/SFHvrX8w/ironchest-netherite-1.12.2-1.0.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "jecharacters-1.12.0-3.7.4.jar",
+  "sha1": "8d8234996d4007fee4b92facae9dec8ef7535589",
+  "slug": "justenoughcharacters",
+  "title": "JustEnoughCharacters",
+  "categories": [
+   "utility"
+  ],
+  "version": "3.7.4",
+  "url": "https://cdn.modrinth.com/data/I7k4B65h/versions/VaZcd0s3/jecharacters-1.12.0-3.7.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "jei_1.12.2-4.24.0.1040.jar",
+  "sha1": "77b86ca39f60d918ffab45ad050db82a2a3dbbd8",
+  "slug": "jei",
+  "title": "Just Enough Items (JEI)",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "4.24.0.1040",
+  "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/Wf5aieqQ/jei_1.12.2-4.24.0.1040.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "journeymap-forge-1.12.2-6.0.10.jar",
+  "sha1": "6455be4d12b507878067738ccb23cfa02992c719",
+  "slug": "journeymap",
+  "title": "JourneyMap",
+  "categories": [
+   "adventure",
+   "utility"
+  ],
+  "version": "1.12.2-6.0.10+forge",
+  "url": "https://cdn.modrinth.com/data/lfHFW1mp/versions/ArujzPqc/journeymap-forge-1.12.2-6.0.10.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "konkrete_forge_1.6.1_MC_1.12-1.12.2.jar",
+  "sha1": "d8853dbd60fd050709d2d687d875cb0d93806e92",
+  "slug": "konkrete",
+  "title": "Konkrete",
+  "categories": [
+   "library"
+  ],
+  "version": "1.6.1-1.12-1.12.2-forge",
+  "url": "https://cdn.modrinth.com/data/J81TRJWm/versions/Nmo9ggyx/konkrete_forge_1.6.1_MC_1.12-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "letmedespawn-1.12.2-forge-1.0.2.jar",
+  "sha1": "89cd0cecbf15bccb5e0d7091b92c71e619f3dd21",
+  "slug": "lmd",
+  "title": "Let Me Despawn",
+  "categories": [
+   "optimization"
+  ],
+  "version": "1.12.2-forge-1.0.2",
+  "url": "https://cdn.modrinth.com/data/vE2FN5qn/versions/aPFboA2d/letmedespawn-1.12.2-forge-1.0.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "litematica-forge-1.12.2-0.0.0-dev.20191217.195055.jar",
+  "sha1": "f0daa84a8a235e3e441152e9517d4368968b99f6",
+  "slug": "litematica",
+  "title": "Litematica",
+  "categories": [
+   "utility"
+  ],
+  "version": "0.0.0-dev.20191217.195055",
+  "url": "https://cdn.modrinth.com/data/bEpr0Arc/versions/puzJfE7s/litematica-forge-1.12.2-0.0.0-dev.20191217.195055.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "lootr-1.12.2-0.6.2.jar",
+  "sha1": "3d21562963b4cdffeb7b5361c54b5ac560e1708f",
+  "slug": "lootr",
+  "title": "Lootr",
+  "categories": [
+   "utility"
+  ],
+  "version": "0.6.2",
+  "url": "https://cdn.modrinth.com/data/EltpO5cN/versions/fTrJqmfv/lootr-1.12.2-0.6.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "lostcities-1.12-2.0.22.jar",
+  "sha1": "dcea94d4a3d05f8282e014fcfe69048feafe4ce0",
+  "slug": "the-lost-cities",
+  "title": "The Lost Cities",
+  "categories": [
+   "adventure",
+   "worldgen"
+  ],
+  "version": "1.12-2.0.22",
+  "url": "https://cdn.modrinth.com/data/8VDCUS3b/versions/dKHWZOQm/lostcities-1.12-2.0.22.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "malilib-forge-1.12.2-0.10.0-dev.23.nomixin.jar",
+  "sha1": "897ceddb0f32583d1c004f37213e19e58b1106f5",
+  "slug": "malilib",
+  "title": "MaLiLib",
+  "categories": [
+   "library",
+   "utility"
+  ],
+  "version": "0.10.0-dev.23.nomixin",
+  "url": "https://cdn.modrinth.com/data/GcWjdA9I/versions/6PDV12GO/malilib-forge-1.12.2-0.10.0-dev.23.nomixin.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "nyfsspiders-Forge-1.12.2-3.0.5.jar",
+  "sha1": "e527189fd17b8c32b9c7aba41b1befa2b0d87952",
+  "slug": "nyfs-spiders",
+  "title": "Nyf's Spiders",
+  "categories": [
+   "mobs"
+  ],
+  "version": "3.0.5",
+  "url": "https://cdn.modrinth.com/data/dOGM7ccu/versions/OEeP3Ust/nyfsspiders-Forge-1.12.2-3.0.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "rechiseled-1.2.6a-forge-mc1.12.jar",
+  "sha1": "de8d80f9709b12303a72b5f33b6cd10b16456e4b",
+  "slug": "rechiseled",
+  "title": "Rechiseled",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.2.6a-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/B0g2vT6l/versions/cCU7v3Cm/rechiseled-1.2.6a-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "replaymod-1.12.2-2.6.24.jar",
+  "sha1": "090dec4dfbd927bb1698177c1c3bccffc17afe8b",
+  "slug": "replaymod",
+  "title": "ReplayMod",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.12.2-2.6.24",
+  "url": "https://cdn.modrinth.com/data/Nv2fQJo5/versions/V8x1l1js/replaymod-1.12.2-2.6.24.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "supermartijn642configlib-1.1.8-forge-mc1.12.jar",
+  "sha1": "49f6b461ff22ad8e23bb99679c1f64eee85ee958",
+  "slug": "supermartijn642s-config-lib",
+  "title": "SuperMartijn642's Config Lib",
+  "categories": [
+   "library"
+  ],
+  "version": "1.1.8-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/LN9BxssP/versions/IJL4TGRd/supermartijn642configlib-1.1.8-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "tweakeroo-forge-1.12.2-0.10.0-dev.20201007.231650+notrd.jar",
+  "sha1": "4ee4a7db77bf767d929133832837b65c63b3f8be",
+  "slug": "tweakeroo",
+  "title": "Tweakeroo",
+  "categories": [
+   "utility"
+  ],
+  "version": "0.10.0-dev.20201007.231650+notrd",
+  "url": "https://cdn.modrinth.com/data/t5wuYk45/versions/4cMyhs2o/tweakeroo-forge-1.12.2-0.10.0-dev.20201007.231650%2Bnotrd.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "voicechat-forge-1.12.2-2.6.26.jar",
+  "sha1": "9b08e9cc005f0093165126fc092eba80869c90cf",
+  "slug": "simple-voice-chat",
+  "title": "Simple Voice Chat",
+  "categories": [
+   "adventure",
+   "social",
+   "utility"
+  ],
+  "version": "forge-1.12.2-2.6.26",
+  "url": "https://cdn.modrinth.com/data/9eGKb6K1/versions/lFqUamvV/voicechat-forge-1.12.2-2.6.26.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "waveycapes-forge-mc1.12.2-1.2.0.jar",
+  "sha1": "40ed4ad073ea7e3eea077ce9b08209d2e34f4065",
+  "slug": "wavey-capes",
+  "title": "Wavey Capes",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.2.0-forge-1.12",
+  "url": "https://cdn.modrinth.com/data/kYuIpRLv/versions/1.2.0-forge-1.12/waveycapes-forge-mc1.12.2-1.2.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "worldedit-forge-mc1.12.2-6.1.10-dist.jar",
+  "sha1": "17314bdab33678478af060d2156338ee34db8a09",
+  "slug": "worldedit",
+  "title": "WorldEdit",
+  "categories": [
+   "library",
+   "management",
+   "utility"
+  ],
+  "version": "6.1.10",
+  "url": "https://cdn.modrinth.com/data/1u6JkXh5/versions/GaGvu76z/worldedit-forge-mc1.12.2-6.1.10-dist.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "xaerominimap-forge-1.12.2-26.6.0.jar",
+  "sha1": "b8697cc145185645b750c54280f01c48e103773d",
+  "slug": "xaeros-minimap",
+  "title": "Xaero's Minimap",
+  "categories": [
+   "adventure",
+   "transportation",
+   "utility"
+  ],
+  "version": "forge-1.12.2-26.6.0",
+  "url": "https://cdn.modrinth.com/data/1bokaNcj/versions/5RQMTvSN/xaerominimap-forge-1.12.2-26.6.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "xaeroworldmap-forge-1.12.2-1.47.0.jar",
+  "sha1": "a00726c1f38b6d0794499b7337423bb25203b122",
+  "slug": "xaeros-world-map",
+  "title": "Xaero's World Map",
+  "categories": [
+   "adventure",
+   "transportation",
+   "utility"
+  ],
+  "version": "forge-1.12.2-1.47.0",
+  "url": "https://cdn.modrinth.com/data/NcUtCpym/versions/qRwIl1WB/xaeroworldmap-forge-1.12.2-1.47.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2",
+  "file": "zume-1.2.2.jar",
+  "sha1": "cbd353ee0e2a35d122a758b9cbb26b2f54145f3f",
+  "slug": "zume",
+  "title": "Zume",
+  "categories": [
+   "utility"
+  ],
+  "version": "1.2.2",
+  "url": "https://cdn.modrinth.com/data/o6qsdrrQ/versions/Rh2ImJ86/zume-1.2.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "AdditionalBanners-1.12.2-1.1.77.jar",
+  "sha1": "b0471a7defba6ca8305093134be3e5d8652ac430",
+  "slug": "additional-banners",
+  "title": "Additional Banners",
+  "categories": [
+   "adventure",
+   "utility"
+  ],
+  "version": "1.1.77",
+  "url": "https://cdn.modrinth.com/data/AVPTFuxC/versions/CFS4Zk2g/AdditionalBanners-1.12.2-1.1.77.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "AdditionalEnchantedMiner-1.12.2-12.5.7.jar",
+  "sha1": "bfe474f9e836324fe965abac9eb80cb05269fc47",
+  "slug": "additional-enchanted-miner",
+  "title": "Additional Enchanted Miner",
+  "categories": [
+   "technology"
+  ],
+  "version": "12.5.7",
+  "url": "https://cdn.modrinth.com/data/jhxX1zVW/versions/kp5ymDWS/AdditionalEnchantedMiner-1.12.2-12.5.7.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "AdvancedBackups-forge-1.12-3.7.1.jar",
+  "sha1": "43d4300e5804fb865dae402a2f6f302bdbdc1588",
+  "slug": "advanced-backups",
+  "title": "Advanced Backups",
+  "categories": [
+   "management",
+   "storage",
+   "utility"
+  ],
+  "version": "3.7.1",
+  "url": "https://cdn.modrinth.com/data/Jrmoreqs/versions/hgS99DJg/AdvancedBackups-forge-1.12-3.7.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Age-of-Weapons-1.12.2-(v.0.13.6).jar",
+  "sha1": "2ba41d64643f5281a475716436d02f0f4bf1ebd9",
+  "slug": "age-of-weapons-reforged",
+  "title": "Age of Weapons - Reforged",
+  "categories": [
+   "equipment",
+   "game-mechanics",
+   "technology"
+  ],
+  "version": "v.0.13.6",
+  "url": "https://cdn.modrinth.com/data/cJz6vYNZ/versions/vsQom1ZT/Age-of-Weapons-1.12.2-%28v.0.13.6%29.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "AkashicTome-1.2-12.jar",
+  "sha1": "b11bf9d93f4bd7a2eeb8cfe49c1b30ce1a2f5a37",
+  "slug": "akashic-tome",
+  "title": "Akashic Tome",
+  "categories": [
+   "storage",
+   "utility"
+  ],
+  "version": "1.2-12",
+  "url": "https://cdn.modrinth.com/data/JBthPdnp/versions/qAZUyIdA/AkashicTome-1.2-12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "AoA3-3.3.6.jar",
+  "sha1": "b0e46f6c8d608972157d5ba27f7b093c46797e5a",
+  "slug": "adventofascension",
+  "title": "Advent Of Ascension",
+  "categories": [
+   "adventure",
+   "equipment",
+   "worldgen"
+  ],
+  "version": "1.12.2-3.3.6",
+  "url": "https://cdn.modrinth.com/data/9qn2AQBc/versions/1.12.2-3.3.6/AoA3-3.3.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "BetterBurning-1.12.2-0.9.2.jar",
+  "sha1": "42b54aa677d783d2cd9fe6d74d416aff43d258f4",
+  "slug": "better-burning",
+  "title": "Better Burning",
+  "categories": [
+   "adventure",
+   "utility"
+  ],
+  "version": "0.9.2",
+  "url": "https://cdn.modrinth.com/data/uNBP8Xul/versions/YCZkKqY1/BetterBurning-1.12.2-0.9.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "BetterFurnacesReforged-1.12.2-1.5.5.jar",
+  "sha1": "f07c4dbf9f40f2310dae16a0090bd5cef0a931f1",
+  "slug": "better-furnaces-reforged",
+  "title": "Better Furnaces Reforged",
+  "categories": [
+   "technology",
+   "utility"
+  ],
+  "version": "1.12.2-1.5.5",
+  "url": "https://cdn.modrinth.com/data/ZXOYCX2A/versions/YI1hklI2/BetterFurnacesReforged-1.12.2-1.5.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "BetterThanMending-1.1.2.jar",
+  "sha1": "85dba4173aa2913b02d8f9a71c6ac0d97938b1ff",
+  "slug": "better-than-mending",
+  "title": "Better Than Mending",
+  "categories": [
+   "equipment",
+   "utility"
+  ],
+  "version": "1.1.2",
+  "url": "https://cdn.modrinth.com/data/Lvv4SHrK/versions/1.1.2/BetterThanMending-1.1.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "BiomesOPlenty-1.12.2-7.0.1.2445-universal.jar",
+  "sha1": "13c1e58ffec2a550b9698e25cda93b8d155007b0",
+  "slug": "biomes-o-plenty",
+  "title": "Biomes O' Plenty",
+  "categories": [
+   "adventure",
+   "decoration",
+   "worldgen"
+  ],
+  "version": "7.0.1.2445",
+  "url": "https://cdn.modrinth.com/data/HXF82T3G/versions/e5wgKLKS/BiomesOPlenty-1.12.2-7.0.1.2445-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "BloodMagic-1.12.2-2.4.3-105.jar",
+  "sha1": "541b63338663dbeb5fc818608a70ad3fff129177",
+  "slug": "blood-magic",
+  "title": "Blood Magic",
+  "categories": [
+   "equipment",
+   "magic"
+  ],
+  "version": "1.12.2-2.4.3-105",
+  "url": "https://cdn.modrinth.com/data/PbNc6qBY/versions/GtMIuGOR/BloodMagic-1.12.2-2.4.3-105.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Born In A Barn 1.8-1.12-1.2.jar",
+  "sha1": "2a19c174eb4989d7ca33e6fcc543f44158ae8949",
+  "slug": "born-in-a-barn",
+  "title": "Born in a Barn",
+  "categories": [
+   "game-mechanics",
+   "optimization",
+   "utility"
+  ],
+  "version": "1.2",
+  "url": "https://cdn.modrinth.com/data/WfPGKC8F/versions/40q9Yeit/Born%20In%20A%20Barn%201.8-1.12-1.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Botania+r1.10-364.4.jar",
+  "sha1": "7ad38e809f785c18fbc17c5beac2650342ae4a96",
+  "slug": "botania",
+  "title": "Botania",
+  "categories": [
+   "decoration",
+   "magic",
+   "technology"
+  ],
+  "version": "1.10-364.4-forge",
+  "url": "https://cdn.modrinth.com/data/pfjLUfGv/versions/1.10-364.4-forge/Botania%2Br1.10-364.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Capsule-1.12.2-3.4.76.jar",
+  "sha1": "385cbed26365189526b226d22580cb00aef94a5a",
+  "slug": "capsule",
+  "title": "Capsule",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "3.4.76",
+  "url": "https://cdn.modrinth.com/data/Pt0JOpyz/versions/72nZSLNl/Capsule-1.12.2-3.4.76.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ConquestReforged-3.0.2-mc1.12.2.jar",
+  "sha1": "267005d251c0441a995b553894e9ca8418cdcd69",
+  "slug": "conquest-reforged",
+  "title": "Conquest Reforged",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.0.0",
+  "url": "https://cdn.modrinth.com/data/s93iojuG/versions/6pTzZPph/ConquestReforged-3.0.2-mc1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "DarkUtils-1.12.2-1.8.230.jar",
+  "sha1": "3f34c35903ca09e637dc3426eb81ca64ced0429a",
+  "slug": "dark-utilities",
+  "title": "Dark Utilities",
+  "categories": [
+   "adventure",
+   "equipment"
+  ],
+  "version": "1.8.230",
+  "url": "https://cdn.modrinth.com/data/CkqTAIaP/versions/NYqAjxPp/DarkUtils-1.12.2-1.8.230.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Decocraft-2.6.3.7_1.12.2.jar",
+  "sha1": "e226ed02e3181aca765a52cee7bad8865d93815b",
+  "slug": "decocraft",
+  "title": "Decocraft",
+  "categories": [
+   "decoration"
+  ],
+  "version": "2.6.3.7",
+  "url": "https://cdn.modrinth.com/data/IZJSgKZe/versions/2.6.3.7/Decocraft-2.6.3.7_1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Draconic-Evolution-1.12.2-2.3.28.354-universal.jar",
+  "sha1": "aa952832b369ff12a26ef608ee7a001b687ca226",
+  "slug": "draconic-evolution",
+  "title": "Draconic Evolution",
+  "categories": [
+   "equipment",
+   "mobs",
+   "storage"
+  ],
+  "version": "2.3.28.354",
+  "url": "https://cdn.modrinth.com/data/nBqivi8H/versions/jGfLfP4K/Draconic-Evolution-1.12.2-2.3.28.354-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Dynmap-3.7-beta-4-forge-1.12.2.jar",
+  "sha1": "4ca1cdc2153d07c2637aa81bb2757982061f9b3b",
+  "slug": "dynmap",
+  "title": "Dynmap\u00ae",
+  "categories": [
+   "decoration",
+   "management",
+   "utility"
+  ],
+  "version": "3.7-beta-4",
+  "url": "https://cdn.modrinth.com/data/fRQREgAc/versions/oonqFE15/Dynmap-3.7-beta-4-forge-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ElevatorMod-1.12.2-1.4.2.jar",
+  "sha1": "2aef30c410cecc38be91c822d1b37ca74bcce57e",
+  "slug": "elevatormod",
+  "title": "ElevatorMod",
+  "categories": [
+   "transportation"
+  ],
+  "version": "1.12.2-1.4.2",
+  "url": "https://cdn.modrinth.com/data/hi2dSXTu/versions/sqiXnhC5/ElevatorMod-1.12.2-1.4.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "EnderIO-1.12.2-5.3.72.jar",
+  "sha1": "60d62a0dab5b12c527fd8eda1d353888e3406175",
+  "slug": "enderio",
+  "title": "Ender IO",
+  "categories": [
+   "decoration",
+   "equipment",
+   "technology"
+  ],
+  "version": "5.3.72",
+  "url": "https://cdn.modrinth.com/data/49ZofO4f/versions/ozde4Meh/EnderIO-1.12.2-5.3.72.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "EnderStorage-1.12.2-2.4.6.137-universal.jar",
+  "sha1": "7a872baf72b1da038704056a0cf7bbcc40bfa4d6",
+  "slug": "ender-storage",
+  "title": "Ender Storage",
+  "categories": [
+   "storage"
+  ],
+  "version": "2.4.6.137",
+  "url": "https://cdn.modrinth.com/data/BbrHg80P/versions/dKRcYSd0/EnderStorage-1.12.2-2.4.6.137-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "EpicFightMod-1.12.2-2.2.8.jar",
+  "sha1": "8bea869c6b4d4b965574eafbc52916d9163a5989",
+  "slug": "epic-fight",
+  "title": "Epic Fight",
+  "categories": [
+   "equipment",
+   "library",
+   "mobs"
+  ],
+  "version": "2.2.8",
+  "url": "https://cdn.modrinth.com/data/vu3NZ5Ma/versions/gDDYyt4W/EpicFightMod-1.12.2-2.2.8.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ExtremeReactors-1.12.2-0.4.5.68.jar",
+  "sha1": "69dde2f0c2b2c204a66f5ae5c704a39f6b08c6ef",
+  "slug": "extreme-reactors",
+  "title": "Extreme Reactors",
+  "categories": [
+   "technology",
+   "worldgen"
+  ],
+  "version": "1.12.2-0.4.5.68",
+  "url": "https://cdn.modrinth.com/data/idkvShUy/versions/lXY8AQnu/ExtremeReactors-1.12.2-0.4.5.68.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Future-MC-0.2.21.jar",
+  "sha1": "641c6b63f40d6c5846b93f61ab661a99a59d03c3",
+  "slug": "future-mc",
+  "title": "Future MC",
+  "categories": [
+   "decoration",
+   "equipment"
+  ],
+  "version": "0.2.21",
+  "url": "https://cdn.modrinth.com/data/dKv1FGT7/versions/v3ZmWrP5/Future-MC-0.2.21.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Immersive Vehicles-1.12.2-24.0.0.jar",
+  "sha1": "cfe5e1fc5dd66b9670f4cf0ba2df8894ba600e5d",
+  "slug": "immersive-vehicles",
+  "title": "Immersive Vehicles",
+  "categories": [
+   "decoration",
+   "technology",
+   "transportation"
+  ],
+  "version": "24.0.0-1.12.2",
+  "url": "https://cdn.modrinth.com/data/BCzBuhJ5/versions/KyR21IJF/Immersive%20Vehicles-1.12.2-24.0.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ImmersiveEngineering-0.12-98.jar",
+  "sha1": "633070d9c447fdaf6a9ead59425017815c890c63",
+  "slug": "immersiveengineering",
+  "title": "Immersive Engineering",
+  "categories": [
+   "equipment",
+   "technology"
+  ],
+  "version": "0.12-98",
+  "url": "https://cdn.modrinth.com/data/tIm2nV03/versions/qklpKVVz/ImmersiveEngineering-0.12-98.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "IronJetpacks-1.12.2-1.1.0.jar",
+  "sha1": "0cd6350d3b42166ce941f78d8a8a58f687a1c1cd",
+  "slug": "iron-jetpacks",
+  "title": "Iron Jetpacks",
+  "categories": [
+   "equipment",
+   "technology",
+   "transportation"
+  ],
+  "version": "1.1.0",
+  "url": "https://cdn.modrinth.com/data/DWIEOniQ/versions/jynCCqg7/IronJetpacks-1.12.2-1.1.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Ksyxis-1.4.6.jar",
+  "sha1": "6de6271329e0c83e3ccc0512a0d3cfcc3e790d3f",
+  "slug": "ksyxis",
+  "title": "Ksyxis",
+  "categories": [
+   "optimization",
+   "utility",
+   "worldgen"
+  ],
+  "version": "1.4.6",
+  "url": "https://cdn.modrinth.com/data/2ecVyZ49/versions/kzLBJQLn/Ksyxis-1.4.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MTS Official Pack-1.12.2-V29.jar",
+  "sha1": "0895dfda05d7f66a69bb86febe7e03faa08526ce",
+  "slug": "immersive-vehicles-official-content-pack",
+  "title": "Immersive Vehicles - Official Content Pack [OCP] - Planes & Cars",
+  "categories": [
+   "technology",
+   "transportation",
+   "utility"
+  ],
+  "version": "29",
+  "url": "https://cdn.modrinth.com/data/C7TiPPJz/versions/HNHPiWuz/MTS%20Official%20Pack-1.12.2-V29.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Mekanism-1.12.2-9.8.3.390.jar",
+  "sha1": "1d5b531b7c107d6946b3e957f4554e2cb7686320",
+  "slug": "mekanism",
+  "title": "Mekanism",
+  "categories": [
+   "equipment",
+   "storage",
+   "technology"
+  ],
+  "version": "9.8.3.390",
+  "url": "https://cdn.modrinth.com/data/Ce6I4WUE/versions/9.8.3/Mekanism-1.12.2-9.8.3.390.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MekanismGenerators-1.12.2-9.8.3.390.jar",
+  "sha1": "6980bbbc9d18c5dea7e2242fe9d542da2d41c481",
+  "slug": "mekanism-generators",
+  "title": "Mekanism Generators",
+  "categories": [
+   "technology"
+  ],
+  "version": "9.8.3.390",
+  "url": "https://cdn.modrinth.com/data/OFVYKsAk/versions/9.8.3.390/MekanismGenerators-1.12.2-9.8.3.390.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MekanismTools-1.12.2-9.8.3.390.jar",
+  "sha1": "8c32f71f2db7a695abc8413aa7dfe8c28c485585",
+  "slug": "mekanism-tools",
+  "title": "Mekanism Tools",
+  "categories": [
+   "equipment"
+  ],
+  "version": "9.8.3.390",
+  "url": "https://cdn.modrinth.com/data/tqQpq1lt/versions/9.8.3.390/MekanismTools-1.12.2-9.8.3.390.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MineTraps-1.12.2-(v.1.0.4).jar",
+  "sha1": "1745bda2159d3aa88290923bde9112ba3557c0ed",
+  "slug": "minetraps",
+  "title": "MineTraps",
+  "categories": [
+   "cursed",
+   "decoration",
+   "equipment"
+  ],
+  "version": "v.1.0.4",
+  "url": "https://cdn.modrinth.com/data/1TVTyRG9/versions/nBwnLf85/MineTraps-1.12.2-%28v.1.0.4%29.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MoreAvaritiaMc1.12.2-0.7.jar",
+  "sha1": "f16227322ffe6ba65653dca4325e42749f62a2b4",
+  "slug": "more_avaritia",
+  "title": "MoreAvaritia",
+  "categories": [
+   "equipment"
+  ],
+  "version": "0.7",
+  "url": "https://cdn.modrinth.com/data/GkKw6pl3/versions/VEMhWzFh/MoreAvaritiaMc1.12.2-0.7.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MoreBows-1.0.10+1.12.2.jar",
+  "sha1": "0049092c1347f338ea3c85c232fed649599604de",
+  "slug": "more-bows-restrung",
+  "title": "More Bows: Restrung!",
+  "categories": [
+   "adventure",
+   "equipment"
+  ],
+  "version": "v1.0.10+1.12.2",
+  "url": "https://cdn.modrinth.com/data/CkMS2Yh3/versions/AnIc1h0O/MoreBows-1.0.10%2B1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MysticalAgradditions-1.12.2-1.3.2.jar",
+  "sha1": "7387a2976cafec35222e6549b3c447e7972dc4aa",
+  "slug": "mystical-agradditions",
+  "title": "Mystical Agradditions",
+  "categories": [
+   "equipment",
+   "magic",
+   "worldgen"
+  ],
+  "version": "1.3.2",
+  "url": "https://cdn.modrinth.com/data/pl0jGXIx/versions/fNIXv2Jz/MysticalAgradditions-1.12.2-1.3.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "MysticalAgriculture-1.12.2-1.7.5.jar",
+  "sha1": "dd7b50ccebda09f8cb44d35997827ae3450455d1",
+  "slug": "mystical-agriculture",
+  "title": "Mystical Agriculture",
+  "categories": [
+   "equipment",
+   "magic",
+   "worldgen"
+  ],
+  "version": "1.7.5",
+  "url": "https://cdn.modrinth.com/data/C95ReXie/versions/tkG0KX4G/MysticalAgriculture-1.12.2-1.7.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "NaturesCompass-1.12.2-1.8.5-forge.jar",
+  "sha1": "60bcf179cab708f67bbce98d201e82f3e7be9266",
+  "slug": "natures-compass",
+  "title": "Nature's Compass",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.12.2-1.8.5-forge",
+  "url": "https://cdn.modrinth.com/data/fPetb5Kh/versions/kMPLisZs/NaturesCompass-1.12.2-1.8.5-forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Nether-API-v1.5.4-mc1.12.2.jar",
+  "sha1": "3dabba4c48d44e1f6ddcaa953d07a10c942c7b8f",
+  "slug": "nether-api",
+  "title": "Nether API",
+  "categories": [
+   "library",
+   "worldgen"
+  ],
+  "version": "1.5.4",
+  "url": "https://cdn.modrinth.com/data/65qOM4nb/versions/ZnbZ8HHk/Nether-API-v1.5.4-mc1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "OpenComputers-MC1.12.2-1.8.10+258943363.jar",
+  "sha1": "fe7a9b9af4b952eedcaa21633e3f83e443ee693b",
+  "slug": "opencomputers",
+  "title": "OpenComputers",
+  "categories": [
+   "decoration",
+   "technology"
+  ],
+  "version": "1.8.10",
+  "url": "https://cdn.modrinth.com/data/YiAbZis2/versions/J90kUiyR/OpenComputers-MC1.12.2-1.8.10%2B258943363.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Pixelmon-1.12.2-8.4.3-universal.jar",
+  "sha1": "ff980f06438daa19a106d02e07bc6503d56f8e4e",
+  "slug": "pixelmon",
+  "title": "Pixelmon",
+  "categories": [
+   "adventure",
+   "decoration",
+   "worldgen"
+  ],
+  "version": "8.4.3",
+  "url": "https://cdn.modrinth.com/data/59ZceYlU/versions/Q8fEBG8j/Pixelmon-1.12.2-8.4.3-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ProjectVibrantJourneys-1.12.2-1.6.4.jar",
+  "sha1": "bc36f9cec993d276e209f35da199de565fc38c68",
+  "slug": "project-vibrant-journeys",
+  "title": "Project: Vibrant Journeys",
+  "categories": [
+   "worldgen"
+  ],
+  "version": "1.12.1-1.6.4",
+  "url": "https://cdn.modrinth.com/data/Z8Xbk4yv/versions/52V04aOm/ProjectVibrantJourneys-1.12.2-1.6.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Quark-r1.6-179.jar",
+  "sha1": "35521fd8911b6ef893afbfe7d0d5d04962b3360d",
+  "slug": "quark",
+  "title": "Quark",
+  "categories": [
+   "game-mechanics",
+   "technology",
+   "utility"
+  ],
+  "version": "r1.6-179",
+  "url": "https://cdn.modrinth.com/data/qnQsVE2z/versions/MPJKDJmI/Quark-r1.6-179.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "RealisticTorches-1.12.2-2.1.2.jar",
+  "sha1": "03100cc1b2a29013f815bce0fc5e7baa23fdbeff",
+  "slug": "realistic-torches",
+  "title": "Realistic Torches",
+  "categories": [
+   "adventure",
+   "decoration",
+   "game-mechanics"
+  ],
+  "version": "1.12.2-2.1.2",
+  "url": "https://cdn.modrinth.com/data/iQYnQIfP/versions/wvxdYyeo/RealisticTorches-1.12.2-2.1.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Rex's-AdditionalStructures-1.12.x(v.2.5.0).jar",
+  "sha1": "f9de541a2651f0ec01c41861126caba956e1e6d9",
+  "slug": "additional-structures",
+  "title": "Additional Structures",
+  "categories": [
+   "adventure",
+   "worldgen"
+  ],
+  "version": "v.2.5.0",
+  "url": "https://cdn.modrinth.com/data/TWsbC6jW/versions/stoSMZ1p/Rex%27s-AdditionalStructures-1.12.x%28v.2.5.0%29.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SRParasites-1.10.9.jar",
+  "sha1": "5d5ce93c51cbd91b048e25d97463583e83709789",
+  "slug": "scapeandrunparasites",
+  "title": "Scape and Run: Parasites",
+  "categories": [
+   "mobs"
+  ],
+  "version": "1.10.9",
+  "url": "https://cdn.modrinth.com/data/MJX7HTHx/versions/GqXT1zbV/SRParasites-1.10.9.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ScalingHealth-1.12.2-1.3.42+147.jar",
+  "sha1": "e621a6b6319bd3a854055af2b21826068852f0ea",
+  "slug": "scaling-health",
+  "title": "Scaling Health",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "worldgen"
+  ],
+  "version": "1.3.42",
+  "url": "https://cdn.modrinth.com/data/UvEHlX52/versions/rVZWSpuL/ScalingHealth-1.12.2-1.3.42%2B147.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SereneSeasons-1.12.2-1.2.18-universal.jar",
+  "sha1": "05acc4faf6f5ca31215599c0ebf778ba18a9121b",
+  "slug": "serene-seasons",
+  "title": "Serene Seasons",
+  "categories": [
+   "food",
+   "game-mechanics"
+  ],
+  "version": "1.2.18",
+  "url": "https://cdn.modrinth.com/data/e0bNACJD/versions/BMsrDMPq/SereneSeasons-1.12.2-1.2.18-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SilentGear-1.12.2-0.6.7+76.jar",
+  "sha1": "ec949aed93099df2207e6cd7f8a9398655790b5f",
+  "slug": "silent-gear",
+  "title": "Silent Gear",
+  "categories": [
+   "equipment"
+  ],
+  "version": "0.6.7",
+  "url": "https://cdn.modrinth.com/data/73mSSnCf/versions/2cKKuqNq/SilentGear-1.12.2-0.6.7%2B76.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SimpleHats-0.4.1.jar",
+  "sha1": "babb90cb368dc88aa55b6c96a756546fc11a2d9f",
+  "slug": "simple-hats",
+  "title": "Simple Hats",
+  "categories": [
+   "decoration",
+   "equipment"
+  ],
+  "version": "1.12.2-Forge-0.4.1",
+  "url": "https://cdn.modrinth.com/data/iSkQCp6b/versions/TIFkKFLE/SimpleHats-0.4.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SimpleStorageNetwork-1.12.2-2.0.1.jar",
+  "sha1": "0ba90a1497cf521416f09c00036c78fede35faaf",
+  "slug": "simple-storage-network",
+  "title": "Simple Storage Network",
+  "categories": [
+   "storage"
+  ],
+  "version": "1.12.2-2.0.1",
+  "url": "https://cdn.modrinth.com/data/cVIr8Vz1/versions/JdylTyat/SimpleStorageNetwork-1.12.2-2.0.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SpartanShields-1.12.2-1.5.5.jar",
+  "sha1": "89faa64364dfaa6799392e8f71da95e7b5af1144",
+  "slug": "spartan-shields",
+  "title": "Spartan Shields",
+  "categories": [
+   "equipment",
+   "game-mechanics"
+  ],
+  "version": "1.12.2-1.5.5",
+  "url": "https://cdn.modrinth.com/data/W5rjEyqs/versions/1.5.5/SpartanShields-1.12.2-1.5.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "SpartanWeaponry-1.12.2-1.6.1.jar",
+  "sha1": "0f4c533dbd1a9f6e9383bac0f6fef4cb80354fc3",
+  "slug": "spartan-weaponry",
+  "title": "Spartan Weaponry",
+  "categories": [
+   "equipment",
+   "game-mechanics"
+  ],
+  "version": "1.12.2-1.6.1",
+  "url": "https://cdn.modrinth.com/data/icU5P2Mk/versions/x2dB3EKv/SpartanWeaponry-1.12.2-1.6.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "StarSourceBlade-1.12.2-1.3.jar",
+  "sha1": "53ea751b9d776c01597e56aa3dea1f1fc1a6f3e1",
+  "slug": "starsource",
+  "title": "StarSource",
+  "categories": [
+   "equipment"
+  ],
+  "version": "1.3",
+  "url": "https://cdn.modrinth.com/data/QXMadwaJ/versions/DLj7ADWu/StarSourceBlade-1.12.2-1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "StorageDrawers-1.12.2-5.5.2.jar",
+  "sha1": "512979dd3ecfe70cffc4d1c59630855474837fd3",
+  "slug": "storagedrawers",
+  "title": "Storage Drawers",
+  "categories": [
+   "storage"
+  ],
+  "version": "1.12-5.5.2",
+  "url": "https://cdn.modrinth.com/data/guitPqEi/versions/MYiIvcYr/StorageDrawers-1.12.2-5.5.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "TConstruct-1.12.2-2.13.0.183.jar",
+  "sha1": "e37e1f05ad0eaf567497ce655bc877dc1778bd0f",
+  "slug": "tinkers-construct",
+  "title": "Tinkers' Construct",
+  "categories": [
+   "equipment",
+   "magic",
+   "technology"
+  ],
+  "version": "2.13.0.183",
+  "url": "https://cdn.modrinth.com/data/rxIIYO6c/versions/mNZUIBbe/TConstruct-1.12.2-2.13.0.183.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "TerraFirmaCraft-MC1.12.2-1.7.23.181.jar",
+  "sha1": "02572c98137f42c8e35bc5a74a7a78699bbad373",
+  "slug": "terrafirmacraft",
+  "title": "TerraFirmaCraft",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "worldgen"
+  ],
+  "version": "1.7.23.181",
+  "url": "https://cdn.modrinth.com/data/JaCEZUhg/versions/k4rM7PTU/TerraFirmaCraft-MC1.12.2-1.7.23.181.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "The-Hordes-1.12.2-1.6.3e.jar",
+  "sha1": "3a9ab953809eef0ebe0d207a57911c204a11d379",
+  "slug": "the-hordes",
+  "title": "The Hordes",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "mobs"
+  ],
+  "version": "1.12.2-1.6.3e",
+  "url": "https://cdn.modrinth.com/data/O3HDffUR/versions/Q6XVVcGq/The-Hordes-1.12.2-1.6.3e.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "ToughAsNails-1.12.2-3.1.0.141-universal.jar",
+  "sha1": "594c723d9708616b0f69bec1fb2d884d9ade7444",
+  "slug": "tough-as-nails",
+  "title": "Tough As Nails",
+  "categories": [
+   "equipment",
+   "food",
+   "game-mechanics"
+  ],
+  "version": "3.1.0.141",
+  "url": "https://cdn.modrinth.com/data/ge1sOdFH/versions/QWJ0uEnl/ToughAsNails-1.12.2-3.1.0.141-universal.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "TravelersBackpack-1.12.2-1.0.35.jar",
+  "sha1": "5c9157582cc081f0d3b4090f3a2dbc5cfbe70cc6",
+  "slug": "travelersbackpack",
+  "title": "Traveler's Backpack",
+  "categories": [
+   "adventure",
+   "equipment",
+   "storage"
+  ],
+  "version": "1.12.2-1.0.35",
+  "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/1.12.2-1.0.35/TravelersBackpack-1.12.2-1.0.35.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "VampiresNeedUmbrellas-1.12.2-1.5.jar",
+  "sha1": "fd6f006d3d36cb858c7911fd242ab903bbca97e4",
+  "slug": "vampires-need-umbrellas",
+  "title": "Vampires Need Umbrellas",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.12.2-1.5",
+  "url": "https://cdn.modrinth.com/data/FaUysFni/versions/f743KvKs/VampiresNeedUmbrellas-1.12.2-1.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "Vampirism-1.12.2-1.6.2.jar",
+  "sha1": "a1ac0161fca6236ebac14c0fec8b57a66937be04",
+  "slug": "vampirism",
+  "title": "Vampirism",
+  "categories": [
+   "adventure",
+   "magic"
+  ],
+  "version": "1.12.2-1.6.2",
+  "url": "https://cdn.modrinth.com/data/jVZ0F1wn/versions/JBd0KUB4/Vampirism-1.12.2-1.6.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "VampirismIntegrations-1.12.2-1.3.0.jar",
+  "sha1": "2800bc9b8ec46010d73f4b9bdcbe7ed84a0bbe4d",
+  "slug": "vampirism-integrations",
+  "title": "Vampirism Integrations",
+  "categories": [
+   "magic"
+  ],
+  "version": "1.12.2-1.3.0",
+  "url": "https://cdn.modrinth.com/data/ygTFuViO/versions/1.12.2-1.3.0/VampirismIntegrations-1.12.2-1.3.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "WirelessRedstone-1.12.2-1.1.6.jar",
+  "sha1": "b843d278ee9c6e11d94ffbde26a7822d72f74f88",
+  "slug": "wirelessredstone",
+  "title": "Wireless Redstone",
+  "categories": [
+   "game-mechanics",
+   "technology",
+   "utility"
+  ],
+  "version": "1.12.2-1.1.6",
+  "url": "https://cdn.modrinth.com/data/2mBYHHZ5/versions/DLQolp7C/WirelessRedstone-1.12.2-1.1.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "[1.12.2] SecurityCraft v1.10.1.jar",
+  "sha1": "47532d6720f2309b815253936d79c1f29986de19",
+  "slug": "security-craft",
+  "title": "SecurityCraft",
+  "categories": [
+   "adventure",
+   "equipment",
+   "technology"
+  ],
+  "version": "v1.10.1",
+  "url": "https://cdn.modrinth.com/data/v8jzRtAt/versions/S5V33aWc/%5B1.12.2%5D%20SecurityCraft%20v1.10.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "[1.12.2]-Epic-Knights-Armor-and-Weapons-6.2v(uncomplete).jar",
+  "sha1": "2e7b2d9fa1c072fce4b595a5b4d1e93c03a852e6",
+  "slug": "epic-knights-shields-armor-and-weapons",
+  "title": "Epic Knights: Shields Armor and Weapons",
+  "categories": [
+   "equipment"
+  ],
+  "version": "6.2",
+  "url": "https://cdn.modrinth.com/data/L6jvzao4/versions/s7HoL42h/%5B1.12.2%5D-Epic-Knights-Armor-and-Weapons-6.2v%28uncomplete%29.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "additionallanterns-1.1.2-forge-mc1.12.jar",
+  "sha1": "4427da9744523f7beed0c4364b75a1b8dbcd9803",
+  "slug": "additional-lanterns",
+  "title": "Additional Lanterns",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.1.2-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/jXNvTKds/versions/iaMil4wz/additionallanterns-1.1.2-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "aether-1.12.2-v1.5.4.1.jar",
+  "sha1": "22509d36e97a0d5c180fa7481609dce600068283",
+  "slug": "aether",
+  "title": "The Aether",
+  "categories": [
+   "adventure",
+   "equipment",
+   "worldgen"
+  ],
+  "version": "1.12.2-v1.5.4.1",
+  "url": "https://cdn.modrinth.com/data/YhmgMVyu/versions/y1tzlBx9/aether-1.12.2-v1.5.4.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "baubley-heart-canisters-1.12.2-2.0.3.jar",
+  "sha1": "63a0872773dd016896d8458ae6684ed824240db2",
+  "slug": "baubley-heart-canisters",
+  "title": "Baubley Heart Canisters",
+  "categories": [
+   "adventure",
+   "equipment",
+   "utility"
+  ],
+  "version": "1.12.2-2.0.3",
+  "url": "https://cdn.modrinth.com/data/fPdy2fCM/versions/7y6WCjSG/baubley-heart-canisters-1.12.2-2.0.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "beyonddimensions-0.1.7.5-1.12.2.jar",
+  "sha1": "4618743fc0812d5f0b0d87a04d806c018589d6e5",
+  "slug": "beyonddimensions",
+  "title": "Beyond Dimensions",
+  "categories": [
+   "storage",
+   "transportation",
+   "utility"
+  ],
+  "version": "0.1.7.5",
+  "url": "https://cdn.modrinth.com/data/6zGxpbt7/versions/IFDaYpPK/beyonddimensions-0.1.7.5-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "carryon-1.12.2-1.12.7.23.jar",
+  "sha1": "6b48020b113f227d92a2d5ea3d763c9bf6196554",
+  "slug": "carry-on",
+  "title": "Carry On",
+  "categories": [
+   "game-mechanics",
+   "storage",
+   "transportation"
+  ],
+  "version": "1.12.7.23",
+  "url": "https://cdn.modrinth.com/data/joEfVgkn/versions/uGbxgawj/carryon-1.12.2-1.12.7.23.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "chococraft_1.12.1-0.9.1.52.jar",
+  "sha1": "40390dec58a9934de13f98bac2f8b9d15c428418",
+  "slug": "chococraft",
+  "title": "Chococraft",
+  "categories": [
+   "adventure",
+   "food",
+   "mobs"
+  ],
+  "version": "0.9.1.52",
+  "url": "https://cdn.modrinth.com/data/bPTEaC7v/versions/mBebASEQ/chococraft_1.12.1-0.9.1.52.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "chunkloaders-1.2.9a-forge-mc1.12.jar",
+  "sha1": "2be71af413e910b0ce59647373a28e14200bd5d4",
+  "slug": "chunk-loaders",
+  "title": "Chunk Loaders",
+  "categories": [
+   "technology",
+   "utility"
+  ],
+  "version": "1.2.9a-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/t1VgucWo/versions/6RtABTVf/chunkloaders-1.2.9a-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "comforts-1.12.2-1.4.1.3.jar",
+  "sha1": "30528a47630935ba8517dcd5a28263a8be117b5f",
+  "slug": "comforts",
+  "title": "Comforts",
+  "categories": [
+   "adventure",
+   "decoration"
+  ],
+  "version": "1.12.2-1.4.1.3",
+  "url": "https://cdn.modrinth.com/data/SaCpeal4/versions/dHrSKL4J/comforts-1.12.2-1.4.1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "connectedglass-1.1.14-forge-mc1.12.jar",
+  "sha1": "3ee6e876d028af47744909e7cbeb9d2145f82484",
+  "slug": "connected-glass",
+  "title": "Connected Glass",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.1.14-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/DghO0R02/versions/WrqzgdUP/connectedglass-1.1.14-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "cosmeticbeds-1.12.2-1.0.2.2.jar",
+  "sha1": "ad7a483466e5d3935bf0f27afc27e49e5ae204fc",
+  "slug": "bedspreads",
+  "title": "Bedspreads",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.12.2-1.0.2.2",
+  "url": "https://cdn.modrinth.com/data/vNNL5mc7/versions/mcoSrF6h/cosmeticbeds-1.12.2-1.0.2.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "culinaryconstruct-1.3.4.jar",
+  "sha1": "08b6d4dbe26ac0772b75803d0a740a62f9bb6df7",
+  "slug": "culinary-construct",
+  "title": "Culinary Construct",
+  "categories": [
+   "food"
+  ],
+  "version": "1.3.4",
+  "url": "https://cdn.modrinth.com/data/i0hioBIg/versions/ev8Dbp1s/culinaryconstruct-1.3.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "dawnoftime_builder_edition-1.12.2-1.0.7.jar",
+  "sha1": "39cbfb7fd08a84cb0e0037577018cdc0c5c002de",
+  "slug": "dawn-of-time",
+  "title": "Dawn of Time",
+  "categories": [
+   "adventure",
+   "decoration"
+  ],
+  "version": "1.0.7",
+  "url": "https://cdn.modrinth.com/data/RgWXq0La/versions/OMmo48Eh/dawnoftime_builder_edition-1.12.2-1.0.7.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "entangled-1.3.21-forge-mc1.12.jar",
+  "sha1": "21c9802dcfb7f28c5aaf5d444e1d416c43847bb9",
+  "slug": "entangled",
+  "title": "Entangled",
+  "categories": [
+   "magic",
+   "storage",
+   "technology"
+  ],
+  "version": "1.3.21-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/rylMOguI/versions/lKJLkDvY/entangled-1.3.21-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "firstaid-1.6.22.jar",
+  "sha1": "d9927b8c24def4b32e1ca81f3b8caf379391e34e",
+  "slug": "firstaid",
+  "title": "FirstAid",
+  "categories": [
+   "adventure",
+   "game-mechanics"
+  ],
+  "version": "1.6.22",
+  "url": "https://cdn.modrinth.com/data/eTiYU57B/versions/mcwDfpit/firstaid-1.6.22.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "fossilsarcheology-8.0.6.jar",
+  "sha1": "456575303523b6c60ba9f1af0de4b5fc95646170",
+  "slug": "fossils-and-archeology-revival",
+  "title": "Fossils and Archeology: Revival",
+  "categories": [
+   "mobs",
+   "technology",
+   "worldgen"
+  ],
+  "version": "8.0.6",
+  "url": "https://cdn.modrinth.com/data/IJY7IqPP/versions/2Wi50MGh/fossilsarcheology-8.0.6.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "grappling_hook_mod-1.12.2-v13.jar",
+  "sha1": "6e19255da276ab2a3a4adbc30652169adf6901d3",
+  "slug": "grappling-hook-mod",
+  "title": "Grappling Hook Mod",
+  "categories": [
+   "equipment"
+  ],
+  "version": "v13-1.12.2",
+  "url": "https://cdn.modrinth.com/data/hGWjTxOA/versions/v13-1.12.2/grappling_hook_mod-1.12.2-v13.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "iceandfire-1.9.1-1.12.2.jar",
+  "sha1": "4bf427fe3dcf8b7c30ce64ca1b61550037ff60ec",
+  "slug": "ice-and-fire-dragons",
+  "title": "Ice and Fire",
+  "categories": [
+   "adventure",
+   "magic",
+   "mobs"
+  ],
+  "version": "1.9.1",
+  "url": "https://cdn.modrinth.com/data/LVnvHVBp/versions/737XMmok/iceandfire-1.9.1-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "incontrol-1.12-3.9.18.jar",
+  "sha1": "a9a3b82dc6c8d9a9107f5e03eaa79b5854c2eed2",
+  "slug": "in-control",
+  "title": "In Control!",
+  "categories": [
+   "management",
+   "mobs",
+   "utility"
+  ],
+  "version": "1.12-3.9.18",
+  "url": "https://cdn.modrinth.com/data/KpICtuVx/versions/X5YFoHxO/incontrol-1.12-3.9.18.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "industrialforegoing-1.12.2-1.12.13-237.jar",
+  "sha1": "4f44934b392d7bf1713707a93b29006e98bd7cff",
+  "slug": "industrial-foregoing",
+  "title": "Industrial Foregoing",
+  "categories": [
+   "food",
+   "storage",
+   "technology"
+  ],
+  "version": "1.12.13-237",
+  "url": "https://cdn.modrinth.com/data/lWxpUd04/versions/kCY68l3Y/industrialforegoing-1.12.2-1.12.13-237.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "infwithmend-forge-1.12.2-1.0.0.jar",
+  "sha1": "0a159b80386ffd1be72a81843c9b1575cbf59f2f",
+  "slug": "infinity-with-mending",
+  "title": "Infinity With Mending",
+  "categories": [
+   "equipment",
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "forge-1.12.2-1.0.0",
+  "url": "https://cdn.modrinth.com/data/TToG3iVN/versions/yl5sKYCo/infwithmend-forge-1.12.2-1.0.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "inventorypets-1.12-2.0.15.jar",
+  "sha1": "ae26500f8ca04cf1a5218654dad2a59ad0161b43",
+  "slug": "inventory-pets",
+  "title": "Inventory Pets",
+  "categories": [
+   "adventure",
+   "equipment",
+   "magic"
+  ],
+  "version": "2.0.15",
+  "url": "https://cdn.modrinth.com/data/hrbIt8wl/versions/mkiG9hAE/inventorypets-1.12-2.0.15.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "itemcollectors-1.1.12-forge-mc1.12.jar",
+  "sha1": "66ec6d378bff2e199a02ef76ba02150177f4325e",
+  "slug": "item-collectors",
+  "title": "Item Collectors",
+  "categories": [
+   "storage",
+   "technology"
+  ],
+  "version": "1.1.12-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/y9vDr4Th/versions/Kve24Rrw/itemcollectors-1.1.12-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "lost-aether-content-1.12.2-1.0.2.jar",
+  "sha1": "7afd5c89092db20080f5e11a3cbae0511bdabbb9",
+  "slug": "aether-lost-content",
+  "title": "Aether: Lost Content Addon",
+  "categories": [
+   "equipment",
+   "mobs",
+   "worldgen"
+  ],
+  "version": "1.0.2",
+  "url": "https://cdn.modrinth.com/data/lr2r2Dpz/versions/fRz8xo9z/lost-aether-content-1.12.2-1.0.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "lostcities-1.12-2.0.22.jar",
+  "sha1": "dcea94d4a3d05f8282e014fcfe69048feafe4ce0",
+  "slug": "the-lost-cities",
+  "title": "The Lost Cities",
+  "categories": [
+   "adventure",
+   "worldgen"
+  ],
+  "version": "1.12-2.0.22",
+  "url": "https://cdn.modrinth.com/data/8VDCUS3b/versions/dKHWZOQm/lostcities-1.12-2.0.22.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "mahoutsukai-1.12.2-v1.19.54.jar",
+  "sha1": "d719567feec9079b79425960e05f168959369cae",
+  "slug": "mahou-tsukai",
+  "title": "Mahou Tsukai",
+  "categories": [
+   "magic"
+  ],
+  "version": "1.12.2-v1.19.54",
+  "url": "https://cdn.modrinth.com/data/7jOxn6qJ/versions/1.19.54/mahoutsukai-1.12.2-v1.19.54.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "mcw-lights-1.0.6-mc1.12.2forge.jar",
+  "sha1": "5090bef18988763efb904501aa35838391afbeeb",
+  "slug": "macaws-lights-and-lamps",
+  "title": "Macaw's Lights and Lamps",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.0.6",
+  "url": "https://cdn.modrinth.com/data/w4an97C2/versions/Tn5Kci4f/mcw-lights-1.0.6-mc1.12.2forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "mcw-paintings-1.0.5-1.12.2forge.jar",
+  "sha1": "477aed0296677292c218e03d1469f1b67b677982",
+  "slug": "macaws-paintings",
+  "title": "Macaw's Paintings",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.0.5",
+  "url": "https://cdn.modrinth.com/data/okE6QVAY/versions/2Ae8gzln/mcw-paintings-1.0.5-1.12.2forge.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "movingelevators-1.4.12-forge-mc1.12.jar",
+  "sha1": "aa1a550a6dc82400d1d96011e6603dd1d0624ffd",
+  "slug": "moving-elevators",
+  "title": "Moving Elevators",
+  "categories": [
+   "decoration",
+   "technology"
+  ],
+  "version": "1.4.12-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/9KZOe6HD/versions/eSCQSnUy/movingelevators-1.4.12-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "murasame-1.0.0.jar",
+  "sha1": "0427f81e7b61f4c61c30b3b4b974de0911abf9a5",
+  "slug": "slashblade-murasame",
+  "title": "Slashblade Murasame",
+  "categories": [
+   "adventure",
+   "equipment",
+   "worldgen"
+  ],
+  "version": "1.12.2-1.0.0",
+  "url": "https://cdn.modrinth.com/data/LrSy5gex/versions/noPKZnP2/murasame-1.0.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "musictriggers-7.0.4.jar",
+  "sha1": "7c43f5b8840474e933840e7e4090584e1f849c94",
+  "slug": "music-triggers",
+  "title": "Music Triggers",
+  "categories": [
+   "adventure",
+   "management",
+   "utility"
+  ],
+  "version": "7.0.4",
+  "url": "https://cdn.modrinth.com/data/RXDYkg6Z/versions/stXJIX0z/musictriggers-7.0.4.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "netmusic-1.12.2-1.1.0.jar",
+  "sha1": "3bfea9346f517bb09a4a1ea33cec286be7596274",
+  "slug": "net-music",
+  "title": "Net Music",
+  "categories": [
+   "decoration",
+   "utility"
+  ],
+  "version": "1.1.0",
+  "url": "https://cdn.modrinth.com/data/gKNuqaQq/versions/3pYMWmqs/netmusic-1.12.2-1.1.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "nyfsspiders-Forge-1.12.2-3.0.5.jar",
+  "sha1": "e527189fd17b8c32b9c7aba41b1befa2b0d87952",
+  "slug": "nyfs-spiders",
+  "title": "Nyf's Spiders",
+  "categories": [
+   "mobs"
+  ],
+  "version": "3.0.5",
+  "url": "https://cdn.modrinth.com/data/dOGM7ccu/versions/OEeP3Ust/nyfsspiders-Forge-1.12.2-3.0.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "packedup-1.1.1a-forge-mc1.12.jar",
+  "sha1": "697d7f6b0bdac92fcd0de6af58df788be0ddadaf",
+  "slug": "packed-up-backpacks",
+  "title": "Packed Up (Backpacks)",
+  "categories": [
+   "storage"
+  ],
+  "version": "1.1.1a-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/ZbFzEauY/versions/bgQ4Xuay/packedup-1.1.1a-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "prefab-1.3.1.7.jar",
+  "sha1": "0b5dfc0886b25d25f2b635ed32d02a0114a3db33",
+  "slug": "prefab",
+  "title": "Prefab",
+  "categories": [
+   "decoration",
+   "worldgen"
+  ],
+  "version": "1.3.1.7",
+  "url": "https://cdn.modrinth.com/data/pTJ1ZloG/versions/RfS9WGhJ/prefab-1.3.1.7.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "rats-3.2.13-1.12.2.jar",
+  "sha1": "55024fc9c166b69351f8c43cc6b7400cebcd2dfb",
+  "slug": "rats",
+  "title": "Rats",
+  "categories": [
+   "cursed",
+   "mobs",
+   "technology"
+  ],
+  "version": "3.2.13",
+  "url": "https://cdn.modrinth.com/data/CETpiisl/versions/6Qb97Q8V/rats-3.2.13-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "rechiseled-1.2.6a-forge-mc1.12.jar",
+  "sha1": "de8d80f9709b12303a72b5f33b6cd10b16456e4b",
+  "slug": "rechiseled",
+  "title": "Rechiseled",
+  "categories": [
+   "decoration"
+  ],
+  "version": "1.2.6a-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/B0g2vT6l/versions/cCU7v3Cm/rechiseled-1.2.6a-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "refinedstorage-1.6.16.jar",
+  "sha1": "007c8fb5bcc2bb99b7bbb055440e20b276251d77",
+  "slug": "refined-storage",
+  "title": "Refined Storage",
+  "categories": [
+   "storage",
+   "technology",
+   "transportation"
+  ],
+  "version": "1.6.16",
+  "url": "https://cdn.modrinth.com/data/KDvYkUg3/versions/wEzhu0F6/refinedstorage-1.6.16.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "refinedstorageaddons-0.4.5.jar",
+  "sha1": "61cd5c8a76ab157cb4f4633e9de9ddfa68366948",
+  "slug": "refined-storage-addons",
+  "title": "Refined Storage Addons",
+  "categories": [
+   "storage",
+   "technology",
+   "transportation"
+  ],
+  "version": "0.4.5",
+  "url": "https://cdn.modrinth.com/data/Z4Z5ccuT/versions/axJp9gRi/refinedstorageaddons-0.4.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "refinedstoragerequestify-1.12.2-1.0.2-3.jar",
+  "sha1": "85fd1c848af45c9b26ae6bc2f00c98636f198723",
+  "slug": "rs-requestify",
+  "title": "Refined Storage: Requestify",
+  "categories": [
+   "storage",
+   "technology"
+  ],
+  "version": "1.0.2",
+  "url": "https://cdn.modrinth.com/data/dSxaHfLO/versions/mG8qb4gK/refinedstoragerequestify-1.12.2-1.0.2-3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "responsiveshields-2.3-mc1.12.x.jar",
+  "sha1": "0caa25bd72dbecf6a2002cf6a4eced1c58099c4d",
+  "slug": "responsiveshields",
+  "title": "Responsive Shields",
+  "categories": [
+   "equipment",
+   "utility"
+  ],
+  "version": "2.3",
+  "url": "https://cdn.modrinth.com/data/MBmh0f9A/versions/MlMADrFf/responsiveshields-2.3-mc1.12.x.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "rftools-1.12-7.73.jar",
+  "sha1": "16a4e8c1907bdaac546ab3fd56904d202da427f3",
+  "slug": "rftools",
+  "title": "RFTools (Legacy)",
+  "categories": [
+   "storage",
+   "technology",
+   "transportation"
+  ],
+  "version": "1.12-7.73",
+  "url": "https://cdn.modrinth.com/data/FwyGRcXc/versions/xRnNLLgU/rftools-1.12-7.73.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "simplemagnets-1.1.12-forge-mc1.12.jar",
+  "sha1": "5ad541d2d6e90a0525ad62987d31e4bc92b2743c",
+  "slug": "simple-magnets",
+  "title": "Simple Magnets",
+  "categories": [
+   "adventure",
+   "equipment",
+   "technology"
+  ],
+  "version": "1.1.12-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/YyNQVpOu/versions/jvqx9L3y/simplemagnets-1.1.12-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "sit-1.12.2-v1.3.jar",
+  "sha1": "1a19c5aa9373e5e9b666cd1e8a2b3632c5983d72",
+  "slug": "bl4cks-sit",
+  "title": "Sit",
+  "categories": [
+   "game-mechanics"
+  ],
+  "version": "v1.3",
+  "url": "https://cdn.modrinth.com/data/VKXzIykF/versions/EzTj5ssf/sit-1.12.2-v1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "slashblade_addon-1.7.0.jar",
+  "sha1": "73007a2da38da13709b88a742b5f1b1f89e112e2",
+  "slug": "sjap",
+  "title": "SlashBladeJapaneseAddonPack",
+  "categories": [
+   "adventure",
+   "decoration",
+   "equipment"
+  ],
+  "version": "1.7.0-1.12.2",
+  "url": "https://cdn.modrinth.com/data/UVAZ3yo1/versions/EjIIGsC3/slashblade_addon-1.7.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "themidnight-0.3.5.jar",
+  "sha1": "2198e4b9b383c78a3a65ddd450e9065520d36b6e",
+  "slug": "the-midnight",
+  "title": "The Midnight",
+  "categories": [
+   "adventure",
+   "mobs",
+   "worldgen"
+  ],
+  "version": "1.12.2-0.3.5",
+  "url": "https://cdn.modrinth.com/data/f12ixI8d/versions/SDyMoN0t/themidnight-0.3.5.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "tombstone-1.12.2-4.8.0.jar",
+  "sha1": "d6b878a63265cf014e8a67aae66d3d4e451d6a63",
+  "slug": "corail-tombstone",
+  "title": "Corail Tombstone",
+  "categories": [
+   "adventure",
+   "game-mechanics",
+   "magic"
+  ],
+  "version": "forge-1.12.2-4.8.0",
+  "url": "https://cdn.modrinth.com/data/YT5K34AB/versions/zLwFOXYW/tombstone-1.12.2-4.8.0.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "trashcans-1.1.2-forge-mc1.12.jar",
+  "sha1": "dcad36d56c41b8c31ac6d7f3d10a7f60c8492879",
+  "slug": "trash-cans",
+  "title": "Trash Cans",
+  "categories": [
+   "decoration",
+   "storage",
+   "technology"
+  ],
+  "version": "1.1.2-forge-mc1.12",
+  "url": "https://cdn.modrinth.com/data/4QrnfueM/versions/2zoAbNrx/trashcans-1.1.2-forge-mc1.12.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "underlay-1.0.2-mc1.12.2.jar",
+  "sha1": "3dc3110579c3277121be7027028856b212db1d14",
+  "slug": "underlay",
+  "title": "Underlay",
+  "categories": [
+   "decoration",
+   "game-mechanics",
+   "utility"
+  ],
+  "version": "1.0.2",
+  "url": "https://cdn.modrinth.com/data/iltKD9qU/versions/Bw5rpMTy/underlay-1.0.2-mc1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "usefulslime-1.2-1.12.2.jar",
+  "sha1": "50dcfc6c8e03148ab9f34c818f8bfa31006858f0",
+  "slug": "useful-slime",
+  "title": "Useful Slime",
+  "categories": [
+   "adventure",
+   "equipment",
+   "transportation"
+  ],
+  "version": "1.2",
+  "url": "https://cdn.modrinth.com/data/CzM6C1W0/versions/7nvVKmlp/usefulslime-1.2-1.12.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "xercapaint-1.12.2-1.3.jar",
+  "sha1": "638b95595665bdae6798752e69a1d543ec064f7e",
+  "slug": "joy-of-painting",
+  "title": "Joy of Painting",
+  "categories": [
+   "decoration",
+   "game-mechanics",
+   "social"
+  ],
+  "version": "1.12.2-1.3",
+  "url": "https://cdn.modrinth.com/data/YOs4tZea/versions/a9v9DVrs/xercapaint-1.12.2-1.3.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "xnet-1.12-1.8.2.jar",
+  "sha1": "085f5aef1d407f815028e5ecc87265cc5d8142e6",
+  "slug": "xnet",
+  "title": "XNet",
+  "categories": [
+   "technology",
+   "transportation"
+  ],
+  "version": "1.12-1.8.2",
+  "url": "https://cdn.modrinth.com/data/iu1jkWqa/versions/bcioOzsw/xnet-1.12-1.8.2.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "xptome-1.12.2-v2.0.1.jar",
+  "sha1": "7382f9d0cb925a40ed660cf5b66d2fa9b092a176",
+  "slug": "xp-tome",
+  "title": "XP Tome",
+  "categories": [
+   "adventure",
+   "storage",
+   "utility"
+  ],
+  "version": "v2.0.1",
+  "url": "https://cdn.modrinth.com/data/AnpW69o3/versions/SjZUh4bc/xptome-1.12.2-v2.0.1.jar"
+ },
+ {
+  "folder": "test-mods/1.12.2-content",
+  "file": "zerocore-1.12.2-0.1.2.9.jar",
+  "sha1": "bc87c72b3aac54367b6641f9dbd41f6a218043cd",
+  "slug": "zerocore",
+  "title": "ZeroCore",
+  "categories": [
+   "library",
+   "technology",
+   "utility"
+  ],
+  "version": "1.12.2-0.1.2.9",
+  "url": "https://cdn.modrinth.com/data/rHpb85Mf/versions/BM8zU1AX/zerocore-1.12.2-0.1.2.9.jar"
+ }
+]
