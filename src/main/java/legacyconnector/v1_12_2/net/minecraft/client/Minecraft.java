@@ -188,18 +188,32 @@ public class Minecraft {
 
     public void setRenderViewEntity(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
         var modern = entity == null ? null : entity.mcc$entity;
-        mc().setCameraEntity(modern != null ? modern : mc().player);
+        mc().setCameraEntity(modern != null ? modern : ClientAccess.player());
+    }
+
+    /**
+     * Reads of the modern client's player and level, kept out of this class: verifying it would load their client classes, and
+     * client-only mods call {@link #getMinecraft()} on dedicated servers too (CTM's preInit).
+     */
+    private static final class ClientAccess {
+        static net.minecraft.world.entity.Entity player() {
+            return mc().player;
+        }
+
+        static net.minecraft.world.level.Level level() {
+            return mc().level;
+        }
     }
 
     // ------------------------------------------------------------------ phantom fields
 
     public static EntityPlayerSP mcc$get$player(Minecraft m) {
-        var p = mc().player;
+        var p = ClientAccess.player();
         return p == null ? null : EntityBridge1122.wrap(p) instanceof EntityPlayerSP sp ? sp : null;
     }
 
     public static WorldClient mcc$get$world(Minecraft m) {
-        var level = mc().level;
+        var level = ClientAccess.level();
         return level == null ? null : WorldBridge1122.wrap(level) instanceof WorldClient w ? w : null;
     }
 
