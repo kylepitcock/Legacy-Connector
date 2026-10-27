@@ -7,8 +7,14 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
 
 /** A block that has a tile entity. */
 public abstract class BlockContainer extends Block implements ITileEntityProvider {
+    protected BlockContainer(Material material, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor color) {
+        super(material, color);
+        this.hasTileEntity = true;
+    }
+
     protected BlockContainer(Material material) {
         super(material);
+        this.hasTileEntity = true;
     }
 
     @Override

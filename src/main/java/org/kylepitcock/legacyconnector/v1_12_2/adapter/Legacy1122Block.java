@@ -74,7 +74,13 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
     private final boolean removed;
     private final boolean comparator;
     private final boolean pickItem;
+    private final boolean collisionList;
+    private final boolean pushReaction;
+    private final boolean relativeHardness;
     private int failures;
+    /** Set while legacy code computes a shape or breaking speed: the shim's defaults ask the modern block again, which must not recurse. */
+    private static final ThreadLocal<boolean[]> IN_LEGACY_SHAPE = ThreadLocal.withInitial(() -> new boolean[1]);
+    private static final ThreadLocal<boolean[]> IN_LEGACY_HARDNESS = ThreadLocal.withInitial(() -> new boolean[1]);
 
     public Legacy1122Block(Block legacy, Properties properties) {
         super(properties);
@@ -100,6 +106,11 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
         this.removed = overrides(legacy, "removedByPlayer", S, W, P, EntityPlayer.class, boolean.class);
         this.comparator = overrides(legacy, "hasComparatorInputOverride", S);
         this.pickItem = overrides(legacy, "getItem", W, P, S);
+        Class<?> BB = legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.class;
+        this.collisionList = overrides(legacy, "addCollisionBoxToList", S, W, P, BB, java.util.List.class, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class,
+                boolean.class);
+        this.pushReaction = overrides(legacy, "getPushReaction", S);
+        this.relativeHardness = overrides(legacy, "getPlayerRelativeBlockHardness", S, EntityPlayer.class, W, P);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
     }
 
@@ -375,6 +386,63 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
             failure("onFallenUpon", e);
             super.fallOn(level, state, pos, entity, distance);
         }
+    }
+
+    // ------------------------------------------------------------------ shape, pistons, breaking speed
+
+    /** Several collision boxes (machines, pipes, frames): what the mod's addCollisionBoxToList adds for a mask around the block. */
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
+            net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (!collisionList || !(getter instanceof Level level) || IN_LEGACY_SHAPE.get()[0]) return super.getCollisionShape(state, getter, pos, context);
+        List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new ArrayList<>();
+        var mask = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 2,
+                pos.getY() + 2, pos.getZ() + 2);
+        var entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec && ec.getEntity() != null ? entity(ec.getEntity()) : null;
+        boolean[] guard = IN_LEGACY_SHAPE.get();
+        guard[0] = true;
+        try {
+            legacy.addCollisionBoxToList(state(state), world(level), pos(pos), mask, boxes, entity, true);
+        } catch (RuntimeException | LinkageError e) {
+            failure("addCollisionBoxToList", e);
+            return super.getCollisionShape(state, getter, pos, context);
+        } finally {
+            guard[0] = false;
+        }
+        var shape = net.minecraft.world.phys.shapes.Shapes.empty();
+        for (var b : boxes) {
+            if (b == null) continue;
+            shape = net.minecraft.world.phys.shapes.Shapes.or(shape, net.minecraft.world.phys.shapes.Shapes.create(b.minX - pos.getX(), b.minY - pos.getY(),
+                    b.minZ - pos.getZ(), b.maxX - pos.getX(), b.maxY - pos.getY(), b.maxZ - pos.getZ()));
+        }
+        return shape;
+    }
+
+    @Override
+    public net.minecraft.world.level.material.PushReaction getPistonPushReaction(BlockState state) {
+        if (!pushReaction) return super.getPistonPushReaction(state);
+        try {
+            var r = legacy.getPushReaction(state(state));
+            return r == null ? super.getPistonPushReaction(state) : r.mcc$modern();
+        } catch (RuntimeException | LinkageError e) {
+            return super.getPistonPushReaction(state);
+        }
+    }
+
+    @Override
+    protected float getDestroyProgress(BlockState state, Player player, net.minecraft.world.level.BlockGetter getter, BlockPos pos) {
+        boolean[] guard = IN_LEGACY_HARDNESS.get();
+        if (relativeHardness && getter instanceof Level level && !guard[0]) {
+            guard[0] = true;
+            try {
+                return legacy.getPlayerRelativeBlockHardness(state(state), player(player), world(level), pos(pos));
+            } catch (RuntimeException | LinkageError e) {
+                failure("getPlayerRelativeBlockHardness", e);
+            } finally {
+                guard[0] = false;
+            }
+        }
+        return super.getDestroyProgress(state, player, getter, pos);
     }
 
     // ------------------------------------------------------------------ redstone

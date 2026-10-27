@@ -57,6 +57,33 @@ public abstract class FluidRegistry {
         return java.util.Collections.unmodifiableMap(new LinkedHashMap<>(FLUIDS));
     }
 
+    /** The fluid whose block this is (vanilla water and lava, flowing or still, included); null for other blocks. */
+    public static synchronized Fluid lookupFluidForBlock(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
+        if (block == null) return null;
+        var name = block.getRegistryName();
+        if (name != null && "minecraft".equals(name.getNamespace())) {
+            String path = name.getPath();
+            if (path.equals("water") || path.equals("flowing_water")) return WATER;
+            if (path.equals("lava") || path.equals("flowing_lava")) return LAVA;
+        }
+        for (Fluid f : FLUIDS.values()) if (f.getBlock() == block) return f;
+        return null;
+    }
+
+    /** The registered name of the fluid ("modid:name" in Forge's default-fluid table; the plain name here). */
+    public static synchronized String getDefaultFluidName(Fluid fluid) {
+        return getFluidName(fluid);
+    }
+
+    /** The mod that registered the fluid of a stack (minecraft for water and lava). */
+    public static synchronized String getModId(FluidStack stack) {
+        if (stack == null || stack.getFluid() == null) return null;
+        Fluid f = stack.getFluid();
+        if (f == WATER || f == LAVA) return "minecraft";
+        var block = f.getBlock();
+        return block != null && block.getRegistryName() != null ? block.getRegistryName().getNamespace() : null;
+    }
+
     public static synchronized int getFluidID(Fluid fluid) {
         Integer id = IDS.get(fluid);
         return id == null ? -1 : id;

@@ -30,6 +30,38 @@ public final class SynthItems1122 {
                 args -> args.length == 1 && args[0] instanceof ItemStack s ? (Object) burnTime(s) : Synth.NONE);
         Synth.addStaticMethod("net.minecraft.tileentity.TileEntityFurnace.isItemFuel",
                 args -> args.length == 1 && args[0] instanceof ItemStack s ? (Object) (burnTime(s) > 0) : Synth.NONE);
+        // enchanted books: the StoredEnchantments list
+        Synth.addStaticMethod("net.minecraft.item.ItemEnchantedBook.getEnchantments", args -> {
+            if (args.length != 1 || !(args[0] instanceof ItemStack s)) return Synth.NONE;
+            var tag = s.getTagCompound();
+            return tag != null ? tag.getTagList("StoredEnchantments", 10) : new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList();
+        });
+        Synth.addStaticMethod("net.minecraft.item.ItemEnchantedBook.addEnchantment", args -> {
+            if (args.length != 2 || !(args[0] instanceof ItemStack s) || !(args[1] instanceof legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentData d)) {
+                return Synth.NONE;
+            }
+            var stored = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getEnchantments(s);
+            Integer old = stored.get(d.enchantment);
+            if (old == null || old < d.enchantmentLevel) stored.put(d.enchantment, d.enchantmentLevel);
+            legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.setEnchantments(stored, s);
+            return null;
+        });
+        Synth.addStaticMethod("net.minecraft.item.ItemEnchantedBook.getEnchantedItemStack", args -> args.length == 1
+                && args[0] instanceof legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentData d
+                ? legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.mcc$enchantedBook(d) : Synth.NONE);
+        // bone meal: the modern growth rules of the block there
+        Synth.StaticMethod bonemeal = args -> {
+            if (args.length < 3 || !(args[0] instanceof ItemStack s) || !(args[1] instanceof legacyconnector.v1_12_2.net.minecraft.world.World w)
+                    || !(args[2] instanceof legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos)) {
+                return Synth.NONE;
+            }
+            var modern = Stacks1122.toModernLive(s);
+            if (modern.isEmpty()) modern = new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.BONE_MEAL);
+            boolean grown = net.minecraft.world.item.BoneMealItem.applyBonemeal(modern, w.mcc$level(), pos.mcc$modern(), null);
+            if (grown && s.mcc$backing() == null) s.shrink(1);
+            return grown;
+        };
+        Synth.addStaticMethod("net.minecraft.item.ItemDye.applyBonemeal", bonemeal);
         // Blocks.FIRE.setFireInfo(block, encouragement, flammability): the modern fire's flammability table
         Synth.addInstanceMethod("net.minecraft.block.BlockFire.setFireInfo", (self, args) -> {
             if (args.length != 3 || !(args[0] instanceof Block b) || !(b.mcc$modern instanceof net.minecraft.world.level.block.Block modern)) return Synth.NONE;
