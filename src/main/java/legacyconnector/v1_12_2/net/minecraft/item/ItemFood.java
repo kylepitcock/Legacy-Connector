@@ -55,4 +55,24 @@ public class ItemFood extends Item {
     public float mcc$potionEffectProbability() {
         return potionEffectProbability;
     }
+
+    /** After eating (the modern food component gave hunger, saturation and the potion effect): mods add their own effects. */
+    protected void onFoodEaten(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+    }
+
+    public void mcc$onFoodEaten(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        onFoodEaten(stack, world, player);
+    }
+
+    @Override
+    public int getMaxItemUseDuration(ItemStack stack) {
+        return itemUseDuration;
+    }
+
+    @Override
+    public EnumAction getItemUseAction(ItemStack stack) {
+        return EnumAction.EAT;
+    }
 }
