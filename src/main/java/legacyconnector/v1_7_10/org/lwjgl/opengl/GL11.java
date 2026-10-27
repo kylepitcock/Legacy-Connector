@@ -300,6 +300,7 @@ public class GL11 extends GL11Guard {
     public static void glEnable(int cap) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.record(() -> glEnable(cap))) return;
+        if (cap == GL_DEPTH_TEST) org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.flushBatch();
         mcc$track(cap, true);
         switch (cap) {
             case GL_BLEND -> RenderSystem.enableBlend();
@@ -329,6 +330,7 @@ public class GL11 extends GL11Guard {
     public static void glDisable(int cap) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.record(() -> glDisable(cap))) return;
+        if (cap == GL_DEPTH_TEST) org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.flushBatch();
         mcc$track(cap, false);
         switch (cap) {
             case GL_BLEND -> RenderSystem.disableBlend();
@@ -352,6 +354,7 @@ public class GL11 extends GL11Guard {
     public static void glDepthMask(boolean flag) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.record(() -> glDepthMask(flag))) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.flushBatch();
         RenderSystem.depthMask(flag);
     }
 

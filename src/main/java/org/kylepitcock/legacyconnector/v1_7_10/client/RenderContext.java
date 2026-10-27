@@ -325,7 +325,26 @@ public final class RenderContext {
     public static VertexConsumer modelBuffer() {
         // model boxes count as drawn geometry too (an inventory block handler drawing a TESR model: Thaumcraft's crystals)
         quadCount++;
-        return buffers().getBuffer(armorLayering ? RenderType.armorCutoutNoCull(texture) : RenderType.entityCutoutNoCull(texture));
+        if (armorLayering) return buffers().getBuffer(RenderType.armorCutoutNoCull(texture));
+        // models drawn with blending on blend like raw geometry: an additive (GL_SRC_ALPHA, GL_ONE) glow layer over the same
+        // boxes (Thaumcraft's runic matrix runes) came out as opaque cutout faces fighting the stone they lie on
+        if (blend && additive) {
+            if (gui() != null) return buffers().getBuffer(LegacyRenderTypes.guiAdditive(texture));
+            return buffers().getBuffer(additiveAlpha ? LegacyRenderTypes.additiveAlpha(texture, depthTest) : RenderType.eyes(texture));
+        }
+        return buffers().getBuffer(blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
+    }
+
+    /**
+     * Draws the geometry batched so far, before legacy code changes depth state that render types leave as they find it
+     * (the depth mask of types that write depth, the depth test of types that skip it). Legacy drawing was immediate: what was
+     * drawn before {@code glDepthMask(false)} wrote depth. Batched, it was drawn at the next flush under the later mask (the
+     * runic matrix's cubes flushed under its halo's glDepthMask(false) wrote no depth, and the halo and essentia trails drew
+     * over them).
+     */
+    public static void flushBatch() {
+        if (!active() || gui() != null || CAPTURE.get() != null) return;
+        if (buffers() instanceof MultiBufferSource.BufferSource source) source.endLastBatch();
     }
 
     /**
