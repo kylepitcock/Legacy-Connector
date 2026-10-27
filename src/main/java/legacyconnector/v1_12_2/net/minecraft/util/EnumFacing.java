@@ -284,4 +284,32 @@ public enum EnumFacing implements IStringSerializable {
     public static EnumFacing mcc$of(net.minecraft.core.Direction direction) {
         return direction == null ? null : VALUES[direction.get3DDataValue()];
     }
+
+    // ---- 1.12.2 names of older mappings, and placement facing
+
+    public int getFrontOffsetX() {
+        return getXOffset();
+    }
+
+    public int getFrontOffsetY() {
+        return getYOffset();
+    }
+
+    public int getFrontOffsetZ() {
+        return getZOffset();
+    }
+
+    /** The facing a block placed by {@code placer} at {@code pos} takes (pistons, dispensers): up/down when close and above/below. */
+    public static EnumFacing getDirectionFromEntityLiving(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase placer) {
+        double px = legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(placer);
+        double py = legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posY(placer);
+        double pz = legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(placer);
+        if (Math.abs(px - (pos.getX() + 0.5F)) < 2.0D && Math.abs(pz - (pos.getZ() + 0.5F)) < 2.0D) {
+            double eye = py + placer.getEyeHeight();
+            if (eye - pos.getY() > 2.0D) return UP;
+            if (pos.getY() - eye > 0.0D) return DOWN;
+        }
+        return placer.getHorizontalFacing().getOpposite();
+    }
 }

@@ -32,6 +32,12 @@ public class BlockPos extends Vec3i {
         this(source.getX(), source.getY(), source.getZ());
     }
 
+    /** The block the entity stands in (its position floored). */
+    public BlockPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity source) {
+        this(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(source), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posY(source),
+                legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(source));
+    }
+
     public BlockPos add(double x, double y, double z) {
         return x == 0.0D && y == 0.0D && z == 0.0D ? this : new BlockPos(getX() + x, getY() + y, getZ() + z);
     }
@@ -213,6 +219,11 @@ public class BlockPos extends Vec3i {
             return setPos(vec.getX(), vec.getY(), vec.getZ());
         }
 
+        public MutableBlockPos setPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+            return setPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(entity), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posY(entity),
+                    legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(entity));
+        }
+
         public MutableBlockPos move(EnumFacing facing) {
             return move(facing, 1);
         }
@@ -228,6 +239,79 @@ public class BlockPos extends Vec3i {
         @Override
         public BlockPos toImmutable() {
             return new BlockPos(this);
+        }
+    }
+
+    /** A mutable position from a small shared pool (released ones are reused), as 1.12.2's. */
+    public static final class PooledMutableBlockPos extends MutableBlockPos {
+        private boolean released;
+        private static final List<PooledMutableBlockPos> POOL = new ArrayList<>();
+
+        private PooledMutableBlockPos(int xIn, int yIn, int zIn) {
+            super(xIn, yIn, zIn);
+        }
+
+        public static PooledMutableBlockPos retain() {
+            return retain(0, 0, 0);
+        }
+
+        public static PooledMutableBlockPos retain(double xIn, double yIn, double zIn) {
+            return retain(MathHelper.floor(xIn), MathHelper.floor(yIn), MathHelper.floor(zIn));
+        }
+
+        public static PooledMutableBlockPos retain(Vec3i vec) {
+            return retain(vec.getX(), vec.getY(), vec.getZ());
+        }
+
+        public static PooledMutableBlockPos retain(int xIn, int yIn, int zIn) {
+            synchronized (POOL) {
+                if (!POOL.isEmpty()) {
+                    PooledMutableBlockPos pos = POOL.remove(POOL.size() - 1);
+                    if (pos != null && pos.released) {
+                        pos.released = false;
+                        pos.setPos(xIn, yIn, zIn);
+                        return pos;
+                    }
+                }
+            }
+            return new PooledMutableBlockPos(xIn, yIn, zIn);
+        }
+
+        public void release() {
+            synchronized (POOL) {
+                if (POOL.size() < 100) POOL.add(this);
+                this.released = true;
+            }
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(int xIn, int yIn, int zIn) {
+            return (PooledMutableBlockPos) super.setPos(xIn, yIn, zIn);
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+            return (PooledMutableBlockPos) super.setPos(entity);
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(double xIn, double yIn, double zIn) {
+            return (PooledMutableBlockPos) super.setPos(xIn, yIn, zIn);
+        }
+
+        @Override
+        public PooledMutableBlockPos setPos(Vec3i vec) {
+            return (PooledMutableBlockPos) super.setPos(vec);
+        }
+
+        @Override
+        public PooledMutableBlockPos move(EnumFacing facing) {
+            return (PooledMutableBlockPos) super.move(facing);
+        }
+
+        @Override
+        public PooledMutableBlockPos move(EnumFacing facing, int n) {
+            return (PooledMutableBlockPos) super.move(facing, n);
         }
     }
 }

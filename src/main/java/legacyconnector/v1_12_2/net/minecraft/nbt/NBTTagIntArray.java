@@ -10,6 +10,14 @@ public class NBTTagIntArray extends NBTBase {
         this.data = data;
     }
 
+    public NBTTagIntArray(java.util.List<Integer> values) {
+        this.data = new int[values.size()];
+        for (int i = 0; i < data.length; i++) {
+            Integer v = values.get(i);
+            data[i] = v == null ? 0 : v;
+        }
+    }
+
     @Override
     public byte getId() {
         return 11;

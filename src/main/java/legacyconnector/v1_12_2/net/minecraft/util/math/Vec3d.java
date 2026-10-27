@@ -114,4 +114,52 @@ public class Vec3d {
     public static Vec3d mcc$of(net.minecraft.world.phys.Vec3 v) {
         return new Vec3d(v.x, v.y, v.z);
     }
+
+    // ---- 1.12.2 Vec3d, continued
+
+    public Vec3d add(double xIn, double yIn, double zIn) {
+        return addVector(xIn, yIn, zIn);
+    }
+
+    public double lengthSquared() {
+        return x * x + y * y + z * z;
+    }
+
+    public double lengthVector() {
+        return length();
+    }
+
+    /** The point on the segment to {@code vec} where x is {@code xIn}, or null when the segment does not reach it. */
+    public Vec3d getIntermediateWithXValue(Vec3d vec, double xIn) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dx * dx < 1.0000000116860974E-7D) return null;
+        double t = (xIn - x) / dx;
+        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
+    }
+
+    public Vec3d getIntermediateWithYValue(Vec3d vec, double yIn) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dy * dy < 1.0000000116860974E-7D) return null;
+        double t = (yIn - y) / dy;
+        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
+    }
+
+    public Vec3d getIntermediateWithZValue(Vec3d vec, double zIn) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dz * dz < 1.0000000116860974E-7D) return null;
+        double t = (zIn - z) / dz;
+        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
+    }
+
+    public static Vec3d fromPitchYaw(Vec2f rotation) {
+        return fromPitchYaw(rotation.x, rotation.y);
+    }
+
+    public static Vec3d fromPitchYaw(float pitch, float yaw) {
+        float f = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
+        float f1 = MathHelper.sin(-yaw * 0.017453292F - (float) Math.PI);
+        float f2 = -MathHelper.cos(-pitch * 0.017453292F);
+        float f3 = MathHelper.sin(-pitch * 0.017453292F);
+        return new Vec3d(f1 * f2, f3, f * f2);
+    }
 }
