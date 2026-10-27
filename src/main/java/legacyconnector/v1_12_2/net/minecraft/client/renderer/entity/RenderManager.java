@@ -141,7 +141,35 @@ public class RenderManager {
         if (render != null) return render;
         // a view of a modern entity: the modern renderer draws it; a mod entity without a renderer was a white box in 1.12
         boolean hosted = entityIn.mcc$entity instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.Host1122;
-        return (Render<T>) (hosted ? mcc$placeholder : mcc$modern);
+        if (!hosted) return (Render<T>) mcc$modern;
+        // a mod entity extending a vanilla mob without a renderer of its own: 1.12 drew it with the vanilla renderer
+        Render<? extends Entity> vanilla = mcc$vanilla(entityIn.getClass());
+        return (Render<T>) (vanilla != null ? vanilla : mcc$placeholder);
+    }
+
+    private Map<Class<?>, Render<? extends Entity>> mcc$vanillaRenderers;
+
+    /** The vanilla renderer of the closest vanilla superclass that has one in the shim. */
+    private Render<? extends Entity> mcc$vanilla(Class<?> cls) {
+        if (mcc$vanillaRenderers == null) {
+            Map<Class<?>, Render<? extends Entity>> m = new HashMap<>();
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySlime.class, new RenderSlime(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.AbstractSkeleton.class, new RenderSkeleton(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityZombie.class, new RenderZombie(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityCreeper.class, new RenderCreeper(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityVillager.class, new RenderVillager(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityPig.class, new RenderPig(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityCow.class, new RenderCow(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityChicken.class, new RenderChicken(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityTNTPrimed.class, new RenderTNTPrimed(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class, new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
+            mcc$vanillaRenderers = m;
+        }
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            Render<? extends Entity> r = mcc$vanillaRenderers.get(c);
+            if (r != null) return r;
+        }
+        return null;
     }
 
     public void cacheActiveRenderInfo(World worldIn, FontRenderer textRendererIn, Entity livingPlayerIn, Entity pointedEntityIn, GameSettings optionsIn, float partialTicks) {
