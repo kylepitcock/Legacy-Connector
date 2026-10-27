@@ -111,8 +111,6 @@ public final class RuntimeApis1122 {
 
     // ------------------------------------------------------------------ registries
 
-    /** CriteriaTriggers.REGISTRY: trigger id -> trigger (only the mods' triggers; vanilla's are modern advancements). */
-    private static final Map<Object, Object> TRIGGERS = new LinkedHashMap<>();
     /** Forge's ItemPredicates: name -> factory of an item predicate from its JSON. */
     private static final Map<Object, Object> ITEM_PREDICATES = new LinkedHashMap<>();
     /** StatList.ALL_STATS / BASIC_STATS of the stats mods register. */
@@ -216,29 +214,7 @@ public final class RuntimeApis1122 {
     // ------------------------------------------------------------------ registration of the resolvers
 
     public static void register() {
-        String adv = "net.minecraft.advancements.CriteriaTriggers.";
-        Synth.addStaticMethod(adv + "register", args -> {
-            Object trigger = args.length > 0 ? args[0] : null;
-            if (trigger == null) return null;
-            Object id = invoke(trigger, "getId");
-            synchronized (TRIGGERS) {
-                Object key = id != null ? id : trigger;
-                if (TRIGGERS.containsKey(key) && TRIGGERS.get(key) != trigger) LOG.warn("Duplicate criterion id {}; keeping the first", id);
-                else TRIGGERS.put(key, trigger);
-            }
-            return trigger;
-        });
-        Synth.addStaticMethod(adv + "get", args -> {
-            synchronized (TRIGGERS) {
-                return args.length > 0 && args[0] != null ? TRIGGERS.get(args[0]) : null;
-            }
-        });
-        Synth.addStaticMethod(adv + "getAll", args -> {
-            synchronized (TRIGGERS) {
-                return List.copyOf(TRIGGERS.values());
-            }
-        });
-
+        // CriteriaTriggers is a real shim class (register/get/getAll live there)
         String preds = "net.minecraftforge.advancements.critereon.ItemPredicates.";
         Synth.addStaticMethod(preds + "register", args -> {
             if (args.length < 2 || args[0] == null) return null;
