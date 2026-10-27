@@ -28,6 +28,45 @@ public abstract class GuiContainer extends GuiScreen {
     protected final Set<Slot> dragSplittingSlots = new HashSet<>();
     protected ItemStack draggedStack = ItemStack.EMPTY;
     protected boolean doubleClick;
+    /** The count left on the cursor after a drag split (shown on the carried stack). */
+    protected int dragSplittingRemnant;
+    protected boolean isRightMouseClick;
+    /** Touchscreen mode: a stack flying back to its slot, where it started and when. The modern screen animates its own. */
+    protected ItemStack returningStack = ItemStack.EMPTY;
+    protected Slot returningStackDestSlot;
+    protected long returningStackTime;
+    protected int touchUpX;
+    protected int touchUpY;
+
+    /** Draws a stack with its count (or {@code altText}) at a GUI position, raised above the slots as the carried stack is. */
+    protected void drawItemStack(ItemStack stack, int x, int y, String altText) {
+        var gui = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.gui();
+        if (gui == null || stack == null || stack.isEmpty()) return;
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        gui.pose().pushPose();
+        gui.pose().translate(0.0F, 0.0F, 232.0F);
+        gui.renderItem(modern, x, y);
+        gui.renderItemDecorations(net.minecraft.client.Minecraft.getInstance().font, modern, x, y - (draggedStack.isEmpty() ? 0 : 8), altText);
+        gui.pose().popPose();
+    }
+
+    /** Draws a slot's stack (or its empty-slot sprite) at the slot's position relative to the GUI. */
+    protected void drawSlot(Slot slotIn) {
+        var gui = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.gui();
+        if (gui == null || slotIn == null) return;
+        ItemStack stack = slotIn.getStack();
+        if (stack.isEmpty()) {
+            String sprite = slotIn.getSlotTexture();
+            if (sprite != null) {
+                var atlas = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS);
+                gui.blit(slotIn.xPos, slotIn.yPos, 0, 16, 16, atlas.apply(net.minecraft.resources.ResourceLocation.parse(sprite)));
+            }
+            return;
+        }
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        gui.renderItem(modern, slotIn.xPos, slotIn.yPos);
+        gui.renderItemDecorations(net.minecraft.client.Minecraft.getInstance().font, modern, slotIn.xPos, slotIn.yPos);
+    }
 
     /** What the hosting modern screen does for the legacy screen. */
     public interface Host {
