@@ -4,141 +4,621 @@ import legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.potion.Potion;
 import legacyconnector.v1_12_2.net.minecraft.potion.PotionEffect;
+import legacyconnector.v1_12_2.net.minecraft.util.DamageSource;
 import legacyconnector.v1_12_2.net.minecraft.util.EnumHand;
 import legacyconnector.v1_12_2.net.minecraft.world.World;
-import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
+import net.minecraft.world.entity.LivingEntity;
+import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
+import org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122;
+import org.kylepitcock.legacyconnector.v1_12_2.entity.LivingHost1122;
 
 /**
- * 1.12.2 living entity over a modern {@link net.minecraft.world.entity.LivingEntity}. Equipment comes back as live stacks:
- * shrinking or damaging a held stack writes it back to the hand it came from, as the shared stack did in 1.12.2.
+ * 1.12.2 living entity: health, held items and equipment, potion effects, attributes, combat and the living hooks a host runs
+ * (onLivingUpdate, damageEntity, onDeath, travel, ...). Held and equipped stacks are live ({@link LiveStacks1122}): a mod that shrinks
+ * the stack in a hand changes the hand.
  */
 public abstract class EntityLivingBase extends Entity {
+    @Deprecated
+    public float rotationYawHead;
+    private float mcc$local_rotationYawHead;
+    @Deprecated
+    public float prevRotationYawHead;
+    private float mcc$local_prevRotationYawHead;
+    @Deprecated
+    public float renderYawOffset;
+    private float mcc$local_renderYawOffset;
+    @Deprecated
+    public float prevRenderYawOffset;
+    private float mcc$local_prevRenderYawOffset;
+    @Deprecated
+    public int hurtTime;
+    private int mcc$local_hurtTime;
+    @Deprecated
+    public int maxHurtTime;
+    @Deprecated
+    public int deathTime;
+    private int mcc$local_deathTime;
+    @Deprecated
+    public float moveForward;
+    private float mcc$local_moveForward;
+    @Deprecated
+    public float moveStrafing;
+    private float mcc$local_moveStrafing;
+    @Deprecated
+    public float moveVertical;
+    private float mcc$local_moveVertical;
+    @Deprecated
+    public boolean isSwingInProgress;
+    private boolean mcc$local_isSwingInProgress;
+    @Deprecated
+    public float swingProgress;
+    private float mcc$local_swingProgress;
+    @Deprecated
+    public float prevSwingProgress;
+    private float mcc$local_prevSwingProgress;
+    @Deprecated
+    public int swingProgressInt;
+    private int mcc$local_swingProgressInt;
+    @Deprecated
+    public EnumHand swingingHand;
+    @Deprecated
+    public float limbSwing;
+    private float mcc$local_limbSwing;
+    @Deprecated
+    public float limbSwingAmount;
+    private float mcc$local_limbSwingAmount;
+    @Deprecated
+    public float prevLimbSwingAmount;
+    private float mcc$local_prevLimbSwingAmount;
+    @Deprecated
+    public boolean isJumping;
+    private boolean mcc$local_isJumping;
+    @Deprecated
+    public float jumpMovementFactor;
+    private float mcc$local_jumpMovementFactor = 0.02F;
+    @Deprecated
+    public int recentlyHit;
+    @Deprecated
+    public int maxHurtResistantTime;
+    @Deprecated
+    public float attackedAtYaw;
+    @Deprecated
+    public int arrowHitTimer;
+    @Deprecated
+    public float cameraPitch;
+    @Deprecated
+    public float prevCameraPitch;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer attackingPlayer;
+
+    /** Ticks since the entity last took damage or acted (EntityLiving's despawn timer). */
+    protected int idleTime;
+    protected int scoreValue;
+    protected float lastDamage;
+    protected ItemStack activeItemStack = ItemStack.EMPTY;
+    protected int activeItemStackUseCount;
+
+    private legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AbstractAttributeMap mcc$attributeMap;
+    private DamageSource mcc$lastDamageSource;
+
     public EntityLivingBase(World world) {
         super(world);
+        try {
+            applyEntityAttributes();
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("applyEntityAttributes of {} failed: {}", getClass().getName(), e.toString());
+        }
+        // the base value, not the overridable setHealth: mods mirror health into data keys they only add later in their constructor
+        if (mcc$entity instanceof LivingEntity l && mcc$hosted()) l.setHealth(l.getMaxHealth());
+        this.preventEntitySpawning = true;
     }
 
-    protected net.minecraft.world.entity.LivingEntity mcc$living() {
-        return mcc$entity instanceof net.minecraft.world.entity.LivingEntity l ? l : null;
+    protected EntityLivingBase(LivingEntity modern) {
+        super(modern);
     }
 
-    private static EntityLivingBase mcc$living(Entity view) {
-        return view instanceof EntityLivingBase l ? l : null;
+    public final LivingEntity mcc$living() {
+        return mcc$entity instanceof LivingEntity l ? l : null;
     }
 
-    static net.minecraft.world.entity.EquipmentSlot mcc$slot(EntityEquipmentSlot slot) {
-        return switch (slot) {
-            case MAINHAND -> net.minecraft.world.entity.EquipmentSlot.MAINHAND;
-            case OFFHAND -> net.minecraft.world.entity.EquipmentSlot.OFFHAND;
-            case FEET -> net.minecraft.world.entity.EquipmentSlot.FEET;
-            case LEGS -> net.minecraft.world.entity.EquipmentSlot.LEGS;
-            case CHEST -> net.minecraft.world.entity.EquipmentSlot.CHEST;
-            case HEAD -> net.minecraft.world.entity.EquipmentSlot.HEAD;
-        };
+    private LivingHost1122 mcc$livingHost() {
+        return mcc$host() instanceof LivingHost1122 h ? h : null;
     }
 
-    static net.minecraft.world.InteractionHand mcc$hand(EnumHand hand) {
-        return hand == EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND;
+    // ------------------------------------------------------------------ phantom fields
+
+    public static float mcc$get$rotationYawHead(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.yHeadRot : e.mcc$local_rotationYawHead;
     }
 
-    // ------------------------------------------------------------------ equipment
-
-    public ItemStack getItemStackFromSlot(EntityEquipmentSlot slot) {
-        var l = mcc$living();
-        if (l == null || slot == null) return ItemStack.EMPTY;
-        var modernSlot = mcc$slot(slot);
-        return Stacks1122.fromModern(l.getItemBySlot(modernSlot)).mcc$bind(s -> l.setItemSlot(modernSlot, Stacks1122.toModern(s)));
+    public static void mcc$set$rotationYawHead(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.yHeadRot = v;
+        else e.mcc$local_rotationYawHead = v;
     }
 
-    public void setItemStackToSlot(EntityEquipmentSlot slot, ItemStack stack) {
-        var l = mcc$living();
-        if (l != null && slot != null) l.setItemSlot(mcc$slot(slot), Stacks1122.toModern(stack));
+    public static float mcc$get$prevRotationYawHead(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.yHeadRotO : e.mcc$local_prevRotationYawHead;
     }
 
-    public ItemStack getHeldItem(EnumHand hand) {
-        return getItemStackFromSlot(hand == EnumHand.OFF_HAND ? EntityEquipmentSlot.OFFHAND : EntityEquipmentSlot.MAINHAND);
+    public static void mcc$set$prevRotationYawHead(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.yHeadRotO = v;
+        else e.mcc$local_prevRotationYawHead = v;
     }
 
-    public ItemStack getHeldItemMainhand() {
-        return getItemStackFromSlot(EntityEquipmentSlot.MAINHAND);
+    public static float mcc$get$renderYawOffset(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.yBodyRot : e.mcc$local_renderYawOffset;
     }
 
-    public ItemStack getHeldItemOffhand() {
-        return getItemStackFromSlot(EntityEquipmentSlot.OFFHAND);
+    public static void mcc$set$renderYawOffset(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.yBodyRot = v;
+        else e.mcc$local_renderYawOffset = v;
     }
 
-    public void setHeldItem(EnumHand hand, ItemStack stack) {
-        setItemStackToSlot(hand == EnumHand.OFF_HAND ? EntityEquipmentSlot.OFFHAND : EntityEquipmentSlot.MAINHAND, stack);
+    public static float mcc$get$prevRenderYawOffset(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.yBodyRotO : e.mcc$local_prevRenderYawOffset;
     }
 
-    public Iterable<ItemStack> getHeldEquipment() {
-        return java.util.List.of(getHeldItemMainhand(), getHeldItemOffhand());
+    public static void mcc$set$prevRenderYawOffset(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.yBodyRotO = v;
+        else e.mcc$local_prevRenderYawOffset = v;
     }
 
-    public Iterable<ItemStack> getArmorInventoryList() {
-        return java.util.List.of(getItemStackFromSlot(EntityEquipmentSlot.FEET), getItemStackFromSlot(EntityEquipmentSlot.LEGS),
-                getItemStackFromSlot(EntityEquipmentSlot.CHEST), getItemStackFromSlot(EntityEquipmentSlot.HEAD));
+    public static int mcc$get$hurtTime(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.hurtTime : e.mcc$local_hurtTime;
     }
 
-    public EnumHand getActiveHand() {
-        var l = mcc$living();
-        return l != null && l.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+    public static void mcc$set$hurtTime(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) l.hurtTime = v;
+        else e.mcc$local_hurtTime = v;
     }
 
-    public void setActiveHand(EnumHand hand) {
-        var l = mcc$living();
-        if (l != null) l.startUsingItem(mcc$hand(hand));
+    public static int mcc$get$maxHurtTime(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.hurtDuration : 10;
     }
 
-    public boolean isHandActive() {
-        var l = mcc$living();
-        return l != null && l.isUsingItem();
+    public static void mcc$set$maxHurtTime(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) l.hurtDuration = v;
     }
 
-    public ItemStack getActiveItemStack() {
-        var l = mcc$living();
-        return l == null ? ItemStack.EMPTY : Stacks1122.fromModern(l.getUseItem());
+    public static int mcc$get$deathTime(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.deathTime : e.mcc$local_deathTime;
     }
 
-    public int getItemInUseCount() {
-        var l = mcc$living();
-        return l == null ? 0 : l.getUseItemRemainingTicks();
+    public static void mcc$set$deathTime(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) l.deathTime = v;
+        else e.mcc$local_deathTime = v;
     }
 
-    public void stopActiveHand() {
-        var l = mcc$living();
-        if (l != null) l.releaseUsingItem();
+    public static float mcc$get$moveForward(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.zza : e.mcc$local_moveForward;
     }
 
-    public void resetActiveHand() {
-        var l = mcc$living();
-        if (l != null) l.stopUsingItem();
+    public static void mcc$set$moveForward(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.zza = v;
+        else e.mcc$local_moveForward = v;
     }
 
-    public void swingArm(EnumHand hand) {
-        var l = mcc$living();
-        if (l != null) l.swing(mcc$hand(hand), true);
+    public static float mcc$get$moveStrafing(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.xxa : e.mcc$local_moveStrafing;
     }
 
-    public int getTotalArmorValue() {
-        var l = mcc$living();
-        return l == null ? 0 : l.getArmorValue();
+    public static void mcc$set$moveStrafing(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.xxa = v;
+        else e.mcc$local_moveStrafing = v;
+    }
+
+    public static float mcc$get$moveVertical(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.yya : e.mcc$local_moveVertical;
+    }
+
+    public static void mcc$set$moveVertical(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.yya = v;
+        else e.mcc$local_moveVertical = v;
+    }
+
+    public static boolean mcc$get$isSwingInProgress(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.swinging : e.mcc$local_isSwingInProgress;
+    }
+
+    public static void mcc$set$isSwingInProgress(EntityLivingBase e, boolean v) {
+        var l = e.mcc$living();
+        if (l != null) l.swinging = v;
+        else e.mcc$local_isSwingInProgress = v;
+    }
+
+    public static float mcc$get$swingProgress(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.attackAnim : e.mcc$local_swingProgress;
+    }
+
+    public static void mcc$set$swingProgress(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.attackAnim = v;
+        else e.mcc$local_swingProgress = v;
+    }
+
+    public static float mcc$get$prevSwingProgress(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.oAttackAnim : e.mcc$local_prevSwingProgress;
+    }
+
+    public static void mcc$set$prevSwingProgress(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.oAttackAnim = v;
+        else e.mcc$local_prevSwingProgress = v;
+    }
+
+    public static int mcc$get$swingProgressInt(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.swingTime : e.mcc$local_swingProgressInt;
+    }
+
+    public static void mcc$set$swingProgressInt(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) l.swingTime = v;
+        else e.mcc$local_swingProgressInt = v;
+    }
+
+    public static EnumHand mcc$get$swingingHand(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null && l.swingingArm == net.minecraft.world.InteractionHand.OFF_HAND ? EnumHand.OFF_HAND : EnumHand.MAIN_HAND;
+    }
+
+    public static void mcc$set$swingingHand(EntityLivingBase e, EnumHand v) {
+        var l = e.mcc$living();
+        if (l != null) l.swingingArm = mcc$hand(v);
+    }
+
+    public static float mcc$get$limbSwing(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.walkAnimation.position() : e.mcc$local_limbSwing;
+    }
+
+    public static void mcc$set$limbSwing(EntityLivingBase e, float v) {
+        e.mcc$local_limbSwing = v;
+    }
+
+    public static float mcc$get$limbSwingAmount(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.walkAnimation.speed() : e.mcc$local_limbSwingAmount;
+    }
+
+    public static void mcc$set$limbSwingAmount(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) l.walkAnimation.setSpeed(v);
+        else e.mcc$local_limbSwingAmount = v;
+    }
+
+    public static float mcc$get$prevLimbSwingAmount(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? l.walkAnimation.speed(0.0F) : e.mcc$local_prevLimbSwingAmount;
+    }
+
+    public static void mcc$set$prevLimbSwingAmount(EntityLivingBase e, float v) {
+        e.mcc$local_prevLimbSwingAmount = v;
+    }
+
+    public static boolean mcc$get$isJumping(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.jumping(l) : e.mcc$local_isJumping;
+    }
+
+    public static void mcc$set$isJumping(EntityLivingBase e, boolean v) {
+        var l = e.mcc$living();
+        if (l != null) l.setJumping(v);
+        else e.mcc$local_isJumping = v;
+    }
+
+    public static float mcc$get$jumpMovementFactor(EntityLivingBase e) {
+        return e.mcc$local_jumpMovementFactor;
+    }
+
+    public static void mcc$set$jumpMovementFactor(EntityLivingBase e, float v) {
+        e.mcc$local_jumpMovementFactor = v;
+    }
+
+    public static int mcc$get$recentlyHit(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.lastHurtByPlayerTime(l) : 0;
+    }
+
+    public static void mcc$set$recentlyHit(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setLastHurtByPlayerTime(l, v);
+    }
+
+    public static int mcc$get$maxHurtResistantTime(EntityLivingBase e) {
+        return 20;
+    }
+
+    public static void mcc$set$maxHurtResistantTime(EntityLivingBase e, int v) {
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer mcc$get$attackingPlayer(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null && EntityBridge1122.wrap(l.getLastHurtByMob()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer p
+                && org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.lastHurtByPlayerTime(l) > 0 ? p : null;
+    }
+
+    public static void mcc$set$attackingPlayer(EntityLivingBase e, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer v) {
+        var l = e.mcc$living();
+        if (l != null && v != null && v.mcc$entity instanceof net.minecraft.world.entity.player.Player p) {
+            l.setLastHurtByPlayer(p);
+        }
+    }
+
+    // ------------------------------------------------------------------ hooks a host runs (the base hands them back to vanilla)
+
+    @Override
+    public void onUpdate() {
+        super.onUpdate();
+    }
+
+    /** One tick of the living update: movement input, AI (EntityLiving), travel, pushing. */
+    public void onLivingUpdate() {
+        var h = mcc$livingHost();
+        if (h != null) h.mcc$superAiStep();
+    }
+
+    /** EntityLiving runs the AI here; the base does nothing (players). */
+    protected void updateEntityActionState() {
+    }
+
+    public boolean attackEntityFrom(DamageSource source, float amount) {
+        if (source != null) mcc$lastDamageSource = source;
+        return super.attackEntityFrom(source, amount);
+    }
+
+    /**
+     * Takes damage that got past invulnerability: armour, resistance and absorption reduce it, the rest comes off health (the modern
+     * actuallyHurt, which hosts route here so mods' overrides apply). Without a host only absorption is applied.
+     */
+    protected void damageEntity(DamageSource source, float amount) {
+        LivingEntity l = mcc$living();
+        if (l == null || source == null) return;
+        var modern = source.mcc$modern(l.level());
+        var h = mcc$livingHost();
+        if (h != null) {
+            h.mcc$superActuallyHurt(modern, amount);
+            return;
+        }
+        if (isEntityInvulnerable(source)) return;
+        float absorbed = Math.min(amount, l.getAbsorptionAmount());
+        l.setAbsorptionAmount(l.getAbsorptionAmount() - absorbed);
+        float rest = amount - absorbed;
+        if (rest > 0.0F) {
+            l.getCombatTracker().recordDamage(modern, rest);
+            l.setHealth(l.getHealth() - rest);
+        }
+    }
+
+    public final void mcc$damageEntity(DamageSource source, float amount) {
+        damageEntity(source, amount);
+    }
+
+    public void onDeath(DamageSource cause) {
+        var h = mcc$livingHost();
+        if (h != null && cause != null) h.mcc$superDie(cause.mcc$modern(mcc$entity.level()));
+    }
+
+    /** The loot of a death: the loot table (when the mod gives one) or dropFewItems, then the equipment. */
+    protected void dropLoot(boolean wasRecentlyHit, int lootingModifier, DamageSource source) {
+        dropFewItems(wasRecentlyHit, lootingModifier);
+    }
+
+    protected void dropFewItems(boolean wasRecentlyHit, int lootingModifier) {
+    }
+
+    protected void dropEquipment(boolean wasRecentlyHit, int lootingModifier) {
+        var h = mcc$livingHost();
+        if (h != null) h.mcc$superDropEquipment();
+    }
+
+    public final void mcc$dropLoot(boolean recentlyHit, int looting, DamageSource source) {
+        dropLoot(recentlyHit, looting, source);
+        dropEquipment(recentlyHit, looting);
+    }
+
+    protected boolean canDropLoot() {
+        return !isChild();
+    }
+
+    protected int getExperiencePoints(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return 0;
+    }
+
+    public final int mcc$experience() {
+        return getExperiencePoints(null);
+    }
+
+    /** One tick of lying dead (the modern tickDeath). */
+    protected void onDeathUpdate() {
+        var h = mcc$livingHost();
+        if (h != null) h.mcc$superTickDeath();
+        else if (mcc$living() != null) org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.tickDeath(mcc$living());
+    }
+
+    public final void mcc$onDeathUpdate() {
+        onDeathUpdate();
+    }
+
+    /** Damage after armour (the modern getDamageAfterArmorAbsorb). */
+    protected float applyArmorCalculations(DamageSource source, float amount) {
+        LivingEntity l = mcc$living();
+        if (l == null || source == null) return amount;
+        var modern = source.mcc$modern(l.level());
+        var h = mcc$livingHost();
+        if (h != null) return h.mcc$superArmorAbsorb(modern, amount);
+        return org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.damageAfterArmorAbsorb(l, modern, amount);
+    }
+
+    public final float mcc$applyArmorCalculations(DamageSource source, float amount) {
+        return applyArmorCalculations(source, amount);
+    }
+
+    /** Damage after Resistance and protection enchantments (the modern getDamageAfterMagicAbsorb). */
+    protected float applyPotionDamageCalculations(DamageSource source, float amount) {
+        LivingEntity l = mcc$living();
+        if (l == null || source == null) return amount;
+        var modern = source.mcc$modern(l.level());
+        var h = mcc$livingHost();
+        if (h != null) return h.mcc$superMagicAbsorb(modern, amount);
+        return org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.damageAfterMagicAbsorb(l, modern, amount);
+    }
+
+    public final float mcc$applyPotionDamageCalculations(DamageSource source, float amount) {
+        return applyPotionDamageCalculations(source, amount);
+    }
+
+    protected int decreaseAirSupply(int air) {
+        LivingEntity l = mcc$living();
+        if (l == null) return air - 1;
+        var h = mcc$livingHost();
+        if (h != null) return h.mcc$superDecreaseAirSupply(air);
+        return org.kylepitcock.legacyconnector.v1_7_10.entity.ModernAccess.decreaseAirSupply(l, air);
+    }
+
+    public final int mcc$decreaseAirSupply(int air) {
+        return decreaseAirSupply(air);
+    }
+
+    /** One tick of movement from the given input (the modern travel). */
+    public void travel(float strafe, float vertical, float forward) {
+        var h = mcc$livingHost();
+        if (h != null) h.mcc$superTravel(strafe, vertical, forward);
+        else if (mcc$entity instanceof LivingEntity l) l.travel(new net.minecraft.world.phys.Vec3(strafe, vertical, forward));
+    }
+
+    protected void jump() {
+        var h = mcc$livingHost();
+        if (h != null) h.mcc$superJump();
+        else if (mcc$entity instanceof LivingEntity l) l.jumpFromGround();
+    }
+
+    public final void mcc$jump() {
+        jump();
+    }
+
+    protected float getJumpUpwardsMotion() {
+        return 0.42F;
+    }
+
+    protected void handleJumpWater() {
+        mcc$set$motionY(this, mcc$get$motionY(this) + 0.03999999910593033D);
+    }
+
+    protected void handleJumpLava() {
+        mcc$set$motionY(this, mcc$get$motionY(this) + 0.03999999910593033D);
+    }
+
+    protected float getWaterSlowDown() {
+        return 0.8F;
+    }
+
+    public boolean attackEntityAsMob(Entity target) {
+        LivingEntity l = mcc$living();
+        if (l == null || target == null || target.mcc$entity == null) return false;
+        var h = mcc$livingHost();
+        if (h != null) return h.mcc$superDoHurtTarget(target.mcc$entity);
+        return l.doHurtTarget(target.mcc$entity);
+    }
+
+    /** Pushes away an entity this one touches. Hosts route the modern push here when a mod changes it. */
+    protected void collideWithEntity(Entity other) {
+        if (other == null) return;
+        var h = mcc$livingHost();
+        if (h != null && other.mcc$entity != null) {
+            h.mcc$superDoPush(other.mcc$entity);
+            return;
+        }
+        other.applyEntityCollision(this);
+    }
+
+    public final void mcc$collideWithEntity(Entity other) {
+        collideWithEntity(other);
+    }
+
+    protected void collideWithNearbyEntities() {
+    }
+
+    @Override
+    protected void outOfWorld() {
+        var host = mcc$host();
+        if (host != null) host.mcc$superOutOfWorld();
+        else if (mcc$living() != null) mcc$living().hurt(mcc$living().damageSources().fellOutOfWorld(), 4.0F);
+    }
+
+    // ------------------------------------------------------------------ attributes
+
+    protected void applyEntityAttributes() {
+        var map = getAttributeMap();
+        map.registerAttribute(SharedMonsterAttributes.MAX_HEALTH);
+        map.registerAttribute(SharedMonsterAttributes.KNOCKBACK_RESISTANCE);
+        map.registerAttribute(SharedMonsterAttributes.MOVEMENT_SPEED);
+        map.registerAttribute(SharedMonsterAttributes.ARMOR);
+        map.registerAttribute(SharedMonsterAttributes.ARMOR_TOUGHNESS);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AbstractAttributeMap getAttributeMap() {
+        if (mcc$attributeMap == null) {
+            var map = new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeMap();
+            map.mcc$bind(this::mcc$living);
+            mcc$attributeMap = map;
+        }
+        return mcc$attributeMap;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttributeInstance getEntityAttribute(
+            legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttribute attribute) {
+        return getAttributeMap().getAttributeInstance(attribute);
+    }
+
+    public EnumCreatureAttribute getCreatureAttribute() {
+        LivingEntity l = mcc$living();
+        if (l != null && !mcc$hosted()) {
+            if (l.getType().is(net.minecraft.tags.EntityTypeTags.UNDEAD)) return EnumCreatureAttribute.UNDEAD;
+            if (l.getType().is(net.minecraft.tags.EntityTypeTags.ARTHROPOD)) return EnumCreatureAttribute.ARTHROPOD;
+            if (l.getType().is(net.minecraft.tags.EntityTypeTags.ILLAGER)) return EnumCreatureAttribute.ILLAGER;
+        }
+        return EnumCreatureAttribute.UNDEFINED;
     }
 
     // ------------------------------------------------------------------ health
 
     public float getHealth() {
         var l = mcc$living();
-        return l == null ? 0 : l.getHealth();
+        return l != null ? l.getHealth() : 0;
+    }
+
+    public final float getMaxHealth() {
+        var l = mcc$living();
+        return l != null ? l.getMaxHealth() : 20.0F;
     }
 
     public void setHealth(float health) {
         var l = mcc$living();
         if (l != null) l.setHealth(health);
-    }
-
-    public float getMaxHealth() {
-        var l = mcc$living();
-        return l == null ? 0 : l.getMaxHealth();
     }
 
     public void heal(float amount) {
@@ -148,7 +628,7 @@ public abstract class EntityLivingBase extends Entity {
 
     public float getAbsorptionAmount() {
         var l = mcc$living();
-        return l == null ? 0 : l.getAbsorptionAmount();
+        return l != null ? l.getAbsorptionAmount() : 0;
     }
 
     public void setAbsorptionAmount(float amount) {
@@ -156,15 +636,20 @@ public abstract class EntityLivingBase extends Entity {
         if (l != null) l.setAbsorptionAmount(amount);
     }
 
-    @Override
-    public boolean isEntityAlive() {
+    public int getTotalArmorValue() {
         var l = mcc$living();
-        return l != null ? l.isAlive() && l.getHealth() > 0 : super.isEntityAlive();
+        return l != null ? l.getArmorValue() : 0;
     }
 
     public boolean isChild() {
         var l = mcc$living();
         return l != null && l.isBaby();
+    }
+
+    public boolean isEntityUndead() {
+        if (mcc$hosted()) return getCreatureAttribute() == EnumCreatureAttribute.UNDEAD;
+        var l = mcc$living();
+        return l != null && l.isInvertedHealAndHarm();
     }
 
     public boolean isOnLadder() {
@@ -177,38 +662,60 @@ public abstract class EntityLivingBase extends Entity {
         return l != null && l.isFallFlying();
     }
 
+    public int getTicksElytraFlying() {
+        var l = mcc$living();
+        return l != null ? l.getFallFlyingTicks() : 0;
+    }
+
     public boolean isPlayerSleeping() {
         var l = mcc$living();
         return l != null && l.isSleeping();
+    }
+
+    @Override
+    public boolean isEntityAlive() {
+        var l = mcc$living();
+        return l != null ? l.isAlive() : super.isEntityAlive();
+    }
+
+    public boolean canBreatheUnderwater() {
+        // a hosted entity answers with the legacy default: the host asks this method itself
+        return !mcc$hosted() && mcc$entity instanceof LivingEntity l && l.canBreatheUnderwater();
     }
 
     public java.util.Random getRNG() {
         return rand;
     }
 
-    public void knockBack(Entity attacker, float strength, double xRatio, double zRatio) {
+    public int getIdleTime() {
+        var l = mcc$living();
+        return l != null ? l.getNoActionTime() : idleTime;
+    }
+
+    public boolean isServerWorld() {
+        return mcc$entity != null && !mcc$entity.level().isClientSide();
+    }
+
+    protected boolean isPlayer() {
+        return false;
+    }
+
+    protected boolean isMovementBlocked() {
+        return getHealth() <= 0.0F;
+    }
+
+    public boolean canBeHitWithPotion() {
+        return true;
+    }
+
+    public boolean attackable() {
+        var l = mcc$living();
+        return l == null || l.attackable();
+    }
+
+    public void knockBack(Entity source, float strength, double xRatio, double zRatio) {
         var l = mcc$living();
         if (l != null) l.knockback(strength, xRatio, zRatio);
-    }
-
-    public EntityLivingBase getRevengeTarget() {
-        var l = mcc$living();
-        return l == null ? null : mcc$living(mcc$view(l.getLastHurtByMob()));
-    }
-
-    public void setRevengeTarget(EntityLivingBase target) {
-        var l = mcc$living();
-        if (l != null) l.setLastHurtByMob(target == null ? null : target.mcc$living());
-    }
-
-    public EntityLivingBase getAttackingEntity() {
-        var l = mcc$living();
-        return l == null ? null : mcc$living(mcc$view(l.getKillCredit()));
-    }
-
-    public EntityLivingBase getLastAttackedEntity() {
-        var l = mcc$living();
-        return l == null ? null : mcc$living(mcc$view(l.getLastHurtMob()));
     }
 
     public boolean canEntityBeSeen(Entity other) {
@@ -216,37 +723,364 @@ public abstract class EntityLivingBase extends Entity {
         return l != null && other != null && other.mcc$entity != null && l.hasLineOfSight(other.mcc$entity);
     }
 
-    // ------------------------------------------------------------------ potion effects
-
-    public boolean isPotionActive(Potion potion) {
+    public EntityLivingBase getRevengeTarget() {
         var l = mcc$living();
-        var effect = potion == null ? null : potion.mcc$modern();
-        return l != null && effect != null && l.hasEffect(effect);
+        return l == null ? null : EntityBridge1122.wrap(l.getLastHurtByMob()) instanceof EntityLivingBase t ? t : null;
     }
 
-    public PotionEffect getActivePotionEffect(Potion potion) {
+    public int getRevengeTimer() {
         var l = mcc$living();
-        var effect = potion == null ? null : potion.mcc$modern();
-        var instance = l == null || effect == null ? null : l.getEffect(effect);
-        return instance == null ? null : PotionEffect.mcc$fromModern(instance);
+        return l != null ? l.getLastHurtByMobTimestamp() : 0;
     }
 
-    public java.util.Collection<PotionEffect> getActivePotionEffects() {
-        java.util.List<PotionEffect> out = new java.util.ArrayList<>();
+    public void setRevengeTarget(EntityLivingBase target) {
         var l = mcc$living();
-        if (l != null) {
-            for (var e : l.getActiveEffects()) {
-                var legacy = PotionEffect.mcc$fromModern(e);
-                if (legacy != null) out.add(legacy);
+        if (l != null) l.setLastHurtByMob(target == null ? null : target.mcc$living());
+    }
+
+    public EntityLivingBase getLastAttackedEntity() {
+        var l = mcc$living();
+        return l == null ? null : EntityBridge1122.wrap(l.getLastHurtMob()) instanceof EntityLivingBase t ? t : null;
+    }
+
+    public int getLastAttackedEntityTime() {
+        var l = mcc$living();
+        return l != null ? l.getLastHurtMobTimestamp() : 0;
+    }
+
+    public void setLastAttackedEntity(Entity target) {
+        var l = mcc$living();
+        if (l != null && target != null) l.setLastHurtMob(target.mcc$entity);
+    }
+
+    public EntityLivingBase getAttackingEntity() {
+        var l = mcc$living();
+        return l == null ? null : EntityBridge1122.wrap(l.getKillCredit()) instanceof EntityLivingBase t ? t : null;
+    }
+
+    public DamageSource getLastDamageSource() {
+        var l = mcc$living();
+        if (l != null && l.getLastDamageSource() != null) return DamageSource.mcc$of(l.getLastDamageSource());
+        return mcc$lastDamageSource;
+    }
+
+    public int getArrowCountInEntity() {
+        var l = mcc$living();
+        return l != null ? l.getArrowCount() : 0;
+    }
+
+    public void setArrowCountInEntity(int count) {
+        var l = mcc$living();
+        if (l != null) l.setArrowCount(count);
+    }
+
+    public float getSwingProgress(float partialTicks) {
+        var l = mcc$living();
+        return l != null ? l.getAttackAnim(partialTicks) : 0;
+    }
+
+    public void swingArm(EnumHand hand) {
+        var l = mcc$living();
+        if (l != null) l.swing(mcc$hand(hand), true);
+    }
+
+    protected void updateArmSwingProgress() {
+    }
+
+    public void renderBrokenItemStack(ItemStack stack) {
+        var l = mcc$living();
+        if (l != null && stack != null && !stack.isEmpty()) l.playSound(net.minecraft.sounds.SoundEvents.ITEM_BREAK, 0.8F, 0.8F + l.level().random.nextFloat() * 0.4F);
+    }
+
+    public void setJumping(boolean jumping) {
+        var l = mcc$living();
+        if (l != null) l.setJumping(jumping);
+        else mcc$local_isJumping = jumping;
+    }
+
+    public float getAIMoveSpeed() {
+        var l = mcc$living();
+        return l != null ? l.getSpeed() : 0.1F;
+    }
+
+    public void setAIMoveSpeed(float speed) {
+        var l = mcc$living();
+        if (l != null) l.setSpeed(speed);
+    }
+
+    @Override
+    public float getRotationYawHead() {
+        return mcc$get$rotationYawHead(this);
+    }
+
+    @Override
+    public void setRotationYawHead(float yaw) {
+        mcc$set$rotationYawHead(this, yaw);
+    }
+
+    @Override
+    public void setRenderYawOffset(float offset) {
+        mcc$set$renderYawOffset(this, offset);
+    }
+
+    @Override
+    public boolean canBeCollidedWith() {
+        return mcc$hosted() ? !mcc$get$isDead(this) : super.canBeCollidedWith();
+    }
+
+    @Override
+    public boolean canBePushed() {
+        return mcc$hosted() ? isEntityAlive() && !isOnLadder() : super.canBePushed();
+    }
+
+    public void onItemPickup(Entity entity, int count) {
+        if (entity != null && entity.mcc$entity != null && mcc$entity instanceof LivingEntity l && !l.level().isClientSide()) l.take(entity.mcc$entity, count);
+    }
+
+    public void dismountEntity(Entity vehicle) {
+        if (mcc$entity == null) return;
+        if (vehicle != null && vehicle.mcc$entity != null && mcc$entity instanceof LivingEntity l) {
+            var spot = vehicle.mcc$entity.getDismountLocationForPassenger(l);
+            mcc$entity.dismountTo(spot.x, spot.y, spot.z);
+        }
+    }
+
+    public boolean attemptTeleport(double x, double y, double z) {
+        var l = mcc$living();
+        return l != null && l.randomTeleport(x, y, z, true);
+    }
+
+    public net.minecraft.world.entity.HumanoidArm mcc$arm() {
+        var l = mcc$living();
+        return l != null ? l.getMainArm() : net.minecraft.world.entity.HumanoidArm.RIGHT;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide getPrimaryHand() {
+        return mcc$arm() == net.minecraft.world.entity.HumanoidArm.LEFT ? legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide.LEFT
+                : legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide.RIGHT;
+    }
+
+    // ------------------------------------------------------------------ sounds (bridged for the host)
+
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getHurtSound(DamageSource source) {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(net.minecraft.sounds.SoundEvents.GENERIC_HURT);
+    }
+
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getDeathSound() {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(net.minecraft.sounds.SoundEvents.GENERIC_DEATH);
+    }
+
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getFallSound(int height) {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(height > 4 ? net.minecraft.sounds.SoundEvents.GENERIC_BIG_FALL
+                : net.minecraft.sounds.SoundEvents.GENERIC_SMALL_FALL);
+    }
+
+    protected float getSoundVolume() {
+        return 1.0F;
+    }
+
+    protected float getSoundPitch() {
+        return isChild() ? (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.5F : (rand.nextFloat() - rand.nextFloat()) * 0.2F + 1.0F;
+    }
+
+    protected void playHurtSound(DamageSource source) {
+        var sound = getHurtSound(source);
+        if (sound != null) playSound(sound, getSoundVolume(), getSoundPitch());
+    }
+
+    public final legacyconnector.v1_12_2.net.minecraft.util.SoundEvent mcc$hurtSound(DamageSource source) {
+        return getHurtSound(source);
+    }
+
+    public final legacyconnector.v1_12_2.net.minecraft.util.SoundEvent mcc$deathSound() {
+        return getDeathSound();
+    }
+
+    public final float mcc$soundVolume() {
+        return getSoundVolume();
+    }
+
+    public final float mcc$soundPitch() {
+        return getSoundPitch();
+    }
+
+    // ------------------------------------------------------------------ held items and equipment (live stacks)
+
+    private ItemStack mcc$slotView(net.minecraft.world.entity.EquipmentSlot slot) {
+        LivingEntity l = mcc$living();
+        if (l == null) return ItemStack.EMPTY;
+        return LiveStacks1122.view(l, slot, new LiveStacks1122.Slot() {
+            @Override
+            public net.minecraft.world.item.ItemStack get() {
+                return l.getItemBySlot(slot);
             }
+
+            @Override
+            public void set(net.minecraft.world.item.ItemStack stack) {
+                l.setItemSlot(slot, stack);
+            }
+        });
+    }
+
+    private void mcc$slotPut(net.minecraft.world.entity.EquipmentSlot slot, ItemStack stack) {
+        LivingEntity l = mcc$living();
+        if (l == null) return;
+        LiveStacks1122.put(l, slot, new LiveStacks1122.Slot() {
+            @Override
+            public net.minecraft.world.item.ItemStack get() {
+                return l.getItemBySlot(slot);
+            }
+
+            @Override
+            public void set(net.minecraft.world.item.ItemStack s) {
+                l.setItemSlot(slot, s);
+            }
+        }, stack == null ? ItemStack.EMPTY : stack);
+    }
+
+    public ItemStack getHeldItem(EnumHand hand) {
+        return mcc$slotView(hand == EnumHand.OFF_HAND ? net.minecraft.world.entity.EquipmentSlot.OFFHAND : net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+    }
+
+    public ItemStack getHeldItemMainhand() {
+        return getHeldItem(EnumHand.MAIN_HAND);
+    }
+
+    public ItemStack getHeldItemOffhand() {
+        return getHeldItem(EnumHand.OFF_HAND);
+    }
+
+    public void setHeldItem(EnumHand hand, ItemStack stack) {
+        mcc$slotPut(hand == EnumHand.OFF_HAND ? net.minecraft.world.entity.EquipmentSlot.OFFHAND : net.minecraft.world.entity.EquipmentSlot.MAINHAND, stack);
+    }
+
+    public ItemStack getItemStackFromSlot(EntityEquipmentSlot slot) {
+        return slot == null ? ItemStack.EMPTY : mcc$slotView(mcc$slot(slot));
+    }
+
+    @Override
+    public void setItemStackToSlot(EntityEquipmentSlot slot, ItemStack stack) {
+        if (slot != null) mcc$slotPut(mcc$slot(slot), stack);
+    }
+
+    public boolean hasItemInSlot(EntityEquipmentSlot slot) {
+        return !getItemStackFromSlot(slot).isEmpty();
+    }
+
+    @Override
+    public Iterable<ItemStack> getArmorInventoryList() {
+        java.util.List<ItemStack> out = new java.util.ArrayList<>();
+        for (EntityEquipmentSlot s : new EntityEquipmentSlot[] {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST,
+                EntityEquipmentSlot.HEAD}) {
+            out.add(getItemStackFromSlot(s));
         }
         return out;
     }
 
+    @Override
+    public Iterable<ItemStack> getHeldEquipment() {
+        return java.util.List.of(getHeldItemMainhand(), getHeldItemOffhand());
+    }
+
+    public void setActiveHand(EnumHand hand) {
+        var l = mcc$living();
+        if (l != null) l.startUsingItem(mcc$hand(hand));
+    }
+
+    public EnumHand getActiveHand() {
+        var l = mcc$living();
+        return l == null || l.getUsedItemHand() == net.minecraft.world.InteractionHand.MAIN_HAND ? EnumHand.MAIN_HAND : EnumHand.OFF_HAND;
+    }
+
+    public boolean isHandActive() {
+        var l = mcc$living();
+        return l != null && l.isUsingItem();
+    }
+
+    public ItemStack getActiveItemStack() {
+        var l = mcc$living();
+        if (l == null || !l.isUsingItem()) return ItemStack.EMPTY;
+        return getHeldItem(getActiveHand());
+    }
+
+    public int getItemInUseCount() {
+        var l = mcc$living();
+        return l == null ? 0 : l.getUseItemRemainingTicks();
+    }
+
+    public int getItemInUseMaxCount() {
+        var l = mcc$living();
+        return l == null || !l.isUsingItem() ? 0 : l.getTicksUsingItem();
+    }
+
+    public void stopActiveHand() {
+        var l = mcc$living();
+        if (l != null) l.releaseUsingItem();
+    }
+
+    public void resetActiveHand() {
+        var l = mcc$living();
+        if (l != null) l.stopUsingItem();
+    }
+
+    public boolean isActiveItemStackBlocking() {
+        var l = mcc$living();
+        return l != null && l.isBlocking();
+    }
+
+    protected void onItemUseFinish() {
+    }
+
+    protected void updateActiveHand() {
+    }
+
+    public static net.minecraft.world.InteractionHand mcc$hand(EnumHand hand) {
+        return hand == EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND;
+    }
+
+    public static net.minecraft.world.entity.EquipmentSlot mcc$slot(EntityEquipmentSlot slot) {
+        return switch (slot) {
+            case MAINHAND -> net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+            case OFFHAND -> net.minecraft.world.entity.EquipmentSlot.OFFHAND;
+            case FEET -> net.minecraft.world.entity.EquipmentSlot.FEET;
+            case LEGS -> net.minecraft.world.entity.EquipmentSlot.LEGS;
+            case CHEST -> net.minecraft.world.entity.EquipmentSlot.CHEST;
+            case HEAD -> net.minecraft.world.entity.EquipmentSlot.HEAD;
+        };
+    }
+
+    public static EntityEquipmentSlot mcc$slot(net.minecraft.world.entity.EquipmentSlot slot) {
+        return switch (slot) {
+            case OFFHAND -> EntityEquipmentSlot.OFFHAND;
+            case FEET -> EntityEquipmentSlot.FEET;
+            case LEGS -> EntityEquipmentSlot.LEGS;
+            case CHEST -> EntityEquipmentSlot.CHEST;
+            case HEAD -> EntityEquipmentSlot.HEAD;
+            default -> EntityEquipmentSlot.MAINHAND;
+        };
+    }
+
+    // ------------------------------------------------------------------ potion effects
+
     public void addPotionEffect(PotionEffect effect) {
         var l = mcc$living();
-        var modern = effect == null ? null : effect.mcc$toModern();
-        if (l != null && modern != null) l.addEffect(modern);
+        if (l == null || effect == null) return;
+        var modern = effect.mcc$toModern();
+        if (modern != null) l.addEffect(modern);
+    }
+
+    public boolean isPotionActive(Potion potion) {
+        var l = mcc$living();
+        var holder = potion == null ? null : potion.mcc$modern();
+        return l != null && holder != null && l.hasEffect(holder);
+    }
+
+    public PotionEffect getActivePotionEffect(Potion potion) {
+        var l = mcc$living();
+        var holder = potion == null ? null : potion.mcc$modern();
+        if (l == null || holder == null) return null;
+        var e = l.getEffect(holder);
+        return e == null ? null : PotionEffect.mcc$fromModern(e);
     }
 
     public PotionEffect removeActivePotionEffect(Potion potion) {
@@ -257,12 +1091,75 @@ public abstract class EntityLivingBase extends Entity {
 
     public void removePotionEffect(Potion potion) {
         var l = mcc$living();
-        var effect = potion == null ? null : potion.mcc$modern();
-        if (l != null && effect != null) l.removeEffect(effect);
+        var holder = potion == null ? null : potion.mcc$modern();
+        if (l != null && holder != null) l.removeEffect(holder);
+    }
+
+    public java.util.Collection<PotionEffect> getActivePotionEffects() {
+        java.util.List<PotionEffect> out = new java.util.ArrayList<>();
+        var l = mcc$living();
+        if (l != null) {
+            for (var e : l.getActiveEffects()) {
+                var p = PotionEffect.mcc$fromModern(e);
+                if (p != null) out.add(p);
+            }
+        }
+        return out;
+    }
+
+    public java.util.Map<Potion, PotionEffect> getActivePotionMap() {
+        java.util.Map<Potion, PotionEffect> out = new java.util.LinkedHashMap<>();
+        for (PotionEffect e : getActivePotionEffects()) out.put(e.getPotion(), e);
+        return out;
     }
 
     public void clearActivePotions() {
         var l = mcc$living();
         if (l != null) l.removeAllEffects();
+    }
+
+    /** Forge: removes every effect {@code stack} cures (milk cures all vanilla effects). */
+    public void curePotionEffects(ItemStack stack) {
+        var l = mcc$living();
+        if (l == null || l.level().isClientSide()) return;
+        if (stack != null && stack.getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.MILK_BUCKET) {
+            l.removeEffectsCuredBy(net.neoforged.neoforge.common.EffectCures.MILK);
+        }
+    }
+
+    public boolean isPotionApplicable(PotionEffect effect) {
+        if (effect == null) return false;
+        var l = mcc$living();
+        if (l != null && !mcc$hosted()) {
+            var modern = effect.mcc$toModern();
+            return modern == null || l.canBeAffected(modern);
+        }
+        if (getCreatureAttribute() == EnumCreatureAttribute.UNDEAD) {
+            Potion p = effect.getPotion();
+            return p != legacyconnector.v1_12_2.net.minecraft.init.MobEffects.REGENERATION && p != legacyconnector.v1_12_2.net.minecraft.init.MobEffects.POISON;
+        }
+        return true;
+    }
+
+    protected void onNewPotionEffect(PotionEffect effect) {
+    }
+
+    protected void onChangedPotionEffect(PotionEffect effect, boolean reapply) {
+    }
+
+    protected void onFinishedPotionEffect(PotionEffect effect) {
+    }
+
+    protected void updatePotionEffects() {
+    }
+
+    protected void markPotionsDirty() {
+    }
+
+    public void setPartying(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, boolean partying) {
+    }
+
+    @Override
+    public void notifyDataManagerChange(legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<?> key) {
     }
 }

@@ -71,6 +71,7 @@ public final class LegacyConnector {
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
             if (e.getRegistryKey().equals(Registries.MENU)) org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
@@ -99,6 +100,7 @@ public final class LegacyConnector {
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
+        org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.
