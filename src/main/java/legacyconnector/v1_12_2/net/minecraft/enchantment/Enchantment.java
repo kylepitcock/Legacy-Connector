@@ -125,6 +125,11 @@ public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> 
         return 0;
     }
 
+    /** Extra melee damage against a creature kind at a level. */
+    public float calcDamageByCreature(int level, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute creatureType) {
+        return 0.0F;
+    }
+
     public void onEntityDamaged(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity target,
             int level) {
     }

@@ -12,4 +12,9 @@ public interface IItemHandler {
     ItemStack extractItem(int slot, int amount, boolean simulate);
 
     int getSlotLimit(int slot);
+
+    /** Forge 14.23: whether the slot accepts the stack at all (handlers written before it accept everything). */
+    default boolean isItemValid(int slot, ItemStack stack) {
+        return true;
+    }
 }

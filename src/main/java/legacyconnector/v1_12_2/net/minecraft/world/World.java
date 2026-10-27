@@ -942,7 +942,8 @@ public class World implements IBlockAccess {
             return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
         }
         var be = access.getBlockEntity(p);
-        return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
+        if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l) return l.legacy();
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(this, be); // the game's own block entities
     }
 
     /** Puts a legacy tile entity at a position whose block hosts legacy tile entities (others have their own modern block entity). */

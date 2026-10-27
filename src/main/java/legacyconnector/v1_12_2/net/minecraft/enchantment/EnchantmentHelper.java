@@ -139,6 +139,159 @@ public class EnchantmentHelper {
         return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("vanishing_curse"), stack) > 0;
     }
 
+    private static String mcc$vanillaName(Enchantment e) {
+        var name = e == null ? null : e.getRegistryName();
+        return name != null && "minecraft".equals(name.getNamespace()) ? name.getPath() : null;
+    }
+
+    /** Extra melee damage of the stack's enchantments against a creature kind (Sharpness, Smite, Bane of Arthropods, mods' own). */
+    public static float getModifierForCreature(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute creatureAttribute) {
+        float total = 0.0F;
+        if (stack == null || stack.isEmpty()) return total;
+        for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+            int level = e.getValue();
+            String vanilla = mcc$vanillaName(e.getKey());
+            if (vanilla == null) {
+                total += e.getKey().calcDamageByCreature(level, creatureAttribute);
+            } else if (vanilla.equals("sharpness")) {
+                total += 1.0F + (float) Math.max(0, level - 1) * 0.5F;
+            } else if (vanilla.equals("smite") && creatureAttribute == legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute.UNDEAD) {
+                total += (float) level * 2.5F;
+            } else if (vanilla.equals("bane_of_arthropods") && creatureAttribute == legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute.ARTHROPOD) {
+                total += (float) level * 2.5F;
+            }
+        }
+        return total;
+    }
+
+    /** Damage reduction points of the stacks' protection enchantments against a damage source (1.12's EnchantmentProtection rules). */
+    public static int getEnchantmentModifierDamage(Iterable<ItemStack> stacks, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
+        int total = 0;
+        if (stacks == null || source == null) return 0;
+        for (ItemStack stack : stacks) {
+            if (stack == null || stack.isEmpty()) continue;
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+                int level = e.getValue();
+                String vanilla = mcc$vanillaName(e.getKey());
+                if (vanilla == null) {
+                    total += e.getKey().calcModifierDamage(level, source);
+                } else if (!source.canHarmInCreative()) {
+                    switch (vanilla) {
+                        case "protection" -> total += level;
+                        case "fire_protection" -> total += source.isFireDamage() ? level * 2 : 0;
+                        case "feather_falling" -> total += "fall".equals(source.getDamageType()) ? level * 3 : 0;
+                        case "blast_protection" -> total += source.isExplosion() ? level * 2 : 0;
+                        case "projectile_protection" -> total += source.isProjectile() ? level * 2 : 0;
+                        default -> { }
+                    }
+                }
+            }
+        }
+        return total;
+    }
+
+    /** Runs the mods' enchantments' reactions to the user being hurt (vanilla Thorns acts by itself in the modern game). */
+    public static void applyThornEnchantments(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity attacker) {
+        if (user == null) return;
+        for (ItemStack stack : user.getEquipmentAndArmor()) {
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) e.getKey().onUserHurt(user, attacker, e.getValue());
+        }
+    }
+
+    /** Runs the mods' enchantments' effects of the user hitting the target (vanilla Bane of Arthropods acts by itself). */
+    public static void applyArthropodEnchantments(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
+        if (user == null) return;
+        for (ItemStack stack : user.getEquipmentAndArmor()) {
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) e.getKey().onEntityDamaged(user, target, e.getValue());
+        }
+    }
+
+    /** A random piece of the entity's equipment carrying the enchantment (EMPTY when none does). */
+    public static ItemStack getEnchantedItem(Enchantment enchantment, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if (enchantment == null) return ItemStack.EMPTY;
+        java.util.List<ItemStack> list = enchantment.getEntityEquipment(entity);
+        if (list.isEmpty()) return ItemStack.EMPTY;
+        java.util.List<ItemStack> with = new java.util.ArrayList<>();
+        for (ItemStack s : list) if (!s.isEmpty() && getEnchantmentLevel(enchantment, s) > 0) with.add(s);
+        return with.isEmpty() ? ItemStack.EMPTY : with.get(entity.getRNG().nextInt(with.size()));
+    }
+
+    public static int getFishingSpeedBonus(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("lure"), stack);
+    }
+
+    public static int getFishingLuckBonus(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("luck_of_the_sea"), stack);
+    }
+
+    /** The enchanting table level offered in a row (0, 1, 2) for a bookshelf power, as 1.12 rolled it. */
+    public static int calcItemStackEnchantability(java.util.Random rand, int enchantNum, int power, ItemStack stack) {
+        int enchantability = stack.getItem().getItemEnchantability();
+        if (enchantability <= 0) return 0;
+        if (power > 15) power = 15;
+        int j = rand.nextInt(8) + 1 + (power >> 1) + rand.nextInt(power + 1);
+        if (enchantNum == 0) return Math.max(j / 3, 1);
+        return enchantNum == 1 ? j * 2 / 3 + 1 : Math.max(j, power * 2);
+    }
+
+    /** Enchants the stack as the enchanting table would at a level (a book becomes an enchanted book). */
+    public static ItemStack addRandomEnchantment(java.util.Random random, ItemStack stack, int level, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = buildEnchantmentList(random, stack, level, allowTreasure);
+        boolean book = stack.getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.BOOK;
+        if (book) {
+            stack = new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.ENCHANTED_BOOK);
+            Map<Enchantment, Integer> stored = new LinkedHashMap<>();
+            for (EnchantmentData d : list) stored.put(d.enchantment, d.enchantmentLevel);
+            setEnchantments(stored, stack);
+        } else {
+            for (EnchantmentData d : list) stack.addEnchantment(d.enchantment, d.enchantmentLevel);
+        }
+        return stack;
+    }
+
+    /** The enchantments the enchanting table would roll for the stack at a level. */
+    public static java.util.List<EnchantmentData> buildEnchantmentList(java.util.Random randomIn, ItemStack itemStackIn, int level, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = new java.util.ArrayList<>();
+        int enchantability = itemStackIn.getItem().getItemEnchantability();
+        if (enchantability <= 0) return list;
+        level = level + 1 + randomIn.nextInt(enchantability / 4 + 1) + randomIn.nextInt(enchantability / 4 + 1);
+        float f = (randomIn.nextFloat() + randomIn.nextFloat() - 1.0F) * 0.15F;
+        level = Math.max(1, Math.round((float) level + (float) level * f));
+        java.util.List<EnchantmentData> candidates = getEnchantmentDatas(level, itemStackIn, allowTreasure);
+        if (!candidates.isEmpty()) {
+            list.add(legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.getRandomItem(randomIn, candidates));
+            while (randomIn.nextInt(50) <= level) {
+                removeIncompatible(candidates, list.get(list.size() - 1));
+                if (candidates.isEmpty()) break;
+                list.add(legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.getRandomItem(randomIn, candidates));
+                level /= 2;
+            }
+        }
+        return list;
+    }
+
+    public static void removeIncompatible(java.util.List<EnchantmentData> list, EnchantmentData data) {
+        list.removeIf(e -> !data.enchantment.isCompatibleWith(e.enchantment));
+    }
+
+    /** Every enchantment (at the highest fitting level) the table may put on the stack at a level. */
+    public static java.util.List<EnchantmentData> getEnchantmentDatas(int level, ItemStack stack, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = new java.util.ArrayList<>();
+        boolean book = stack.getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.BOOK;
+        Enchantment.getEnchantmentByID(0); // vanilla constants registered
+        for (Enchantment enchantment : Enchantment.REGISTRY) {
+            if (enchantment == null || enchantment.isTreasureEnchantment() && !allowTreasure) continue;
+            if (!enchantment.canApplyAtEnchantingTable(stack) && !(book && enchantment.isAllowedOnBooks())) continue;
+            for (int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
+                if (level >= enchantment.getMinEnchantability(i) && level <= enchantment.getMaxEnchantability(i)) {
+                    list.add(new EnchantmentData(enchantment, i));
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+
     /** {@code ItemEnchantedBook.getEnchantedItemStack}: an enchanted book storing the enchantment. */
     public static ItemStack mcc$enchantedBook(EnchantmentData data) {
         ItemStack book = new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.ENCHANTED_BOOK);
