@@ -140,14 +140,4 @@ public class PlayerInteractionManager {
                 ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND));
     }
 
-    public EnumActionResult processRightClickBlock(EntityPlayer player, World world, ItemStack stack, EnumHand hand, BlockPos pos, EnumFacing facing,
-            float hitX, float hitY, float hitZ) {
-        var sp = player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p ? p : mcc$player();
-        if (sp == null || world == null || world.mcc$level() == null || pos == null) return EnumActionResult.PASS;
-        var direction = facing == null ? net.minecraft.core.Direction.UP : net.minecraft.core.Direction.byName(facing.getName());
-        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ),
-                direction, pos.mcc$modern(), false);
-        return EnumActionResult.mcc$of(sp.gameMode.useItemOn(sp, world.mcc$level(), Stacks1122.toModernLive(stack), hand == EnumHand.OFF_HAND
-                ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND, hit));
-    }
 }

@@ -2065,4 +2065,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         if (m == null || killed == null || killed.mcc$entity == null) return;
         m.awardKillScore(killed.mcc$entity, score, source == null ? m.damageSources().generic() : source.mcc$modern(m.level()));
     }
+
+    private boolean mcc$outsideBorder;
+    private float mcc$local_distanceWalkedOnStepModified;
 }
