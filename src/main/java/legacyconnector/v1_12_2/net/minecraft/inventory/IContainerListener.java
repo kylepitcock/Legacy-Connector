@@ -3,13 +3,14 @@ package legacyconnector.v1_12_2.net.minecraft.inventory;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
-/** Who sees a container (a player): told about every slot change and window property (progress bars). */
+/** Watches a container (the player who has it open is one: {@code EntityPlayerMP}). */
 public interface IContainerListener {
     void sendAllContents(Container container, NonNullList<ItemStack> items);
 
-    void sendSlotContents(Container container, int slotIndex, ItemStack stack);
+    void sendSlotContents(Container container, int slot, ItemStack stack);
 
-    void sendWindowProperty(Container container, int varToUpdate, int newValue);
+    /** A progress bar value (furnace burn time, machine energy): arrives in the client container's {@code updateProgressBar}. */
+    void sendWindowProperty(Container container, int id, int value);
 
     void sendAllWindowProperties(Container container, IInventory inventory);
 }

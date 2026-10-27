@@ -2,17 +2,22 @@ package legacyconnector.v1_12_2.net.minecraft.inventory;
 
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
+import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
-/** 1.12.2 slot: one index of an inventory at a position in a container's screen. */
+/**
+ * 1.12.2 slot: one index of an inventory at a GUI position. Hosted by a modern slot ({@code LegacySlot1122}) that asks this one for
+ * its stack, validity, limits and pickup hooks.
+ */
 public class Slot {
     private final int slotIndex;
     public final IInventory inventory;
     public int slotNumber;
     public int xPos;
     public int yPos;
-    /** Forge: the background icon (a texture sprite name and its atlas). */
+    /** Forge: the sprite drawn in the empty slot (an atlas name such as {@code minecraft:items/empty_armor_slot_shield}). */
     protected String backgroundName;
-    protected legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation backgroundLocation;
+    protected ResourceLocation backgroundLocation;
+    protected Object backgroundMap;
 
     public Slot(IInventory inventory, int index, int xPosition, int yPosition) {
         this.inventory = inventory;
@@ -21,16 +26,16 @@ public class Slot {
         this.yPos = yPosition;
     }
 
-    /** A stack was shift-clicked out: the difference counts as crafted. */
-    public void onSlotChange(ItemStack newStack, ItemStack oldStack) {
-        int i = oldStack.getCount() - newStack.getCount();
-        if (i > 0) onCrafting(oldStack, i);
+    /** Called after a shift-click moved {@code moved} out of {@code original}: the difference counts as crafted. */
+    public void onSlotChange(ItemStack moved, ItemStack original) {
+        int i = original.getCount() - moved.getCount();
+        if (i > 0) onCrafting(original, i);
     }
 
     protected void onCrafting(ItemStack stack, int amount) {
     }
 
-    protected void onSwapCraft(int numItemsCrafted) {
+    protected void onSwapCraft(int amount) {
     }
 
     protected void onCrafting(ItemStack stack) {
@@ -46,7 +51,8 @@ public class Slot {
     }
 
     public ItemStack getStack() {
-        return inventory.getStackInSlot(slotIndex);
+        ItemStack s = inventory.getStackInSlot(slotIndex);
+        return s == null ? ItemStack.EMPTY : s;
     }
 
     public boolean getHasStack() {
@@ -75,7 +81,8 @@ public class Slot {
     }
 
     public ItemStack decrStackSize(int amount) {
-        return inventory.decrStackSize(slotIndex, amount);
+        ItemStack s = inventory.decrStackSize(slotIndex, amount);
+        return s == null ? ItemStack.EMPTY : s;
     }
 
     public boolean isHere(IInventory inv, int slotIn) {
@@ -90,23 +97,24 @@ public class Slot {
         return true;
     }
 
-    public int getSlotIndex() {
-        return slotIndex;
+    /** The texture sheet the background sprite is on (the blocks atlas unless a mod set its own). */
+    public ResourceLocation getBackgroundLocation() {
+        return backgroundLocation == null ? new ResourceLocation("textures/atlas/blocks.png") : backgroundLocation;
     }
 
-    public boolean isSameInventory(Slot other) {
-        return inventory == other.inventory;
+    public void setBackgroundLocation(ResourceLocation texture) {
+        this.backgroundLocation = texture;
     }
 
     public void setBackgroundName(String name) {
         this.backgroundName = name;
     }
 
-    public legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation getBackgroundLocation() {
-        return backgroundLocation != null ? backgroundLocation : new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("textures/atlas/blocks.png");
+    public int getSlotIndex() {
+        return slotIndex;
     }
 
-    public void setBackgroundLocation(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation location) {
-        this.backgroundLocation = location;
+    public boolean isSameInventory(Slot other) {
+        return other != null && inventory == other.inventory;
     }
 }

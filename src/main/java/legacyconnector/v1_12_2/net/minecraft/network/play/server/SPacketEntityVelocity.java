@@ -21,7 +21,7 @@ public class SPacketEntityVelocity implements Packet<INetHandlerPlayClient> {
 
     private static net.minecraft.world.phys.Vec3 motion(legacyconnector.v1_12_2.net.minecraft.entity.Entity e) {
         var m = e.mcc$modern();
-        return m != null ? m.getDeltaMovement() : new net.minecraft.world.phys.Vec3(e.motionX, e.motionY, e.motionZ);
+        return m != null ? m.getDeltaMovement() : new net.minecraft.world.phys.Vec3(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionX(e), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionY(e), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionZ(e));
     }
 
     public SPacketEntityVelocity(int entityIdIn, double motionXIn, double motionYIn, double motionZIn) {

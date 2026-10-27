@@ -12,14 +12,8 @@ public final class PlayerHooks1122 {
         void open(EntityPlayer player, Object mod, int id, World world, int x, int y, int z);
     }
 
-    private static final java.util.concurrent.atomic.AtomicBoolean WARNED = new java.util.concurrent.atomic.AtomicBoolean();
-
-    /** Set by the GUI bridge; until then the request is logged once. */
-    public static volatile OpenGui OPEN_GUI = (player, mod, id, world, x, y, z) -> {
-        if (WARNED.compareAndSet(false, true)) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("A 1.12.2 mod opened GUI {} of {}, but mod GUIs cannot be opened yet", id, mod);
-        }
-    };
+    /** The GUI bridge: a container GUI from the server, a client-only one on the client. */
+    public static volatile OpenGui OPEN_GUI = org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::openGui;
 
     public static void openGui(EntityPlayer player, Object mod, int id, World world, int x, int y, int z) {
         try {

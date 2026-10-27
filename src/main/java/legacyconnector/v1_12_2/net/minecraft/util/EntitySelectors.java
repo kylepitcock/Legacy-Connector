@@ -13,7 +13,7 @@ public final class EntitySelectors {
 
     public static final Predicate<Entity> IS_ALIVE = e -> {
         var m = modern(e);
-        return m != null ? m.isAlive() : e != null && !e.isDead;
+        return m != null ? m.isAlive() : e != null && !legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$isDead(e);
     };
     public static final Predicate<Entity> IS_STANDALONE = e -> {
         var m = modern(e);

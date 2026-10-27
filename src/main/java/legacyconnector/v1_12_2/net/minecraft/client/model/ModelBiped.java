@@ -98,7 +98,7 @@ public class ModelBiped extends ModelBase {
         bipedLeftArm.rotationPointX = 5.0F;
         float f = 1.0F;
         if (flying && entityIn != null) {
-            f = (float) (entityIn.motionX * entityIn.motionX + entityIn.motionY * entityIn.motionY + entityIn.motionZ * entityIn.motionZ);
+            f = (float) (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionX(entityIn) * legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionX(entityIn) + legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionY(entityIn) * legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionY(entityIn) + legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionZ(entityIn) * legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$motionZ(entityIn));
             f = f / 0.2F;
             f = f * f * f;
         }

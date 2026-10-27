@@ -1005,7 +1005,7 @@ public class World implements IBlockAccess {
         if (modern.isAddedToLevel() || modern.level() != level && modern.level() != null && modern.isAlive() && level != null && modern.level().getEntity(modern.getId()) == modern) {
             return false;
         }
-        if (entity.world == null) entity.world = this;
+        if (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(entity) == null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$world(entity, this);
         return access.addFreshEntity(modern);
     }
 
@@ -1030,13 +1030,13 @@ public class World implements IBlockAccess {
     public void removeEntity(Entity entity) {
         var modern = modernOf(entity);
         if (modern != null) modern.discard();
-        if (entity != null) entity.isDead = true;
+        if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
 
     public void removeEntityDangerously(Entity entity) {
         var modern = modernOf(entity);
         if (modern != null) modern.discard();
-        if (entity != null) entity.isDead = true;
+        if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
 
     public void onEntityAdded(Entity entity) {

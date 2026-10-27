@@ -39,7 +39,7 @@ public class WorldBorder {
     }
 
     public double getClosestDistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
-        return getClosestDistance(entity.posX, entity.posZ);
+        return getClosestDistance(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(entity), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(entity));
     }
 
     public double getClosestDistance(double x, double z) {

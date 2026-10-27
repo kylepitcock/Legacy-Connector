@@ -47,6 +47,18 @@ public final class ConfigManager {
         }
     }
 
+    /** The categories of a mod's {@link Config} classes in their config files (what Forge's config GUI lists for the mod). */
+    public static List<ConfigCategory> mcc$categories(String modid) {
+        List<ConfigCategory> out = new ArrayList<>();
+        for (Class<?> cls : CLASSES.getOrDefault(modid, List.of())) {
+            Config c = cls.getAnnotation(Config.class);
+            String name = c.name().isEmpty() ? modid : c.name();
+            Configuration cfg = FILES.get(modid + "/" + name);
+            if (cfg != null && cfg.hasCategory(c.category())) out.add(cfg.getCategory(c.category()));
+        }
+        return out;
+    }
+
     public static Class<?>[] getModConfigClasses(String modid) {
         return CLASSES.getOrDefault(modid, List.of()).toArray(new Class<?>[0]);
     }
