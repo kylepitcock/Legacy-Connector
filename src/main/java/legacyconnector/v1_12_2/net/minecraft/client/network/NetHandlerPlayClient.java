@@ -20,7 +20,7 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
 
     /** Phantom: the server's player limit (redirected to {@link #mcc$get$currentServerMaxPlayers}). */
     @Deprecated
-    public int currentServerMaxPlayers = 20;
+    public int currentServerMaxPlayers;
     /** The screen to return to when the connection closes. */
     public legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen guiScreenServer;
     private final com.mojang.authlib.GameProfile profile;
