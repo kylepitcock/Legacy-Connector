@@ -519,6 +519,26 @@ public final class RuntimeApis1122 {
         return name != null && "minecraft".equals(name.getNamespace()) && VANILLA_CARRIABLE.contains(name.getPath());
     }
 
+    /** For the real EntityEnderman class: the same carriable-block registry the synthesized statics used. */
+    public static void mcc$setCarriable(Block block, boolean carriable) {
+        if (block == null) return;
+        synchronized (CARRIABLE) {
+            CARRIABLE.put(block, carriable);
+        }
+    }
+
+    public static boolean mcc$isCarriable(Block block) {
+        return block != null && isCarriable(block);
+    }
+
+    /** For the real EntityParrot class: the same mimic sound registry the synthesized static used. */
+    public static void mcc$registerMimicSound(Class<?> entityClass, Object sound) {
+        if (entityClass == null || sound == null) return;
+        synchronized (MIMIC_SOUNDS) {
+            MIMIC_SOUNDS.put(entityClass, sound);
+        }
+    }
+
     /** The mimic sound mods gave an entity class (or one of its superclasses), or null. */
     public static Object mimicSound(Class<?> entityClass) {
         synchronized (MIMIC_SOUNDS) {
