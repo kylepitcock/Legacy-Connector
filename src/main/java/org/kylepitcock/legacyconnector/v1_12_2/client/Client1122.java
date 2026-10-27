@@ -40,6 +40,10 @@ public final class Client1122 {
             }
         });
         modBus.addListener(Client1122::onRegisterRenderers);
+        // layers mods add to the legacy player renderers run on the modern ones
+        modBus.addListener((EntityRenderersEvent.AddLayers e) -> {
+            if (present()) LegacyPlayerLayer1122.addTo(e);
+        });
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block e) -> {
             if (present()) Colors1122.onBlockColors(e);
         });
@@ -93,5 +97,11 @@ public final class Client1122 {
 
     private static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         if (TileEntityBridge1122.type() != null) event.registerBlockEntityRenderer(TileEntityBridge1122.type(), ctx -> new LegacyBlockEntityRenderer1122());
+        // 1.12.2 mod entities: drawn by the legacy renderer their mod registered (RenderingRegistry)
+        for (var type : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.allTypes()) {
+            @SuppressWarnings("unchecked")
+            var t = (net.minecraft.world.entity.EntityType<net.minecraft.world.entity.Entity>) type;
+            event.registerEntityRenderer(t, LegacyEntityRenderer1122::new);
+        }
     }
 }
