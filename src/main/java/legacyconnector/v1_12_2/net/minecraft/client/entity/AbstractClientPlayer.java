@@ -77,4 +77,9 @@ public abstract class AbstractClientPlayer extends legacyconnector.v1_12_2.net.m
     public float getFovModifier() {
         return mcc$player() instanceof net.minecraft.client.player.AbstractClientPlayer p ? p.getFieldOfViewModifier() : 1.0F;
     }
+
+    /** The scoreboard of the player's world. */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getWorldScoreboard() {
+        return legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(mcc$player().level().getScoreboard());
+    }
 }

@@ -80,6 +80,7 @@ public final class ClientEvents1122 {
         bus.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Pre e) -> frame++);
         bus.addListener(ClientEvents1122::onHand);
         bus.addListener(ClientEvents1122::onBlockOverlay);
+        bus.addListener(ClientEvents1122::onItemInFrame);
         bus.addListener(ClientEvents1122::onFog);
         bus.addListener(ClientEvents1122::onFogColor);
         bus.addListener(ClientEvents1122::onCamera);
@@ -275,7 +276,8 @@ public final class ClientEvents1122 {
 
     private static void onBossBar(net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent.BossEventProgress e) {
         if (!wants(RenderGameOverlayEvent.BossInfo.class)) return;
-        var legacy = new RenderGameOverlayEvent.BossInfo(root(e.getPartialTick().getGameTimeDeltaPartialTick(false)), ElementType.BOSSINFO, e.getX(), e.getY(),
+        var legacy = new RenderGameOverlayEvent.BossInfo(root(e.getPartialTick().getGameTimeDeltaPartialTick(false)), ElementType.BOSSINFO,
+                legacyconnector.v1_12_2.net.minecraft.client.gui.BossInfoClient.mcc$of(e.getBossEvent()), e.getX(), e.getY(),
                 e.getIncrement());
         RenderContext.beginGui(e.getGuiGraphics());
         try {
@@ -474,6 +476,21 @@ public final class ClientEvents1122 {
         } finally {
             RenderContext.end();
             buffers.endBatch();
+        }
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderItemFrame itemFrameRenderer;
+
+    private static void onItemInFrame(net.neoforged.neoforge.client.event.RenderItemInFrameEvent e) {
+        if (!wants(legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderItemInFrameEvent.class)) return;
+        if (!(EntityBridge1122.wrap(e.getItemFrameEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItemFrame frame)) return;
+        if (itemFrameRenderer == null) itemFrameRenderer = new legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderItemFrame(legacyMc().getRenderManager(),
+                legacyMc().getRenderItem());
+        RenderContext.beginWorld(e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), OverlayTexture.NO_OVERLAY);
+        try {
+            if (post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderItemInFrameEvent(frame, itemFrameRenderer), "item frame")) e.setCanceled(true);
+        } finally {
+            RenderContext.end();
         }
     }
 
