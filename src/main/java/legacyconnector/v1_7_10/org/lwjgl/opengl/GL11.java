@@ -175,6 +175,25 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glLoadMatrix(FloatBuffer m) {
+        if (m == null || m.remaining() < 16) return;
+        org.joml.Matrix4f matrix = new org.joml.Matrix4f().set(m.position(), m);
+        if (DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
+        RenderContext.loadMatrix(matrix);
+    }
+
+    public static void glLoadMatrix(java.nio.DoubleBuffer m) {
+        if (m == null || m.remaining() < 16) return;
+        org.joml.Matrix4f matrix = new org.joml.Matrix4f(new org.joml.Matrix4d().set(m.position(), m));
+        if (DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
+        RenderContext.loadMatrix(matrix);
+    }
+
+    public static void glOrtho(double left, double right, double bottom, double top, double zNear, double zFar) {
+        mcc$multMatrix(new org.joml.Matrix4f().setOrtho((float) left, (float) right, (float) bottom, (float) top, (float) zNear, (float) zFar));
+    }
+
+    public static void glFrustum(double left, double right, double bottom, double top, double zNear, double zFar) {
+        mcc$multMatrix(new org.joml.Matrix4f().setFrustum((float) left, (float) right, (float) bottom, (float) top, (float) zNear, (float) zFar));
     }
 
     public static void glClipPlane(int plane, java.nio.DoubleBuffer equation) {
@@ -235,9 +254,13 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glLoadIdentity() {
+        if (DisplayLists.record(() -> glLoadIdentity())) return;
+        RenderContext.loadIdentity();
     }
 
     public static void glMatrixMode(int mode) {
+        if (DisplayLists.record(() -> glMatrixMode(mode))) return;
+        RenderContext.matrixMode(mode);
     }
 
     /** Multiplies the emulated model-view matrix by a column-major 4x4 matrix (the buffer's next 16 values). */
@@ -255,6 +278,7 @@ public class GL11 extends GL11Guard {
 
     private static void mcc$multMatrix(org.joml.Matrix4f matrix) {
         if (DisplayLists.record(() -> mcc$multMatrix(matrix))) return;
+        if (RenderContext.multMatrix(matrix)) return; // the texture or projection matrix
         var pose = RenderContext.pose();
         if (pose == null) return;
         var last = pose.last();

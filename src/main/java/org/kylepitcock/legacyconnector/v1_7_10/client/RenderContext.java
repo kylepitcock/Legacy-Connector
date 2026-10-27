@@ -72,6 +72,13 @@ public final class RenderContext {
         try {
             Frame f = frames().pop();
             if (frames().isEmpty()) {
+                // a legacy projection left in place must not outlive the frame (restored while the frame's target is current)
+                frames().push(f);
+                try {
+                    resetMatrixModes();
+                } finally {
+                    frames().pop();
+                }
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
                 resetState();
                 // a depth function legacy code left set must not leak into modern rendering
@@ -304,6 +311,7 @@ public final class RenderContext {
 
     public static void quad(double[][] v, float nx, float ny, float nz) {
         quadCount++;
+        v = textured(v);
         if (bounds != null) {
             for (double[] p : v) {
                 for (int i = 0; i < 3; i++) {
@@ -391,12 +399,31 @@ public final class RenderContext {
     // ------------------------------------------------------------------ matrix stack
 
     public static void push() {
+        if (matrixMode == GL_TEXTURE) {
+            textureStack.push(textureMatrix == null ? new org.joml.Matrix4f() : new org.joml.Matrix4f(textureMatrix));
+            return;
+        }
+        if (matrixMode == GL_PROJECTION) {
+            if (beginProjection()) projectionStack.push(new org.joml.Matrix4f(projection));
+            return;
+        }
         PoseStack p = pose();
         if (p != null) p.pushPose();
         else strayPushes++;
     }
 
     public static void pop() {
+        if (matrixMode == GL_TEXTURE) {
+            textureMatrix = textureStack.isEmpty() ? null : textureStack.pop();
+            return;
+        }
+        if (matrixMode == GL_PROJECTION) {
+            if (projection == null || projectionStack.isEmpty()) return;
+            org.joml.Matrix4f previous = projectionStack.pop();
+            if (projectionStack.isEmpty() && previous.equals(savedProjection)) endProjection();
+            else setProjection(previous);
+            return;
+        }
         PoseStack p = pose();
         // A pop with nothing pushed (legacy code is sloppy) must not remove the caller's base matrix.
         if (p != null) {
@@ -407,20 +434,152 @@ public final class RenderContext {
     }
 
     public static void translate(double x, double y, double z) {
+        if (multMatrix(new org.joml.Matrix4f().translation((float) x, (float) y, (float) z))) return;
         PoseStack p = pose();
         if (p != null) p.translate(x, y, z);
     }
 
     public static void rotate(float degrees, float x, float y, float z) {
-        PoseStack p = pose();
-        if (p == null) return;
         float len = (float) Math.sqrt(x * x + y * y + z * z);
         if (len == 0) return;
+        if (matrixMode != GL_MODELVIEW && multMatrix(new org.joml.Matrix4f().rotation((float) Math.toRadians(degrees), x / len, y / len, z / len))) return;
+        PoseStack p = pose();
+        if (p == null) return;
         p.mulPose(new Quaternionf().rotationAxis((float) Math.toRadians(degrees), x / len, y / len, z / len));
     }
 
     public static void scale(float x, float y, float z) {
+        if (matrixMode != GL_MODELVIEW && multMatrix(new org.joml.Matrix4f().scaling(x, y, z))) return;
         PoseStack p = pose();
         if (p != null) p.scale(x, y, z);
+    }
+
+    // ------------------------------------------------------------------ matrix modes (glMatrixMode)
+    //
+    // 1.7.10 code switches to GL_TEXTURE to scroll or scale texture coordinates (glints, energy fields) and to GL_PROJECTION
+    // to draw its own perspective or orthographic view (Galacticraft's galaxy map, 3D previews in screens). Without the modes
+    // those calls landed on the model-view matrix and moved the geometry instead.
+
+    private static final int GL_MODELVIEW = 5888, GL_PROJECTION = 5889, GL_TEXTURE = 5890;
+    private static int matrixMode = GL_MODELVIEW;
+    /** The emulated texture matrix applied to legacy texture coordinates; null is the identity. */
+    private static org.joml.Matrix4f textureMatrix;
+    private static final Deque<org.joml.Matrix4f> textureStack = new ArrayDeque<>();
+    /** The legacy projection while legacy code has replaced the modern one; null while it has not. */
+    private static org.joml.Matrix4f projection;
+    private static final Deque<org.joml.Matrix4f> projectionStack = new ArrayDeque<>();
+    private static org.joml.Matrix4f savedProjection;
+    private static com.mojang.blaze3d.vertex.VertexSorting savedSorting;
+    private static org.joml.Matrix4f savedModelView;
+    private static PoseStack.Pose foldedPose;
+
+    public static void matrixMode(int mode) {
+        matrixMode = mode;
+    }
+
+    /** glLoadIdentity: the texture or legacy projection matrix, or the model-view while a legacy projection is in use. */
+    public static void loadIdentity() {
+        loadMatrix(new org.joml.Matrix4f());
+    }
+
+    public static void loadMatrix(org.joml.Matrix4f m) {
+        if (matrixMode == GL_TEXTURE) {
+            textureMatrix = new org.joml.Matrix4f(m);
+        } else if (matrixMode == GL_PROJECTION) {
+            if (beginProjection()) setProjection(m);
+        } else if (projection != null && pose() != null) {
+            // the model-view: only once the legacy code has its own projection (1.7.10's identity then means "no camera");
+            // under the modern projection an identity would drop the screen or world transform the legacy code never set up
+            pose().last().pose().set(m);
+            pose().last().normal().identity();
+        }
+    }
+
+    /** glMultMatrix, glOrtho and glFrustum (and translate/rotate/scale) in the texture or projection mode; false in the model-view mode. */
+    public static boolean multMatrix(org.joml.Matrix4f m) {
+        if (matrixMode == GL_TEXTURE) {
+            if (textureMatrix == null) textureMatrix = new org.joml.Matrix4f();
+            textureMatrix.mul(m);
+            return true;
+        }
+        if (matrixMode == GL_PROJECTION) {
+            if (beginProjection()) setProjection(new org.joml.Matrix4f(projection).mul(m));
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Starts emulating the projection: the modern one is saved, and the modern base model-view (the screen's depth offset)
+     * moves into the current pose so that it can be identity while legacy code projects with its own matrix. False without a
+     * legacy frame or off the render thread (then the calls are ignored as before).
+     */
+    private static boolean beginProjection() {
+        if (projection != null) return true;
+        PoseStack p = pose();
+        if (p == null || !RenderSystem.isOnRenderThread()) return false;
+        flushBatch();
+        savedProjection = new org.joml.Matrix4f(RenderSystem.getProjectionMatrix());
+        savedSorting = RenderSystem.getVertexSorting();
+        savedModelView = new org.joml.Matrix4f(RenderSystem.getModelViewMatrix());
+        projection = new org.joml.Matrix4f(savedProjection);
+        foldedPose = p.last();
+        foldedPose.pose().mulLocal(savedModelView);
+        var stack = RenderSystem.getModelViewStack();
+        stack.pushMatrix();
+        stack.identity();
+        RenderSystem.applyModelViewMatrix();
+        return true;
+    }
+
+    private static void setProjection(org.joml.Matrix4f m) {
+        flushBatch();
+        projection = new org.joml.Matrix4f(m);
+        RenderSystem.setProjectionMatrix(projection, savedSorting);
+    }
+
+    /** Puts the modern projection and model-view back (the legacy code popped its projection, or the frame ended). */
+    private static void endProjection() {
+        if (projection == null) return;
+        flushBatch();
+        RenderSystem.setProjectionMatrix(savedProjection, savedSorting);
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+        PoseStack p = pose();
+        if (p != null && p.last() == foldedPose) foldedPose.pose().mulLocal(new org.joml.Matrix4f(savedModelView).invert());
+        projection = null;
+        projectionStack.clear();
+        foldedPose = null;
+    }
+
+    /** Draws the geometry batched so far, before the projection it was meant for changes. */
+    private static void flushBatch() {
+        GuiGraphics gui = gui();
+        if (gui != null) {
+            mcc$flushGui(gui);
+        } else if (buffers() instanceof MultiBufferSource.BufferSource source) {
+            source.endBatch();
+        }
+    }
+
+    /** Texture coordinates through the emulated texture matrix (a copy of the quad when it is not the identity). */
+    private static double[][] textured(double[][] v) {
+        if (textureMatrix == null || !texture2d) return v;
+        double[][] out = new double[v.length][];
+        org.joml.Vector4f uv = new org.joml.Vector4f();
+        for (int i = 0; i < v.length; i++) {
+            out[i] = v[i].clone();
+            textureMatrix.transform(uv.set((float) out[i][3], (float) out[i][4], 0F, 1F));
+            out[i][3] = uv.x;
+            out[i][4] = uv.y;
+        }
+        return out;
+    }
+
+    private static void resetMatrixModes() {
+        endProjection();
+        matrixMode = GL_MODELVIEW;
+        textureMatrix = null;
+        textureStack.clear();
     }
 }
