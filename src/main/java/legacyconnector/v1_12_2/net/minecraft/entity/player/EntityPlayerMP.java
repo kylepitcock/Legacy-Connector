@@ -162,4 +162,19 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
     public legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements getAdvancements() {
         return new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(this);
     }
+
+    /** Phantom field (area F): accesses are redirected to {@code mcc$get$interactionManager}, a view over the modern game mode. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager interactionManager;
+    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$interactionManager;
+
+    public static legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$get$interactionManager(EntityPlayerMP p) {
+        if (p.mcc$interactionManager == null) p.mcc$interactionManager = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager(p);
+        return p.mcc$interactionManager;
+    }
+
+    public static void mcc$set$interactionManager(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager manager) {
+        if (manager != null) manager.player = p;
+        p.mcc$interactionManager = manager;
+    }
 }
