@@ -795,12 +795,18 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public boolean isLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
             legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
-        return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LEAVES;
+        return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LEAVES || mcc$vanillaTagged(net.minecraft.tags.BlockTags.LEAVES);
+    }
+
+    /** Whether this is a vanilla block wrapper whose modern block is in the tag (vanilla logs and leaves; read at runtime only). */
+    private boolean mcc$vanillaTagged(net.minecraft.tags.TagKey<net.minecraft.world.level.block.Block> tag) {
+        return mcc$modern instanceof net.minecraft.world.level.block.Block b && !(b instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block)
+                && b.defaultBlockState().is(tag);
     }
 
     /** Forge: whether the block is a log (trees grow around it, leaves stay); false unless overridden. */
     public boolean isWood(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
-        return false;
+        return mcc$vanillaTagged(net.minecraft.tags.BlockTags.LOGS);
     }
 
     public boolean isFoliage(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
@@ -1076,7 +1082,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Forge: whether leaves next to the block stay (logs sustain them). */
     public boolean canSustainLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
             legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
-        return false;
+        return mcc$vanillaTagged(net.minecraft.tags.BlockTags.LOGS);
     }
 
     /** Forge: whether ore generation may replace the block (stone for the overworld's ores). */
