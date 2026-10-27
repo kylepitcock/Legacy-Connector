@@ -121,4 +121,76 @@ public class ForgeEventFactory {
     public static int onHoeUse(ItemStack stack, EntityPlayer player, World worldIn, BlockPos pos) {
         return 0;
     }
+
+    // ---- area F: more hooks over the modern events
+
+    private static net.minecraft.world.entity.LivingEntity living(Entity e) {
+        return e != null && e.mcc$modern() instanceof net.minecraft.world.entity.LivingEntity l ? l : null;
+    }
+
+    /** Fires the pickup check: -1 when a mod forbids the pickup, 1 when one forces it, 0 to pick up as usual. */
+    public static int onItemPickup(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem entityItem, EntityPlayer player) {
+        var p = player(player);
+        if (p == null || entityItem == null || !(entityItem.mcc$modern() instanceof net.minecraft.world.entity.item.ItemEntity item)) return 0;
+        var result = EventHooks.fireItemPickupPre(item, p).canPickup();
+        return result == net.neoforged.neoforge.common.util.TriState.FALSE ? -1 : result == net.neoforged.neoforge.common.util.TriState.TRUE ? 1 : 0;
+    }
+
+    /** The extra ticks a mod gives an expiring item entity (a negative number lets it despawn). */
+    public static int onItemExpire(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem entity, ItemStack item) {
+        if (entity == null || !(entity.mcc$modern() instanceof net.minecraft.world.entity.item.ItemEntity modern)) return -1;
+        return EventHooks.onItemExpire(modern);
+    }
+
+    /** True when a mod stops the taming. */
+    public static boolean onAnimalTame(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAnimal animal, EntityPlayer tamer) {
+        var p = player(tamer);
+        if (p == null || animal == null || !(animal.mcc$modern() instanceof net.minecraft.world.entity.animal.Animal modern)) return false;
+        return EventHooks.onAnimalTame(modern, p);
+    }
+
+    public static ItemStack onItemUseFinish(EntityLivingBase entity, ItemStack item, int duration, ItemStack result) {
+        var l = living(entity);
+        if (l == null) return result;
+        return Stacks1122.fromModern(EventHooks.onItemUseFinish(l, Stacks1122.toModern(item), duration, Stacks1122.toModern(result)));
+    }
+
+    /** True when a mod canceled stopping the use. */
+    public static boolean onUseItemStop(EntityLivingBase entity, ItemStack item, int duration) {
+        var l = living(entity);
+        return l != null && EventHooks.onUseItemStop(l, Stacks1122.toModern(item), duration);
+    }
+
+    /** Whether the player can harvest the state (the harvest check event, after the block's own rule). */
+    public static boolean doPlayerHarvestCheck(EntityPlayer player, IBlockState state, boolean success) {
+        var p = player(player);
+        if (p == null || state == null) return success;
+        var event = new net.neoforged.neoforge.event.entity.player.PlayerEvent.HarvestCheck(p, state(state), p.level(), p.blockPosition(), success);
+        return net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).canHarvest();
+    }
+
+    /** The burn time mods give the stack (-1: the item's own). */
+    public static int getItemBurnTime(ItemStack itemStack) {
+        if (itemStack == null || itemStack.isEmpty()) return 0;
+        return EventHooks.getItemBurnTime(Stacks1122.toModern(itemStack), -1, null);
+    }
+
+    /** True when a mod stops the lightning bolt hitting the entity. */
+    public static boolean onEntityStruckByLightning(Entity entity, legacyconnector.v1_12_2.net.minecraft.entity.effect.EntityLightningBolt bolt) {
+        if (entity == null || entity.mcc$modern() == null || bolt == null || !(bolt.mcc$modern() instanceof net.minecraft.world.entity.LightningBolt modern)) return false;
+        return EventHooks.onEntityStruckByLightning(entity.mcc$modern(), modern);
+    }
+
+    /** The neighbour notification event for a block change; returns the legacy event (canceled when a mod canceled the modern one). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.NeighborNotifyEvent onNeighborNotify(World world, BlockPos pos,
+            IBlockState state, java.util.EnumSet<legacyconnector.v1_12_2.net.minecraft.util.EnumFacing> notifiedSides, boolean forceRedstoneUpdate) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.NeighborNotifyEvent(world, pos, state, notifiedSides, forceRedstoneUpdate);
+        var level = world == null ? null : world.mcc$level();
+        if (level != null) {
+            java.util.EnumSet<net.minecraft.core.Direction> sides = java.util.EnumSet.noneOf(net.minecraft.core.Direction.class);
+            if (notifiedSides != null) for (var f : notifiedSides) sides.add(f.mcc$modern());
+            if (EventHooks.onNeighborNotify(level, pos(pos), state(state), sides, forceRedstoneUpdate).isCanceled()) event.setCanceled(true);
+        }
+        return event;
+    }
 }

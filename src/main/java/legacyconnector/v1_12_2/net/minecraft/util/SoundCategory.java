@@ -27,4 +27,11 @@ public enum SoundCategory {
         for (SoundCategory c : values()) if (c.name.equals(name)) return c;
         return null;
     }
+
+
+    public static java.util.Set<String> getSoundCategoryNames() {
+        java.util.Set<String> names = new java.util.LinkedHashSet<>();
+        for (SoundCategory c : values()) names.add(c.getName());
+        return names;
+    }
 }

@@ -280,4 +280,142 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         var server = mcc$modern();
         return server != null && server.isFlightAllowed();
     }
+
+
+    // ---- area F: advancements and the worlds array
+
+    public legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager getAdvancementManager() {
+        return legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager.INSTANCE;
+    }
+
+    /** Phantom field: accesses are redirected to {@code mcc$get$worlds} (the loaded levels, overworld first, as 1.12's array). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.WorldServer[] worlds;
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.WorldServer[] mcc$get$worlds(MinecraftServer s) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return new legacyconnector.v1_12_2.net.minecraft.world.WorldServer[0];
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.world.WorldServer> out = new java.util.ArrayList<>();
+        out.add((legacyconnector.v1_12_2.net.minecraft.world.WorldServer) org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(server.overworld()));
+        for (var level : server.getAllLevels()) {
+            if (level == server.overworld()) continue;
+            if (org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level) instanceof legacyconnector.v1_12_2.net.minecraft.world.WorldServer w) out.add(w);
+        }
+        return out.toArray(new legacyconnector.v1_12_2.net.minecraft.world.WorldServer[0]);
+    }
+
+    // ---- area F: more of the server
+
+    /**
+     * Phantom field: accesses are redirected to {@code mcc$get$futureTaskQueue}, a queue whose {@code add} runs the task on the
+     * server thread (mods queue FutureTasks into it directly instead of calling addScheduledTask).
+     */
+    @Deprecated
+    public java.util.Queue<java.util.concurrent.FutureTask<?>> futureTaskQueue;
+
+    private static final java.util.Queue<java.util.concurrent.FutureTask<?>> MCC$TASKS = new java.util.AbstractQueue<>() {
+        @Override
+        public boolean offer(java.util.concurrent.FutureTask<?> task) {
+            if (task == null) return false;
+            var server = mcc$modern();
+            if (server == null || server.isSameThread()) task.run();
+            else server.execute(task);
+            return true;
+        }
+
+        @Override
+        public java.util.concurrent.FutureTask<?> poll() {
+            return null;
+        }
+
+        @Override
+        public java.util.concurrent.FutureTask<?> peek() {
+            return null;
+        }
+
+        @Override
+        public java.util.Iterator<java.util.concurrent.FutureTask<?>> iterator() {
+            return java.util.Collections.emptyIterator();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    };
+
+    public static java.util.Queue<java.util.concurrent.FutureTask<?>> mcc$get$futureTaskQueue(MinecraftServer s) {
+        return MCC$TASKS;
+    }
+
+    /** Phantom field: accesses are redirected to {@code mcc$get$currentTime} (the time of the last tick). */
+    @Deprecated
+    public long currentTime;
+
+    public static long mcc$get$currentTime(MinecraftServer s) {
+        return getCurrentTimeMillis();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer getDataFixer() {
+        return legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixesManager.getDataFixer();
+    }
+
+    public boolean isCommandBlockEnabled() {
+        var server = mcc$modern();
+        return server != null && server.isCommandBlockEnabled();
+    }
+
+    public String getServerHostname() {
+        var server = mcc$modern();
+        return server == null ? "" : server.getLocalIp();
+    }
+
+    public String getServerModName() {
+        return "fml,forge";
+    }
+
+    public java.net.Proxy getServerProxy() {
+        var server = mcc$modern();
+        return server == null ? java.net.Proxy.NO_PROXY : server.getProxy();
+    }
+
+    public int getSpawnProtectionSize() {
+        var server = mcc$modern();
+        return server == null ? 16 : server.getSpawnProtectionRadius();
+    }
+
+    public int getSpawnRadius(legacyconnector.v1_12_2.net.minecraft.world.WorldServer worldIn) {
+        var server = mcc$modern();
+        if (server == null) return 10;
+        var level = worldIn != null && worldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel l ? l : server.overworld();
+        return server.getSpawnRadius(level);
+    }
+
+    public boolean isServerStopped() {
+        var server = mcc$modern();
+        return server == null || server.isStopped();
+    }
+
+    public void saveAllWorlds(boolean isSilent) {
+        var server = mcc$modern();
+        if (server != null) server.saveAllChunks(isSilent, false, false);
+    }
+
+    public void setAllowFlight(boolean allow) {
+        var server = mcc$modern();
+        if (server != null) server.setFlightAllowed(allow);
+    }
+
+    public boolean isAnvilFileSet() {
+        return true;
+    }
+
+    public void initiateShutdown() {
+        var server = mcc$modern();
+        if (server != null) server.halt(false);
+    }
+
+    public String getServerVersion() {
+        return "1.12.2";
+    }
 }

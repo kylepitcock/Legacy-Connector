@@ -58,4 +58,24 @@ public class NetworkManager {
     public void disableAutoRead() {
         if (connection.channel() != null) connection.channel().config().setAutoRead(false);
     }
+
+
+    private INetHandler mcc$handler;
+
+    public EnumPacketDirection getDirection() {
+        return connection.getReceiving() == net.minecraft.network.protocol.PacketFlow.CLIENTBOUND ? EnumPacketDirection.CLIENTBOUND
+                : EnumPacketDirection.SERVERBOUND;
+    }
+
+    public void setNetHandler(INetHandler handler) {
+        this.mcc$handler = handler;
+    }
+
+    public INetHandler getNetHandler() {
+        return mcc$handler;
+    }
+
+    /** The modern connection handles its own packets; nothing is queued here. */
+    public void processReceivedPackets() {
+    }
 }

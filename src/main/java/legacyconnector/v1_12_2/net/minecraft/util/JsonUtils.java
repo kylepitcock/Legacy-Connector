@@ -174,4 +174,36 @@ public class JsonUtils {
         String s = String.valueOf(json);
         return s.length() > 10 ? s.substring(0, 10) + "..." : s;
     }
+
+    // ---- area F
+
+    /** The member deserialized as {@code adapter} through the context (loot tables and advancements read their parts so). */
+    public static <T> T deserializeClass(JsonElement json, String memberName, com.google.gson.JsonDeserializationContext context, Class<? extends T> adapter) {
+        if (json != null) return context.deserialize(json, adapter);
+        throw new com.google.gson.JsonSyntaxException("Missing " + memberName);
+    }
+
+    public static <T> T deserializeClass(JsonObject json, String memberName, com.google.gson.JsonDeserializationContext context, Class<? extends T> adapter) {
+        if (json.has(memberName)) return deserializeClass(json.get(memberName), memberName, context, adapter);
+        throw new com.google.gson.JsonSyntaxException("Missing " + memberName);
+    }
+
+    public static <T> T deserializeClass(JsonObject json, String memberName, T fallback, com.google.gson.JsonDeserializationContext context,
+            Class<? extends T> adapter) {
+        return json.has(memberName) ? deserializeClass(json.get(memberName), memberName, context, adapter) : fallback;
+    }
+
+    public static long getLong(JsonElement json, String memberName) {
+        if (json.isJsonPrimitive() && json.getAsJsonPrimitive().isNumber()) return json.getAsLong();
+        throw new com.google.gson.JsonSyntaxException("Expected " + memberName + " to be a Long, was " + toString(json));
+    }
+
+    public static long getLong(JsonObject json, String memberName) {
+        if (json.has(memberName)) return getLong(json.get(memberName), memberName);
+        throw new com.google.gson.JsonSyntaxException("Missing " + memberName + ", expected to find a Long");
+    }
+
+    public static long getLong(JsonObject json, String memberName, long fallback) {
+        return json.has(memberName) ? getLong(json.get(memberName), memberName) : fallback;
+    }
 }

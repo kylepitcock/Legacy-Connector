@@ -68,4 +68,21 @@ public class ChunkPos {
     public static ChunkPos mcc$of(net.minecraft.world.level.ChunkPos pos) {
         return new ChunkPos(pos.x, pos.z);
     }
+
+
+    public int getRegionCoordX() {
+        return x >> 5;
+    }
+
+    public int getRegionCoordZ() {
+        return z >> 5;
+    }
+
+    public int getRegionPositionX() {
+        return x & 31;
+    }
+
+    public int getRegionPositionZ() {
+        return z & 31;
+    }
 }

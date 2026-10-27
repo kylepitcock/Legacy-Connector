@@ -1,41 +1,58 @@
 package legacyconnector.v1_12_2.net.minecraft.server.management;
 
+import java.util.ArrayList;
+import java.util.List;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP;
 import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
-import legacyconnector.v1_12_2.net.minecraft.world.WorldServer;
 
 /**
- * 1.12.2 tracker of which players see which chunks, over the server level's modern chunk map: who watches a chunk, and resending
- * a changed block to them. Player view tracking itself is the modern game's.
+ * Which players watch which chunks of a server world: a view over the modern level's chunk map (the modern game adds and
+ * removes watchers itself, so the add/remove calls only matter for its own bookkeeping).
  */
 public class PlayerChunkMap {
-    private final WorldServer world;
+    private final net.minecraft.server.level.ServerLevel level;
 
-    public PlayerChunkMap(WorldServer world) {
-        this.world = world;
+    public PlayerChunkMap(net.minecraft.server.level.ServerLevel level) {
+        this.level = level;
     }
 
-    private net.minecraft.server.level.ServerLevel level() {
-        return world == null ? null : world.mcc$serverLevel();
+    public PlayerChunkMap(legacyconnector.v1_12_2.net.minecraft.world.WorldServer world) {
+        this(world.mcc$serverLevel());
     }
 
-    public WorldServer getWorldServer() {
-        return world;
+    public net.minecraft.server.level.ServerLevel mcc$level() {
+        return level;
     }
 
-    public void tick() {
+    public legacyconnector.v1_12_2.net.minecraft.world.WorldServer getWorldServer() {
+        return (legacyconnector.v1_12_2.net.minecraft.world.WorldServer) org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level);
     }
 
-    /** Whether any player watches the chunk. */
+    List<net.minecraft.server.level.ServerPlayer> mcc$watchers(int x, int z) {
+        return level == null ? List.of() : level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(x, z), false);
+    }
+
     public boolean contains(int chunkX, int chunkZ) {
-        var level = level();
-        return level != null && !level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(chunkX, chunkZ), false).isEmpty();
+        return level != null && level.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(chunkX, chunkZ)) != null;
     }
 
-    /** Sends the block's current state to the players watching it. */
+    /** The chunk's watcher entry, or null when the chunk is not loaded for players. */
+    public PlayerChunkMapEntry getEntry(int x, int z) {
+        return contains(x, z) ? new PlayerChunkMapEntry(this, x, z) : null;
+    }
+
+    public PlayerChunkMapEntry getOrCreateEntry(int chunkX, int chunkZ) {
+        return new PlayerChunkMapEntry(this, chunkX, chunkZ);
+    }
+
+    public boolean isPlayerWatchingChunk(EntityPlayerMP player, int chunkX, int chunkZ) {
+        var sp = player == null ? null : player.mcc$serverPlayer();
+        return sp != null && mcc$watchers(chunkX, chunkZ).contains(sp);
+    }
+
+    /** Sends the block's new state to the players watching its chunk. */
     public void markBlockForUpdate(BlockPos pos) {
-        var level = level();
-        if (level != null) level.getChunkSource().blockChanged(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()));
+        if (level != null && pos != null) level.getChunkSource().blockChanged(pos.mcc$modern());
     }
 
     public void addPlayer(EntityPlayerMP player) {
@@ -47,12 +64,18 @@ public class PlayerChunkMap {
     public void updateMovingPlayer(EntityPlayerMP player) {
     }
 
-    public boolean isPlayerWatchingChunk(EntityPlayerMP player, int chunkX, int chunkZ) {
-        var level = level();
-        if (level == null || !(player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p)) return false;
-        return level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(chunkX, chunkZ), false).contains(p);
+    public void tick() {
     }
 
+    public List<EntityPlayerMP> mcc$players(int x, int z) {
+        List<EntityPlayerMP> out = new ArrayList<>();
+        for (var sp : mcc$watchers(x, z)) {
+            if (org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(sp) instanceof EntityPlayerMP mp) out.add(mp);
+        }
+        return out;
+    }
+
+    /** The view distance is the server's setting. */
     public void setPlayerViewRadius(int radius) {
     }
 

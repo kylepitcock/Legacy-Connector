@@ -29,4 +29,27 @@ public class GameData {
         if (registry != null) registry.register(value); // findRegistry logged a registry the layer does not have
         return value;
     }
+
+    /** Block state ids ({@code Block.getStateId}/{@code getStateById}) as 1.12.2's id map. */
+    private static final legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState> BLOCK_STATE_IDS =
+            new legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<>() {
+                @Override
+                public int get(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+                    return state == null ? -1 : Block.getStateId(state);
+                }
+
+                @Override
+                public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getByValue(int id) {
+                    return Block.getStateById(id);
+                }
+
+                @Override
+                public void put(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState key, int value) {
+                    // the ids are computed from the block's id and metadata
+                }
+            };
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState> getBlockStateIDMap() {
+        return BLOCK_STATE_IDS;
+    }
 }

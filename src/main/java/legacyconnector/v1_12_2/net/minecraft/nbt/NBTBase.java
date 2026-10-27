@@ -126,9 +126,20 @@ public abstract class NBTBase {
         else if (tag instanceof ByteArrayTag b) out = new NBTTagByteArray(b.getAsByteArray());
         else if (tag instanceof StringTag s) out = new NBTTagString(s.getAsString());
         else if (tag instanceof IntArrayTag i) out = new NBTTagIntArray(i.getAsIntArray());
-        else if (tag instanceof LongArrayTag l) out = new NBTTagIntArray(java.util.Arrays.stream(l.getAsLongArray()).mapToInt(v -> (int) v).toArray());
+        else if (tag instanceof LongArrayTag l) out = new NBTTagLongArray(l.getAsLongArray());
         else return null;
         out.mcc$parent = parent;
         return out;
+    }
+
+
+    /** 1.12.2's name of {@link #isEmpty} (the snapshot mappings renamed it). */
+    public boolean hasNoTags() {
+        return isEmpty();
+    }
+
+    /** {@link #getTypeName} under the name of the stable mappings. */
+    public static String getTagTypeName(int id) {
+        return getTypeName(id);
     }
 }

@@ -142,4 +142,62 @@ public class FMLCommonHandler {
                 exception);
         if (stopGame) throw new RuntimeException(message, exception);
     }
+
+    // ---- area F
+
+    public void firePlayerItemPickupEvent(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem item, legacyconnector.v1_12_2.net.minecraft.item.ItemStack clone) {
+        bus().post(new legacyconnector.v1_12_2.net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent(player, item, clone));
+    }
+
+    /** The client's language code (en_us on a server). */
+    public String getCurrentLanguage() {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return "en_us";
+        return ClientLanguage.get();
+    }
+
+    /** Opens a legacy screen on the client (FML's own screens and mods' ones). */
+    public void showGuiScreen(Object clientGuiScreen) {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) ClientLanguage.show(clientGuiScreen);
+    }
+
+    /** The modern level saves its own data; FML's save hooks have nothing to add. */
+    public void handleWorldDataSave(legacyconnector.v1_12_2.net.minecraft.world.storage.SaveHandler handler, legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo worldInfo,
+            legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tagCompound) {
+    }
+
+    public boolean isDisplayCloseRequested() {
+        return false;
+    }
+
+    public void onRenderTickStart(float timer) {
+        bus().post(new legacyconnector.v1_12_2.net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent(
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START, timer));
+    }
+
+    public void onRenderTickEnd(float timer) {
+        bus().post(new legacyconnector.v1_12_2.net.minecraftforge.fml.common.gameevent.TickEvent.RenderTickEvent(
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.gameevent.TickEvent.Phase.END, timer));
+    }
+
+    /** The client's search trees are rebuilt by the modern creative screen itself. */
+    public void reloadSearchTrees() {
+    }
+
+    /** Only loaded on the client. */
+    private static final class ClientLanguage {
+        static String get() {
+            return net.minecraft.client.Minecraft.getInstance().getLanguageManager().getSelected();
+        }
+
+        static void show(Object screen) {
+            if (screen == null) {
+                net.minecraft.client.Minecraft.getInstance().setScreen(null);
+            } else if (screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen legacy) {
+                org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.display(legacy);
+            } else if (screen instanceof net.minecraft.client.gui.screens.Screen modern) {
+                net.minecraft.client.Minecraft.getInstance().setScreen(modern);
+            }
+        }
+    }
 }

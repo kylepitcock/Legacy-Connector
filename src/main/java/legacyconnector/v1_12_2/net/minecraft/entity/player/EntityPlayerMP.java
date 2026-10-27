@@ -151,4 +151,30 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
             legacyconnector.v1_12_2.net.minecraft.inventory.IInventory inventory) {
         for (int i = 0; i < inventory.getFieldCount(); ++i) sendWindowProperty(container, i, inventory.getField(i));
     }
+
+    /** A handler a mod built for this player (fake players get theirs from the handler's constructor). */
+    public static void mcc$set$connection(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer handler) {
+        p.mcc$connection = handler;
+    }
+
+
+    /** The player's advancements (area F; a view over the modern player's). */
+    public legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements getAdvancements() {
+        return new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(this);
+    }
+
+    /** Phantom field (area F): accesses are redirected to {@code mcc$get$interactionManager}, a view over the modern game mode. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager interactionManager;
+    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$interactionManager;
+
+    public static legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$get$interactionManager(EntityPlayerMP p) {
+        if (p.mcc$interactionManager == null) p.mcc$interactionManager = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager(p);
+        return p.mcc$interactionManager;
+    }
+
+    public static void mcc$set$interactionManager(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager manager) {
+        if (manager != null) manager.player = p;
+        p.mcc$interactionManager = manager;
+    }
 }

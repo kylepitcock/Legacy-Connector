@@ -1883,4 +1883,11 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         category.addCrashSection("Entity's Momentum", String.format(java.util.Locale.ROOT, "%.2f, %.2f, %.2f", mcc$get$motionX(this), mcc$get$motionY(this),
                 mcc$get$motionZ(this)));
     }
+
+
+    /** The scoreboard team the entity is on (area F), or null. */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Team getTeam() {
+        var team = mcc$entity == null ? null : mcc$entity.getTeam();
+        return team instanceof net.minecraft.world.scores.PlayerTeam p ? legacyconnector.v1_12_2.net.minecraft.scoreboard.ScorePlayerTeam.mcc$of(p) : null;
+    }
 }

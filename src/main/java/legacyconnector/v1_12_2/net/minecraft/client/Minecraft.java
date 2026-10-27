@@ -271,4 +271,10 @@ public class Minecraft {
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap getTextureMapBlocks() {
         return legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks();
     }
+
+    /** The logged-in user (area F; null on a dedicated server). */
+    public legacyconnector.v1_12_2.net.minecraft.util.Session getSession() {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return null;
+        return legacyconnector.v1_12_2.net.minecraft.util.Session.mcc$of(mc().getUser());
+    }
 }
