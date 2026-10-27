@@ -798,6 +798,7 @@ public class World implements IBlockAccess {
     // ------------------------------------------------------------------ updates and redstone
 
     public void notifyBlockUpdate(BlockPos pos, IBlockState oldState, IBlockState newState, int flags) {
+        for (IWorldEventListener l : mcc$listeners()) l.notifyBlockUpdate(this, pos, oldState, newState, flags);
         Level live = mcc$liveLevel();
         if (live == null) return;
         if (live instanceof ServerLevel sl && !sl.getServer().isSameThread()) return;
@@ -1335,6 +1336,7 @@ public class World implements IBlockAccess {
     }
 
     public void playEvent(EntityPlayer player, int type, BlockPos pos, int data) {
+        for (IWorldEventListener l : mcc$listeners()) l.playEvent(player, type, pos, data);
         Level live = mcc$liveLevel();
         if (live == null) return;
         live.levelEvent(player == null ? null : player.mcc$player(), type, modern(pos), eventData(type, data));
@@ -1750,5 +1752,116 @@ public class World implements IBlockAccess {
 
     public legacyconnector.v1_12_2.net.minecraft.crash.CrashReportCategory addWorldInfoToCrashReport(legacyconnector.v1_12_2.net.minecraft.crash.CrashReport report) {
         return report.makeCategoryDepth("Affected level", 1);
+    }
+
+    // ------------------------------------------------------------------ area W: listeners, particles, ray traces
+
+    /** The registered {@link IWorldEventListener}s (a snapshot: listeners may remove themselves while called). */
+    public List<IWorldEventListener> mcc$listeners() {
+        if (eventListeners.isEmpty()) return java.util.Collections.emptyList();
+        List<IWorldEventListener> out = new ArrayList<>();
+        synchronized (eventListeners) {
+            for (Object o : eventListeners) if (o instanceof IWorldEventListener l) out.add(l);
+        }
+        return out;
+    }
+
+    public void addEventListener(IWorldEventListener listener) {
+        if (listener == null) return;
+        synchronized (eventListeners) {
+            eventListeners.add(listener);
+        }
+    }
+
+    public void removeEventListener(IWorldEventListener listener) {
+        synchronized (eventListeners) {
+            eventListeners.remove(listener);
+        }
+    }
+
+    /**
+     * A particle effect. As in 1.12 it is only drawn by a client world (a server world's call reaches its listeners and nothing
+     * else; servers send particles with {@code WorldServer.spawnParticle(type, x, y, z, count, ...)}).
+     */
+    public void spawnParticle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, double x, double y, double z, double xSpeed, double ySpeed,
+            double zSpeed, int... parameters) {
+        mcc$particle(type, type != null && type.getShouldIgnoreRange(), false, x, y, z, xSpeed, ySpeed, zSpeed, parameters);
+    }
+
+    public void spawnParticle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, boolean ignoreRange, double x, double y, double z, double xSpeed,
+            double ySpeed, double zSpeed, int... parameters) {
+        mcc$particle(type, type != null && type.getShouldIgnoreRange() || ignoreRange, false, x, y, z, xSpeed, ySpeed, zSpeed, parameters);
+    }
+
+    public void spawnAlwaysVisibleParticle(int id, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, int... parameters) {
+        mcc$particle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes.getParticleFromId(id), false, true, x, y, z, xSpeed, ySpeed, zSpeed,
+                parameters);
+    }
+
+    private void mcc$particle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, boolean ignoreRange, boolean always, double x, double y,
+            double z, double xSpeed, double ySpeed, double zSpeed, int... parameters) {
+        if (type == null) return;
+        for (IWorldEventListener l : mcc$listeners()) {
+            if (always) l.spawnParticle(type.getParticleID(), ignoreRange, true, x, y, z, xSpeed, ySpeed, zSpeed, parameters);
+            else l.spawnParticle(type.getParticleID(), ignoreRange, x, y, z, xSpeed, ySpeed, zSpeed, parameters);
+        }
+        Level live = mcc$liveLevel();
+        if (live == null || !live.isClientSide()) return;
+        try {
+            var options = type.mcc$modern(xSpeed, ySpeed, zSpeed, parameters == null ? new int[0] : parameters);
+            if (options == null) return;
+            boolean color = type.mcc$speedIsColor();
+            double vx = color ? 0 : xSpeed, vy = color ? 0 : ySpeed, vz = color ? 0 : zSpeed;
+            if (always) live.addAlwaysVisibleParticle(options, ignoreRange, x, y, z, vx, vy, vz);
+            else live.addParticle(options, ignoreRange, x, y, z, vx, vy, vz);
+        } catch (RuntimeException | LinkageError e) {
+            // a particle the modern game cannot build (unknown block state): nothing is drawn
+        }
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end) {
+        return rayTraceBlocks(start, end, false, false, false);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end, boolean stopOnLiquid) {
+        return rayTraceBlocks(start, end, stopOnLiquid, false, false);
+    }
+
+    /**
+     * The first block a line hits. {@code stopOnLiquid} also hits still liquid (1.12 stopped on source blocks only);
+     * {@code ignoreBlockWithoutBoundingBox} skips blocks without a collision box (else their selection outline counts). With
+     * {@code returnLastUncollidableBlock} a miss reports the end of the line as a MISS result, else a miss is null.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end, boolean stopOnLiquid,
+            boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock) {
+        if (start == null || end == null || access == null) return null;
+        if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z) || Double.isNaN(end.x) || Double.isNaN(end.y) || Double.isNaN(end.z)) {
+            return null;
+        }
+        var context = new net.minecraft.world.level.ClipContext(start.mcc$modern(), end.mcc$modern(),
+                ignoreBlockWithoutBoundingBox ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE,
+                stopOnLiquid ? net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY : net.minecraft.world.level.ClipContext.Fluid.NONE,
+                net.minecraft.world.phys.shapes.CollisionContext.empty());
+        net.minecraft.world.phys.BlockHitResult hit;
+        try {
+            hit = access.clip(context);
+        } catch (RuntimeException e) {
+            return null;
+        }
+        Vec3d at = new Vec3d(hit.getLocation().x, hit.getLocation().y, hit.getLocation().z);
+        EnumFacing side = EnumFacing.byIndex(hit.getDirection().get3DDataValue());
+        BlockPos pos = new BlockPos(hit.getBlockPos().getX(), hit.getBlockPos().getY(), hit.getBlockPos().getZ());
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) {
+            return returnLastUncollidableBlock
+                    ? new legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult(legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.Type.MISS, at, side, pos)
+                    : null;
+        }
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult(at, side, pos);
+    }
+
+    /** The server's loot tables (one manager for all worlds, as in 1.12); null on a client or detached world. */
+    public legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager getLootTableManager() {
+        return level == null || level.getServer() == null ? null
+                : legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager.mcc$of(level.getServer());
     }
 }

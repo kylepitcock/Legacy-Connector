@@ -124,4 +124,46 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         for (var p : s.players()) if (!p.isSpectator() && !p.isSleepingLongEnough()) return false;
         return true;
     }
+
+    // ------------------------------------------------------------------ area W: particles to players, chunk map
+
+    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap mcc$playerChunkMap;
+
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap getPlayerChunkMap() {
+        if (mcc$playerChunkMap == null) mcc$playerChunkMap = new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(this);
+        return mcc$playerChunkMap;
+    }
+
+    /** Sends a particle burst to the players near it (within 32 blocks, 512 for long-distance particles), as 1.12's server did. */
+    public void spawnParticle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, double x, double y, double z, int count, double xOffset,
+            double yOffset, double zOffset, double speed, int... arguments) {
+        spawnParticle(type, false, x, y, z, count, xOffset, yOffset, zOffset, speed, arguments);
+    }
+
+    public void spawnParticle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, boolean longDistance, double x, double y, double z, int count,
+            double xOffset, double yOffset, double zOffset, double speed, int... arguments) {
+        ServerLevel s = server();
+        if (s == null || type == null || mcc$liveLevel() == null) return;
+        try {
+            var options = type.mcc$modern(xOffset, yOffset, zOffset, arguments == null ? new int[0] : arguments);
+            if (options == null) return;
+            for (var player : s.players()) {
+                s.sendParticles(player, options, longDistance || type.getShouldIgnoreRange(), x, y, z, count, xOffset, yOffset, zOffset, speed);
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a particle the modern game cannot build: nothing is sent
+        }
+    }
+
+    public void spawnParticle(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP player, legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type,
+            boolean longDistance, double x, double y, double z, int count, double xOffset, double yOffset, double zOffset, double speed, int... arguments) {
+        ServerLevel s = server();
+        if (s == null || type == null || player == null || !(player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        try {
+            var options = type.mcc$modern(xOffset, yOffset, zOffset, arguments == null ? new int[0] : arguments);
+            if (options != null) s.sendParticles(sp, options, longDistance, x, y, z, count, xOffset, yOffset, zOffset, speed);
+        } catch (RuntimeException | LinkageError e) {
+            // nothing is sent
+        }
+    }
 }

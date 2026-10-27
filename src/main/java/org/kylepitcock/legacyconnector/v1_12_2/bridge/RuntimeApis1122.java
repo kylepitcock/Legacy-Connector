@@ -349,18 +349,6 @@ public final class RuntimeApis1122 {
             return args.length > 0 && args[0] instanceof IBlockState s && s.getBlock() == block;
         });
 
-        // LootConditionManager.testAllConditions: every condition's own testCondition(Random, LootContext) must pass
-        Synth.addStaticMethod("net.minecraft.world.storage.loot.conditions.LootConditionManager.testAllConditions", args -> {
-            if (args.length < 3 || !(args[0] instanceof Object[] conditions)) return true;
-            for (Object c : conditions) {
-                if (c == null) continue;
-                Object r = Synth.dispatch(c, "testCondition", "(Ljava/util/Random;L" + SYNTH.replace('.', '/') + "net/minecraft/world/storage/loot/LootContext;)Z",
-                        new Object[] {args[1], args[2]});
-                if (r != Synth.NONE && !Synth.toBoolean(r)) return false;
-            }
-            return true;
-        });
-
         registerBiomeManager();
         registerEnums();
         registerEntities();
