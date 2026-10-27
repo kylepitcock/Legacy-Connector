@@ -587,6 +587,14 @@ public class World implements IBlockAccess {
         for (var shape : access.getBlockCollisions(modernEntity, bb.mcc$modern())) {
             for (var part : shape.toAabbs()) out.add(AxisAlignedBB.mcc$of(part));
         }
+        var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+        if (bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.event.world.GetCollisionBoxesEvent.class)) {
+            try {
+                bus.post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.GetCollisionBoxesEvent(this, entity, bb, out));
+            } catch (RuntimeException | LinkageError e) {
+                // the boxes as they are
+            }
+        }
         return out;
     }
 

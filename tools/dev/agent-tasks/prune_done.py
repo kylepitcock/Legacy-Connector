@@ -63,7 +63,7 @@ for line in open(task, encoding='utf-8'):
     else:
         desc = shim_type(rest.split(' ')[0])
         ok = has(owner, name + ' ' + desc)
-    if ok and '[UNRESOLVED]' not in line:
+    if ok:
         dropped += 1
     else:
         kept.append(line)
