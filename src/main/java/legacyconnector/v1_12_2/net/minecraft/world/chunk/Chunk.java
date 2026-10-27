@@ -379,4 +379,27 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
         QUEUED,
         CHECK
     }
+
+    // ------------------------------------------------------------------ area W: sections, biome lookup
+
+    /** 1.12's marker for a section that holds nothing. */
+    public static final legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage NULL_BLOCK_STORAGE = null;
+    private legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] mcc$sections;
+
+    /** The 16 sections of legacy y 0..255 (views that read and write this chunk); an empty one is {@link #NULL_BLOCK_STORAGE}. */
+    public legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] getBlockStorageArray() {
+        if (mcc$sections == null) {
+            var out = new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[16];
+            for (int i = 0; i < 16; i++) out[i] = new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage(this, i << 4);
+            mcc$sections = out;
+        }
+        var out = mcc$sections.clone();
+        if (access != null) for (int i = 0; i < 16; i++) if (isEmptyBetween(i << 4, (i << 4) + 15)) out[i] = NULL_BLOCK_STORAGE;
+        return out;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.world.biome.Biome getBiome(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider provider) {
+        if (world != null && (access != null || world.mcc$level() != null)) return world.getBiome(pos);
+        return provider == null ? legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS : provider.getBiome(pos, legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS);
+    }
 }

@@ -27,6 +27,7 @@ public class GuiTextField extends Gui {
     private int disabledColor = 7368816;
     private boolean visible = true;
     private Predicate<String> validator = s -> true;
+    private GuiPageButtonList.GuiResponder guiResponder;
 
     public GuiTextField(int componentId, FontRenderer fontRenderer, int x, int y, int width, int height) {
         this.id = componentId;
@@ -46,6 +47,16 @@ public class GuiTextField extends Gui {
         if (!validator.apply(textIn)) return;
         this.text = textIn.length() > maxStringLength ? textIn.substring(0, maxStringLength) : textIn;
         setCursorPositionEnd();
+        setResponderEntryValue(id, text);
+    }
+
+    /** The listener told about every change of the text (vanilla's world customisation pages use it). */
+    public void setGuiResponder(GuiPageButtonList.GuiResponder guiResponderIn) {
+        this.guiResponder = guiResponderIn;
+    }
+
+    public void setResponderEntryValue(int idIn, String textIn) {
+        if (guiResponder != null) guiResponder.setEntryValue(idIn, textIn);
     }
 
     public String getText() {
@@ -92,6 +103,7 @@ public class GuiTextField extends Gui {
         if (validator.apply(out)) {
             text = out;
             moveCursorBy(i - selectionEnd + l);
+            setResponderEntryValue(id, text);
         }
     }
 
@@ -116,6 +128,7 @@ public class GuiTextField extends Gui {
         if (validator.apply(out)) {
             text = out;
             if (back) moveCursorBy(num);
+            setResponderEntryValue(id, text);
         }
     }
 

@@ -4,7 +4,7 @@ import legacyconnector.v1_12_2.net.minecraft.block.material.Material;
 import legacyconnector.v1_12_2.net.minecraft.util.IStringSerializable;
 
 /** Vanilla's flowers: the two flower blocks and the kinds each has. */
-public abstract class BlockFlower extends Block {
+public abstract class BlockFlower extends BlockBush {
     protected BlockFlower() {
         super(Material.PLANTS);
     }

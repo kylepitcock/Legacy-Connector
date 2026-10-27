@@ -332,4 +332,17 @@ public abstract class WorldProvider {
         if (type.ultraWarm() && !type.hasSkyLight()) p.nether = true;
         return p;
     }
+
+    /** Forge: whether a bed may be used here (beds explode where players cannot respawn, and in hell biomes). */
+    public WorldSleepResult canSleepAt(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var w = world;
+        boolean hell = w != null && w.getBiome(pos) == legacyconnector.v1_12_2.net.minecraft.init.Biomes.HELL;
+        return canRespawnHere() && !hell ? WorldSleepResult.ALLOW : WorldSleepResult.BED_EXPLODES;
+    }
+
+    public enum WorldSleepResult {
+        ALLOW,
+        DENY,
+        BED_EXPLODES
+    }
 }

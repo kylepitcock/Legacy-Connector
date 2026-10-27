@@ -551,4 +551,39 @@ public final class ItemStack {
         this.itemDamage = parsed.itemDamage;
         this.stackTagCompound = parsed.stackTagCompound;
     }
+
+    // ------------------------------------------------------------------ more 1.12.2 / Forge stack API
+
+    /** Forge: a stack with capability data (item capabilities keep their data in the stack tag, so the data is not needed). */
+    public ItemStack(Item item, int amount, int meta, NBTTagCompound capNBT) {
+        this(item, amount, meta);
+    }
+
+    private int mcc$animationsToGo;
+
+    public int getAnimationsToGo() {
+        return mcc$animationsToGo;
+    }
+
+    public void setAnimationsToGo(int animations) {
+        this.mcc$animationsToGo = animations;
+    }
+
+    /** The name as a chat component: "[name]", italic when renamed. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getTextComponent() {
+        var name = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(getDisplayName());
+        if (hasDisplayName()) name.getStyle().setItalic(true);
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString("[").appendSibling(name).appendText("]");
+    }
+
+    /** Stacks in item frames belong to modern entities; a legacy stack is never on one. */
+    public boolean isOnItemFrame() {
+        return false;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemUseFirst(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, float hitX, float hitY, float hitZ) {
+        return getItem().onItemUseFirst(playerIn, worldIn, pos, side, hitX, hitY, hitZ, hand);
+    }
 }

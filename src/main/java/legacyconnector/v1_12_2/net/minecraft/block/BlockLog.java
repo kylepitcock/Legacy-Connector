@@ -21,9 +21,29 @@ public abstract class BlockLog extends BlockRotatedPillar {
         setSoundType(SoundType.WOOD);
     }
 
-    /** The modern leaves decay by their distance to logs on their own; nothing to start here. */
+    /** Legacy leaves around start their decay check (the modern leaves decay by their distance to logs on their own). */
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
+        if (!world.isAreaLoaded(pos.add(-5, -5, -5), pos.add(5, 5, 5))) return;
+        for (int x = -4; x <= 4; x++) {
+            for (int y = -4; y <= 4; y++) {
+                for (int z = -4; z <= 4; z++) {
+                    BlockPos p = pos.add(x, y, z);
+                    IBlockState s = world.getBlockState(p);
+                    if (s.getBlock() instanceof BlockLeaves && s.getBlock().isLeaves(s, world, p)) s.getBlock().beginLeavesDecay(s, world, p);
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean canSustainLeaves(IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos) {
+        return true;
+    }
+
+    @Override
+    public boolean isWood(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos) {
+        return true;
     }
 
     @Override

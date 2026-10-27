@@ -35,4 +35,11 @@ public class ShapelessOreRecipe extends ShapelessRecipes {
         for (Object o : recipe) list.add(CraftingHelper.getIngredient(o));
         return list;
     }
+
+    /** Forge: a shapeless ore recipe from its JSON (mods' recipe factories build on it). */
+    public static ShapelessOreRecipe factory(legacyconnector.v1_12_2.net.minecraftforge.common.crafting.JsonContext context, com.google.gson.JsonObject json) {
+        com.google.gson.JsonObject copy = json.deepCopy();
+        copy.addProperty("type", "forge:ore_shapeless");
+        return (ShapelessOreRecipe) legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper.getRecipe(copy, context);
+    }
 }

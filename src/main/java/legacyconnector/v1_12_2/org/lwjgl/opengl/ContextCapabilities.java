@@ -26,4 +26,9 @@ public class ContextCapabilities {
             GL_EXT_framebuffer_multisample = true, GL_EXT_bgra = true, GL_EXT_abgr = false, GL_EXT_compiled_vertex_array = false;
     public final boolean GL_NV_fog_distance = false, GL_NV_texture_rectangle = false, GL_ATI_texture_float = false,
             GL_KHR_debug = true, GL_AMD_debug_output = false, GL_ARB_debug_output = true;
+    /** Buffer, sync and query features of the core 3.3+ context; shader-related ones stay off for the reason above. */
+    public final boolean GL_EXT_pixel_buffer_object = true, GL_ARB_copy_buffer = true, GL_ARB_draw_elements_base_vertex = true, GL_ARB_sync = true,
+            GL_ARB_timer_query = true, GL_ARB_texture_storage = true, GL_ARB_base_instance = true, GL_ARB_multi_draw_indirect = true,
+            GL_ARB_buffer_storage = false, GL_ARB_shader_storage_buffer_object = false, GL_APPLE_vertex_array_object = false,
+            GL_EXT_geometry_shader4 = false, GL_EXT_separate_shader_objects = false, GL_ATI_meminfo = false, GL_NVX_gpu_memory_info = false;
 }
