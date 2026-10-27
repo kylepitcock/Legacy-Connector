@@ -8,6 +8,10 @@ public class PlaySoundEvent extends SoundEvent {
     private final ISound sound;
     private ISound result;
 
+    public PlaySoundEvent(legacyconnector.v1_12_2.net.minecraft.client.audio.SoundManager manager, ISound sound) {
+        this(sound);
+    }
+
     public PlaySoundEvent(ISound sound) {
         this.sound = sound;
         this.name = sound == null || sound.getSoundLocation() == null ? "" : sound.getSoundLocation().getPath();

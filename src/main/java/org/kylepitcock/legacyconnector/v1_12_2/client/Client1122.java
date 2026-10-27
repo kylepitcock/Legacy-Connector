@@ -56,6 +56,7 @@ public final class Client1122 {
         LegacyParticles1122.register();
         ParticleDraw1122.install();
         ScreenEvents1122.register();
+        ClientEvents1122.register();
         // 1.12 told its resource reload listeners again after every resource reload
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(
                 (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager -> {
