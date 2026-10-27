@@ -46,6 +46,23 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         return legacy;
     }
 
+    /** {@code World.setTileEntity}: this block entity now hosts the given tile entity. */
+    public void mcc$setLegacy(TileEntity te) {
+        if (te == null || te == legacy) return;
+        if (legacy != null) {
+            try {
+                legacy.invalidate();
+            } catch (RuntimeException | LinkageError e) {
+                // replaced regardless
+            }
+        }
+        legacy = te;
+        failed = false;
+        pending = null;
+        bind(te);
+        setChanged();
+    }
+
     private void bind(TileEntity te) {
         te.mcc$host = this;
         te.setWorld(WorldBridge1122.wrap(level));
