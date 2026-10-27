@@ -78,7 +78,7 @@ public class ForgeHooks {
     public static boolean onTravelToDimension(Entity entity, int dimension) {
         if (entity == null || entity.mcc$modern() == null) return true;
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-        var level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+        var level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
         return level == null || CommonHooks.onTravelToDimension(entity.mcc$modern(), level.dimension());
     }
 

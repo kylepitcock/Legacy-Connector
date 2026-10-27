@@ -1,0 +1,144 @@
+package legacyconnector.v1_12_2.net.minecraft.world.storage;
+
+import java.util.HashMap;
+import java.util.Map;
+import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.storage.DimensionDataStorage;
+
+/**
+ * 1.12.2 saved-data registry over a modern {@link DimensionDataStorage}: each {@link WorldSavedData} is stored as
+ * {@code data/legacy_<name>.dat} of its dimension. Without a storage (client side) data lives in memory only.
+ */
+public class MapStorage {
+    private final DimensionDataStorage storage;
+    private final Map<String, WorldSavedData> loadedDataMap = new HashMap<>();
+
+    public MapStorage(DimensionDataStorage storage) {
+        this.storage = storage;
+    }
+
+    /** A storage a mod builds over a save handler: it keeps its data in memory (the world's own storages are the saved ones). */
+    public MapStorage(ISaveHandler handler) {
+        this((DimensionDataStorage) null);
+    }
+
+    private static final Map<DimensionDataStorage, MapStorage> STORAGES = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+    private static final MapStorage CLIENT = new MapStorage((DimensionDataStorage) null);
+
+    /** The storage of a server level (the in-memory client one for null). */
+    public static MapStorage mcc$of(net.minecraft.server.level.ServerLevel level) {
+        if (level == null) return CLIENT;
+        return STORAGES.computeIfAbsent(level.getDataStorage(), MapStorage::new);
+    }
+
+    private static String file(String name) {
+        return "legacy_" + name.replaceAll("[^a-zA-Z0-9_.-]", "_");
+    }
+
+    /** The saved data, or null when none was saved yet (mods then create it and call {@link #setData}). */
+    public synchronized WorldSavedData getOrLoadData(Class<? extends WorldSavedData> clazz, String dataIdentifier) {
+        WorldSavedData cached = loadedDataMap.get(dataIdentifier);
+        if (cached != null || storage == null) return cached;
+        Adapter adapter;
+        try {
+            adapter = storage.get(new SavedData.Factory<>(() -> new Adapter(create(clazz, dataIdentifier)),
+                    (tag, registries) -> Adapter.load(create(clazz, dataIdentifier), tag), null), file(dataIdentifier));
+        } catch (RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/SavedData").warn("Cannot load legacy saved data {}: {}", dataIdentifier, e.toString());
+            return null;
+        }
+        if (adapter == null || adapter.legacy == null || !clazz.isInstance(adapter.legacy)) return null;
+        loadedDataMap.put(dataIdentifier, adapter.legacy);
+        return adapter.legacy;
+    }
+
+    public synchronized void setData(String dataIdentifier, WorldSavedData data) {
+        if (data == null) return;
+        loadedDataMap.put(dataIdentifier, data);
+        if (storage != null) storage.set(file(dataIdentifier), new Adapter(data));
+    }
+
+    public void saveAllData() {
+        if (storage != null) storage.save();
+    }
+
+    public synchronized int getUniqueDataId(String key) {
+        WorldSavedData counts = getOrLoadData(IdCounts.class, "idcounts");
+        if (counts == null) {
+            counts = new IdCounts("idcounts");
+            setData("idcounts", counts);
+        }
+        return ((IdCounts) counts).next(key);
+    }
+
+    private static WorldSavedData create(Class<?> type, String name) {
+        try {
+            var ctor = type.getDeclaredConstructor(String.class);
+            ctor.setAccessible(true);
+            return (WorldSavedData) ctor.newInstance(name);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/SavedData").warn("Cannot create legacy saved data {} ({})", name, type.getName(), e);
+            return null;
+        }
+    }
+
+    /** Modern saved data holding a legacy instance. */
+    private static final class Adapter extends SavedData {
+        final WorldSavedData legacy;
+
+        Adapter(WorldSavedData legacy) {
+            this.legacy = legacy;
+        }
+
+        static Adapter load(WorldSavedData legacy, CompoundTag tag) {
+            if (legacy != null) legacy.readFromNBT(new NBTTagCompound(tag.getCompound("data")));
+            return new Adapter(legacy);
+        }
+
+        @Override
+        public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
+            if (legacy != null) {
+                NBTTagCompound data = new NBTTagCompound();
+                NBTTagCompound written = legacy.writeToNBT(data);
+                tag.put("data", (written != null ? written : data).mcc$modern());
+                legacy.setDirty(false);
+            }
+            return tag;
+        }
+
+        @Override
+        public boolean isDirty() {
+            return legacy != null && legacy.isDirty() || super.isDirty();
+        }
+    }
+
+    /** Vanilla's "idcounts" (map ids and similar counters). */
+    public static final class IdCounts extends WorldSavedData {
+        private final Map<String, Short> counts = new HashMap<>();
+
+        public IdCounts(String name) {
+            super(name);
+        }
+
+        int next(String key) {
+            short id = (short) (counts.getOrDefault(key, (short) -1) + 1);
+            counts.put(key, id);
+            markDirty();
+            return id;
+        }
+
+        @Override
+        public void readFromNBT(NBTTagCompound tag) {
+            for (String k : tag.getKeySet()) counts.put(k, tag.getShort(k));
+        }
+
+        @Override
+        public NBTTagCompound writeToNBT(NBTTagCompound tag) {
+            counts.forEach(tag::setShort);
+            return tag;
+        }
+    }
+}

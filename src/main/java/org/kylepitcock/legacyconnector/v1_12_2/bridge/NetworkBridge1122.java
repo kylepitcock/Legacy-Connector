@@ -106,7 +106,7 @@ public final class NetworkBridge1122 {
 
         public void sendToDimension(IMessage message, int dimension) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
             if (level != null) PacketDistributor.sendToPlayersInDimension(level, encode(message));
         }
 
@@ -118,7 +118,7 @@ public final class NetworkBridge1122 {
         /** To every player tracking the chunk the point is in. */
         public void sendToAllTracking(IMessage message, int dimension, double x, double z) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
             if (level != null) {
                 PacketDistributor.sendToPlayersTrackingChunk(level, new net.minecraft.world.level.ChunkPos(net.minecraft.util.Mth.floor(x) >> 4,
                         net.minecraft.util.Mth.floor(z) >> 4), encode(message));
@@ -132,7 +132,7 @@ public final class NetworkBridge1122 {
 
         public void sendToAllAround(IMessage message, int dimension, double x, double y, double z, double range) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+            ServerLevel level = server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
             if (level != null) PacketDistributor.sendToPlayersNear(level, null, x, y, z, range, encode(message));
         }
     }

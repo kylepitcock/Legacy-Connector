@@ -47,7 +47,7 @@ public final class EventBridge1122 {
 
     /** The 1.12 numeric id of a dimension (the same table the 1.12 network channels use). */
     public static int dimensionId(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> key) {
-        return legacyconnector.v1_7_10.net.minecraft.world.WorldProvider.dimensionId(key);
+        return legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$idOf(key);
     }
 
     public static synchronized void register() {

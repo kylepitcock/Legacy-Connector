@@ -55,7 +55,7 @@ public final class FmlChannelBridge1122 {
 
     private static ServerLevel level(int dimension) {
         var server = ServerLifecycleHooks.getCurrentServer();
-        return server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+        return server == null ? null : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$level(dimension);
     }
 
     public static void send(FMLProxyPacket packet, FMLOutboundHandler.OutboundTarget target, Object args) {
