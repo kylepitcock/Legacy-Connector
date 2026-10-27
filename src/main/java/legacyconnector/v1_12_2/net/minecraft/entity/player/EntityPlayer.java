@@ -562,7 +562,6 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public float renderOffsetY;
     public float renderOffsetZ;
     private legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest mcc$enderChest;
-    private legacyconnector.v1_12_2.net.minecraft.util.CombatTracker mcc$combatTracker;
 
     /** The container the player has open: a legacy container, a view of a vanilla menu, or the inventory container. */
     public static legacyconnector.v1_12_2.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
@@ -647,11 +646,6 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest getInventoryEnderChest() {
         if (mcc$enderChest == null) mcc$enderChest = new legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest(mcc$player().getEnderChestInventory());
         return mcc$enderChest;
-    }
-
-    public legacyconnector.v1_12_2.net.minecraft.util.CombatTracker getCombatTracker() {
-        if (mcc$combatTracker == null) mcc$combatTracker = new legacyconnector.v1_12_2.net.minecraft.util.CombatTracker(this);
-        return mcc$combatTracker;
     }
 
     /** Whether the player shows a skin layer (the client's skin customisation). */

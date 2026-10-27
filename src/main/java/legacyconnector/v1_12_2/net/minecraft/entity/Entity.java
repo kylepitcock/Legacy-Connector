@@ -2052,6 +2052,15 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         mcc$set$timeUntilPortal(this, mcc$get$timeUntilPortal(old));
     }
 
+    /** After a hit: the target's thorns and the attacker's weapon enchantments act (the modern post-attack enchantment effects). */
+    protected void applyEnchantments(EntityLivingBase attacker, Entity target) {
+        if (attacker == null || target == null || attacker.mcc$entity == null || target.mcc$entity == null) return;
+        if (!(attacker.mcc$entity.level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        var source = attacker.mcc$entity instanceof net.minecraft.world.entity.player.Player p ? sl.damageSources().playerAttack(p)
+                : sl.damageSources().mobAttack((net.minecraft.world.entity.LivingEntity) attacker.mcc$entity);
+        net.minecraft.world.item.enchantment.EnchantmentHelper.doPostAttackEffects(sl, target.mcc$entity, source);
+    }
+
     /** Gives the killer score for a kill (the modern scoreboard criteria). */
     public void awardKillScore(Entity killed, int score, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
         var m = mcc$entity;

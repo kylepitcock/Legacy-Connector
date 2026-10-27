@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
  * the payload of a legacy {@code IEntityAdditionalSpawnData}, length-prefixed so a mod that reads a different amount than it wrote
  * cannot corrupt the packet.
  */
-final class SpawnData1122 {
+public final class SpawnData1122 {
     private SpawnData1122() {}
 
     static void write(Host1122 host, Entity legacy, RegistryFriendlyByteBuf buf) {
@@ -53,5 +53,16 @@ final class SpawnData1122 {
             payload.release();
         }
         return legacy;
+    }
+
+    /** 1.12's group spawn data ({@code IEntityLivingData}) carried through the modern {@code SpawnGroupData} of a spawn group. */
+    public record Group(legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData data) implements net.minecraft.world.entity.SpawnGroupData {
+        public static legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData legacy(net.minecraft.world.entity.SpawnGroupData modern) {
+            return modern instanceof Group g ? g.data() : null;
+        }
+
+        public static net.minecraft.world.entity.SpawnGroupData modern(legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData legacy) {
+            return legacy == null ? null : new Group(legacy);
+        }
     }
 }
