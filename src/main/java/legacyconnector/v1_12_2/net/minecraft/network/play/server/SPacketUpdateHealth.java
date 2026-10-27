@@ -20,30 +20,27 @@ public class SPacketUpdateHealth implements Packet<INetHandlerPlayClient> {
         this.saturationLevel = saturationLevelIn;
     }
 
-    public float getHealth() {
+    public float mcc$health() {
         return health;
     }
 
-    public int getFoodLevel() {
+    public int mcc$foodLevel() {
         return foodLevel;
     }
 
-    public float getSaturationLevel() {
+    public float mcc$saturationLevel() {
         return saturationLevel;
     }
 
+
     @Override
     public void readPacketData(PacketBuffer buf) throws IOException {
-        health = buf.readFloat();
-        foodLevel = buf.readVarInt();
-        saturationLevel = buf.readFloat();
+        // read by the modern client from the modern packet
     }
 
     @Override
     public void writePacketData(PacketBuffer buf) throws IOException {
-        buf.writeFloat(health);
-        buf.writeVarInt(foodLevel);
-        buf.writeFloat(saturationLevel);
+        // written as the modern packet
     }
 
     /** Handled by the modern client as the modern packet. */
