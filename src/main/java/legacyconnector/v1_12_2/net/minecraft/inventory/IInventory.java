@@ -39,4 +39,10 @@ public interface IInventory {
     String getName();
 
     boolean hasCustomName();
+
+    /** IWorldNameable: the name as a text component (the custom name as is, else the name as a translation key). */
+    default legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+        return hasCustomName() ? new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(getName())
+                : new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation(getName());
+    }
 }

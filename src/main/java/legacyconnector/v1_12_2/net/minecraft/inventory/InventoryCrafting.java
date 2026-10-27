@@ -4,13 +4,19 @@ import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
-/** A crafting grid as a plain list of stacks. */
+/** A crafting grid as a plain list of stacks; changes are reported to the container it belongs to ({@code onCraftMatrixChanged}). */
 public class InventoryCrafting implements IInventory {
     private final NonNullList<ItemStack> stackList;
     private final int inventoryWidth;
     private final int inventoryHeight;
+    private final Container eventHandler;
+
+    public InventoryCrafting(Container eventHandler, int width, int height) {
+        this((Object) eventHandler, width, height);
+    }
 
     public InventoryCrafting(Object eventHandler, int width, int height) {
+        this.eventHandler = eventHandler instanceof Container c ? c : null;
         this.stackList = NonNullList.withSize(width * height, ItemStack.EMPTY);
         this.inventoryWidth = width;
         this.inventoryHeight = height;
@@ -38,20 +44,20 @@ public class InventoryCrafting implements IInventory {
 
     @Override
     public ItemStack decrStackSize(int index, int count) {
-        ItemStack s = stackList.get(index);
-        return s.isEmpty() ? ItemStack.EMPTY : s.splitStack(count);
+        ItemStack s = ItemStackHelper.getAndSplit(stackList, index, count);
+        if (!s.isEmpty() && eventHandler != null) eventHandler.onCraftMatrixChanged(this);
+        return s;
     }
 
     @Override
     public ItemStack removeStackFromSlot(int index) {
-        ItemStack s = stackList.get(index);
-        stackList.set(index, ItemStack.EMPTY);
-        return s;
+        return ItemStackHelper.getAndRemove(stackList, index);
     }
 
     @Override
     public void setInventorySlotContents(int index, ItemStack stack) {
         stackList.set(index, stack);
+        if (eventHandler != null) eventHandler.onCraftMatrixChanged(this);
     }
 
     @Override
