@@ -605,4 +605,22 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     public boolean shouldRotateAroundWhenRendering() {
         return false;
     }
+
+    /**
+     * The block the player looks at within reach (fluids too when asked: buckets), or null when the ray hits nothing; through the
+     * modern ray clip from the player's eyes.
+     */
+    protected legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTrace(legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn, boolean useLiquids) {
+        var player = playerIn == null ? null : playerIn.mcc$player();
+        var level = worldIn == null ? null : worldIn.mcc$level();
+        if (player == null || level == null) return null;
+        var eye = player.getEyePosition();
+        var end = eye.add(player.getViewVector(1.0F).scale(player.blockInteractionRange()));
+        var hit = level.clip(new net.minecraft.world.level.ClipContext(eye, end, net.minecraft.world.level.ClipContext.Block.OUTLINE,
+                useLiquids ? net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY : net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
+        return legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.mcc$of(hit);
+    }
+
 }

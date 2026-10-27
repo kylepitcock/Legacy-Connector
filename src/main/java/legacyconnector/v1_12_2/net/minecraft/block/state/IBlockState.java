@@ -192,4 +192,24 @@ public interface IBlockState {
     default boolean isNormalCube(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         return getBlock().isNormalCube(this, world, pos);
     }
+
+    default int getPackedLightmapCoords(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess source, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getPackedLightmapCoords(this, source, pos);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getOffset(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess access,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getOffset(this, access, pos);
+    }
+
+    default boolean doesSideBlockChestOpening(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return getBlock().doesSideBlockChestOpening(this, world, pos, side);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult collisionRayTrace(legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d start,
+            legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d end) {
+        return getBlock().collisionRayTrace(this, worldIn, pos, start, end);
+    }
 }
