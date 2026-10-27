@@ -66,14 +66,33 @@ public final class ItemStack {
 
     public void setCount(int count) {
         this.stackSize = count;
+        mcc$changed();
     }
 
     public void grow(int count) {
         this.stackSize += count;
+        mcc$changed();
     }
 
     public void shrink(int count) {
         this.stackSize -= count;
+        mcc$changed();
+    }
+
+    /**
+     * Where a stack read from a modern inventory goes back to when it changes (a player's held item, an inventory slot): the
+     * legacy code holds the very stack the slot had in 1.12.2 and shrinks or damages it in place.
+     */
+    private transient java.util.function.Consumer<ItemStack> mcc$sink;
+
+    public ItemStack mcc$bind(java.util.function.Consumer<ItemStack> sink) {
+        if (this != EMPTY) this.mcc$sink = sink;
+        return this;
+    }
+
+    private void mcc$changed() {
+        var sink = mcc$sink;
+        if (sink != null) sink.accept(this);
     }
 
     public int getMetadata() {
@@ -86,6 +105,7 @@ public final class ItemStack {
 
     public void setItemDamage(int damage) {
         this.itemDamage = damage;
+        mcc$changed();
     }
 
     public int getMaxStackSize() {
@@ -118,11 +138,13 @@ public final class ItemStack {
 
     public void setTagCompound(NBTTagCompound tag) {
         this.stackTagCompound = tag;
+        mcc$changed();
     }
 
     public void setTagInfo(String key, legacyconnector.v1_12_2.net.minecraft.nbt.NBTBase value) {
         if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
         stackTagCompound.setTag(key, value);
+        mcc$changed();
     }
 
     /** The display name as a translation key (display.LocName), translated where it is shown. */

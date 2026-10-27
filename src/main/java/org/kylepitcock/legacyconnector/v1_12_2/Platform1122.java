@@ -38,6 +38,7 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ClientRegistrations1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CommandBridge1122.registerCommandBase();
         registerServerLifecycle();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.register();
     }
 
     /** The modern server's lifecycle as FML's server events, sent to every 1.12.2 mod's {@code @Mod.EventHandler} methods. */

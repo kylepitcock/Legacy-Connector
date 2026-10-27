@@ -24,11 +24,27 @@ public final class EntityBridge1122 {
         if (view == null) {
             World world = WorldBridge1122.wrap(modern.level());
             if (modern instanceof ServerPlayer) view = new EntityPlayerMP(world);
+            else if (modern instanceof net.minecraft.world.entity.player.Player) view = new PlainPlayer(world);
+            else if (modern instanceof net.minecraft.world.entity.LivingEntity) view = new PlainLiving(world);
             else view = new PlainEntity(world);
             view.mcc$entity = modern;
             ENTITIES.put(modern, view);
         }
         return view;
+    }
+
+    /** A client-side player (1.12.2's EntityPlayerSP and EntityOtherPlayerMP are not modelled yet). */
+    private static final class PlainPlayer extends legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer {
+        PlainPlayer(World world) {
+            super(world);
+        }
+    }
+
+    /** A modern living entity with no legacy class of its own. */
+    private static final class PlainLiving extends legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase {
+        PlainLiving(World world) {
+            super(world);
+        }
     }
 
     /** A modern entity with no legacy class of its own. */

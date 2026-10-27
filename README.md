@@ -4,7 +4,10 @@
 
 Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop a 1.7.10 mod jar (1.12.2 mods are experimental, see the status table) into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
-runs Fabric mods on NeoForge. The original jar is never modified.
+runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars can also go in `mods/1.7.10/` or
+`mods/1.12.2/`; mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods) must, because
+NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
+"Module ... contains package org.spongepowered...".
 
 > **Status: alpha (0.3.x).** 1.7.10 is the main target; 1.12.2 is experimental (loads and registers content, little verified in a real game; issue #64). Content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O'
 > Plenty, HBM, Thaumcraft, Witchery and many more) load with their blocks, items, entities, recipes, GUIs,

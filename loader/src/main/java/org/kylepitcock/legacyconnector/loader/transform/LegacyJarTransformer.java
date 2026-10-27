@@ -237,6 +237,8 @@ public final class LegacyJarTransformer {
         Map<String, byte[]> other = contents.other;
         Manifest manifest = contents.manifest;
 
+        int platformCopies = dropPlatformLibraries(classes, other);
+        if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
@@ -321,6 +323,38 @@ public final class LegacyJarTransformer {
         Manifest outManifest = cleanManifest(manifest, jar);
         write(output, outManifest, outClasses, outResources);
         return result;
+    }
+
+    /** Libraries the platform ships as modules: a bundled copy would split their packages and JPMS refuses to boot. */
+    private static final List<String> PLATFORM_LIBRARIES = List.of("org/spongepowered/asm/", "org/spongepowered/tools/");
+
+    /**
+     * Drops bundled copies of {@link #PLATFORM_LIBRARIES} (1.12.2 mods shaded Mixin for their own mixins, which target 1.12
+     * classes and cannot apply here) and the service registrations that would load them as launcher or Mixin services.
+     * References to the dropped classes link to NeoForge's Mixin.
+     */
+    static int dropPlatformLibraries(Map<String, byte[]> classes, Map<String, byte[]> other) {
+        int dropped = 0;
+        for (var it = classes.keySet().iterator(); it.hasNext(); ) {
+            String name = it.next();
+            for (String prefix : PLATFORM_LIBRARIES) {
+                if (name.startsWith(prefix)) {
+                    it.remove();
+                    dropped++;
+                    break;
+                }
+            }
+        }
+        for (var it = other.keySet().iterator(); it.hasNext(); ) {
+            String name = it.next();
+            if (!name.startsWith("META-INF/services/")) continue;
+            String service = name.substring("META-INF/services/".length());
+            if (service.startsWith("cpw.mods.modlauncher.") || service.startsWith("org.spongepowered.") || service.equals("javax.annotation.processing.Processor")) {
+                it.remove();
+                dropped++;
+            }
+        }
+        return dropped;
     }
 
     private static void closeSupertypes(String name, Hierarchy hierarchy, SynthDemand demand) {

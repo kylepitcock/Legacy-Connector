@@ -26,7 +26,7 @@ Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector.
 ## Installation
 
 1. Create a **Minecraft 1.21.1 / NeoForge 21.1.x** profile (Java 21) and install Legacy Connector.
-2. Download the **1.7.10** or **1.12.2** versions of the mods you want from their CurseForge pages (Files tab, filter by game version). The CurseForge app won't add old-version mods to a 1.21.1 profile, so add them by hand: in the app, open your profile, click **⋯ → Open Folder**, and drop the jars into `mods`.
+2. Download the **1.7.10** or **1.12.2** versions of the mods you want from their CurseForge pages (Files tab, filter by game version). The CurseForge app won't add old-version mods to a 1.21.1 profile, so add them by hand: in the app, open your profile, click **⋯ → Open Folder**, and drop the jars into `mods`. Mods that bundle their own Mixin (common in 1.12.2, e.g. Spartan Weaponry) go in `mods/1.12.2` instead; in `mods` itself NeoForge would load them as launcher plugins before they can be translated, and the game would stop.
 3. If a mod needs a library (CodeChickenLib, CoFH Core, etc.), add that library's jar for the same old version too.
 4. Start the game. The first launch translates each legacy jar, with a progress bar on the loading screen, and caches the result, so later launches are fast.
 5. Check `logs/legacyconnector-report.txt` to see what was translated and anything that couldn't be linked.
