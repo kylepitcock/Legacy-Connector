@@ -83,7 +83,7 @@ public class ItemCameraTransforms {
                 firstperson_left.mcc$modern(), firstperson_right.mcc$modern(), head.mcc$modern(), gui.mcc$modern(), ground.mcc$modern(), fixed.mcc$modern());
     }
 
-    public enum TransformType {
+    public enum TransformType implements legacyconnector.v1_12_2.net.minecraftforge.common.model.IModelPart {
         NONE,
         THIRD_PERSON_LEFT_HAND,
         THIRD_PERSON_RIGHT_HAND,
