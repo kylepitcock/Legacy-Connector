@@ -81,7 +81,7 @@ public final class Registries1122 {
     public static final Reg VILLAGER_PROFESSIONS = new Reg(null, o -> {});
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final Reg POTION_TYPES = new Reg(null, o -> {});
-    public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, p -> {});
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, org.kylepitcock.legacyconnector.v1_12_2.entity.Effects1122::register);
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment> ENCHANTMENTS =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.class, e -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS =

@@ -1,5 +1,11 @@
 package legacyconnector.v1_12_2.net.minecraft.server.management;
 
+import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
+import legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult;
+import legacyconnector.v1_12_2.net.minecraft.util.EnumHand;
+import legacyconnector.v1_12_2.net.minecraft.world.WorldServer;
+import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP;
 import legacyconnector.v1_12_2.net.minecraft.util.EnumFacing;
 import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
@@ -118,5 +124,30 @@ public class PlayerInteractionManager {
         return result.consumesAction() ? legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.SUCCESS
                 : result == net.minecraft.world.InteractionResult.FAIL ? legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.FAIL
                 : legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+    }
+
+    /** The view for a server player. */
+    public static PlayerInteractionManager mcc$of(EntityPlayerMP player) {
+        PlayerInteractionManager m = new PlayerInteractionManager(player.getEntityWorld());
+        m.player = player;
+        return m;
+    }
+
+    public EnumActionResult processRightClick(EntityPlayer player, World world, ItemStack stack, EnumHand hand) {
+        var sp = player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p ? p : mcc$player();
+        if (sp == null || world == null || world.mcc$level() == null) return EnumActionResult.PASS;
+        return EnumActionResult.mcc$of(sp.gameMode.useItem(sp, world.mcc$level(), Stacks1122.toModernLive(stack), hand == EnumHand.OFF_HAND
+                ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND));
+    }
+
+    public EnumActionResult processRightClickBlock(EntityPlayer player, World world, ItemStack stack, EnumHand hand, BlockPos pos, EnumFacing facing,
+            float hitX, float hitY, float hitZ) {
+        var sp = player != null && player.mcc$entity instanceof net.minecraft.server.level.ServerPlayer p ? p : mcc$player();
+        if (sp == null || world == null || world.mcc$level() == null || pos == null) return EnumActionResult.PASS;
+        var direction = facing == null ? net.minecraft.core.Direction.UP : net.minecraft.core.Direction.byName(facing.getName());
+        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ),
+                direction, pos.mcc$modern(), false);
+        return EnumActionResult.mcc$of(sp.gameMode.useItemOn(sp, world.mcc$level(), Stacks1122.toModernLive(stack), hand == EnumHand.OFF_HAND
+                ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND, hit));
     }
 }

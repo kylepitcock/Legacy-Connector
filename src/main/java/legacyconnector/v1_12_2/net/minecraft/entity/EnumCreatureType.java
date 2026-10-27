@@ -27,4 +27,14 @@ public enum EnumCreatureType {
     public boolean getAnimal() {
         return isAnimal;
     }
+
+    /** The legacy class a creature of this type is an instance of (Forge's spawn-cap check). */
+    public Class<?> getCreatureClass() {
+        return switch (this) {
+            case MONSTER -> legacyconnector.v1_12_2.net.minecraft.entity.monster.IMob.class;
+            case CREATURE -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAnimal.class;
+            case AMBIENT -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAmbientCreature.class;
+            case WATER_CREATURE -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityWaterMob.class;
+        };
+    }
 }
