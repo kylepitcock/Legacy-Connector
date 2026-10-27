@@ -58,6 +58,22 @@ public final class TileViews1122 {
                 TileEntity t = factory.apply(be);
                 if (t != null) return t;
             }
+            if (be instanceof net.minecraft.world.level.block.entity.SignBlockEntity s) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySign(s);
+            if (be instanceof net.minecraft.world.level.block.entity.SkullBlockEntity s) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySkull(s);
+            if (be instanceof net.minecraft.world.level.block.entity.BannerBlockEntity b) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityBanner(b);
+            if (be instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity s) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityMobSpawner(s);
+            if (be instanceof net.minecraft.world.level.block.entity.HopperBlockEntity h) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityHopper(h);
+            if (be instanceof net.minecraft.world.level.block.entity.DropperBlockEntity d) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityDropper(d);
+            if (be instanceof net.minecraft.world.level.block.entity.DispenserBlockEntity d) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityDispenser(d);
+            if (be instanceof net.minecraft.world.level.block.entity.BedBlockEntity b) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityBed(b);
+            if (be instanceof net.minecraft.world.level.block.piston.PistonMovingBlockEntity p) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityPiston(p);
+            if (be instanceof net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity s) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityShulkerBox(s);
+            if (be instanceof net.minecraft.world.level.block.entity.ComparatorBlockEntity c) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityComparator(c);
+            if (be instanceof net.minecraft.world.level.block.entity.TheEndGatewayBlockEntity g) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityEndGateway(g);
+            if (be instanceof net.minecraft.world.level.block.entity.TheEndPortalBlockEntity) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityEndPortal();
+            if (be instanceof net.minecraft.world.level.block.entity.BeaconBlockEntity b) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityBeacon(b);
+            if (be instanceof net.minecraft.world.level.block.entity.CommandBlockEntity c) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityCommandBlock(c);
+            if (be instanceof net.minecraft.world.level.block.entity.StructureBlockEntity s) return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityStructure(s);
             if (be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
                 return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityChest(chest);
             }
