@@ -38,7 +38,12 @@ public class LegacyScreen1122 extends Screen {
         if (failed) return;
         RenderContext.beginGui(graphics);
         try {
-            guard(() -> legacy.drawScreen(mouseX, mouseY, partialTick));
+            guard(() -> {
+                if (ScreenEvents1122.drawPre(legacy, mouseX, mouseY, partialTick)) {
+                    legacy.drawScreen(mouseX, mouseY, partialTick);
+                    ScreenEvents1122.drawPost(legacy, mouseX, mouseY, partialTick);
+                }
+            });
         } finally {
             RenderContext.end();
         }

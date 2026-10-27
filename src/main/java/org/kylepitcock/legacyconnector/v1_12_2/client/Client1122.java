@@ -9,6 +9,7 @@ public final class Client1122 {
     public static void register(IEventBus modBus) {
         modBus.addListener(ClientGui1122::onRegisterScreens);
         LegacyParticles1122.register();
+        ScreenEvents1122.register();
         // 1.12 told its resource reload listeners again after every resource reload
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(
                 (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager -> {

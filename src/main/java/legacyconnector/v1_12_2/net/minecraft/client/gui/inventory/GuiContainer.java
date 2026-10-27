@@ -194,6 +194,7 @@ public abstract class GuiContainer extends GuiScreen {
 
     public void mcc$drawForeground(int mouseX, int mouseY) {
         drawGuiContainerForegroundLayer(mouseX, mouseY);
+        mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiContainerEvent.DrawForeground(this, mouseX, mouseY));
         for (var b : buttonList) {
             if (b.isMouseOver()) {
                 b.drawButtonForegroundLayer(mouseX - guiLeft, mouseY - guiTop);

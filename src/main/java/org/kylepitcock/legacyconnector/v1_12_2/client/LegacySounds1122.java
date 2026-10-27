@@ -44,6 +44,26 @@ public final class LegacySounds1122 {
         return instance;
     }
 
+    /** The legacy sound a modern instance plays, or a record standing in for a modern sound (for PlaySoundEvent handlers). */
+    public static ISound legacy(SoundInstance instance) {
+        synchronized (PLAYING) {
+            for (var e : PLAYING.entrySet()) if (e.getValue() == instance) return e.getKey();
+        }
+        var id = instance.getLocation();
+        legacyconnector.v1_12_2.net.minecraft.util.SoundCategory category;
+        try {
+            category = legacyconnector.v1_12_2.net.minecraft.util.SoundCategory.valueOf(instance.getSource().name());
+        } catch (IllegalArgumentException e) {
+            category = legacyconnector.v1_12_2.net.minecraft.util.SoundCategory.MASTER;
+        }
+        boolean resolved = instance.getSound() != null;
+        return new legacyconnector.v1_12_2.net.minecraft.client.audio.PositionedSoundRecord(
+                new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id.getNamespace(), id.getPath()), category,
+                resolved ? instance.getVolume() : 1.0F, resolved ? instance.getPitch() : 1.0F, instance.isLooping(), instance.getDelay(),
+                instance.getAttenuation() == SoundInstance.Attenuation.NONE ? ISound.AttenuationType.NONE : ISound.AttenuationType.LINEAR,
+                (float) instance.getX(), (float) instance.getY(), (float) instance.getZ());
+    }
+
     public static void play(ISound sound, int delay) {
         SoundInstance instance = instance(sound);
         if (instance == null) return;

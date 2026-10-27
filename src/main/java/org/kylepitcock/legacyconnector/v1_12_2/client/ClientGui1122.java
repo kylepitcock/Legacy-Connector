@@ -54,8 +54,18 @@ public final class ClientGui1122 {
             mc.setScreen(null);
             return;
         }
+        GuiScreen[] replace = new GuiScreen[1];
+        if (ScreenEvents1122.openLegacy(screen, replace)) return;
+        mc.setScreen(host(replace[0]));
+    }
+
+    /** The modern screen showing a legacy one: the game's own equivalent for 1.12's screens, else a host of the legacy screen. */
+    public static net.minecraft.client.gui.screens.Screen host(GuiScreen screen) {
+        if (screen == null) return null;
+        if (screen instanceof ScreenEvents1122.View view && view.mcc$modern() != null) return view.mcc$modern();
+        Minecraft mc = Minecraft.getInstance();
         net.minecraft.client.gui.screens.Screen vanilla = vanillaEquivalent(mc, screen);
-        mc.setScreen(vanilla != null ? vanilla : new LegacyScreen1122(screen));
+        return vanilla != null ? vanilla : new LegacyScreen1122(screen);
     }
 
     /**
@@ -78,7 +88,8 @@ public final class ClientGui1122 {
             case "GuiIngameMenu" -> new net.minecraft.client.gui.screens.PauseScreen(true);
             case "GuiModList" -> new net.neoforged.neoforge.client.gui.ModListScreen(parent);
             case "GuiInventory" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player);
-            case "GuiChat" -> new net.minecraft.client.gui.screens.ChatScreen("");
+            case "GuiChat" -> new net.minecraft.client.gui.screens.ChatScreen(
+                    screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiChat chat ? chat.mcc$defaultText() : "");
             default -> null;
         };
     }
@@ -88,10 +99,8 @@ public final class ClientGui1122 {
         var s = Minecraft.getInstance().screen;
         if (s instanceof LegacyScreen1122 ls) return ls.legacy();
         if (s instanceof LegacyContainerScreen1122 cs && cs.legacy() != null) return cs.legacy();
-        return s == null ? null : FOREIGN_SCREEN;
+        return ScreenEvents1122.legacyOf(s);
     }
-
-    private static final GuiScreen FOREIGN_SCREEN = new GuiScreen();
 
     public static void showClientOnly(IGuiHandler handler, EntityPlayer player, int id, World world, int x, int y, int z) {
         Object gui = handler.getClientGuiElement(id, player, world, x, y, z);

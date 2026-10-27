@@ -116,9 +116,15 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         for (int i = 0; i < buttonList.size(); ++i) {
             GuiButton b = buttonList.get(i);
             if (b.mousePressed(mc, mouseX, mouseY)) {
+                var pre = new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Pre(this, b, buttonList);
+                if (mcc$post(pre)) break;
+                b = pre.getButton();
                 selectedButton = b;
                 b.playPressSound(mc == null ? null : mc.getSoundHandler());
                 actionPerformed(b);
+                if (org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.currentLegacyScreen() == this) {
+                    mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.ActionPerformedEvent.Post(this, pre.getButton(), buttonList));
+                }
             }
         }
     }
@@ -141,8 +147,17 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         this.fontRenderer = mc.fontRenderer;
         this.width = width;
         this.height = height;
-        this.buttonList.clear();
-        initGui();
+        if (!mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent.Pre(this, buttonList))) {
+            this.buttonList.clear();
+            initGui();
+        }
+        mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.InitGuiEvent.Post(this, buttonList));
+    }
+
+    /** Posts a Forge event when somebody listens to it; true if it was cancelled. */
+    public static boolean mcc$post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
+        var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+        return bus.mcc$hasListeners(event.getClass()) && bus.post(event);
     }
 
     public void setGuiSize(int w, int h) {
@@ -189,6 +204,7 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
 
     public void drawDefaultBackground() {
         drawWorldBackground(0);
+        mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.BackgroundDrawnEvent(this));
     }
 
     public void drawWorldBackground(int tint) {
@@ -270,7 +286,10 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
             InputEvent1122.eventY = y;
         }
         try {
-            handleMouseInput();
+            if (!mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.MouseInputEvent.Pre(this))) {
+                handleMouseInput();
+                mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.MouseInputEvent.Post(this));
+            }
         } catch (IOException e) {
             throw new java.io.UncheckedIOException(e);
         } finally {
@@ -319,7 +338,10 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         InputEvent1122.eventCharacter = c;
         InputEvent1122.eventKeyState = pressed;
         try {
-            handleKeyboardInput();
+            if (!mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.KeyboardInputEvent.Pre(this))) {
+                handleKeyboardInput();
+                mcc$post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent.KeyboardInputEvent.Post(this));
+            }
         } catch (IOException e) {
             throw new java.io.UncheckedIOException(e);
         } finally {
