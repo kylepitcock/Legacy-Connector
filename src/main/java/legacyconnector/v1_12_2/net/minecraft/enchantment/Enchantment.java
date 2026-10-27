@@ -125,11 +125,6 @@ public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> 
         return 0;
     }
 
-    /** Extra melee damage against a creature kind at a level. */
-    public float calcDamageByCreature(int level, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute creatureType) {
-        return 0.0F;
-    }
-
     public void onEntityDamaged(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity target,
             int level) {
     }
@@ -157,5 +152,17 @@ public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> 
         public int getWeight() {
             return weight;
         }
+    }
+
+    /** Extra melee damage against a kind of creature (1.12.2's sharpness, smite and bane of arthropods for the vanilla ones). */
+    public float calcDamageByCreature(int level, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute creatureType) {
+        var name = getRegistryName();
+        if (name == null || !"minecraft".equals(name.getNamespace())) return 0.0F;
+        return switch (name.getPath()) {
+            case "sharpness" -> 1.0F + (float) Math.max(0, level - 1) * 0.5F;
+            case "smite" -> creatureType == legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute.UNDEAD ? (float) level * 2.5F : 0.0F;
+            case "bane_of_arthropods" -> creatureType == legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute.ARTHROPOD ? (float) level * 2.5F : 0.0F;
+            default -> 0.0F;
+        };
     }
 }

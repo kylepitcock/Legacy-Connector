@@ -41,6 +41,11 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
         return net.minecraft.client.Minecraft.getInstance().gameRenderer.currentEffect() != null;
     }
 
+    /** The active post-processing chain (a view of the modern one), or null. */
+    public legacyconnector.v1_12_2.net.minecraft.client.shader.ShaderGroup getShaderGroup() {
+        return legacyconnector.v1_12_2.net.minecraft.client.shader.ShaderGroup.mcc$of(net.minecraft.client.Minecraft.getInstance().gameRenderer.currentEffect());
+    }
+
     public void stopUseShader() {
         net.minecraft.client.Minecraft.getInstance().gameRenderer.shutdownEffect();
     }

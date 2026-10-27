@@ -6,7 +6,7 @@ import legacyconnector.v1_12_2.net.minecraft.inventory.InventoryBasic;
 import legacyconnector.v1_12_2.net.minecraft.inventory.Slot;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 
-/** Forge's container slot over one slot of an {@link IItemHandler} (the item handler decides what fits and what may be taken). */
+/** Forge: a container slot over one slot of an {@link IItemHandler} (validity and limits come from simulated inserts). */
 public class SlotItemHandler extends Slot {
     private static final IInventory emptyInventory = new InventoryBasic("[Null]", true, 0);
     private final IItemHandler itemHandler;
@@ -20,14 +20,14 @@ public class SlotItemHandler extends Slot {
 
     @Override
     public boolean isItemValid(ItemStack stack) {
-        if (stack.isEmpty() || !itemHandler.isItemValid(index, stack)) return false;
+        if (stack.isEmpty()) return false;
         IItemHandler handler = getItemHandler();
         ItemStack remainder;
-        if (handler instanceof IItemHandlerModifiable modifiable) {
-            ItemStack current = modifiable.getStackInSlot(index);
-            modifiable.setStackInSlot(index, ItemStack.EMPTY);
-            remainder = modifiable.insertItem(index, stack, true);
-            modifiable.setStackInSlot(index, current);
+        if (handler instanceof IItemHandlerModifiable handlerModifiable) {
+            ItemStack currentStack = handlerModifiable.getStackInSlot(index);
+            handlerModifiable.setStackInSlot(index, ItemStack.EMPTY);
+            remainder = handlerModifiable.insertItem(index, stack, true);
+            handlerModifiable.setStackInSlot(index, currentStack);
         } else {
             remainder = handler.insertItem(index, stack, true);
         }
@@ -41,12 +41,12 @@ public class SlotItemHandler extends Slot {
 
     @Override
     public void putStack(ItemStack stack) {
-        if (getItemHandler() instanceof IItemHandlerModifiable modifiable) modifiable.setStackInSlot(index, stack);
+        ((IItemHandlerModifiable) getItemHandler()).setStackInSlot(index, stack);
         onSlotChanged();
     }
 
     @Override
-    public void onSlotChange(ItemStack p_75220_1_, ItemStack p_75220_2_) {
+    public void onSlotChange(ItemStack moved, ItemStack original) {
     }
 
     @Override
@@ -60,15 +60,17 @@ public class SlotItemHandler extends Slot {
         int maxInput = stack.getMaxStackSize();
         maxAdd.setCount(maxInput);
         IItemHandler handler = getItemHandler();
-        ItemStack current = handler.getStackInSlot(index);
-        if (handler instanceof IItemHandlerModifiable modifiable) {
-            modifiable.setStackInSlot(index, ItemStack.EMPTY);
-            ItemStack remainder = modifiable.insertItem(index, maxAdd, true);
-            modifiable.setStackInSlot(index, current);
+        ItemStack currentStack = handler.getStackInSlot(index);
+        if (handler instanceof IItemHandlerModifiable handlerModifiable) {
+            handlerModifiable.setStackInSlot(index, ItemStack.EMPTY);
+            ItemStack remainder = handlerModifiable.insertItem(index, maxAdd, true);
+            handlerModifiable.setStackInSlot(index, currentStack);
             return maxInput - remainder.getCount();
         }
         ItemStack remainder = handler.insertItem(index, maxAdd, true);
-        return current.getCount() + maxInput - remainder.getCount();
+        int current = currentStack.getCount();
+        int added = maxInput - remainder.getCount();
+        return current + added;
     }
 
     @Override

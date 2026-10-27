@@ -169,4 +169,75 @@ public class ForgeHooks {
         else if (!end.isEmpty()) ichat.appendText(end);
         return ichat;
     }
+
+    // ---- area F: block breaking and harvesting, attacks, falls
+
+    private static net.minecraft.world.level.Level mcc$level(Object world) {
+        return world instanceof World w ? w.mcc$level() : null;
+    }
+
+    /**
+     * Fires the block break event for a player breaking the block: -1 when a mod canceled it, else the experience the block drops
+     * (the modern event no longer carries one; the block drops its own when broken).
+     */
+    public static int onBlockBreakEvent(World world, legacyconnector.v1_12_2.net.minecraft.world.GameType gameType,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP entityPlayer, BlockPos pos) {
+        var level = world == null ? null : world.mcc$level();
+        var sp = entityPlayer == null ? null : entityPlayer.mcc$serverPlayer();
+        if (level == null || sp == null || pos == null) return 0;
+        var p = pos(pos);
+        var event = CommonHooks.fireBlockBreak(level, gameType == null ? sp.gameMode.getGameModeForPlayer() : gameType.mcc$modern(), sp, p, level.getBlockState(p));
+        return event.isCanceled() ? -1 : 0;
+    }
+
+    /** Whether the player can harvest the block at {@code pos} (right tool, or no tool needed; mods' harvest check events decide too). */
+    public static boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.block.Block block, EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos) {
+        var level = mcc$level(world);
+        var p = player == null ? null : player.mcc$player();
+        if (level == null || p == null || pos == null) return true;
+        var mp = pos(pos);
+        var state = level.getBlockState(mp);
+        return net.neoforged.neoforge.event.EventHooks.doPlayerHarvestCheck(p, state, level, mp);
+    }
+
+    /** Whether the stack is a tool that breaks the block at {@code pos} faster (its tool type matches). */
+    public static boolean isToolEffective(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos, ItemStack stack) {
+        var level = mcc$level(world);
+        if (level == null || pos == null || stack == null || stack.isEmpty()) return false;
+        var state = level.getBlockState(pos(pos));
+        var modern = Stacks1122.toModern(stack);
+        return modern.isCorrectToolForDrops(state) || modern.getDestroySpeed(state) > 1.0F;
+    }
+
+    /** Whether the stack's tool can harvest the block at {@code pos} (blocks that need no tool always can). */
+    public static boolean canToolHarvestBlock(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos, ItemStack stack) {
+        var level = mcc$level(world);
+        if (level == null || pos == null) return false;
+        var state = level.getBlockState(pos(pos));
+        if (!state.requiresCorrectToolForDrops()) return true;
+        return stack != null && !stack.isEmpty() && Stacks1122.toModern(stack).isCorrectToolForDrops(state);
+    }
+
+    /** False when a mod canceled the player's attack on the target. */
+    public static boolean onPlayerAttackTarget(EntityPlayer player, Entity target) {
+        var p = player == null ? null : player.mcc$player();
+        if (p == null || target == null || target.mcc$modern() == null) return true;
+        return CommonHooks.onPlayerAttackTarget(p, target.mcc$modern());
+    }
+
+    /** The fall distance and damage multiplier after mods' fall handlers, or null when the fall was canceled. */
+    public static float[] onLivingFall(EntityLivingBase entity, float distance, float damageMultiplier) {
+        if (entity == null || !(entity.mcc$modern() instanceof net.minecraft.world.entity.LivingEntity living)) return new float[] {distance, damageMultiplier};
+        return CommonHooks.onLivingFall(living, distance, damageMultiplier);
+    }
+
+    /** How far away a mob notices the player: the distance scaled by the player's visibility (sneaking, invisibility, mob heads). */
+    public static double getPlayerVisibilityDistance(EntityPlayer player, double xzDistance, double maxXZDistance) {
+        var p = player == null ? null : player.mcc$player();
+        if (p == null) return xzDistance;
+        double visibility = p.getVisibilityPercent(null);
+        double max = maxXZDistance * visibility;
+        return xzDistance >= max ? max : xzDistance;
+    }
 }

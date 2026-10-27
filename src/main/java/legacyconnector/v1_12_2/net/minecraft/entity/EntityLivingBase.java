@@ -1162,4 +1162,59 @@ public abstract class EntityLivingBase extends Entity {
     @Override
     public void notifyDataManagerChange(legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<?> key) {
     }
+
+    // ------------------------------------------------------------------ combat and Forge attributes (area E, 1.12.2)
+
+    /** Forge's swim speed attribute (NeoForge's swim speed). */
+    public static final legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttribute SWIM_SPEED =
+            new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.RangedAttribute(null, "forge.swimSpeed", 1.0D, 0.0D, 1024.0D).setShouldWatch(true);
+    @Deprecated
+    public EntityLivingBase revengeTarget;
+    @Deprecated
+    public int ticksSinceLastSwing;
+    private int mcc$local_ticksSinceLastSwing;
+    @Deprecated
+    public int ticksElytraFlying;
+    private legacyconnector.v1_12_2.net.minecraft.util.CombatTracker mcc$combatTracker;
+
+    public static EntityLivingBase mcc$get$revengeTarget(EntityLivingBase e) {
+        return e.getRevengeTarget();
+    }
+
+    public static void mcc$set$revengeTarget(EntityLivingBase e, EntityLivingBase v) {
+        e.setRevengeTarget(v);
+    }
+
+    /** Ticks since the last attack (the modern attack strength ticker for players; kept locally for other entities). */
+    public static int mcc$get$ticksSinceLastSwing(EntityLivingBase e) {
+        if (e.mcc$entity instanceof net.minecraft.world.entity.player.Player p) return (int) (p.getAttackStrengthScale(0.0F) * p.getCurrentItemAttackStrengthDelay());
+        return e.mcc$local_ticksSinceLastSwing;
+    }
+
+    public static void mcc$set$ticksSinceLastSwing(EntityLivingBase e, int v) {
+        if (e.mcc$entity instanceof net.minecraft.world.entity.player.Player p && v == 0) p.resetAttackStrengthTicker();
+        e.mcc$local_ticksSinceLastSwing = v;
+    }
+
+    public static int mcc$get$ticksElytraFlying(EntityLivingBase e) {
+        return e.getTicksElytraFlying();
+    }
+
+    public static void mcc$set$ticksElytraFlying(EntityLivingBase e, int v) {
+        // counted by the modern entity
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.CombatTracker getCombatTracker() {
+        if (mcc$combatTracker == null) mcc$combatTracker = new legacyconnector.v1_12_2.net.minecraft.util.CombatTracker(this);
+        return mcc$combatTracker;
+    }
+
+    /** Plays the sound of putting on a piece of equipment. */
+    protected void playEquipSound(ItemStack stack) {
+        var l = mcc$living();
+        if (l == null || stack == null || stack.isEmpty()) return;
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        var equippable = modern.getItem() instanceof net.minecraft.world.item.ArmorItem armor ? armor.getEquipSound().value() : net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC.value();
+        l.playSound(equippable, 1.0F, 1.0F);
+    }
 }

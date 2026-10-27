@@ -14,6 +14,10 @@ public class BiomeProvider {
 
     private final legacyconnector.v1_12_2.net.minecraft.world.World world;
     private final List<Biome> biomesToSpawnIn = new ArrayList<>();
+    /** The 1:4 and per-block biome layers of a mod's layer-based provider (null: answered from the world or the subclass). */
+    protected legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer genBiomes;
+    protected legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer biomeIndexLayer;
+    protected final BiomeCache biomeCache = new BiomeCache(this);
 
     protected BiomeProvider() {
         this.world = null;
@@ -43,6 +47,7 @@ public class BiomeProvider {
     }
 
     public Biome getBiome(BlockPos pos, Biome defaultBiome) {
+        if (world == null && biomeIndexLayer != null) return biomeCache.getBiome(pos.getX(), pos.getZ(), defaultBiome);
         Biome b = world == null ? null : world.mcc$generatorBiome(pos.getX(), world.getSeaLevel(), pos.getZ());
         return b != null ? b : defaultBiome != null ? defaultBiome : legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
     }
@@ -54,6 +59,11 @@ public class BiomeProvider {
     public Biome[] getBiomesForGeneration(Biome[] biomes, int x, int z, int width, int height) {
         // the 1:4 scale grid generators sample terrain with
         if (biomes == null || biomes.length < width * height) biomes = new Biome[width * height];
+        if (world == null && genBiomes != null) {
+            int[] ids = genBiomes.getInts(x, z, width, height);
+            for (int i = 0; i < width * height; i++) biomes[i] = Biome.getBiome(ids[i], legacyconnector.v1_12_2.net.minecraft.init.Biomes.DEFAULT);
+            return biomes;
+        }
         for (int j = 0; j < height; j++) {
             for (int i = 0; i < width; i++) biomes[j * width + i] = getBiome(new BlockPos((x + i) << 2, 0, (z + j) << 2));
         }
@@ -66,6 +76,15 @@ public class BiomeProvider {
 
     public Biome[] getBiomes(Biome[] listToReuse, int x, int z, int width, int length, boolean cacheFlag) {
         if (listToReuse == null || listToReuse.length < width * length) listToReuse = new Biome[width * length];
+        if (world == null && biomeIndexLayer != null) {
+            if (cacheFlag && width == 16 && length == 16 && (x & 15) == 0 && (z & 15) == 0) {
+                System.arraycopy(biomeCache.getCachedBiomes(x, z), 0, listToReuse, 0, width * length);
+                return listToReuse;
+            }
+            int[] ids = biomeIndexLayer.getInts(x, z, width, length);
+            for (int i = 0; i < width * length; i++) listToReuse[i] = Biome.getBiome(ids[i], legacyconnector.v1_12_2.net.minecraft.init.Biomes.DEFAULT);
+            return listToReuse;
+        }
         for (int j = 0; j < length; j++) {
             for (int i = 0; i < width; i++) listToReuse[j * width + i] = getBiome(new BlockPos(x + i, 0, z + j));
         }
@@ -97,6 +116,15 @@ public class BiomeProvider {
     }
 
     public void cleanupCache() {
+        biomeCache.cleanupCache();
+    }
+
+    /** Forge: lets mods replace the biome layers of a world type (WorldTypeEvent.InitBiomeGens on the terrain bus). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer[] getModdedBiomeGenerators(legacyconnector.v1_12_2.net.minecraft.world.WorldType worldType,
+            long seed, legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer[] original) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.WorldTypeEvent.InitBiomeGens(worldType, seed, original);
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.TERRAIN_GEN_BUS.post(event);
+        return event.getNewBiomeGens();
     }
 
     public boolean isFixedBiome() {

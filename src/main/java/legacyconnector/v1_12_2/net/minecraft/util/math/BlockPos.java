@@ -28,6 +28,12 @@ public class BlockPos extends Vec3i {
         this(vec.x, vec.y, vec.z);
     }
 
+    /** The block the entity stands in (its position floored); without this the linker adapted the call to BlockPos(Vec3d) with null. */
+    public BlockPos(legacyconnector.v1_12_2.net.minecraft.entity.Entity source) {
+        this(legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posX(source), legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posY(source),
+                legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$posZ(source));
+    }
+
     public BlockPos(Vec3i source) {
         this(source.getX(), source.getY(), source.getZ());
     }

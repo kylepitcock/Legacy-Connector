@@ -28,6 +28,13 @@ public final class Client1122 {
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("posting TextureStitchEvent.Pre", e);
             }
+            try {
+                CustomModels1122.registerTextures();
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("listing the textures of custom-loader models", e);
+            }
+            // textures of OBJ materials (Assets1122 ran first and collected them)
+            for (String texture : org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.TEXTURES) Sprites1122.register(texture);
             Sprites1122.contribute(out);
         });
         modBus.addListener((TextureAtlasStitchedEvent e) -> {
@@ -51,11 +58,20 @@ public final class Client1122 {
             if (present()) Colors1122.onItemColors(e);
         });
         modBus.addListener(Client1122::onModifyBaking);
+        // plain model locations mods asked ModelLoaderRegistry for are baked as standalone models
+        modBus.addListener((net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e) -> {
+            if (!present()) return;
+            for (var location : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry.mcc$requested()) {
+                e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(location.mcc$modern()));
+            }
+        });
         // screens, particles, key bindings, resource reloads
         modBus.addListener(ClientGui1122::onRegisterScreens);
         LegacyParticles1122.register();
         ParticleDraw1122.install();
         ScreenEvents1122.register();
+        ClientEvents1122.register();
+        ClientCommands1122.register();
         // 1.12 told its resource reload listeners again after every resource reload
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(
                 (net.minecraft.server.packs.resources.ResourceManagerReloadListener) manager -> {
@@ -77,6 +93,12 @@ public final class Client1122 {
     private static void onModifyBaking(net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult event) {
         if (!present()) return;
         Models1122.invalidate();
+        CustomModels1122.setBaking(event.getModels());
+        try {
+            CustomModels1122.bakeInto(event.getModels());
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("baking custom-loader models", e);
+        }
         BakedRegistry1122 registry = new BakedRegistry1122(event.getModels());
         try {
             MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelBakeEvent(
@@ -85,6 +107,7 @@ public final class Client1122 {
         } catch (RuntimeException | LinkageError e) {
             RenderErrors1122.report("posting ModelBakeEvent", e);
         }
+        CustomModels1122.setBaking(null);
         if (registry.replaced > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Models").info("1.12.2 mods replaced {} baked model(s)", registry.replaced);
     }
 

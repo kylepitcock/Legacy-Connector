@@ -41,6 +41,10 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     protected static final IBlockState SANDSTONE = mcc$state("sandstone");
     protected static final IBlockState ICE = mcc$state("ice");
     protected static final IBlockState WATER = mcc$state("water");
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.NoiseGeneratorPerlin TEMPERATURE_NOISE =
+            new legacyconnector.v1_12_2.net.minecraft.world.gen.NoiseGeneratorPerlin(new java.util.Random(1234L), 1);
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.NoiseGeneratorPerlin GRASS_COLOR_NOISE =
+            new legacyconnector.v1_12_2.net.minecraft.world.gen.NoiseGeneratorPerlin(new java.util.Random(2345L), 1);
 
     /** A vanilla block's default state by its 1.12 name (air when it cannot be made yet). */
     private static IBlockState mcc$state(String name) {
@@ -211,9 +215,12 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
 
     // ------------------------------------------------------------------ climate and colours
 
-    /** The temperature at a height: it falls above y=64 as in 1.12. */
+    /** The temperature at a height: it falls above y=64, varied by noise, as in 1.12. */
     public final float getTemperature(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
-        if (pos.getY() > 64) return getDefaultTemperature() - (pos.getY() - 64) * 0.05F / 30.0F;
+        if (pos.getY() > 64) {
+            float f = (float) (TEMPERATURE_NOISE.getValue((double) ((float) pos.getX() / 8.0F), (double) ((float) pos.getZ() / 8.0F)) * 4.0D);
+            return getDefaultTemperature() - (f + (float) pos.getY() - 64.0F) * 0.05F / 30.0F;
+        }
         return getDefaultTemperature();
     }
 
@@ -243,13 +250,13 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     public int getGrassColorAtPos(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         double t = Math.max(0.0D, Math.min(1.0D, getTemperature(pos)));
         double r = Math.max(0.0D, Math.min(1.0D, getRainfall()));
-        return getModdedBiomeGrassColor(net.minecraft.world.level.GrassColor.get(t, r));
+        return getModdedBiomeGrassColor(legacyconnector.v1_12_2.net.minecraft.world.ColorizerGrass.getGrassColor(t, r));
     }
 
     public int getFoliageColorAtPos(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         double t = Math.max(0.0D, Math.min(1.0D, getTemperature(pos)));
         double r = Math.max(0.0D, Math.min(1.0D, getRainfall()));
-        return getModdedBiomeFoliageColor(net.minecraft.world.level.FoliageColor.get(t, r));
+        return getModdedBiomeFoliageColor(legacyconnector.v1_12_2.net.minecraft.world.ColorizerFoliage.getFoliageColor(t, r));
     }
 
     public int getModdedBiomeGrassColor(int original) {

@@ -142,4 +142,42 @@ public class PotionEffect implements Comparable<PotionEffect> {
     public String toString() {
         return getEffectName() + (amplifier > 0 ? " x " + (amplifier + 1) : "") + ", Duration: " + duration;
     }
+
+    // ------------------------------------------------------------------ ticking and curing (area E, 1.12.2)
+
+    private java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$curativeItems;
+
+    /** One tick on an entity: the potion acts when ready, then the duration counts down; false once it ran out. */
+    public boolean onUpdate(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if (duration > 0) {
+            if (potion != null && potion.isReady(duration, amplifier)) potion.performEffect(entity, amplifier);
+            deincrementDuration();
+        }
+        return duration > 0;
+    }
+
+    public int deincrementDuration() {
+        return --duration;
+    }
+
+    /** Forge: the stacks that cure this effect (a milk bucket unless changed). */
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getCurativeItems() {
+        if (mcc$curativeItems == null) {
+            mcc$curativeItems = potion != null ? potion.getCurativeItems() : new java.util.ArrayList<>();
+        }
+        return mcc$curativeItems;
+    }
+
+    public void setCurativeItems(java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> items) {
+        this.mcc$curativeItems = items;
+    }
+
+    public boolean isCurativeItem(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        for (var s : getCurativeItems()) if (s.isItemEqual(stack)) return true;
+        return false;
+    }
+
+    public void addCurativeItem(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        if (!isCurativeItem(stack)) getCurativeItems().add(stack);
+    }
 }

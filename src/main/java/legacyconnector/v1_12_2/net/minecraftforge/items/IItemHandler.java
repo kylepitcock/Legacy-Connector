@@ -13,7 +13,7 @@ public interface IItemHandler {
 
     int getSlotLimit(int slot);
 
-    /** Forge 14.23: whether the slot accepts the stack at all (handlers written before it accept everything). */
+    /** Forge: whether the stack may go in the slot at all (before stack sizes); any stack by default. */
     default boolean isItemValid(int slot, ItemStack stack) {
         return true;
     }

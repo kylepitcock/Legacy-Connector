@@ -467,4 +467,102 @@ public abstract class EntityLiving extends EntityLivingBase {
             return null;
         }
     }
+
+    // ------------------------------------------------------------------ spawning and equipment (area E, 1.12.2)
+
+    /** Client interpolation targets (kept for legacy renderers and movement code; the modern entity interpolates itself). */
+    public int newPosRotationIncrements;
+    public double interpTargetX;
+    public double interpTargetY;
+    public double interpTargetZ;
+    public double interpTargetYaw;
+    public double interpTargetPitch;
+    public float randomYawVelocity;
+    public float movedDistance;
+    public float prevMovedDistance;
+    @Deprecated
+    public boolean persistenceRequired;
+    @Deprecated
+    public EntityLivingBase attackTarget;
+
+    public static boolean mcc$get$persistenceRequired(EntityLiving e) {
+        return e.isNoDespawnRequired();
+    }
+
+    public static void mcc$set$persistenceRequired(EntityLiving e, boolean v) {
+        if (v) e.enablePersistence();
+    }
+
+    public static EntityLivingBase mcc$get$attackTarget(EntityLiving e) {
+        return e.getAttackTarget();
+    }
+
+    public static void mcc$set$attackTarget(EntityLiving e, EntityLivingBase v) {
+        e.setAttackTarget(v);
+    }
+
+    /**
+     * Called once when the mob is spawned naturally, by a spawner or an egg (1.12: a random follow range bonus and, one time in twenty,
+     * left-handedness; the modern spawn finalization does the same). Returns the data shared with the rest of its group.
+     */
+    public IEntityLivingData onInitialSpawn(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty, IEntityLivingData livingdata) {
+        var m = mcc$entity;
+        if (m instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122 host && mcc$hosted()) {
+            var modernDifficulty = m.level().getCurrentDifficultyAt(m.blockPosition());
+            var result = host.mcc$superFinalizeSpawn(modernDifficulty, org.kylepitcock.legacyconnector.v1_12_2.entity.SpawnData1122.Group.modern(livingdata));
+            var legacy = org.kylepitcock.legacyconnector.v1_12_2.entity.SpawnData1122.Group.legacy(result);
+            return legacy != null ? legacy : livingdata;
+        }
+        var follow = getEntityAttribute(SharedMonsterAttributes.FOLLOW_RANGE);
+        if (follow != null) {
+            follow.applyModifier(new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier("Random spawn bonus", rand.nextGaussian() * 0.05D, 1));
+        }
+        setLeftHanded(rand.nextFloat() < 0.05F);
+        return livingdata;
+    }
+
+    /** Gives the mob random armour by difficulty (verbatim 1.12: a 15% chance scaled by the local difficulty). */
+    protected void setEquipmentBasedOnDifficulty(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty) {
+        if (rand.nextFloat() >= 0.15F * difficulty.getClampedAdditionalDifficulty()) return;
+        int i = rand.nextInt(2);
+        float f = mcc$get$world(this) != null && mcc$entity != null && mcc$entity.level().getDifficulty() == net.minecraft.world.Difficulty.HARD ? 0.1F : 0.25F;
+        if (rand.nextFloat() < 0.095F) ++i;
+        if (rand.nextFloat() < 0.095F) ++i;
+        if (rand.nextFloat() < 0.095F) ++i;
+        boolean first = true;
+        for (EntityEquipmentSlot slot : new EntityEquipmentSlot[] {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST,
+                EntityEquipmentSlot.HEAD}) {
+            ItemStack worn = getItemStackFromSlot(slot);
+            if (!first && rand.nextFloat() < f) break;
+            first = false;
+            if (worn.isEmpty()) {
+                Item item = getArmorByChance(slot, i);
+                if (item != null) setItemStackToSlot(slot, new ItemStack(item));
+            }
+        }
+    }
+
+    /** Enchants the equipment by difficulty (the modern enchanting of spawn equipment). */
+    protected void setEnchantmentBasedOnDifficulty(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty) {
+        Mob m = mcc$mob();
+        if (m == null || !(m.level() instanceof net.minecraft.server.level.ServerLevel sl) || difficulty == null) return;
+        float f = difficulty.getClampedAdditionalDifficulty();
+        for (var slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            var stack = m.getItemBySlot(slot);
+            if (!stack.isEmpty() && rand.nextFloat() < (slot.getType() == net.minecraft.world.entity.EquipmentSlot.Type.HUMANOID_ARMOR ? 0.5F : 0.25F) * f) {
+                var enchanted = net.minecraft.world.item.enchantment.EnchantmentHelper.enchantItem(m.getRandom(), stack, (int) (5.0F + f * rand.nextInt(18)),
+                        sl.registryAccess(), java.util.Optional.empty());
+                m.setItemSlot(slot, enchanted);
+            }
+        }
+    }
+
+    /** The legacy data fixers of a mob's NBT; the modern game keeps no legacy fixers. */
+    public static void registerFixesMob(legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer fixer, Class<?> cls) {
+    }
+
+    protected void doWaterSplashEffect() {
+        var m = mcc$entity;
+        if (m != null) m.playSound(net.minecraft.sounds.SoundEvents.GENERIC_SPLASH, 0.2F, 1.0F + (rand.nextFloat() - rand.nextFloat()) * 0.4F);
+    }
 }

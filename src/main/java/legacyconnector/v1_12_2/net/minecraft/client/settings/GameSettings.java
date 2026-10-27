@@ -713,4 +713,380 @@ public class GameSettings {
         key.setKeyCode(keyCode);
         saveOptions();
     }
+
+    // ------------------------------------------------------------------ area R2b: more options, the Options enum
+
+    /** Phantoms answered from the game's options. */
+    @Deprecated
+    public boolean chatColours;
+    @Deprecated
+    public float chatHeightFocused;
+    @Deprecated
+    public int clouds;
+    @Deprecated
+    public boolean showDebugProfilerChart;
+    @Deprecated
+    public boolean showLagometer;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide mainHand;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty difficulty;
+
+    public static boolean mcc$get$chatColours(GameSettings s) {
+        return Opt.bool(Options.CHAT_COLOR);
+    }
+
+    public static void mcc$set$chatColours(GameSettings s, boolean v) {
+        Opt.setBool(Options.CHAT_COLOR, v);
+    }
+
+    public static float mcc$get$chatHeightFocused(GameSettings s) {
+        return Opt.floatValue(Options.CHAT_HEIGHT_FOCUSED);
+    }
+
+    public static void mcc$set$chatHeightFocused(GameSettings s, float v) {
+        Opt.setFloat(Options.CHAT_HEIGHT_FOCUSED, v);
+    }
+
+    /** 0 off, 1 fast, 2 fancy. */
+    public static int mcc$get$clouds(GameSettings s) {
+        try {
+            return switch (mc().options.cloudStatus().get()) {
+                case OFF -> 0;
+                case FAST -> 1;
+                default -> 2;
+            };
+        } catch (RuntimeException | LinkageError e) {
+            return 2;
+        }
+    }
+
+    public static void mcc$set$clouds(GameSettings s, int v) {
+        try {
+            mc().options.cloudStatus().set(v <= 0 ? net.minecraft.client.CloudStatus.OFF : v == 1 ? net.minecraft.client.CloudStatus.FAST : net.minecraft.client.CloudStatus.FANCY);
+        } catch (RuntimeException | LinkageError e) {
+            // no client options
+        }
+    }
+
+    public static boolean mcc$get$showDebugProfilerChart(GameSettings s) {
+        try {
+            return mc().getDebugOverlay().showProfilerChart();
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    public static boolean mcc$get$showLagometer(GameSettings s) {
+        try {
+            return mc().getDebugOverlay().showFpsCharts();
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide mcc$get$mainHand(GameSettings s) {
+        try {
+            return legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide.mcc$of(mc().options.mainHand().get());
+        } catch (RuntimeException | LinkageError e) {
+            return legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide.RIGHT;
+        }
+    }
+
+    public static void mcc$set$mainHand(GameSettings s, legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide v) {
+        try {
+            if (v != null) mc().options.mainHand().set(v.mcc$modern());
+        } catch (RuntimeException | LinkageError e) {
+            // no client options
+        }
+    }
+
+    /** The difficulty of the world played in (the game keeps no client difficulty option any more). */
+    public static legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty mcc$get$difficulty(GameSettings s) {
+        try {
+            var level = mc().level;
+            return legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty.mcc$of(level == null ? net.minecraft.world.Difficulty.NORMAL : level.getDifficulty());
+        } catch (RuntimeException | LinkageError e) {
+            return legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty.NORMAL;
+        }
+    }
+
+    /** The value of an on/off option. */
+    public boolean getOptionOrdinalValue(Options option) {
+        return Opt.bool(option);
+    }
+
+    /** Steps an option: on/off options flip, the others move to their next value. */
+    public void setOptionValue(Options option, int value) {
+        if (option.isBoolean()) {
+            Opt.setBool(option, !Opt.bool(option));
+        } else {
+            Opt.cycle(option, value);
+        }
+        saveOptions();
+    }
+
+    public float getOptionFloatValue(Options option) {
+        return Opt.floatValue(option);
+    }
+
+    public void setOptionFloatValue(Options option, float value) {
+        Opt.setFloat(option, value);
+    }
+
+    /** The option's button text ("FOV: 70", "Auto-Jump: ON"). */
+    public String getKeyBinding(Options option) {
+        String label = legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format(option.getTranslation()) + ": ";
+        if (option.isBoolean()) return label + legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format(Opt.bool(option) ? "options.on" : "options.off");
+        if (option.isFloat()) return label + Math.round(Opt.floatValue(option));
+        return label + Opt.text(option);
+    }
+
+    /** The bridge between the legacy options and the game's. */
+    private static final class Opt {
+        private Opt() {}
+
+        static net.minecraft.client.OptionInstance<Boolean> boolOption(Options option) {
+            var o = mc().options;
+            return switch (option) {
+                case INVERT_MOUSE -> o.invertYMouse();
+                case VIEW_BOBBING -> o.bobView();
+                case CHAT_COLOR -> o.chatColors();
+                case CHAT_LINKS -> o.chatLinks();
+                case CHAT_LINKS_PROMPT -> o.chatLinksPrompt();
+                case USE_FULLSCREEN -> o.fullscreen();
+                case ENABLE_VSYNC -> o.enableVsync();
+                case TOUCHSCREEN -> o.touchscreen();
+                case FORCE_UNICODE_FONT -> o.forceUnicodeFont();
+                case REDUCED_DEBUG_INFO -> o.reducedDebugInfo();
+                case ENTITY_SHADOWS -> o.entityShadows();
+                case SHOW_SUBTITLES -> o.showSubtitles();
+                case REALMS_NOTIFICATIONS -> o.realmsNotifications();
+                case AUTO_JUMP -> o.autoJump();
+                default -> null;
+            };
+        }
+
+        static boolean bool(Options option) {
+            try {
+                if (option == Options.FBO_ENABLE || option == Options.USE_VBO) return true;
+                var o = boolOption(option);
+                return o != null && o.get();
+            } catch (RuntimeException | LinkageError e) {
+                return false;
+            }
+        }
+
+        static void setBool(Options option, boolean value) {
+            try {
+                var o = boolOption(option);
+                if (o != null) o.set(value);
+            } catch (RuntimeException | LinkageError e) {
+                // no client options
+            }
+        }
+
+        static float floatValue(Options option) {
+            try {
+                var o = mc().options;
+                return switch (option) {
+                    case SENSITIVITY -> o.sensitivity().get().floatValue();
+                    case FOV -> o.fov().get();
+                    case GAMMA -> o.gamma().get().floatValue();
+                    case RENDER_DISTANCE -> o.renderDistance().get();
+                    case FRAMERATE_LIMIT -> o.framerateLimit().get();
+                    case CHAT_OPACITY -> o.chatOpacity().get().floatValue();
+                    case CHAT_SCALE -> o.chatScale().get().floatValue();
+                    case CHAT_WIDTH -> o.chatWidth().get().floatValue();
+                    case CHAT_HEIGHT_FOCUSED -> o.chatHeightFocused().get().floatValue();
+                    case CHAT_HEIGHT_UNFOCUSED -> o.chatHeightUnfocused().get().floatValue();
+                    case MIPMAP_LEVELS -> o.mipmapLevels().get();
+                    default -> 0.0F;
+                };
+            } catch (RuntimeException | LinkageError e) {
+                return 0.0F;
+            }
+        }
+
+        static void setFloat(Options option, float v) {
+            try {
+                var o = mc().options;
+                switch (option) {
+                    case SENSITIVITY -> o.sensitivity().set((double) v);
+                    case FOV -> o.fov().set(Math.round(v));
+                    case GAMMA -> o.gamma().set((double) v);
+                    case RENDER_DISTANCE -> o.renderDistance().set(Math.round(v));
+                    case FRAMERATE_LIMIT -> o.framerateLimit().set(Math.round(v));
+                    case CHAT_OPACITY -> o.chatOpacity().set((double) v);
+                    case CHAT_SCALE -> o.chatScale().set((double) v);
+                    case CHAT_WIDTH -> o.chatWidth().set((double) v);
+                    case CHAT_HEIGHT_FOCUSED -> o.chatHeightFocused().set((double) v);
+                    case CHAT_HEIGHT_UNFOCUSED -> o.chatHeightUnfocused().set((double) v);
+                    case MIPMAP_LEVELS -> o.mipmapLevels().set(Math.round(v));
+                    default -> {
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                // no client options, or a value the option does not take
+            }
+        }
+
+        static <T> T next(T[] values, T current, int step) {
+            int i = java.util.Arrays.asList(values).indexOf(current);
+            return values[Math.floorMod(i + step, values.length)];
+        }
+
+        static void cycle(Options option, int step) {
+            try {
+                var o = mc().options;
+                switch (option) {
+                    case GUI_SCALE -> o.guiScale().set(Math.floorMod(o.guiScale().get() + step, 5));
+                    case PARTICLES -> o.particles().set(next(net.minecraft.client.ParticleStatus.values(), o.particles().get(), step));
+                    case GRAPHICS -> o.graphicsMode().set(next(net.minecraft.client.GraphicsStatus.values(), o.graphicsMode().get(), step));
+                    case RENDER_CLOUDS -> o.cloudStatus().set(next(net.minecraft.client.CloudStatus.values(), o.cloudStatus().get(), step));
+                    case MAIN_HAND -> o.mainHand().set(o.mainHand().get().getOpposite());
+                    case AMBIENT_OCCLUSION -> o.ambientOcclusion().set(!o.ambientOcclusion().get());
+                    case CHAT_VISIBILITY -> o.chatVisibility().set(next(net.minecraft.world.entity.player.ChatVisiblity.values(), o.chatVisibility().get(), step));
+                    default -> {
+                    }
+                }
+                if (option == Options.GUI_SCALE) mc().resizeDisplay();
+            } catch (RuntimeException | LinkageError e) {
+                // no client options
+            }
+        }
+
+        static String text(Options option) {
+            try {
+                var o = mc().options;
+                return switch (option) {
+                    case GUI_SCALE -> o.guiScale().get() == 0 ? legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format("options.guiScale.auto")
+                            : String.valueOf(o.guiScale().get());
+                    case PARTICLES -> o.particles().get().getCaption().getString();
+                    case GRAPHICS -> o.graphicsMode().get().getCaption().getString();
+                    case RENDER_CLOUDS -> o.cloudStatus().get().getCaption().getString();
+                    case MAIN_HAND -> o.mainHand().get().getCaption().getString();
+                    case AMBIENT_OCCLUSION -> legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format(o.ambientOcclusion().get() ? "options.on" : "options.off");
+                    case CHAT_VISIBILITY -> legacyconnector.v1_12_2.net.minecraft.client.resources.I18n.format(o.chatVisibility().get().getKey());
+                    default -> "";
+                };
+            } catch (RuntimeException | LinkageError e) {
+                return "";
+            }
+        }
+    }
+
+    /** 1.12's options: on/off ones, sliders (with their range and step) and cycling ones. */
+    public enum Options {
+        INVERT_MOUSE("options.invertMouse", false, true),
+        SENSITIVITY("options.sensitivity", true, false),
+        FOV("options.fov", true, false, 30.0F, 110.0F, 1.0F),
+        GAMMA("options.gamma", true, false),
+        SATURATION("options.saturation", true, false),
+        RENDER_DISTANCE("options.renderDistance", true, false, 2.0F, 16.0F, 1.0F),
+        VIEW_BOBBING("options.viewBobbing", false, true),
+        ANAGLYPH("options.anaglyph", false, true),
+        FRAMERATE_LIMIT("options.framerateLimit", true, false, 10.0F, 260.0F, 10.0F),
+        FBO_ENABLE("options.fboEnable", false, true),
+        RENDER_CLOUDS("options.renderClouds", false, false),
+        GRAPHICS("options.graphics", false, false),
+        AMBIENT_OCCLUSION("options.ao", false, false),
+        GUI_SCALE("options.guiScale", false, false),
+        PARTICLES("options.particles", false, false),
+        CHAT_VISIBILITY("options.chat.visibility", false, false),
+        CHAT_COLOR("options.chat.color", false, true),
+        CHAT_LINKS("options.chat.links", false, true),
+        CHAT_OPACITY("options.chat.opacity", true, false),
+        CHAT_LINKS_PROMPT("options.chat.links.prompt", false, true),
+        SNOOPER_ENABLED("options.snooper", false, true),
+        USE_FULLSCREEN("options.fullscreen", false, true),
+        ENABLE_VSYNC("options.vsync", false, true),
+        USE_VBO("options.vbo", false, true),
+        TOUCHSCREEN("options.touchscreen", false, true),
+        CHAT_SCALE("options.chat.scale", true, false),
+        CHAT_WIDTH("options.chat.width", true, false),
+        CHAT_HEIGHT_FOCUSED("options.chat.height.focused", true, false),
+        CHAT_HEIGHT_UNFOCUSED("options.chat.height.unfocused", true, false),
+        MIPMAP_LEVELS("options.mipmapLevels", true, false, 0.0F, 4.0F, 1.0F),
+        FORCE_UNICODE_FONT("options.forceUnicodeFont", false, true),
+        REDUCED_DEBUG_INFO("options.reducedDebugInfo", false, true),
+        ENTITY_SHADOWS("options.entityShadows", false, true),
+        MAIN_HAND("options.mainHand", false, false),
+        ATTACK_INDICATOR("options.attackIndicator", false, false),
+        ENABLE_WEAK_ATTACKS("options.enableWeakAttacks", false, true),
+        SHOW_SUBTITLES("options.showSubtitles", false, true),
+        REALMS_NOTIFICATIONS("options.realmsNotifications", false, true),
+        AUTO_JUMP("options.autoJump", false, true),
+        NARRATOR("options.narrator", false, false);
+
+        private final boolean isFloat;
+        private final boolean isBoolean;
+        private final String translation;
+        private final float valueStep;
+        private float valueMin;
+        private float valueMax;
+
+        Options(String translation, boolean isFloat, boolean isBoolean) {
+            this(translation, isFloat, isBoolean, 0.0F, 1.0F, 0.0F);
+        }
+
+        Options(String translation, boolean isFloat, boolean isBoolean, float valueMin, float valueMax, float valueStep) {
+            this.translation = translation;
+            this.isFloat = isFloat;
+            this.isBoolean = isBoolean;
+            this.valueMin = valueMin;
+            this.valueMax = valueMax;
+            this.valueStep = valueStep;
+        }
+
+        public static Options byOrdinal(int ordinal) {
+            for (Options o : values()) if (o.getOrdinal() == ordinal) return o;
+            return null;
+        }
+
+        public boolean isFloat() {
+            return isFloat;
+        }
+
+        public boolean isBoolean() {
+            return isBoolean;
+        }
+
+        public int getOrdinal() {
+            return ordinal();
+        }
+
+        public int returnEnumOrdinal() {
+            return ordinal();
+        }
+
+        public String getTranslation() {
+            return translation;
+        }
+
+        public float getValueMin() {
+            return valueMin;
+        }
+
+        public float getValueMax() {
+            return valueMax;
+        }
+
+        public void setValueMax(float value) {
+            this.valueMax = value;
+        }
+
+        public float normalizeValue(float value) {
+            return net.minecraft.util.Mth.clamp((snapToStepClamp(value) - valueMin) / (valueMax - valueMin), 0.0F, 1.0F);
+        }
+
+        public float denormalizeValue(float value) {
+            return snapToStepClamp(valueMin + (valueMax - valueMin) * net.minecraft.util.Mth.clamp(value, 0.0F, 1.0F));
+        }
+
+        public float snapToStepClamp(float value) {
+            if (valueStep > 0.0F) value = valueStep * (float) Math.round(value / valueStep);
+            return net.minecraft.util.Mth.clamp(value, valueMin, valueMax);
+        }
+    }
 }

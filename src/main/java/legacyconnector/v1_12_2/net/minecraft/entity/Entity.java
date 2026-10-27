@@ -1883,4 +1883,189 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         category.addCrashSection("Entity's Momentum", String.format(java.util.Locale.ROOT, "%.2f, %.2f, %.2f", mcc$get$motionX(this), mcc$get$motionY(this),
                 mcc$get$motionZ(this)));
     }
+
+
+    /** The scoreboard team the entity is on (area F), or null. */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Team getTeam() {
+        var team = mcc$entity == null ? null : mcc$entity.getTeam();
+        return team instanceof net.minecraft.world.scores.PlayerTeam p ? legacyconnector.v1_12_2.net.minecraft.scoreboard.ScorePlayerTeam.mcc$of(p) : null;
+    }
+
+    public static float mcc$get$distanceWalkedOnStepModified(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.moveDist : e.mcc$local_distanceWalkedOnStepModified;
+    }
+
+    public static void mcc$set$distanceWalkedOnStepModified(Entity e, float v) {
+        var m = e.mcc$entity;
+        if (m != null) m.moveDist = v;
+        else e.mcc$local_distanceWalkedOnStepModified = v;
+    }
+
+    /**
+     * Forge: moves to another dimension and lets the teleporter place the entity there (a vanilla teleporter keeps the position, as
+     * the modern game's own portal logic does the placing for vanilla travel).
+     */
+    public Entity changeDimension(int dimension, legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter teleporter) {
+        float yaw = mcc$get$rotationYaw(this);
+        Entity moved = changeDimension(dimension);
+        if (moved != null && teleporter != null && !teleporter.isVanilla()) {
+            try {
+                teleporter.placeEntity(mcc$get$world(moved), moved, yaw);
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("Teleporter {} failed to place {}: {}", teleporter.getClass().getName(),
+                        moved, e.toString());
+            }
+        }
+        return moved;
+    }
+
+    /** How much this entity, as the exploder, lets a block resist (the block's own resistance). */
+    public float getExplosionResistance(legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion, World world, BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state == null ? 0.0F : state.getBlock().getExplosionResistance(this);
+    }
+
+    public boolean canExplosionDestroyBlock(legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion, World world, BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, float power) {
+        return true;
+    }
+
+    /** Forge: whether this entity counts as the creature type (spawn caps skip persistent mobs when {@code forSpawnCount}). */
+    public boolean isCreatureType(EnumCreatureType type, boolean forSpawnCount) {
+        if (type == null) return false;
+        if (forSpawnCount && this instanceof EntityLiving l && l.isNoDespawnRequired()) return false;
+        return type.getCreatureClass().isAssignableFrom(getClass());
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction getPushReaction() {
+        var m = mcc$entity;
+        if (m == null) return legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.NORMAL;
+        return switch (m.getPistonPushReaction()) {
+            case DESTROY -> legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.DESTROY;
+            case BLOCK -> legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.BLOCK;
+            case IGNORE -> legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.IGNORE;
+            case PUSH_ONLY -> legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.PUSH_ONLY;
+            default -> legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction.NORMAL;
+        };
+    }
+
+    /** The yaw after a structure rotation (verbatim 1.12). */
+    public float getRotatedYaw(legacyconnector.v1_12_2.net.minecraft.util.Rotation rotation) {
+        float f = net.minecraft.util.Mth.wrapDegrees(mcc$get$rotationYaw(this));
+        return switch (rotation) {
+            case CLOCKWISE_180 -> f + 180.0F;
+            case COUNTERCLOCKWISE_90 -> f + 270.0F;
+            case CLOCKWISE_90 -> f + 90.0F;
+            default -> f;
+        };
+    }
+
+    /** The yaw after a structure mirror (verbatim 1.12). */
+    public float getMirroredYaw(legacyconnector.v1_12_2.net.minecraft.util.Mirror mirror) {
+        float f = net.minecraft.util.Mth.wrapDegrees(mcc$get$rotationYaw(this));
+        return switch (mirror) {
+            case LEFT_RIGHT -> -f;
+            case FRONT_BACK -> 360.0F - f;
+            default -> f;
+        };
+    }
+
+    /** Forge: called when the entity is added to a world (hosts call it for mod entities). */
+    public void onAddedToWorld() {
+    }
+
+    /** Forge: called when the entity is removed from its world. */
+    public void onRemovedFromWorld() {
+    }
+
+    public boolean isAddedToWorld() {
+        return mcc$entity != null && mcc$entity.isAddedToLevel();
+    }
+
+    /** Takes {@code passenger} off this entity. */
+    protected void removePassenger(Entity passenger) {
+        if (passenger != null && passenger.mcc$entity != null && mcc$entity != null && passenger.mcc$entity.getVehicle() == mcc$entity) {
+            passenger.mcc$entity.stopRiding();
+        }
+    }
+
+    /** Whether the bounding box moved by the offset would be free of blocks and liquids. */
+    public boolean isOffsetPositionInLiquid(double x, double y, double z) {
+        return mcc$entity != null && mcc$entity.isFree(x, y, z);
+    }
+
+    /** Lets every block the bounding box touches act on this entity (cobwebs, pressure plates, portals, fire). */
+    protected void doBlockCollisions() {
+        var m = mcc$entity;
+        if (m == null) return;
+        var level = m.level();
+        var box = m.getBoundingBox();
+        var min = net.minecraft.core.BlockPos.containing(box.minX + 0.001D, box.minY + 0.001D, box.minZ + 0.001D);
+        var max = net.minecraft.core.BlockPos.containing(box.maxX - 0.001D, box.maxY - 0.001D, box.maxZ - 0.001D);
+        if (!level.hasChunksAt(min, max)) return;
+        for (var pos : net.minecraft.core.BlockPos.betweenClosed(min, max)) {
+            var state = level.getBlockState(pos);
+            try {
+                state.entityInside(level, pos.immutable(), m);
+            } catch (RuntimeException e) {
+                // a block reacting to an entity must not stop the legacy update
+            }
+        }
+    }
+
+    /** 1.12: an entity's NBT that ignores what an item carried for it (item frames, minecarts and falling blocks say true). */
+    public boolean ignoreItemEntityData() {
+        return false;
+    }
+
+    public boolean isOutsideBorder() {
+        var m = mcc$entity;
+        return m != null ? !m.level().getWorldBorder().isWithinBounds(m.getBoundingBox()) : mcc$outsideBorder;
+    }
+
+    public void setOutsideBorder(boolean outside) {
+        mcc$outsideBorder = outside;
+    }
+
+    /** Plays the step sound of the block walked on (snow layers on top count as snow). */
+    protected void playStepSound(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.Block block) {
+        var m = mcc$entity;
+        if (m == null || pos == null) return;
+        var level = m.level();
+        var modernPos = pos.mcc$modern();
+        var state = level.getBlockState(modernPos.above()).is(net.minecraft.world.level.block.Blocks.SNOW)
+                ? level.getBlockState(modernPos.above()) : level.getBlockState(modernPos);
+        if (state.isAir() || state.liquid()) return;
+        var sound = state.getSoundType(level, modernPos, m);
+        m.playSound(sound.getStepSound(), sound.getVolume() * 0.15F, sound.getPitch());
+    }
+
+    /** Copies everything but the dimension from the entity this one replaces (dimension travel). */
+    public void copyDataFromOld(Entity old) {
+        if (old == null) return;
+        NBTTagCompound tag = old.writeToNBT(new NBTTagCompound());
+        tag.removeTag("Dimension");
+        readFromNBT(tag);
+        mcc$set$timeUntilPortal(this, mcc$get$timeUntilPortal(old));
+    }
+
+    /** After a hit: the target's thorns and the attacker's weapon enchantments act (the modern post-attack enchantment effects). */
+    protected void applyEnchantments(EntityLivingBase attacker, Entity target) {
+        if (attacker == null || target == null || attacker.mcc$entity == null || target.mcc$entity == null) return;
+        if (!(attacker.mcc$entity.level() instanceof net.minecraft.server.level.ServerLevel sl)) return;
+        var source = attacker.mcc$entity instanceof net.minecraft.world.entity.player.Player p ? sl.damageSources().playerAttack(p)
+                : sl.damageSources().mobAttack((net.minecraft.world.entity.LivingEntity) attacker.mcc$entity);
+        net.minecraft.world.item.enchantment.EnchantmentHelper.doPostAttackEffects(sl, target.mcc$entity, source);
+    }
+
+    /** Gives the killer score for a kill (the modern scoreboard criteria). */
+    public void awardKillScore(Entity killed, int score, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
+        var m = mcc$entity;
+        if (m == null || killed == null || killed.mcc$entity == null) return;
+        m.awardKillScore(killed.mcc$entity, score, source == null ? m.damageSources().generic() : source.mcc$modern(m.level()));
+    }
+
+    private boolean mcc$outsideBorder;
+    private float mcc$local_distanceWalkedOnStepModified;
 }

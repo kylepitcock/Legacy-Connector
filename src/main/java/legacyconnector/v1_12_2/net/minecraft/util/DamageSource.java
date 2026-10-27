@@ -253,4 +253,34 @@ public class DamageSource {
         if (projectile && directModern != null) return sources.thrown(directModern, attacker);
         return sources.generic();
     }
+
+    // ------------------------------------------------------------------ projectile and explosion sources, messages (area E, 1.12.2)
+
+    public static DamageSource causeArrowDamage(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityArrow arrow, Entity indirect) {
+        return new EntityDamageSourceIndirect("arrow", arrow, indirect).setProjectile();
+    }
+
+    public static DamageSource causeFireballDamage(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFireball fireball, Entity indirect) {
+        return indirect == null ? new EntityDamageSourceIndirect("onFire", fireball, fireball).setFireDamage().setProjectile()
+                : new EntityDamageSourceIndirect("fireball", fireball, indirect).setFireDamage().setProjectile();
+    }
+
+    /** The damage of an explosion (its placer, when it has one, is the attacker). */
+    public static DamageSource causeExplosionDamage(legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion) {
+        return causeExplosionDamage(explosion == null ? null : explosion.getExplosivePlacedBy());
+    }
+
+    /** Where the damage came from: the immediate source's position (null for sources without an entity). */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getDamageLocation() {
+        Entity e = getImmediateSource();
+        return e == null ? null : e.getPositionVector();
+    }
+
+    /** The chat message for a death by this source (the modern death message of its modern counterpart). */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDeathMessage(EntityLivingBase victim) {
+        if (victim != null && victim.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l) {
+            return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(mcc$modern(l.level()).getLocalizedDeathMessage(l).getString());
+        }
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("death.attack." + damageType, victim == null ? "" : victim.getDisplayName());
+    }
 }

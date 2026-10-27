@@ -25,6 +25,16 @@ public interface ISound {
 
     AttenuationType getAttenuationType();
 
+    /** Looks up the sound event of {@link #getSoundLocation} and picks the sound to play; returns the event (null when unknown). */
+    default SoundEventAccessor createAccessor(SoundHandler handler) {
+        return handler.getAccessor(getSoundLocation());
+    }
+
+    /** The sound picked by {@link #createAccessor}. */
+    default Sound getSound() {
+        return SoundHandler.MISSING_SOUND;
+    }
+
     enum AttenuationType {
         NONE(0),
         LINEAR(2);

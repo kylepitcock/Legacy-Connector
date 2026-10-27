@@ -545,6 +545,198 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return getDisplayNameString();
     }
 
+    // ------------------------------------------------------------------ containers, GUIs and statistics (area E, 1.12.2)
+
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.inventory.Container openContainer;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.inventory.Container inventoryContainer;
+    @Deprecated
+    public BlockPos bedLocation;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.FoodStats foodStats;
+    @Deprecated
+    public int sleepTimer;
+    /** Client render offsets while sleeping (only legacy renderers read them). */
+    public float renderOffsetX;
+    public float renderOffsetY;
+    public float renderOffsetZ;
+    private legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest mcc$enderChest;
+
+    /** The container the player has open: a legacy container, a view of a vanilla menu, or the inventory container. */
+    public static legacyconnector.v1_12_2.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
+        Player m = p.mcc$player();
+        if (m == null) return null;
+        if (m.containerMenu == null || m.containerMenu == m.inventoryMenu) return mcc$get$inventoryContainer(p);
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.MenuView1122.of(m.containerMenu);
+    }
+
+    /** Mods reset {@code openContainer} to the inventory container after closing their own; a hosted container becomes the open menu. */
+    public static void mcc$set$openContainer(EntityPlayer p, legacyconnector.v1_12_2.net.minecraft.inventory.Container v) {
+        Player m = p.mcc$player();
+        if (m == null) return;
+        var menu = org.kylepitcock.legacyconnector.v1_12_2.entity.MenuView1122.modern(v);
+        if (v == null || menu == m.inventoryMenu) m.containerMenu = m.inventoryMenu;
+        else if (menu != null) m.containerMenu = menu;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.inventory.Container mcc$get$inventoryContainer(EntityPlayer p) {
+        Player m = p.mcc$player();
+        return m == null ? null : org.kylepitcock.legacyconnector.v1_12_2.entity.MenuView1122.of(m.inventoryMenu);
+    }
+
+    public static void mcc$set$inventoryContainer(EntityPlayer p, legacyconnector.v1_12_2.net.minecraft.inventory.Container v) {
+        // the inventory menu belongs to the modern player
+    }
+
+    public static BlockPos mcc$get$bedLocation(EntityPlayer p) {
+        return p.getBedLocation();
+    }
+
+    public static void mcc$set$bedLocation(EntityPlayer p, BlockPos v) {
+        if (p.mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            sp.setRespawnPosition(sp.getRespawnDimension(), v == null ? null : v.mcc$modern(), sp.getRespawnAngle(), sp.isRespawnForced(), false);
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.FoodStats mcc$get$foodStats(EntityPlayer p) {
+        return p.getFoodStats();
+    }
+
+    public static void mcc$set$foodStats(EntityPlayer p, legacyconnector.v1_12_2.net.minecraft.util.FoodStats v) {
+        // the food data belongs to the modern player
+    }
+
+    public static int mcc$get$sleepTimer(EntityPlayer p) {
+        return p.getSleepTimer();
+    }
+
+    public static void mcc$set$sleepTimer(EntityPlayer p, int v) {
+        // counted by the modern player while it sleeps
+    }
+
+    /** Awards a statistic (vanilla statistics count as their modern ones; a mod's own statistic has no modern counter). */
+    public void addStat(legacyconnector.v1_12_2.net.minecraft.stats.StatBase stat) {
+        addStat(stat, 1);
+    }
+
+    public void addStat(legacyconnector.v1_12_2.net.minecraft.stats.StatBase stat, int amount) {
+        var modern = stat == null ? null : stat.mcc$modern();
+        if (modern != null && mcc$player() != null) mcc$player().awardStat(modern, amount);
+    }
+
+    public void takeStat(legacyconnector.v1_12_2.net.minecraft.stats.StatBase stat) {
+        var modern = stat == null ? null : stat.mcc$modern();
+        if (modern != null && mcc$player() != null) mcc$player().resetStat(modern);
+    }
+
+    /** Opens a chest-like GUI on an inventory (server side; the client is told to show it). */
+    public void displayGUIChest(legacyconnector.v1_12_2.net.minecraft.inventory.IInventory inventory) {
+        org.kylepitcock.legacyconnector.v1_12_2.entity.PlayerGuis1122.displayGUIChest(this, inventory);
+    }
+
+    public void displayGui(legacyconnector.v1_12_2.net.minecraft.world.IInteractionObject guiOwner) {
+        org.kylepitcock.legacyconnector.v1_12_2.entity.PlayerGuis1122.displayGui(this, guiOwner);
+    }
+
+    public void displayVillagerTradeGui(legacyconnector.v1_12_2.net.minecraft.entity.IMerchant merchant) {
+        org.kylepitcock.legacyconnector.v1_12_2.entity.PlayerGuis1122.displayVillagerTradeGui(this, merchant);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest getInventoryEnderChest() {
+        if (mcc$enderChest == null) mcc$enderChest = new legacyconnector.v1_12_2.net.minecraft.inventory.InventoryEnderChest(mcc$player().getEnderChestInventory());
+        return mcc$enderChest;
+    }
+
+    /** Whether the player shows a skin layer (the client's skin customisation). */
+    public boolean isWearing(EnumPlayerModelParts part) {
+        return part != null && mcc$player().isModelPartShown(part.mcc$modern());
+    }
+
+    /** Lies down in the bed at {@code pos} (server: the modern sleep rules and Forge's sleep events); the 1.12 result. */
+    public SleepResult trySleep(BlockPos pos) {
+        if (pos == null) return SleepResult.OTHER_PROBLEM;
+        var result = mcc$player().startSleepInBed(pos.mcc$modern());
+        return result.right().isPresent() ? SleepResult.OK : switch (result.left().get()) {
+            case NOT_POSSIBLE_HERE -> SleepResult.NOT_POSSIBLE_HERE;
+            case NOT_POSSIBLE_NOW -> SleepResult.NOT_POSSIBLE_NOW;
+            case TOO_FAR_AWAY -> SleepResult.TOO_FAR_AWAY;
+            case NOT_SAFE -> SleepResult.NOT_SAFE;
+            default -> SleepResult.OTHER_PROBLEM;
+        };
+    }
+
+    /** The yaw a sleeping player faces in its bed (1.12: south 90, north 270, east 180, west 0). */
+    public float getBedOrientationInDegrees() {
+        var d = mcc$player().getBedOrientation();
+        if (d == null) return 0.0F;
+        return switch (d) {
+            case SOUTH -> 90.0F;
+            case NORTH -> 270.0F;
+            case EAST -> 180.0F;
+            default -> 0.0F;
+        };
+    }
+
+    public void setRenderOffsetForSleep(EnumFacing facing) {
+        renderOffsetX = -1.8F * facing.getXOffset();
+        renderOffsetZ = -1.8F * facing.getZOffset();
+    }
+
+    /**
+     * Where a player whose spawn point is {@code pos} would respawn: next to the bed there (the modern stand-up search), at {@code pos}
+     * itself when the spawn is forced and the two blocks there are free, otherwise null.
+     */
+    public static BlockPos getBedSpawnLocation(World world, BlockPos pos, boolean forceSpawn) {
+        if (world == null || pos == null || world.mcc$level() == null) return null;
+        var level = world.mcc$level();
+        var modernPos = pos.mcc$modern();
+        var state = level.getBlockState(modernPos);
+        if (state.getBlock() instanceof net.minecraft.world.level.block.BedBlock) {
+            var found = net.minecraft.world.level.block.BedBlock.findStandUpPosition(net.minecraft.world.entity.EntityType.PLAYER, level, modernPos,
+                    state.getValue(net.minecraft.world.level.block.BedBlock.FACING), 0.0F);
+            return found.map(v -> new BlockPos(v.x, v.y, v.z)).orElse(null);
+        }
+        if (!forceSpawn) return null;
+        boolean free = !level.getBlockState(modernPos).isSolid() && !level.getBlockState(modernPos.above()).isSolid();
+        return free ? pos : null;
+    }
+
+    /** The 1.12 dimension id of the player's respawn point. */
+    public int getSpawnDimension() {
+        if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            var level = sp.server.getLevel(sp.getRespawnDimension());
+            return level == null ? 0 : org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.dimensionId(level);
+        }
+        return 0;
+    }
+
+    public float getArmorVisibility() {
+        return mcc$player().getArmorCoverPercentage();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getLeftShoulderEntity() {
+        return new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(mcc$player().getShoulderEntityLeft().copy());
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getRightShoulderEntity() {
+        return new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(mcc$player().getShoulderEntityRight().copy());
+    }
+
+    public void setGameType(legacyconnector.v1_12_2.net.minecraft.world.GameType type) {
+        if (type != null && mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) sp.setGameMode(type.mcc$modern());
+    }
+
+    /** Unlocks recipes in the player's recipe book (the modern recipes of the same names). */
+    public void unlockRecipes(java.util.List<legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe> recipes) {
+        if (recipes == null || !(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+        java.util.List<net.minecraft.resources.ResourceLocation> ids = new java.util.ArrayList<>();
+        for (var r : recipes) {
+            if (r != null && r.getRegistryName() != null) ids.add(r.getRegistryName().mcc$modern());
+        }
+        sp.awardRecipesByKey(ids);
+    }
+
     /** Sleep results of trySleep. */
     public enum SleepResult {
         OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE

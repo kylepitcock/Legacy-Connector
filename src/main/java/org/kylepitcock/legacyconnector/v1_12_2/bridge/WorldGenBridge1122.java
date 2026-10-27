@@ -35,9 +35,12 @@ public final class WorldGenBridge1122 {
 
     private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed) {
         List<IWorldGenerator> gens = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators();
-        if (gens.isEmpty()) return;
+        boolean events = TerrainEvents1122.wanted();
+        if (gens.isEmpty() && !events) return;
         World world = WorldBridge1122.wrap(level);
         try {
+            // 1.12 populated the chunk (with its terrain events) before GameRegistry ran the mods' generators
+            if (events) TerrainEvents1122.populate(world, worldSeed, chunkX, chunkZ, DUMMY);
             Random fmlRandom = new Random(worldSeed);
             long xSeed = fmlRandom.nextLong() >> 2 + 1L;
             long zSeed = fmlRandom.nextLong() >> 2 + 1L;

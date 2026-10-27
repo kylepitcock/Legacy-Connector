@@ -20,7 +20,7 @@ public class CombinedInvWrapper implements IItemHandlerModifiable {
         this.slotCount = index;
     }
 
-    /** The handler a slot of the combined handler belongs to (-1 when out of range). */
+    /** The handler a combined slot falls in, or -1. */
     protected int getIndexForSlot(int slot) {
         if (slot < 0) return -1;
         for (int i = 0; i < baseIndex.length; i++) if (slot - baseIndex[i] < 0) return i;

@@ -4,12 +4,11 @@ import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
-/** A crafting grid as a plain list of stacks. */
+/** A crafting grid as a plain list of stacks; changes are reported to the container it belongs to ({@code onCraftMatrixChanged}). */
 public class InventoryCrafting implements IInventory {
     private final NonNullList<ItemStack> stackList;
     private final int inventoryWidth;
     private final int inventoryHeight;
-
     /** The container told when the grid changes (it recomputes the result); null for grids made by recipe code. */
     private final Container eventHandler;
 
@@ -53,9 +52,7 @@ public class InventoryCrafting implements IInventory {
 
     @Override
     public ItemStack removeStackFromSlot(int index) {
-        ItemStack s = stackList.get(index);
-        stackList.set(index, ItemStack.EMPTY);
-        return s;
+        return ItemStackHelper.getAndRemove(stackList, index);
     }
 
     @Override
