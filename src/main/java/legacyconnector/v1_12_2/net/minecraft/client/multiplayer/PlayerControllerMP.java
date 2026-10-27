@@ -156,4 +156,22 @@ public class PlayerControllerMP {
         var m = mode();
         if (m != null) m.tick();
     }
+
+    // ------------------------------------------------------------------ area R2b
+
+    /** The player's game mode. */
+    public legacyconnector.v1_12_2.net.minecraft.world.GameType getCurrentGameType() {
+        var m = mode();
+        return m == null ? legacyconnector.v1_12_2.net.minecraft.world.GameType.NOT_SET : legacyconnector.v1_12_2.net.minecraft.world.GameType.mcc$of(m.getPlayerMode());
+    }
+
+    /** Clicks a slot of the open container (sent to the server, applied here at once); returns the stack the cursor holds afterwards. */
+    public ItemStack windowClick(int windowId, int slotId, int mouseButton, legacyconnector.v1_12_2.net.minecraft.inventory.ClickType type,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        var m = mode();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (m == null || mc.player == null || type == null) return ItemStack.EMPTY;
+        m.handleInventoryMouseClick(windowId, slotId, mouseButton, type.mcc$modern(), mc.player);
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(mc.player.containerMenu.getCarried());
+    }
 }

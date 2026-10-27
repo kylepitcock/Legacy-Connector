@@ -18,6 +18,26 @@ public final class WorldClient1122 {
         return level instanceof net.minecraft.client.multiplayer.ClientLevel c ? c.getCloudColor(partialTicks) : new net.minecraft.world.phys.Vec3(1.0D, 1.0D, 1.0D);
     }
 
+    /** {@code WorldClient.addEntityToWorld}: the legacy entity's modern entity (hosted if needed) joins the client level under the id. */
+    public static void addEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, int id, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        if (!(world.mcc$level() instanceof net.minecraft.client.multiplayer.ClientLevel client)) return;
+        var modern = EntityBridge1122.host(world, entity);
+        if (modern == null) return;
+        var old = client.getEntity(id);
+        if (old != null && old != modern) client.removeEntity(id, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+        modern.setId(id);
+        client.addEntity(modern);
+    }
+
+    /** {@code WorldClient.removeEntityFromWorld}. */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.Entity removeEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, int id) {
+        if (!(world.mcc$level() instanceof net.minecraft.client.multiplayer.ClientLevel client)) return null;
+        var modern = client.getEntity(id);
+        if (modern == null) return null;
+        client.removeEntity(id, net.minecraft.world.entity.Entity.RemovalReason.DISCARDED);
+        return EntityBridge1122.wrap(modern);
+    }
+
     /** Rebuilds the render sections of a block range. */
     public static void markRenderRange(int x1, int y1, int z1, int x2, int y2, int z2) {
         var mc = net.minecraft.client.Minecraft.getInstance();
