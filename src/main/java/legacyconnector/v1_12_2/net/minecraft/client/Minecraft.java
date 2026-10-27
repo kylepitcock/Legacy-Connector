@@ -15,6 +15,11 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122;
  * are phantoms answered by their {@code mcc$get$} accessors.
  */
 public class Minecraft {
+    /**
+     * Whether this is a client. Client-only mods call {@link #getMinecraft()} on dedicated servers too (CTM's preInit); there the
+     * client singletons below stay null, since loading them would load modern client classes.
+     */
+    private static final boolean CLIENT = net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
     private static final Minecraft INSTANCE = new Minecraft();
 
     public static final boolean IS_RUNNING_ON_MAC = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("mac");
@@ -38,13 +43,13 @@ public class Minecraft {
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.entity.Entity pointedEntity;
 
-    public FontRenderer fontRenderer = FontRenderer.mcc$INSTANCE;
-    public FontRenderer standardGalacticFontRenderer = FontRenderer.mcc$INSTANCE;
+    public FontRenderer fontRenderer = CLIENT ? FontRenderer.mcc$INSTANCE : null;
+    public FontRenderer standardGalacticFontRenderer = CLIENT ? FontRenderer.mcc$INSTANCE : null;
     /** The mods' particles (ticked and drawn by the layer). */
-    public final legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager effectRenderer = new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager();
+    public final legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager effectRenderer = CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager() : null;
     public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP playerController =
-            legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP.mcc$INSTANCE;
-    public final legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame ingameGUI = legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame.mcc$INSTANCE;
+            CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP.mcc$INSTANCE : null;
+    public final legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame ingameGUI = CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame.mcc$INSTANCE : null;
 
     public legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager getLanguageManager() {
         return legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
@@ -257,7 +262,7 @@ public class Minecraft {
     // ------------------------------------------------------------------ rendering objects (area R: client.renderer)
 
     public final legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager renderEngine =
-            new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager(getResourceManager());
+            CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager(getResourceManager()) : null;
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager getTextureManager() {
         return renderEngine;
