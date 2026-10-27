@@ -166,6 +166,41 @@ public class DamageSource {
         return e != null && e.mcc$entity instanceof net.minecraft.world.entity.player.Player p && p.getAbilities().instabuild;
     }
 
+    /**
+     * The legacy damage source of a modern one: the 1.12 constant of the same name for sources without an entity, else an entity
+     * (or indirect) source over the entities' views, with the projectile, explosion, fire and armour flags of its damage type.
+     */
+    public static DamageSource mcc$of(net.minecraft.world.damagesource.DamageSource modern) {
+        if (modern == null) return GENERIC;
+        String type = modern.getMsgId();
+        var causing = modern.getEntity();
+        var direct = modern.getDirectEntity();
+        if (causing == null && direct == null) {
+            for (var f : DamageSource.class.getFields()) {
+                try {
+                    if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) && f.get(null) instanceof DamageSource s && s.damageType.equals(type)) return s;
+                } catch (IllegalAccessException e) {
+                    // public constants are readable
+                }
+            }
+        }
+        DamageSource out;
+        Entity causingView = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(causing);
+        if (direct != null && direct != causing) {
+            out = new EntityDamageSourceIndirect(type, org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(direct), causingView);
+        } else if (causingView != null) {
+            out = new EntityDamageSource(type, causingView);
+        } else {
+            out = new DamageSource(type);
+        }
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_PROJECTILE)) out.setProjectile();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_EXPLOSION)) out.setExplosion();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.IS_FIRE)) out.setFireDamage();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.BYPASSES_ARMOR)) out.setDamageBypassesArmor();
+        if (modern.is(net.minecraft.tags.DamageTypeTags.BYPASSES_INVULNERABILITY)) out.setDamageAllowedInCreativeMode();
+        return out;
+    }
+
     /** The modern damage source of the same kind (vanilla types by name; mod types by their flags), for hurting modern entities. */
     public net.minecraft.world.damagesource.DamageSource mcc$modern(net.minecraft.world.level.Level level) {
         var sources = level.damageSources();

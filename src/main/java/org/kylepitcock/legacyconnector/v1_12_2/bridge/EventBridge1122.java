@@ -106,7 +106,235 @@ public final class EventBridge1122 {
                 post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.Save(WorldBridge1122.wrap(level)));
             }
         });
+        registerLiving(bus);
+        registerInteractions(bus);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Client.register(bus);
+    }
+
+    // ------------------------------------------------------------------ Forge living, player and block events
+
+    private static legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living(net.minecraft.world.entity.Entity e) {
+        return EntityBridge1122.wrap(e) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase l ? l : null;
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos(net.minecraft.core.BlockPos p) {
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(p.getX(), p.getY(), p.getZ());
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d vec(net.minecraft.world.phys.Vec3 v) {
+        return v == null ? null : new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(v.x, v.y, v.z);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face(net.minecraft.core.Direction d) {
+        return d == null ? null : legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.mcc$of(d);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand(net.minecraft.world.InteractionHand h) {
+        return h == net.minecraft.world.InteractionHand.OFF_HAND ? legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND
+                : legacyconnector.v1_12_2.net.minecraft.util.EnumHand.MAIN_HAND;
+    }
+
+    private static net.neoforged.neoforge.common.util.TriState tri(Event.Result r) {
+        return r == Event.Result.ALLOW ? net.neoforged.neoforge.common.util.TriState.TRUE
+                : r == Event.Result.DENY ? net.neoforged.neoforge.common.util.TriState.FALSE : net.neoforged.neoforge.common.util.TriState.DEFAULT;
+    }
+
+    private static net.minecraft.world.InteractionResult result(legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult r) {
+        return r == legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.SUCCESS ? net.minecraft.world.InteractionResult.SUCCESS
+                : r == legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.FAIL ? net.minecraft.world.InteractionResult.FAIL : net.minecraft.world.InteractionResult.PASS;
+    }
+
+    private static void registerLiving(IEventBus bus) {
+        // 1.12.2 posted LivingAttackEvent and then LivingHurtEvent before armour, LivingDamageEvent after it
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent e) -> {
+            boolean attack = wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingAttackEvent.class);
+            boolean hurt = wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingHurtEvent.class);
+            if (!attack && !hurt) return;
+            var entity = living(e.getEntity());
+            if (entity == null) return;
+            var source = legacyconnector.v1_12_2.net.minecraft.util.DamageSource.mcc$of(e.getSource());
+            if (attack && post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingAttackEvent(entity, source, e.getAmount()))) {
+                e.setCanceled(true);
+                return;
+            }
+            if (hurt) {
+                var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, source, e.getAmount());
+                if (post(event)) e.setCanceled(true);
+                else e.setAmount(event.getAmount());
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingDamageEvent.Pre e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDamageEvent.class)) return;
+            var entity = living(e.getEntity());
+            if (entity == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDamageEvent(entity,
+                    legacyconnector.v1_12_2.net.minecraft.util.DamageSource.mcc$of(e.getSource()), e.getNewDamage());
+            // the modern event can no longer be canceled here: a canceled legacy one deals no damage
+            if (post(event)) e.setNewDamage(0);
+            else e.setNewDamage(event.getAmount());
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDeathEvent.class)) return;
+            var entity = living(e.getEntity());
+            if (entity != null && post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDeathEvent(entity,
+                    legacyconnector.v1_12_2.net.minecraft.util.DamageSource.mcc$of(e.getSource())))) {
+                e.setCanceled(true);
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingFallEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingFallEvent.class)) return;
+            var entity = living(e.getEntity());
+            if (entity == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingFallEvent(entity, e.getDistance(), e.getDamageMultiplier());
+            if (post(event)) e.setCanceled(true);
+            e.setDistance(event.getDistance());
+            e.setDamageMultiplier(event.getDamageMultiplier());
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent.class)) return;
+            var entity = living(e.getEntity());
+            if (entity != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent(entity));
+        });
+        bus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.LivingEntity)
+                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent.class)) return;
+            var entity = living(e.getEntity());
+            if (entity != null && post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent(entity))) e.setCanceled(true);
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.Clone e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.Clone.class)) return;
+            EntityPlayer player = player(e.getEntity()), original = player(e.getOriginal());
+            if (player != null && original != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.Clone(player, original, e.isWasDeath()));
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.BreakSpeed e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player == null) return;
+            var at = e.getPosition().map(EventBridge1122::pos).orElse(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.ORIGIN);
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.BreakSpeed(player, StatesBridge1122.toLegacy(e.getState()), e.getOriginalSpeed(), at);
+            if (post(event)) e.setCanceled(true);
+            else e.setNewSpeed(event.getNewSpeed());
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StartTracking e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.StartTracking.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.StartTracking(player, EntityBridge1122.wrap(e.getTarget())));
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.StopTracking e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.StopTracking.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.StopTracking(player, EntityBridge1122.wrap(e.getTarget())));
+        });
+    }
+
+    private static void registerInteractions(IEventBus bus) {
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickBlock e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock(player, hand(e.getHand()),
+                    pos(e.getPos()), face(e.getFace()), vec(e.getHitVec().getLocation()));
+            if (post(event)) {
+                e.setCanceled(true);
+                e.setCancellationResult(result(event.getCancellationResult()));
+                return;
+            }
+            e.setUseBlock(tri(event.getUseBlock()));
+            e.setUseItem(tri(event.getUseItem()));
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickItem(player, hand(e.getHand()));
+            if (post(event)) {
+                e.setCanceled(true);
+                e.setCancellationResult(result(event.getCancellationResult()));
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            if (player == null) return;
+            var p = e.getPos();
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock(player, pos(p), face(e.getFace()),
+                    new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(p.getX() + 0.5D, p.getY() + 0.5D, p.getZ() + 0.5D));
+            if (post(event)) {
+                e.setCanceled(true);
+                return;
+            }
+            e.setUseBlock(tri(event.getUseBlock()));
+            e.setUseItem(tri(event.getUseItem()));
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            var target = EntityBridge1122.wrap(e.getTarget());
+            if (player == null || target == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteract(player, hand(e.getHand()), target);
+            if (post(event)) {
+                e.setCanceled(true);
+                e.setCancellationResult(result(event.getCancellationResult()));
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific.class)) return;
+            EntityPlayer player = player(e.getEntity());
+            var target = EntityBridge1122.wrap(e.getTarget());
+            if (player == null || target == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.EntityInteractSpecific(player, hand(e.getHand()), target, vec(e.getLocalPos()));
+            if (post(event)) {
+                e.setCanceled(true);
+                e.setCancellationResult(result(event.getCancellationResult()));
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.BreakEvent.class)) return;
+            if (!(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.BreakEvent(WorldBridge1122.wrap(level), pos(e.getPos()),
+                    StatesBridge1122.toLegacy(e.getState()), player(e.getPlayer()));
+            if (post(event)) e.setCanceled(true);
+        });
+        bus.addListener((net.neoforged.neoforge.event.level.BlockDropsEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent.class)) return;
+            harvestDrops(e);
+        });
+    }
+
+    /**
+     * HarvestDropsEvent over the modern drops: the legacy list holds the dropped stacks; if handlers change it (or lower the drop
+     * chance) the item entities are rebuilt from it at the block.
+     */
+    private static void harvestDrops(net.neoforged.neoforge.event.level.BlockDropsEvent e) {
+        var level = e.getLevel();
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> drops = new java.util.ArrayList<>();
+        for (var entity : e.getDrops()) drops.add(Stacks1122.fromModern(entity.getItem()));
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> before = new java.util.ArrayList<>();
+        for (var d : drops) before.add(d.copy());
+        var breaker = e.getBreaker() instanceof net.minecraft.world.entity.player.Player p ? player(p) : null;
+        int fortune = 0;
+        boolean silk = false;
+        if (!e.getTool().isEmpty()) {
+            var enchantments = level.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+            fortune = e.getTool().getEnchantmentLevel(enchantments.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE));
+            silk = e.getTool().getEnchantmentLevel(enchantments.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH)) > 0;
+        }
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent(WorldBridge1122.wrap(level), pos(e.getPos()),
+                StatesBridge1122.toLegacy(e.getState()), fortune, 1.0F, drops, breaker, silk);
+        post(event);
+        boolean changed = event.getDropChance() < 1.0F || drops.size() != before.size();
+        for (int i = 0; !changed && i < drops.size(); i++) {
+            changed = !legacyconnector.v1_12_2.net.minecraft.item.ItemStack.areItemStacksEqual(drops.get(i), before.get(i));
+        }
+        if (!changed) return;
+        e.getDrops().clear();
+        var at = e.getPos();
+        for (var stack : drops) {
+            if (stack == null || stack.isEmpty() || level.random.nextFloat() > event.getDropChance()) continue;
+            var item = new net.minecraft.world.entity.item.ItemEntity(level, at.getX() + 0.5D, at.getY() + 0.5D, at.getZ() + 0.5D, Stacks1122.toModern(stack));
+            item.setDefaultPickUpDelay();
+            e.getDrops().add(item);
+        }
     }
 
     private static int dimension(net.minecraft.server.MinecraftServer server, net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> key) {
