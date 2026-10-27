@@ -371,6 +371,27 @@ public final class RenderContext {
         forcedLight = -1;
     }
 
+    /**
+     * A GL_LINES segment in the world through the line pipeline (screen-space width); false when there is nowhere to draw it
+     * (chunk capture), and the caller draws a thin quad instead.
+     */
+    static boolean line(double[] a, double[] b) {
+        PoseStack p = pose();
+        if (p == null || CAPTURE.get() != null) return false;
+        quadCount++;
+        VertexConsumer buffer = buffers().getBuffer(LegacyRenderTypes.lines(depthTest));
+        PoseStack.Pose last = p.last();
+        float nx = (float) (b[0] - a[0]), ny = (float) (b[1] - a[1]), nz = (float) (b[2] - a[2]);
+        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        nx /= len;
+        ny /= len;
+        nz /= len;
+        for (double[] v : new double[][] {a, b}) {
+            buffer.addVertex(last, (float) v[0], (float) v[1], (float) v[2]).setColor((int) (long) v[5]).setNormal(last, nx, ny, nz);
+        }
+        return true;
+    }
+
     /** Entity-style buffer for the bound texture, used by legacy models. */
     public static VertexConsumer modelBuffer() {
         // model boxes count as drawn geometry too (an inventory block handler drawing a TESR model: Thaumcraft's crystals)

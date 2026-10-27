@@ -45,6 +45,8 @@ public final class EntitySelfTest {
         });
     }
 
+    private static final java.util.Set<Long> FORCED = new java.util.HashSet<>();
+
     private static void start(MinecraftServer server) {
         ServerLevel level = server.overworld();
         BlockPos spawn = level.getSharedSpawnPos();
@@ -55,6 +57,8 @@ public final class EntitySelfTest {
                 int x = spawn.getX() + (i % 16) * 3 - 24;
                 int z = spawn.getZ() + (i / 16) * 3 - 24;
                 i++;
+                // forced for the test: an unticketed chunk unloads whenever the server lags, and its entities counted as removed
+                if (FORCED.add(net.minecraft.world.level.ChunkPos.asLong(x >> 4, z >> 4))) level.setChunkForced(x >> 4, z >> 4, true);
                 level.getChunk(x >> 4, z >> 4);
                 int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
                 Entity e = info.type().create(level);
@@ -136,6 +140,13 @@ public final class EntitySelfTest {
         LOG.info("Mob walking distance in 100 ticks (blocks), fastest first: {}", fast.subList(0, Math.min(12, fast.size())));
         StringBuilder sb = new StringBuilder();
         RESULT.forEach((k, v) -> sb.append("\n  ").append(k).append(": ").append(v));
+        if (!SPAWNED.isEmpty()) {
+            var level = SPAWNED.get(0).level();
+            if (level instanceof ServerLevel server) {
+                for (long c : FORCED) server.setChunkForced(net.minecraft.world.level.ChunkPos.getX(c), net.minecraft.world.level.ChunkPos.getZ(c), false);
+            }
+        }
+        FORCED.clear();
         LOG.info("ENTITY SELF TEST: {} alive, {} removed, {} failed, {} not spawned of {} types{}", alive, gone, failed,
                 LegacyHosts.all().size() - SPAWNED.size(), LegacyHosts.all().size(), sb);
     }

@@ -114,6 +114,28 @@ public final class LegacyRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .createCompositeState(false)));
 
+    private static RenderType legacyLines(boolean depthTest) {
+        return create(depthTest ? "legacyconnector_lines" : "legacyconnector_lines_no_depth", DefaultVertexFormat.POSITION_COLOR_NORMAL,
+                VertexFormat.Mode.LINES, 1536, false, false,
+                CompositeState.builder()
+                        .setShaderState(RENDERTYPE_LINES_SHADER)
+                        .setLineState(new LineStateShard(java.util.OptionalDouble.empty()))
+                        .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+                        .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .setCullState(NO_CULL)
+                        .setDepthTestState(depthTest ? LEQUAL_DEPTH_TEST : LEGACY_NO_DEPTH)
+                        .createCompositeState(false));
+    }
+
+    private static final RenderType LINES = legacyLines(true);
+    private static final RenderType LINES_NO_DEPTH = legacyLines(false);
+
+    /** GL_LINES in the world, one pixel wide (the vanilla line shader widens them in screen space). */
+    public static RenderType lines(boolean depthTest) {
+        return depthTest ? LINES : LINES_NO_DEPTH;
+    }
+
     public static RenderType guiUnlit(ResourceLocation texture) {
         return GUI_UNLIT.apply(texture);
     }

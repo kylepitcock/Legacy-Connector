@@ -211,6 +211,8 @@ public final class LegacyVertices {
         double dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
         double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (len < 1.0E-9) return;
+        // in the world a real line, a pixel wide at any distance (a hair-wide quad vanished into dots: CustomOreGen's wireframes)
+        if (RenderContext.gui() == null && RenderContext.line(a, b)) return;
         double half = RenderContext.gui() != null ? 0.5D : 0.01D;
         double px, py, pz;
         if (Math.abs(dz) < 1.0E-6) {
@@ -238,7 +240,9 @@ public final class LegacyVertices {
         v1[0] += px; v1[1] += py; v1[2] += pz;
         v2[0] -= px; v2[1] -= py; v2[2] -= pz;
         v3[0] -= px; v3[1] -= py; v3[2] -= pz;
-        emit(s, v0, v1, v2, v3);
+        // filled whatever the polygon mode: in GL_LINE mode the quad's own edges were lines again, recursing until the stack
+        // overflowed (CustomOreGen's wireframes crashed the game)
+        emitFilled(s, v0, v1, v2, v3);
     }
 
     /** {@code glPolygonMode(..., GL_LINE)}: filled primitives are drawn as their edges (CustomOreGen's wireframes). */
@@ -256,6 +260,10 @@ public final class LegacyVertices {
             }
             return;
         }
+        emitFilled(s, a, b, c, d);
+    }
+
+    private static void emitFilled(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
         if (!s.hasNormal() && RenderContext.gui() != null) {
             // GL's default current normal, facing the viewer: a face normal of a quad wound for y-down screen space points
