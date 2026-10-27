@@ -5,11 +5,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSerializationContext;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
-/**
- * A condition of a loot table entry, pool or function. Its test, {@code testCondition(Random, LootContext)}, names the synthesized
- * {@code LootContext}, so implementations declare it on their own and it is reached through the synthesized helpers.
- */
+/** A condition of a loot table entry, pool or function. */
 public interface LootCondition {
+    boolean testCondition(java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootContext context);
+
     /** Reads and writes a condition type from and to loot table JSON; registered with {@link LootConditionManager}. */
     abstract class Serializer<T extends LootCondition> {
         private final ResourceLocation lootTableLocation;

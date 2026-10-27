@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.inventory;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 
-public interface IInventory {
+public interface IInventory extends legacyconnector.v1_12_2.net.minecraft.world.IWorldNameable {
     int getSizeInventory();
 
     boolean isEmpty();
@@ -39,4 +39,11 @@ public interface IInventory {
     String getName();
 
     boolean hasCustomName();
+
+    /** IWorldNameable: the inventory's name as text (implementations usually override it). */
+    @Override
+    default legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+        return hasCustomName() ? new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(getName())
+                : new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation(getName());
+    }
 }

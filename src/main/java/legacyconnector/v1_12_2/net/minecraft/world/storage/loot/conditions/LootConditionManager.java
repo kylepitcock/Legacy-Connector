@@ -4,10 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
-/**
- * The loot condition types by name and by class. {@code testAllConditions(LootCondition[], Random, LootContext)} names the synthesized
- * {@code LootContext} and is answered by the 1.12.2 runtime methods ({@code RuntimeApis1122}).
- */
+/** The loot condition types by name and by class. */
 public class LootConditionManager {
     private static final Map<ResourceLocation, LootCondition.Serializer<?>> NAME_TO_SERIALIZER_MAP = new HashMap<>();
     private static final Map<Class<?>, LootCondition.Serializer<?>> CLASS_TO_SERIALIZER_MAP = new HashMap<>();
@@ -32,5 +29,18 @@ public class LootConditionManager {
         LootCondition.Serializer<?> serializer = condition == null ? null : CLASS_TO_SERIALIZER_MAP.get(condition.getClass());
         if (serializer == null) throw new IllegalArgumentException("Unknown loot item condition " + condition);
         return (LootCondition.Serializer<T>) serializer;
+    }
+
+    /** Whether every condition passes (an empty or null list passes). */
+    public static boolean testAllConditions(LootCondition[] conditions, java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootContext context) {
+        if (conditions == null) return true;
+        for (LootCondition c : conditions) if (c != null && !c.testCondition(rand, context)) return false;
+        return true;
+    }
+
+    public static boolean testAllConditions(Iterable<LootCondition> conditions, java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootContext context) {
+        if (conditions == null) return true;
+        for (LootCondition c : conditions) if (c != null && !c.testCondition(rand, context)) return false;
+        return true;
     }
 }
