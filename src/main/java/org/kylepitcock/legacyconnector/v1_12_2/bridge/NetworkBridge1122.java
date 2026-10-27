@@ -83,13 +83,19 @@ public final class NetworkBridge1122 {
                 IMessage message = ctor.newInstance();
                 message.fromBytes(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(payload.data()));
                 MessageContext ctx = toServer
-                        ? new MessageContext(Side.SERVER, new NetHandlerPlayServer((EntityPlayerMP) EntityBridge1122.wrap(context.player())))
+                        ? new MessageContext(Side.SERVER, serverHandler((EntityPlayerMP) EntityBridge1122.wrap(context.player())))
                         : new MessageContext(Side.CLIENT, null);
                 IMessage reply = handler.onMessage(message, ctx);
                 if (reply != null) context.reply(encode(reply));
             } catch (Exception e) {
                 LOG.error("Legacy message {} on channel {} failed", type.getName(), name, e);
             }
+        }
+
+        /** The player's own handler (the one {@code player.connection} returns), so mods comparing or caching it see one object. */
+        private static NetHandlerPlayServer serverHandler(EntityPlayerMP player) {
+            NetHandlerPlayServer h = player == null ? null : EntityPlayerMP.mcc$get$connection(player);
+            return h != null ? h : new NetHandlerPlayServer(player);
         }
 
         public void sendToServer(IMessage message) {
@@ -108,6 +114,20 @@ public final class NetworkBridge1122 {
             var server = ServerLifecycleHooks.getCurrentServer();
             ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
             if (level != null) PacketDistributor.sendToPlayersInDimension(level, encode(message));
+        }
+
+        /** To the players tracking the entity (not the entity itself), as FML's TRACKING_ENTITY target. */
+        public void sendToAllTracking(IMessage message, net.minecraft.world.entity.Entity entity) {
+            if (entity != null && entity.level() instanceof ServerLevel) PacketDistributor.sendToPlayersTrackingEntity(entity, encode(message));
+        }
+
+        /** To the players that have the chunk at the point loaded, as FML's TRACKING_POINT target. */
+        public void sendToAllTracking(IMessage message, int dimension, double x, double z) {
+            var server = ServerLifecycleHooks.getCurrentServer();
+            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
+            if (level != null) {
+                PacketDistributor.sendToPlayersTrackingChunk(level, new net.minecraft.world.level.ChunkPos(net.minecraft.core.BlockPos.containing(x, 0, z)), encode(message));
+            }
         }
 
         public void sendToAllAround(IMessage message, int dimension, double x, double y, double z, double range) {

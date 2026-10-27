@@ -41,6 +41,16 @@ public class SimpleNetworkWrapper {
         channel.sendToAllAround(message, point.dimension, point.x, point.y, point.z, point.range);
     }
 
+    /** To every player tracking the entity (FML 1.12's TRACKING_ENTITY; the entity itself is not included). */
+    public void sendToAllTracking(IMessage message, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        channel.sendToAllTracking(message, entity == null ? null : entity.mcc$entity);
+    }
+
+    /** To every player that has the chunk at the point loaded (FML 1.12's TRACKING_POINT; the range is not used, as in FML). */
+    public void sendToAllTracking(IMessage message, NetworkRegistry.TargetPoint point) {
+        channel.sendToAllTracking(message, point.dimension, point.x, point.z);
+    }
+
     public void sendToDimension(IMessage message, int dimensionId) {
         channel.sendToDimension(message, dimensionId);
     }

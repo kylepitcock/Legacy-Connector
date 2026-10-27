@@ -13,6 +13,7 @@ public class EntityPlayerMP extends EntityPlayer {
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer mcc$get$connection(EntityPlayerMP p) {
+        if (p.mcc$connection != null) return p.mcc$connection;
         if (p.mcc$serverPlayer() == null) return null;
         if (p.mcc$connection == null) p.mcc$connection = new legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer(p);
         return p.mcc$connection;
@@ -51,5 +52,10 @@ public class EntityPlayerMP extends EntityPlayer {
     public void sendMessage(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent component) {
         var player = mcc$serverPlayer();
         if (player != null && component != null) player.sendSystemMessage(component.mcc$modern());
+    }
+
+    /** A handler a mod built for this player (fake players get theirs from their own constructor). */
+    public static void mcc$set$connection(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer handler) {
+        p.mcc$connection = handler;
     }
 }
