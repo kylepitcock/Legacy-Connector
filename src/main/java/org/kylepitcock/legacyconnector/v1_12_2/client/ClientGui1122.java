@@ -100,6 +100,18 @@ public final class ClientGui1122 {
             case "GuiIngameMenu" -> new net.minecraft.client.gui.screens.PauseScreen(true);
             case "GuiModList" -> new net.neoforged.neoforge.client.gui.ModListScreen(parent);
             case "GuiInventory" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player);
+            case "GuiContainerCreative" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player,
+                    mc.player.connection.enabledFeatures(), mc.options.operatorItemsTab().get());
+            case "GuiCreateWorld" -> {
+                net.minecraft.client.gui.screens.worldselection.CreateWorldScreen.openFresh(mc, parent);
+                yield mc.screen;
+            }
+            case "GuiGameOver" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiGameOver over
+                    ? new net.minecraft.client.gui.screens.DeathScreen(over.mcc$cause() == null ? null : over.mcc$cause().mcc$modern(),
+                            mc.level != null && mc.level.getLevelData().isHardcore())
+                    : null;
+            case "GuiWinGame" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiWinGame win ? win.mcc$modern() : null;
+            case "GuiScreenBook" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreenBook book ? book.mcc$modern() : null;
             case "GuiChat" -> new net.minecraft.client.gui.screens.ChatScreen(
                     screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiChat chat ? chat.mcc$defaultText() : "");
             default -> null;

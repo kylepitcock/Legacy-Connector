@@ -82,4 +82,34 @@ public class FMLClientHandler {
     public String getCurrentLanguage() {
         return net.minecraft.client.Minecraft.getInstance().options.languageCode;
     }
+    /** The config screen factory of a mod (its {@code @Mod(guiFactory)}, or Forge's default screen for {@code @Config} mods). */
+    public IModGuiFactory getGuiFactoryFor(legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModContainer selectedMod) {
+        return selectedMod == null ? null : org.kylepitcock.legacyconnector.v1_12_2.client.ConfigScreens1122.factoryFor(selectedMod.getModId());
+    }
+
+    /** Reloads the resource packs; the modern game reloads everything (Forge's selective reload has no counterpart). */
+    public void refreshResources(legacyconnector.v1_12_2.net.minecraftforge.client.resource.IResourceType... inclusion) {
+        refreshResources();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.network.NetworkManager getClientToServerNetworkManager() {
+        var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
+        return connection == null ? null : legacyconnector.v1_12_2.net.minecraft.network.NetworkManager.mcc$of(connection.getConnection());
+    }
+
+    /** The integrated server while playing single player (null on a remote server). */
+    public legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer getServer() {
+        return net.minecraft.client.Minecraft.getInstance().hasSingleplayerServer() ? legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance() : null;
+    }
+
+    /** FML drew its own loading or error screen here; the modern game has its own loading overlay, so nothing is drawn. */
+    public boolean handleLoadingScreen(legacyconnector.v1_12_2.net.minecraft.client.gui.ScaledResolution scaledResolution) {
+        return false;
+    }
+
+    /** Rebuilds the world's chunk meshes (after a mod changed how its blocks render). */
+    public void reloadRenderers() {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.levelRenderer != null) mc.levelRenderer.allChanged();
+    }
 }

@@ -60,6 +60,17 @@ public final class ConfigScreens1122 {
         }
     }
 
+    /** FMLClientHandler.getGuiFactoryFor: the gui factory of a legacy mod (null when it has none or it failed). */
+    public static IModGuiFactory factoryFor(String legacyId) {
+        if (legacyId == null) return null;
+        LegacyModRecord mod = org.kylepitcock.legacyconnector.core.LegacyMods.byLegacyId(legacyId);
+        if (mod == null || mod.mainClass == null) return null;
+        Mod annotation = mod.mainClass.getAnnotation(Mod.class);
+        boolean hasFactory = annotation != null && !annotation.guiFactory().isEmpty();
+        boolean hasConfig = legacyconnector.v1_12_2.net.minecraftforge.common.config.ConfigManager.getModConfigClasses(mod.legacyId).length > 0;
+        return hasFactory || hasConfig ? factory(mod) : null;
+    }
+
     private static Screen open(LegacyModRecord mod, Screen parent) {
         try {
             IModGuiFactory factory = factory(mod);
