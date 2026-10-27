@@ -78,7 +78,28 @@ public class PropertyEnum<T extends Enum<T> & IStringSerializable> extends Prope
             java.util.Map.entry("BlockColored.COLOR", "net.minecraft.item.EnumDyeColor"),
             java.util.Map.entry("BlockRailBase.SHAPE", "net.minecraft.block.BlockRailBase$EnumRailDirection"),
             java.util.Map.entry("BlockStoneSlab.VARIANT", "net.minecraft.block.BlockStoneSlab$EnumType"),
-            java.util.Map.entry("BlockWoodSlab.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"));
+            java.util.Map.entry("BlockWoodSlab.VARIANT", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockSapling.TYPE", "net.minecraft.block.BlockPlanks$EnumType"),
+            java.util.Map.entry("BlockBed.PART", "net.minecraft.block.BlockBed$EnumPartType"),
+            java.util.Map.entry("BlockTallGrass.TYPE", "net.minecraft.block.BlockTallGrass$EnumType"),
+            java.util.Map.entry("BlockDoublePlant.VARIANT", "net.minecraft.block.BlockDoublePlant$EnumPlantType"),
+            java.util.Map.entry("BlockDoublePlant.HALF", "net.minecraft.block.BlockDoublePlant$EnumBlockHalf"),
+            java.util.Map.entry("BlockTrapDoor.HALF", "net.minecraft.block.BlockTrapDoor$DoorHalf"),
+            java.util.Map.entry("BlockPrismarine.VARIANT", "net.minecraft.block.BlockPrismarine$EnumType"),
+            java.util.Map.entry("BlockWall.VARIANT", "net.minecraft.block.BlockWall$EnumType"),
+            java.util.Map.entry("BlockPistonExtension.TYPE", "net.minecraft.block.BlockPistonExtension$EnumPistonType"),
+            java.util.Map.entry("BlockPistonMoving.TYPE", "net.minecraft.block.BlockPistonExtension$EnumPistonType"),
+            java.util.Map.entry("BlockRedstoneComparator.MODE", "net.minecraft.block.BlockRedstoneComparator$Mode"),
+            java.util.Map.entry("BlockFlowerPot.CONTENTS", "net.minecraft.block.BlockFlowerPot$EnumFlowerType"),
+            java.util.Map.entry("BlockRedSandstone.TYPE", "net.minecraft.block.BlockRedSandstone$EnumType"),
+            java.util.Map.entry("BlockStoneSlabNew.VARIANT", "net.minecraft.block.BlockStoneSlabNew$EnumType"),
+            java.util.Map.entry("BlockRail.SHAPE", "net.minecraft.block.BlockRailBase$EnumRailDirection"),
+            java.util.Map.entry("BlockRailPowered.SHAPE", "net.minecraft.block.BlockRailBase$EnumRailDirection"),
+            java.util.Map.entry("BlockRailDetector.SHAPE", "net.minecraft.block.BlockRailBase$EnumRailDirection"),
+            java.util.Map.entry("BlockStainedGlass.COLOR", "net.minecraft.item.EnumDyeColor"),
+            java.util.Map.entry("BlockStainedGlassPane.COLOR", "net.minecraft.item.EnumDyeColor"),
+            java.util.Map.entry("BlockCarpet.COLOR", "net.minecraft.item.EnumDyeColor"),
+            java.util.Map.entry("BlockConcretePowder.COLOR", "net.minecraft.item.EnumDyeColor"));
 
     /** Vanilla enum properties (BlockLog.LOG_AXIS, ...): over the constants of the enum class they hold, which the synthesizer made. */
     @SuppressWarnings({"unchecked", "rawtypes"})

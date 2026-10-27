@@ -258,4 +258,30 @@ public abstract class Container {
     public short mcc$nextTransactionID() {
         return ++transactionID;
     }
+
+    public short getNextTransactionID(legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer inventory) {
+        return mcc$nextTransactionID();
+    }
+
+    /**
+     * Recomputes the result slot of a crafting grid (a legacy recipe, else a modern data pack recipe) and sends it to the player's
+     * client.
+     */
+    protected void slotChangedCraftingGrid(World world, EntityPlayer player, InventoryCrafting inv, InventoryCraftResult result) {
+        if (world == null || world.isRemote) return;
+        ItemStack itemstack;
+        legacyconnector.v1_12_2.net.minecraft.item.crafting.IRecipe recipe = legacyconnector.v1_12_2.net.minecraft.item.crafting.CraftingManager.findMatchingRecipe(inv, world);
+        if (recipe != null) {
+            result.setRecipeUsed(recipe);
+            itemstack = recipe.getCraftingResult(inv);
+        } else {
+            result.setRecipeUsed(null);
+            itemstack = org.kylepitcock.legacyconnector.v1_12_2.bridge.Crafting1122.modernResult(inv, world);
+        }
+        result.setInventorySlotContents(0, itemstack);
+        if (org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.player(player) instanceof net.minecraft.server.level.ServerPlayer sp) {
+            sp.connection.send(new net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket(windowId, 0, 0,
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(itemstack)));
+        }
+    }
 }

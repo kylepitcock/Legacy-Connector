@@ -38,4 +38,20 @@ public class ShapedOreRecipe extends ShapedRecipes {
         this.height = primer.height;
         this.input = primer.input;
     }
+
+    /** Forge IShapedRecipe: the pattern's width and height. */
+    public int getRecipeWidth() {
+        return width;
+    }
+
+    public int getRecipeHeight() {
+        return height;
+    }
+
+    /** Forge: a shaped ore recipe from its JSON (mods' recipe factories build on it). */
+    public static ShapedOreRecipe factory(legacyconnector.v1_12_2.net.minecraftforge.common.crafting.JsonContext context, com.google.gson.JsonObject json) {
+        com.google.gson.JsonObject copy = json.deepCopy();
+        copy.addProperty("type", "forge:ore_shaped");
+        return (ShapedOreRecipe) legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper.getRecipe(copy, context);
+    }
 }

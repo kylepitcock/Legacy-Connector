@@ -147,4 +147,61 @@ public class EnchantmentHelper {
         setEnchantments(stored, book);
         return book;
     }
+
+    /** The extra melee damage of the stack's enchantments against a kind of creature. */
+    public static float getModifierForCreature(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute creatureAttribute) {
+        float total = 0.0F;
+        for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+            if (e.getKey() != null) total += e.getKey().calcDamageByCreature(e.getValue(), creatureAttribute);
+        }
+        return total;
+    }
+
+    /** The equipment of the entity (held items and armour) whose enchantments react to it being hurt or hurting. */
+    private static java.util.List<ItemStack> mcc$equipment(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        java.util.List<ItemStack> out = new java.util.ArrayList<>();
+        for (var slot : legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.values()) {
+            ItemStack s = entity.getItemStackFromSlot(slot);
+            if (s != null && !s.isEmpty()) out.add(s);
+        }
+        return out;
+    }
+
+    /** Thorns-like enchantments of the hurt entity's equipment answer the attacker ({@code Enchantment.onUserHurt}). */
+    public static void applyThornEnchantments(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity attacker) {
+        if (user == null) return;
+        for (ItemStack stack : mcc$equipment(user)) {
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+                if (e.getKey() != null) e.getKey().onUserHurt(user, attacker, e.getValue());
+            }
+        }
+        if (attacker instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer p) {
+            ItemStack held = p.getHeldItemMainhand();
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(held).entrySet()) {
+                if (e.getKey() != null) e.getKey().onUserHurt(user, attacker, e.getValue());
+            }
+        }
+    }
+
+    /** Bane-of-arthropods-like enchantments of the attacker's equipment act on the target ({@code Enchantment.onEntityDamaged}). */
+    public static void applyArthropodEnchantments(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
+        if (user == null) return;
+        for (ItemStack stack : mcc$equipment(user)) {
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+                if (e.getKey() != null) e.getKey().onEntityDamaged(user, target, e.getValue());
+            }
+        }
+    }
+
+    /** The total protection the entity's armour gives against a damage source ({@code Enchantment.calcModifierDamage}), capped as vanilla does at the caller. */
+    public static int getEnchantmentModifierDamage(Iterable<ItemStack> stacks, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
+        int total = 0;
+        for (ItemStack stack : stacks) {
+            for (Map.Entry<Enchantment, Integer> e : getEnchantments(stack).entrySet()) {
+                if (e.getKey() != null) total += e.getKey().calcModifierDamage(e.getValue(), source);
+            }
+        }
+        return total;
+    }
+
 }
