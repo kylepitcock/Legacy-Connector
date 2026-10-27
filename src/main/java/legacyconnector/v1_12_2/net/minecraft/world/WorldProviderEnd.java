@@ -73,4 +73,22 @@ public class WorldProviderEnd extends WorldProvider {
     public DimensionType getDimensionType() {
         return DimensionType.THE_END;
     }
+
+    /** Phantom: redirected to {@link #mcc$get$dragonFightManager}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager dragonFightManager;
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager mcc$get$dragonFightManager(WorldProviderEnd p) {
+        return p.getDragonFightManager();
+    }
+
+    /** The End's dragon fight (the modern level's), or null on a client or a level without one. */
+    public legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager getDragonFightManager() {
+        return world == null ? null : legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager.mcc$of(world.mcc$level());
+    }
+
+    @Override
+    public WorldSleepResult canSleepAt(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return WorldSleepResult.BED_EXPLODES;
+    }
 }
