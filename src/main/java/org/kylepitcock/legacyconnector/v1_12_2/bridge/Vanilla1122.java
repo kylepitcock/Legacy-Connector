@@ -476,6 +476,23 @@ public final class Vanilla1122 {
             mv.visitInsn(org.objectweb.asm.Opcodes.RETURN);
             mv.visitMaxs(0, 0);
             mv.visitEnd();
+            // abstract methods of the class chain answer defaults: real shim classes call theirs from the constructor (BlockSlab.isDouble)
+            for (java.lang.reflect.Method m : abstractClassMethods(parent)) {
+                var am = cw.visitMethod(m.getModifiers() & (org.objectweb.asm.Opcodes.ACC_PUBLIC | org.objectweb.asm.Opcodes.ACC_PROTECTED),
+                        m.getName(), org.objectweb.asm.Type.getMethodDescriptor(m), null, null);
+                am.visitCode();
+                org.objectweb.asm.Type r = org.objectweb.asm.Type.getReturnType(m);
+                switch (r.getSort()) {
+                    case org.objectweb.asm.Type.VOID -> am.visitInsn(org.objectweb.asm.Opcodes.RETURN);
+                    case org.objectweb.asm.Type.LONG -> { am.visitInsn(org.objectweb.asm.Opcodes.LCONST_0); am.visitInsn(org.objectweb.asm.Opcodes.LRETURN); }
+                    case org.objectweb.asm.Type.FLOAT -> { am.visitInsn(org.objectweb.asm.Opcodes.FCONST_0); am.visitInsn(org.objectweb.asm.Opcodes.FRETURN); }
+                    case org.objectweb.asm.Type.DOUBLE -> { am.visitInsn(org.objectweb.asm.Opcodes.DCONST_0); am.visitInsn(org.objectweb.asm.Opcodes.DRETURN); }
+                    case org.objectweb.asm.Type.OBJECT, org.objectweb.asm.Type.ARRAY -> { am.visitInsn(org.objectweb.asm.Opcodes.ACONST_NULL); am.visitInsn(org.objectweb.asm.Opcodes.ARETURN); }
+                    default -> { am.visitInsn(org.objectweb.asm.Opcodes.ICONST_0); am.visitInsn(org.objectweb.asm.Opcodes.IRETURN); }
+                }
+                am.visitMaxs(0, 0);
+                am.visitEnd();
+            }
             cw.visitEnd();
             Class<?> defined = java.lang.invoke.MethodHandles.privateLookupIn(parent, java.lang.invoke.MethodHandles.lookup()).defineClass(cw.toByteArray());
             CONCRETE.put(parent, defined);
@@ -483,6 +500,22 @@ public final class Vanilla1122 {
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             return null;
         }
+    }
+
+    /** The public or protected abstract methods declared by {@code type} and its superclasses that no class below implements. */
+    private static java.util.List<java.lang.reflect.Method> abstractClassMethods(Class<?> type) {
+        java.util.Set<String> implemented = new java.util.HashSet<>();
+        java.util.List<java.lang.reflect.Method> out = new java.util.ArrayList<>();
+        for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+            for (var m : c.getDeclaredMethods()) {
+                int mod = m.getModifiers();
+                if (java.lang.reflect.Modifier.isStatic(mod) || m.isSynthetic()) continue;
+                String key = m.getName() + org.objectweb.asm.Type.getMethodDescriptor(m);
+                if (!java.lang.reflect.Modifier.isAbstract(mod)) implemented.add(key);
+                else if ((java.lang.reflect.Modifier.isPublic(mod) || java.lang.reflect.Modifier.isProtected(mod)) && implemented.add(key)) out.add(m);
+            }
+        }
+        return out;
     }
 
     /** A new instance of a synthesized class: its smallest constructor with default arguments, or an uninitialized object. */
