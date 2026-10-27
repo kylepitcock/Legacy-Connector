@@ -18,4 +18,22 @@ public class SoundEvent extends IForgeRegistryEntry.Impl<SoundEvent> {
     public ResourceLocation getSoundName() {
         return soundName;
     }
+
+    /**
+     * The modern event to play: the vanilla one, or for a mod sound an unregistered event of the mod's (modern) namespace, sent
+     * to clients by name (the client plays it from the mod's sounds.json).
+     */
+    public net.minecraft.sounds.SoundEvent mcc$event() {
+        var m = mcc$modern;
+        if (m != null) return m;
+        ResourceLocation name = getRegistryName() != null ? getRegistryName() : soundName;
+        if (name == null) return null;
+        var id = net.minecraft.resources.ResourceLocation.tryBuild(org.kylepitcock.legacyconnector.core.Ids.modernModId(name.getNamespace()),
+                name.getPath().toLowerCase(java.util.Locale.ROOT));
+        if (id == null) return null;
+        var registered = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+        m = registered != null ? registered : net.minecraft.sounds.SoundEvent.createVariableRangeEvent(id);
+        mcc$modern = m;
+        return m;
+    }
 }

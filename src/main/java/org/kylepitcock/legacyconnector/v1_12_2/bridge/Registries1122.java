@@ -30,7 +30,7 @@ public final class Registries1122 {
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome> BIOMES =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.class, b -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry> ENTITIES =
-            new Reg<>(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry.class, e -> {});
+            new Reg<>(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry.class, e -> org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.register(e));
 
     static {
         ENTITIES.vanilla = Registries1122::vanillaEntities;

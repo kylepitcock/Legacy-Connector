@@ -39,6 +39,15 @@ public interface IAttribute {
     /** The vanilla attribute constants (SharedMonsterAttributes.MAX_HEALTH, ...) for the synthesized classes declaring them, by "owner.field". */
     static IAttribute mcc$synthDefault(String field) {
         String name = field.substring(field.lastIndexOf('.') + 1);
+        if (field.contains("SharedMonsterAttributes")) {
+            try {
+                var f = legacyconnector.v1_12_2.net.minecraft.entity.SharedMonsterAttributes.class.getField(name);
+                return (IAttribute) f.get(null);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // not one of the hand-written constants
+            }
+        }
+        if (name.equals("REACH_DISTANCE")) return legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.REACH_DISTANCE;
         return switch (name) {
             case "MAX_HEALTH" -> new RangedAttribute(null, "generic.maxHealth", 20.0, Float.MIN_VALUE, 1024.0).setDescription("Max Health").setShouldWatch(true);
             case "FOLLOW_RANGE" -> new RangedAttribute(null, "generic.followRange", 32.0, 0.0, 2048.0).setDescription("Follow Range");
