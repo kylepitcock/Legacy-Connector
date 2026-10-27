@@ -297,4 +297,18 @@ public enum EnumFacing implements IStringSerializable {
     public static EnumFacing mcc$of(net.minecraft.core.Direction direction) {
         return direction == null ? null : VALUES[direction.get3DDataValue()];
     }
+
+
+    /** The offsets under the names of the stable 1.12 mappings. */
+    public int getFrontOffsetX() {
+        return getXOffset();
+    }
+
+    public int getFrontOffsetY() {
+        return getYOffset();
+    }
+
+    public int getFrontOffsetZ() {
+        return getZOffset();
+    }
 }

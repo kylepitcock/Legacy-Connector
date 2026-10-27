@@ -56,7 +56,24 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
         }
     }
 
+    /** The manager a mod passed in (fake players' handlers), else none. */
+    private NetworkManager mcc$manager;
+
+    /** The handler mods build for their fake players: it becomes the player's {@code connection}. */
+    public NetHandlerPlayServer(legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server, NetworkManager networkManager, EntityPlayerMP player) {
+        this(player);
+        this.mcc$manager = networkManager;
+        if (player != null) EntityPlayerMP.mcc$set$connection(player, this);
+    }
+
+    /** Resets the anti-cheat's last good position to where the player is (after a mod moved it). */
+    public void captureCurrentPosition() {
+        var m = modern();
+        if (m != null) m.resetPosition();
+    }
+
     public NetworkManager getNetworkManager() {
+        if (mcc$manager != null) return mcc$manager;
         var m = modern();
         return m == null ? null : NetworkManager.mcc$of(m.getConnection());
     }

@@ -156,4 +156,10 @@ public class Vec3d {
     public static Vec3d mcc$of(net.minecraft.world.phys.Vec3 v) {
         return new Vec3d(v.x, v.y, v.z);
     }
+
+
+    /** {@link #length} under the name of the stable 1.12 mappings. */
+    public double lengthVector() {
+        return length();
+    }
 }

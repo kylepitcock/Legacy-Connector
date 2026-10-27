@@ -271,4 +271,302 @@ public class Minecraft {
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap getTextureMapBlocks() {
         return legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks();
     }
+
+    // ------------------------------------------------------------------ the rest of the client (area R2b)
+
+    private static boolean client() {
+        return net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
+    }
+
+    /** The client's singletons below are null on a dedicated server (client-only mods call {@code getMinecraft()} there too). */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem getRenderItem() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance() : null;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher getBlockRendererDispatcher() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher.mcc$instance() : null;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.color.BlockColors getBlockColors() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.color.BlockColors.mcc$instance() : null;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors getItemColors() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors.mcc$instance() : null;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer entityRendererObject;
+    private legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal renderGlobalObject;
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager getRenderManager() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager.mcc$instance() : null;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer getItemRenderer() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer.mcc$instance() : null;
+    }
+
+    /** Phantom: the game renderer (camera, fog, light map); mods may replace it. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer entityRenderer;
+
+    public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer mcc$get$entityRenderer(Minecraft m) {
+        if (m.entityRendererObject == null && CLIENT) m.entityRendererObject = legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer.mcc$instance();
+        return m.entityRendererObject;
+    }
+
+    public static synchronized void mcc$set$entityRenderer(Minecraft m, legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer value) {
+        m.entityRendererObject = value;
+    }
+
+    /** Phantom: the world renderer; made on first use, mods may replace it. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal renderGlobal;
+
+    public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal mcc$get$renderGlobal(Minecraft m) {
+        if (m.renderGlobalObject == null && CLIENT) m.renderGlobalObject = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal.mcc$instance();
+        return m.renderGlobalObject;
+    }
+
+    public static synchronized void mcc$set$renderGlobal(Minecraft m, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal value) {
+        m.renderGlobalObject = value;
+    }
+
+    /** Phantom: the main framebuffer (see {@link #getFramebuffer}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer framebuffer;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer mcc$get$framebuffer(Minecraft m) {
+        return m.getFramebuffer();
+    }
+
+    /** The main framebuffer the world and screens draw into. */
+    public legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer getFramebuffer() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer.mcc$main() : null;
+    }
+
+    /** Phantom: what the crosshair is on. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult objectMouseOver;
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult mcc$get$objectMouseOver(Minecraft m) {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.objectMouseOver() : null;
+    }
+
+    public static void mcc$set$objectMouseOver(Minecraft m, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult value) {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.setObjectMouseOver(value);
+    }
+
+    /** The connection to the server (null when not in a world). */
+    public legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient getConnection() {
+        return client() && org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.connected()
+                ? legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient.mcc$INSTANCE : null;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer integratedServer;
+
+    /** The single player server while one runs (a view answering from it), else null. */
+    public synchronized legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer getIntegratedServer() {
+        if (!isIntegratedServerRunning()) return null;
+        if (integratedServer == null) {
+            integratedServer = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
+                    legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer.class);
+        }
+        return integratedServer;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.util.Session session;
+
+    /** The signed-in account. */
+    public synchronized legacyconnector.v1_12_2.net.minecraft.util.Session getSession() {
+        if (session == null) {
+            session = client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.session()
+                    : new legacyconnector.v1_12_2.net.minecraft.util.Session("Player", "", "", "legacy");
+        }
+        return session;
+    }
+
+    /** The multiplayer server played on (null in single player). */
+    public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.ServerData getCurrentServerData() {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.currentServerData() : null;
+    }
+
+    /** The client's section profiler (records nothing until enabled). */
+    public final legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler = new legacyconnector.v1_12_2.net.minecraft.profiler.Profiler();
+
+    private boolean connectedToRealms;
+
+    /** Realms is not supported: never connected unless a mod says so. */
+    public boolean isConnectedToRealms() {
+        return connectedToRealms;
+    }
+
+    public void setConnectedToRealms(boolean value) {
+        this.connectedToRealms = value;
+    }
+
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer metadataSerializer =
+            new legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer();
+    public final java.io.File mcDataDir = gameDir;
+    public final java.io.File fileResourcepacks = new java.io.File(gameDir, "resourcepacks");
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager languageManager = !CLIENT ? null :
+            legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
+    /** The game's own assets as a legacy pack. */
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.DefaultResourcePack defaultResourcePack = CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.resources.DefaultResourcePack() : null;
+    /** Packs mods add by reflection, then {@code refreshResources()}: they are served to legacy resource lookups. */
+    private final java.util.List<legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack> defaultResourcePacks = new java.util.ArrayList<>();
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository resourcePackRepository =
+            new legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository(fileResourcepacks,
+                    new java.io.File(gameDir, "server-resource-packs"), null, metadataSerializer, null);
+
+    public legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository getResourcePackRepository() {
+        return resourcePackRepository;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.resources.SkinManager getSkinManager() {
+        return legacyconnector.v1_12_2.net.minecraft.client.resources.SkinManager.mcc$instance();
+    }
+
+    /** Reloads the resources; packs mods put into {@code defaultResourcePacks} are added to the legacy lookups first. */
+    public void refreshResources() {
+        if (resourceManager instanceof legacyconnector.v1_12_2.net.minecraft.client.resources.SimpleReloadableResourceManager m) {
+            synchronized (defaultResourcePacks) {
+                for (var pack : defaultResourcePacks) if (!m.mcc$has(pack)) m.reloadResourcePack(pack);
+            }
+        }
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.refreshResources();
+    }
+
+    /** Re-applies the window size to the game (the window itself belongs to the game). */
+    public void resize(int width, int height) {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.resize();
+    }
+
+    /** Crashes the game with the report (on the next frame, as 1.12 did). */
+    public void crashed(legacyconnector.v1_12_2.net.minecraft.crash.CrashReport report) {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.crash(report);
+    }
+
+    public void displayCrashReport(legacyconnector.v1_12_2.net.minecraft.crash.CrashReport report) {
+        crashed(report);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.crash.CrashReport addGraphicsAndWorldToCrashReport(legacyconnector.v1_12_2.net.minecraft.crash.CrashReport report) {
+        return report;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker mcMusicTicker;
+
+    public synchronized legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker getMusicTicker() {
+        if (mcMusicTicker == null) mcMusicTicker = new legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker(this);
+        return mcMusicTicker;
+    }
+
+    /** The music ticker if a mod replaced it with its own (by reflection), else null (not a 1.12 method). */
+    public synchronized legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker mcc$replacedMusicTicker() {
+        var t = mcMusicTicker;
+        return t == null || t.getClass() == legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker.class ? null : t;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker.MusicType getAmbientMusicType() {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.ambientMusicType()
+                : legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker.MusicType.MENU;
+    }
+
+    /** Opens a saved world by folder name (main menu mods' "continue" buttons); a missing world opens the world creation screen. */
+    public void launchIntegratedServer(String folderName, String worldName, legacyconnector.v1_12_2.net.minecraft.world.WorldSettings settings) {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.launchIntegratedServer(folderName);
+    }
+
+    /** Phantom: 1.12 skipped drawing the world while one loaded; the game decides that now. */
+    @Deprecated
+    public boolean skipRenderWorld;
+
+    public static boolean mcc$get$skipRenderWorld(Minecraft m) {
+        return false;
+    }
+
+    /** 1.12 swapped the window buffers here (mods drew their own loading progress); the game presents its frames itself. */
+    public void updateDisplay() {
+    }
+
+    /** 1.12 checked the global keys (F1, F2, F3, F11) after a screen took a key; the game handles them itself. */
+    public void dispatchKeypresses() {
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer getDataFixer() {
+        return legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixesManager.getDataFixer();
+    }
+
+    /** The ticks the last frame advanced. */
+    public float getTickLength() {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.tickLength() : 1.0F;
+    }
+
+    public String getVersion() {
+        return "1.12.2";
+    }
+
+    public String getVersionType() {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.versionType() : "release";
+    }
+
+    public boolean isDemo() {
+        return client() && org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.isDemo();
+    }
+
+    /** {@code loadWorld(null)} leaves the world (back to the title screen); a client world cannot be swapped in. */
+    public void loadWorld(WorldClient world) {
+        if (world == null && client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.leaveWorld();
+    }
+
+    public void loadWorld(WorldClient world, String loadingMessage) {
+        loadWorld(world);
+    }
+
+    public LoadingScreenRenderer loadingScreen = CLIENT ? new LoadingScreenRenderer(this) : null;
+
+    /** Phantom: the model manager. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelManager modelManager;
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelManager mcc$get$modelManager(Minecraft m) {
+        return legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelManager.mcc$instance();
+    }
+
+    /** Phantom: the partial tick frozen while the game is paused. */
+    @Deprecated
+    public float renderPartialTicksPaused;
+
+    public static float mcc$get$renderPartialTicksPaused(Minecraft m) {
+        return client() ? org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.pausedPartialTicks() : 0.0F;
+    }
+
+    /** Phantom: whether the window is full screen. */
+    @Deprecated
+    public boolean fullscreen;
+
+    public static boolean mcc$get$fullscreen(Minecraft m) {
+        return client() && org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.fullscreen();
+    }
+
+    public boolean isFullScreen() {
+        return mcc$get$fullscreen(this);
+    }
+
+    public void toggleFullscreen() {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.toggleFullscreen();
+    }
+
+    public static int getGLMaximumTextureSize() {
+        return org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.maxTextureSize();
+    }
+
+    /** Phantom: chunks drawn in many passes (always). */
+    @Deprecated
+    public boolean renderChunksMany;
+
+    public static boolean mcc$get$renderChunksMany(Minecraft m) {
+        return true;
+    }
 }

@@ -250,4 +250,39 @@ public class MathHelper {
         if (angle < -180) angle += 360;
         return angle;
     }
+
+    // ---- 1.12.2 MathHelper, area F additions
+
+    public static int absFloor(double value) {
+        return (int) (value >= 0.0D ? value : -value + 1.0D);
+    }
+
+    public static double getDouble(String value, double defaultValue) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Throwable t) {
+            return defaultValue;
+        }
+    }
+
+    public static double getDouble(String value, double defaultValue, double max) {
+        return Math.max(max, getDouble(value, defaultValue));
+    }
+
+    public static int multiplyColor(int colorA, int colorB) {
+        int i = (colorA & 16711680) >> 16;
+        int j = (colorB & 16711680) >> 16;
+        int k = (colorA & 65280) >> 8;
+        int l = (colorB & 65280) >> 8;
+        int i1 = colorA & 255;
+        int j1 = colorB & 255;
+        int k1 = (int) ((float) i * (float) j / 255.0F);
+        int l1 = (int) ((float) k * (float) l / 255.0F);
+        int i2 = (int) ((float) i1 * (float) j1 / 255.0F);
+        return colorA & -16777216 | k1 << 16 | l1 << 8 | i2;
+    }
+
+    public static double pct(double value, double min, double max) {
+        return (value - min) / (max - min);
+    }
 }

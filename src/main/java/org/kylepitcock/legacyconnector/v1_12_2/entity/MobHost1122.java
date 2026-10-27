@@ -572,6 +572,42 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
 
     // ------------------------------------------------------------------ spawning, despawning, interaction, size
 
+    private net.minecraft.world.level.ServerLevelAccessor spawnLevel;
+    private net.minecraft.world.entity.MobSpawnType spawnType;
+
+    /** A mod's {@code onInitialSpawn} runs as the modern spawn finalization; its {@code super} call reaches the modern one. */
+    @Override
+    public net.minecraft.world.entity.SpawnGroupData finalizeSpawn(net.minecraft.world.level.ServerLevelAccessor level, net.minecraft.world.DifficultyInstance difficulty,
+            net.minecraft.world.entity.MobSpawnType type, net.minecraft.world.entity.SpawnGroupData data) {
+        if (!(legacy instanceof EntityLiving l) || !Hosts1122.overrides(legacy.getClass(), "onInitialSpawn",
+                legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance.class, legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData.class)) {
+            return super.finalizeSpawn(level, difficulty, type, data);
+        }
+        spawnLevel = level;
+        spawnType = type;
+        boolean region = !(level instanceof ServerLevel);
+        if (region) l.mcc$worldOverride = level;
+        try {
+            var result = l.onInitialSpawn(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance.mcc$of(difficulty), SpawnData1122.Group.legacy(data));
+            return SpawnData1122.Group.modern(result);
+        } catch (RuntimeException | LinkageError e) {
+            Hosts1122.failed(legacy.getClass(), "onInitialSpawn", e);
+            return data;
+        } finally {
+            if (region) l.mcc$worldOverride = null;
+            spawnLevel = null;
+            spawnType = null;
+        }
+    }
+
+    /** The modern spawn finalization (random follow range bonus, left-handedness) for the base {@code onInitialSpawn}. */
+    public net.minecraft.world.entity.SpawnGroupData mcc$superFinalizeSpawn(net.minecraft.world.DifficultyInstance difficulty,
+            net.minecraft.world.entity.SpawnGroupData data) {
+        var level = spawnLevel != null ? spawnLevel : level() instanceof ServerLevel sl ? sl : null;
+        if (level == null) return data;
+        return super.finalizeSpawn(level, difficulty, spawnType != null ? spawnType : net.minecraft.world.entity.MobSpawnType.NATURAL, data);
+    }
+
     @Override
     public boolean checkSpawnRules(net.minecraft.world.level.LevelAccessor level, net.minecraft.world.entity.MobSpawnType reason) {
         if (!(legacy instanceof EntityLiving l)) return super.checkSpawnRules(level, reason);

@@ -63,6 +63,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (mrl == null) continue;
                 ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
                 String target = org.kylepitcock.legacyconnector.core.Ids.namespace(mrl.getNamespace()) + ":item/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(mrl.getPath());
+                if (ObjAssets1122.isObj(mrl.getPath())) {
+                    // an OBJ item model (models/item/<name>.obj): NeoForge's OBJ loader
+                    target = ObjAssets1122.model(org.kylepitcock.legacyconnector.core.Ids.namespace(mrl.getNamespace()),
+                            "item/" + org.kylepitcock.legacyconnector.core.Ids.normalizePath(mrl.getPath()), null, null, null, out);
+                }
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
                 JsonObject model = new JsonObject();
                 model.addProperty("parent", target);
@@ -172,6 +177,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
         }
         if (model == null) return copy;
+        if (ObjAssets1122.isObj(model)) {
+            // a Forge OBJ model: NeoForge's OBJ loader draws it (with the variant's texture overrides and flip-v)
+            int c = model.indexOf(':');
+            JsonObject textures = source.has("textures") && source.get("textures").isJsonObject() ? source.getAsJsonObject("textures") : null;
+            copy.addProperty("model", ObjAssets1122.model(model.substring(0, c), model.substring(c + 1), textures, ObjAssets1122.custom(source),
+                    textures == null ? null : blockId.getPath() + "_" + key, out));
+            return copy;
+        }
         if (source.has("textures") && source.get("textures").isJsonObject() && source.getAsJsonObject("textures").size() > 0) {
             JsonObject generated = new JsonObject();
             generated.addProperty("parent", model);

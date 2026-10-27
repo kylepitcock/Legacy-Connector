@@ -1,0 +1,141 @@
+package legacyconnector.v1_12_2.net.minecraft.entity;
+
+import legacyconnector.v1_12_2.net.minecraft.potion.PotionEffect;
+import legacyconnector.v1_12_2.net.minecraft.potion.PotionType;
+import legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes;
+import legacyconnector.v1_12_2.net.minecraft.world.World;
+
+/**
+ * 1.12.2 lingering potion cloud: {@code new EntityAreaEffectCloud(world, x, y, z)} is a modern cloud, and its setters (radius, duration,
+ * wait time, growth, particle, potion, effects, colour, owner) configure the modern one.
+ */
+public class EntityAreaEffectCloud extends Entity {
+    private float mcc$radius = 0.5F;
+    private int mcc$duration = 600;
+    private int mcc$color;
+
+    public EntityAreaEffectCloud(World world) {
+        super(world);
+        mcc$set$noClip(this, true);
+        mcc$set$isImmuneToFire(this, true);
+        // a view of a cloud already in the world keeps its radius
+        if (mcc$cloud() == null || !mcc$entity.isAddedToLevel()) setRadius(3.0F);
+    }
+
+    public EntityAreaEffectCloud(World world, double x, double y, double z) {
+        this(world);
+        setPosition(x, y, z);
+    }
+
+    protected EntityAreaEffectCloud(net.minecraft.world.entity.Entity modern) {
+        super(modern);
+    }
+
+    private net.minecraft.world.entity.AreaEffectCloud mcc$cloud() {
+        return mcc$entity instanceof net.minecraft.world.entity.AreaEffectCloud c ? c : null;
+    }
+
+    @Override
+    protected void entityInit() {
+    }
+
+    public void setRadius(float radius) {
+        mcc$radius = radius;
+        var c = mcc$cloud();
+        if (c != null) c.setRadius(radius);
+    }
+
+    public float getRadius() {
+        var c = mcc$cloud();
+        return c != null ? c.getRadius() : mcc$radius;
+    }
+
+    public void setDuration(int duration) {
+        mcc$duration = duration;
+        var c = mcc$cloud();
+        if (c != null) c.setDuration(duration);
+    }
+
+    public int getDuration() {
+        var c = mcc$cloud();
+        return c != null ? c.getDuration() : mcc$duration;
+    }
+
+    public void setWaitTime(int ticks) {
+        var c = mcc$cloud();
+        if (c != null) c.setWaitTime(ticks);
+    }
+
+    public void setRadiusOnUse(float radius) {
+        var c = mcc$cloud();
+        if (c != null) c.setRadiusOnUse(radius);
+    }
+
+    public void setRadiusPerTick(float radius) {
+        var c = mcc$cloud();
+        if (c != null) c.setRadiusPerTick(radius);
+    }
+
+    public void setDurationOnUse(int duration) {
+        var c = mcc$cloud();
+        if (c != null) c.setDurationOnUse(duration);
+    }
+
+    public void setParticle(EnumParticleTypes particle) {
+        var c = mcc$cloud();
+        if (c == null || particle == null) return;
+        var options = particle.mcc$modern(0.0D, 0.0D, 0.0D);
+        if (options != null) c.setParticle(options);
+    }
+
+    public EnumParticleTypes getParticle() {
+        return EnumParticleTypes.SPELL_MOB;
+    }
+
+    public void setPotion(PotionType potion) {
+        var c = mcc$cloud();
+        var modern = potion == null ? null : potion.mcc$modern();
+        if (c != null && modern != null) c.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(modern));
+    }
+
+    public void addEffect(PotionEffect effect) {
+        var c = mcc$cloud();
+        var modern = effect == null ? null : effect.mcc$toModern();
+        if (c != null && modern != null) c.addEffect(modern);
+    }
+
+    /** A custom cloud colour (the modern cloud keeps the colour with its potion contents). */
+    public void setColor(int color) {
+        mcc$color = color;
+        var c = mcc$cloud();
+        if (c == null) return;
+        var tag = new net.minecraft.nbt.CompoundTag();
+        c.saveWithoutId(tag);
+        var contents = tag.getCompound("potion_contents");
+        contents.putInt("custom_color", color);
+        tag.put("potion_contents", contents);
+        c.load(tag);
+    }
+
+    public int getColor() {
+        return mcc$color;
+    }
+
+    public void setOwner(EntityLivingBase owner) {
+        var c = mcc$cloud();
+        if (c != null) c.setOwner(owner != null && owner.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l ? l : null);
+    }
+
+    public EntityLivingBase getOwner() {
+        var c = mcc$cloud();
+        return c == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(c.getOwner()) instanceof EntityLivingBase l ? l : null;
+    }
+
+    @Override
+    protected void readEntityFromNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+    }
+
+    @Override
+    protected void writeEntityToNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+    }
+}

@@ -252,4 +252,53 @@ public class KeyBinding implements Comparable<KeyBinding> {
     public String getDisplayNameWithModifier() {
         return getDisplayName();
     }
+
+    // ------------------------------------------------------------------ area R2b
+
+    /** The order of the categories in the controls screen: the game's own table (mods add theirs to it). */
+    public static final Map<String, Integer> CATEGORY_ORDER = mcc$categoryOrder();
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Integer> mcc$categoryOrder() {
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            try {
+                var f = net.minecraft.client.KeyMapping.class.getDeclaredField("CATEGORY_SORT_ORDER");
+                f.setAccessible(true);
+                return (Map<String, Integer>) f.get(null);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // fall through to a table of our own
+            }
+        }
+        return new java.util.HashMap<>();
+    }
+
+    /** Phantom: presses not yet handled (what {@link #isPressed} counts down). */
+    @Deprecated
+    public int pressTime;
+
+    private static java.lang.reflect.Field clickCount;
+
+    private static synchronized java.lang.reflect.Field mcc$clickCount() throws ReflectiveOperationException {
+        if (clickCount == null) {
+            clickCount = net.minecraft.client.KeyMapping.class.getDeclaredField("clickCount");
+            clickCount.setAccessible(true);
+        }
+        return clickCount;
+    }
+
+    public static int mcc$get$pressTime(KeyBinding k) {
+        try {
+            return mcc$clickCount().getInt(k.mcc$modern());
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
+    public static void mcc$set$pressTime(KeyBinding k, int v) {
+        try {
+            mcc$clickCount().setInt(k.mcc$modern(), v);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            // no client
+        }
+    }
 }

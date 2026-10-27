@@ -220,4 +220,9 @@ public class AxisAlignedBB {
     public static AxisAlignedBB mcc$of(AABB box) {
         return new AxisAlignedBB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
+
+
+    public AxisAlignedBB(Vec3d min, Vec3d max) {
+        this(min.x, min.y, min.z, max.x, max.y, max.z);
+    }
 }

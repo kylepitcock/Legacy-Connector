@@ -12,6 +12,11 @@ public class FakePlayer extends EntityPlayerMP {
         super(mcc$create(world, profile));
     }
 
+    /** The 1.12.2 constructor (a server world). */
+    public FakePlayer(legacyconnector.v1_12_2.net.minecraft.world.WorldServer world, GameProfile profile) {
+        super(mcc$create(world, profile));
+    }
+
     public FakePlayer(net.neoforged.neoforge.common.util.FakePlayer modern) {
         super(modern);
     }

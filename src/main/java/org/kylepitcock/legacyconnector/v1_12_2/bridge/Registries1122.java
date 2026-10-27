@@ -81,7 +81,7 @@ public final class Registries1122 {
     public static final Reg VILLAGER_PROFESSIONS = new Reg(null, o -> {});
     @SuppressWarnings({"rawtypes", "unchecked"})
     public static final Reg POTION_TYPES = new Reg(null, o -> {});
-    public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, p -> {});
+    public static final Reg<legacyconnector.v1_12_2.net.minecraft.potion.Potion> POTIONS = new Reg<>(legacyconnector.v1_12_2.net.minecraft.potion.Potion.class, org.kylepitcock.legacyconnector.v1_12_2.entity.Effects1122::register);
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment> ENCHANTMENTS =
             new Reg<>(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.class, e -> {});
     public static final Reg<legacyconnector.v1_12_2.net.minecraft.util.SoundEvent> SOUND_EVENTS =
@@ -94,15 +94,15 @@ public final class Registries1122 {
     public static synchronized <V extends IForgeRegistryEntry<V>> Reg<V> custom(ResourceLocation name, Class<V> type) {
         Reg<V> reg = new Reg<>(type, v -> {});
         CUSTOM.add(reg);
-        if (name != null) CUSTOM_NAMES.put(name, reg);
+        if (name != null) CUSTOM_NAMES.put(reg, name);
         return reg;
     }
 
-    private static final Map<ResourceLocation, Reg<?>> CUSTOM_NAMES = new LinkedHashMap<>();
+    private static final Map<Reg<?>, ResourceLocation> CUSTOM_NAMES = new java.util.IdentityHashMap<>();
 
-    /** The registries mods made, by the name they gave (RegistryManager). */
-    public static synchronized Map<ResourceLocation, Reg<?>> customRegistryNames() {
-        return new LinkedHashMap<>(CUSTOM_NAMES);
+    /** The name a mod gave its own registry (RegistryManager.getName), or null. */
+    public static synchronized ResourceLocation customName(Object registry) {
+        return CUSTOM_NAMES.get(registry);
     }
 
     public static synchronized java.util.List<Reg<?>> customRegistries() {

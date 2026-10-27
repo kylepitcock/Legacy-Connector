@@ -1864,4 +1864,10 @@ public class World implements IBlockAccess {
         return level == null || level.getServer() == null ? null
                 : legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager.mcc$of(level.getServer());
     }
+
+    /** The world's scoreboard (area F; the server's on a server, the client's on a client). */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getScoreboard() {
+        var level = mcc$level();
+        return level == null ? null : legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(level.getScoreboard());
+    }
 }

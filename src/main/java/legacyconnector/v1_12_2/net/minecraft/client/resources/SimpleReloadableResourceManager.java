@@ -16,6 +16,31 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
  */
 public class SimpleReloadableResourceManager implements IReloadableResourceManager {
     private final List<IResourceManagerReloadListener> listeners = new java.util.concurrent.CopyOnWriteArrayList<>();
+    /** Per-domain pack stacks mods add their own packs to; lookups ask them first. */
+    public final java.util.Map<String, FallbackResourceManager> domainResourceManagers = new java.util.concurrent.ConcurrentHashMap<>();
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer rmMetadataSerializer;
+
+    public SimpleReloadableResourceManager() {
+        this(new legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer());
+    }
+
+    public SimpleReloadableResourceManager(legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer serializer) {
+        this.rmMetadataSerializer = serializer;
+    }
+
+    /** Whether a pack was added for one of its domains (not a 1.12 method). */
+    public boolean mcc$has(IResourcePack pack) {
+        for (FallbackResourceManager m : domainResourceManagers.values()) if (m.resourcePacks.contains(pack)) return true;
+        return false;
+    }
+
+    /** Adds a pack for its domains (what 1.12 did on a resource reload; mods call it to add a pack of their own). */
+    public void reloadResourcePack(IResourcePack pack) {
+        if (pack == null) return;
+        for (String domain : pack.getResourceDomains()) {
+            domainResourceManagers.computeIfAbsent(domain, d -> new FallbackResourceManager(rmMetadataSerializer)).addResourcePack(pack);
+        }
+    }
 
     @Override
     public void registerReloadListener(IResourceManagerReloadListener listener) {
@@ -50,6 +75,14 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
 
     @Override
     public IResource getResource(ResourceLocation location) throws IOException {
+        FallbackResourceManager added = domainResourceManagers.get(location.getNamespace());
+        if (added != null) {
+            try {
+                return added.getResource(location);
+            } catch (IOException e) {
+                // not in the packs mods added
+            }
+        }
         List<IResource> all = find(location, true);
         if (all.isEmpty()) throw new java.io.FileNotFoundException(location.toString());
         return all.get(0);
@@ -58,6 +91,14 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
     @Override
     public List<IResource> getAllResources(ResourceLocation location) throws IOException {
         List<IResource> all = find(location, false);
+        FallbackResourceManager added = domainResourceManagers.get(location.getNamespace());
+        if (added != null) {
+            try {
+                all.addAll(added.getAllResources(location));
+            } catch (IOException e) {
+                // not in the packs mods added
+            }
+        }
         if (all.isEmpty()) throw new java.io.FileNotFoundException(location.toString());
         return all;
     }
