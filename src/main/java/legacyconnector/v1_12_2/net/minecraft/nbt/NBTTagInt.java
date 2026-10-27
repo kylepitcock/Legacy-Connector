@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.nbt;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 
-public class NBTTagInt extends NBTBase.NBTPrimitive {
+public class NBTTagInt extends NBTPrimitive {
     private final int data;
 
     public NBTTagInt(int data) {

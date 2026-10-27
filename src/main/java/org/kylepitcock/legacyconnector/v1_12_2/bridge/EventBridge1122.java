@@ -20,6 +20,17 @@ public final class EventBridge1122 {
 
     private EventBridge1122() {}
 
+    private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.EventBus bus() {
+        return MinecraftForge.EVENT_BUS;
+    }
+
+    /** The 1.12 numeric id of a dimension (the id {@link WorldBridge1122#dimensionId} gives its level). */
+    public static int dimensionId(net.minecraft.resources.ResourceKey<net.minecraft.world.level.Level> key) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        var level = server == null || key == null ? null : server.getLevel(key);
+        return level != null ? WorldBridge1122.dimensionId(level) : legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$idOf(key);
+    }
+
     private static boolean wants(Class<? extends Event> type) {
         return MinecraftForge.EVENT_BUS.mcc$hasListeners(type);
     }
@@ -105,6 +116,35 @@ public final class EventBridge1122 {
             if (e.getLevel() instanceof net.minecraft.world.level.Level level && wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.Save.class)) {
                 post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.Save(WorldBridge1122.wrap(level)));
             }
+        });
+        bus.addListener((net.neoforged.neoforge.event.AnvilUpdateEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.AnvilUpdateEvent.class)) return;
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.AnvilUpdateEvent(Stacks1122.fromModern(e.getLeft()),
+                    Stacks1122.fromModern(e.getRight()), e.getName(), (int) e.getCost());
+            post(legacy);
+            if (legacy.isCanceled()) {
+                e.setCanceled(true);
+            } else if (legacy.getOutput() != null && !legacy.getOutput().isEmpty()) {
+                e.setOutput(Stacks1122.toModern(legacy.getOutput()));
+                e.setCost(legacy.getCost());
+                e.setMaterialCost(legacy.getMaterialCost());
+            }
+        });
+        bus.addListener((net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent e) -> {
+            if (e.getItemStack().isEmpty() || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent.class)) return;
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent(Stacks1122.fromModern(e.getItemStack()),
+                    e.getBurnTime());
+            post(legacy);
+            if (legacy.isCanceled()) e.setBurnTime(legacy.getBurnTime());
+        });
+        bus.addListener((net.neoforged.neoforge.event.ServerChatEvent e) -> {
+            EntityPlayer p;
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.ServerChatEvent.class) || !((p = player(e.getPlayer())) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP mp)) return;
+            var component = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("chat.type.text", p.getName(), e.getRawText());
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.ServerChatEvent(mp, e.getRawText(), component);
+            post(legacy);
+            if (legacy.isCanceled()) e.setCanceled(true);
+            else if (legacy.getComponent() != component && legacy.getComponent() != null) e.setMessage(legacy.getComponent().mcc$modern());
         });
         registerLiving(bus);
         registerInteractions(bus);

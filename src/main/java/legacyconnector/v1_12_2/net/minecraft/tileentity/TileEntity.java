@@ -54,6 +54,16 @@ public abstract class TileEntity implements ICapabilityProvider {
         readFromNBT(tag);
     }
 
+    /** The packet that tells clients about this tile entity when it changes; none by default (the update tag is sent). */
+    public legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketUpdateTileEntity getUpdatePacket() {
+        return null;
+    }
+
+    /** Receives the packet {@link #getUpdatePacket} made, on the client. */
+    public void onDataPacket(legacyconnector.v1_12_2.net.minecraft.network.NetworkManager net,
+            legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketUpdateTileEntity pkt) {
+    }
+
     public void markDirty() {
         if (mcc$host != null) mcc$host.setChanged();
     }

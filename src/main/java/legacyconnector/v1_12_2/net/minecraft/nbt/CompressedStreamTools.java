@@ -38,6 +38,21 @@ public class CompressedStreamTools {
         return new NBTTagCompound(NbtIo.read(in));
     }
 
+    public static NBTTagCompound read(java.io.DataInputStream in) throws IOException {
+        return read((DataInput) in);
+    }
+
+    /** The size limit is the modern reader's: legacy callers passed {@link NBTSizeTracker#INFINITE} or a 2 MB limit. */
+    public static NBTTagCompound read(DataInput in, NBTSizeTracker tracker) throws IOException {
+        return new NBTTagCompound(NbtIo.read(in, tracker == null ? NbtAccounter.unlimitedHeap() : tracker.mcc$accounter()));
+    }
+
+    public static void write(NBTTagCompound tag, File file) throws IOException {
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(new FileOutputStream(file))) {
+            write(tag, out);
+        }
+    }
+
     public static void write(NBTTagCompound tag, DataOutput out) throws IOException {
         NbtIo.write(tag.mcc$modern(), out);
     }

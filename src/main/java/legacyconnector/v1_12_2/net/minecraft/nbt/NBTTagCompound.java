@@ -218,7 +218,7 @@ public class NBTTagCompound extends NBTBase {
         return hasKey(key + "Most", 4) && hasKey(key + "Least", 4);
     }
 
-    public NBTTagCompound merge(NBTTagCompound other) {
+    public void merge(NBTTagCompound other) {
         for (String key : other.getKeySet()) {
             NBTBase value = other.getTag(key);
             if (value instanceof NBTTagCompound inner && hasKey(key, 10)) {
@@ -227,6 +227,5 @@ public class NBTTagCompound extends NBTBase {
                 setTag(key, value.copy());
             }
         }
-        return this;
     }
 }

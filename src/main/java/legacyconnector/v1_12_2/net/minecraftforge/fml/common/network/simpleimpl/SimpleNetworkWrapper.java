@@ -45,6 +45,37 @@ public class SimpleNetworkWrapper {
         channel.sendToDimension(message, dimensionId);
     }
 
+    public void sendToAllTracking(IMessage message, NetworkRegistry.TargetPoint point) {
+        channel.sendToAllTracking(message, point.dimension, point.x, point.z);
+    }
+
+    public void sendToAllTracking(IMessage message, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        channel.sendToAllTracking(message, entity == null ? null : entity.mcc$modern());
+    }
+
+    /** The message as a vanilla packet, for mods that send it through a connection themselves. */
+    public legacyconnector.v1_12_2.net.minecraft.network.Packet<?> getPacketFrom(IMessage message) {
+        net.minecraft.network.protocol.Packet<?> modern = channel.packet(message);
+        return new legacyconnector.v1_12_2.net.minecraft.network.Packet<legacyconnector.v1_12_2.net.minecraft.network.INetHandler>() {
+            @Override
+            public void readPacketData(legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer buf) {
+            }
+
+            @Override
+            public void writePacketData(legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer buf) {
+            }
+
+            @Override
+            public void processPacket(legacyconnector.v1_12_2.net.minecraft.network.INetHandler handler) {
+            }
+
+            @Override
+            public net.minecraft.network.protocol.Packet<?> mcc$modern() {
+                return modern;
+            }
+        };
+    }
+
     public void sendToServer(IMessage message) {
         channel.sendToServer(message);
     }

@@ -28,6 +28,17 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
         }
     }
 
+    /** "namespace:path" split into its two parts, the namespace "minecraft" when none is given. */
+    protected static String[] splitObjectName(String toSplit) {
+        String[] out = new String[] {"minecraft", toSplit};
+        int i = toSplit.indexOf(':');
+        if (i >= 0) {
+            out[1] = toSplit.substring(i + 1);
+            if (i > 1) out[0] = toSplit.substring(0, i);
+        }
+        return out;
+    }
+
     public String getPath() {
         return path;
     }

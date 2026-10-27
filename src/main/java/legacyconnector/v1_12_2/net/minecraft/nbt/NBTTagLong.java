@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.nbt;
 import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.Tag;
 
-public class NBTTagLong extends NBTBase.NBTPrimitive {
+public class NBTTagLong extends NBTPrimitive {
     private final long data;
 
     public NBTTagLong(long data) {
