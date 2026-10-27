@@ -703,7 +703,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     public void beginLeavesDecay(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
     }
 
-    public boolean canBeReplacedByLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+    public boolean canBeReplacedByLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         return !state.isFullCube();
     }
 
@@ -715,11 +715,268 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return state.getMaterial().isOpaque() && state.isFullCube();
     }
 
-    public legacyconnector.v1_12_2.net.minecraft.block.material.MapColor getMapColor(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+    public legacyconnector.v1_12_2.net.minecraft.block.material.MapColor getMapColor(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         return blockMapColor != null ? blockMapColor : material.getMaterialMapColor();
     }
 
     public legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction getPushReaction(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
         return material.getPushReaction();
     }
+
+    // ------------------------------------------------------------------ hooks taking an IBlockAccess (1.12.2 vanilla and Forge defaults)
+    // The modern block calls the ones a mod overrides (bounds, collision box, light, replaceability, drops, friction, pick block,
+    // explosion resistance; see Legacy1122Block); the rest are what mods call on their own and on vanilla blocks.
+
+    /** Forge: whether the state counts as air (material AIR). */
+    public boolean isAir(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.AIR;
+    }
+
+    /** Whether placing a block here replaces this one (by material: air, water, tall grass, snow layers...). */
+    public boolean isReplaceable(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return world.getBlockState(pos).getMaterial().isReplaceable();
+    }
+
+    /** The state with the properties that depend on the neighbours (connections, ...) filled in; the stored state by default. */
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getActualState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state;
+    }
+
+    /** Forge: the state with its unlisted (render) properties filled in; the state itself by default. */
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getExtendedState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state;
+    }
+
+    /** The outline box, relative to the block (a full cube, or the state-only bounds the block declares). */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getBoundingBox(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess source, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var b = mcc$staticBounds(state);
+        return b != null ? b : FULL_BLOCK_AABB;
+    }
+
+    /** The collision box, relative to the block (the outline box by default; null for none). */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getCollisionBoundingBox(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBoundingBox(state, world, pos);
+    }
+
+    /** The highlighted box in world coordinates. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getSelectedBoundingBox(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.getBoundingBox(world, pos).offset(pos);
+    }
+
+    /** How the face supports attachments (SOLID by default, as in 1.12.2). */
+    public legacyconnector.v1_12_2.net.minecraft.block.state.BlockFaceShape getBlockFaceShape(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face) {
+        Boolean vanilla = org.kylepitcock.legacyconnector.v1_12_2.bridge.BlockFaces1122.vanillaSturdy(state, world, pos, face);
+        return vanilla == null || vanilla ? legacyconnector.v1_12_2.net.minecraft.block.state.BlockFaceShape.SOLID
+                : legacyconnector.v1_12_2.net.minecraft.block.state.BlockFaceShape.UNDEFINED;
+    }
+
+    /** Forge: whether the side is solid (torches, levers attach): a vanilla block's modern face, else a normal cube or a solid top. */
+    public boolean isSideSolid(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        Boolean vanilla = org.kylepitcock.legacyconnector.v1_12_2.bridge.BlockFaces1122.vanillaSturdy(state, world, pos, side);
+        if (vanilla != null) return vanilla;
+        if (side == legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP && state.isTopSolid()) return true;
+        return isNormalCube(state, world, pos);
+    }
+
+    /** Forge: a normal cube at a position (the state's own answer by default). */
+    public boolean isNormalCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.isNormalCube();
+    }
+
+    public boolean isLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LEAVES;
+    }
+
+    /** Forge: whether the block is a log (trees grow around it, leaves stay); false unless overridden. */
+    public boolean isWood(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return false;
+    }
+
+    public boolean isFoliage(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return false;
+    }
+
+    /** Whether the side is drawn: not when the box reaches that side and the neighbour hides it. */
+    public boolean shouldSideBeRendered(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        var bb = state.getBoundingBox(world, pos);
+        switch (side) {
+            case DOWN -> {
+                if (bb.minY > 0.0D) return true;
+            }
+            case UP -> {
+                if (bb.maxY < 1.0D) return true;
+            }
+            case NORTH -> {
+                if (bb.minZ > 0.0D) return true;
+            }
+            case SOUTH -> {
+                if (bb.maxZ < 1.0D) return true;
+            }
+            case WEST -> {
+                if (bb.minX > 0.0D) return true;
+            }
+            case EAST -> {
+                if (bb.maxX < 1.0D) return true;
+            }
+            default -> {
+            }
+        }
+        var other = pos.offset(side);
+        return !world.getBlockState(other).doesSideBlockRendering(world, other, side.getOpposite());
+    }
+
+    /** Forge: whether this block hides the neighbour's face against it (opaque cubes do). */
+    public boolean doesSideBlockRendering(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face) {
+        return state.isOpaqueCube();
+    }
+
+    /** Forge: the drops of the block at a position, added to the list (getItemDropped x quantityDropped with damageDropped). */
+    public void getDrops(legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> drops,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune) {
+        drops.addAll(mcc$defaultDrops(state, fortune));
+    }
+
+    /** Forge's older form: the drops as a new list. */
+    @Deprecated
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getDrops(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune) {
+        legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> ret = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+        getDrops(ret, world, pos, state, fortune);
+        return ret;
+    }
+
+    /** Forge: the light the block gives at a position (its state's light by default). */
+    public int getLightValue(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.getLightValue();
+    }
+
+    public int getLightOpacity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return state.getLightOpacity();
+    }
+
+    /** Forge: the friction of the top for an entity (the block's slipperiness by default). */
+    public float getSlipperiness(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return slipperiness;
+    }
+
+    /** Forge: the resistance against an explosion at a position (the block-wide resistance by default). */
+    public float getExplosionResistance(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity exploder, legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion) {
+        return getExplosionResistance(exploder);
+    }
+
+    /** Forge: whether fences, walls and panes beside it connect on that side (decided by the face shape unless overridden). */
+    public boolean canBeConnectedTo(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        return false;
+    }
+
+    /** Forge: whether the player's held tool harvests the block (drops it): no tool needed, or the right tool of a high enough level. */
+    public boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        var state = world.getBlockState(pos);
+        state = state.getBlock().getActualState(state, world, pos);
+        if (state.getMaterial().isToolNotRequired()) return true;
+        var stack = player.getHeldItemMainhand();
+        String tool = getHarvestTool(state);
+        if (stack.isEmpty() || tool == null) return player.canHarvestBlock(state);
+        int toolLevel = stack.getItem().getHarvestLevel(stack, tool, player, state);
+        if (toolLevel < 0) return player.canHarvestBlock(state);
+        return toolLevel >= getHarvestLevel(state);
+    }
+
+    /** Whether entities walk through the block (materials that do not block movement). */
+    public boolean isPassable(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return !getMaterialLegacy().blocksMovement();
+    }
+
+    /** Forge: whether an entity (the dragon, the wither) may destroy the block; everything but the end's own blocks may. */
+    public boolean canEntityDestroy(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return this != legacyconnector.v1_12_2.net.minecraft.init.Blocks.BEDROCK && this != legacyconnector.v1_12_2.net.minecraft.init.Blocks.END_PORTAL
+                && this != legacyconnector.v1_12_2.net.minecraft.init.Blocks.END_PORTAL_FRAME && this != legacyconnector.v1_12_2.net.minecraft.init.Blocks.COMMAND_BLOCK;
+    }
+
+    /** Forge: the stack the pick-block key gives (the block's own item by default). */
+    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack getPickBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult target, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return getItem(world, pos, state);
+    }
+
+    /** Forge: weak (indirect) redstone power out of a side; none by default. */
+    public int getWeakPower(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return 0;
+    }
+
+    public int getStrongPower(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return 0;
+    }
+
+    /** Forge: whether redstone dust connects to the block from that side (power sources do). */
+    public boolean canConnectRedstone(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return state.canProvidePower() && side != null;
+    }
+
+
+    /** Forge: whether the block burns (by its material). */
+    public boolean isFlammable(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face) {
+        return getFlammability(world, pos, face) > 0;
+    }
+
+    /** Forge: how easily fire burns the block away (vanilla's fire table through the modern fire block). */
+    public int getFlammability(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face) {
+        return mcc$modern instanceof net.minecraft.world.level.block.Block b
+                ? b.defaultBlockState().getFlammability(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO, net.minecraft.core.Direction.UP) : 0;
+    }
+
+    /** Forge: how easily fire spreads to the block. */
+    public int getFireSpreadSpeed(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face) {
+        return mcc$modern instanceof net.minecraft.world.level.block.Block b
+                ? b.defaultBlockState().getFireSpreadSpeed(net.minecraft.world.level.EmptyBlockGetter.INSTANCE, net.minecraft.core.BlockPos.ZERO, net.minecraft.core.Direction.UP) : 0;
+    }
+
+    /** Forge: whether fire on top burns forever (netherrack, magma). */
+    public boolean isFireSource(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return side == legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP && (this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.NETHERRACK
+                || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.MAGMA);
+    }
+
+    /** Forge: whether the block is a ladder for an entity (BlockLadder and vines are). */
+    public boolean isLadder(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return this instanceof BlockLadder || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.LADDER || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.VINE;
+    }
+
+    /** Forge: whether a beacon pyramid may be built of it (iron, gold, diamond and emerald blocks). */
+    public boolean isBeaconBase(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos beacon) {
+        return this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.EMERALD_BLOCK || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.GOLD_BLOCK
+                || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.DIAMOND_BLOCK || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.IRON_BLOCK;
+    }
+
 }

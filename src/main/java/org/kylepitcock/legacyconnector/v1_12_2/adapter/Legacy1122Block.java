@@ -77,6 +77,16 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean collisionList;
     private final boolean pushReaction;
     private final boolean relativeHardness;
+    // hooks taking an IBlockAccess
+    private final boolean bounds;
+    private final boolean collisionBox;
+    private final boolean replaceable;
+    private final boolean lightValue;
+    private final boolean lightOpacity;
+    private final boolean slipperiness;
+    private final boolean dropsList;
+    private final boolean pickBlock;
+    private final boolean explosionResistance;
     private int failures;
     /** Set while legacy code computes a shape or breaking speed: the shim's defaults ask the modern block again, which must not recurse. */
     private static final ThreadLocal<boolean[]> IN_LEGACY_SHAPE = ThreadLocal.withInitial(() -> new boolean[1]);
@@ -111,6 +121,18 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 boolean.class);
         this.pushReaction = overrides(legacy, "getPushReaction", S);
         this.relativeHardness = overrides(legacy, "getPlayerRelativeBlockHardness", S, EntityPlayer.class, W, P);
+        Class<?> A = legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class;
+        this.bounds = overrides(legacy, "getBoundingBox", S, A, P);
+        this.collisionBox = overrides(legacy, "getCollisionBoundingBox", S, A, P);
+        this.replaceable = overrides(legacy, "isReplaceable", A, P);
+        this.lightValue = overrides(legacy, "getLightValue", S, A, P);
+        this.lightOpacity = overrides(legacy, "getLightOpacity", S, A, P);
+        this.slipperiness = overrides(legacy, "getSlipperiness", S, A, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
+        this.dropsList = overrides(legacy, "getDrops", legacyconnector.v1_12_2.net.minecraft.util.NonNullList.class, A, P, S, int.class)
+                || overrides(legacy, "getDrops", A, P, S, int.class);
+        this.pickBlock = overrides(legacy, "getPickBlock", S, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.class, W, P, EntityPlayer.class);
+        this.explosionResistance = overrides(legacy, "getExplosionResistance", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class,
+                legacyconnector.v1_12_2.net.minecraft.world.Explosion.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
     }
 
@@ -475,14 +497,43 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     @Override
     protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (bounds && !IN_LEGACY_SHAPE.get()[0]) {
+            var b = legacyBox(state, getter, pos, false);
+            if (b != null) return b;
+        }
         var s = staticShape(state);
         return s != null ? s : super.getShape(state, getter, pos, context);
+    }
+
+    /** A legacy block-relative box (getBoundingBox or getCollisionBoundingBox at the position) as a shape; null when it cannot be had. */
+    private net.minecraft.world.phys.shapes.VoxelShape legacyBox(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos, boolean collision) {
+        boolean[] guard = IN_LEGACY_SHAPE.get();
+        guard[0] = true;
+        try {
+            var access = WorldBridge1122.access(getter);
+            var ls = state(state);
+            var b = collision ? legacy.getCollisionBoundingBox(ls, access, pos(pos)) : legacy.getBoundingBox(ls, access, pos(pos));
+            if (b == null) return net.minecraft.world.phys.shapes.Shapes.empty();
+            if (b.minX <= 0 && b.minY <= 0 && b.minZ <= 0 && b.maxX >= 1 && b.maxY >= 1 && b.maxZ >= 1 && b.maxX <= 1 && b.maxY <= 1 && b.maxZ <= 1) {
+                return net.minecraft.world.phys.shapes.Shapes.block();
+            }
+            return net.minecraft.world.phys.shapes.Shapes.create(b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ);
+        } catch (RuntimeException | LinkageError e) {
+            failure(collision ? "getCollisionBoundingBox" : "getBoundingBox", e);
+            return null;
+        } finally {
+            guard[0] = false;
+        }
     }
 
     /** Several collision boxes (machines, pipes, frames): what the mod's addCollisionBoxToList adds for a mask around the block. */
     @Override
     protected net.minecraft.world.phys.shapes.VoxelShape getCollisionShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (collisionBox && !collisionList && !IN_LEGACY_SHAPE.get()[0]) {
+            var b = legacyBox(state, getter, pos, true);
+            if (b != null) return b;
+        }
         if (!collisionList || !(getter instanceof Level level) || IN_LEGACY_SHAPE.get()[0]) return super.getCollisionShape(state, getter, pos, context);
         List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new ArrayList<>();
         var mask = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 2,
@@ -562,6 +613,11 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     public List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> legacyDrops(World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             IBlockState state, int fortune) {
         try {
+            if (dropsList) {
+                legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> drops = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+                legacy.getDrops(drops, world, pos, state, fortune);
+                return drops;
+            }
             return legacy.mcc$defaultDrops(state, fortune);
         } catch (RuntimeException | LinkageError e) {
             failure("getDrops", e);
@@ -622,6 +678,17 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
 
     @Override
     public net.minecraft.world.item.ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        if (pickBlock && level instanceof Level l) {
+            try {
+                var hit = new legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult(
+                        new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5),
+                        legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP, pos(pos));
+                var s = legacy.getPickBlock(state(state), hit, world(l), pos(pos), null);
+                if (s != null && !s.isEmpty()) return Stacks1122.toModern(s);
+            } catch (RuntimeException | LinkageError e) {
+                failure("getPickBlock", e);
+            }
+        }
         if (pickItem && level instanceof Level l) {
             try {
                 var s = legacy.getItem(world(l), pos(pos), state(state));
@@ -631,5 +698,64 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             }
         }
         return super.getCloneItemStack(level, pos, state);
+    }
+
+    // ------------------------------------------------------------------ hooks taking an IBlockAccess
+
+    @Override
+    protected boolean canBeReplaced(BlockState state, net.minecraft.world.item.context.BlockPlaceContext context) {
+        if (!replaceable) return super.canBeReplaced(state, context);
+        try {
+            return legacy.isReplaceable(world(context.getLevel()), pos(context.getClickedPos()));
+        } catch (RuntimeException | LinkageError e) {
+            failure("isReplaceable", e);
+            return super.canBeReplaced(state, context);
+        }
+    }
+
+    @Override
+    public int getLightEmission(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        if (!lightValue) return super.getLightEmission(state, level, pos);
+        try {
+            return Math.max(0, Math.min(15, legacy.getLightValue(state(state), WorldBridge1122.access(level), pos(pos))));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getLightValue", e);
+            return super.getLightEmission(state, level, pos);
+        }
+    }
+
+    @Override
+    protected int getLightBlock(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos) {
+        if (!lightOpacity) return super.getLightBlock(state, level, pos);
+        try {
+            return Math.max(0, Math.min(15, legacy.getLightOpacity(state(state), WorldBridge1122.access(level), pos(pos))));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getLightOpacity", e);
+            return super.getLightBlock(state, level, pos);
+        }
+    }
+
+    @Override
+    public float getFriction(BlockState state, LevelReader level, BlockPos pos, Entity entity) {
+        if (!slipperiness) return super.getFriction(state, level, pos, entity);
+        try {
+            return legacy.getSlipperiness(state(state), WorldBridge1122.access(level), pos(pos), entity == null ? null : entity(entity));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getSlipperiness", e);
+            return super.getFriction(state, level, pos, entity);
+        }
+    }
+
+    @Override
+    public float getExplosionResistance(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.world.level.Explosion explosion) {
+        if (!explosionResistance || !(level instanceof Level l)) return super.getExplosionResistance(state, level, pos, explosion);
+        try {
+            var source = explosion == null ? null : explosion.getDirectSourceEntity();
+            // the explosion math is the same in both versions: (resistance + 0.3) * 0.3 per step
+            return legacy.getExplosionResistance(world(l), pos(pos), source == null ? null : entity(source), null);
+        } catch (RuntimeException | LinkageError e) {
+            failure("getExplosionResistance", e);
+            return super.getExplosionResistance(state, level, pos, explosion);
+        }
     }
 }

@@ -22,8 +22,7 @@ public interface IBlockState {
 
     Material getMaterial();
 
-    // The block's (deprecated) per-state methods, as vanilla's StateImplementation forwards them. isSideSolid and getBlockFaceShape name
-    // synthesized types; they are answered by SynthMethods1122.
+    // The block's (deprecated) per-state methods, as vanilla's StateImplementation forwards them.
 
     default int getLightValue() {
         return getBlock().getLightValue(this);
@@ -124,5 +123,73 @@ public interface IBlockState {
     default boolean isNormalCube() {
         Material m = getMaterial();
         return m != null && m.isOpaque() && isFullCube();
+    }
+
+    // ------------------------------------------------------------------ per-state forms of the block's IBlockAccess hooks
+
+    default boolean isSideSolid(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return getBlock().isSideSolid(this, world, pos, side);
+    }
+
+    default BlockFaceShape getBlockFaceShape(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        return getBlock().getBlockFaceShape(world, this, pos, facing);
+    }
+
+    default IBlockState getActualState(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getActualState(this, world, pos);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getCollisionBoundingBox(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getCollisionBoundingBox(this, world, pos);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getBoundingBox(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getBoundingBox(this, world, pos);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getSelectedBoundingBox(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getSelectedBoundingBox(this, world, pos);
+    }
+
+    default int getLightOpacity(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getLightOpacity(this, world, pos);
+    }
+
+    default int getLightValue(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getLightValue(this, world, pos);
+    }
+
+    default legacyconnector.v1_12_2.net.minecraft.block.material.MapColor getMapColor(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().getMapColor(this, world, pos);
+    }
+
+    default boolean shouldSideBeRendered(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        return getBlock().shouldSideBeRendered(this, world, pos, facing);
+    }
+
+    default boolean doesSideBlockRendering(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        return getBlock().doesSideBlockRendering(this, world, pos, facing);
+    }
+
+    default int getWeakPower(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return getBlock().getWeakPower(this, world, pos, side);
+    }
+
+    default int getStrongPower(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return getBlock().getStrongPower(this, world, pos, side);
+    }
+
+    default boolean isNormalCube(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getBlock().isNormalCube(this, world, pos);
     }
 }

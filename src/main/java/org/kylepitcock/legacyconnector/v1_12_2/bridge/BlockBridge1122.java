@@ -29,7 +29,8 @@ public final class BlockBridge1122 {
                 ? legacySound.mcc$modern : sound(block.getMaterialLegacy()));
         float hardness = block.mcc$hardness();
         if (hardness < 0) p.strength(-1.0F, 3600000.0F);
-        else p.strength(hardness, block.mcc$resistance());
+        // 1.12 kept three times the setResistance value and divided by five when an explosion asked (stone: 30 -> 6, modern stone 6)
+        else p.strength(hardness, block.mcc$resistance() / 5.0F);
         int light = block.mcc$light();
         if (light > 0) p.lightLevel(s -> light);
         if (block.slipperiness != 0.6F) p.friction(block.slipperiness);
