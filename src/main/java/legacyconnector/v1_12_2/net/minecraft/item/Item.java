@@ -346,4 +346,230 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     public boolean isEnchantable(ItemStack stack) {
         return getItemStackLimit(stack) == 1 && isDamageable();
     }
+
+    // ------------------------------------------------------------------ use and gameplay hooks (1.12.2 defaults; mods override)
+
+    /** The random items roll (drops, sounds). */
+    protected static final java.util.Random itemRand = new java.util.Random();
+    protected static final java.util.UUID ATTACK_DAMAGE_MODIFIER = java.util.UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+    protected static final java.util.UUID ATTACK_SPEED_MODIFIER = java.util.UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+
+    /** The stack a legacy player holds in a hand, as a live view. */
+    protected static ItemStack mcc$held(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        if (player == null || !(player.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l)) return ItemStack.EMPTY;
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(l.getItemInHand(
+                hand == legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND));
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.ActionResult<ItemStack> onItemRightClick(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return new legacyconnector.v1_12_2.net.minecraft.util.ActionResult<>(legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS, mcc$held(player, hand));
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemUse(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+    }
+
+    /** Forge: called before the block is activated. */
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemUseFirst(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side,
+            float hitX, float hitY, float hitZ, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+    }
+
+    public ItemStack onItemUseFinish(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return stack;
+    }
+
+    public void onPlayerStoppedUsing(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, int timeLeft) {
+    }
+
+    /** Forge: each tick while the item is being used. */
+    public void onUsingTick(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, int count) {
+    }
+
+    public int getMaxItemUseDuration(ItemStack stack) {
+        return 0;
+    }
+
+    public EnumAction getItemUseAction(ItemStack stack) {
+        return EnumAction.NONE;
+    }
+
+    /** Each tick while the stack is in an entity's inventory. */
+    public void onUpdate(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, int itemSlot, boolean isSelected) {
+    }
+
+    public void onCreated(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+    }
+
+    public boolean hitEntity(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase target, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase attacker) {
+        return false;
+    }
+
+    public boolean onBlockDestroyed(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return false;
+    }
+
+    public boolean itemInteractionForEntity(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase target, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return false;
+    }
+
+    /** Forge: true cancels the block break. */
+    public boolean onBlockStartBreak(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return false;
+    }
+
+    /** Forge: true cancels the attack. */
+    public boolean onLeftClickEntity(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return false;
+    }
+
+    public boolean onEntitySwing(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, ItemStack stack) {
+        return false;
+    }
+
+    public boolean onDroppedByPlayer(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return true;
+    }
+
+    public float getDestroySpeed(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return 1.0F;
+    }
+
+    public boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    /** Forge's stack-aware form. */
+    public boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, ItemStack stack) {
+        return canHarvestBlock(state);
+    }
+
+    /** The attribute modifiers the item gives in a slot (swords and tools add damage and speed). */
+    @SuppressWarnings("deprecation")
+    public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getItemAttributeModifiers(legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot) {
+        return com.google.common.collect.HashMultimap.create();
+    }
+
+    public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getAttributeModifiers(legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot,
+            ItemStack stack) {
+        return getItemAttributeModifiers(slot);
+    }
+
+    public boolean getIsRepairable(ItemStack toRepair, ItemStack repair) {
+        return false;
+    }
+
+    public boolean isShield(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        var name = stack.getItem().getRegistryName();
+        return name != null && "minecraft:shield".equals(name.toString());
+    }
+
+    public boolean canDisableShield(ItemStack stack, ItemStack shield, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase attacker) {
+        return this instanceof ItemAxe;
+    }
+
+    public boolean isBookEnchantable(ItemStack stack, ItemStack book) {
+        return true;
+    }
+
+    public boolean canApplyAtEnchantingTable(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment enchantment) {
+        return true;
+    }
+
+    /** Forge: the damage of a stack (its metadata unless the item stores it elsewhere). */
+    public int getDamage(ItemStack stack) {
+        return stack.mcc$rawDamage();
+    }
+
+    public void setDamage(ItemStack stack, int damage) {
+        stack.mcc$setRawDamage(Math.max(0, damage));
+    }
+
+    public boolean isDamaged(ItemStack stack) {
+        return getDamage(stack) > 0;
+    }
+
+    public boolean showDurabilityBar(ItemStack stack) {
+        return stack.isItemDamaged();
+    }
+
+    public double getDurabilityForDisplay(ItemStack stack) {
+        int max = stack.getMaxDamage();
+        return max <= 0 ? 0.0D : (double) stack.getItemDamage() / (double) max;
+    }
+
+    public int getRGBDurabilityForDisplay(ItemStack stack) {
+        return java.awt.Color.HSBtoRGB(Math.max(0.0F, (float) (1.0D - getDurabilityForDisplay(stack))) / 3.0F, 1.0F, 1.0F);
+    }
+
+    public String getUnlocalizedNameInefficiently(ItemStack stack) {
+        String name = getUnlocalizedName(stack);
+        return name == null ? "" : name;
+    }
+
+    /** Forge: the tag sent to clients. */
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getNBTShareTag(ItemStack stack) {
+        return stack.getTagCompound();
+    }
+
+    public boolean getShareTag() {
+        return true;
+    }
+
+    public boolean shouldCauseReequipAnimation(ItemStack oldStack, ItemStack newStack, boolean slotChanged) {
+        return slotChanged || !ItemStack.areItemStacksEqual(oldStack, newStack);
+    }
+
+    public boolean shouldCauseBlockBreakReset(ItemStack oldStack, ItemStack newStack) {
+        return !(newStack.getItem() == oldStack.getItem() && ItemStack.areItemStackTagsEqual(newStack, oldStack)
+                && (newStack.isItemStackDamageable() || newStack.getMetadata() == oldStack.getMetadata()));
+    }
+
+    /** Forge: burn time in a furnace, -1 for the vanilla rules. */
+    public int getItemBurnTime(ItemStack stack) {
+        return -1;
+    }
+
+    public int getEntityLifespan(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        return 6000;
+    }
+
+    public boolean hasCustomEntity(ItemStack stack) {
+        return false;
+    }
+
+    public float getXpRepairRatio(ItemStack stack) {
+        return 2.0F;
+    }
+
+    public float getSmeltingExperience(ItemStack stack) {
+        return -1.0F;
+    }
+
+    public boolean isBeaconPayment(ItemStack stack) {
+        return false;
+    }
+
+    public boolean canContinueUsing(ItemStack oldStack, ItemStack newStack) {
+        return ItemStack.areItemsEqualIgnoreDurability(oldStack, newStack);
+    }
+
+    public String getCreatorModId(ItemStack stack) {
+        var name = getRegistryName();
+        return name == null ? "minecraft" : name.getNamespace();
+    }
+
+    public boolean isValidArmor(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot armorType, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return false;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot getEquipmentSlot(ItemStack stack) {
+        return null;
+    }
+
+    public boolean isPotionIngredient(ItemStack stack) {
+        return false;
+    }
 }

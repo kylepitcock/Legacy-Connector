@@ -152,4 +152,8 @@ public class Material {
     public MapColor getMaterialMapColor() {
         return materialMapColor;
     }
+
+    public EnumPushReaction getPushReaction() {
+        return EnumPushReaction.values()[mobilityFlag];
+    }
 }
