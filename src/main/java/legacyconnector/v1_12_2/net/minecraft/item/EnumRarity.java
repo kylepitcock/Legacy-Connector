@@ -12,7 +12,7 @@ public class EnumRarity {
     public static final EnumRarity RARE = new EnumRarity("RARE", TextFormatting.AQUA, "Rare");
     public static final EnumRarity EPIC = new EnumRarity("EPIC", TextFormatting.LIGHT_PURPLE, "Epic");
 
-    public final TextFormatting rarityColor;
+    public final TextFormatting color;
     public final String rarityName;
     private final String name;
 
@@ -20,7 +20,7 @@ public class EnumRarity {
         this.ordinal = ALL.size();
         ALL.add(this);
         this.name = name;
-        this.rarityColor = color;
+        this.color = color;
         this.rarityName = displayName;
     }
 

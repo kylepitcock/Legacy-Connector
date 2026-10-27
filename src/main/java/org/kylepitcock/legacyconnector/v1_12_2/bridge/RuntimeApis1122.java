@@ -471,20 +471,6 @@ public final class RuntimeApis1122 {
             return a == null ? Synth.NONE : a.hash();
         });
         Synth.addInstanceMethod(horse + ".getOrdinal", (self, args) -> self instanceof Enum<?> e ? e.ordinal() : Synth.NONE);
-
-        // EnumPlantType.getPlantType(name): the constant of that name (any case), added when there is none
-        String plant = "net.minecraftforge.common.EnumPlantType";
-        Synth.addStaticMethod(plant + ".getPlantType", args -> {
-            if (args.length < 1 || !(args[0] instanceof String name)) return Synth.NONE;
-            Class<?> type = synthClass(plant);
-            if (type == null || !type.isEnum()) return Synth.NONE;
-            Object[] constants = type.getEnumConstants();
-            if (constants != null) for (Object c : constants) if (((Enum<?>) c).name().equalsIgnoreCase(name)) return c;
-            for (String builtIn : new String[] {"Plains", "Desert", "Beach", "Cave", "Water", "Nether", "Crop"}) {
-                if (builtIn.equalsIgnoreCase(name)) return enumConstant(plant, builtIn);
-            }
-            return enumConstant(plant, name);
-        });
     }
 
     private static HorseArmor horseArmor(Object type) {

@@ -20,9 +20,7 @@ import net.minecraft.nbt.Tag;
  * immutable modern data components.
  */
 public abstract class NBTBase {
-    public static final String[] NBTTypes = {"END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]", "LONG[]"};
-    /** 1.12.2's name of {@link #NBTTypes}. */
-    public static final String[] NBT_TYPES = NBTTypes;
+    public static final String[] NBTTypes = {"END", "BYTE", "SHORT", "INT", "LONG", "FLOAT", "DOUBLE", "BYTE[]", "STRING", "LIST", "COMPOUND", "INT[]"};
 
     NBTBase mcc$parent;
     Runnable mcc$onChange;
@@ -30,6 +28,38 @@ public abstract class NBTBase {
     public abstract byte getId();
 
     public abstract NBTBase copy();
+
+    /** The 1.12 name of {@link #NBTTypes}. */
+    public static final String[] NBT_TYPES = NBTTypes;
+
+    public static String getTypeName(int id) {
+        return switch (id) {
+            case 0 -> "TAG_End";
+            case 1 -> "TAG_Byte";
+            case 2 -> "TAG_Short";
+            case 3 -> "TAG_Int";
+            case 4 -> "TAG_Long";
+            case 5 -> "TAG_Float";
+            case 6 -> "TAG_Double";
+            case 7 -> "TAG_Byte_Array";
+            case 8 -> "TAG_String";
+            case 9 -> "TAG_List";
+            case 10 -> "TAG_Compound";
+            case 11 -> "TAG_Int_Array";
+            case 12 -> "TAG_Long_Array";
+            case 99 -> "Any Numeric Tag";
+            default -> "UNKNOWN";
+        };
+    }
+
+    /** Overridden by compounds, lists and arrays. */
+    public boolean isEmpty() {
+        return false;
+    }
+
+    protected static NBTBase create(byte id) {
+        return createNewByType(id);
+    }
 
     public abstract Tag mcc$modern();
 
@@ -64,9 +94,7 @@ public abstract class NBTBase {
             case 8 -> new NBTTagString("");
             case 9 -> new NBTTagList();
             case 10 -> new NBTTagCompound();
-            case 0 -> new NBTTagEnd();
             case 11 -> new NBTTagIntArray(new int[0]);
-            case 12 -> new NBTTagLongArray(new long[0]);
             default -> null;
         };
     }
@@ -99,43 +127,19 @@ public abstract class NBTBase {
         else if (tag instanceof StringTag s) out = new NBTTagString(s.getAsString());
         else if (tag instanceof IntArrayTag i) out = new NBTTagIntArray(i.getAsIntArray());
         else if (tag instanceof LongArrayTag l) out = new NBTTagLongArray(l.getAsLongArray());
-        else if (tag instanceof net.minecraft.nbt.EndTag) out = new NBTTagEnd();
         else return null;
         out.mcc$parent = parent;
         return out;
     }
 
+
+    /** 1.12.2's name of {@link #isEmpty} (the snapshot mappings renamed it). */
     public boolean hasNoTags() {
-        return false;
+        return isEmpty();
     }
 
-    /** {@link #hasNoTags} under the name later 1.12 mappings gave it. */
-    public boolean isEmpty() {
-        return hasNoTags();
-    }
-
+    /** {@link #getTypeName} under the name of the stable mappings. */
     public static String getTagTypeName(int id) {
-        return switch (id) {
-            case 0 -> "TAG_End";
-            case 1 -> "TAG_Byte";
-            case 2 -> "TAG_Short";
-            case 3 -> "TAG_Int";
-            case 4 -> "TAG_Long";
-            case 5 -> "TAG_Float";
-            case 6 -> "TAG_Double";
-            case 7 -> "TAG_Byte_Array";
-            case 8 -> "TAG_String";
-            case 9 -> "TAG_List";
-            case 10 -> "TAG_Compound";
-            case 11 -> "TAG_Int_Array";
-            case 12 -> "TAG_Long_Array";
-            case 99 -> "Any Numeric Tag";
-            default -> "UNKNOWN";
-        };
-    }
-
-    /** {@link #getTagTypeName} under the name later 1.12 mappings gave it. */
-    public static String getTypeName(int id) {
-        return getTagTypeName(id);
+        return getTypeName(id);
     }
 }

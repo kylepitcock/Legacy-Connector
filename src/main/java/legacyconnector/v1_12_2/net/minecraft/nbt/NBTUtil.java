@@ -22,6 +22,67 @@ public final class NBTUtil {
         return new UUID(tag.getLong("M"), tag.getLong("L"));
     }
 
+    public static com.mojang.authlib.GameProfile readGameProfileFromNBT(NBTTagCompound compound) {
+        String name = compound.hasKey("Name", 8) ? compound.getString("Name") : null;
+        UUID uuid = null;
+        if (compound.hasKey("Id", 8)) {
+            try {
+                uuid = UUID.fromString(compound.getString("Id"));
+            } catch (Throwable t) {
+                // a malformed id reads as none
+            }
+        }
+        if (name == null && uuid == null) return null;
+        try {
+            com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(
+                    uuid == null ? net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name) : uuid, name == null ? "" : name);
+            if (compound.hasKey("Properties", 10)) {
+                NBTTagCompound props = compound.getCompoundTag("Properties");
+                for (String key : props.getKeySet()) {
+                    NBTTagList list = props.getTagList(key, 10);
+                    for (int i = 0; i < list.tagCount(); i++) {
+                        NBTTagCompound p = list.getCompoundTagAt(i);
+                        String value = p.getString("Value");
+                        profile.getProperties().put(key, p.hasKey("Signature", 8)
+                                ? new com.mojang.authlib.properties.Property(key, value, p.getString("Signature"))
+                                : new com.mojang.authlib.properties.Property(key, value));
+                    }
+                }
+            }
+            return profile;
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
+    public static NBTTagCompound writeGameProfile(NBTTagCompound tagCompound, com.mojang.authlib.GameProfile profile) {
+        if (profile.getName() != null && !profile.getName().isEmpty()) tagCompound.setString("Name", profile.getName());
+        if (profile.getId() != null) tagCompound.setString("Id", profile.getId().toString());
+        if (!profile.getProperties().isEmpty()) {
+            NBTTagCompound props = new NBTTagCompound();
+            for (String key : profile.getProperties().keySet()) {
+                NBTTagList list = new NBTTagList();
+                for (com.mojang.authlib.properties.Property property : profile.getProperties().get(key)) {
+                    NBTTagCompound p = new NBTTagCompound();
+                    p.setString("Value", property.value());
+                    if (property.signature() != null) p.setString("Signature", property.signature());
+                    list.appendTag(p);
+                }
+                props.setTag(key, list);
+            }
+            tagCompound.setTag("Properties", props);
+        }
+        return tagCompound;
+    }
+
+    /**
+     * Whether {@code compare} holds everything {@code reference} holds (extra keys allowed); with {@code compareTagList} a
+     * reference list matches when each of its entries matches some entry of the other list.
+     */
+    public static boolean areNBTEquals(NBTBase reference, NBTBase compare, boolean compareTagList) {
+        return net.minecraft.nbt.NbtUtils.compareNbt(reference == null ? null : reference.mcc$modern(), compare == null ? null : compare.mcc$modern(), compareTagList);
+    }
+
     public static NBTTagCompound createPosTag(BlockPos pos) {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("X", pos.getX());
@@ -65,98 +126,5 @@ public final class NBTUtil {
 
     private static <T extends Comparable<T>> String valueName(IBlockState state, IProperty<T> property) {
         return property.getName(state.getValue(property));
-    }
-
-    // ---- 1.12.2 game profiles and comparisons
-
-    /** A game profile from its tag (Name, Id and Properties), or null when it has neither name nor id. */
-    public static com.mojang.authlib.GameProfile readGameProfileFromNBT(NBTTagCompound compound) {
-        String name = compound.hasKey("Name", 8) ? compound.getString("Name") : null;
-        String id = compound.hasKey("Id", 8) ? compound.getString("Id") : null;
-        try {
-            UUID uuid;
-            try {
-                uuid = UUID.fromString(id);
-            } catch (Throwable t) {
-                uuid = null;
-            }
-            if (uuid == null && name == null) return null;
-            // modern profiles need both: an offline id as the server derives it, an empty name
-            com.mojang.authlib.GameProfile profile = new com.mojang.authlib.GameProfile(
-                    uuid != null ? uuid : net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name), name == null ? "" : name);
-            if (compound.hasKey("Properties", 10)) {
-                NBTTagCompound properties = compound.getCompoundTag("Properties");
-                for (String key : properties.getKeySet()) {
-                    NBTTagList list = properties.getTagList(key, 10);
-                    for (int i = 0; i < list.tagCount(); i++) {
-                        NBTTagCompound p = list.getCompoundTagAt(i);
-                        String value = p.getString("Value");
-                        if (p.hasKey("Signature", 8)) {
-                            profile.getProperties().put(key, new com.mojang.authlib.properties.Property(key, value, p.getString("Signature")));
-                        } else {
-                            profile.getProperties().put(key, new com.mojang.authlib.properties.Property(key, value));
-                        }
-                    }
-                }
-            }
-            return profile;
-        } catch (Throwable t) {
-            return null;
-        }
-    }
-
-    public static NBTTagCompound writeGameProfile(NBTTagCompound tagCompound, com.mojang.authlib.GameProfile profile) {
-        if (profile.getName() != null && !profile.getName().isEmpty()) tagCompound.setString("Name", profile.getName());
-        if (profile.getId() != null) tagCompound.setString("Id", profile.getId().toString());
-        if (!profile.getProperties().isEmpty()) {
-            NBTTagCompound properties = new NBTTagCompound();
-            for (String key : profile.getProperties().keySet()) {
-                NBTTagList list = new NBTTagList();
-                for (com.mojang.authlib.properties.Property property : profile.getProperties().get(key)) {
-                    NBTTagCompound p = new NBTTagCompound();
-                    p.setString("Value", property.value());
-                    if (property.hasSignature()) p.setString("Signature", property.signature());
-                    list.appendTag(p);
-                }
-                properties.setTag(key, list);
-            }
-            tagCompound.setTag("Properties", properties);
-        }
-        return tagCompound;
-    }
-
-    /**
-     * Whether {@code compare} holds everything {@code reference} has (extra keys allowed); with {@code compareTagList} a list matches
-     * when each of the reference's elements matches some element of the other list.
-     */
-    public static boolean areNBTEquals(NBTBase reference, NBTBase compare, boolean compareTagList) {
-        if (reference == compare) return true;
-        if (reference == null) return true;
-        if (compare == null) return false;
-        if (!reference.getClass().equals(compare.getClass())) return false;
-        if (reference instanceof NBTTagCompound ref) {
-            NBTTagCompound cmp = (NBTTagCompound) compare;
-            for (String key : ref.getKeySet()) {
-                if (!areNBTEquals(ref.getTag(key), cmp.getTag(key), compareTagList)) return false;
-            }
-            return true;
-        }
-        if (reference instanceof NBTTagList ref && compareTagList) {
-            NBTTagList cmp = (NBTTagList) compare;
-            if (ref.tagCount() == 0) return cmp.tagCount() == 0;
-            for (int i = 0; i < ref.tagCount(); i++) {
-                NBTBase a = ref.get(i);
-                boolean found = false;
-                for (int j = 0; j < cmp.tagCount(); j++) {
-                    if (areNBTEquals(a, cmp.get(j), compareTagList)) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) return false;
-            }
-            return true;
-        }
-        return reference.equals(compare);
     }
 }

@@ -3,134 +3,119 @@ package legacyconnector.v1_12_2.net.minecraft.network;
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP;
 import legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent;
 
-/**
- * The server's handler of one player's connection: a view over the modern player's game packet listener. Packets mods send
- * through it become their modern equivalents ({@link Packet#mcc$modern}). A handler built for a fake player (with a detached
- * {@link NetworkManager}) sends nothing.
- */
-public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayServer,
-        legacyconnector.v1_12_2.net.minecraft.util.ITickable {
+/** A player's connection on the server: a view over the modern player's connection. */
+public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayServer {
     public EntityPlayerMP player;
-    public final NetworkManager netManager;
 
-    /** Phantom field: accesses are redirected to {@code mcc$get$floatingTickCount} (the modern listener's airborne tick count). */
+    /** Phantom fields: accesses are redirected to the accessors below. */
+    @Deprecated
+    public NetworkManager netManager;
     @Deprecated
     public int floatingTickCount;
 
     public NetHandlerPlayServer(EntityPlayerMP player) {
         this.player = player;
-        var sp = player == null ? null : player.mcc$serverPlayer();
-        this.netManager = sp != null && sp.connection != null ? new NetworkManager(sp.connection.getConnection()) : new NetworkManager(EnumPacketDirection.SERVERBOUND);
-        this.netManager.setNetHandler(this);
     }
 
-    public NetHandlerPlayServer(legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server, NetworkManager networkManager, EntityPlayerMP player) {
-        this.player = player;
-        this.netManager = networkManager == null ? new NetworkManager(EnumPacketDirection.SERVERBOUND) : networkManager;
-        this.netManager.setNetHandler(this);
-        if (player != null) EntityPlayerMP.mcc$set$connection(player, this);
+    private net.minecraft.server.network.ServerGamePacketListenerImpl modern() {
+        var p = player == null ? null : player.mcc$serverPlayer();
+        return p == null ? null : p.connection;
     }
 
-    private net.minecraft.server.network.ServerGamePacketListenerImpl mcc$listener() {
-        var sp = player == null ? null : player.mcc$serverPlayer();
-        return sp == null ? null : sp.connection;
+    public static NetworkManager mcc$get$netManager(NetHandlerPlayServer h) {
+        return h.getNetworkManager();
     }
 
-    public NetworkManager getNetworkManager() {
-        return netManager;
-    }
+    private static java.lang.reflect.Field aboveGround;
 
-    /** Sends the packet's modern form to this player; packets with no modern form, and fake players, send nothing. */
-    public void sendPacket(Packet<?> packet) {
-        if (packet == null || netManager.mcc$connection == null) return;
-        var sp = player == null ? null : player.mcc$serverPlayer();
-        var listener = mcc$listener();
-        if (sp == null || listener == null) return;
-        net.minecraft.network.protocol.Packet<?> modern;
-        try {
-            modern = packet.mcc$modern(sp);
-        } catch (RuntimeException | LinkageError e) {
-            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Network").warn("Cannot send legacy packet {}: {}", packet.getClass().getName(), e.toString());
-            return;
+    private static java.lang.reflect.Field aboveGroundField() throws ReflectiveOperationException {
+        if (aboveGround == null) {
+            java.lang.reflect.Field f = net.minecraft.server.network.ServerGamePacketListenerImpl.class.getDeclaredField("aboveGroundTickCount");
+            f.setAccessible(true);
+            aboveGround = f;
         }
-        if (modern != null) listener.send(modern);
+        return aboveGround;
     }
 
-    public void setPlayerLocation(double x, double y, double z, float yaw, float pitch) {
-        var listener = mcc$listener();
-        if (listener != null) listener.teleport(x, y, z, yaw, pitch);
-    }
-
-    /** {@code relativeSet} holds {@code SPacketPlayerPosLook.EnumFlags} (X, Y, Z, Y_ROT, X_ROT), the modern relative movements' names. */
-    public void setPlayerLocation(double x, double y, double z, float yaw, float pitch, java.util.Set<?> relativeSet) {
-        var listener = mcc$listener();
-        if (listener == null) return;
-        java.util.Set<net.minecraft.world.entity.RelativeMovement> relative = java.util.EnumSet.noneOf(net.minecraft.world.entity.RelativeMovement.class);
-        if (relativeSet != null) {
-            for (Object flag : relativeSet) {
-                try {
-                    relative.add(net.minecraft.world.entity.RelativeMovement.valueOf(String.valueOf(flag instanceof Enum<?> e ? e.name() : flag)));
-                } catch (IllegalArgumentException e) {
-                    // not a movement flag
-                }
-            }
-        }
-        listener.teleport(x, y, z, yaw, pitch, relative);
-    }
-
-    public void disconnect(ITextComponent textComponent) {
-        var listener = mcc$listener();
-        if (listener != null) listener.disconnect(textComponent == null ? net.minecraft.network.chat.Component.empty() : textComponent.mcc$modern());
-    }
-
-    /** Resets the anti-cheat's last good position to where the player is (after a mod moved it). */
-    public void captureCurrentPosition() {
-        var listener = mcc$listener();
-        if (listener != null) listener.resetPosition();
-    }
-
-    @Override
-    public void onDisconnect(ITextComponent reason) {
-    }
-
-    /** The modern listener ticks itself. */
-    @Override
-    public void update() {
-    }
-
-    private static java.lang.reflect.Field mcc$floating;
-
-    private static java.lang.reflect.Field mcc$floatingField() {
-        if (mcc$floating == null) {
-            try {
-                var f = net.minecraft.server.network.ServerGamePacketListenerImpl.class.getDeclaredField("aboveGroundTickCount");
-                f.setAccessible(true);
-                mcc$floating = f;
-            } catch (ReflectiveOperationException | RuntimeException e) {
-                return null;
-            }
-        }
-        return mcc$floating;
-    }
-
+    /** How long the player has been in the air without flying (the server kicks for flying at 80). */
     public static int mcc$get$floatingTickCount(NetHandlerPlayServer h) {
-        var listener = h.mcc$listener();
-        var f = mcc$floatingField();
+        var m = h.modern();
         try {
-            return listener == null || f == null ? 0 : f.getInt(listener);
-        } catch (IllegalAccessException e) {
+            return m == null ? 0 : aboveGroundField().getInt(m);
+        } catch (ReflectiveOperationException | RuntimeException e) {
             return 0;
         }
     }
 
-    /** Mods reset it to keep a flying player from being kicked. */
     public static void mcc$set$floatingTickCount(NetHandlerPlayServer h, int value) {
-        var listener = h.mcc$listener();
-        var f = mcc$floatingField();
+        var m = h.modern();
         try {
-            if (listener != null && f != null) f.setInt(listener, value);
-        } catch (IllegalAccessException e) {
-            // left as is
+            if (m != null) aboveGroundField().setInt(m, value);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // the kick timer stays as it is
         }
+    }
+
+    /** The manager a mod passed in (fake players' handlers), else none. */
+    private NetworkManager mcc$manager;
+
+    /** The handler mods build for their fake players: it becomes the player's {@code connection}. */
+    public NetHandlerPlayServer(legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server, NetworkManager networkManager, EntityPlayerMP player) {
+        this(player);
+        this.mcc$manager = networkManager;
+        if (player != null) EntityPlayerMP.mcc$set$connection(player, this);
+    }
+
+    /** Resets the anti-cheat's last good position to where the player is (after a mod moved it). */
+    public void captureCurrentPosition() {
+        var m = modern();
+        if (m != null) m.resetPosition();
+    }
+
+    public NetworkManager getNetworkManager() {
+        if (mcc$manager != null) return mcc$manager;
+        var m = modern();
+        return m == null ? null : NetworkManager.mcc$of(m.getConnection());
+    }
+
+    /** Sends a vanilla packet a mod built, as the modern packet it describes. */
+    public void sendPacket(Packet<?> packetIn) {
+        var m = modern();
+        var packet = packetIn == null ? null : packetIn.mcc$modern();
+        if (m != null && packet != null) m.send(packet);
+    }
+
+    public void disconnect(ITextComponent textComponent) {
+        var m = modern();
+        if (m != null) m.disconnect(textComponent == null ? net.minecraft.network.chat.Component.empty() : textComponent.mcc$modern());
+    }
+
+    @Override
+    public void onDisconnect(ITextComponent reason) {
+        disconnect(reason);
+    }
+
+    public void setPlayerLocation(double x, double y, double z, float yaw, float pitch) {
+        var m = modern();
+        if (m != null) m.teleport(x, y, z, yaw, pitch);
+    }
+
+    /** {@code relativeSet} holds SPacketPlayerPosLook.EnumFlags: X, Y, Z, Y_ROT, X_ROT, the parts that are relative. */
+    public void setPlayerLocation(double x, double y, double z, float yaw, float pitch, java.util.Set<?> relativeSet) {
+        var m = modern();
+        if (m == null) return;
+        java.util.Set<net.minecraft.world.entity.RelativeMovement> relative = java.util.EnumSet.noneOf(net.minecraft.world.entity.RelativeMovement.class);
+        if (relativeSet != null) {
+            for (Object o : relativeSet) {
+                if (o instanceof Enum<?> e) {
+                    try {
+                        relative.add(net.minecraft.world.entity.RelativeMovement.valueOf(e.name()));
+                    } catch (IllegalArgumentException ignored) {
+                        // not a movement flag
+                    }
+                }
+            }
+        }
+        m.teleport(x, y, z, yaw, pitch, relative);
     }
 }

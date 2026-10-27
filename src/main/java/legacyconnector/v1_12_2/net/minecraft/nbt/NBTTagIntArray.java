@@ -10,14 +10,6 @@ public class NBTTagIntArray extends NBTBase {
         this.data = data;
     }
 
-    public NBTTagIntArray(java.util.List<Integer> values) {
-        this.data = new int[values.size()];
-        for (int i = 0; i < data.length; i++) {
-            Integer v = values.get(i);
-            data[i] = v == null ? 0 : v;
-        }
-    }
-
     @Override
     public byte getId() {
         return 11;
@@ -35,5 +27,19 @@ public class NBTTagIntArray extends NBTBase {
 
     public int[] getIntArray() {
         return data;
+    }
+
+
+    public NBTTagIntArray(java.util.List<Integer> values) {
+        this(mcc$ints(values));
+    }
+
+    private static int[] mcc$ints(java.util.List<Integer> values) {
+        int[] out = new int[values.size()];
+        for (int i = 0; i < out.length; i++) {
+            Integer v = values.get(i);
+            out[i] = v == null ? 0 : v;
+        }
+        return out;
     }
 }

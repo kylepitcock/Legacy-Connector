@@ -1,8 +1,5 @@
 package legacyconnector.v1_12_2.net.minecraft.util.math;
 
-import legacyconnector.v1_12_2.net.minecraft.entity.Entity;
-
-/** A chunk's column coordinates (immutable), as 1.12.2's. */
 public class ChunkPos {
     public final int x;
     public final int z;
@@ -33,9 +30,9 @@ public class ChunkPos {
         return this == o || o instanceof ChunkPos c && c.x == x && c.z == z;
     }
 
-    public double getDistanceSq(Entity entity) {
-        double dx = (x * 16 + 8) - Entity.mcc$get$posX(entity);
-        double dz = (z * 16 + 8) - Entity.mcc$get$posZ(entity);
+    public double getDistanceSq(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        Vec3d p = entity.getPositionVector();
+        double dx = (x << 4) + 8 - p.x, dz = (z << 4) + 8 - p.z;
         return dx * dx + dz * dz;
     }
 
@@ -55,9 +52,23 @@ public class ChunkPos {
         return (z << 4) + 15;
     }
 
-    public BlockPos getBlock(int x, int y, int z) {
-        return new BlockPos((this.x << 4) + x, y, (this.z << 4) + z);
+    public BlockPos getBlock(int xIn, int yIn, int zIn) {
+        return new BlockPos((x << 4) + xIn, yIn, (z << 4) + zIn);
     }
+
+    @Override
+    public String toString() {
+        return "[" + x + ", " + z + "]";
+    }
+
+    public net.minecraft.world.level.ChunkPos mcc$modern() {
+        return new net.minecraft.world.level.ChunkPos(x, z);
+    }
+
+    public static ChunkPos mcc$of(net.minecraft.world.level.ChunkPos pos) {
+        return new ChunkPos(pos.x, pos.z);
+    }
+
 
     public int getRegionCoordX() {
         return x >> 5;
@@ -73,18 +84,5 @@ public class ChunkPos {
 
     public int getRegionPositionZ() {
         return z & 31;
-    }
-
-    @Override
-    public String toString() {
-        return "[" + x + ", " + z + "]";
-    }
-
-    public net.minecraft.world.level.ChunkPos mcc$modern() {
-        return new net.minecraft.world.level.ChunkPos(x, z);
-    }
-
-    public static ChunkPos mcc$of(net.minecraft.world.level.ChunkPos pos) {
-        return pos == null ? null : new ChunkPos(pos.x, pos.z);
     }
 }

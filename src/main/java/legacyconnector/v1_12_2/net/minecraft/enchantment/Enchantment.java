@@ -77,6 +77,69 @@ public abstract class Enchantment extends IForgeRegistryEntry.Impl<Enchantment> 
         return false;
     }
 
+    /** Whether the enchantment fits the item (its type's rule). */
+    public boolean canApply(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        return type != null && type.canEnchantItem(stack.getItem());
+    }
+
+    /** Forge: whether the enchanting table may put it on the stack. */
+    public boolean canApplyAtEnchantingTable(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        return stack.getItem().canApplyAtEnchantingTable(stack, this);
+    }
+
+    /** Whether both may be on one item (neither forbids the other). */
+    public final boolean isCompatibleWith(Enchantment other) {
+        return canApplyTogether(other) && other.canApplyTogether(this);
+    }
+
+    protected boolean canApplyTogether(Enchantment other) {
+        return this != other;
+    }
+
+    public boolean isAllowedOnBooks() {
+        return true;
+    }
+
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> getEntityEquipment(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = new java.util.ArrayList<>();
+        if (entity == null || !(entity.mcc$entity instanceof net.minecraft.world.entity.LivingEntity l)) return out;
+        for (EntityEquipmentSlot slot : applicableEquipmentTypes) {
+            var s = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(l.getItemBySlot(mcc$slot(slot)));
+            if (!s.isEmpty()) out.add(s);
+        }
+        return out;
+    }
+
+    private static net.minecraft.world.entity.EquipmentSlot mcc$slot(EntityEquipmentSlot slot) {
+        return switch (slot) {
+            case MAINHAND -> net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+            case OFFHAND -> net.minecraft.world.entity.EquipmentSlot.OFFHAND;
+            case FEET -> net.minecraft.world.entity.EquipmentSlot.FEET;
+            case LEGS -> net.minecraft.world.entity.EquipmentSlot.LEGS;
+            case CHEST -> net.minecraft.world.entity.EquipmentSlot.CHEST;
+            case HEAD -> net.minecraft.world.entity.EquipmentSlot.HEAD;
+        };
+    }
+
+    public int calcModifierDamage(int level, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
+        return 0;
+    }
+
+    public void onEntityDamaged(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity target,
+            int level) {
+    }
+
+    public void onUserHurt(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase user, legacyconnector.v1_12_2.net.minecraft.entity.Entity attacker,
+            int level) {
+    }
+
+    public String getTranslatedName(int level) {
+        String s = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getName());
+        if (isCurse()) s = legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting.RED + s;
+        return level == 1 && getMaxLevel() == 1 ? s
+                : s + " " + legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal("enchantment.level." + level);
+    }
+
     public enum Rarity {
         COMMON(10), UNCOMMON(5), RARE(2), VERY_RARE(1);
 

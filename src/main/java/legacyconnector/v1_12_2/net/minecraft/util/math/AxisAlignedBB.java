@@ -78,6 +78,99 @@ public class AxisAlignedBB {
         return new AxisAlignedBB(minX + pos.getX(), minY + pos.getY(), minZ + pos.getZ(), maxX + pos.getX(), maxY + pos.getY(), maxZ + pos.getZ());
     }
 
+    public AxisAlignedBB offset(Vec3d vec) {
+        return offset(vec.x, vec.y, vec.z);
+    }
+
+    /** How far {@code other} may move by {@code offsetX} before it hits this box (clipped movement, as entity collision does). */
+    public double calculateXOffset(AxisAlignedBB other, double offsetX) {
+        if (other.maxY > minY && other.minY < maxY && other.maxZ > minZ && other.minZ < maxZ) {
+            if (offsetX > 0.0D && other.maxX <= minX) {
+                double d1 = minX - other.maxX;
+                if (d1 < offsetX) offsetX = d1;
+            } else if (offsetX < 0.0D && other.minX >= maxX) {
+                double d0 = maxX - other.minX;
+                if (d0 > offsetX) offsetX = d0;
+            }
+        }
+        return offsetX;
+    }
+
+    public double calculateYOffset(AxisAlignedBB other, double offsetY) {
+        if (other.maxX > minX && other.minX < maxX && other.maxZ > minZ && other.minZ < maxZ) {
+            if (offsetY > 0.0D && other.maxY <= minY) {
+                double d1 = minY - other.maxY;
+                if (d1 < offsetY) offsetY = d1;
+            } else if (offsetY < 0.0D && other.minY >= maxY) {
+                double d0 = maxY - other.minY;
+                if (d0 > offsetY) offsetY = d0;
+            }
+        }
+        return offsetY;
+    }
+
+    public double calculateZOffset(AxisAlignedBB other, double offsetZ) {
+        if (other.maxX > minX && other.minX < maxX && other.maxY > minY && other.minY < maxY) {
+            if (offsetZ > 0.0D && other.maxZ <= minZ) {
+                double d1 = minZ - other.maxZ;
+                if (d1 < offsetZ) offsetZ = d1;
+            } else if (offsetZ < 0.0D && other.minZ >= maxZ) {
+                double d0 = maxZ - other.minZ;
+                if (d0 > offsetZ) offsetZ = d0;
+            }
+        }
+        return offsetZ;
+    }
+
+    /** Where the segment from {@code vecA} to {@code vecB} first enters this box, with the face it crosses; null when it misses. */
+    public RayTraceResult calculateIntercept(Vec3d vecA, Vec3d vecB) {
+        Vec3d hit = null;
+        legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side = null;
+        Vec3d[] candidates = {
+                collideWithXPlane(minX, vecA, vecB), collideWithXPlane(maxX, vecA, vecB),
+                collideWithYPlane(minY, vecA, vecB), collideWithYPlane(maxY, vecA, vecB),
+                collideWithZPlane(minZ, vecA, vecB), collideWithZPlane(maxZ, vecA, vecB)};
+        legacyconnector.v1_12_2.net.minecraft.util.EnumFacing[] faces = {
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.WEST, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.EAST,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.DOWN, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.NORTH, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.SOUTH};
+        for (int i = 0; i < candidates.length; i++) {
+            Vec3d c = candidates[i];
+            if (c != null && (hit == null || vecA.squareDistanceTo(c) < vecA.squareDistanceTo(hit))) {
+                hit = c;
+                side = faces[i];
+            }
+        }
+        return hit == null ? null : new RayTraceResult(hit, side);
+    }
+
+    private Vec3d collideWithXPlane(double x, Vec3d a, Vec3d b) {
+        Vec3d v = a.getIntermediateWithXValue(b, x);
+        return v != null && intersectsWithYZ(v) ? v : null;
+    }
+
+    private Vec3d collideWithYPlane(double y, Vec3d a, Vec3d b) {
+        Vec3d v = a.getIntermediateWithYValue(b, y);
+        return v != null && intersectsWithXZ(v) ? v : null;
+    }
+
+    private Vec3d collideWithZPlane(double z, Vec3d a, Vec3d b) {
+        Vec3d v = a.getIntermediateWithZValue(b, z);
+        return v != null && intersectsWithXY(v) ? v : null;
+    }
+
+    public boolean intersectsWithYZ(Vec3d vec) {
+        return vec.y >= minY && vec.y <= maxY && vec.z >= minZ && vec.z <= maxZ;
+    }
+
+    public boolean intersectsWithXZ(Vec3d vec) {
+        return vec.x >= minX && vec.x <= maxX && vec.z >= minZ && vec.z <= maxZ;
+    }
+
+    public boolean intersectsWithXY(Vec3d vec) {
+        return vec.x >= minX && vec.x <= maxX && vec.y >= minY && vec.y <= maxY;
+    }
+
     public boolean intersects(AxisAlignedBB o) {
         return intersects(o.minX, o.minY, o.minZ, o.maxX, o.maxY, o.maxZ);
     }
@@ -128,116 +221,8 @@ public class AxisAlignedBB {
         return new AxisAlignedBB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
     }
 
-    // ---- 1.12.2 AxisAlignedBB, continued
 
     public AxisAlignedBB(Vec3d min, Vec3d max) {
         this(min.x, min.y, min.z, max.x, max.y, max.z);
-    }
-
-    public AxisAlignedBB offset(Vec3d vec) {
-        return offset(vec.x, vec.y, vec.z);
-    }
-
-    /** How far {@code other} may move along x by {@code offsetX} before it touches this box (the collision clip). */
-    public double calculateXOffset(AxisAlignedBB other, double offsetX) {
-        if (other.maxY > minY && other.minY < maxY && other.maxZ > minZ && other.minZ < maxZ) {
-            if (offsetX > 0.0D && other.maxX <= minX) {
-                double d = minX - other.maxX;
-                if (d < offsetX) offsetX = d;
-            } else if (offsetX < 0.0D && other.minX >= maxX) {
-                double d = maxX - other.minX;
-                if (d > offsetX) offsetX = d;
-            }
-        }
-        return offsetX;
-    }
-
-    public double calculateYOffset(AxisAlignedBB other, double offsetY) {
-        if (other.maxX > minX && other.minX < maxX && other.maxZ > minZ && other.minZ < maxZ) {
-            if (offsetY > 0.0D && other.maxY <= minY) {
-                double d = minY - other.maxY;
-                if (d < offsetY) offsetY = d;
-            } else if (offsetY < 0.0D && other.minY >= maxY) {
-                double d = maxY - other.minY;
-                if (d > offsetY) offsetY = d;
-            }
-        }
-        return offsetY;
-    }
-
-    public double calculateZOffset(AxisAlignedBB other, double offsetZ) {
-        if (other.maxX > minX && other.minX < maxX && other.maxY > minY && other.minY < maxY) {
-            if (offsetZ > 0.0D && other.maxZ <= minZ) {
-                double d = minZ - other.maxZ;
-                if (d < offsetZ) offsetZ = d;
-            } else if (offsetZ < 0.0D && other.minZ >= maxZ) {
-                double d = maxZ - other.minZ;
-                if (d > offsetZ) offsetZ = d;
-            }
-        }
-        return offsetZ;
-    }
-
-    /** Where the segment from {@code vecA} to {@code vecB} first enters this box, with the side it enters through; null if it misses. */
-    public RayTraceResult calculateIntercept(Vec3d vecA, Vec3d vecB) {
-        Vec3d hit = collideWithXPlane(minX, vecA, vecB);
-        legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.WEST;
-        Vec3d v = collideWithXPlane(maxX, vecA, vecB);
-        if (v != null && isClosest(vecA, hit, v)) {
-            hit = v;
-            side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.EAST;
-        }
-        v = collideWithYPlane(minY, vecA, vecB);
-        if (v != null && isClosest(vecA, hit, v)) {
-            hit = v;
-            side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.DOWN;
-        }
-        v = collideWithYPlane(maxY, vecA, vecB);
-        if (v != null && isClosest(vecA, hit, v)) {
-            hit = v;
-            side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP;
-        }
-        v = collideWithZPlane(minZ, vecA, vecB);
-        if (v != null && isClosest(vecA, hit, v)) {
-            hit = v;
-            side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.NORTH;
-        }
-        v = collideWithZPlane(maxZ, vecA, vecB);
-        if (v != null && isClosest(vecA, hit, v)) {
-            hit = v;
-            side = legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.SOUTH;
-        }
-        return hit == null ? null : new RayTraceResult(hit, side);
-    }
-
-    boolean isClosest(Vec3d from, Vec3d current, Vec3d candidate) {
-        return current == null || from.squareDistanceTo(candidate) < from.squareDistanceTo(current);
-    }
-
-    Vec3d collideWithXPlane(double x, Vec3d a, Vec3d b) {
-        Vec3d v = a.getIntermediateWithXValue(b, x);
-        return v != null && intersectsWithYZ(v) ? v : null;
-    }
-
-    Vec3d collideWithYPlane(double y, Vec3d a, Vec3d b) {
-        Vec3d v = a.getIntermediateWithYValue(b, y);
-        return v != null && intersectsWithXZ(v) ? v : null;
-    }
-
-    Vec3d collideWithZPlane(double z, Vec3d a, Vec3d b) {
-        Vec3d v = a.getIntermediateWithZValue(b, z);
-        return v != null && intersectsWithXY(v) ? v : null;
-    }
-
-    public boolean intersectsWithYZ(Vec3d vec) {
-        return vec.y >= minY && vec.y <= maxY && vec.z >= minZ && vec.z <= maxZ;
-    }
-
-    public boolean intersectsWithXZ(Vec3d vec) {
-        return vec.x >= minX && vec.x <= maxX && vec.z >= minZ && vec.z <= maxZ;
-    }
-
-    public boolean intersectsWithXY(Vec3d vec) {
-        return vec.x >= minX && vec.x <= maxX && vec.y >= minY && vec.y <= maxY;
     }
 }

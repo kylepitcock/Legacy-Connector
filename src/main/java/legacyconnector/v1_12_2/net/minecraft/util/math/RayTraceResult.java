@@ -3,16 +3,16 @@ package legacyconnector.v1_12_2.net.minecraft.util.math;
 import legacyconnector.v1_12_2.net.minecraft.entity.Entity;
 import legacyconnector.v1_12_2.net.minecraft.util.EnumFacing;
 
-/** What a ray hit: a block (position and side), an entity, or nothing; as 1.12.2's, with Forge's {@code subHit}/{@code hitInfo}. */
+/** A ray's hit: a block face, an entity or nothing. */
 public class RayTraceResult {
     private BlockPos blockPos;
     public Type typeOfHit;
     public EnumFacing sideHit;
     public Vec3d hitVec;
     public Entity entityHit;
-    /** Forge: the sub-part of the block or entity that was hit. */
+    /** Forge: the sub-part of the block that was hit. */
     public int subHit = -1;
-    /** Forge: anything the ray tracer wants to attach. */
+    /** Forge: data a block attaches to its hit. */
     public Object hitInfo = null;
 
     public RayTraceResult(Vec3d hitVecIn, EnumFacing sideHitIn, BlockPos blockPosIn) {
@@ -24,7 +24,7 @@ public class RayTraceResult {
     }
 
     public RayTraceResult(Entity entityIn) {
-        this(entityIn, new Vec3d(Entity.mcc$get$posX(entityIn), Entity.mcc$get$posY(entityIn), Entity.mcc$get$posZ(entityIn)));
+        this(entityIn, entityIn.getPositionVector());
     }
 
     public RayTraceResult(Type typeIn, Vec3d hitVecIn, EnumFacing sideHitIn, BlockPos blockPosIn) {
@@ -49,32 +49,32 @@ public class RayTraceResult {
         return "HitResult{type=" + typeOfHit + ", blockpos=" + blockPos + ", f=" + sideHit + ", pos=" + hitVec + ", entity=" + entityHit + '}';
     }
 
-    /** The legacy view of a modern hit result (null stays null). */
-    public static RayTraceResult mcc$of(net.minecraft.world.phys.HitResult hit) {
-        if (hit == null) return null;
-        Vec3d at = Vec3d.mcc$of(hit.getLocation());
-        if (hit instanceof net.minecraft.world.phys.EntityHitResult e) {
-            Entity view = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e.getEntity());
-            if (view != null) return new RayTraceResult(view, at);
-            return new RayTraceResult(Type.MISS, at, EnumFacing.UP, BlockPos.ORIGIN);
+    /** The modern hit this one describes (null for a miss without a position). */
+    public net.minecraft.world.phys.HitResult mcc$modern() {
+        Vec3d v = hitVec == null ? Vec3d.ZERO : hitVec;
+        if (typeOfHit == Type.ENTITY && entityHit != null && entityHit.mcc$entity != null) {
+            return new net.minecraft.world.phys.EntityHitResult(entityHit.mcc$entity, v.mcc$modern());
         }
-        if (hit instanceof net.minecraft.world.phys.BlockHitResult b) {
-            return new RayTraceResult(b.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? Type.MISS : Type.BLOCK, at,
-                    EnumFacing.mcc$of(b.getDirection()), BlockPos.mcc$of(b.getBlockPos()));
-        }
-        return new RayTraceResult(Type.MISS, at, EnumFacing.UP, BlockPos.ORIGIN);
+        net.minecraft.core.Direction side = sideHit == null ? net.minecraft.core.Direction.UP : net.minecraft.core.Direction.from3DDataValue(sideHit.getIndex());
+        BlockPos p = blockPos == null ? BlockPos.ORIGIN : blockPos;
+        net.minecraft.core.BlockPos mp = new net.minecraft.core.BlockPos(p.getX(), p.getY(), p.getZ());
+        return typeOfHit == Type.BLOCK ? new net.minecraft.world.phys.BlockHitResult(v.mcc$modern(), side, mp, false)
+                : net.minecraft.world.phys.BlockHitResult.miss(v.mcc$modern(), side, mp);
     }
 
-    /** The modern hit result this stands for. */
-    public net.minecraft.world.phys.HitResult mcc$modern() {
-        net.minecraft.world.phys.Vec3 at = hitVec == null ? net.minecraft.world.phys.Vec3.ZERO : hitVec.mcc$modern();
-        if (typeOfHit == Type.ENTITY && entityHit != null && entityHit.mcc$entity != null) {
-            return new net.minecraft.world.phys.EntityHitResult(entityHit.mcc$entity, at);
+    /** The legacy view of a modern hit (entities through their legacy views). */
+    public static RayTraceResult mcc$of(net.minecraft.world.phys.HitResult hit) {
+        if (hit == null) return null;
+        Vec3d v = Vec3d.mcc$of(hit.getLocation());
+        if (hit instanceof net.minecraft.world.phys.EntityHitResult e) {
+            return new RayTraceResult(org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e.getEntity()), v);
         }
-        net.minecraft.core.Direction side = sideHit == null ? net.minecraft.core.Direction.UP : sideHit.mcc$modern();
-        net.minecraft.core.BlockPos pos = blockPos == null ? net.minecraft.core.BlockPos.containing(at) : blockPos.mcc$modern();
-        return typeOfHit == Type.BLOCK ? new net.minecraft.world.phys.BlockHitResult(at, side, pos, false)
-                : net.minecraft.world.phys.BlockHitResult.miss(at, side, pos);
+        if (hit instanceof net.minecraft.world.phys.BlockHitResult b) {
+            BlockPos p = new BlockPos(b.getBlockPos().getX(), b.getBlockPos().getY(), b.getBlockPos().getZ());
+            EnumFacing side = EnumFacing.byIndex(b.getDirection().get3DDataValue());
+            return new RayTraceResult(b.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? Type.MISS : Type.BLOCK, v, side, p);
+        }
+        return new RayTraceResult(Type.MISS, v, EnumFacing.UP, BlockPos.ORIGIN);
     }
 
     public enum Type {

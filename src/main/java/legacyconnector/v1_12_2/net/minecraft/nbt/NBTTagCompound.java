@@ -218,7 +218,6 @@ public class NBTTagCompound extends NBTBase {
         return hasKey(key + "Most", 4) && hasKey(key + "Least", 4);
     }
 
-    /** Copies the other compound's tags in, merging nested compounds (1.12.2 returns nothing). */
     public void merge(NBTTagCompound other) {
         for (String key : other.getKeySet()) {
             NBTBase value = other.getTag(key);

@@ -50,6 +50,10 @@ public class Vec3d {
         return addVector(vec.x, vec.y, vec.z);
     }
 
+    public Vec3d add(double xIn, double yIn, double zIn) {
+        return addVector(xIn, yIn, zIn);
+    }
+
     public Vec3d addVector(double xIn, double yIn, double zIn) {
         return new Vec3d(x + xIn, y + yIn, z + zIn);
     }
@@ -75,6 +79,44 @@ public class Vec3d {
 
     public double length() {
         return MathHelper.sqrt(x * x + y * y + z * z);
+    }
+
+    public double lengthSquared() {
+        return x * x + y * y + z * z;
+    }
+
+    /** The point on the line to {@code vec} whose x is {@code x}, or null when it lies outside the segment. */
+    public Vec3d getIntermediateWithXValue(Vec3d vec, double xv) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dx * dx < 1.0000000116860974E-7D) return null;
+        double d = (xv - x) / dx;
+        return d >= 0.0D && d <= 1.0D ? new Vec3d(x + dx * d, y + dy * d, z + dz * d) : null;
+    }
+
+    public Vec3d getIntermediateWithYValue(Vec3d vec, double yv) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dy * dy < 1.0000000116860974E-7D) return null;
+        double d = (yv - y) / dy;
+        return d >= 0.0D && d <= 1.0D ? new Vec3d(x + dx * d, y + dy * d, z + dz * d) : null;
+    }
+
+    public Vec3d getIntermediateWithZValue(Vec3d vec, double zv) {
+        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
+        if (dz * dz < 1.0000000116860974E-7D) return null;
+        double d = (zv - z) / dz;
+        return d >= 0.0D && d <= 1.0D ? new Vec3d(x + dx * d, y + dy * d, z + dz * d) : null;
+    }
+
+    public static Vec3d fromPitchYaw(Vec2f rotation) {
+        return fromPitchYaw(rotation.x, rotation.y);
+    }
+
+    public static Vec3d fromPitchYaw(float pitch, float yaw) {
+        float f = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
+        float f1 = MathHelper.sin(-yaw * 0.017453292F - (float) Math.PI);
+        float f2 = -MathHelper.cos(-pitch * 0.017453292F);
+        float f3 = MathHelper.sin(-pitch * 0.017453292F);
+        return new Vec3d(f1 * f2, f3, f * f2);
     }
 
     public Vec3d rotatePitch(float pitch) {
@@ -115,51 +157,9 @@ public class Vec3d {
         return new Vec3d(v.x, v.y, v.z);
     }
 
-    // ---- 1.12.2 Vec3d, continued
 
-    public Vec3d add(double xIn, double yIn, double zIn) {
-        return addVector(xIn, yIn, zIn);
-    }
-
-    public double lengthSquared() {
-        return x * x + y * y + z * z;
-    }
-
+    /** {@link #length} under the name of the stable 1.12 mappings. */
     public double lengthVector() {
         return length();
-    }
-
-    /** The point on the segment to {@code vec} where x is {@code xIn}, or null when the segment does not reach it. */
-    public Vec3d getIntermediateWithXValue(Vec3d vec, double xIn) {
-        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
-        if (dx * dx < 1.0000000116860974E-7D) return null;
-        double t = (xIn - x) / dx;
-        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
-    }
-
-    public Vec3d getIntermediateWithYValue(Vec3d vec, double yIn) {
-        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
-        if (dy * dy < 1.0000000116860974E-7D) return null;
-        double t = (yIn - y) / dy;
-        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
-    }
-
-    public Vec3d getIntermediateWithZValue(Vec3d vec, double zIn) {
-        double dx = vec.x - x, dy = vec.y - y, dz = vec.z - z;
-        if (dz * dz < 1.0000000116860974E-7D) return null;
-        double t = (zIn - z) / dz;
-        return t >= 0.0D && t <= 1.0D ? new Vec3d(x + dx * t, y + dy * t, z + dz * t) : null;
-    }
-
-    public static Vec3d fromPitchYaw(Vec2f rotation) {
-        return fromPitchYaw(rotation.x, rotation.y);
-    }
-
-    public static Vec3d fromPitchYaw(float pitch, float yaw) {
-        float f = MathHelper.cos(-yaw * 0.017453292F - (float) Math.PI);
-        float f1 = MathHelper.sin(-yaw * 0.017453292F - (float) Math.PI);
-        float f2 = -MathHelper.cos(-pitch * 0.017453292F);
-        float f3 = MathHelper.sin(-pitch * 0.017453292F);
-        return new Vec3d(f1 * f2, f3, f * f2);
     }
 }

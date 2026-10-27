@@ -127,57 +127,34 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
         return new NBTTagList(mcc$list.copy());
     }
 
-    // ---- 1.12.2 (Forge made the list Iterable)
-
-    @Override
-    public boolean hasNoTags() {
-        return mcc$list.isEmpty();
-    }
-
     /** The tag at {@code index} (a live view for compounds and lists), or an end tag when out of range. */
     public NBTBase get(int index) {
-        if (index < 0 || index >= mcc$list.size()) return new NBTTagEnd();
-        NBTBase out = NBTBase.mcc$wrap(mcc$list.get(index), this);
-        return out == null ? new NBTTagEnd() : out;
+        if (index >= 0 && index < mcc$list.size()) {
+            NBTBase tag = NBTBase.mcc$wrap(mcc$list.get(index), this);
+            if (tag != null) return tag;
+        }
+        return new NBTTagEnd();
     }
 
-    /** Replaces the tag at {@code index}; a tag of another type than the list's is dropped, as 1.12.2 logged and did. */
     public void set(int index, NBTBase tag) {
-        if (tag == null || tag.getId() == 0) return;
-        if (index < 0 || index >= mcc$list.size()) return;
-        if (mcc$list.getElementType() != 0 && mcc$list.getElementType() != tag.getId()) return;
-        mcc$list.set(index, tag.mcc$modern());
-        if (tag instanceof NBTTagCompound || tag instanceof NBTTagList) tag.mcc$parent = this;
-        mcc$markDirty();
+        if (index >= 0 && index < mcc$list.size() && (mcc$list.size() == 1 || mcc$list.getElementType() == tag.getId())) {
+            mcc$list.set(index, tag.mcc$modern());
+            if (tag instanceof NBTTagCompound || tag instanceof NBTTagList) tag.mcc$parent = this;
+            mcc$markDirty();
+        }
     }
 
     public int getIntAt(int index) {
         return index >= 0 && index < mcc$list.size() && mcc$list.get(index) instanceof net.minecraft.nbt.IntTag t ? t.getAsInt() : 0;
     }
 
-    public NBTTagList getTagListAt(int index) {
-        if (index >= 0 && index < mcc$list.size() && mcc$list.get(index) instanceof ListTag l) {
-            NBTTagList view = new NBTTagList(l);
-            view.mcc$parent = this;
-            return view;
-        }
-        return new NBTTagList();
+    @Override
+    public boolean isEmpty() {
+        return mcc$list.isEmpty();
     }
 
     @Override
     public java.util.Iterator<NBTBase> iterator() {
-        @SuppressWarnings("unchecked")
-        java.util.List<NBTBase> view = mcc$get$tagList(this);
-        return view.iterator();
-    }
-
-    @Override
-    public void forEach(java.util.function.Consumer<? super NBTBase> action) {
-        Iterable.super.forEach(action);
-    }
-
-    @Override
-    public java.util.Spliterator<NBTBase> spliterator() {
-        return Iterable.super.spliterator();
+        return mcc$get$tagList(this).iterator();
     }
 }

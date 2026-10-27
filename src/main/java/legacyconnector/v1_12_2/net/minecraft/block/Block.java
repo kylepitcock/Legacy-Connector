@@ -8,7 +8,7 @@ import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry
 /** 1.12.2 {@code Block}: a registry entry with a material, hardness/resistance, light and a creative tab. */
 public class Block extends IForgeRegistryEntry.Impl<Block> {
     public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespacedDefaultedByKey<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Block> REGISTRY = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS, "air");
-    protected final Material blockMaterial;
+    protected final Material material;
     protected float blockHardness;
     protected float blockResistance;
     protected int lightValue;
@@ -34,7 +34,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     private static int MCC_STATE_FAILURES;
 
     public Block(Material material) {
-        this.blockMaterial = material;
+        this.material = material;
+        this.blockMapColor = material == null ? null : material.getMaterialMapColor();
+        this.translucent = material != null && !material.blocksLight();
         legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer container = null;
         try {
             // overridden by mods before their own fields exist, as in 1.12; a state container that fails to build leaves the plain one
@@ -44,6 +46,13 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         }
         this.blockState = container != null ? container : new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this);
         setDefaultState(blockState.getBaseState());
+        try {
+            this.fullBlock = getDefaultState().isOpaqueCube();
+        } catch (RuntimeException | LinkageError e) {
+            // a mod's isOpaqueCube reading fields its constructor has not set yet: a full block, as Block's own answer
+            this.fullBlock = true;
+        }
+        this.lightOpacity = fullBlock ? 255 : 0;
     }
 
     protected legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer createBlockState() {
@@ -73,7 +82,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public Material getMaterialLegacy() {
-        return blockMaterial != null ? blockMaterial : legacyconnector.v1_12_2.net.minecraft.block.material.Material.ROCK;
+        return material != null ? material : legacyconnector.v1_12_2.net.minecraft.block.material.Material.ROCK;
     }
 
     public Block setUnlocalizedName(String name) {
@@ -225,8 +234,19 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Vanilla's form: whether the block is a tile entity provider (Forge asks {@link #hasTileEntity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState)}). */
     @Deprecated
     public boolean hasTileEntity() {
-        return this instanceof ITileEntityProvider;
+        return hasTileEntity || this instanceof ITileEntityProvider;
     }
+
+    /** Set by BlockContainer (vanilla's tile entity blocks). */
+    protected boolean hasTileEntity;
+    /** Whether the default state is an opaque cube (lighting, culling). */
+    protected boolean fullBlock;
+    /** Whether light passes through (glass, leaves): not opaque. */
+    protected boolean translucent;
+    /** How fast the block's break particles fall. */
+    public float blockParticleGravity = 1.0F;
+    /** Forge: the player harvesting this block in harvestBlock (read by getDrops). */
+    protected static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer> harvesters = new ThreadLocal<>();
 
     public String getLocalizedName() {
         return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getTranslationKey() + ".name");
@@ -260,7 +280,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public Material getMaterial(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
-        return blockMaterial;
+        return material;
     }
 
     public int damageDropped(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
@@ -300,5 +320,406 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     public void getSubBlocks(CreativeTabs tab, legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> items) {
         items.add(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(this));
+    }
+
+    // ------------------------------------------------------------------ gameplay hooks (1.12.2 defaults; mods override; the modern
+    // block forwards the ones a mod overrides, see Legacy1122Block). Hooks taking an IBlockAccess wait for that interface (world area).
+
+    /** The random blocks roll (drops). */
+    protected static final java.util.Random RANDOM = new java.util.Random();
+    /** Whether the block takes its light from its brightest neighbour (slabs, stairs, farmland). */
+    protected boolean useNeighborBrightness;
+
+    public boolean onBlockActivated(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, float hitX, float hitY, float hitZ) {
+        return false;
+    }
+
+    public void onBlockClicked(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+    }
+
+    public void onBlockAdded(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+    }
+
+    /** Called when the block is replaced; the modern block entity is removed by the game itself. */
+    public void breakBlock(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+    }
+
+    public void neighborChanged(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, Block block, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos fromPos) {
+    }
+
+    public void updateTick(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, java.util.Random rand) {
+    }
+
+    /** A random tick: an update tick unless the block says otherwise. */
+    public void randomTick(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, java.util.Random random) {
+        updateTick(world, pos, state, random);
+    }
+
+    public void randomDisplayTick(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, java.util.Random rand) {
+    }
+
+    public int tickRate(legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        return 10;
+    }
+
+    public void onBlockPlacedBy(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase placer,
+            legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+    }
+
+    public void onBlockHarvested(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+    }
+
+    public void onPlayerDestroy(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+    }
+
+    public void onEntityCollision(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+    }
+
+    public void onEntityWalk(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+    }
+
+    public void onFallenUpon(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, float fallDistance) {
+    }
+
+    public void onLanded(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+    }
+
+    public boolean eventReceived(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int id, int param) {
+        return false;
+    }
+
+    /** Whether the block may be placed here: the block there now can be replaced. */
+    public boolean canPlaceBlockAt(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var level = world == null ? null : world.mcc$level();
+        return level == null || level.getBlockState(pos.mcc$modern()).canBeReplaced();
+    }
+
+    public boolean canPlaceBlockOnSide(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return canPlaceBlockAt(world, pos);
+    }
+
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateForPlacement(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, float hitX, float hitY,
+            float hitZ, int meta, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase placer) {
+        return getStateFromMeta(meta);
+    }
+
+    /** Forge's hand-aware form. */
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateForPlacement(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, float hitX, float hitY,
+            float hitZ, int meta, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase placer, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer);
+    }
+
+    // ------------------------------------------------------------------ drops
+
+    public legacyconnector.v1_12_2.net.minecraft.item.Item getItemDropped(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, java.util.Random rand, int fortune) {
+        return legacyconnector.v1_12_2.net.minecraft.item.Item.getItemFromBlock(this);
+    }
+
+    public int quantityDropped(java.util.Random random) {
+        return 1;
+    }
+
+    public int quantityDroppedWithBonus(int fortune, java.util.Random random) {
+        return quantityDropped(random);
+    }
+
+    public int quantityDropped(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune, java.util.Random random) {
+        return quantityDroppedWithBonus(fortune, random);
+    }
+
+    /** The drops 1.12's default getDrops computes: getItemDropped x quantityDropped, with damageDropped as metadata. */
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$defaultDrops(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune) {
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = new java.util.ArrayList<>();
+        java.util.Random rand = RANDOM;
+        int count = quantityDropped(state, fortune, rand);
+        for (int i = 0; i < count; i++) {
+            legacyconnector.v1_12_2.net.minecraft.item.Item item = getItemDropped(state, rand, fortune);
+            if (item != null && item != legacyconnector.v1_12_2.net.minecraft.init.Items.AIR) out.add(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, 1, damageDropped(state)));
+        }
+        return out;
+    }
+
+    public final void dropBlockAsItem(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune) {
+        dropBlockAsItemWithChance(world, pos, state, 1.0F, fortune);
+    }
+
+    public void dropBlockAsItemWithChance(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, float chance, int fortune) {
+        if (world == null || world.isRemote) return;
+        for (legacyconnector.v1_12_2.net.minecraft.item.ItemStack drop : mcc$drops(world, pos, state, fortune)) {
+            if (world.rand.nextFloat() <= chance) spawnAsEntity(world, pos, drop);
+        }
+    }
+
+    /** The block's drops through the modern block (which asks the mod's getDrops when it overrides it). */
+    protected java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> mcc$drops(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, int fortune) {
+        if (mcc$modern instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block b) return b.legacyDrops(world, pos, state, fortune);
+        return mcc$defaultDrops(state, fortune);
+    }
+
+    /** Drops a stack as an item entity with 1.12's random offset in the block. */
+    public static void spawnAsEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        if (world == null || world.isRemote || stack == null || stack.isEmpty()) return;
+        var level = world.mcc$level();
+        if (!(level instanceof net.minecraft.server.level.ServerLevel)) return;
+        double dx = level.random.nextFloat() * 0.5F + 0.25D;
+        double dy = level.random.nextFloat() * 0.5F + 0.25D;
+        double dz = level.random.nextFloat() * 0.5F + 0.25D;
+        var entity = new net.minecraft.world.entity.item.ItemEntity(level, pos.getX() + dx, pos.getY() + dy, pos.getZ() + dz,
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack));
+        entity.setDefaultPickUpDelay();
+        level.addFreshEntity(entity);
+    }
+
+    /** What a player who breaks the block gets: the silk touch stack or the drops (the modern block handles harvesting itself). */
+    public void harvestBlock(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity te, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        int fortune = 0;
+        boolean silk = false;
+        if (stack != null && !stack.isEmpty()) {
+            fortune = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.getEnchantmentByLocation("fortune"), stack);
+            silk = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.getEnchantmentByLocation("silk_touch"), stack) > 0;
+        }
+        if (player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player p) p.causeFoodExhaustion(0.005F);
+        harvesters.set(player);
+        try {
+            if (silk && canSilkHarvest(world, pos, state, player)) {
+                legacyconnector.v1_12_2.net.minecraft.item.ItemStack drop = getSilkTouchDrop(state);
+                if (!drop.isEmpty()) spawnAsEntity(world, pos, drop);
+            } else {
+                dropBlockAsItem(world, pos, state, fortune);
+            }
+        } finally {
+            harvesters.remove();
+        }
+    }
+
+    public boolean canSilkHarvest(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return canSilkHarvest() && !hasTileEntity(state);
+    }
+
+    @Deprecated
+    protected boolean canSilkHarvest() {
+        return getDefaultState().isFullCube() && !hasTileEntity(getDefaultState());
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack mcc$silkTouchDrop(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return getSilkTouchDrop(state);
+    }
+
+    protected legacyconnector.v1_12_2.net.minecraft.item.ItemStack getSilkTouchDrop(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        legacyconnector.v1_12_2.net.minecraft.item.Item item = legacyconnector.v1_12_2.net.minecraft.item.Item.getItemFromBlock(this);
+        if (item == null || item == legacyconnector.v1_12_2.net.minecraft.init.Items.AIR) return legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY;
+        int meta = item.getHasSubtypes() ? getMetaFromState(state) : 0;
+        return new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, 1, meta);
+    }
+
+    /** The stack the pick-block key gives (no IBlockAccess form here: world blocks only). */
+    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack getItem(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        legacyconnector.v1_12_2.net.minecraft.item.Item item = legacyconnector.v1_12_2.net.minecraft.item.Item.getItemFromBlock(this);
+        return item == null || item == legacyconnector.v1_12_2.net.minecraft.init.Items.AIR ? legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY : new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, 1, damageDropped(state));
+    }
+
+    /** Forge: breaking by a player; true when the block was removed. */
+    public boolean removedByPlayer(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            boolean willHarvest) {
+        onBlockHarvested(world, pos, state, player);
+        return world.setBlockState(pos, legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR.getDefaultState(), world.isRemote ? 11 : 3);
+    }
+
+    public boolean rotateBlock(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing axis) {
+        var level = world == null ? null : world.mcc$level();
+        if (level == null) return false;
+        var mp = pos.mcc$modern();
+        var state = level.getBlockState(mp);
+        var rotated = state.rotate(level, mp, net.minecraft.world.level.block.Rotation.CLOCKWISE_90);
+        if (rotated == state) return false;
+        level.setBlockAndUpdate(mp, rotated);
+        return true;
+    }
+
+    public void onPlantGrow(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos source) {
+    }
+
+    public boolean getUseNeighborBrightness(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return useNeighborBrightness;
+    }
+
+    public SoundType getSoundType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return getSoundType();
+    }
+
+    public boolean canRenderInLayer(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer layer) {
+        return getRenderLayer() == layer;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer getRenderLayer() {
+        return legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer.SOLID;
+    }
+
+    public boolean isCollidable() {
+        return true;
+    }
+
+    public boolean canCollideCheck(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, boolean hitIfLiquid) {
+        return isCollidable();
+    }
+
+    public boolean canProvidePower(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    public boolean hasComparatorInputOverride(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    public int getComparatorInputOverride(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockState, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return 0;
+    }
+
+    public boolean requiresUpdates() {
+        return true;
+    }
+
+    public boolean isAssociatedBlock(Block other) {
+        return this == other;
+    }
+
+    public static boolean isEqualTo(Block a, Block b) {
+        return a != null && b != null && (a == b || a.isAssociatedBlock(b));
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState withRotation(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.Rotation rot) {
+        return state;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState withMirror(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.Mirror mirror) {
+        return state;
+    }
+
+    public boolean isToolEffective(String type, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return type != null && type.equals(getHarvestTool(state));
+    }
+
+    public float getEnchantPowerBonus(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return 0.0F;
+    }
+
+    // ------------------------------------------------------------------ more 1.12.2 block rules
+
+    /** The player harvesting the block on this thread (Forge's harvesters), for mods' getDrops. */
+    public static void mcc$harvester(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        if (player == null) harvesters.remove();
+        else harvesters.set(player);
+    }
+
+    /** How much of the block a player breaks per tick: the modern rule (tool speed, effects, water, air) on the modern state. */
+    public float getPlayerRelativeBlockHardness(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (player == null || !(player.mcc$entity instanceof net.minecraft.world.entity.player.Player p) || world == null) return 0.0F;
+        var level = world.mcc$level();
+        var mp = pos.mcc$modern();
+        return level.getBlockState(mp).getDestroyProgress(p, level, mp);
+    }
+
+    /** Drops experience orbs worth the amount (ores). */
+    public void dropXpOnBlockBreak(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int amount) {
+        if (world == null || world.isRemote || amount <= 0) return;
+        if (world.mcc$level() instanceof net.minecraft.server.level.ServerLevel level) {
+            net.minecraft.world.entity.ExperienceOrb.award(level, net.minecraft.world.phys.Vec3.atCenterOf(pos.mcc$modern()), amount);
+        }
+    }
+
+    /** Blocks pistons and attached blocks never connect to (shulker boxes, leaves, glass, ...), as 1.12 listed them. */
+    public static boolean isExceptBlockForAttachWithPiston(Block block) {
+        if (block == null || block.getRegistryName() == null) return false;
+        String name = block.getRegistryName().getPath();
+        return name.endsWith("shulker_box") || name.equals("leaves") || name.equals("leaves2") || name.equals("barrier") || name.equals("cauldron")
+                || name.equals("glass") || name.equals("beacon") || name.equals("sea_lantern") || name.equals("stained_glass") || name.equals("piston")
+                || name.equals("sticky_piston") || name.equals("piston_head") || name.equals("melon_block") || name.equals("pumpkin") || name.equals("lit_pumpkin");
+    }
+
+    public boolean canEntitySpawn(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return true;
+    }
+
+    /** Whether the top face is a full solid face (mobs stand on it). */
+    public boolean isTopSolid(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getMaterial().isOpaque() && state.isFullCube();
+    }
+
+    public boolean isTranslucent(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return translucent;
+    }
+
+    public int getLightOpacity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return lightOpacity;
+    }
+
+    public boolean isBlockNormalCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getMaterial().blocksMovement() && state.isFullCube();
+    }
+
+    public boolean isNormalCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getMaterial().isOpaque() && state.isFullCube() && !state.canProvidePower();
+    }
+
+    public boolean causesSuffocation(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return material.blocksMovement() && getDefaultState().isFullCube();
+    }
+
+    /** The box an entity collides with, offset to the position, added to the list when it meets the entity's box. */
+    protected static void addCollisionBoxToList(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB entityBox,
+            java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> collidingBoxes, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB blockBox) {
+        if (blockBox == null) return;
+        legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB box = blockBox.offset(pos);
+        if (entityBox.intersects(box)) collidingBoxes.add(box);
+    }
+
+    /**
+     * The collision boxes of the block at a position (the modern shape of the block there: the legacy collision box once the world
+     * area forwards getCollisionBoundingBox), for the entity box given.
+     */
+    public void addCollisionBoxToList(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB entityBox,
+            java.util.List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> collidingBoxes, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, boolean isActualState) {
+        if (world == null) return;
+        var level = world.mcc$level();
+        var mp = pos.mcc$modern();
+        for (var box : level.getBlockState(mp).getCollisionShape(level, mp).toAabbs()) {
+            addCollisionBoxToList(pos, entityBox, collidingBoxes, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(box));
+        }
+    }
+
+    /**
+     * The block's bounds when they depend on the state alone (slabs, torches, ladders), or null for a full or world-dependent
+     * shape: the modern block's shape until the world area forwards getBoundingBox(IBlockAccess).
+     */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB mcc$staticBounds(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return null;
+    }
+
+    /** Leaves near a removed log start to decay (the modern leaves do it by distance on their own). */
+    public void beginLeavesDecay(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+    }
+
+    public boolean canBeReplacedByLeaves(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return !state.isFullCube();
+    }
+
+    public float getAmbientOcclusionLightValue(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.isBlockNormalCube() ? 0.2F : 1.0F;
+    }
+
+    public boolean isFullyOpaque(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getMaterial().isOpaque() && state.isFullCube();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.material.MapColor getMapColor(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return blockMapColor != null ? blockMapColor : material.getMaterialMapColor();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.material.EnumPushReaction getPushReaction(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return material.getPushReaction();
     }
 }

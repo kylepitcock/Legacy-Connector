@@ -5,18 +5,22 @@ import java.nio.charset.StandardCharsets;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 import legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer;
+import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
+import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry;
+import legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry;
 
-/** FML 1.12.2's buffer helpers for custom messages: var ints, UTF-8 strings, tags and item stacks in the vanilla wire forms. */
+/** FML's helpers for mods' packet buffers: variable-length ints, UTF-8 strings, tags, item stacks and registry entries. */
 public class ByteBufUtils {
     private ByteBufUtils() {}
 
     public static int varIntByteCount(int toCount) {
-        return (toCount & 0xFFFFFF80) == 0 ? 1 : ((toCount & 0xFFFFC000) == 0 ? 2 : ((toCount & 0xFFE00000) == 0 ? 3 : ((toCount & 0xF0000000) == 0 ? 4 : 5)));
+        return (toCount & 0xFFFFFF80) == 0 ? 1 : (toCount & 0xFFFFC000) == 0 ? 2 : (toCount & 0xFFE00000) == 0 ? 3 : (toCount & 0xF0000000) == 0 ? 4 : 5;
     }
 
     public static int readVarInt(ByteBuf buf, int maxSize) {
         if (maxSize <= 0 || maxSize > 5) throw new IllegalArgumentException("Varint length is between 1 and 5, not " + maxSize);
-        int i = 0, j = 0;
+        int i = 0;
+        int j = 0;
         byte b0;
         do {
             b0 = buf.readByte();
@@ -62,7 +66,7 @@ public class ByteBufUtils {
 
     public static void writeUTF8String(ByteBuf to, String string) {
         byte[] utf8Bytes = string.getBytes(StandardCharsets.UTF_8);
-        if (varIntByteCount(utf8Bytes.length) >= 3) throw new IllegalArgumentException("The string is too long for this encoding.");
+        if (varIntByteCount(utf8Bytes.length) > 2) throw new IllegalArgumentException("The string is too long for this encoding.");
         writeVarInt(to, utf8Bytes.length, 2);
         to.writeBytes(utf8Bytes);
     }
@@ -91,27 +95,31 @@ public class ByteBufUtils {
         }
     }
 
-    /** A registry entry by its registry name. */
-    public static <T extends legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry<T>> void writeRegistryEntry(ByteBuf out, T entry) {
+    /** A registry entry as its registry name (both ends run the same legacy registries, so names are stable). */
+    public static <T extends IForgeRegistryEntry<T>> void writeRegistryEntry(ByteBuf out, T entry) {
         writeUTF8String(out, String.valueOf(entry.getRegistryName()));
     }
 
-    public static <T extends legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry<T>> T readRegistryEntry(ByteBuf in,
-            legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry<T> registry) {
+    public static <T extends IForgeRegistryEntry<T>> T readRegistryEntry(ByteBuf in, IForgeRegistry<T> registry) {
         String name = readUTF8String(in);
-        T entry = registry.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name));
-        if (entry == null) throw new IllegalArgumentException("Invalid or unknown registry entry " + name);
+        T entry = registry.getValue(new ResourceLocation(name));
+        if (entry == null) throw new IllegalArgumentException("Invalid registry name " + name + " for registry " + registry.getRegistrySuperType().getName());
         return entry;
     }
 
+    public static <T extends IForgeRegistryEntry<T>> void writeRegistryEntries(ByteBuf out, java.util.Collection<T> entries) {
+        writeVarInt(out, entries.size(), 5);
+        for (T entry : entries) writeRegistryEntry(out, entry);
+    }
+
+    public static <T extends IForgeRegistryEntry<T>> java.util.List<T> readRegistryEntries(ByteBuf in, IForgeRegistry<T> registry) {
+        int size = readVarInt(in, 5);
+        java.util.List<T> out = new java.util.ArrayList<>(size);
+        for (int i = 0; i < size; i++) out.add(readRegistryEntry(in, registry));
+        return out;
+    }
+
     public static String getContentDump(ByteBuf buffer) {
-        int currentLength = buffer.readableBytes();
-        StringBuilder returnString = new StringBuilder((currentLength * 3) + (currentLength / 16 * 18) + 2);
-        int i;
-        for (i = 0; i < currentLength; i++) {
-            if ((i != 0) && (i % 16 == 0)) returnString.append('\n');
-            returnString.append(String.format("%02x ", buffer.getUnsignedByte(i + buffer.readerIndex())));
-        }
-        return returnString.toString();
+        return io.netty.buffer.ByteBufUtil.prettyHexDump(buffer);
     }
 }

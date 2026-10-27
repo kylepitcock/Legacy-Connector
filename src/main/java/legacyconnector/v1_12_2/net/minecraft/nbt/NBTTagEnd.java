@@ -1,26 +1,20 @@
 package legacyconnector.v1_12_2.net.minecraft.nbt;
 
-import net.minecraft.nbt.EndTag;
-import net.minecraft.nbt.Tag;
-
-/** The end tag (what an out-of-range list read returns in 1.12.2). */
+/** The end tag, which lookups of absent list entries return. */
 public class NBTTagEnd extends NBTBase {
-    public NBTTagEnd() {
-    }
-
     @Override
     public byte getId() {
         return 0;
     }
 
     @Override
-    public NBTTagEnd copy() {
+    public NBTBase copy() {
         return new NBTTagEnd();
     }
 
     @Override
-    public Tag mcc$modern() {
-        return EndTag.INSTANCE;
+    public net.minecraft.nbt.Tag mcc$modern() {
+        return net.minecraft.nbt.EndTag.INSTANCE;
     }
 
     @Override

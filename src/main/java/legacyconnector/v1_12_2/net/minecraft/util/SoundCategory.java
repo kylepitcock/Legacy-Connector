@@ -14,26 +14,24 @@ public enum SoundCategory {
         return name;
     }
 
-    private static final java.util.Map<String, SoundCategory> BY_NAME = new java.util.HashMap<>();
-
-    static {
-        for (SoundCategory c : values()) BY_NAME.put(c.name, c);
-    }
-
-    public static SoundCategory getByName(String name) {
-        return BY_NAME.get(name);
-    }
-
-    public static java.util.Set<String> getSoundCategoryNames() {
-        return BY_NAME.keySet();
-    }
-
-    /** The modern sound source (same constants under the same names). */
+    /** The modern source (same constants in the same order). */
     public net.minecraft.sounds.SoundSource mcc$modern() {
-        return net.minecraft.sounds.SoundSource.valueOf(name());
+        return net.minecraft.sounds.SoundSource.values()[ordinal()];
     }
 
     public static SoundCategory mcc$of(net.minecraft.sounds.SoundSource source) {
-        return source == null ? MASTER : valueOf(source.name());
+        return values()[source.ordinal()];
+    }
+
+    public static SoundCategory getByName(String name) {
+        for (SoundCategory c : values()) if (c.name.equals(name)) return c;
+        return null;
+    }
+
+
+    public static java.util.Set<String> getSoundCategoryNames() {
+        java.util.Set<String> names = new java.util.LinkedHashSet<>();
+        for (SoundCategory c : values()) names.add(c.getName());
+        return names;
     }
 }

@@ -122,10 +122,52 @@ public class MathHelper {
         return abs(y - x) < 1.0E-5F;
     }
 
-    // ---- 1.12.2 MathHelper, continued
-
     public static double atan2(double y, double x) {
         return Math.atan2(y, x);
+    }
+
+    public static double fastInvSqrt(double v) {
+        double d = 0.5D * v;
+        long i = Double.doubleToRawLongBits(v);
+        i = 6910469410427058090L - (i >> 1);
+        v = Double.longBitsToDouble(i);
+        return v * (1.5D - d * v * v);
+    }
+
+    public static double frac(double number) {
+        return number - (double) lfloor(number);
+    }
+
+    public static long getCoordinateRandom(int x, int y, int z) {
+        long i = (long) (x * 3129871) ^ (long) z * 116129781L ^ (long) y;
+        i = i * i * 42317861L + i * 11L;
+        return i;
+    }
+
+    public static long getPositionRandom(Vec3i pos) {
+        return getCoordinateRandom(pos.getX(), pos.getY(), pos.getZ());
+    }
+
+    public static int getInt(String value, int defaultValue) {
+        try {
+            return Integer.parseInt(value);
+        } catch (Throwable t) {
+            return defaultValue;
+        }
+    }
+
+    public static int getInt(String value, int defaultValue, int max) {
+        return Math.max(max, getInt(value, defaultValue));
+    }
+
+    public static java.util.UUID getRandomUUID(Random rand) {
+        long i = rand.nextLong() & -61441L | 16384L;
+        long j = rand.nextLong() & 4611686018427387903L | Long.MIN_VALUE;
+        return new java.util.UUID(i, j);
+    }
+
+    public static java.util.UUID getRandomUUID() {
+        return getRandomUUID(new Random());
     }
 
     public static int hsvToRGB(float hue, float saturation, float value) {
@@ -144,78 +186,15 @@ public class MathHelper {
             case 5 -> { r = value; g = f1; b = f2; }
             default -> throw new RuntimeException("Something went wrong when converting from HSV to RGB. Input was " + hue + ", " + saturation + ", " + value);
         }
-        int j = clamp((int) (r * 255.0F), 0, 255);
-        int k = clamp((int) (g * 255.0F), 0, 255);
-        int l = clamp((int) (b * 255.0F), 0, 255);
-        return j << 16 | k << 8 | l;
+        return clamp((int) (r * 255.0F), 0, 255) << 16 | clamp((int) (g * 255.0F), 0, 255) << 8 | clamp((int) (b * 255.0F), 0, 255);
     }
 
-    public static long getCoordinateRandom(int x, int y, int z) {
-        long i = (long) (x * 3129871) ^ (long) z * 116129781L ^ (long) y;
-        i = i * i * 42317861L + i * 11L;
-        return i;
+    public static int intFloorDiv(int x, int y) {
+        return x < 0 ? -((-x - 1) / y) - 1 : x / y;
     }
 
-    public static long getPositionRandom(Vec3i pos) {
-        return getCoordinateRandom(pos.getX(), pos.getY(), pos.getZ());
-    }
-
-    public static float positiveModulo(float numerator, float denominator) {
-        return (numerator % denominator + denominator) % denominator;
-    }
-
-    public static double positiveModulo(double numerator, double denominator) {
-        return (numerator % denominator + denominator) % denominator;
-    }
-
-    public static int getInt(String value, int defaultValue) {
-        try {
-            return Integer.parseInt(value);
-        } catch (Throwable t) {
-            return defaultValue;
-        }
-    }
-
-    public static int getInt(String value, int defaultValue, int max) {
-        return Math.max(max, getInt(value, defaultValue));
-    }
-
-    public static double getDouble(String value, double defaultValue) {
-        try {
-            return Double.parseDouble(value);
-        } catch (Throwable t) {
-            return defaultValue;
-        }
-    }
-
-    public static double getDouble(String value, double defaultValue, double max) {
-        return Math.max(max, getDouble(value, defaultValue));
-    }
-
-    public static float nextFloat(Random random, float minimum, float maximum) {
-        return minimum >= maximum ? minimum : random.nextFloat() * (maximum - minimum) + minimum;
-    }
-
-    public static double nextDouble(Random random, double minimum, double maximum) {
-        return minimum >= maximum ? minimum : random.nextDouble() * (maximum - minimum) + minimum;
-    }
-
-    public static java.util.UUID getRandomUUID(Random rand) {
-        long i = rand.nextLong() & -61441L | 16384L;
-        long j = rand.nextLong() & 4611686018427387903L | Long.MIN_VALUE;
-        return new java.util.UUID(i, j);
-    }
-
-    public static java.util.UUID getRandomUUID() {
-        return getRandomUUID(java.util.concurrent.ThreadLocalRandom.current());
-    }
-
-    public static int wrapDegrees(int angle) {
-        int i = angle % 360;
-        if (i >= 180) i -= 360;
-        if (i < -180) i += 360;
-        return i;
-    }
+    private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[] {0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13,
+            23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
 
     public static int smallestEncompassingPowerOfTwo(int value) {
         int i = value - 1;
@@ -231,9 +210,6 @@ public class MathHelper {
         return value != 0 && (value & value - 1) == 0;
     }
 
-    private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION = new int[] {0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8, 31, 27, 13,
-            23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9};
-
     public static int log2DeBruijn(int value) {
         value = isPowerOfTwo(value) ? value : smallestEncompassingPowerOfTwo(value);
         return MULTIPLY_DE_BRUIJN_BIT_POSITION[(int) ((long) value * 125613361L >> 27) & 31];
@@ -243,12 +219,20 @@ public class MathHelper {
         return log2DeBruijn(value) - (isPowerOfTwo(value) ? 0 : 1);
     }
 
-    public static int absFloor(double value) {
-        return (int) (value >= 0.0D ? value : -value + 1.0D);
+    public static double nextDouble(Random random, double minimum, double maximum) {
+        return minimum >= maximum ? minimum : random.nextDouble() * (maximum - minimum) + minimum;
     }
 
-    public static int intFloorDiv(int x, int y) {
-        return Math.floorDiv(x, y);
+    public static float nextFloat(Random random, float minimum, float maximum) {
+        return minimum >= maximum ? minimum : random.nextFloat() * (maximum - minimum) + minimum;
+    }
+
+    public static double positiveModulo(double numerator, double denominator) {
+        return (numerator % denominator + denominator) % denominator;
+    }
+
+    public static float positiveModulo(float numerator, float denominator) {
+        return (numerator % denominator + denominator) % denominator;
     }
 
     public static int rgb(float rIn, float gIn, float bIn) {
@@ -260,44 +244,45 @@ public class MathHelper {
         return (lvt_3_1_ << 8) + bIn;
     }
 
-    public static int multiplyColor(int p_180188_0_, int p_180188_1_) {
-        int i = (p_180188_0_ & 16711680) >> 16;
-        int j = (p_180188_1_ & 16711680) >> 16;
-        int k = (p_180188_0_ & 65280) >> 8;
-        int l = (p_180188_1_ & 65280) >> 8;
-        int i1 = (p_180188_0_ & 255) >> 0;
-        int j1 = (p_180188_1_ & 255) >> 0;
+    public static int wrapDegrees(int angle) {
+        angle = angle % 360;
+        if (angle >= 180) angle -= 360;
+        if (angle < -180) angle += 360;
+        return angle;
+    }
+
+    // ---- 1.12.2 MathHelper, area F additions
+
+    public static int absFloor(double value) {
+        return (int) (value >= 0.0D ? value : -value + 1.0D);
+    }
+
+    public static double getDouble(String value, double defaultValue) {
+        try {
+            return Double.parseDouble(value);
+        } catch (Throwable t) {
+            return defaultValue;
+        }
+    }
+
+    public static double getDouble(String value, double defaultValue, double max) {
+        return Math.max(max, getDouble(value, defaultValue));
+    }
+
+    public static int multiplyColor(int colorA, int colorB) {
+        int i = (colorA & 16711680) >> 16;
+        int j = (colorB & 16711680) >> 16;
+        int k = (colorA & 65280) >> 8;
+        int l = (colorB & 65280) >> 8;
+        int i1 = colorA & 255;
+        int j1 = colorB & 255;
         int k1 = (int) ((float) i * (float) j / 255.0F);
         int l1 = (int) ((float) k * (float) l / 255.0F);
         int i2 = (int) ((float) i1 * (float) j1 / 255.0F);
-        return p_180188_0_ & -16777216 | k1 << 16 | l1 << 8 | i2;
+        return colorA & -16777216 | k1 << 16 | l1 << 8 | i2;
     }
 
-    public static double pct(double p_181160_0_, double p_181160_2_, double p_181160_4_) {
-        return (p_181160_0_ - p_181160_2_) / (p_181160_4_ - p_181160_2_);
-    }
-
-    public static double frac(double number) {
-        return number - (double) lfloor(number);
-    }
-
-    public static float frac(float number) {
-        return number - (float) floor(number);
-    }
-
-    public static float fastInvSqrt(float x) {
-        return (float) (1.0D / Math.sqrt(x));
-    }
-
-    public static double fastInvSqrt(double x) {
-        return 1.0D / Math.sqrt(x);
-    }
-
-    public static long clamp(long num, long min, long max) {
-        return num < min ? min : num > max ? max : num;
-    }
-
-    public static boolean epsilonEquals(double x, double y) {
-        return Math.abs(y - x) < 1.0E-5D;
+    public static double pct(double value, double min, double max) {
+        return (value - min) / (max - min);
     }
 }

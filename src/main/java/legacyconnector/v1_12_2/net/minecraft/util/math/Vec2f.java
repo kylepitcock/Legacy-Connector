@@ -1,6 +1,5 @@
 package legacyconnector.v1_12_2.net.minecraft.util.math;
 
-/** A pair of floats (a pitch/yaw rotation, a 2D point), as 1.12.2's. */
 public class Vec2f {
     public static final Vec2f ZERO = new Vec2f(0.0F, 0.0F);
     public static final Vec2f ONE = new Vec2f(1.0F, 1.0F);
