@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.nbt;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 
-public class NBTTagByte extends NBTBase.NBTPrimitive {
+public class NBTTagByte extends NBTPrimitive {
     private final byte data;
 
     public NBTTagByte(byte data) {

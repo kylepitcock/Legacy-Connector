@@ -12,6 +12,8 @@ public class Style {
     private Boolean strikethrough;
     private Boolean obfuscated;
     private String insertion;
+    private legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent clickEvent;
+    private legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent hoverEvent;
 
     private static final Style ROOT = new Style() {
         @Override
@@ -46,6 +48,16 @@ public class Style {
 
         @Override
         public String getInsertion() {
+            return null;
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent getClickEvent() {
+            return null;
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent getHoverEvent() {
             return null;
         }
 
@@ -95,7 +107,25 @@ public class Style {
 
     public boolean isEmpty() {
         return bold == null && italic == null && strikethrough == null && underlined == null && obfuscated == null && color == null
-                && insertion == null;
+                && insertion == null && clickEvent == null && hoverEvent == null;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent getClickEvent() {
+        return clickEvent == null ? parent().getClickEvent() : clickEvent;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent getHoverEvent() {
+        return hoverEvent == null ? parent().getHoverEvent() : hoverEvent;
+    }
+
+    public Style setClickEvent(legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent event) {
+        this.clickEvent = event;
+        return this;
+    }
+
+    public Style setHoverEvent(legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent event) {
+        this.hoverEvent = event;
+        return this;
     }
 
     public String getInsertion() {
@@ -164,6 +194,8 @@ public class Style {
         s.obfuscated = obfuscated;
         s.color = color;
         s.insertion = insertion;
+        s.clickEvent = clickEvent;
+        s.hoverEvent = hoverEvent;
         s.parentStyle = parentStyle;
         return s;
     }
@@ -178,6 +210,8 @@ public class Style {
         s.setObfuscated(getObfuscated());
         s.setColor(getColor());
         s.setInsertion(getInsertion());
+        s.setClickEvent(getClickEvent());
+        s.setHoverEvent(getHoverEvent());
         return s;
     }
 
@@ -195,6 +229,8 @@ public class Style {
         if (getStrikethrough()) s = s.withStrikethrough(true);
         if (getObfuscated()) s = s.withObfuscated(true);
         if (getInsertion() != null) s = s.withInsertion(getInsertion());
+        if (getClickEvent() != null) s = s.withClickEvent(getClickEvent().mcc$modern());
+        if (getHoverEvent() != null) s = s.withHoverEvent(getHoverEvent().mcc$modern());
         return s;
     }
 
@@ -215,5 +251,59 @@ public class Style {
     public String toString() {
         return "Style{hasParent=" + (parentStyle != null) + ", color=" + color + ", bold=" + bold + ", italic=" + italic + ", underlined=" + underlined
                 + ", obfuscated=" + obfuscated + ", insertion=" + insertion + "}";
+    }
+
+    /** Writes the values set on this style (not inherited ones) into a 1.12 text JSON object. */
+    public void mcc$writeJson(com.google.gson.JsonObject o) {
+        if (bold != null) o.addProperty("bold", bold);
+        if (italic != null) o.addProperty("italic", italic);
+        if (underlined != null) o.addProperty("underlined", underlined);
+        if (strikethrough != null) o.addProperty("strikethrough", strikethrough);
+        if (obfuscated != null) o.addProperty("obfuscated", obfuscated);
+        if (color != null) o.addProperty("color", color.getFriendlyName());
+        if (insertion != null) o.addProperty("insertion", insertion);
+        if (clickEvent != null) {
+            com.google.gson.JsonObject e = new com.google.gson.JsonObject();
+            e.addProperty("action", clickEvent.getAction().getCanonicalName());
+            e.addProperty("value", clickEvent.getValue());
+            o.add("clickEvent", e);
+        }
+        if (hoverEvent != null) {
+            com.google.gson.JsonObject e = new com.google.gson.JsonObject();
+            e.addProperty("action", hoverEvent.getAction().getCanonicalName());
+            e.add("value", ITextComponent.Serializer.mcc$toTree(hoverEvent.getValue()));
+            o.add("hoverEvent", e);
+        }
+    }
+
+    /** The style a 1.12 text JSON object describes. */
+    public static Style mcc$readJson(com.google.gson.JsonObject o) {
+        Style s = new Style();
+        if (o.has("bold")) s.bold = o.get("bold").getAsBoolean();
+        if (o.has("italic")) s.italic = o.get("italic").getAsBoolean();
+        if (o.has("underlined")) s.underlined = o.get("underlined").getAsBoolean();
+        if (o.has("strikethrough")) s.strikethrough = o.get("strikethrough").getAsBoolean();
+        if (o.has("obfuscated")) s.obfuscated = o.get("obfuscated").getAsBoolean();
+        if (o.has("color")) s.color = TextFormatting.getValueByName(o.get("color").getAsString());
+        if (o.has("insertion")) s.insertion = o.get("insertion").getAsString();
+        if (o.has("clickEvent") && o.get("clickEvent").isJsonObject()) {
+            com.google.gson.JsonObject e = o.getAsJsonObject("clickEvent");
+            var action = e.has("action") ? legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent.Action
+                    .getValueByCanonicalName(e.get("action").getAsString()) : null;
+            String value = e.has("value") ? e.get("value").getAsString() : null;
+            if (action != null && value != null && action.shouldAllowInChat()) {
+                s.clickEvent = new legacyconnector.v1_12_2.net.minecraft.util.text.event.ClickEvent(action, value);
+            }
+        }
+        if (o.has("hoverEvent") && o.get("hoverEvent").isJsonObject()) {
+            com.google.gson.JsonObject e = o.getAsJsonObject("hoverEvent");
+            var action = e.has("action") ? legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent.Action
+                    .getValueByCanonicalName(e.get("action").getAsString()) : null;
+            ITextComponent value = e.has("value") ? ITextComponent.Serializer.mcc$fromTree(e.get("value")) : null;
+            if (action != null && value != null && action.shouldAllowInChat()) {
+                s.hoverEvent = new legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent(action, value);
+            }
+        }
+        return s;
     }
 }

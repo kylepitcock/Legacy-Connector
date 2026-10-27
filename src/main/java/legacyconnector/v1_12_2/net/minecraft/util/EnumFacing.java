@@ -281,6 +281,19 @@ public enum EnumFacing implements IStringSerializable {
         return net.minecraft.core.Direction.from3DDataValue(index);
     }
 
+    /** The face of a block placed at {@code pos} that faces the placer (up or down when it stands right above or below). */
+    public static EnumFacing getDirectionFromEntityLiving(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase placer) {
+        net.minecraft.world.entity.Entity e = placer.mcc$modern();
+        if (e == null) return NORTH;
+        if (Math.abs(e.getX() - (pos.getX() + 0.5F)) < 2.0D && Math.abs(e.getZ() - (pos.getZ() + 0.5F)) < 2.0D) {
+            double eyes = e.getEyeY();
+            if (eyes - pos.getY() > 2.0D) return UP;
+            if (pos.getY() - eyes > 0.0D) return DOWN;
+        }
+        return mcc$of(e.getDirection()).getOpposite();
+    }
+
     public static EnumFacing mcc$of(net.minecraft.core.Direction direction) {
         return direction == null ? null : VALUES[direction.get3DDataValue()];
     }

@@ -12,4 +12,15 @@ public enum Mirror {
         if (this == FRONT_BACK && facing.getAxis() == EnumFacing.Axis.X) return facing.getOpposite();
         return this == LEFT_RIGHT && facing.getAxis() == EnumFacing.Axis.Z ? facing.getOpposite() : facing;
     }
+
+    /** The rotation index (of {@code rotationCount} steps) seen in the mirror. */
+    public int mirrorRotation(int rotationIn, int rotationCount) {
+        int i = rotationCount / 2;
+        int j = rotationIn > i ? rotationIn - rotationCount : rotationIn;
+        return switch (this) {
+            case FRONT_BACK -> (rotationCount - j) % rotationCount;
+            case LEFT_RIGHT -> (i - j + rotationCount) % rotationCount;
+            default -> rotationIn;
+        };
+    }
 }

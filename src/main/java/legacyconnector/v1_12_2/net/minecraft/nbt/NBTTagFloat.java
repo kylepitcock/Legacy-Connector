@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.nbt;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.Tag;
 
-public class NBTTagFloat extends NBTBase.NBTPrimitive {
+public class NBTTagFloat extends NBTPrimitive {
     private final float data;
 
     public NBTTagFloat(float data) {
