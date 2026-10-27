@@ -122,4 +122,12 @@ public class PotionUtils {
         stack.setTagCompound(tag);
         return stack;
     }
+
+    /** Adds the effect lines a potion item shows (effect, amplifier, duration and attribute changes, as the modern tooltip). */
+    public static void addPotionTooltip(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, java.util.List<String> lines, float durationFactor) {
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        var contents = modern.getOrDefault(net.minecraft.core.component.DataComponents.POTION_CONTENTS,
+                net.minecraft.world.item.alchemy.PotionContents.EMPTY);
+        contents.addPotionTooltip(c -> lines.add(c.getString()), durationFactor, 20.0F);
+    }
 }
