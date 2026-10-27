@@ -40,6 +40,16 @@ public class FontRenderer implements legacyconnector.v1_12_2.net.minecraft.clien
     public FontRenderer() {
     }
 
+    /**
+     * 1.12's constructor: a font sheet, the texture manager and the unicode flag. Mods' renderers built this way (a custom sheet or a
+     * subclass that restyles text) draw with the game font; the sheet and flag are kept for code that reads them.
+     */
+    public FontRenderer(legacyconnector.v1_12_2.net.minecraft.client.settings.GameSettings gameSettingsIn, ResourceLocation location,
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager textureManagerIn, boolean unicode) {
+        if (location != null) this.locationFontTexture = location;
+        this.unicodeFlag = unicode;
+    }
+
     private static int[] legacyColors() {
         int[] out = new int[32];
         for (int i = 0; i < 32; i++) {
@@ -106,6 +116,20 @@ public class FontRenderer implements legacyconnector.v1_12_2.net.minecraft.clien
 
     protected float renderUnicodeChar(char ch, boolean italic) {
         return renderChar(ch);
+    }
+
+    /** Draws one character at the pen position and returns its advance (1.12: spaces, then the ASCII sheet or a unicode page). */
+    protected float renderChar(char ch, boolean italic) {
+        if (ch == 160 || ch == ' ') return 4.0F;
+        return renderChar(ch);
+    }
+
+    /** Forge: after a character, the underline and strikethrough of its advance, then the pen moves on. */
+    protected void doDraw(float f) {
+        int color = textColor != 0 ? textColor | 0xFF000000 : 0xFFFFFFFF;
+        if (strikethroughStyle) Gui.drawRect((int) posX, (int) (posY + FONT_HEIGHT / 2.0F), (int) (posX + f), (int) (posY + FONT_HEIGHT / 2.0F) + 1, color);
+        if (underlineStyle) Gui.drawRect((int) posX - 1, (int) (posY + FONT_HEIGHT), (int) (posX + f), (int) (posY + FONT_HEIGHT) + 1, color);
+        posX += (float) (int) f;
     }
 
     private float renderChar(char ch) {

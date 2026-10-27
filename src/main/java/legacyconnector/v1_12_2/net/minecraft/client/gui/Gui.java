@@ -70,6 +70,29 @@ public class Gui {
         pose.popPose();
     }
 
+    /**
+     * Draws a sprite of the bound atlas (normally the blocks atlas) at its full UV range, scaled to the size given. A sprite the modern
+     * blocks atlas has is drawn from there; any other is drawn with its own UVs from the bound texture.
+     */
+    public void drawTexturedModalRect(int xCoord, int yCoord, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite textureSprite, int widthIn, int heightIn) {
+        var gui = RenderContext.gui();
+        if (gui == null || textureSprite == null) return;
+        var modern = textureSprite.mcc$modern();
+        if (modern != null) {
+            gui.blit(xCoord, yCoord, (int) zLevel, widthIn, heightIn, modern);
+        } else {
+            mcc$blitUV(xCoord, yCoord, widthIn, heightIn, textureSprite.getMinU(), textureSprite.getMinV(), textureSprite.getMaxU(), textureSprite.getMaxV());
+        }
+    }
+
+    /** Blits the bound texture's UV rectangle (0..1 coordinates) to a screen rectangle. */
+    public static void mcc$blitUV(int x, int y, int width, int height, float u0, float v0, float u1, float v1) {
+        var gui = RenderContext.gui();
+        if (gui == null) return;
+        final int res = 65536;
+        gui.blit(RenderContext.texture(), x, y, width, height, u0 * res, v0 * res, Math.round((u1 - u0) * res), Math.round((v1 - v0) * res), res, res);
+    }
+
     public static void drawModalRectWithCustomSizedTexture(int x, int y, float u, float v, int width, int height, float textureWidth, float textureHeight) {
         var gui = RenderContext.gui();
         if (gui != null) gui.blit(RenderContext.texture(), x, y, u, v, width, height, (int) textureWidth, (int) textureHeight);

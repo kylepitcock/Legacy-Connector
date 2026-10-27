@@ -144,12 +144,13 @@ public abstract class GuiSlot {
         bindAmountScrolled();
         var gui = RenderContext.gui();
         if (gui == null) return;
-        drawContainerBackground();
+        var tessellator = legacyconnector.v1_12_2.net.minecraft.client.renderer.Tessellator.getInstance();
+        drawContainerBackground(tessellator);
         int k = left + width / 2 - getListWidth() / 2 + 2;
         int l = top + 4 - (int) amountScrolled;
         gui.enableScissor(left, top, right, bottom);
         try {
-            // drawListHeader(int, int, Tessellator) needs the rendering shim's Tessellator; headers are not drawn yet
+            if (hasListHeader) drawListHeader(k, l, tessellator);
             drawSelectionBox(k, l, mouseXIn, mouseYIn, partialTicks);
         } finally {
             gui.disableScissor();
@@ -288,6 +289,15 @@ public abstract class GuiSlot {
 
     protected void drawContainerBackground() {
         tile(left, top, right, bottom, (int) amountScrolled, 0x202020);
+    }
+
+    /** Forge: the dark dirt behind the entries (lists override it to draw their own background). */
+    protected void drawContainerBackground(legacyconnector.v1_12_2.net.minecraft.client.renderer.Tessellator tessellator) {
+        drawContainerBackground();
+    }
+
+    /** The header above the first entry when {@link #setHasListHeader} enabled one (scrolls with the list). */
+    protected void drawListHeader(int insideLeft, int insideTop, legacyconnector.v1_12_2.net.minecraft.client.renderer.Tessellator tessellatorIn) {
     }
 
     private static void tile(int x1, int y1, int x2, int y2, float vScroll, int rgb) {
