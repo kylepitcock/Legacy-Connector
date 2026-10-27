@@ -99,12 +99,28 @@ public final class ItemStack {
         return itemDamage;
     }
 
+    /** Forge: the damage as the item reports it ({@link Item#getDamage}, which reads the stored value unless overridden). */
     public int getItemDamage() {
+        return item == null ? itemDamage : item.getDamage(this);
+    }
+
+    /** Forge: through {@link Item#setDamage} (which stores it, never below 0, unless overridden). */
+    public void setItemDamage(int damage) {
+        if (item == null) {
+            this.itemDamage = damage;
+            mcc$changed();
+        } else {
+            item.setDamage(this, damage);
+        }
+    }
+
+    /** The stored damage/metadata value ({@link Item#getDamage}'s default). */
+    public int mcc$rawDamage() {
         return itemDamage;
     }
 
-    public void setItemDamage(int damage) {
-        this.itemDamage = damage;
+    public void mcc$setRawDamage(int damage) {
+        this.itemDamage = Math.max(0, damage);
         mcc$changed();
     }
 
@@ -125,7 +141,7 @@ public final class ItemStack {
     }
 
     public boolean isItemDamaged() {
-        return isItemStackDamageable() && itemDamage > 0;
+        return isItemStackDamageable() && getItemDamage() > 0;
     }
 
     public boolean hasTagCompound() {
@@ -226,6 +242,11 @@ public final class ItemStack {
     }
 
     public String getDisplayName() {
+        NBTTagCompound display = getSubCompound("display");
+        if (display != null) {
+            if (display.hasKey("Name", 8)) return display.getString("Name");
+            if (display.hasKey("LocName", 8)) return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(display.getString("LocName"));
+        }
         if (item == null) return "";
         String n = item.getItemStackDisplayName(this);
         return n != null ? n : getUnlocalizedName();
@@ -255,5 +276,279 @@ public final class ItemStack {
         this.stackSize = parsed.stackSize;
         this.itemDamage = parsed.itemDamage;
         this.stackTagCompound = parsed.stackTagCompound;
+    }
+
+    // ------------------------------------------------------------------ 1.12.2 / Forge stack API (names, damage, use, capabilities)
+
+    public static final java.text.DecimalFormat DECIMALFORMAT = new java.text.DecimalFormat("#.##");
+
+    /** Forge: a stack with capability data (restored into its capabilities when they are first asked for). */
+    public ItemStack(Item item, int amount, int meta, NBTTagCompound capNBT) {
+        this(item, amount, meta);
+        this.mcc$capNBT = capNBT;
+    }
+
+    private NBTTagCompound mcc$capNBT;
+    private legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider[] mcc$caps;
+    private int animationsToGo;
+
+    /** The item's own capability provider and those attached by AttachCapabilitiesEvent, made on first use. */
+    private legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider[] mcc$caps() {
+        var caps = mcc$caps;
+        if (caps != null) return caps;
+        java.util.List<legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider> list = new java.util.ArrayList<>();
+        if (item != null) {
+            try {
+                var own = item.initCapabilities(this, mcc$capNBT);
+                if (own != null) list.add(own);
+            } catch (RuntimeException | LinkageError e) {
+                // an item whose capabilities cannot be built has none
+            }
+            try {
+                var event = new legacyconnector.v1_12_2.net.minecraftforge.event.AttachCapabilitiesEvent<>(ItemStack.class, this);
+                legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+                list.addAll(event.getCapabilities().values());
+            } catch (RuntimeException | LinkageError e) {
+                // no attached capabilities
+            }
+        }
+        caps = list.toArray(new legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider[0]);
+        mcc$caps = caps;
+        return caps;
+    }
+
+    public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        if (isEmpty() || capability == null) return false;
+        for (var c : mcc$caps()) if (c.hasCapability(capability, facing)) return true;
+        return false;
+    }
+
+    public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        if (isEmpty() || capability == null) return null;
+        for (var c : mcc$caps()) {
+            T t = c.getCapability(capability, facing);
+            if (t != null) return t;
+        }
+        return null;
+    }
+
+    /** Forge: capabilities are compatible when neither stack carries any (item capabilities keep their data in the stack tag). */
+    public boolean areCapsCompatible(ItemStack other) {
+        return this == other || mcc$caps().length == 0 && other.mcc$caps().length == 0 || item == other.item;
+    }
+
+    /** Uses up durability (Unbreaking may spare some); a stack that breaks shrinks by one. Creative players take no damage. */
+    public void damageItem(int amount, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityIn) {
+        if (entityIn instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer p
+                && legacyconnector.v1_12_2.net.minecraft.entity.player.PlayerCapabilities.mcc$get$isCreativeMode(
+                        legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.mcc$get$capabilities(p))) {
+            return;
+        }
+        if (!isItemStackDamageable()) return;
+        java.util.Random rand = entityIn == null ? new java.util.Random() : entityIn.getRNG();
+        if (attemptDamageItem(amount, rand, entityIn instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP mp ? mp : null)) {
+            if (entityIn != null && entityIn.mcc$modern() instanceof net.minecraft.world.entity.LivingEntity living) {
+                living.level().playSound(null, living.getX(), living.getY(), living.getZ(), net.minecraft.sounds.SoundEvents.ITEM_BREAK,
+                        living.getSoundSource(), 0.8F, 0.8F + living.level().random.nextFloat() * 0.4F);
+            }
+            shrink(1);
+            mcc$setRawDamage(0);
+        }
+    }
+
+    /** Applies damage (Unbreaking may negate each point); true when the stack is now broken. */
+    public boolean attemptDamageItem(int amount, java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP damager) {
+        if (!isItemStackDamageable()) return false;
+        if (amount > 0) {
+            int i = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getEnchantmentLevel(legacyconnector.v1_12_2.net.minecraft.init.Enchantments.UNBREAKING, this);
+            int j = 0;
+            for (int k = 0; i > 0 && k < amount; ++k) {
+                boolean negate = !(getItem() instanceof ItemArmor && rand.nextFloat() < 0.6F) && rand.nextInt(i + 1) > 0;
+                if (negate) ++j;
+            }
+            amount -= j;
+            if (amount <= 0) return false;
+        }
+        setItemDamage(getItemDamage() + amount);
+        return getItemDamage() > getMaxDamage();
+    }
+
+    public boolean hasDisplayName() {
+        NBTTagCompound display = getSubCompound("display");
+        return display != null && display.hasKey("Name", 8);
+    }
+
+    public ItemStack setStackDisplayName(String displayName) {
+        getOrCreateSubCompound("display").setString("Name", displayName);
+        mcc$changed();
+        return this;
+    }
+
+    public void clearCustomName() {
+        NBTTagCompound display = getSubCompound("display");
+        if (display != null) {
+            display.removeTag("Name");
+            if (display.isEmpty()) {
+                removeSubCompound("display");
+                if (stackTagCompound != null && stackTagCompound.isEmpty()) stackTagCompound = null;
+            }
+        }
+        mcc$changed();
+    }
+
+    public NBTTagCompound getSubCompound(String key) {
+        return stackTagCompound != null && stackTagCompound.hasKey(key, 10) ? stackTagCompound.getCompoundTag(key) : null;
+    }
+
+    public void removeSubCompound(String key) {
+        if (stackTagCompound != null && stackTagCompound.hasKey(key, 10)) {
+            stackTagCompound.removeTag(key);
+            mcc$changed();
+        }
+    }
+
+    public int getMaxItemUseDuration() {
+        return getItem().getMaxItemUseDuration(this);
+    }
+
+    public EnumAction getItemUseAction() {
+        return getItem().getItemUseAction(this);
+    }
+
+    public boolean hasEffect() {
+        return getItem().hasEffect(this);
+    }
+
+    public boolean isItemEnchantable() {
+        return getItem().isEnchantable(this) && !isItemEnchanted();
+    }
+
+    public EnumRarity getRarity() {
+        return getItem().getRarity(this);
+    }
+
+    public boolean isItemEqualIgnoreDurability(ItemStack stack) {
+        return !isItemStackDamageable() ? isItemEqual(stack) : !stack.isEmpty() && item == stack.item;
+    }
+
+    public static boolean areItemsEqualIgnoreDurability(ItemStack stackA, ItemStack stackB) {
+        if (stackA == stackB) return true;
+        return !stackA.isEmpty() && !stackB.isEmpty() && stackA.isItemEqualIgnoreDurability(stackB);
+    }
+
+    /** Forge: equal as the client sees them (the share tag instead of the full tag). */
+    public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack stackA, ItemStack stackB) {
+        if (stackA.isEmpty()) return stackB.isEmpty();
+        return !stackB.isEmpty() && stackA.stackSize == stackB.stackSize && stackA.item == stackB.item && stackA.getItemDamage() == stackB.getItemDamage()
+                && areItemStackShareTagsEqual(stackA, stackB);
+    }
+
+    public static boolean areItemStackShareTagsEqual(ItemStack stackA, ItemStack stackB) {
+        NBTTagCompound a = stackA.getItem().getNBTShareTag(stackA), b = stackB.getItem().getNBTShareTag(stackB);
+        return a == null ? b == null : a.equals(b);
+    }
+
+    /** The modifiers the stack's tag lists for the slot, else the item's own. */
+    public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getAttributeModifiers(
+            legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot equipmentSlot) {
+        if (hasTagCompound() && stackTagCompound.hasKey("AttributeModifiers", 9)) {
+            com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> out = com.google.common.collect.HashMultimap.create();
+            var list = stackTagCompound.getTagList("AttributeModifiers", 10);
+            for (int i = 0; i < list.tagCount(); ++i) {
+                NBTTagCompound tag = list.getCompoundTagAt(i);
+                if (tag.hasKey("Slot", 8) && !tag.getString("Slot").equals(equipmentSlot.getName())) continue;
+                java.util.UUID id = new java.util.UUID(tag.getLong("UUIDMost"), tag.getLong("UUIDLeast"));
+                if (id.getLeastSignificantBits() == 0L && id.getMostSignificantBits() == 0L) continue;
+                out.put(tag.getString("AttributeName"), new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(id,
+                        tag.getString("Name"), tag.getDouble("Amount"), tag.getInteger("Operation")));
+            }
+            return out;
+        }
+        return getItem().getAttributeModifiers(equipmentSlot, this);
+    }
+
+    /** The name as a chat component: "[name]", italic when renamed. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getTextComponent() {
+        var name = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(getDisplayName());
+        if (hasDisplayName()) name.getStyle().setItalic(true);
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString("[").appendSibling(name).appendText("]");
+    }
+
+    /** Stacks in item frames are modern entities' stacks; a legacy stack is never on one. */
+    public boolean isOnItemFrame() {
+        return false;
+    }
+
+    public boolean interactWithEntity(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityIn, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return getItem().itemInteractionForEntity(this, playerIn, entityIn, hand);
+    }
+
+    public void onCrafting(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn, int amount) {
+        getItem().onCreated(this, worldIn, playerIn);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemUse(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, float hitX, float hitY, float hitZ) {
+        return getItem().onItemUse(playerIn, worldIn, pos, hand, side, hitX, hitY, hitZ);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onItemUseFirst(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, float hitX, float hitY, float hitZ) {
+        return getItem().onItemUseFirst(playerIn, worldIn, pos, side, hitX, hitY, hitZ, hand);
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.ActionResult<ItemStack> useItemRightClick(legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        return getItem().onItemRightClick(worldIn, playerIn, hand);
+    }
+
+    public ItemStack onItemUseFinish(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityLiving) {
+        return getItem().onItemUseFinish(this, worldIn, entityLiving);
+    }
+
+    public void onBlockDestroyed(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockIn,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn) {
+        getItem().onBlockDestroyed(this, worldIn, blockIn, pos, playerIn);
+    }
+
+    public void hitEntity(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityIn, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn) {
+        getItem().hitEntity(this, entityIn, playerIn);
+    }
+
+    public float getDestroySpeed(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockIn) {
+        return getItem().getDestroySpeed(this, blockIn);
+    }
+
+    public boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState blockIn) {
+        return getItem().canHarvestBlock(blockIn, this);
+    }
+
+    public int getRepairCost() {
+        return hasTagCompound() && stackTagCompound.hasKey("RepairCost", 3) ? stackTagCompound.getInteger("RepairCost") : 0;
+    }
+
+    public void setRepairCost(int cost) {
+        if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
+        stackTagCompound.setInteger("RepairCost", cost);
+        mcc$changed();
+    }
+
+    public int getAnimationsToGo() {
+        return animationsToGo;
+    }
+
+    public void setAnimationsToGo(int animations) {
+        this.animationsToGo = animations;
+    }
+
+    public void updateAnimation(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn,
+            int inventorySlot, boolean isCurrentItem) {
+        if (animationsToGo > 0) --animationsToGo;
+        if (item != null) item.onUpdate(this, worldIn, entityIn, inventorySlot, isCurrentItem);
     }
 }
