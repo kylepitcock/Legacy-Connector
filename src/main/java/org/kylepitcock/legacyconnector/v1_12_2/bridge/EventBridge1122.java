@@ -148,6 +148,7 @@ public final class EventBridge1122 {
         });
         registerLiving(bus);
         registerInteractions(bus);
+        registerAreaF(bus);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Client.register(bus);
     }
 
@@ -409,5 +410,18 @@ public final class EventBridge1122 {
                 if (wants(TickEvent.RenderTickEvent.class)) post(new TickEvent.RenderTickEvent(TickEvent.Phase.END, e.getPartialTick().getGameTimeDeltaPartialTick(false)));
             });
         }
+    }
+
+    // ------------------------------------------------------------------ area F: FML item pickup
+
+    private static void registerAreaF(IEventBus bus) {
+        bus.addListener((net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent.Post e) -> {
+            if (!wants(PlayerEvent.ItemPickupEvent.class) || player(e.getPlayer()) == null) return;
+            var item = EntityBridge1122.wrap(e.getItemEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem i ? i : null;
+            var picked = e.getOriginalStack().copy();
+            picked.setCount(e.getOriginalStack().getCount() - e.getCurrentStack().getCount());
+            if (picked.isEmpty()) return;
+            post(new PlayerEvent.ItemPickupEvent(player(e.getPlayer()), item, Stacks1122.fromModern(picked)));
+        });
     }
 }

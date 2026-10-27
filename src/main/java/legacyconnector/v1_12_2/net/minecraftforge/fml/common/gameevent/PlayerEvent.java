@@ -72,4 +72,24 @@ public class PlayerEvent extends Event {
             this.toDim = toDim;
         }
     }
+
+    /** A player picked up an item entity (posted after the pickup, with what was picked up). */
+    public static class ItemPickupEvent extends PlayerEvent {
+        public final ItemStack stack;
+        private final legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem originalEntity;
+
+        public ItemPickupEvent(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem entPickedUp, ItemStack stack) {
+            super(player);
+            this.originalEntity = entPickedUp;
+            this.stack = stack;
+        }
+
+        public ItemStack getStack() {
+            return stack;
+        }
+
+        public legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem getOriginalEntity() {
+            return originalEntity;
+        }
+    }
 }
