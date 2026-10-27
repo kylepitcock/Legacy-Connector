@@ -15,6 +15,13 @@ each in its own git worktree, and sorted with the most-used APIs first:
 | `task-I.txt` | 1.7.10 blocks, items, tile entities, inventories, crafting, enchantments, ore dictionary, fluids |
 | `task-F.txt` | 1.7.10 everything else (FML, Forge, network, commands, NBT, utilities, server, stats) |
 | `task-C.txt` | APIs logged at runtime as "not implemented yet" (mixes 1.7.10 and 1.12.2) |
+
+On 2026-10-27 the area lists got a `# ---- 1.12.2` section each: 12,286 1.12.2 APIs from the link check of 201 1.12.2 jars
+(120 content mods and 81 popular mods from Modrinth, listed in `tools/dev/test-mods-1.12.2.md`, downloadable with
+`tools/dev/fetch_test_mods_1122.py`). Same areas, 1.12.2 package names (`net.minecraftforge.fml...` instead of
+`cpw.mods.fml...`): E 3,338, R1 2,113, R2a 1,061, R2b 889, W 1,423, I 2,225, F 1,237 entries. A 1.12.2 line ends with
+`# n mod(s): <jar names>; e.g. <user classes>`; implement it in `src/main/java/legacyconnector/v1_12_2/...`. The 1.12.2 client
+(R1, R2a, R2b) has no rendering bridge yet, so those sections need that foundation first.
 | `task-D.txt` | 1.12.2 APIs logged at runtime |
 
 Each line is `legacy.class.member(descriptor)` (fields: `class.field:type`), followed by `# n user(s): <mod classes>`.
