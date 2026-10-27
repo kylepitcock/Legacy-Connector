@@ -102,34 +102,38 @@ public class BiomeDecorator {
      */
     protected void genDecorations(BiomeGenBase biome) {
         var bus = legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
-        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Pre(currentWorld, randomGenerator, chunk_X, chunk_Z));
+        // the decoration's own world, random and chunk: what it generates can decorate again through this shared decorator
+        // and reset the fields (Fisk's ore generation got a null random in the Post event, in Twilight Forest)
+        World world = currentWorld;
         Random rand = randomGenerator;
+        int cx = chunk_X, cz = chunk_Z;
+        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Pre(world, rand, cx, cz));
         int trees = treesPerChunk;
         if (rand.nextInt(10) == 0) trees++;
-        if (trees > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(currentWorld, rand, chunk_X, chunk_Z,
+        if (trees > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(world, rand, cx, cz,
                 legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.TREE)) {
             for (int i = 0; i < trees; i++) {
-                int x = chunk_X + rand.nextInt(16) + 8;
-                int z = chunk_Z + rand.nextInt(16) + 8;
-                int y = currentWorld.getHeightValue(x, z);
+                int x = cx + rand.nextInt(16) + 8;
+                int z = cz + rand.nextInt(16) + 8;
+                int y = world.getHeightValue(x, z);
                 var tree = biome.func_150567_a(rand);
                 if (tree == null) continue;
                 tree.setScale(1.0, 1.0, 1.0);
-                if (tree.generate(currentWorld, rand, x, y, z)) tree.func_150524_b(currentWorld, rand, x, y, z);
+                if (tree.generate(world, rand, x, y, z)) tree.func_150524_b(world, rand, x, y, z);
             }
         }
-        if (grassPerChunk > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(currentWorld, rand, chunk_X, chunk_Z,
+        if (grassPerChunk > 0 && legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.TerrainGen.decorate(world, rand, cx, cz,
                 legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Decorate.EventType.GRASS)) {
             for (int i = 0; i < grassPerChunk; i++) {
-                int x = chunk_X + rand.nextInt(16) + 8;
-                int z = chunk_Z + rand.nextInt(16) + 8;
-                int top = currentWorld.getHeightValue(x, z) * 2;
+                int x = cx + rand.nextInt(16) + 8;
+                int z = cz + rand.nextInt(16) + 8;
+                int top = world.getHeightValue(x, z) * 2;
                 if (top <= 0) continue;
                 int y = rand.nextInt(top);
                 var gen = biome.getRandomWorldGenForGrass(rand);
-                if (gen != null) gen.generate(currentWorld, rand, x, y, z);
+                if (gen != null) gen.generate(world, rand, x, y, z);
             }
         }
-        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Post(currentWorld, randomGenerator, chunk_X, chunk_Z));
+        bus.post(new legacyconnector.v1_7_10.net.minecraftforge.event.terraingen.DecorateBiomeEvent.Post(world, rand, cx, cz));
     }
 }
