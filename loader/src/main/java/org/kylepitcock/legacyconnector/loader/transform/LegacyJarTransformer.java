@@ -175,7 +175,7 @@ public final class LegacyJarTransformer {
         }
     }
 
-    private static final List<String> PROVIDED_LIBRARIES = List.of("it/unimi/dsi/fastutil/", "com/google/common/", "com/google/gson/",
+    private static final List<String> PROVIDED_LIBRARIES = List.of("it/unimi/dsi/fastutil/", "com/google/common/", "com/google/thirdparty/", "com/google/gson/",
             "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/",
             "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
 
@@ -326,7 +326,8 @@ public final class LegacyJarTransformer {
     }
 
     /** Libraries the platform ships as modules: a bundled copy would split their packages and JPMS refuses to boot. */
-    private static final List<String> PLATFORM_LIBRARIES = List.of("org/spongepowered/asm/", "org/spongepowered/tools/");
+    private static final List<String> PLATFORM_LIBRARIES = List.of("org/spongepowered/asm/", "org/spongepowered/tools/",
+            "com/llamalad7/mixinextras/");
 
     /**
      * Drops bundled copies of {@link #PLATFORM_LIBRARIES} (1.12.2 mods shaded Mixin for their own mixins, which target 1.12
