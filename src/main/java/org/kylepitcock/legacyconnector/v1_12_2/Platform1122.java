@@ -102,6 +102,7 @@ public final class Platform1122 implements LegacyPlatform {
             LegacyModContainer1122.setActive(null);
         }
         dispatch(mod, new FMLConstructionEvent());
+        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.ConfigScreens1122.register(mod);
     }
 
     private static void injectInstanceAndMetadata(LegacyModRecord mod, LegacyModContainer1122 container) throws IllegalAccessException {

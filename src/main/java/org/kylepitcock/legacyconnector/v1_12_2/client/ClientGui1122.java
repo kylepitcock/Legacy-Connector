@@ -54,6 +54,10 @@ public final class ClientGui1122 {
             mc.setScreen(null);
             return;
         }
+        if (screen instanceof ScreenEvents1122.View view && view.mcc$modern() != null) {
+            mc.setScreen(view.mcc$modern()); // back to a modern screen (its opening is announced by the modern event)
+            return;
+        }
         GuiScreen[] replace = new GuiScreen[1];
         if (ScreenEvents1122.openLegacy(screen, replace)) return;
         mc.setScreen(host(replace[0]));
