@@ -54,7 +54,7 @@ public final class ClientGui1122 {
             mc.setScreen(null);
             return;
         }
-        if (screen instanceof ScreenEvents1122.View view && view.mcc$modern() != null) {
+        if (screen instanceof ScreenEvents1122.Modern view && view.mcc$modern() != null) {
             mc.setScreen(view.mcc$modern()); // back to a modern screen (its opening is announced by the modern event)
             return;
         }
@@ -63,13 +63,21 @@ public final class ClientGui1122 {
         mc.setScreen(host(replace[0]));
     }
 
-    /** The modern screen showing a legacy one: the game's own equivalent for 1.12's screens, else a host of the legacy screen. */
+    /**
+     * The modern screen showing a legacy one: the game's own equivalent for 1.12's screens, a container screen for a container GUI the
+     * client shows itself (its clicks go to the player's open menu, see {@link ClientMenu1122}), else a host of the legacy screen.
+     */
     public static net.minecraft.client.gui.screens.Screen host(GuiScreen screen) {
         if (screen == null) return null;
-        if (screen instanceof ScreenEvents1122.View view && view.mcc$modern() != null) return view.mcc$modern();
+        if (screen instanceof ScreenEvents1122.Modern view && view.mcc$modern() != null) return view.mcc$modern();
         Minecraft mc = Minecraft.getInstance();
         net.minecraft.client.gui.screens.Screen vanilla = vanillaEquivalent(mc, screen);
-        return vanilla != null ? vanilla : new LegacyScreen1122(screen);
+        if (vanilla != null) return vanilla;
+        if (screen instanceof GuiContainer gc && gc.inventorySlots != null) {
+            net.minecraft.client.gui.screens.Screen container = ClientMenu1122.screen(gc);
+            if (container != null) return container;
+        }
+        return new LegacyScreen1122(screen);
     }
 
     /**
@@ -106,9 +114,13 @@ public final class ClientGui1122 {
         return ScreenEvents1122.legacyOf(s);
     }
 
+    /**
+     * FML's client-side openGui: the client GUI is shown at once, container GUIs too (their clicks go to the player's open menu, as in
+     * 1.12; a server-opened container replaces the screen when the server's opening arrives).
+     */
     public static void showClientOnly(IGuiHandler handler, EntityPlayer player, int id, World world, int x, int y, int z) {
         Object gui = handler.getClientGuiElement(id, player, world, x, y, z);
-        if (gui instanceof GuiScreen screen && !(gui instanceof GuiContainer)) display(screen);
+        if (gui instanceof GuiScreen screen) display(screen);
     }
 
     public static void openFromServer(IGuiHandler handler, int id, int x, int y, int z) {

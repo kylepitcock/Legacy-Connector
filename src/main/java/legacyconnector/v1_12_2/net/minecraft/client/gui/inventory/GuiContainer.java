@@ -181,6 +181,11 @@ public abstract class GuiContainer extends GuiScreen {
         return ySize;
     }
 
+    public void mcc$setSize(int xSize, int ySize) {
+        this.xSize = xSize;
+        this.ySize = ySize;
+    }
+
     public void mcc$setOrigin(int left, int top) {
         this.guiLeft = left;
         this.guiTop = top;

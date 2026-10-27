@@ -171,6 +171,15 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         return bus.mcc$hasListeners(event.getClass()) && bus.post(event);
     }
 
+    /** Sets up a stand-in of a modern screen (no init events: the modern screen was set up by the game). */
+    public void mcc$initView(Minecraft mc, int w, int h) {
+        this.mc = mc;
+        this.fontRenderer = mc.fontRenderer;
+        this.itemRender = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
+        this.width = w;
+        this.height = h;
+    }
+
     public void setGuiSize(int w, int h) {
         this.width = w;
         this.height = h;
