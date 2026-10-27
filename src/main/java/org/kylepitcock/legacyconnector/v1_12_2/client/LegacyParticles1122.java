@@ -37,7 +37,7 @@ public final class LegacyParticles1122 {
     /** Whether the particle's class draws itself (overrides renderParticle below the shim). */
     private static boolean custom(Class<?> cls) {
         return CUSTOM.computeIfAbsent(cls, c -> {
-            for (Class<?> k = c; k != null && !k.getName().startsWith("legacyconnector."); k = k.getSuperclass()) {
+            for (Class<?> k = c; k != null && k != Particle.class; k = k.getSuperclass()) {
                 for (var m : k.getDeclaredMethods()) if (m.getName().equals("renderParticle") && m.getParameterCount() == 8) return true;
             }
             return false;
@@ -74,9 +74,16 @@ public final class LegacyParticles1122 {
                     if (custom(p.getClass())) {
                         ParticleManager.CustomRenderer r = ParticleManager.mcc$customRenderer;
                         if (r != null) r.render(p, partial, rx, rxz, rz, ryz, rxy);
+                        RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern("minecraft", "textures/particle/particles.png"));
                         continue;
                     }
-                    if (p.getFXLayer() != 0) continue; // a sprite of the block atlas: drawn by the rendering shim's renderParticle
+                    if (p.getFXLayer() != 0) {
+                        // a sprite of the block atlas (or a self-drawing layer): the default renderParticle with the atlas bound
+                        ParticleManager.CustomRenderer r = ParticleManager.mcc$customRenderer;
+                        if (r != null) r.render(p, partial, rx, rxz, rz, ryz, rxy);
+                        RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern("minecraft", "textures/particle/particles.png"));
+                        continue;
+                    }
                     double[][] q = p.mcc$defaultQuad(partial, rx, rxz, rz, ryz, rxy);
                     int light = p.getBrightnessForRender(partial);
                     int argb = p.mcc$argb();

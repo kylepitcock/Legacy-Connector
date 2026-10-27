@@ -15,6 +15,11 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122;
  * are phantoms answered by their {@code mcc$get$} accessors.
  */
 public class Minecraft {
+    /**
+     * Whether this is a client. Client-only mods call {@link #getMinecraft()} on dedicated servers too (CTM's preInit); there the
+     * client singletons below stay null, since loading them would load modern client classes.
+     */
+    private static final boolean CLIENT = net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
     private static final Minecraft INSTANCE = new Minecraft();
 
     public static final boolean IS_RUNNING_ON_MAC = System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("mac");
@@ -38,13 +43,13 @@ public class Minecraft {
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.entity.Entity pointedEntity;
 
-    public FontRenderer fontRenderer = FontRenderer.mcc$INSTANCE;
-    public FontRenderer standardGalacticFontRenderer = FontRenderer.mcc$INSTANCE;
+    public FontRenderer fontRenderer = CLIENT ? FontRenderer.mcc$INSTANCE : null;
+    public FontRenderer standardGalacticFontRenderer = CLIENT ? FontRenderer.mcc$INSTANCE : null;
     /** The mods' particles (ticked and drawn by the layer). */
-    public final legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager effectRenderer = new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager();
+    public final legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager effectRenderer = CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager() : null;
     public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP playerController =
-            legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP.mcc$INSTANCE;
-    public final legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame ingameGUI = legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame.mcc$INSTANCE;
+            CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP.mcc$INSTANCE : null;
+    public final legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame ingameGUI = CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame.mcc$INSTANCE : null;
 
     public legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager getLanguageManager() {
         return legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
@@ -257,7 +262,7 @@ public class Minecraft {
     // ------------------------------------------------------------------ rendering objects (area R: client.renderer)
 
     public final legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager renderEngine =
-            new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager(getResourceManager());
+            CLIENT ? new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager(getResourceManager()) : null;
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager getTextureManager() {
         return renderEngine;
@@ -273,53 +278,41 @@ public class Minecraft {
         return net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
     }
 
+    /** The client's singletons below are null on a dedicated server (client-only mods call {@code getMinecraft()} there too). */
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem getRenderItem() {
-        return legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance() : null;
     }
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher getBlockRendererDispatcher() {
-        return legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher.mcc$instance();
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher.mcc$instance() : null;
     }
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.color.BlockColors getBlockColors() {
-        return legacyconnector.v1_12_2.net.minecraft.client.renderer.color.BlockColors.mcc$instance();
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.color.BlockColors.mcc$instance() : null;
     }
 
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors getItemColors() {
-        return legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors.mcc$instance();
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors.mcc$instance() : null;
     }
 
-    private legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager renderManager;
-    private legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer itemRenderer;
     private legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer entityRendererObject;
     private legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal renderGlobalObject;
     private legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer framebufferObject;
 
-    public synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager getRenderManager() {
-        if (renderManager == null) {
-            renderManager = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
-                    legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager.class, renderEngine, getRenderItem());
-        }
-        return renderManager;
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager getRenderManager() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager.mcc$instance() : null;
     }
 
-    public synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer getItemRenderer() {
-        if (itemRenderer == null) {
-            itemRenderer = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
-                    legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer.class, this);
-        }
-        return itemRenderer;
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer getItemRenderer() {
+        return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.ItemRenderer.mcc$instance() : null;
     }
 
-    /** Phantom: the game renderer (camera, fog, light map); made on first use, mods may replace it. */
+    /** Phantom: the game renderer (camera, fog, light map); mods may replace it. */
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer entityRenderer;
 
     public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer mcc$get$entityRenderer(Minecraft m) {
-        if (m.entityRendererObject == null) {
-            m.entityRendererObject = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
-                    legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer.class, m, m.getResourceManager());
-        }
+        if (m.entityRendererObject == null && CLIENT) m.entityRendererObject = legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer.mcc$instance();
         return m.entityRendererObject;
     }
 
@@ -332,10 +325,7 @@ public class Minecraft {
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal renderGlobal;
 
     public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal mcc$get$renderGlobal(Minecraft m) {
-        if (m.renderGlobalObject == null) {
-            m.renderGlobalObject = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
-                    legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal.class, m);
-        }
+        if (m.renderGlobalObject == null && CLIENT) m.renderGlobalObject = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal.mcc$instance();
         return m.renderGlobalObject;
     }
 
@@ -353,7 +343,7 @@ public class Minecraft {
 
     /** The main framebuffer the world and screens draw into. */
     public synchronized legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer getFramebuffer() {
-        if (framebufferObject == null) {
+        if (framebufferObject == null && CLIENT) {
             framebufferObject = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
                     legacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer.class, mcc$get$displayWidth(this), mcc$get$displayHeight(this), true);
         }
@@ -424,7 +414,7 @@ public class Minecraft {
             new legacyconnector.v1_12_2.net.minecraft.client.resources.data.MetadataSerializer();
     public final java.io.File mcDataDir = gameDir;
     public final java.io.File fileResourcepacks = new java.io.File(gameDir, "resourcepacks");
-    public final legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager languageManager =
+    public final legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager languageManager = !CLIENT ? null :
             legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
     /** The vanilla pack as a legacy pack is not provided (resources of the game are found through the resource manager). */
     public final legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack defaultResourcePack = null;
@@ -539,7 +529,7 @@ public class Minecraft {
         loadWorld(world);
     }
 
-    public LoadingScreenRenderer loadingScreen = new LoadingScreenRenderer(this);
+    public LoadingScreenRenderer loadingScreen = CLIENT ? new LoadingScreenRenderer(this) : null;
 
     /** Phantom: the model manager. */
     @Deprecated

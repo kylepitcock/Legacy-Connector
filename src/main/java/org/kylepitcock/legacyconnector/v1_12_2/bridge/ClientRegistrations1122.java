@@ -76,6 +76,13 @@ public final class ClientRegistrations1122 {
         }
     }
 
+    /** How many entity renderers are registered (cheap; RenderManager creates new ones when it grows). */
+    public static int entityRendererCount() {
+        synchronized (ENTITY_RENDERERS) {
+            return ENTITY_RENDERERS.size();
+        }
+    }
+
     public static Map<Object, Class<?>> metadataSerializers() {
         synchronized (METADATA_SERIALIZERS) {
             return new LinkedHashMap<>(METADATA_SERIALIZERS);
