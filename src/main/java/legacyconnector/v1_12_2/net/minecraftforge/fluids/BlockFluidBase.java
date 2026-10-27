@@ -49,4 +49,69 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
     public BlockFluidBase setFluidStack(FluidStack stack) {
         return this;
     }
+
+    /** The fluid level of the block (0 is a source block), stored as its metadata. */
+    public static final legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger LEVEL =
+            legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger.create("level", 0, 15);
+
+    @Override
+    protected legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer createBlockState() {
+        return new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this, LEVEL);
+    }
+
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getStateFromMeta(int meta) {
+        return getDefaultState().withProperty(LEVEL, meta & 15);
+    }
+
+    @Override
+    public int getMetaFromState(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getValue(LEVEL);
+    }
+
+    public int getQuantaValue(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var state = world.getBlockState(pos);
+        if (state.getBlock() == legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR) return 0;
+        if (state.getBlock() != this) return -1;
+        return quantaPerBlock - state.getValue(LEVEL);
+    }
+
+    public int getMaxRenderHeightMeta() {
+        return quantaPerBlock - 1;
+    }
+
+    public int getQuantaPerBlock() {
+        return quantaPerBlock;
+    }
+
+    public int getDensityDir() {
+        return densityDir;
+    }
+
+    /** Fluids are drawn by the modern fluid renderer, not as models. */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType getRenderType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.MODEL;
+    }
+
+    @Override
+    public boolean isOpaqueCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public boolean isFullCube(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB getCollisionBoundingBox(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return NULL_AABB;
+    }
+
+    @Override
+    public boolean isReplaceable(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return true;
+    }
 }

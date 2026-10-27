@@ -979,4 +979,70 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
                 || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.DIAMOND_BLOCK || this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.IRON_BLOCK;
     }
 
+    /** Whether the block is the vanilla block of one of these 1.12 registry paths (vanilla blocks are wrappers, compared by name). */
+    public static boolean mcc$named(Block block, String... paths) {
+        if (block == null) return false;
+        var name = block.getRegistryName();
+        String modern = block.mcc$modern instanceof net.minecraft.world.level.block.Block b && !(b instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block)
+                ? net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).getPath() : null;
+        for (String p : paths) {
+            if (name != null && "minecraft".equals(name.getNamespace()) && p.equals(name.getPath())) return true;
+            if (modern != null && MCC$MODERN_NAMES.getOrDefault(p, java.util.List.of(p)).stream().anyMatch(m -> m.equals(modern)
+                    || m.equals("*_terracotta") && modern.endsWith("_terracotta") && !modern.endsWith("glazed_terracotta"))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The modern blocks a 1.12 vanilla name became (a wrapper made from the modern block is named after it). */
+    private static final java.util.Map<String, java.util.List<String>> MCC$MODERN_NAMES = java.util.Map.of("grass", java.util.List.of("grass_block"),
+            "dirt", java.util.List.of("dirt", "coarse_dirt", "podzol"), "sand", java.util.List.of("sand", "red_sand"), "hardened_clay",
+            java.util.List.of("terracotta"), "stained_hardened_clay", java.util.List.of("*_terracotta"), "reeds", java.util.List.of("sugar_cane"));
+
+    /** Forge: whether the plant may grow on this block (cactus on sand, crops on farmland, plains plants on grass and dirt...). */
+    public boolean canSustainPlant(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction,
+            legacyconnector.v1_12_2.net.minecraftforge.common.IPlantable plantable) {
+        var plantPos = pos.offset(direction);
+        var plant = plantable.getPlant(world, plantPos);
+        var plantType = plantable.getPlantType(world, plantPos);
+        Block plantBlock = plant == null ? null : plant.getBlock();
+        if (mcc$named(plantBlock, "cactus")) return mcc$named(this, "cactus", "sand");
+        if (mcc$named(plantBlock, "reeds") && mcc$named(this, "reeds")) return true;
+        if (plantable instanceof BlockBush bush && bush.canSustainBush(state)) return true;
+        if (plantType == null) return false;
+        switch (plantType) {
+            case Desert:
+                return mcc$named(this, "sand", "hardened_clay", "stained_hardened_clay");
+            case Nether:
+                return mcc$named(this, "soul_sand");
+            case Crop:
+                return mcc$named(this, "farmland");
+            case Cave:
+                return state.isSideSolid(world, pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP);
+            case Plains:
+                return mcc$named(this, "grass", "dirt", "farmland");
+            case Water:
+                return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER;
+            case Beach: {
+                boolean isBeach = mcc$named(this, "grass", "dirt", "sand");
+                if (!isBeach) return false;
+                for (var side : legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.Plane.HORIZONTAL) {
+                    if (world.getBlockState(pos.offset(side)).getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER) return true;
+                }
+                return false;
+            }
+            default:
+                return false;
+        }
+    }
+
+    /** Forge: whether the soil hydrates crops (wet farmland). */
+    public boolean isFertile(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (!mcc$named(this, "farmland")) return false;
+        var modern = world.mcc$level().getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
+        return modern.hasProperty(net.minecraft.world.level.block.FarmBlock.MOISTURE) && modern.getValue(net.minecraft.world.level.block.FarmBlock.MOISTURE) > 0;
+    }
+
 }
