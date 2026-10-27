@@ -57,6 +57,9 @@ public final class LegacyConnector {
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
             MENUS.register("legacy_1_7_10", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
                     org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge::clientMenu));
+    public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyMenu1122>> LEGACY_MENU_1_12_2 =
+            MENUS.register("legacy_1_12_2", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::clientMenu));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
@@ -73,10 +76,16 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
-            if (e.getRegistryKey().equals(Registries.MENU)) org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
+            if (e.getRegistryKey().equals(Registries.MENU)) {
+                org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.setMenuType(LEGACY_MENU_1_7_10.get());
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122.setMenuType(LEGACY_MENU_1_12_2.get());
+            }
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
-        if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
+        if (FMLEnvironment.dist.isClient()) {
+            org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
+            org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
+        }
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
         modBus.addListener(EventPriority.LOWEST, LegacyLifecycle::onRegister);
         modBus.addListener(LegacyLifecycle::onCommonSetup);

@@ -24,6 +24,12 @@ public final class EntityBridge1122 {
         if (view == null) {
             World world = WorldBridge1122.wrap(modern.level());
             if (modern instanceof ServerPlayer) view = new EntityPlayerMP(world);
+            else if (modern instanceof net.minecraft.world.entity.player.Player && modern.level().isClientSide()) {
+                // client players: the local one is Minecraft.player (EntityPlayerSP), the others EntityOtherPlayerMP
+                view = net.neoforged.fml.loading.FMLEnvironment.dist.isClient() && org.kylepitcock.legacyconnector.v1_12_2.client.ClientGui1122.isLocalPlayer(modern)
+                        ? new legacyconnector.v1_12_2.net.minecraft.client.entity.EntityPlayerSP(world)
+                        : new legacyconnector.v1_12_2.net.minecraft.client.entity.EntityOtherPlayerMP(world);
+            }
             else view = new PlainEntity(world);
             view.mcc$entity = modern;
             ENTITIES.put(modern, view);

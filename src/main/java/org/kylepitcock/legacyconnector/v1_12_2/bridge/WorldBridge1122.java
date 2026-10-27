@@ -12,7 +12,8 @@ public final class WorldBridge1122 {
 
     public static synchronized World wrap(Level level) {
         if (level == null) return null;
-        return WORLDS.computeIfAbsent(level, WorldView::new);
+        // the client's level is a WorldClient (Minecraft.world)
+        return WORLDS.computeIfAbsent(level, l -> l.isClientSide() ? new legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient(l) : new WorldView(l));
     }
 
     private static final class WorldView extends World {
