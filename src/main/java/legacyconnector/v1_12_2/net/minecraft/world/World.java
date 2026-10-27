@@ -8,7 +8,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122;
 
 /** 1.12.2 world: a view over a modern level. */
-public class World {
+public class World implements IBlockAccess {
     private final net.minecraft.world.level.Level level;
 
     public final boolean isRemote;
@@ -146,5 +146,38 @@ public class World {
 
     public boolean isDaytimeNow() {
         return isDaytime();
+    }
+
+    // ------------------------------------------------------------------ IBlockAccess
+
+    @Override
+    public int getCombinedLight(BlockPos pos, int lightValue) {
+        var p = modern(pos);
+        int sky = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, p);
+        int block = Math.max(lightValue, level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p));
+        return sky << 20 | block << 4;
+    }
+
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.world.biome.Biome getBiome(BlockPos pos) {
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(level.getBiome(modern(pos)));
+    }
+
+    @Override
+    public int getStrongPower(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction) {
+        var p = modern(pos);
+        return level.getBlockState(p).getDirectSignal(level, p, direction.mcc$modern());
+    }
+
+    @Override
+    public WorldType getWorldType() {
+        return WorldType.mcc$of(level);
+    }
+
+    @Override
+    public boolean isSideSolid(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, boolean _default) {
+        var p = modern(pos);
+        if (!level.hasChunkAt(p)) return _default;
+        return level.getBlockState(p).isFaceSturdy(level, p, side.mcc$modern());
     }
 }
