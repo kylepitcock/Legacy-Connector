@@ -220,6 +220,15 @@ public class PacketBuffer extends ByteBuf {
         return this;
     }
 
+    /** A text component as its 1.12 JSON. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent readTextComponent() throws IOException {
+        return legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.Serializer.jsonToComponent(readString(32767));
+    }
+
+    public PacketBuffer writeTextComponent(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent component) {
+        return writeString(legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent.Serializer.componentToJson(component));
+    }
+
     public ResourceLocation readResourceLocation() {
         return new ResourceLocation(readString(32767));
     }
