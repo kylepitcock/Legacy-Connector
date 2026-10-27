@@ -19,7 +19,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block;
  */
 public final class BlockFaces1122 {
     private static final String STATE = "Llegacyconnector/v1_12_2/net/minecraft/block/state/IBlockState;";
-    private static final String ACCESS = "Llegacyconnector_synth/v1_12_2/net/minecraft/world/IBlockAccess;";
+    private static final String ACCESS = "Llegacyconnector/v1_12_2/net/minecraft/world/IBlockAccess;";
     private static final String POS = "Llegacyconnector/v1_12_2/net/minecraft/util/math/BlockPos;";
     private static final String FACING = "Llegacyconnector/v1_12_2/net/minecraft/util/EnumFacing;";
     private static final String SHAPE_CLASS = "net.minecraft.block.state.BlockFaceShape";
