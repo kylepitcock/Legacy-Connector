@@ -45,6 +45,8 @@ public class Particle {
     protected float particleAlpha = 1.0F;
     protected float particleAngle;
     protected float prevParticleAngle;
+    /** The block-atlas sprite a layer-1 particle shows (setParticleTexture). */
+    protected legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite particleTexture;
     public static double interpPosX;
     public static double interpPosY;
     public static double interpPosZ;
@@ -278,5 +280,37 @@ public class Particle {
     public int mcc$argb() {
         return ((int) (particleAlpha * 255) & 255) << 24 | ((int) (particleRed * 255) & 255) << 16 | ((int) (particleGreen * 255) & 255) << 8
                 | ((int) (particleBlue * 255) & 255);
+    }
+
+    // ------------------------------------------------------------------ 1.12 drawing (area R1)
+
+    /** A block-atlas sprite for a layer-1 particle (falling dust, mods' sprite particles). */
+    public void setParticleTexture(legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite texture) {
+        this.particleTexture = texture;
+    }
+
+    /**
+     * 1.12's default drawing: a camera-facing quad of the particle's cell of the sheet (or its sprite) with its colour and light, added
+     * to the buffer the particle manager began. Subclasses that override it add their own geometry.
+     */
+    public void renderParticle(legacyconnector.v1_12_2.net.minecraft.client.renderer.BufferBuilder buffer, legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn,
+            float partialTicks, float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
+        double[][] q = mcc$defaultQuad(partialTicks, rotationX, rotationZ, rotationYZ, rotationXY, rotationXZ);
+        if (particleTexture != null) {
+            float u0 = particleTexture.getMinU(), u1 = particleTexture.getMaxU(), v0 = particleTexture.getMinV(), v1 = particleTexture.getMaxV();
+            q[0][3] = u1;
+            q[0][4] = v1;
+            q[1][3] = u1;
+            q[1][4] = v0;
+            q[2][3] = u0;
+            q[2][4] = v0;
+            q[3][3] = u0;
+            q[3][4] = v1;
+        }
+        int light = getBrightnessForRender(partialTicks);
+        int sky = light >> 16 & 65535, block = light & 65535;
+        for (double[] v : q) {
+            buffer.pos(v[0], v[1], v[2]).tex(v[3], v[4]).color(particleRed, particleGreen, particleBlue, particleAlpha).lightmap(sky, block).endVertex();
+        }
     }
 }
