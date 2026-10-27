@@ -52,6 +52,16 @@ public final class ClientRegistrations1122 {
             return null;
         };
         Synth.addStaticMethod("net.minecraft.client.renderer.block.model.ModelBakery.registerItemVariants", variants);
+        // a tile entity renderer: drawn by the modern renderer of the hosting block entity (Client1122)
+        Synth.addStaticMethod("net.minecraftforge.fml.client.registry.ClientRegistry.bindTileEntitySpecialRenderer", args -> {
+            if (args.length > 1 && args[0] instanceof Class<?> c && args[1] instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer<?> r
+                    && legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity.class.isAssignableFrom(c)) {
+                @SuppressWarnings("unchecked")
+                Class<? extends legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity> te = (Class<? extends legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity>) c;
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.instance.mcc$register(te, r);
+            }
+            return null;
+        });
     }
 
     public static List<Object> modelLoaders() {

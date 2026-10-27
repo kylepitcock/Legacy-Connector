@@ -64,6 +64,41 @@ public class ModelLoader {
         return null;
     }
 
+    /** Sprites by name from the block atlas (the texture getter models are baked with). */
+    public static java.util.function.Function<ResourceLocation, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite> defaultTextureGetter() {
+        return location -> legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks().getAtlasSprite(location.toString());
+    }
+
+    public static ModelResourceLocation getInventoryVariant(String s) {
+        if (s.contains("#")) return new ModelResourceLocation(s);
+        return new ModelResourceLocation(s, "inventory");
+    }
+
+    /** The variant names an item's models were registered under (each subtype's model location). */
+    public static java.util.List<String> getVariantNames(Item item) {
+        java.util.List<String> names = new java.util.ArrayList<>();
+        for (int meta = 0; meta < 16; meta++) {
+            ModelResourceLocation m = mcc$model(item, meta);
+            if (m != null && !names.contains(m.toString())) names.add(m.toString());
+        }
+        for (ResourceLocation v : mcc$itemVariants(item)) if (!names.contains(v.toString())) names.add(v.toString());
+        return names;
+    }
+
+    /** A plain white sprite for untextured quads (Forge's "white" texture). */
+    public static final class White extends legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite {
+        public static final ResourceLocation LOCATION = new ResourceLocation("white");
+        public static final White INSTANCE = new White();
+
+        private White() {
+            super(LOCATION.toString());
+        }
+
+        public static void register(legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap map) {
+            map.setTextureEntry(INSTANCE);
+        }
+    }
+
     /** Forge's multipart model wrapper; mods read its private part list by reflection (CTM). */
     public static class MultipartModel {
         private Map<Object, Object> partModels = new java.util.HashMap<>();
