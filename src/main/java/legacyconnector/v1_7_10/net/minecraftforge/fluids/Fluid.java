@@ -31,9 +31,23 @@ public class Fluid {
     }
 
     public Fluid setBlock(Block block) {
+        mcc$blockFromConstructor = false;
         if (this.block == null || this.block == block) this.block = block;
         FluidRegistry.mcc$blockSet(this, block);
         return this;
+    }
+
+    /** Whether the block came from a fluid block's constructor rather than the mod (see {@link #mcc$constructedBy}). */
+    public boolean mcc$blockFromConstructor;
+
+    /**
+     * BlockFluidBase links itself as Forge's did. Modern fluid ids were derived from blocks mods set themselves before
+     * this, so the flag keeps those ids (and the fluids saved in worlds) unchanged.
+     */
+    public void mcc$constructedBy(Block block) {
+        if (this.block != null) return;
+        setBlock(block);
+        mcc$blockFromConstructor = true;
     }
 
     public Fluid setLuminosity(int luminosity) {

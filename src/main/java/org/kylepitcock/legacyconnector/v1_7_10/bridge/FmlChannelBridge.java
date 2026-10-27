@@ -95,12 +95,12 @@ public final class FmlChannelBridge {
                 if (args instanceof EntityPlayerMP player) PacketDistributor.sendToPlayer(player.mcc$serverPlayer(), p);
             }
             case DIMENSION -> {
-                ServerLevel level = server == null || !(args instanceof Integer dim) ? null : DimensionBridge.level(server, dim);
+                ServerLevel level = server == null || !(args instanceof Integer dim) ? null : DimensionBridge.loaded(server, dim);
                 if (level != null) PacketDistributor.sendToPlayersInDimension(level, p);
             }
             case ALLAROUNDPOINT -> {
                 if (args instanceof NetworkRegistry.TargetPoint t && server != null) {
-                    ServerLevel level = DimensionBridge.level(server, t.dimension);
+                    ServerLevel level = DimensionBridge.loaded(server, t.dimension);
                     if (level != null) PacketDistributor.sendToPlayersNear(level, null, t.x, t.y, t.z, t.range, p);
                 }
             }

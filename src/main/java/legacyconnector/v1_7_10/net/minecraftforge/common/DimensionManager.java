@@ -17,7 +17,8 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
 /**
  * Forge's dimension registry. Provider types and dimension ids that mods register are recorded (mods probe for free
  * ids and loop until registration succeeds); the vanilla dimensions 0, -1 and 1 are the running server's levels.
- * Worlds for mod-registered dimensions are not created.
+ * Mod dimensions registered during loading are data pack dimensions; those registered later get a level on first use
+ * ({@code initDimension}, {@code worldServerForDimension}; see RuntimeDimensions).
  */
 public class DimensionManager {
     private static final Map<Integer, Class<?>> PROVIDERS = new ConcurrentHashMap<>();
@@ -41,13 +42,12 @@ public class DimensionManager {
 
     public static int[] unregisterProviderType(int providerId) {
         PROVIDERS.remove(providerId);
+        // Forge only reports the dimensions of the type; they stay registered. Mods that replace a provider (the overworld's,
+        // type 0) unregister the type and register their own under the same id, and removing the dimensions unregistered
+        // the overworld (Mystcraft then took its home dimension for dead and failed every login).
         List<Integer> dims = new ArrayList<>();
         synchronized (DIMENSIONS) {
-            DIMENSIONS.entrySet().removeIf(e -> {
-                if (e.getValue() != providerId) return false;
-                dims.add(e.getKey());
-                return true;
-            });
+            for (var e : DIMENSIONS.entrySet()) if (e.getValue() == providerId) dims.add(e.getKey());
         }
         return dims.stream().mapToInt(Integer::intValue).toArray();
     }
@@ -153,6 +153,8 @@ public class DimensionManager {
     }
 
     public static void initDimension(int dim) {
+        MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+        if (server != null) org.kylepitcock.legacyconnector.v1_7_10.dimension.RuntimeDimensions.getOrCreate(server, dim);
     }
 
     public static void unloadWorld(int id) {

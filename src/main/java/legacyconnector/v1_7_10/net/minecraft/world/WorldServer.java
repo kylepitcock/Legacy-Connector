@@ -18,6 +18,18 @@ public class WorldServer extends World {
         return mcc$fullLevel() instanceof ServerLevel s ? MinecraftServer.mcc$wrap(s.getServer()) : null;
     }
 
+    /**
+     * {@code world.theChunkProviderServer}: the world's chunk provider (nothing declared it, so it read as null: Mystcraft's
+     * instability profiling generates through it).
+     */
+    public static legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer mcc$get$theChunkProviderServer(WorldServer w) {
+        return (legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer) w.getChunkProvider();
+    }
+
+    public static void mcc$set$theChunkProviderServer(WorldServer w, legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer provider) {
+        w.mcc$setChunkProvider(provider);
+    }
+
     private legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker mcc$tracker;
 
     public legacyconnector.v1_7_10.net.minecraft.entity.EntityTracker getEntityTracker() {

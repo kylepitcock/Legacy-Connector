@@ -111,7 +111,7 @@ public class ServerConfigurationManager {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.send(fml,
                     legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLOutboundHandler.OutboundTarget.DIMENSION, dimension);
         } else if (packet != null) {
-            var level = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(mcc$server.mcc$modern(), dimension);
+            var level = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(mcc$server.mcc$modern(), dimension);
             for (var p : mcc$server.mcc$modern().getPlayerList().getPlayers()) if (p.serverLevel() == level) mcc$send(p, packet);
         }
     }
@@ -130,7 +130,7 @@ public class ServerConfigurationManager {
     /** As {@link #sendToAllNear}, skipping {@code except} (the player who caused the effect and shows it already). */
     public void sendToAllNearExcept(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer except, double x, double y, double z,
             double radius, int dimension, legacyconnector.v1_7_10.net.minecraft.network.Packet packet) {
-        var level = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(mcc$server.mcc$modern(), dimension);
+        var level = org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(mcc$server.mcc$modern(), dimension);
         if (level == null || packet == null) return;
         var skip = except == null ? null : except.mcc$player();
         for (var p : mcc$server.mcc$modern().getPlayerList().getPlayers()) {

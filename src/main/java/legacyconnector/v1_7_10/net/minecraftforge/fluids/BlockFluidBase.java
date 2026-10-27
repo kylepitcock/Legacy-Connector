@@ -52,6 +52,9 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
         this.densityDir = fluid.density > 0 ? -1 : 1;
         this.renderPass = material == Material.water || fluid.getName().equals("water") ? 1 : 0;
         displacements.put(this, false);
+        // as Forge's did: the first fluid block becomes the fluid's block (MineFactoryReloaded takes its fluid icons from
+        // fluid.getBlock() and failed on null)
+        fluid.mcc$constructedBy(this);
     }
 
     public BlockFluidBase setQuantaPerBlock(int quantaPerBlock) {

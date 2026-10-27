@@ -80,7 +80,7 @@ public final class FluidBridge {
 
     private static String ownerNamespace(legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid fluid) {
         var block = fluid.getBlock();
-        if (block != null) {
+        if (block != null && !fluid.mcc$blockFromConstructor) {
             if (block.mcc$modern != null) return BuiltInRegistries.BLOCK.getKey(block.mcc$modern).getNamespace();
         }
         return "legacyconnector";

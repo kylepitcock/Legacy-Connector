@@ -106,13 +106,13 @@ public final class NetworkBridge1122 {
 
         public void sendToDimension(IMessage message, int dimension) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
             if (level != null) PacketDistributor.sendToPlayersInDimension(level, encode(message));
         }
 
         public void sendToAllAround(IMessage message, int dimension, double x, double y, double z, double range) {
             var server = ServerLifecycleHooks.getCurrentServer();
-            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.level(server, dimension);
+            ServerLevel level = server == null ? null : org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionBridge.loaded(server, dimension);
             if (level != null) PacketDistributor.sendToPlayersNear(level, null, x, y, z, range, encode(message));
         }
     }

@@ -865,6 +865,11 @@ public class World implements IBlockAccess {
     /** One provider per world, as in 1.7.10 (mods keep it and read its fields). */
     private legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer mcc$chunkProvider;
 
+    /** A provider a mod installs ({@code theChunkProviderServer = ...}). */
+    public void mcc$setChunkProvider(legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer provider) {
+        mcc$chunkProvider = provider;
+    }
+
     public EntityPlayer func_152378_a(java.util.UUID id) {
         var p = id == null ? null : lvl().getPlayerByUUID(id);
         return p == null ? null : (EntityPlayer) EntityBridge.wrap(p);
