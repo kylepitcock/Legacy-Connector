@@ -33,6 +33,8 @@ public final class Client1122 {
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("listing the textures of custom-loader models", e);
             }
+            // textures of OBJ materials (Assets1122 ran first and collected them)
+            for (String texture : org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.TEXTURES) Sprites1122.register(texture);
             Sprites1122.contribute(out);
         });
         modBus.addListener((TextureAtlasStitchedEvent e) -> {
