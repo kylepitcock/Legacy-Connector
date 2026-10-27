@@ -275,7 +275,9 @@ public class GL11Guard extends org.lwjgl.opengl.GL11 {
     }
 
     public static void glDepthFunc(int p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL11.glDepthFunc(p0);
+        // through the state manager: a raw call left its cache stale, so a later RenderSystem.depthFunc(LEQUAL) was skipped and
+        // the legacy GEQUAL stayed on (the Thaumonomicon's frame failed the depth test)
+        if (RenderSystem.isOnRenderThread()) RenderSystem.depthFunc(p0);
     }
 
     public static void glDepthMask(boolean p0) {

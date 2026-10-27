@@ -13,6 +13,18 @@ import net.minecraft.resources.ResourceLocation;
  * node reveal through walls) was hidden.
  */
 public final class LegacyRenderTypes extends RenderType {
+    /**
+     * No depth test, for real: vanilla's NO_DEPTH_TEST (GL_ALWAYS) leaves the depth test as it finds it, relying on every
+     * other type switching it off afterwards. Legacy code draws straight to GL as well (blits with GL_DEPTH_TEST on), and
+     * geometry meant to ignore depth then failed against it (Thaumonomicon category icons behind their tabs).
+     */
+    private static final DepthTestStateShard LEGACY_NO_DEPTH = new DepthTestStateShard("legacyconnector_no_depth", 519) {
+        @Override
+        public void setupRenderState() {
+            com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+        }
+    };
+
     private LegacyRenderTypes(String name, VertexFormat format, VertexFormat.Mode mode, int size, boolean crumbling, boolean sort,
             Runnable setup, Runnable clear) {
         super(name, format, mode, size, crumbling, sort, setup, clear);
@@ -27,7 +39,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
-                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setDepthTestState(LEGACY_NO_DEPTH)
                     .createCompositeState(true)));
 
     private static final Function<ResourceLocation, RenderType> TRANSLUCENT_NO_DEPTH = Util.memoize(texture -> create(
@@ -39,7 +51,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
-                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(true)));
 
@@ -49,7 +61,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setShaderState(POSITION_COLOR_SHADER)
                     .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
                     .setCullState(NO_CULL)
-                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false));
 
@@ -74,7 +86,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setTextureState(new TextureStateShard(texture, false, false))
                     .setTransparencyState(LIGHTNING_TRANSPARENCY)
                     .setCullState(NO_CULL)
-                    .setDepthTestState(NO_DEPTH_TEST)
+                    .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)));
 

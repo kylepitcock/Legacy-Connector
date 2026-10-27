@@ -74,6 +74,8 @@ public final class RenderContext {
             if (frames().isEmpty()) {
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance.mcc$reset();
                 resetState();
+                // a depth function legacy code left set must not leak into modern rendering
+                if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
             }
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
             // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
@@ -202,15 +204,52 @@ public final class RenderContext {
         blend = on;
     }
 
+    /**
+     * Flushes a screen's batched geometry and puts the emulated depth test back: modern render types switch depth testing
+     * on while they draw, and a legacy screen that runs with it off (1.7.10's default) must stay that way. Blending is put
+     * back too: the render types switch it off when done, and a blit after them lost its alpha (Thaumonomicon tab shadows
+     * drew solid black).
+     */
+    public static void mcc$flushGui(GuiGraphics gui) {
+        gui.flush();
+        if (!legacyDepthTest) {
+            com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+            org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
+        }
+        if (blend) {
+            com.mojang.blaze3d.systems.RenderSystem.enableBlend();
+            com.mojang.blaze3d.systems.RenderSystem.blendFunc(blendSrc, blendDst);
+        }
+    }
+
     public static boolean depthTest() {
         return depthTest;
     }
 
+    /**
+     * The depth test legacy code has asked for, as the real GL state immediate draws (blits) run with: a legacy screen starts
+     * with it off as in 1.7.10, while batched legacy geometry keeps the depth-tested GUI types it always drew with.
+     */
+    private static boolean legacyDepthTest = true;
+
+    public static boolean mcc$legacyDepthTest() {
+        return legacyDepthTest;
+    }
+
+    public static void mcc$setLegacyDepthTest(boolean on) {
+        legacyDepthTest = on;
+    }
+
     public static void setDepthTest(boolean on) {
+        legacyDepthTest = on;
         depthTest = on;
     }
 
+    private static int blendSrc = 770, blendDst = 771; // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
+
     public static void setBlendFunc(int src, int dst) {
+        blendSrc = src;
+        blendDst = dst;
         additive = dst == 1; // GL_ONE
         additiveAlpha = additive && src == 770; // GL_SRC_ALPHA
     }
@@ -312,8 +351,11 @@ public final class RenderContext {
     }
 
     public static void resetState() {
+        legacyDepthTest = true;
         texture2d = true;
         blend = false;
+        blendSrc = 770;
+        blendDst = 771;
         depthTest = true;
         additive = false;
         additiveAlpha = false;

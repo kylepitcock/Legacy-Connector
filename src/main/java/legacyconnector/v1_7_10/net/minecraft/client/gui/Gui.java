@@ -50,12 +50,17 @@ public class Gui {
     /** Blits a 256x256-texture region from the bound texture (the classic 1.7.10 behaviour). */
     public void drawTexturedModalRect(int x, int y, int u, int v, int width, int height) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.blit(RenderContext.texture(), x, y, u, v, width, height);
+        if (gui == null) return;
+        // blit draws at once while legacy Tessellator geometry waits in the batch: flush it first so the order stays 1.7.10's
+        // (Thaumcraft's darkening overlay, batched, covered the Thaumonomicon frame blitted after it)
+        RenderContext.mcc$flushGui(gui);
+        gui.blit(RenderContext.texture(), x, y, u, v, width, height);
     }
 
     public void drawTexturedModelRectFromIcon(int x, int y, IIcon icon, int width, int height) {
         var gui = RenderContext.gui();
         if (gui == null || icon == null) return;
+        RenderContext.mcc$flushGui(gui);
         var sprite = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
                 .apply(net.minecraft.resources.ResourceLocation.parse(icon.getIconName()));
         gui.blit(x, y, 0, width, height, sprite);
@@ -63,7 +68,9 @@ public class Gui {
 
     public static void drawModalRectWithCustomSizedTexture(int x, int y, float u, float v, int width, int height, float texW, float texH) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.blit(RenderContext.texture(), x, y, u, v, width, height, (int) texW, (int) texH);
+        if (gui == null) return;
+        RenderContext.mcc$flushGui(gui);
+        gui.blit(RenderContext.texture(), x, y, u, v, width, height, (int) texW, (int) texH);
     }
 
     /** 1.7.10's options background (the dirt tile); {@code textures/gui/options_background.png} is gone, the block texture is the same image. */

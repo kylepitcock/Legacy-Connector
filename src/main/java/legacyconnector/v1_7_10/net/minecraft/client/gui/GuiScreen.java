@@ -157,7 +157,12 @@ public class GuiScreen extends Gui {
 
     public void drawWorldBackground(int tint) {
         var gui = RenderContext.gui();
-        if (gui != null) gui.fillGradient(0, 0, width, height, -1072689136, -804253680);
+        if (gui == null) return;
+        gui.fillGradient(0, 0, width, height, -1072689136, -804253680);
+        // 1.7.10 drew screens without depth writes: the backdrop must not hide what the screen draws behind z=0 (the
+        // Thaumonomicon draws its map and frame at z=-200)
+        RenderContext.mcc$flushGui(gui);
+        com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.Minecraft.ON_OSX);
     }
 
     public void drawBackground(int tint) {

@@ -30,10 +30,18 @@ public class LegacyScreen extends Screen {
         if (failed) return;
         GuiScreen.mcc$beginFrame();
         RenderContext.beginGui(graphics);
+        // 1.7.10 drew screens with depth testing off; mods turn it on where they need it (the Thaumonomicon draws its map
+        // with GL_GEQUAL before enabling it, and lost the map and frame to the depth the modern defaults left)
+        com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
+        org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST); // the state cache can be out of step with GL
+        RenderContext.mcc$setLegacyDepthTest(false);
+        // the held item's depth is still in the buffer and kept the darkening backdrop off it
+        com.mojang.blaze3d.systems.RenderSystem.clear(org.lwjgl.opengl.GL11.GL_DEPTH_BUFFER_BIT, net.minecraft.client.Minecraft.ON_OSX);
         try {
             failed = !ScreenGuard.run(this, () -> legacy.drawScreen(mouseX, mouseY, partialTick));
         } finally {
             RenderContext.end();
+            com.mojang.blaze3d.systems.RenderSystem.enableDepthTest();
         }
     }
 
