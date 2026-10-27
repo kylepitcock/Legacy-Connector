@@ -156,4 +156,10 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
     public static void mcc$set$connection(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.network.NetHandlerPlayServer handler) {
         p.mcc$connection = handler;
     }
+
+
+    /** The player's advancements (area F; a view over the modern player's). */
+    public legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements getAdvancements() {
+        return new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(this);
+    }
 }

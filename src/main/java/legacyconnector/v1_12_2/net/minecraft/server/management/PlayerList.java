@@ -167,4 +167,11 @@ public class PlayerList {
             if (p.distanceToSqr(x, y, z) < radius * radius) p.connection.send(packet);
         }
     }
+
+
+    // ---- area F
+
+    public legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements getPlayerAdvancements(EntityPlayerMP player) {
+        return new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(player);
+    }
 }

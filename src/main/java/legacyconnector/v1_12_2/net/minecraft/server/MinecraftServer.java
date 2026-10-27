@@ -280,4 +280,27 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         var server = mcc$modern();
         return server != null && server.isFlightAllowed();
     }
+
+
+    // ---- area F: advancements and the worlds array
+
+    public legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager getAdvancementManager() {
+        return legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager.INSTANCE;
+    }
+
+    /** Phantom field: accesses are redirected to {@code mcc$get$worlds} (the loaded levels, overworld first, as 1.12's array). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.WorldServer[] worlds;
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.WorldServer[] mcc$get$worlds(MinecraftServer s) {
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return new legacyconnector.v1_12_2.net.minecraft.world.WorldServer[0];
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.world.WorldServer> out = new java.util.ArrayList<>();
+        out.add((legacyconnector.v1_12_2.net.minecraft.world.WorldServer) org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(server.overworld()));
+        for (var level : server.getAllLevels()) {
+            if (level == server.overworld()) continue;
+            if (org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level) instanceof legacyconnector.v1_12_2.net.minecraft.world.WorldServer w) out.add(w);
+        }
+        return out.toArray(new legacyconnector.v1_12_2.net.minecraft.world.WorldServer[0]);
+    }
 }
