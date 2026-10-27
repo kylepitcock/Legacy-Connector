@@ -124,4 +124,9 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         for (var p : s.players()) if (!p.isSpectator() && !p.isSleepingLongEnough()) return false;
         return true;
     }
+
+    /** Which players watch which chunks (area F; a view over the modern chunk map). */
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap getPlayerChunkMap() {
+        return new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerChunkMap(mcc$serverLevel());
+    }
 }
