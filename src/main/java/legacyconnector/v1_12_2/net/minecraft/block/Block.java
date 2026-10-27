@@ -691,6 +691,14 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         }
     }
 
+    /**
+     * The block's bounds when they depend on the state alone (slabs, torches, ladders), or null for a full or world-dependent
+     * shape: the modern block's shape until the world area forwards getBoundingBox(IBlockAccess).
+     */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB mcc$staticBounds(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return null;
+    }
+
     /** Leaves near a removed log start to decay (the modern leaves do it by distance on their own). */
     public void beginLeavesDecay(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
     }

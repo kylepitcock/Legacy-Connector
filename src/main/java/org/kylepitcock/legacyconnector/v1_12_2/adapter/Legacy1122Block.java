@@ -51,7 +51,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122;
  *     <li>random ticks: the legacy {@code randomTick} (an update tick by default) when the block asked for them.</li>
  * </ul>
  */
-public class Legacy1122Block extends net.minecraft.world.level.block.Block {
+public class Legacy1122Block extends net.minecraft.world.level.block.Block implements net.minecraft.world.level.block.BonemealableBlock {
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
 
     private final Block legacy;
@@ -114,10 +114,17 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
         registerDefaultState(stateDefinition.any().setValue(META, 0));
     }
 
-    /** Whether the mod's class (not the shim) declares the method. */
+    /**
+     * Whether the block's or item's class declares the method below the base class: the mod's own classes and the shim's vanilla
+     * subclasses (BlockFalling, BlockRotatedPillar, ...) count; Block, Item and ItemBlock themselves do not (their defaults are what
+     * the modern game already does); synthesized vanilla classes only pass calls up, so they are looked through.
+     */
     public static boolean overrides(Object obj, String name, Class<?>... params) {
         for (Class<?> c = obj.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
-            if (c.getName().startsWith("legacyconnector.") || c.getName().startsWith("legacyconnector_synth.")) return false;
+            if (c == Block.class || c == legacyconnector.v1_12_2.net.minecraft.item.Item.class || c == legacyconnector.v1_12_2.net.minecraft.item.ItemBlock.class) {
+                return false;
+            }
+            if (c.getName().startsWith("legacyconnector_synth.")) continue;
             try {
                 c.getDeclaredMethod(name, params);
                 return true;
@@ -388,7 +395,89 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
         }
     }
 
+    // ------------------------------------------------------------------ vanilla base class rules: glass, ladders, bone meal
+
+    /** BlockBreakable (glass, ice): the faces between two of the same block in the same state are not drawn. */
+    @Override
+    protected boolean skipRendering(BlockState state, BlockState adjacent, net.minecraft.core.Direction direction) {
+        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockBreakable b && b.mcc$hidesSimilarNeighbours() && adjacent.is(this)
+                && adjacent.getValue(META).equals(state.getValue(META))) {
+            return true;
+        }
+        return super.skipRendering(state, adjacent, direction);
+    }
+
+    @Override
+    public boolean isLadder(BlockState state, LevelReader level, BlockPos pos, LivingEntity entity) {
+        return legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLadder || super.isLadder(state, level, pos, entity);
+    }
+
+    /** IGrowable blocks (crops, saplings): bone meal asks and grows them through the legacy code. */
+    @Override
+    public boolean isValidBonemealTarget(LevelReader level, BlockPos pos, BlockState state) {
+        if (!(legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.IGrowable g) || !(level instanceof Level l)) return false;
+        try {
+            return g.canGrow(world(l), pos(pos), state(state), l.isClientSide);
+        } catch (RuntimeException | LinkageError e) {
+            failure("canGrow", e);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isBonemealSuccess(Level level, RandomSource random, BlockPos pos, BlockState state) {
+        if (!(legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.IGrowable g)) return false;
+        try {
+            World w = world(level);
+            return g.canUseBonemeal(w, w.rand, pos(pos), state(state));
+        } catch (RuntimeException | LinkageError e) {
+            failure("canUseBonemeal", e);
+            return false;
+        }
+    }
+
+    @Override
+    public void performBonemeal(ServerLevel level, RandomSource random, BlockPos pos, BlockState state) {
+        if (!(legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.IGrowable g)) return;
+        try {
+            World w = world(level);
+            g.grow(w, w.rand, pos(pos), state(state));
+        } catch (RuntimeException | LinkageError e) {
+            failure("grow", e);
+        }
+    }
+
     // ------------------------------------------------------------------ shape, pistons, breaking speed
+
+    private final net.minecraft.world.phys.shapes.VoxelShape[] staticShapes = new net.minecraft.world.phys.shapes.VoxelShape[16];
+    private final boolean[] staticKnown = new boolean[16];
+
+    /** The legacy block's state-only bounds as a shape (null: none, keep the modern one). */
+    private net.minecraft.world.phys.shapes.VoxelShape staticShape(BlockState state) {
+        int m = state.getValue(META);
+        if (staticKnown[m]) return staticShapes[m];
+        net.minecraft.world.phys.shapes.VoxelShape shape = null;
+        try {
+            var b = legacy.mcc$staticBounds(state(state));
+            if (b != null) {
+                shape = b.minX <= 0 && b.minY <= 0 && b.minZ <= 0 && b.maxX >= 1 && b.maxY >= 1 && b.maxZ >= 1 ? net.minecraft.world.phys.shapes.Shapes.block()
+                        : net.minecraft.world.phys.shapes.Shapes.box(Math.max(0, b.minX), Math.max(0, b.minY), Math.max(0, b.minZ), Math.min(1, b.maxX),
+                                Math.min(1, b.maxY), Math.min(1, b.maxZ));
+            }
+        } catch (RuntimeException | LinkageError e) {
+            shape = null;
+        }
+        staticShapes[m] = shape;
+        staticKnown[m] = true;
+        return shape;
+    }
+
+    @Override
+    protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
+            net.minecraft.world.phys.shapes.CollisionContext context) {
+        var s = staticShape(state);
+        return s != null ? s : super.getShape(state, getter, pos, context);
+    }
 
     /** Several collision boxes (machines, pipes, frames): what the mod's addCollisionBoxToList adds for a mask around the block. */
     @Override
