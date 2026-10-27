@@ -22,6 +22,12 @@ public class GuiToast extends Gui {
         net.minecraft.client.Minecraft.getInstance().getToasts().clear();
     }
 
+    /** Draws the toasts showing (the game draws them every frame itself; mods call this to draw them over their own screens). */
+    public void drawToast(legacyconnector.v1_12_2.net.minecraft.client.gui.ScaledResolution resolution) {
+        var gui = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.gui();
+        if (gui != null) net.minecraft.client.Minecraft.getInstance().getToasts().render(gui);
+    }
+
     public Minecraft getMinecraft() {
         return Minecraft.getMinecraft();
     }
