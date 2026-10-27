@@ -87,7 +87,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 - **Fluids:** flow, render and expose NeoForge fluid capabilities
 - **World generation:** mod biomes become real 1.21 biomes placed by the mod's own biome layers. Mod world types (e.g. Biomes O' Plenty's) appear on the Create World screen. Ore generators, dungeons and structures run normally
 - **Deepslate ores:** legacy ores also generate below y=0 and get an automatic deepslate variant with the same drops and behaviour
-- **Mod dimensions:** run their own terrain, biomes, fog, clouds and sky. Per-dimension gravity, fall damage and sound work, so Galacticraft's planets have low gravity and space is silent. Twilight Forest's portal works
+- **Mod dimensions:** run their own terrain, biomes, fog, clouds and sky. Dimensions that mods register while the game runs get their own world too. Per-dimension gravity, fall damage and sound work, so Galacticraft's planets have low gravity and space is silent. Twilight Forest's portal works
 - **Block and item rendering:** includes custom block render handlers, TESRs, item renderers, OBJ and Techne models, and mods' own texture loaders
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more)
 - **Scala mods,** plus the libraries 1.7.10 shipped (Scala 2.11, Trove, vecmath)
