@@ -156,4 +156,12 @@ public class WorldType {
     public String toString() {
         return name;
     }
+
+    /** Forge: the layer turning climate codes into biomes (vanilla's GenLayerBiome; mod world types override it). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer getBiomeLayer(long worldSeed, legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer parentLayer,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings chunkSettings) {
+        var biome = new legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerBiome(200L, parentLayer, this, chunkSettings);
+        var zoomed = legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerZoom.magnify(1000L, biome, 2);
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerBiomeEdge(1000L, zoomed);
+    }
 }
