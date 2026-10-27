@@ -1,6 +1,7 @@
 package org.kylepitcock.legacyconnector.v1_12_2.bridge;
 
 import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
+import legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP;
 import legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge;
 import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event;
 import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.EventBus;
@@ -95,6 +96,35 @@ public final class EventBridge1122 {
             if (wants(PlayerEvent.ItemSmeltedEvent.class) && (p = player(e.getEntity())) != null) {
                 post(new PlayerEvent.ItemSmeltedEvent(p, Stacks1122.fromModern(e.getSmelting())));
             }
+        });
+        game.addListener((net.neoforged.neoforge.event.AnvilUpdateEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.AnvilUpdateEvent.class)) return;
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.AnvilUpdateEvent(Stacks1122.fromModern(e.getLeft()),
+                    Stacks1122.fromModern(e.getRight()), e.getName(), (int) e.getCost());
+            post(legacy);
+            if (legacy.isCanceled()) {
+                e.setCanceled(true);
+            } else if (legacy.getOutput() != null && !legacy.getOutput().isEmpty()) {
+                e.setOutput(Stacks1122.toModern(legacy.getOutput()));
+                e.setCost(legacy.getCost());
+                e.setMaterialCost(legacy.getMaterialCost());
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.furnace.FurnaceFuelBurnTimeEvent e) -> {
+            if (e.getItemStack().isEmpty() || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent.class)) return;
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.furnace.FurnaceFuelBurnTimeEvent(Stacks1122.fromModern(e.getItemStack()),
+                    e.getBurnTime());
+            post(legacy);
+            if (legacy.isCanceled()) e.setBurnTime(legacy.getBurnTime());
+        });
+        game.addListener((net.neoforged.neoforge.event.ServerChatEvent e) -> {
+            EntityPlayer p;
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.ServerChatEvent.class) || !((p = player(e.getPlayer())) instanceof EntityPlayerMP mp)) return;
+            var component = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("chat.type.text", p.getName(), e.getRawText());
+            var legacy = new legacyconnector.v1_12_2.net.minecraftforge.event.ServerChatEvent(mp, e.getRawText(), component);
+            post(legacy);
+            if (legacy.isCanceled()) e.setCanceled(true);
+            else if (legacy.getComponent() != component && legacy.getComponent() != null) e.setMessage(legacy.getComponent().mcc$modern());
         });
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) Client.register(game);
     }
