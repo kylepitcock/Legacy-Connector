@@ -25,6 +25,12 @@ public final class PlayerGuis1122 {
 
     private PlayerGuis1122() {}
 
+    /** The modern container behind a legacy inventory (the viewed one, or a modern view of a mod's own inventory). */
+    private static net.minecraft.world.Container modernContainer(IInventory inv) {
+        if (inv instanceof org.kylepitcock.legacyconnector.v1_12_2.gui.ModernInventory1122 m) return m.mcc$modern();
+        return org.kylepitcock.legacyconnector.v1_12_2.gui.LegacyInventory1122.of(inv);
+    }
+
     private static ServerPlayer server(EntityPlayer player) {
         return player != null && player.mcc$entity instanceof ServerPlayer sp ? sp : null;
     }
@@ -42,7 +48,7 @@ public final class PlayerGuis1122 {
             displayGui(player, io);
             return;
         }
-        net.minecraft.world.Container modern = ModernInventory1122.modern(inventory);
+        net.minecraft.world.Container modern = modernContainer(inventory);
         int size = modern.getContainerSize();
         Component title = title(inventory.getName(), inventory.hasCustomName());
         sp.openMenu(new SimpleMenuProvider((id, inv, p) -> {
@@ -136,7 +142,7 @@ public final class PlayerGuis1122 {
             return;
         }
         if (object instanceof IInventory inventory) {
-            var modern = ModernInventory1122.modern(inventory);
+            var modern = modernContainer(inventory);
             if (modern.getContainerSize() % 9 == 0 || modern.getContainerSize() == 5) {
                 displayGUIChestPlain(sp, inventory, modern, title);
                 return;
