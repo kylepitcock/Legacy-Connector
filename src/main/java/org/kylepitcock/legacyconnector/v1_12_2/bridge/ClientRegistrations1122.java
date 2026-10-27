@@ -64,6 +64,13 @@ public final class ClientRegistrations1122 {
         });
     }
 
+    /** ModelLoaderRegistry.registerLoader of the shim's class. */
+    public static void addModelLoader(Object loader) {
+        synchronized (MODEL_LOADERS) {
+            if (!MODEL_LOADERS.contains(loader)) MODEL_LOADERS.add(loader);
+        }
+    }
+
     public static List<Object> modelLoaders() {
         synchronized (MODEL_LOADERS) {
             return List.copyOf(MODEL_LOADERS);

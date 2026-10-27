@@ -82,6 +82,14 @@ public class ParticleManager {
 
     /** A vanilla particle by its 1.12 id ({@code EnumParticleTypes.getParticleID()}); returns null as the modern particle has no legacy object. */
     public Particle spawnEffectParticle(int particleId, double xCoord, double yCoord, double zCoord, double xSpeed, double ySpeed, double zSpeed, int... parameters) {
+        IParticleFactory factory = mcc$factories.get(particleId);
+        if (factory != null) {
+            Particle particle = factory.createParticle(particleId, world != null ? world : mcc$clientWorld(), xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed, parameters);
+            if (particle != null) {
+                addEffect(particle);
+                return particle;
+            }
+        }
         org.kylepitcock.legacyconnector.v1_12_2.client.LegacyParticles1122.spawnVanilla(particleId, xCoord, yCoord, zCoord, xSpeed, ySpeed, zSpeed, parameters);
         return null;
     }
@@ -93,5 +101,19 @@ public class ParticleManager {
 
     public void addBlockHitEffects(BlockPos pos, EnumFacing side) {
         if (side != null) net.minecraft.client.Minecraft.getInstance().particleEngine.crack(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()), side.mcc$modern());
+    }
+
+    // ------------------------------------------------------------------ particle factories (area R1)
+
+    /** Factories mods registered by id (registerParticle); they take precedence over the vanilla particle of that id. */
+    private final java.util.Map<Integer, IParticleFactory> mcc$factories = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public void registerParticle(int id, IParticleFactory particleFactory) {
+        if (particleFactory != null) mcc$factories.put(id, particleFactory);
+    }
+
+    private static World mcc$clientWorld() {
+        var level = net.minecraft.client.Minecraft.getInstance().level;
+        return level == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level);
     }
 }
