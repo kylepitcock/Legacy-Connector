@@ -1141,4 +1141,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
             legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
         return isSideSolid(blockState, world, pos, side);
     }
+
+    /** Tooltip lines of the block's item (client; a server never asks). */
+    public void addInformation(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World player,
+            java.util.List<String> tooltip, legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag advanced) {
+    }
 }
