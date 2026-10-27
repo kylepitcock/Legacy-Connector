@@ -87,7 +87,7 @@ public class BlockFence extends Block {
         IBlockState iblockstate = worldIn.getBlockState(pos);
         BlockFaceShape shape = iblockstate.getBlockFaceShape(worldIn, pos, facing);
         Block block = iblockstate.getBlock();
-        boolean pole = shape == BlockFaceShape.MIDDLE_POLE && (iblockstate.getMaterial() == getMaterialLegacy() || Block.mcc$named(block, "fence_gate",
+        boolean pole = shape == BlockFaceShape.MIDDLE_POLE && (iblockstate.getMaterial() == getMaterialLegacy() || block instanceof BlockFenceGate || Block.mcc$named(block, "fence_gate",
                 "spruce_fence_gate", "birch_fence_gate", "jungle_fence_gate", "dark_oak_fence_gate", "acacia_fence_gate"));
         return !isExceptBlockForAttachWithPiston(block) && shape == BlockFaceShape.SOLID || pole || block instanceof BlockFence && iblockstate.getMaterial() == getMaterialLegacy();
     }
