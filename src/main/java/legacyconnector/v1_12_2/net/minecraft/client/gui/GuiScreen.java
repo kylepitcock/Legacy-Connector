@@ -21,6 +21,8 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
     protected List<GuiLabel> labelList = new ArrayList<>();
     public boolean allowUserInput;
     protected FontRenderer fontRenderer;
+    /** The game's item renderer (screens draw stacks with it). */
+    protected legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem itemRender;
     protected GuiButton selectedButton;
     private int eventButton;
     private long lastMouseEvent;
@@ -76,7 +78,15 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
         drawHoveringText(java.util.Arrays.asList(text), x, y);
     }
 
+    private boolean focused;
+
+    /** Whether a control of the screen (a text field) has the keyboard; key bindings are not handled while it has. */
     public void setFocused(boolean hasFocusedControlIn) {
+        this.focused = hasFocusedControlIn;
+    }
+
+    public boolean isFocused() {
+        return focused;
     }
 
     public void drawHoveringText(List<String> textLines, int x, int y) {
@@ -144,6 +154,7 @@ public class GuiScreen extends Gui implements GuiYesNoCallback {
 
     public void setWorldAndResolution(Minecraft mc, int width, int height) {
         this.mc = mc;
+        this.itemRender = legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
         this.fontRenderer = mc.fontRenderer;
         this.width = width;
         this.height = height;
