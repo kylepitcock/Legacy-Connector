@@ -78,6 +78,33 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         super.setRemoved();
     }
 
+    /** Block events (addBlockEvent: chest lids, pistons) reach the legacy tile entity as 1.12's BlockContainer passed them on. */
+    @Override
+    public boolean triggerEvent(int id, int type) {
+        TileEntity te = legacy();
+        if (te != null) {
+            try {
+                if (te.receiveClientEvent(id, type)) return true;
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Legacy tile entity {} failed in receiveClientEvent: {}", te.getClass().getName(), e.toString());
+            }
+        }
+        return super.triggerEvent(id, type);
+    }
+
+    @Override
+    public void onChunkUnloaded() {
+        super.onChunkUnloaded();
+        TileEntity te = legacy;
+        if (te != null) {
+            try {
+                te.onChunkUnload();
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Legacy tile entity {} failed in onChunkUnload: {}", te.getClass().getName(), e.toString());
+            }
+        }
+    }
+
     public void tick() {
         TileEntity te = legacy();
         if (te instanceof ITickable t && !te.isInvalid()) {

@@ -16,6 +16,13 @@ public abstract class BlockContainer extends Block implements ITileEntityProvide
         return true;
     }
 
+    /** Block events go to the tile entity (chest lids, note blocks). */
+    @Override
+    public boolean eventReceived(IBlockState state, World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int id, int param) {
+        TileEntity te = world.getTileEntity(pos);
+        return te != null && te.receiveClientEvent(id, param);
+    }
+
     @Override
     public TileEntity createTileEntity(World world, IBlockState state) {
         return createNewTileEntity(world, getMetaFromState(state));

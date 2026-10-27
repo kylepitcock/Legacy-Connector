@@ -335,6 +335,13 @@ public final class ItemStack {
         return areItemStackTagsEqual(a, b);
     }
 
+    /** Forge: equal as the client sees them (the share tag instead of the full tag). */
+    public static boolean areItemStacksEqualUsingNBTShareTag(ItemStack a, ItemStack b) {
+        if (a.isEmpty() && b.isEmpty()) return true;
+        return !a.isEmpty() && !b.isEmpty() && a.getCount() == b.getCount() && a.getItem() == b.getItem() && a.getItemDamage() == b.getItemDamage()
+                && areItemStackShareTagsEqual(a, b);
+    }
+
     /** Whether the capability data of two stacks match (Forge); stacks here carry none apart from their tag. */
     public boolean areCapsCompatible(ItemStack other) {
         return true;

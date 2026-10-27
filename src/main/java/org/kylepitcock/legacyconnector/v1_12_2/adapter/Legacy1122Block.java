@@ -322,7 +322,14 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block {
     @Override
     protected boolean triggerEvent(BlockState state, Level level, BlockPos pos, int id, int param) {
         boolean handled = super.triggerEvent(state, level, pos, id, param);
-        if (!event) return handled;
+        if (!event) {
+            // BlockContainer.eventReceived passed the event to the tile entity
+            if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockContainer) {
+                BlockEntity be = level.getBlockEntity(pos);
+                return be != null && be.triggerEvent(id, param) || handled;
+            }
+            return handled;
+        }
         try {
             return legacy.eventReceived(state(state), world(level), pos(pos), id, param) || handled;
         } catch (RuntimeException | LinkageError e) {
