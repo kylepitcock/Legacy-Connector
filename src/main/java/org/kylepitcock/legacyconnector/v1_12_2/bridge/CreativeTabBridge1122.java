@@ -25,8 +25,8 @@ public final class CreativeTabBridge1122 {
     /** Registers a modern tab for every mod-created legacy tab; runs at the end of legacy loading. */
     public static void registerTabs() {
         List<CreativeTabs> tabs;
-        synchronized (CreativeTabs.CREATIVE_TAB_ARRAY) {
-            tabs = new ArrayList<>(CreativeTabs.CREATIVE_TAB_ARRAY);
+        synchronized (CreativeTabs.mcc$TABS) {
+            tabs = new ArrayList<>(CreativeTabs.mcc$TABS);
         }
         for (CreativeTabs tab : tabs) {
             if (tab.getTabIndex() < VANILLA_TABS) continue;

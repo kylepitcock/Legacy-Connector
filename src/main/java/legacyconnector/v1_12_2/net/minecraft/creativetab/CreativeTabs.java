@@ -6,7 +6,11 @@ import legacyconnector.v1_12_2.net.minecraft.util.NonNullList;
 
 /** A creative tab: its label, icon and (for the search/vanilla tabs) nothing else; the bridge builds the modern tab from these. */
 public class CreativeTabs {
-    public static final java.util.List<CreativeTabs> CREATIVE_TAB_ARRAY = new java.util.ArrayList<>();
+    /** The tabs in creation order (1.12.2's CREATIVE_TAB_ARRAY, read through {@link #mcc$get$CREATIVE_TAB_ARRAY}). */
+    public static final java.util.List<CreativeTabs> mcc$TABS = new java.util.ArrayList<>();
+    /** Phantom field: reads are redirected to {@code mcc$get$CREATIVE_TAB_ARRAY} (a snapshot of the tabs as 1.12's array). */
+    @Deprecated
+    public static CreativeTabs[] CREATIVE_TAB_ARRAY;
     public static final CreativeTabs BUILDING_BLOCKS = new CreativeTabs("buildingBlocks");
     public static final CreativeTabs DECORATIONS = new CreativeTabs("decorations");
     public static final CreativeTabs REDSTONE = new CreativeTabs("redstone");
@@ -25,9 +29,9 @@ public class CreativeTabs {
 
     public CreativeTabs(String label) {
         this.tabLabel = label;
-        synchronized (CREATIVE_TAB_ARRAY) {
-            this.index = CREATIVE_TAB_ARRAY.size();
-            CREATIVE_TAB_ARRAY.add(this);
+        synchronized (mcc$TABS) {
+            this.index = mcc$TABS.size();
+            mcc$TABS.add(this);
         }
     }
 
@@ -38,8 +42,8 @@ public class CreativeTabs {
 
     /** The index the next tab gets. */
     public static int getNextID() {
-        synchronized (CREATIVE_TAB_ARRAY) {
-            return CREATIVE_TAB_ARRAY.size();
+        synchronized (mcc$TABS) {
+            return mcc$TABS.size();
         }
     }
 
@@ -103,5 +107,43 @@ public class CreativeTabs {
         for (Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS.getValues()) {
             if (item.getCreativeTab() == this) item.getSubItems(this, items);
         }
+    }
+
+    // ---- area F: names of the later 1.12 mappings, enchantment types, the array view
+
+    public static CreativeTabs[] mcc$get$CREATIVE_TAB_ARRAY() {
+        synchronized (mcc$TABS) {
+            return mcc$TABS.toArray(new CreativeTabs[0]);
+        }
+    }
+
+    public int getIndex() {
+        return getTabIndex();
+    }
+
+    public String getTranslationKey() {
+        return getTabLabel();
+    }
+
+    public ItemStack getIcon() {
+        return getIconItemStack();
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType[] mcc$enchantmentTypes =
+            new legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType[0];
+
+    public legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType[] getRelevantEnchantmentTypes() {
+        return mcc$enchantmentTypes;
+    }
+
+    public CreativeTabs setRelevantEnchantmentTypes(legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType... types) {
+        this.mcc$enchantmentTypes = types == null ? new legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType[0] : types;
+        return this;
+    }
+
+    public boolean hasRelevantEnchantmentType(legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType type) {
+        if (type == null) return false;
+        for (var t : mcc$enchantmentTypes) if (t == type) return true;
+        return false;
     }
 }
