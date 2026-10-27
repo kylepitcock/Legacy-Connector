@@ -1,5 +1,12 @@
 package legacyconnector.v1_12_2.net.minecraft.client.resources;
 
-/** Access to resource packs (the layer has no 1.12 resource manager; reload listeners are told once resources are ready). */
+import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
+
+/** Access to resource packs: the files of the mod jars and, on the client, the game's loaded packs. */
 public interface IResourceManager {
+    java.util.Set<String> getResourceDomains();
+
+    IResource getResource(ResourceLocation location) throws java.io.IOException;
+
+    java.util.List<IResource> getAllResources(ResourceLocation location) throws java.io.IOException;
 }

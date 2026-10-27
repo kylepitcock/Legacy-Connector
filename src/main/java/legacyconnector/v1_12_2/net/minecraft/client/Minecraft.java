@@ -40,6 +40,20 @@ public class Minecraft {
 
     public FontRenderer fontRenderer = FontRenderer.mcc$INSTANCE;
     public FontRenderer standardGalacticFontRenderer = FontRenderer.mcc$INSTANCE;
+    /** The mods' particles (ticked and drawn by the layer). */
+    public final legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager effectRenderer = new legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager();
+    public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP playerController =
+            legacyconnector.v1_12_2.net.minecraft.client.multiplayer.PlayerControllerMP.mcc$INSTANCE;
+    public final legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame ingameGUI = legacyconnector.v1_12_2.net.minecraft.client.gui.GuiIngame.mcc$INSTANCE;
+
+    public legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager getLanguageManager() {
+        return legacyconnector.v1_12_2.net.minecraft.client.resources.LanguageManager.mcc$INSTANCE;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.gui.toasts.GuiToast getToastGui() {
+        return legacyconnector.v1_12_2.net.minecraft.client.gui.toasts.GuiToast.mcc$INSTANCE;
+    }
+
     /** The game directory (mods build paths from it). */
     public final java.io.File gameDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
 
