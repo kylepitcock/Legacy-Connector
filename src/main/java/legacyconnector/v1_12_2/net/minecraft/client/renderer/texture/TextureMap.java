@@ -165,6 +165,22 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
     public void deleteGlTexture() {
     }
 
+    /** The legacy sprite of a modern block-atlas sprite (named by the modern id), synchronized with it. */
+    public TextureAtlasSprite mcc$spriteOf(net.minecraft.client.renderer.texture.TextureAtlasSprite modern) {
+        String name = modern.contents().name().toString();
+        TextureAtlasSprite sprite;
+        synchronized (this) {
+            sprite = mapUploadedSprites.get(name);
+            if (sprite == null) sprite = mapRegisteredSprites.get(name);
+            if (sprite == null) {
+                sprite = new TextureAtlasSprite(name);
+                mapUploadedSprites.put(name, sprite);
+            }
+        }
+        if (sprite.mcc$modernIfSynced() != modern) sprite.mcc$sync(modern);
+        return sprite;
+    }
+
     /** After a modern atlas build: every sprite legacy code holds takes the position of its modern sprite. */
     public void mcc$synchronize() {
         var atlas = Sprites1122.blockAtlas();

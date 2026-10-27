@@ -109,6 +109,11 @@ public class TextureAtlasSprite {
         return mcc$modern;
     }
 
+    /** The modern sprite last synchronized with, without looking one up. */
+    public net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modernIfSynced() {
+        return mcc$modern;
+    }
+
     private void ensure() {
         if (mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(iconName));
     }

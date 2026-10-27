@@ -35,6 +35,8 @@ public final class Sprites1122 {
         if (path.startsWith("textures/")) path = path.substring("textures/".length());
         if (ns.equals("minecraft")) {
             if (path.equals("missingno")) return ResourceLocation.withDefaultNamespace("missingno");
+            // already a modern name (a legacy sprite made for a modern one)
+            if (path.startsWith("block/") || path.startsWith("item/") || path.startsWith("entity/")) return ResourceLocation.withDefaultNamespace(path);
             String modern = org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(path, !path.startsWith("items/"));
             int c = modern.indexOf(':');
             return ResourceLocation.fromNamespaceAndPath(modern.substring(0, c), modern.substring(c + 1));

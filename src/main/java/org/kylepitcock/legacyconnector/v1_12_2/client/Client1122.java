@@ -39,6 +39,28 @@ public final class Client1122 {
             }
         });
         modBus.addListener(Client1122::onRegisterRenderers);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Block e) -> {
+            if (present()) Colors1122.onBlockColors(e);
+        });
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item e) -> {
+            if (present()) Colors1122.onItemColors(e);
+        });
+        modBus.addListener(Client1122::onModifyBaking);
+    }
+
+    /** ModelBakeEvent: mods look up and replace baked models by legacy location. */
+    private static void onModifyBaking(net.neoforged.neoforge.client.event.ModelEvent.ModifyBakingResult event) {
+        if (!present()) return;
+        Models1122.invalidate();
+        BakedRegistry1122 registry = new BakedRegistry1122(event.getModels());
+        try {
+            MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelBakeEvent(
+                    legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelManager.mcc$instance(), registry,
+                    new legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader()));
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("posting ModelBakeEvent", e);
+        }
+        if (registry.replaced > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Models").info("1.12.2 mods replaced {} baked model(s)", registry.replaced);
     }
 
     private static Boolean present;
