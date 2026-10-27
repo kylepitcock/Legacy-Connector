@@ -151,4 +151,80 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
             legacyconnector.v1_12_2.net.minecraft.inventory.IInventory inventory) {
         for (int i = 0; i < inventory.getFieldCount(); ++i) sendWindowProperty(container, i, inventory.getField(i));
     }
+
+    // ------------------------------------------------------------------ server player state (area E, 1.12.2)
+
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager interactionManager;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity spectatingEntity;
+    @Deprecated
+    public String language;
+    private legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$interactionManager;
+
+    public static legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager mcc$get$interactionManager(EntityPlayerMP p) {
+        if (p.mcc$interactionManager == null) {
+            p.mcc$interactionManager = legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager.mcc$of(p);
+        }
+        return p.mcc$interactionManager;
+    }
+
+    public static void mcc$set$interactionManager(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.server.management.PlayerInteractionManager v) {
+        if (v != null) {
+            v.player = p;
+            p.mcc$interactionManager = v;
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.Entity mcc$get$spectatingEntity(EntityPlayerMP p) {
+        return p.getSpectatingEntity();
+    }
+
+    public static void mcc$set$spectatingEntity(EntityPlayerMP p, legacyconnector.v1_12_2.net.minecraft.entity.Entity v) {
+        p.setSpectatingEntity(v);
+    }
+
+    public static String mcc$get$language(EntityPlayerMP p) {
+        var sp = p.mcc$serverPlayer();
+        return sp == null ? "en_us" : sp.clientInformation().language();
+    }
+
+    public static void mcc$set$language(EntityPlayerMP p, String v) {
+        // reported by the client
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.world.WorldServer getServerWorld() {
+        return (legacyconnector.v1_12_2.net.minecraft.world.WorldServer) org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(mcc$serverPlayer().serverLevel());
+    }
+
+    /** Resends the whole container (slots, carried stack and properties) to the client. */
+    public void sendContainerToPlayer(legacyconnector.v1_12_2.net.minecraft.inventory.Container container) {
+        var menu = org.kylepitcock.legacyconnector.v1_12_2.entity.MenuView1122.modern(container);
+        if (menu != null) menu.sendAllDataToRemote();
+        else if (container != null) mcc$serverPlayer().containerMenu.sendAllDataToRemote();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity getSpectatingEntity() {
+        var camera = mcc$serverPlayer().getCamera();
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(camera);
+    }
+
+    public void setSpectatingEntity(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        mcc$serverPlayer().setCamera(entity == null ? null : entity.mcc$entity);
+    }
+
+    public void markPlayerActive() {
+        mcc$serverPlayer().resetLastActionTime();
+    }
+
+    public boolean hasSpawnDimension() {
+        return true;
+    }
+
+    /** Forge: moves the player to another dimension; the teleporter places it (or the same position when it is a vanilla teleporter). */
+    @Override
+    public legacyconnector.v1_12_2.net.minecraft.entity.Entity changeDimension(int dimension,
+            legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter teleporter) {
+        return super.changeDimension(dimension, teleporter);
+    }
 }
