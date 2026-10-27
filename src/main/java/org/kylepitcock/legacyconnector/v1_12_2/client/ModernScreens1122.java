@@ -373,7 +373,7 @@ public final class ModernScreens1122 {
             default -> null;
         };
         java.util.List<CreativeTabs> tabs;
-        synchronized (CreativeTabs.CREATIVE_TAB_ARRAY) {
+        synchronized (CreativeTabs.mcc$TABS) {
             tabs = new java.util.ArrayList<>(CreativeTabs.mcc$TABS);
         }
         for (CreativeTabs t : tabs) {
