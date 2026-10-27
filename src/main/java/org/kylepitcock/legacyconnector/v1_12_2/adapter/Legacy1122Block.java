@@ -87,6 +87,9 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean dropsList;
     private final boolean pickBlock;
     private final boolean explosionResistance;
+    private final boolean powerSource;
+    private final boolean weakPower;
+    private final boolean strongPower;
     private int failures;
     /** Set while legacy code computes a shape or breaking speed: the shim's defaults ask the modern block again, which must not recurse. */
     private static final ThreadLocal<boolean[]> IN_LEGACY_SHAPE = ThreadLocal.withInitial(() -> new boolean[1]);
@@ -131,6 +134,9 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.dropsList = overrides(legacy, "getDrops", legacyconnector.v1_12_2.net.minecraft.util.NonNullList.class, A, P, S, int.class)
                 || overrides(legacy, "getDrops", A, P, S, int.class);
         this.pickBlock = overrides(legacy, "getPickBlock", S, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.class, W, P, EntityPlayer.class);
+        this.powerSource = overrides(legacy, "canProvidePower", S);
+        this.weakPower = overrides(legacy, "getWeakPower", S, A, P, EnumFacing.class);
+        this.strongPower = overrides(legacy, "getStrongPower", S, A, P, EnumFacing.class);
         this.explosionResistance = overrides(legacy, "getExplosionResistance", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class,
                 legacyconnector.v1_12_2.net.minecraft.world.Explosion.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
@@ -756,6 +762,40 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         } catch (RuntimeException | LinkageError e) {
             failure("getExplosionResistance", e);
             return super.getExplosionResistance(state, level, pos, explosion);
+        }
+    }
+
+    // ------------------------------------------------------------------ redstone output (buttons, levers, mod emitters)
+
+    @Override
+    protected boolean isSignalSource(BlockState state) {
+        if (!powerSource) return super.isSignalSource(state);
+        try {
+            return legacy.canProvidePower(state(state));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
+    @Override
+    protected int getSignal(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
+        if (!weakPower) return super.getSignal(state, level, pos, direction);
+        try {
+            return Math.max(0, Math.min(15, legacy.getWeakPower(state(state), WorldBridge1122.access(level), pos(pos), EnumFacing.mcc$of(direction))));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getWeakPower", e);
+            return 0;
+        }
+    }
+
+    @Override
+    protected int getDirectSignal(BlockState state, net.minecraft.world.level.BlockGetter level, BlockPos pos, net.minecraft.core.Direction direction) {
+        if (!strongPower) return super.getDirectSignal(state, level, pos, direction);
+        try {
+            return Math.max(0, Math.min(15, legacy.getStrongPower(state(state), WorldBridge1122.access(level), pos(pos), EnumFacing.mcc$of(direction))));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getStrongPower", e);
+            return 0;
         }
     }
 }
