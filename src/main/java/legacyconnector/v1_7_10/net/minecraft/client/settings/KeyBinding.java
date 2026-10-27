@@ -15,6 +15,8 @@ public class KeyBinding implements Comparable<KeyBinding> {
     public static final List keybindArray = new ArrayList();
     /** The categories of all bindings. */
     private static final java.util.Set keybindSet = new java.util.HashSet();
+    /** Key code to binding, as 1.7.10 kept it (HBM looks up which binding owns a key to resolve overlaps). */
+    public static final legacyconnector.v1_7_10.net.minecraft.util.IntHashMap hash = new legacyconnector.v1_7_10.net.minecraft.util.IntHashMap();
 
     private final String description;
     private final String category;
@@ -33,6 +35,7 @@ public class KeyBinding implements Comparable<KeyBinding> {
     private static synchronized void mcc$listed(KeyBinding key) {
         keybindArray.add(key);
         keybindSet.add(key.category);
+        hash.addKey(key.keyCode, key);
     }
 
     /** A binding over an existing modern mapping (vanilla's). */
@@ -116,7 +119,9 @@ public class KeyBinding implements Comparable<KeyBinding> {
     public static void unPressAllKeys() {
     }
 
-    public static void resetKeyBindingArrayAndHash() {
+    public static synchronized void resetKeyBindingArrayAndHash() {
+        hash.clearMap();
+        for (Object o : keybindArray) hash.addKey(((KeyBinding) o).keyCode, o);
     }
 
     @Override

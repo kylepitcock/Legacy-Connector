@@ -93,6 +93,8 @@ public class Loader {
         for (ModContainer c : MCC$CORE_CONTAINERS) if (modname.equals(c.getModId())) return true;
         String lower = modname.toLowerCase(Locale.ROOT);
         if (lower.equals("forge") || lower.equals("fml") || lower.equals("mcp") || lower.equals("minecraft")) return true;
+        // a mod of the same name for another legacy version is not this one (its integration would crash on it)
+        if (LegacyMods.onlyOtherVersions(modname, "1.7.10")) return false;
         if (LegacyMods.byLegacyId(modname) != null) return true;
         for (String present : System.getProperty("legacyconnector.presentLegacyMods", "").split(",")) {
             if (!present.isEmpty() && present.equalsIgnoreCase(modname)) return true;

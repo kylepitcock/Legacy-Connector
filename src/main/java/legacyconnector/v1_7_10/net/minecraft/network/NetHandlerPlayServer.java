@@ -15,7 +15,13 @@ public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecra
     public NetHandlerPlayServer(EntityPlayerMP player) {
         this.playerEntity = player;
         this.serverController = player == null ? null : player.mcServer;
-        this.netManager = null;
+        // mods read the field directly (Logistics Pipes checks netManager.isChannelOpen() for every watching player)
+        this.netManager = mcc$connectionOf(player);
+    }
+
+    private static NetworkManager mcc$connectionOf(EntityPlayerMP player) {
+        var sp = player == null ? null : player.mcc$serverPlayer();
+        return sp == null || sp.connection == null ? NetworkManager.MCC_DUMMY : NetworkManager.mcc$of(sp.connection.getConnection());
     }
 
     public NetHandlerPlayServer(legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer server, NetworkManager manager, EntityPlayerMP player) {
@@ -26,9 +32,8 @@ public class NetHandlerPlayServer implements legacyconnector.v1_7_10.net.minecra
 
     /** The player's connection (the given one for handlers mods made, the real one otherwise). */
     public NetworkManager getNetworkManager() {
-        if (netManager != null) return netManager;
-        var sp = playerEntity == null ? null : playerEntity.mcc$serverPlayer();
-        return sp == null || sp.connection == null ? NetworkManager.MCC_DUMMY : NetworkManager.mcc$of(sp.connection.getConnection());
+        if (netManager != null && netManager != NetworkManager.MCC_DUMMY) return netManager;
+        return mcc$connectionOf(playerEntity);
     }
 
     /**

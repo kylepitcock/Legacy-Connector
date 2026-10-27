@@ -174,7 +174,16 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             keep.add(cacheDir.resolve("coremod-api.jar"));
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
             // every legacy jar of its version: that set is part of the cache key, and peers are scanned on a miss.
-            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges);
+            var crossVersion = crossVersionPackages(loading);
+            if (!crossVersion.isEmpty()) {
+                transformer.crossVersion(crossVersion);
+                for (LegacyVersion v : LegacyVersion.values()) {
+                    Set<String> pkgs = crossVersion.relocated(v);
+                    if (!pkgs.isEmpty()) LOG.info("Legacy Connector: {} packages that {} jars share with another legacy version are relocated in its jars: {}",
+                            pkgs.size(), v.id(), pkgs.size() > 12 ? new ArrayList<>(pkgs).subList(0, 12) + " ..." : pkgs);
+                }
+            }
+            Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
             int uncached = 0;
@@ -296,7 +305,28 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out;
     }
 
-    private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges) throws IOException {
+    /** The class packages that jars of more than one legacy version define (see {@link CrossVersionPackages}). */
+    private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars) {
+        var out = new org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages();
+        for (LegacyJar jar : jars) {
+            try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
+                var en = zip.entries();
+                while (en.hasMoreElements()) {
+                    String n = en.nextElement().getName();
+                    if (!n.endsWith(".class") || n.startsWith("META-INF/") || n.lastIndexOf('/') <= 0) continue;
+                    String name = n.substring(0, n.length() - ".class".length());
+                    if (LegacyVersion.isRelocatedRoot(name)) continue; // Minecraft, Forge and bridged APIs go to each version's shim anyway
+                    out.add(jar.version, name);
+                }
+            } catch (IOException | RuntimeException e) {
+                LOG.debug("Legacy Connector: could not list {}", jar.fileName(), e);
+            }
+        }
+        return out.done();
+    }
+
+    private static Map<LegacyVersion, byte[]> modSetDigests(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges,
+            org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersion) throws IOException {
         Map<LegacyVersion, MessageDigest> digests = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : legacy) {
             MessageDigest md = digests.computeIfAbsent(jar.version, v -> SplitPackageResolver.sha256());
@@ -304,6 +334,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
         }
+        // the relocations depend on the other versions' jars
+        byte[] shared = crossVersion.fingerprint().getBytes(StandardCharsets.UTF_8);
+        digests.forEach((v, md) -> md.update(shared));
         Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
         digests.forEach((v, md) -> out.put(v, md.digest()));
         return out;

@@ -72,6 +72,13 @@ public final class LegacyRemapper extends Remapper {
         overrides.put(from, to);
     }
 
+    /** Packages that jars of several legacy versions define (see {@link CrossVersionPackages}). */
+    private CrossVersionPackages crossVersion = CrossVersionPackages.NONE;
+
+    public void crossVersion(CrossVersionPackages crossVersion) {
+        this.crossVersion = crossVersion;
+    }
+
     /**
      * Mods that copied Minecraft code can declare both {@code field_70925_g} and their own {@code isShaking}; renaming
      * the SRG member would produce a duplicate (ClassFormatError). Such members keep their SRG name in that class.
@@ -127,6 +134,8 @@ public final class LegacyRemapper extends Remapper {
             if (internalName.startsWith(e.getKey())) return e.getValue() + internalName.substring(e.getKey().length());
         }
         if (LegacyVersion.isRelocatedRoot(internalName)) return relocate(internalName);
+        String moved = crossVersion.map(version, internalName);
+        if (moved != null) return moved;
         // String literals keep keyword segments: "class.insecta" (Forestry) is an id, not a package.
         return mappingString ? internalName : renameKeywordPackages(internalName);
     }

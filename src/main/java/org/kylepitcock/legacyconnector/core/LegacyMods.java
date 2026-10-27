@@ -86,6 +86,21 @@ public final class LegacyMods {
         return null;
     }
 
+    /**
+     * Whether {@code id} (legacy or modern id) names only legacy mods of versions other than {@code version}. A mod's
+     * integration with another version of a mod cannot work (1.12.2 Botania's Thaumcraft 6 support crashed on 1.7.10's
+     * Thaumcraft 4), so for its isModLoaded such a mod is absent.
+     */
+    public static synchronized boolean onlyOtherVersions(String id, String version) {
+        boolean other = false;
+        for (LegacyModRecord m : MODS) {
+            if (!m.legacyId.equalsIgnoreCase(id) && !m.modernId.equalsIgnoreCase(id)) continue;
+            if (m.version.equals(version)) return false;
+            other = true;
+        }
+        return other;
+    }
+
     public static synchronized boolean isEmpty() {
         return MODS.isEmpty();
     }

@@ -19,7 +19,7 @@ public class ItemTool extends Item {
     public float damageVsEntity;
     protected Item.ToolMaterial toolMaterial;
     /** The blocks this tool mines at full speed (MCP name: mods read and fill it, CoFH's hammers and sickles). */
-    public Set<Block> effectiveBlocks;
+    public Set<Block> effectiveBlocksTool;
     /** Forge: the tool class ("pickaxe", "axe", "shovel") this tool mines with, if any. */
     private String toolClass;
 
@@ -30,7 +30,7 @@ public class ItemTool extends Item {
         this.toolMaterial = mcc$materialOf(info);
         this.efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
         this.damageVsEntity = damage + toolMaterial.getDamageVsEntity();
-        this.effectiveBlocks = java.util.Collections.emptySet();
+        this.effectiveBlocksTool = java.util.Collections.emptySet();
     }
 
     public static Item.ToolMaterial mcc$materialOf(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
@@ -42,9 +42,9 @@ public class ItemTool extends Item {
         return Item.ToolMaterial.WOOD;
     }
 
-    protected ItemTool(float damage, Item.ToolMaterial material, Set effectiveBlocks) {
+    protected ItemTool(float damage, Item.ToolMaterial material, Set effectiveBlocksTool) {
         this.toolMaterial = material == null ? Item.ToolMaterial.WOOD : material;
-        this.effectiveBlocks = effectiveBlocks == null ? Collections.emptySet() : effectiveBlocks;
+        this.effectiveBlocksTool = effectiveBlocksTool == null ? Collections.emptySet() : effectiveBlocksTool;
         this.maxStackSize = 1;
         this.setMaxDamage(toolMaterial.getMaxUses());
         this.efficiencyOnProperMaterial = toolMaterial.getEfficiencyOnProperMaterial();
@@ -97,12 +97,12 @@ public class ItemTool extends Item {
 
     @Override
     public float getStrVsBlock(ItemStack stack, Block block) {
-        return effectiveBlocks.contains(block) || effectiveFor(toolClass, block, 0) ? efficiencyOnProperMaterial : 1.0F;
+        return effectiveBlocksTool.contains(block) || effectiveFor(toolClass, block, 0) ? efficiencyOnProperMaterial : 1.0F;
     }
 
     @Override
     public float getDigSpeed(ItemStack stack, Block block, int meta) {
-        return effectiveFor(toolClass, block, meta) || effectiveBlocks.contains(block) ? efficiencyOnProperMaterial : super.getDigSpeed(stack, block, meta);
+        return effectiveFor(toolClass, block, meta) || effectiveBlocksTool.contains(block) ? efficiencyOnProperMaterial : super.getDigSpeed(stack, block, meta);
     }
 
     @Override

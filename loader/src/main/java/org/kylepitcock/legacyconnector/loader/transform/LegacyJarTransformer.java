@@ -61,6 +61,20 @@ public final class LegacyJarTransformer {
         return this;
     }
 
+    private CrossVersionPackages crossVersion = CrossVersionPackages.NONE;
+
+    /** Packages that jars of several legacy versions define; each version links to its own copy. */
+    public LegacyJarTransformer crossVersion(CrossVersionPackages crossVersion) {
+        this.crossVersion = crossVersion;
+        return this;
+    }
+
+    private LegacyRemapper remapperFor(LegacyVersion version, SynthDemand demand) {
+        LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version), shim, demand);
+        remapper.crossVersion(crossVersion);
+        return remapper;
+    }
+
     /** Rewrites a legacy class before translation (legacy coremods' class transformers); null leaves classes as shipped. */
     public interface ClassPatcher {
         byte[] patch(LegacyJar jar, String internalName, byte[] bytes);
@@ -192,7 +206,7 @@ public final class LegacyJarTransformer {
      */
     public List<ClassInfo> scan(LegacyJar jar) throws IOException {
         Contents c = readPatched(jar);
-        LegacyRemapper remapper = new LegacyRemapper(jar.version, McpMappings.forVersion(jar.version), shim, null);
+        LegacyRemapper remapper = remapperFor(jar.version, null);
         relocateBundled(jar, c.classes, remapper);
         preventCollisions(c.classes, remapper);
         List<ClassInfo> out = new ArrayList<>();
@@ -216,7 +230,7 @@ public final class LegacyJarTransformer {
     public Result transform(LegacyJar jar, Path output, Map<String, ClassInfo> peers) throws IOException {
         Result result = new Result();
         LegacyVersion version = jar.version;
-        LegacyRemapper remapper = new LegacyRemapper(version, McpMappings.forVersion(version), shim, result.demand);
+        LegacyRemapper remapper = remapperFor(version, result.demand);
 
         Contents contents = readPatched(jar);
         Map<String, byte[]> classes = contents.classes;
