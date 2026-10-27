@@ -6,7 +6,14 @@ public class Mouse {
         try {
             var mc = net.minecraft.client.Minecraft.getInstance();
             if (mc == null || mc.getWindow() == null) return false;
-            return org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().getWindow(), button) == org.lwjgl.glfw.GLFW.GLFW_PRESS;
+            if (org.lwjgl.glfw.GLFW.glfwGetMouseButton(mc.getWindow().getWindow(), button) == org.lwjgl.glfw.GLFW.GLFW_PRESS) return true;
+            // a vanilla binding on this button held down without the physical button (the remote-control test client)
+            if (mc.options == null) return false;
+            for (var key : new net.minecraft.client.KeyMapping[] {mc.options.keyAttack, mc.options.keyUse, mc.options.keyPickItem}) {
+                var k = key.getKey();
+                if (k.getType() == com.mojang.blaze3d.platform.InputConstants.Type.MOUSE && k.getValue() == button && key.isDown()) return true;
+            }
+            return false;
         } catch (RuntimeException | LinkageError e) {
             return false;
         }
