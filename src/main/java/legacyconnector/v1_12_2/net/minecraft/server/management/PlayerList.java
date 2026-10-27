@@ -174,4 +174,64 @@ public class PlayerList {
     public legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements getPlayerAdvancements(EntityPlayerMP player) {
         return new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(player);
     }
+
+    // ---- area F: dimension travel and per-player updates
+
+    /** Moves the player to the dimension, then lets the teleporter place it (mods' teleporters build their own arrival spots). */
+    public void transferPlayerToDimension(EntityPlayerMP player, int dimensionIn, legacyconnector.v1_12_2.net.minecraft.world.Teleporter teleporter) {
+        transferPlayerToDimension(player, dimensionIn, (legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter) teleporter);
+    }
+
+    public void transferPlayerToDimension(EntityPlayerMP player, int dimensionIn, legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter teleporter) {
+        var sp = player == null ? null : player.mcc$serverPlayer();
+        if (sp == null) return;
+        var target = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.levelOf(sp.server, dimensionIn);
+        if (target == null) return;
+        if (target != sp.serverLevel()) sp.teleportTo(target, sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
+        if (teleporter != null) {
+            teleporter.placeEntity(org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(target), player, sp.getYRot());
+            // the teleporter moved the server-side player: tell its client where it is now
+            sp.connection.teleport(sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
+        }
+    }
+
+    /** Moves a (non-player) entity between the worlds, then lets the teleporter place it. */
+    public void transferEntityToWorld(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn, int lastDimension,
+            legacyconnector.v1_12_2.net.minecraft.world.WorldServer oldWorldIn, legacyconnector.v1_12_2.net.minecraft.world.WorldServer toWorldIn,
+            legacyconnector.v1_12_2.net.minecraft.world.Teleporter teleporter) {
+        if (entityIn == null || toWorldIn == null || !(toWorldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel target)) return;
+        var m = entityIn.mcc$modern();
+        if (m == null) return;
+        if (m.level() != target) {
+            m.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(target, m.position(), m.getDeltaMovement(), m.getYRot(),
+                    m.getXRot(), net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
+        }
+        if (teleporter != null) teleporter.placeEntity(toWorldIn, entityIn, m.getYRot());
+    }
+
+    /** The modern level adds an arriving player to its chunk tracking itself. */
+    public void preparePlayer(EntityPlayerMP playerIn, legacyconnector.v1_12_2.net.minecraft.world.WorldServer worldIn) {
+    }
+
+    /** Sends the world's border, time, spawn and weather to the player. */
+    public void updateTimeAndWeatherForPlayer(EntityPlayerMP playerIn, legacyconnector.v1_12_2.net.minecraft.world.WorldServer worldIn) {
+        var sp = playerIn == null ? null : playerIn.mcc$serverPlayer();
+        var m = modern();
+        if (sp == null || m == null) return;
+        var level = worldIn != null && worldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel l ? l : sp.serverLevel();
+        m.sendLevelInfo(sp, level);
+    }
+
+    /** How far away entities are tracked, in blocks (1.12: the view distance in chunks, less one, times 16). */
+    public int getEntityViewDistance() {
+        var m = modern();
+        return m == null ? 144 : m.getViewDistance() * 16 - 16;
+    }
+
+    /** The player's saved data, as written to its player file. */
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getPlayerNBT(EntityPlayerMP player) {
+        var sp = player == null ? null : player.mcc$serverPlayer();
+        if (sp == null) return null;
+        return new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(sp.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
+    }
 }

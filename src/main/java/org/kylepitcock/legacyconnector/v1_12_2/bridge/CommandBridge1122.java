@@ -140,7 +140,13 @@ public final class CommandBridge1122 {
         var lock = org.kylepitcock.legacyconnector.core.LegacyModLocks.of(command);
         lock.lock();
         try {
-            command.execute(MinecraftServer.mcc$instance(), sender, args);
+            // Forge's CommandEvent: mods may cancel the command, change its arguments or report an exception instead
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.CommandEvent(command, sender, args);
+            if (legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event)) {
+                if (event.getException() instanceof Exception thrown) throw thrown;
+                return 1;
+            }
+            command.execute(MinecraftServer.mcc$instance(), sender, event.getParameters());
             return 1;
         } catch (Exception | LinkageError e) {
             if (e instanceof RuntimeException || e instanceof LinkageError) {

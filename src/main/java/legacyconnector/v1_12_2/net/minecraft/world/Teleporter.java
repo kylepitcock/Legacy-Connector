@@ -7,7 +7,7 @@ import legacyconnector.v1_12_2.net.minecraft.entity.Entity;
  * Places an entity arriving in a world. Vanilla's nether portal search is the modern game's own (it runs for vanilla travel);
  * this base keeps the entity where it arrives, and mods' subclasses place it themselves.
  */
-public class Teleporter {
+public class Teleporter implements legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter {
     protected final WorldServer world;
     protected final Random random;
 
@@ -35,10 +35,12 @@ public class Teleporter {
     }
 
     /** Forge's ITeleporter hook. */
+    @Override
     public void placeEntity(World world, Entity entity, float yaw) {
         placeInPortal(entity, yaw);
     }
 
+    @Override
     public boolean isVanilla() {
         return getClass() == Teleporter.class;
     }
