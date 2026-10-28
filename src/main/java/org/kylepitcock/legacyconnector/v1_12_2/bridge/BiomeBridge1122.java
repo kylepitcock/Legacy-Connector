@@ -62,7 +62,8 @@ public final class BiomeBridge1122 {
         map("MESA", "badlands");
         map("MESA_ROCK", "wooded_badlands");
         map("MUTATED_MESA", "eroded_badlands");
-        map("FOREST_HILLS", "cherry_grove");
+        // 1.12 forest hills is a hills variant of forest (modernIds falls back to forest); cherry groves read as forest
+        map("FOREST", "cherry_grove");
         map("PLAINS", "dripstone_caves", "lush_caves", "deep_dark");
     }
 

@@ -89,6 +89,8 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     }
 
     public List<SpawnListEntry> getSpawnableList(EnumCreatureType creatureType) {
+        // a 1.12 vanilla biome's lists start as its modern biome's spawns (area F)
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.ensureVanilla(this);
         return spawnLists.getOrDefault(creatureType, new ArrayList<>());
     }
 
