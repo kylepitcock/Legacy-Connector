@@ -32,6 +32,11 @@ public class TileEntitySign extends TileEntity implements org.kylepitcock.legacy
                 : net.minecraft.core.RegistryAccess.fromRegistryOfRegistries(net.minecraft.core.registries.BuiltInRegistries.REGISTRY);
     }
 
+    /** The game sign a view stands for (null for a legacy sign). */
+    public net.minecraft.world.level.block.entity.SignBlockEntity mcc$modern() {
+        return mcc$sign;
+    }
+
     @Override
     public void mcc$refresh() {
         if (mcc$sign == null) return;

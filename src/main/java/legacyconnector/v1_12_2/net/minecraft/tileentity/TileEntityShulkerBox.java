@@ -103,10 +103,9 @@ public class TileEntityShulkerBox extends TileEntityLockableLoot implements org.
         return "minecraft:shulker_box";
     }
 
-    /** 1.12's ContainerShulkerBox is not part of this layer yet. */
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-        return null;
+        return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerShulkerBox(playerInventory, this, playerIn);
     }
 
     @Override

@@ -89,10 +89,10 @@ public class TileEntityDispenser extends TileEntityLockableLoot {
         return "minecraft:dispenser";
     }
 
-    /** 1.12's ContainerDispenser is not part of this layer yet. */
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-        return null;
+        fillWithLoot(playerIn);
+        return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerDispenser(playerInventory, this);
     }
 
     @Override

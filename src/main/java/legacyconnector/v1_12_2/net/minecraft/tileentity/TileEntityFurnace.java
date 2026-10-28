@@ -286,10 +286,9 @@ public class TileEntityFurnace extends TileEntityLockable implements ITickable, 
         return "minecraft:furnace";
     }
 
-    /** 1.12's ContainerFurnace is not part of this layer yet: furnace GUIs are the game's (mods open their own containers). */
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-        return null;
+        return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerFurnace(playerInventory, this);
     }
 
     @Override

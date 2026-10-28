@@ -32,6 +32,7 @@ public final class ModernScreens1122 {
             if (screen instanceof net.minecraft.client.gui.screens.options.controls.ControlsScreen cs) return new ControlsView(cs);
             if (screen instanceof CreativeModeInventoryScreen cs) return new CreativeView(cs);
             if (screen instanceof InventoryScreen is) return new InventoryView(is);
+            if (screen instanceof net.minecraft.client.gui.screens.inventory.MerchantScreen ms) return new MerchantView(ms);
             if (screen instanceof net.minecraft.client.gui.screens.inventory.CraftingScreen cs) return new CraftingView(cs);
             if (screen instanceof net.minecraft.client.gui.screens.inventory.HopperScreen hs) return new HopperView(hs);
             if (screen instanceof net.minecraft.client.gui.screens.inventory.BrewingStandScreen bs) return new BrewingView(bs);
@@ -319,6 +320,33 @@ public final class ModernScreens1122 {
 
         BeaconView(AbstractContainerScreen<?> modern) {
             super(null, null);
+            this.link = new Link(modern);
+            init(this, modern);
+            mcc$attach(link);
+            link.sync(this);
+        }
+
+        @Override
+        public Screen mcc$modern() {
+            return link.get();
+        }
+
+        @Override
+        public void mcc$sync() {
+            link.sync(this);
+        }
+
+        @Override
+        public boolean doesGuiPauseGame() {
+            return false;
+        }
+    }
+
+    public static final class MerchantView extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiMerchant implements ScreenEvents1122.Modern {
+        private final Link link;
+
+        MerchantView(net.minecraft.client.gui.screens.inventory.MerchantScreen modern) {
+            super(null, legacyconnector.v1_12_2.net.minecraft.client.gui.GuiMerchant.mcc$clientMerchant(modern.getMenu(), modern.getTitle()), null);
             this.link = new Link(modern);
             init(this, modern);
             mcc$attach(link);
