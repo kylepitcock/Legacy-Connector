@@ -63,6 +63,10 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![An HBM nuclear explosion](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/hbm-nuke.png)
 
+**1.12.2: Scape and Run: Parasites**, with its own models, AI and attacks:
+
+![Scape and Run: Parasites](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites.png)
+
 ---
 
 ## How it works
