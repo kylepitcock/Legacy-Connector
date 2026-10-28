@@ -197,4 +197,15 @@ public final class VanillaEntities1122 {
     public static String mcc$legacyNameOf(EntityType<?> type) {
         return byType().get(type);
     }
+
+    /** The modern type exactly this vanilla legacy class views, or null (area F: natural spawn lists). */
+    public static EntityType<?> mcc$modernTypeOf(Class<?> cls) {
+        String n = cls == null ? null : legacyName(cls);
+        Supplier<EntityType<?>> type = n == null ? null : TYPES.get(n);
+        try {
+            return type == null ? null : type.get();
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
 }
