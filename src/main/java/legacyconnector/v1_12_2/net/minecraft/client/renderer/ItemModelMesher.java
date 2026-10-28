@@ -13,6 +13,8 @@ import org.kylepitcock.legacyconnector.v1_12_2.client.Models1122;
 /** Item models: registration goes to Forge's ModelLoader (the generated item models); lookups answer the game's model of the stack. */
 public class ItemModelMesher {
     private final ModelManager modelManager;
+    /** 1.12's mesh definitions by item; registration goes to ModelLoader here. Read by reflection (CodeChickenLib copies it). */
+    private final java.util.Map<Item, ItemMeshDefinition> shapers = new java.util.HashMap<>();
 
     public ItemModelMesher(ModelManager modelManager) {
         this.modelManager = modelManager;

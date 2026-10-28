@@ -45,7 +45,11 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
     public void bindTexture(ResourceLocation resource) {
         if (resource == null) return; // legacy renderers with an unset texture keep the previous one
         flush();
-        RenderContext.bindTexture(mcc$modern(resource));
+        var modern = mcc$modern(resource);
+        // 1.12's HUD sheet (hearts, armor, food) is gone since 1.20.2: composed from the modern sprites the first time it is bound
+        // (Tinkers' Mantle cancels the vanilla hearts and draws its own from it; nothing showed)
+        if (modern.equals(org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.LOCATION)) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyIcons.ensure();
+        RenderContext.bindTexture(modern);
     }
 
     public boolean loadTickableTexture(ResourceLocation textureLocation, ITickableTextureObject textureObj) {

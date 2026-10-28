@@ -174,13 +174,40 @@ public class FontRenderer implements legacyconnector.v1_12_2.net.minecraft.clien
     }
 
     public int getStringWidth(String text) {
-        return text == null ? 0 : font().width(text);
+        if (text == null) return 0;
+        if (font() == null) {
+            int width = 0;
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+                if (c == 167 && i + 1 < text.length()) {
+                    i++; // a formatting code has no width
+                    continue;
+                }
+                width += mcc$defaultWidth(c);
+            }
+            return width;
+        }
+        return font().width(text);
     }
 
     public int getCharWidth(char character) {
         if (character == 167) return -1;
         if (character == ' ') return 4;
+        if (font() == null) return mcc$defaultWidth(character);
         return font().width(String.valueOf(character));
+    }
+
+    /**
+     * The default font's advance of a character, for text measured before the modern client has its font (mods build their font
+     * renderers and wrap text during init; Immersive Engineering's manual font): vanilla's ASCII widths, 6 for anything else.
+     */
+    private static int mcc$defaultWidth(char c) {
+        if (c == ' ') return 4;
+        if ("!',.:;i|".indexOf(c) >= 0) return 2;
+        if ("`l".indexOf(c) >= 0) return 3;
+        if ("It[]".indexOf(c) >= 0) return 4;
+        if ("\"()*<>fk{}".indexOf(c) >= 0) return 5;
+        return 6;
     }
 
     public String trimStringToWidth(String text, int width) {

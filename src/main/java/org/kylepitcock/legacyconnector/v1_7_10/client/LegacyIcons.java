@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
  * sheet with separate HUD sprites in 1.20.2, but mods that draw their own health bar or read these icons still blit from it, so
  * it is composed once from the modern sprites at the old positions and registered under the old name.
  */
-final class LegacyIcons {
-    static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
+public final class LegacyIcons {
+    public static final ResourceLocation LOCATION = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
     private static boolean done;
 
     private LegacyIcons() {}
 
     /** Registers the sheet the first time anything binds it (render thread). */
-    static void ensure() {
+    public static void ensure() {
         if (done || !RenderSystem.isOnRenderThread()) return;
         done = true;
         try {

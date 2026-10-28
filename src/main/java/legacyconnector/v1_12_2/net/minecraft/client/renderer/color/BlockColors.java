@@ -14,6 +14,33 @@ import org.kylepitcock.legacyconnector.v1_12_2.client.Colors1122;
  */
 public class BlockColors {
     private final Map<Block, IBlockColor> handlers = new ConcurrentHashMap<>();
+    /**
+     * Forge's field (by delegate), read by reflection: mods (Quark, Botania) take vanilla's vine and grass handlers from it to tint
+     * their own blocks. A view: a mod handler, else one answering the game's colour of the block; put registers a handler.
+     */
+    @SuppressWarnings("unused")
+    private final Map<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<Block>, IBlockColor> blockColorMap = new java.util.AbstractMap<>() {
+        @Override
+        public IBlockColor get(Object key) {
+            if (!(key instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<?> d) || !(d.get() instanceof Block block)) return null;
+            IBlockColor handler = handlers.get(block);
+            return handler != null ? handler : (state, world, pos, tint) -> Colors1122.modernBlockColor(state, pos, tint);
+        }
+
+        @Override
+        public IBlockColor put(legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<Block> key, IBlockColor value) {
+            IBlockColor old = key == null ? null : handlers.get(key.get());
+            if (key != null && key.get() != null) registerBlockColorHandler(value, key.get());
+            return old;
+        }
+
+        @Override
+        public java.util.Set<Entry<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<Block>, IBlockColor>> entrySet() {
+            java.util.Set<Entry<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<Block>, IBlockColor>> out = new java.util.LinkedHashSet<>();
+            for (var e : handlers.entrySet()) out.add(new java.util.AbstractMap.SimpleEntry<>(e.getKey().delegate, e.getValue()));
+            return out;
+        }
+    };
 
     public BlockColors() {
     }

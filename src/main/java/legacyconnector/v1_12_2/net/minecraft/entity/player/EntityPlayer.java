@@ -478,6 +478,7 @@ public abstract class EntityPlayer extends EntityLivingBase {
     @Override
     public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability, EnumFacing facing) {
         if (capability != null && capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return true;
+        if (capability != null && mcc$baubles(capability)) return true;
         return super.hasCapability(capability, facing);
     }
 
@@ -489,7 +490,14 @@ public abstract class EntityPlayer extends EntityLivingBase {
         if (capability != null && capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
             return (T) mcc$get$inventory(this).mcc$itemHandler(facing);
         }
+        if (capability != null && mcc$baubles(capability)) return (T) legacyconnector.v1_12_2.baubles.api.BaublesApi.getBaublesHandler(this);
         return null;
+    }
+
+    /** Baubles' slots, answered from Curios when the Baubles bridge is active (Curios installed). */
+    private static boolean mcc$baubles(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability) {
+        return capability == legacyconnector.v1_12_2.baubles.api.cap.BaublesCapabilities.CAPABILITY_BAUBLES
+                && net.neoforged.fml.ModList.get() != null && net.neoforged.fml.ModList.get().isLoaded("curios");
     }
 
     // ------------------------------------------------------------------ hooks

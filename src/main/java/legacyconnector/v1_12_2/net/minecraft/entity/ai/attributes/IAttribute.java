@@ -14,7 +14,13 @@ public interface IAttribute {
 
     /** The modern attribute of the same meaning (vanilla attributes by their 1.12 names), or null for mod attributes. */
     default net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> mcc$modern() {
-        String modern = switch (getName()) {
+        return mcc$modernByName(getName());
+    }
+
+    /** The modern attribute for a 1.12 attribute name (the keys of items' attribute modifier maps), or null. */
+    static net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> mcc$modernByName(String name) {
+        if (name == null) return null;
+        String modern = switch (name) {
             case "generic.maxHealth" -> "generic.max_health";
             case "generic.followRange" -> "generic.follow_range";
             case "generic.knockbackResistance" -> "generic.knockback_resistance";

@@ -13,13 +13,24 @@ public class LanguageManager implements IResourceManagerReloadListener {
         return new Language(code, info.region(), info.name(), info.bidirectional());
     }
 
+    /**
+     * The selected language. Mods load inside the modern client's constructor, before its language manager exists (1.12 created it
+     * first; Immersive Engineering's and Tinkers' fonts ask during init): until then the language from the options, else en_us.
+     */
     public Language getCurrentLanguage() {
-        String code = modern().getSelected();
-        return of(code, modern().getLanguage(code));
+        var m = modern();
+        if (m == null) {
+            var options = net.minecraft.client.Minecraft.getInstance().options;
+            String code = options != null && options.languageCode != null ? options.languageCode : "en_us";
+            return of(code, null);
+        }
+        String code = m.getSelected();
+        return of(code, m.getLanguage(code));
     }
 
     public void setCurrentLanguage(Language language) {
-        if (language != null) modern().setSelected(language.getLanguageCode());
+        var m = modern();
+        if (language != null && m != null) m.setSelected(language.getLanguageCode());
     }
 
     /** Whether the font has to use the unicode pages (the player forced it). */

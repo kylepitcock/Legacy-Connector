@@ -286,6 +286,8 @@ public final class Platform1122 implements LegacyPlatform {
         legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.CapabilityFluidHandler.register();
         legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.register();
         legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.register();
+        // Baubles' capabilities exist before any mod's @CapabilityInject for them is resolved (only with Curios: the Baubles bridge)
+        if (net.neoforged.fml.ModList.get().isLoaded("curios")) legacyconnector.v1_12_2.baubles.api.cap.BaublesCapabilities.mcc$init();
         // mods create their own registries here, before any preInit (EnderIO needs its mod object registry then)
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.NewRegistry());
     }
@@ -334,8 +336,17 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES));
         // registries typed by classes only the synthesizer has; the events go out once the type is known
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.postSynthesized(Platform1122::post);
-        for (var custom : org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries()) {
-            if (custom.getRegistrySuperType() != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
+        // Forge 1.12 posted the other registries sorted by name and filled the object holders after each one: Vampirism's skills
+        // (vampirism:skills) are built from the actions registered before them (vampirism:actions) through holder fields
+        var customs = new java.util.ArrayList<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries());
+        customs.sort(java.util.Comparator.comparing(r -> {
+            var name = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customName(r);
+            return name == null ? "~" : name.toString().toLowerCase(java.util.Locale.ROOT);
+        }));
+        for (var custom : customs) {
+            if (custom.getRegistrySuperType() == null) continue;
+            injectObjectHolders();
+            post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
         }
         if (FMLEnvironment.dist.isClient()) post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
         MISSING_HOLDERS.clear();
@@ -408,6 +419,7 @@ public final class Platform1122 implements LegacyPlatform {
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
+        if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles1122.registerItems();
         java.util.Map<String, int[]> perMod = new java.util.TreeMap<>();
         for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             var name = item.getRegistryName();

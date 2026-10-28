@@ -279,11 +279,38 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     }
 
     /** The client's singletons below are null on a dedicated server (client-only mods call {@code getMinecraft()} there too). */
+    /** 1.12's field, replaced by reflection by CodeChickenLib with its own item renderer; the getter answers a replacement. */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem renderItem = CLIENT ? mcc$renderItem() : null;
+
+    private static legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem mcc$renderItem() {
+        try {
+            return legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance();
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem getRenderItem() {
+        if (renderItem != null) return renderItem;
         return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance() : null;
     }
 
+    /**
+     * 1.12's field, replaced by reflection by CodeChickenLib with its own dispatcher (its custom block rendering); the getter answers
+     * a replacement when one was set. Without the field CodeChickenLib failed to initialise.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher blockRenderDispatcher = CLIENT ? mcc$dispatcher() : null;
+
+    private static legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher mcc$dispatcher() {
+        try {
+            return legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher.mcc$instance();
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher getBlockRendererDispatcher() {
+        if (blockRenderDispatcher != null) return blockRenderDispatcher;
         return CLIENT ? legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockRendererDispatcher.mcc$instance() : null;
     }
 

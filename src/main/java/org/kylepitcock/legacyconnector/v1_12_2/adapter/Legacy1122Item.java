@@ -122,6 +122,72 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         return super.canPerformAction(stack, itemAbility);
     }
 
+    /**
+     * The armor slot of the item: Forge's getEquipmentSlot(stack), else an ItemArmor's armorType. The modern game puts only items that
+     * name their slot into armor slots (by hand, dispenser or /item), so legacy chestplates, leggings and boots could not be worn.
+     */
+    @Override
+    public net.minecraft.world.entity.EquipmentSlot getEquipmentSlot(ItemStack stack) {
+        try {
+            var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(stack);
+            var slot = legacy.getEquipmentSlot(view);
+            if (slot == null && legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemArmor armor) slot = armor.armorType;
+            if (slot != null) {
+                return switch (slot) {
+                    case MAINHAND -> net.minecraft.world.entity.EquipmentSlot.MAINHAND;
+                    case OFFHAND -> net.minecraft.world.entity.EquipmentSlot.OFFHAND;
+                    case FEET -> net.minecraft.world.entity.EquipmentSlot.FEET;
+                    case LEGS -> net.minecraft.world.entity.EquipmentSlot.LEGS;
+                    case CHEST -> net.minecraft.world.entity.EquipmentSlot.CHEST;
+                    case HEAD -> net.minecraft.world.entity.EquipmentSlot.HEAD;
+                };
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // no slot of its own
+        }
+        return super.getEquipmentSlot(stack);
+    }
+
+    /**
+     * The item's attribute modifiers per slot (armor points and toughness of armor, attack damage and speed of weapons, mods' own
+     * modifiers) from the legacy getAttributeModifiers(slot, stack). Without this every legacy armor gave 0 armor and every weapon
+     * hit like a fist.
+     */
+    @Override
+    public net.minecraft.world.item.component.ItemAttributeModifiers getDefaultAttributeModifiers(ItemStack stack) {
+        net.minecraft.world.item.component.ItemAttributeModifiers base = super.getDefaultAttributeModifiers(stack);
+        try {
+            var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(stack);
+            var builder = net.minecraft.world.item.component.ItemAttributeModifiers.builder();
+            boolean any = false;
+            for (var slot : legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.values()) {
+                var map = legacy.getAttributeModifiers(slot, view);
+                if (map == null || map.isEmpty()) continue;
+                var group = switch (slot) {
+                    case MAINHAND -> net.minecraft.world.entity.EquipmentSlotGroup.MAINHAND;
+                    case OFFHAND -> net.minecraft.world.entity.EquipmentSlotGroup.OFFHAND;
+                    case FEET -> net.minecraft.world.entity.EquipmentSlotGroup.FEET;
+                    case LEGS -> net.minecraft.world.entity.EquipmentSlotGroup.LEGS;
+                    case CHEST -> net.minecraft.world.entity.EquipmentSlotGroup.CHEST;
+                    case HEAD -> net.minecraft.world.entity.EquipmentSlotGroup.HEAD;
+                };
+                for (var e : map.entries()) {
+                    var attribute = legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttribute.mcc$modernByName(e.getKey());
+                    if (attribute == null || e.getValue() == null) continue;
+                    var modifier = e.getValue().mcc$modern();
+                    // per slot: one modifier id may be used in several slots (armor uses one UUID per slot, swords one for the hand)
+                    modifier = new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                            modifier.id().withSuffix("/" + slot.getName()), modifier.amount(), modifier.operation());
+                    builder.add(attribute, modifier, group);
+                    any = true;
+                }
+            }
+            return any ? builder.build() : base;
+        } catch (RuntimeException | LinkageError e) {
+            return base;
+        }
+    }
+
     @Override
     public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
         return cb().hit ? cb().hit(stack, target, attacker) : super.hurtEnemy(stack, target, attacker);

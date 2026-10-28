@@ -60,8 +60,10 @@ public class PotionType extends IForgeRegistryEntry.Impl<PotionType> {
         return "minecraft".equals(id.getNamespace()) ? mcc$vanilla(id.getPath()) : null;
     }
 
+    /** The type of that name; an unknown or empty name is the empty type, as 1.12's defaulted registry answered (never null). */
     public static PotionType getPotionTypeForName(String name) {
-        return REGISTRY.getObject(new ResourceLocation(name));
+        PotionType t = name == null || name.isEmpty() ? null : REGISTRY.getObject(new ResourceLocation(name));
+        return t != null ? t : mcc$vanilla("empty");
     }
 
     public String getNamePrefixed(String prefix) {
