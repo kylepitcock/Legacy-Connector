@@ -105,6 +105,23 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         return cb().useAction ? cb().useAction(stack, modern) : modern;
     }
 
+    /**
+     * Shields: 1.12 blocked while an item with the BLOCK use action was raised (Forge's isShield for the shield item); the modern game asks
+     * for the shield-block ability, so legacy shields block and wear like vanilla's.
+     */
+    @Override
+    public boolean canPerformAction(ItemStack stack, net.neoforged.neoforge.common.ItemAbility itemAbility) {
+        if (itemAbility == net.neoforged.neoforge.common.ItemAbilities.SHIELD_BLOCK) {
+            try {
+                var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(stack);
+                if (legacy.isShield(view, null) || legacy.getItemUseAction(view) == legacyconnector.v1_12_2.net.minecraft.item.EnumAction.BLOCK) return true;
+            } catch (RuntimeException | LinkageError e) {
+                // not a shield
+            }
+        }
+        return super.canPerformAction(stack, itemAbility);
+    }
+
     @Override
     public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
         return cb().hit ? cb().hit(stack, target, attacker) : super.hurtEnemy(stack, target, attacker);
