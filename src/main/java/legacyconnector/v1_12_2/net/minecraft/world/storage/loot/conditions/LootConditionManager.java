@@ -43,4 +43,24 @@ public class LootConditionManager {
         for (LootCondition c : conditions) if (c != null && !c.testCondition(rand, context)) return false;
         return true;
     }
+
+    /** Gson adapter for conditions in loot table JSON ("condition" names the registered serializer). */
+    public static class Serializer implements com.google.gson.JsonDeserializer<LootCondition>, com.google.gson.JsonSerializer<LootCondition> {
+        @Override
+        public LootCondition deserialize(com.google.gson.JsonElement element, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            var json = element.getAsJsonObject();
+            var name = new ResourceLocation(json.get("condition").getAsString());
+            return getSerializerForName(name).deserialize(json, context);
+        }
+
+        @Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public com.google.gson.JsonElement serialize(LootCondition condition, java.lang.reflect.Type type, com.google.gson.JsonSerializationContext context) {
+            LootCondition.Serializer s = getSerializerFor(condition);
+            var json = new com.google.gson.JsonObject();
+            s.serialize(json, condition, context);
+            json.addProperty("condition", s.getLootTableLocation().toString());
+            return json;
+        }
+    }
 }

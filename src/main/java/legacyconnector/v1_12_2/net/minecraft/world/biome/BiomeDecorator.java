@@ -23,6 +23,25 @@ public class BiomeDecorator {
     public java.util.Random decorationRandom;
     public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos chunkPos;
     public float extraTreeChance = 0.1F;
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenFlowers flowerGen = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenFlowers(
+            legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerColor.YELLOW.getBlock(),
+            legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType.DANDELION);
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator mushroomBrownGen =
+            mcc$modernPatch(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_BROWN_MUSHROOM);
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator mushroomRedGen =
+            mcc$modernPatch(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_RED_MUSHROOM);
+
+    /** A plant patch placed as the modern game's feature of the same plant. */
+    private static legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator mcc$modernPatch(
+            net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> key) {
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator() {
+            @Override
+            public boolean generate(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random rand,
+                    legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+                return org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(world, key, rand, pos);
+            }
+        };
+    }
     public legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings chunkProviderSettings;
     public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator clayGen = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenClay(4);
     public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator sandGen = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenSand(mcc$block("sand"), 7);

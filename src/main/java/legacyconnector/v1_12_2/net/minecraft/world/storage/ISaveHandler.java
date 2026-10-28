@@ -20,4 +20,12 @@ public interface ISaveHandler {
     java.io.File getMapFileFromName(String name);
 
     legacyconnector.v1_12_2.net.minecraft.world.gen.structure.template.TemplateManager getStructureTemplateManager();
+
+    /** The chunk storage of a dimension of this save (its region folder). */
+    default legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader getChunkLoader(legacyconnector.v1_12_2.net.minecraft.world.WorldProvider provider) {
+        java.io.File dir = getWorldDirectory();
+        String folder = provider == null ? null : provider.getSaveFolder();
+        if (dir != null && folder != null) dir = new java.io.File(dir, folder);
+        return new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.AnvilChunkLoader(dir, null);
+    }
 }
