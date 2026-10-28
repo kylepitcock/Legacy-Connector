@@ -58,4 +58,9 @@ public class BlockColors {
         }
         return Colors1122.modernBlockColor(state, pos, renderPass);
     }
+
+    /** 1.12 built the game's block colours here; the game's own (with the mods' handlers) is returned. */
+    public static BlockColors init() {
+        return mcc$instance();
+    }
 }

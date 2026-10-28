@@ -102,4 +102,18 @@ public class TileEntityRendererDispatcher {
 
     public void drawBatch(int pass) {
     }
+
+    /** The frame's view for tile entity renderers: world, textures, viewer and its interpolated position and angles. */
+    public void prepare(World worldIn, TextureManager renderEngineIn, legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer fontRendererIn,
+            Entity entityIn, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult cameraHitResultIn, float p_190056_6_) {
+        if (world != worldIn) setWorld(worldIn);
+        renderEngine = renderEngineIn;
+        entity = entityIn;
+        if (entityIn == null) return;
+        entityYaw = Entity.mcc$get$prevRotationYaw(entityIn) + (Entity.mcc$get$rotationYaw(entityIn) - Entity.mcc$get$prevRotationYaw(entityIn)) * p_190056_6_;
+        entityPitch = Entity.mcc$get$prevRotationPitch(entityIn) + (Entity.mcc$get$rotationPitch(entityIn) - Entity.mcc$get$prevRotationPitch(entityIn)) * p_190056_6_;
+        entityX = Entity.mcc$get$lastTickPosX(entityIn) + (Entity.mcc$get$posX(entityIn) - Entity.mcc$get$lastTickPosX(entityIn)) * (double) p_190056_6_;
+        entityY = Entity.mcc$get$lastTickPosY(entityIn) + (Entity.mcc$get$posY(entityIn) - Entity.mcc$get$lastTickPosY(entityIn)) * (double) p_190056_6_;
+        entityZ = Entity.mcc$get$lastTickPosZ(entityIn) + (Entity.mcc$get$posZ(entityIn) - Entity.mcc$get$lastTickPosZ(entityIn)) * (double) p_190056_6_;
+    }
 }

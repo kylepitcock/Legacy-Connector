@@ -17,4 +17,19 @@ public class Mouse extends legacyconnector.v1_7_10.org.lwjgl.input.Mouse {
 
     public static void setClipMouseCoordinatesToWindow(boolean clip) {
     }
+
+    /** LWJGL 2 named the buttons "BUTTON0" to "BUTTON15" (-1 for other names). */
+    public static int getButtonIndex(String buttonName) {
+        if (buttonName == null || !buttonName.startsWith("BUTTON")) return -1;
+        try {
+            int i = Integer.parseInt(buttonName.substring(6));
+            return i >= 0 && i < 16 ? i : -1;
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** The cursor is the modern window's. */
+    public static void updateCursor() {
+    }
 }

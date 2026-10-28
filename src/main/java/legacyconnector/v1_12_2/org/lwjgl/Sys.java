@@ -28,4 +28,8 @@ public final class Sys {
             return false;
         }
     }
+
+    public static boolean is64Bit() {
+        return System.getProperty("os.arch", "").contains("64");
+    }
 }
