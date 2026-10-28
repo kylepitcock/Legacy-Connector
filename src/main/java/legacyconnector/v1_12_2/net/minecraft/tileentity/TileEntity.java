@@ -213,6 +213,36 @@ public abstract class TileEntity implements ICapabilityProvider {
         return oldState.getBlock() != newState.getBlock();
     }
 
+    /** The name shown for this tile entity (container titles); none for plain tile entities. */
+    public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+        return null;
+    }
+
+    /** Structure placement turned the block: tile entities that store directions turn them too. */
+    public void rotate(legacyconnector.v1_12_2.net.minecraft.util.Rotation rotationIn) {
+    }
+
+    public void mirror(legacyconnector.v1_12_2.net.minecraft.util.Mirror mirrorIn) {
+    }
+
+    /** Sets the world while the tile entity is created (before it is added; chunk loading). */
+    protected void setWorldCreate(World worldIn) {
+        this.world = worldIn;
+    }
+
+    /** Vanilla's own registration of a tile entity class under a name. */
+    public static void register(String id, Class<? extends TileEntity> clazz) {
+        if (id == null || clazz == null) return;
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerClass(clazz, id.indexOf(':') < 0 ? "minecraft:" + id : id);
+    }
+
+    /** Places a legacy view of a game block entity at its world and position (see {@code TileViews1122}). */
+    public void mcc$bind(World worldIn, BlockPos posIn, net.minecraft.world.level.block.entity.BlockEntity host) {
+        this.world = worldIn;
+        this.pos = posIn;
+        this.mcc$host = host;
+    }
+
     @Override
     public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
         return false;

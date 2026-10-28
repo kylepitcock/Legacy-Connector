@@ -48,4 +48,11 @@ public class FluidTankProperties implements IFluidTankProperties {
     public boolean canDrainFluidType(FluidStack fluidStack) {
         return canDrain;
     }
+
+    /** Properties for old-style tank infos (both directions allowed). */
+    public static FluidTankProperties[] convert(legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidTankInfo[] fluidTankInfos) {
+        FluidTankProperties[] properties = new FluidTankProperties[fluidTankInfos.length];
+        for (int i = 0; i < fluidTankInfos.length; i++) properties[i] = new FluidTankProperties(fluidTankInfos[i].fluid, fluidTankInfos[i].capacity);
+        return properties;
+    }
 }

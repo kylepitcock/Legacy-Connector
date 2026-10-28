@@ -224,4 +224,30 @@ public class FluidUtil {
             return contents;
         }
     }
+
+    /** Breaks a non-solid, non-liquid block (a flower, grass) where fluid is placed, dropping it. */
+    public static void destroyBlockOnFluidPlacement(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (world == null || world.isRemote) return;
+        var state = world.getBlockState(pos);
+        var material = state.getMaterial();
+        if (!material.isSolid() && !material.isLiquid()) world.destroyBlock(pos, true);
+    }
+
+    /** Fills an empty container from the fluid block at a position (a source block of a mod fluid, vanilla water or lava). */
+    public static FluidActionResult tryPickUpFluid(ItemStack emptyContainer, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        if (emptyContainer == null || emptyContainer.isEmpty() || worldIn == null || pos == null) return FluidActionResult.FAILURE;
+        var block = worldIn.getBlockState(pos).getBlock();
+        IFluidHandler target = null;
+        if (block instanceof IFluidBlock fluidBlock) {
+            target = new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBlockWrapper(fluidBlock, worldIn, pos);
+        } else {
+            var level = worldIn.mcc$level();
+            var p = new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ());
+            if (level != null && !level.getFluidState(p).isEmpty()) target = new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.BlockWrapper.ModernLiquid(level, p);
+        }
+        if (target == null) return FluidActionResult.FAILURE;
+        return tryFillContainer(emptyContainer, target, Integer.MAX_VALUE, playerIn, true);
+    }
 }

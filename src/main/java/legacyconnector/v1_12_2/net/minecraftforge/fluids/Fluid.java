@@ -37,6 +37,11 @@ public class Fluid {
         this.overlay = overlay;
     }
 
+    public Fluid(String fluidName, ResourceLocation still, ResourceLocation flowing, ResourceLocation overlay, int color) {
+        this(fluidName, still, flowing, overlay);
+        this.color = color;
+    }
+
     public final String getName() {
         return fluidName;
     }
@@ -235,5 +240,59 @@ public class Fluid {
     @Override
     public int hashCode() {
         return fluidName == null ? 0 : fluidName.hashCode();
+    }
+
+    public Fluid setColor(java.awt.Color color) {
+        return setColor(color.getRGB());
+    }
+
+    /** What happens when the fluid is poured where it evaporates (the Nether, for water): a fizz and smoke, and it is gone. */
+    public void vaporize(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, FluidStack fluidStack) {
+        var level = worldIn == null ? null : worldIn.mcc$level();
+        if (level == null) return;
+        var p = new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        var except = player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player pl ? pl : null;
+        level.playSound(except, p, net.minecraft.sounds.SoundEvents.FIRE_EXTINGUISH, net.minecraft.sounds.SoundSource.BLOCKS, 0.5F,
+                2.6F + (level.random.nextFloat() - level.random.nextFloat()) * 0.8F);
+        for (int i = 0; i < 8; ++i) {
+            level.addParticle(net.minecraft.core.particles.ParticleTypes.LARGE_SMOKE, p.getX() + Math.random(), p.getY() + Math.random(), p.getZ() + Math.random(), 0.0D, 0.0D, 0.0D);
+        }
+    }
+
+    // Forge's per-position variants: the fluid's own values unless a mod overrides them.
+
+    public int getLuminosity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getLuminosity();
+    }
+
+    public int getDensity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getDensity();
+    }
+
+    public int getTemperature(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getTemperature();
+    }
+
+    public int getViscosity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getViscosity();
+    }
+
+    public boolean isGaseous(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return isGaseous();
+    }
+
+    public int getColor(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getColor();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getFillSound(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getFillSound();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getEmptySound(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getEmptySound();
     }
 }
