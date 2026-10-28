@@ -4,6 +4,9 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import legacyconnector.v1_7_10.net.minecraft.command.CommandException;
 import legacyconnector.v1_7_10.net.minecraft.command.ICommand;
 import legacyconnector.v1_7_10.net.minecraft.command.ICommandSender;
@@ -12,6 +15,8 @@ import legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.TickTask;
+import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -33,10 +38,47 @@ public final class CommandBridge1710 {
 
     private static LiteralArgumentBuilder<CommandSourceStack> build(String name, ICommand command) {
         return Commands.literal(name)
-                .requires(src -> command.canCommandSenderUseCommand(sender(src)))
+                .requires(src -> canUse(src, command))
                 .executes(ctx -> run(ctx, command, new String[0]))
                 .then(Commands.argument("args", StringArgumentType.greedyString())
                         .executes(ctx -> run(ctx, command, StringArgumentType.getString(ctx, "args").trim().split(" +"))));
+    }
+
+    /** Players whose command tree is resent on the next tick, and players being resent right now (no second retry). */
+    private static final Set<UUID> RESEND = ConcurrentHashMap.newKeySet();
+    private static final Set<UUID> RESENDING = ConcurrentHashMap.newKeySet();
+    private static final Set<String> REPORTED = ConcurrentHashMap.newKeySet();
+
+    /**
+     * 1.7.10 asked a command for permission only when a player typed it; 1.21 asks every command while it sends a
+     * joining player the command tree, before that player is in the player list. Checks that look the sender up by
+     * name there (WarpTheory) threw and the join failed with "Invalid player data". A failing check hides the command
+     * and the player's tree is resent once on the next tick, when the player is listed.
+     */
+    private static boolean canUse(CommandSourceStack src, ICommand command) {
+        try {
+            return command.canCommandSenderUseCommand(sender(src));
+        } catch (RuntimeException | LinkageError e) {
+            if (REPORTED.add(command.getCommandName()))
+                LoggerFactory.getLogger("LegacyConnector/Commands").warn("Permission check of legacy command /{} failed; hiding it for now",
+                        command.getCommandName(), e);
+            if (src.getEntity() instanceof ServerPlayer player && !RESENDING.contains(player.getUUID()) && RESEND.add(player.getUUID())) {
+                var server = src.getServer();
+                // tell() always queues (execute() would run it now, still inside placeNewPlayer)
+                server.tell(new TickTask(server.getTickCount(), () -> {
+                    UUID id = player.getUUID();
+                    RESEND.remove(id);
+                    if (server.getPlayerList().getPlayer(id) != player) return;
+                    RESENDING.add(id);
+                    try {
+                        server.getCommands().sendCommands(player);
+                    } finally {
+                        RESENDING.remove(id);
+                    }
+                }));
+            }
+            return false;
+        }
     }
 
     private static int run(CommandContext<CommandSourceStack> ctx, ICommand command, String[] args) {
