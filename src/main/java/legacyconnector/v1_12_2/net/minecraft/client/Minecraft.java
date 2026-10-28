@@ -14,7 +14,7 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122;
  * The client singleton as 1.12 mods see it: a view over the modern client. Fields that change (player, world, open screen, window size)
  * are phantoms answered by their {@code mcc$get$} accessors.
  */
-public class Minecraft {
+public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.IThreadListener {
     /**
      * Whether this is a client. Client-only mods call {@link #getMinecraft()} on dedicated servers too (CTM's preInit); there the
      * client singletons below stay null, since loading them would load modern client classes.
