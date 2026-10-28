@@ -52,21 +52,14 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     /**
-     * The chunk. On the server thread a chunk the server already tracks (inside the loaded area, still generating) is finished and
-     * returned; any other chunk is an empty chunk view. 1.12 loaded and generated any chunk here, but a synchronous load of a chunk
-     * outside the loaded area from a legacy tick handler (SRParasites' spawner picks random chunks around players) waited forever
-     * and froze the server.
+     * The chunk if it is loaded, else an empty chunk view. 1.12 loaded and generated any chunk here; a synchronous load from a legacy
+     * tick handler never completed on the modern server (even for chunks it was already generating) and froze it for good
+     * (SRParasites' spawner picks random chunks around players every tick).
      */
     @Override
     public Chunk provideChunk(int x, int z) {
         Chunk loaded = getLoadedChunk(x, z);
-        if (loaded != null) return loaded;
-        var access = access();
-        if (access instanceof net.minecraft.server.level.ServerLevel sl && sl.getServer().isSameThread()
-                && sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(x, z)) != null) {
-            return Chunk.mcc$of(world, sl.getChunk(x, z));
-        }
-        return new Chunk(world, x, z);
+        return loaded != null ? loaded : new Chunk(world, x, z);
     }
 
     public Chunk loadChunk(int x, int z) {
