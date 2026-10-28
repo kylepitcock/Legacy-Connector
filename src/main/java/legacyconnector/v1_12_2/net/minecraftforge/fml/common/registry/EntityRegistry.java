@@ -29,10 +29,55 @@ public class EntityRegistry {
         entry.setEgg(new legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo(name, primary, secondary));
     }
 
+    /**
+     * Adds the mob to the biomes' spawn lists, replacing an entry it already has there (as Forge did). The spawn lists become
+     * modern biome modifiers when the server's data is generated ({@code Spawns1122}).
+     */
+    @SuppressWarnings("unchecked")
     public static void addSpawn(Class<? extends Entity> entityClass, int weightedProb, int min, int max, EnumCreatureType typeOfCreature, Biome... biomes) {
+        if (entityClass == null || typeOfCreature == null || biomes == null) return;
+        for (Biome biome : biomes) {
+            if (biome == null) continue;
+            var spawns = biome.getSpawnableList(typeOfCreature);
+            boolean found = false;
+            for (Biome.SpawnListEntry entry : spawns) {
+                if (entry.entityClass == entityClass) {
+                    entry.itemWeight = weightedProb;
+                    entry.minGroupCount = min;
+                    entry.maxGroupCount = max;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) spawns.add(new Biome.SpawnListEntry(entityClass, weightedProb, min, max));
+        }
+    }
+
+    /** By the entity's registered name (or legacy name). */
+    @SuppressWarnings("unchecked")
+    public static void addSpawn(String entityName, int weightedProb, int min, int max, EnumCreatureType spawnList, Biome... biomes) {
+        Class<? extends Entity> cls = mcc$classByName(entityName);
+        if (cls != null) addSpawn(cls, weightedProb, min, max, spawnList, biomes);
     }
 
     public static void removeSpawn(Class<? extends Entity> entityClass, EnumCreatureType typeOfCreature, Biome... biomes) {
+        if (entityClass == null || typeOfCreature == null || biomes == null) return;
+        for (Biome biome : biomes) {
+            if (biome != null) biome.getSpawnableList(typeOfCreature).removeIf(entry -> entry.entityClass == entityClass);
+        }
+    }
+
+    public static void removeSpawn(String entityName, EnumCreatureType spawnList, Biome... biomes) {
+        Class<? extends Entity> cls = mcc$classByName(entityName);
+        if (cls != null) removeSpawn(cls, spawnList, biomes);
+    }
+
+    private static Class<? extends Entity> mcc$classByName(String name) {
+        if (name == null) return null;
+        for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
+            if (name.equals(e.getName()) || e.getRegistryName() != null && name.equals(e.getRegistryName().toString())) return e.getEntityClass();
+        }
+        return null;
     }
 
     public static EntityEntry getEntry(Class<? extends Entity> entityClass) {

@@ -95,4 +95,27 @@ public final class BiomeBridge1122 {
     private static Biome fallback() {
         return legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
     }
+
+    // ------------------------------------------------------------------ legacy -> modern (area F: natural spawns)
+
+    /**
+     * The modern biomes a legacy biome stands for: a 1.12 vanilla biome's modern counterparts (hills, edges and mutated variants
+     * fall back to their base biome), or nothing for a mod biome.
+     */
+    public static java.util.List<ResourceLocation> modernIds(Biome biome) {
+        java.util.List<ResourceLocation> out = new java.util.ArrayList<>();
+        var name = biome == null ? null : biome.getRegistryName();
+        if (name == null || !"minecraft".equals(name.getNamespace())) return out;
+        String field = name.getPath().toUpperCase(java.util.Locale.ROOT);
+        for (String candidate : new String[] {field, field.replace("_HILLS", "").replace("_EDGE", ""), field.replace("MUTATED_", ""),
+                field.replace("MUTATED_", "").replace("_HILLS", "").replace("_EDGE", "").replace("_ROCK", "")}) {
+            for (var e : VANILLA.entrySet()) {
+                if (e.getValue().equals(candidate)) out.add(ResourceLocation.withDefaultNamespace(e.getKey()));
+            }
+            if (!out.isEmpty()) break;
+        }
+        // cave biomes map to plains for lookups; they are not plains for spawning
+        out.removeIf(id -> id.getPath().equals("dripstone_caves") || id.getPath().equals("lush_caves") || id.getPath().equals("deep_dark"));
+        return out;
+    }
 }

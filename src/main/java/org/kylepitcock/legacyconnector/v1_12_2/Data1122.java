@@ -13,5 +13,6 @@ public final class Data1122 implements GeneratedPack.Contributor {
         if (type != PackType.SERVER_DATA) return;
         RecipeBridge1122.generate(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.generate(out);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.contribute(out);
     }
 }
