@@ -102,4 +102,12 @@ public final class DimensionType {
     public String toString() {
         return constant;
     }
+
+    /** Phantom: redirected to {@link #mcc$get$clazz} (the provider class). */
+    @Deprecated
+    public Class<?> clazz;
+
+    public static Class<?> mcc$get$clazz(DimensionType t) {
+        return t.providerClass;
+    }
 }

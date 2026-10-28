@@ -55,4 +55,21 @@ public class LootTableList {
     public static ResourceLocation register(ResourceLocation id) {
         return id;
     }
+
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation EMPTY = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft", "empty");
+
+    /** Every vanilla loot table name declared here. */
+    public static java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> getAll() {
+        java.util.Set<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation> out = new java.util.LinkedHashSet<>();
+        for (var f : LootTableList.class.getFields()) {
+            if (f.getType() == legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation.class && java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+                try {
+                    out.add((legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation) f.get(null));
+                } catch (ReflectiveOperationException e) {
+                    // skip
+                }
+            }
+        }
+        return out;
+    }
 }

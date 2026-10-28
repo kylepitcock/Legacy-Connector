@@ -180,4 +180,15 @@ public class DimensionManager {
     public static boolean isDimensionLoaded(int dim) {
         return mcc$level(dim) != null;
     }
+
+    /** Every registered dimension type with the ids registered for it. */
+    public static synchronized java.util.Map<DimensionType, it.unimi.dsi.fastutil.ints.IntSortedSet> getRegisteredDimensions() {
+        java.util.Map<DimensionType, it.unimi.dsi.fastutil.ints.IntSortedSet> out = new java.util.LinkedHashMap<>();
+        DIMENSIONS.forEach((id, type) -> out.computeIfAbsent(type, t -> new it.unimi.dsi.fastutil.ints.IntRBTreeSet()).add((int) id));
+        return out;
+    }
+
+    /** The modern server creates and unloads its levels itself; a legacy world handed in here is not adopted. */
+    public static void setWorld(int id, legacyconnector.v1_12_2.net.minecraft.world.WorldServer world, legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server) {
+    }
 }

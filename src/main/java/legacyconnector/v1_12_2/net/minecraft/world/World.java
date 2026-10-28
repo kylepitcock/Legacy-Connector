@@ -1870,4 +1870,58 @@ public class World implements IBlockAccess {
         var level = mcc$level();
         return level == null ? null : legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(level.getScoreboard());
     }
+
+    public Chunk getChunkFromBlockCoords(BlockPos pos) {
+        return getChunk(pos);
+    }
+
+    public Chunk getChunkFromChunkCoords(int chunkX, int chunkZ) {
+        return getChunk(chunkX, chunkZ);
+    }
+
+    /** Whether the block at the position is water (Forge). */
+    public boolean isWater(BlockPos pos) {
+        return access != null && access.getFluidState(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ())).is(net.minecraft.tags.FluidTags.WATER);
+    }
+
+    /** The scheduled block ticks of a chunk (removed from the schedule when {@code remove}), as legacy tick entries. */
+    public List<NextTickListEntry> getPendingBlockUpdates(Chunk chunk, boolean remove) {
+        if (chunk == null) return null;
+        int x = chunk.x << 4, z = chunk.z << 4;
+        return getPendingBlockUpdates(new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureBoundingBox(x, 0, z, x + 16, 256, z + 16), remove);
+    }
+
+    public List<NextTickListEntry> getPendingBlockUpdates(legacyconnector.v1_12_2.net.minecraft.world.gen.structure.StructureBoundingBox box, boolean remove) {
+        if (!(mcc$liveLevel() instanceof ServerLevel s) || box == null) return null;
+        var area = net.minecraft.world.level.levelgen.structure.BoundingBox.fromCorners(new net.minecraft.core.Vec3i(box.minX, box.minY, box.minZ),
+                new net.minecraft.core.Vec3i(box.maxX - 1, box.maxY - 1, box.maxZ - 1));
+        List<NextTickListEntry> out = new ArrayList<>();
+        long now = s.getGameTime();
+        try {
+            var field = net.minecraft.world.ticks.LevelTicks.class.getDeclaredField("allContainers");
+            field.setAccessible(true);
+            @SuppressWarnings("unchecked")
+            var containers = (it.unimi.dsi.fastutil.longs.Long2ObjectMap<net.minecraft.world.ticks.LevelChunkTicks<net.minecraft.world.level.block.Block>>) field.get(s.getBlockTicks());
+            for (var e : containers.long2ObjectEntrySet()) {
+                var cp = new net.minecraft.world.level.ChunkPos(e.getLongKey());
+                if (cp.getMaxBlockX() < box.minX || cp.getMinBlockX() >= box.maxX || cp.getMaxBlockZ() < box.minZ || cp.getMinBlockZ() >= box.maxZ) continue;
+                var ticks = e.getValue();
+                List<net.minecraft.world.ticks.ScheduledTick<net.minecraft.world.level.block.Block>> matched = new ArrayList<>();
+                ticks.getAll().forEach(t -> {
+                    if (area.isInside(t.pos())) matched.add(t);
+                });
+                for (var t : matched) {
+                    var legacyBlock = StatesBridge1122.legacyBlock(t.type().defaultBlockState());
+                    NextTickListEntry entry = new NextTickListEntry(BlockPos.mcc$of(t.pos()), legacyBlock);
+                    entry.setScheduledTime(t.triggerTick());
+                    entry.setPriority(t.priority().getValue());
+                    out.add(entry);
+                }
+                if (remove && !matched.isEmpty()) ticks.removeIf(t -> area.isInside(t.pos()));
+            }
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return out;
+        }
+        return out;
+    }
 }

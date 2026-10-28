@@ -30,4 +30,28 @@ public class LootFunctionManager {
         if (serializer == null) throw new IllegalArgumentException("Unknown loot item function " + function);
         return (LootFunction.Serializer<T>) serializer;
     }
+
+    /** Gson adapter for functions in loot table JSON ("function" names the registered serializer, "conditions" its conditions). */
+    public static class Serializer implements com.google.gson.JsonDeserializer<LootFunction>, com.google.gson.JsonSerializer<LootFunction> {
+        @Override
+        public LootFunction deserialize(com.google.gson.JsonElement element, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            var json = element.getAsJsonObject();
+            var name = new ResourceLocation(json.get("function").getAsString());
+            legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[] conditions = json.has("conditions")
+                    ? context.deserialize(json.get("conditions"), legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[].class)
+                    : new legacyconnector.v1_12_2.net.minecraft.world.storage.loot.conditions.LootCondition[0];
+            return getSerializerForName(name).deserialize(json, context, conditions);
+        }
+
+        @Override
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public com.google.gson.JsonElement serialize(LootFunction function, java.lang.reflect.Type type, com.google.gson.JsonSerializationContext context) {
+            LootFunction.Serializer s = getSerializerFor(function);
+            var json = new com.google.gson.JsonObject();
+            s.serialize(json, function, context);
+            json.addProperty("function", s.getFunctionName().toString());
+            if (function.getConditions() != null && function.getConditions().length > 0) json.add("conditions", context.serialize(function.getConditions()));
+            return json;
+        }
+    }
 }

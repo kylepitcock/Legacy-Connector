@@ -468,4 +468,30 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
             this.maxGroupCount = max;
         }
     }
+
+    // ------------------------------------------------------------------ area W: vanilla feature generators
+
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees(false);
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree BIG_TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree(false);
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant DOUBLE_PLANT_GENERATOR = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant();
+
+    /** A random tree generator: big oaks one time in ten, else small oaks (vanilla's default). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenAbstractTree getRandomTreeFeature(java.util.Random rand) {
+        return rand.nextInt(10) == 0 ? BIG_TREE_FEATURE : TREE_FEATURE;
+    }
+
+    /** The grass generator of this biome: a patch of tall grass (the modern game's grass patch). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator getRandomWorldGenForGrass(java.util.Random rand) {
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator() {
+            @Override
+            public boolean generate(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random r, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+                return org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(world, net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_GRASS, r, pos);
+            }
+        };
+    }
+
+    /** Vanilla's flower pick: a poppy one time in three, else a dandelion. */
+    public legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType pickRandomFlower(java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return rand.nextInt(3) > 0 ? legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType.DANDELION : legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType.POPPY;
+    }
 }
