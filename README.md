@@ -61,8 +61,8 @@ fallout-tinted sky and the scorched crater, all from HBM's own explosion and eff
 
 ![An HBM nuclear explosion](docs/images/hbm-nuke.png)
 
-1.12.2: Scape and Run: Parasites, the 1.12.2 version with its own entity models, AI and attacks. Primitive and adapted parasites
-(longarms, summoner, manducater, buglin) and an infected cow, drawn by the mod's own renderers:
+1.12.2: Scape and Run: Parasites. An adapted longarms closes in while a summoner, manducater and buglin charge behind it, all with
+the mod's own models, AI and attacks; the player holds the mod's sentient scythe:
 
 ![Scape and Run: Parasites on 1.21.1](docs/images/srparasites.png)
 
