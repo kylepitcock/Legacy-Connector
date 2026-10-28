@@ -180,4 +180,9 @@ public class GuiIngame extends Gui {
         if (subTitle != null) h.setSubtitle(net.minecraft.network.chat.Component.literal(subTitle));
         if (timeFadeIn >= 0 || displayTime >= 0 || timeFadeOut >= 0) h.setTimes(timeFadeIn, displayTime, timeFadeOut);
     }
+
+    /** The boss bars (area R2b). */
+    public GuiBossOverlay getBossOverlay() {
+        return GuiBossOverlay.mcc$INSTANCE;
+    }
 }

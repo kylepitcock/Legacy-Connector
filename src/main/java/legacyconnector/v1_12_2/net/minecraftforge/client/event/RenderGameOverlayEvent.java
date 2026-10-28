@@ -81,17 +81,24 @@ public class RenderGameOverlayEvent extends Event {
         }
     }
 
-    /** One boss bar about to be drawn ({@code getBossInfo()} is not available: the legacy boss bar class is not implemented yet). */
+    /** One boss bar about to be drawn; handlers change the spacing to the next one. */
     public static class BossInfo extends Pre {
+        private final legacyconnector.v1_12_2.net.minecraft.client.gui.BossInfoClient bossInfo;
         private final int x;
         private final int y;
         private int increment;
 
-        public BossInfo(RenderGameOverlayEvent parent, ElementType type, int x, int y, int increment) {
+        public BossInfo(RenderGameOverlayEvent parent, ElementType type, legacyconnector.v1_12_2.net.minecraft.client.gui.BossInfoClient bossInfo, int x, int y,
+                int increment) {
             super(parent, type);
+            this.bossInfo = bossInfo;
             this.x = x;
             this.y = y;
             this.increment = increment;
+        }
+
+        public legacyconnector.v1_12_2.net.minecraft.client.gui.BossInfoClient getBossInfo() {
+            return bossInfo;
         }
 
         public int getX() {

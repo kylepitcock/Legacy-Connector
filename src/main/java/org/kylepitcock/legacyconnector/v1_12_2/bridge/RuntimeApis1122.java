@@ -566,4 +566,12 @@ public final class RuntimeApis1122 {
         byte[] bytes = tag.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         out.merge("data/minecraft/tags/block/enderman_holdable.json", () -> bytes, (a, b) -> a);
     }
+
+    /** The BiomeManager entries mods added for a biome type (DESERT, WARM, COOL, ICY), as legacy BiomeEntry objects. */
+    public static List<Object> mcc$biomeEntries(String type) {
+        synchronized (BIOME_ENTRIES) {
+            List<Object> list = BIOME_ENTRIES.get(type);
+            return list == null ? new ArrayList<>() : new ArrayList<>(list);
+        }
+    }
 }

@@ -231,4 +231,35 @@ public class BlockEvent extends Event {
             }
         }
     }
+
+    /** Forge: flowing fluid is about to place a block (lava meeting water makes stone, cobblestone, obsidian); the new state may be replaced. */
+    @Cancelable
+    public static class FluidPlaceBlockEvent extends BlockEvent {
+        private final BlockPos liquidPos;
+        private IBlockState newState;
+        private final IBlockState origState;
+
+        public FluidPlaceBlockEvent(World world, BlockPos pos, BlockPos liquidPos, IBlockState state) {
+            super(world, pos, state);
+            this.liquidPos = liquidPos;
+            this.newState = state;
+            this.origState = world == null ? state : world.getBlockState(pos);
+        }
+
+        public BlockPos getLiquidPos() {
+            return liquidPos;
+        }
+
+        public IBlockState getNewState() {
+            return newState;
+        }
+
+        public void setNewState(IBlockState state) {
+            this.newState = state;
+        }
+
+        public IBlockState getOriginalState() {
+            return origState;
+        }
+    }
 }

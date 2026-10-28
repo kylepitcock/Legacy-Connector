@@ -19,6 +19,20 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public ChunkProviderServer(World world) {
         this.world = world;
+        this.chunkLoader = mcc$chunkLoader(world);
+    }
+
+    /** The dimension's chunk storage (its region folder), read through the modern region files. */
+    public final legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader chunkLoader;
+
+    private static legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader mcc$chunkLoader(World world) {
+        var level = world == null ? null : world.mcc$level();
+        java.io.File dir = new java.io.File(".");
+        if (level instanceof net.minecraft.server.level.ServerLevel sl) {
+            dir = net.minecraft.world.level.dimension.DimensionType.getStorageFolder(sl.dimension(),
+                    sl.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT)).toFile();
+        }
+        return new legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.AnvilChunkLoader(dir, null);
     }
 
     private net.minecraft.world.level.LevelAccessor access() {

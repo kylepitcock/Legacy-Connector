@@ -183,4 +183,8 @@ public class ItemArmor extends Item {
         if (!mat.isEmpty() && legacyconnector.v1_12_2.net.minecraftforge.oredict.OreDictionary.itemMatches(mat, repair, false)) return true;
         return super.getIsRepairable(toRepair, repair);
     }
+
+    /** The empty-slot outline sprites of the four armour slots (feet, legs, chest, head). */
+    public static final String[] EMPTY_SLOT_NAMES = {"minecraft:items/empty_armor_slot_boots", "minecraft:items/empty_armor_slot_leggings",
+            "minecraft:items/empty_armor_slot_chestplate", "minecraft:items/empty_armor_slot_helmet"};
 }

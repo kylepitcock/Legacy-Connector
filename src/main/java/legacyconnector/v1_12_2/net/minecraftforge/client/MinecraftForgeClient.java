@@ -41,4 +41,12 @@ public class MinecraftForgeClient {
     public static synchronized void releaseStencilBit(int bit) {
         if (bit >= 0 && bit < 8) stencilBits |= 1 << bit;
     }
+
+    /** The blocks around a position as a chunk cache (what 1.12 handed block renderers: the render chunk with a one-block border). */
+    public static legacyconnector.v1_12_2.net.minecraft.world.ChunkCache getRegionRenderCache(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        int x = pos.getX() & ~15, y = pos.getY() & ~15, z = pos.getZ() & ~15;
+        return new legacyconnector.v1_12_2.net.minecraft.world.ChunkCache(world, new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(x - 1, y - 1, z - 1),
+                new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(x + 16, y + 16, z + 16), 1);
+    }
 }

@@ -24,8 +24,25 @@ public class BiomeProvider {
         biomesToSpawnIn.addAll(allowedBiomes);
     }
 
+    /** A layer-based provider of a world type, as 1.12 built it (mod world types extend this). */
     public BiomeProvider(legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo info) {
+        this(info == null ? 0L : info.getSeed(), info == null ? legacyconnector.v1_12_2.net.minecraft.world.WorldType.DEFAULT : info.getTerrainType(),
+                info == null ? "" : info.getGeneratorOptions());
+    }
+
+    private BiomeProvider(long seed, legacyconnector.v1_12_2.net.minecraft.world.WorldType worldType, String options) {
         this();
+        try {
+            var settings = worldType == legacyconnector.v1_12_2.net.minecraft.world.WorldType.CUSTOMIZED && options != null && !options.isEmpty()
+                    ? legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings.Factory.jsonToFactory(options).build() : null;
+            var type = worldType == null ? legacyconnector.v1_12_2.net.minecraft.world.WorldType.DEFAULT : worldType;
+            var layers = legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer.initializeAllBiomeGenerators(seed, type, settings);
+            layers = getModdedBiomeGenerators(type, seed, layers);
+            this.genBiomes = layers[0];
+            this.biomeIndexLayer = layers[1];
+        } catch (RuntimeException | LinkageError e) {
+            // no layers: answered like a provider without a world (plains)
+        }
     }
 
     private BiomeProvider(legacyconnector.v1_12_2.net.minecraft.world.World world) {

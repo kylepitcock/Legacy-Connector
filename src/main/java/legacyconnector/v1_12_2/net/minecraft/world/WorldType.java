@@ -156,4 +156,29 @@ public class WorldType {
     public String toString() {
         return name;
     }
+
+    /** Forge: the layer turning climate codes into biomes (vanilla's GenLayerBiome; mod world types override it). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer getBiomeLayer(long worldSeed, legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer parentLayer,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings chunkSettings) {
+        var biome = new legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerBiome(200L, parentLayer, this, chunkSettings);
+        var zoomed = legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerZoom.magnify(1000L, biome, 2);
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayerBiomeEdge(1000L, zoomed);
+    }
+
+    /** Forge: how far from the spawn point players appear (the spawnRadius game rule). */
+    public int getSpawnFuzz(WorldServer world, legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server) {
+        var level = world == null ? null : world.mcc$level();
+        return level == null ? 10 : Math.max(0, level.getGameRules().getInt(net.minecraft.world.level.GameRules.RULE_SPAWN_RADIUS));
+    }
+
+    /** Forge: the biome provider of a world of this type (layer-based for the vanilla types, flat worlds one biome). */
+    public legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider getBiomeProvider(World world) {
+        if (this == FLAT) return new legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProviderSingle(legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS);
+        return world == null ? null : world.getBiomeProvider();
+    }
+
+    /** Forge: the chunk generator of a world of this type; the modern game generates vanilla worlds, so there is none of its own. */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator getChunkGenerator(World world, String generatorOptions) {
+        return null;
+    }
 }

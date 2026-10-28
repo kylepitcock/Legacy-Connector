@@ -92,6 +92,8 @@ public final class ClientGui1122 {
             case "GuiMainMenu" -> new net.minecraft.client.gui.screens.TitleScreen();
             case "GuiWorldSelection" -> new net.minecraft.client.gui.screens.worldselection.SelectWorldScreen(parent);
             case "GuiMultiplayer" -> new net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen(parent);
+            case "GuiScreenAddServer" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreenAddServer add ? add.mcc$modern(parent) : null;
+            case "GuiScreenResourcePacks" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreenResourcePacks packs ? packs.mcc$modern(parent) : null;
             case "GuiOptions" -> new net.minecraft.client.gui.screens.options.OptionsScreen(parent, mc.options);
             case "GuiLanguage" -> new net.minecraft.client.gui.screens.options.LanguageSelectScreen(parent, mc.options, mc.getLanguageManager());
             case "GuiScreenOptionsSounds" -> new net.minecraft.client.gui.screens.options.SoundOptionsScreen(parent, mc.options);
