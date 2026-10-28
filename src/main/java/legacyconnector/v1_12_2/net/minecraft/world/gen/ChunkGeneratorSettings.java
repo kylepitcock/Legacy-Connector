@@ -19,6 +19,8 @@ public class ChunkGeneratorSettings {
     public final float stretchY;
     public final float biomeDepthWeight;
     public final float biomeDepthOffset;
+    /** 1.12 spelled this settings field with a capital S (the factory field is biomeDepthOffset). */
+    public final float biomeDepthOffSet;
     public final float biomeScaleWeight;
     public final float biomeScaleOffset;
     public final int seaLevel;
@@ -100,6 +102,7 @@ public class ChunkGeneratorSettings {
         this.stretchY = factory.stretchY;
         this.biomeDepthWeight = factory.biomeDepthWeight;
         this.biomeDepthOffset = factory.biomeDepthOffset;
+        this.biomeDepthOffSet = factory.biomeDepthOffset;
         this.biomeScaleWeight = factory.biomeScaleWeight;
         this.biomeScaleOffset = factory.biomeScaleOffset;
         this.seaLevel = factory.seaLevel;
