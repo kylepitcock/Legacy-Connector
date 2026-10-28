@@ -389,10 +389,12 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return false;
     }
 
-    /** Whether the block may be placed here: the block there now can be replaced. */
+    /**
+     * Whether the block may be placed here: the block there now can be replaced. Read through the world view (its generation region
+     * while decorating: a read of the real level from a generation worker waited on the server thread for good).
+     */
     public boolean canPlaceBlockAt(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
-        var level = world == null ? null : world.mcc$level();
-        return level == null || level.getBlockState(pos.mcc$modern()).canBeReplaced();
+        return world == null || world.mcc$state(pos.mcc$modern()).canBeReplaced();
     }
 
     public boolean canPlaceBlockOnSide(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
@@ -1047,7 +1049,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Forge: whether the soil hydrates crops (wet farmland). */
     public boolean isFertile(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         if (!mcc$named(this, "farmland")) return false;
-        var modern = world.mcc$level().getBlockState(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
+        var modern = world.mcc$state(org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos));
         return modern.hasProperty(net.minecraft.world.level.block.FarmBlock.MOISTURE) && modern.getValue(net.minecraft.world.level.block.FarmBlock.MOISTURE) > 0;
     }
 
