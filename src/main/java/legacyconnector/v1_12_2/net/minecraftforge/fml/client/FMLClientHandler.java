@@ -112,4 +112,21 @@ public class FMLClientHandler {
         var mc = net.minecraft.client.Minecraft.getInstance();
         if (mc.levelRenderer != null) mc.levelRenderer.allChanged();
     }
+
+    // ------------------------------------------------------------------ area R2b
+
+    /** Connects to a server from a screen (the game's connecting screen; back to the screen when it fails). */
+    public void connectToServer(GuiScreen guiMultiplayer, legacyconnector.v1_12_2.net.minecraft.client.multiplayer.ServerData serverEntry) {
+        if (serverEntry == null) return;
+        org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.connect(guiMultiplayer, serverEntry.serverIP, serverEntry);
+    }
+
+    /** The resource pack of a mod's files (its jar or folder), or null for an unknown mod. */
+    public legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack getResourcePackFor(String modId) {
+        var file = modId == null ? null : net.neoforged.fml.ModList.get().getModFileById(modId);
+        if (file == null) return null;
+        java.io.File path = file.getFile().getFilePath().toFile();
+        return path.isDirectory() ? new legacyconnector.v1_12_2.net.minecraft.client.resources.FolderResourcePack(path)
+                : new legacyconnector.v1_12_2.net.minecraft.client.resources.FileResourcePack(path);
+    }
 }
