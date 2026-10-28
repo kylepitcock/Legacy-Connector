@@ -162,6 +162,10 @@ public class RenderManager {
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityCow.class, new RenderCow(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityChicken.class, new RenderChicken(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityTNTPrimed.class, new RenderTNTPrimed(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityWolf.class, new RenderWolf(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityOcelot.class, new RenderOcelot(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityIronGolem.class, new RenderIronGolem(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityPolarBear.class, new RenderPolarBear(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class, new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
             mcc$vanillaRenderers = m;
         }
