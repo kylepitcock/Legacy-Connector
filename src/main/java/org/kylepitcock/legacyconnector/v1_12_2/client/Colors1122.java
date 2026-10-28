@@ -69,7 +69,56 @@ public final class Colors1122 {
 
     public static void registerBlock(Block block, IBlockColor handler) {
         if (!blocksOpen || !(block.mcc$modern instanceof net.minecraft.world.level.block.Block modern)) return;
+        original(modern);
         Minecraft.getInstance().getBlockColors().register(modernBlock(handler), modern);
+    }
+
+    /** The game's own colour handler of each block, taken before a legacy handler replaces it (null: the block has none). */
+    private static final java.util.Map<net.minecraft.world.level.block.Block, java.util.Optional<net.minecraft.client.color.block.BlockColor>> ORIGINALS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static java.lang.reflect.Field providers;
+
+    /** Takes the game's handler of the block before anything replaces it. */
+    public static void snapshot(net.minecraft.world.level.block.Block modern) {
+        original(modern);
+    }
+
+    private static net.minecraft.client.color.block.BlockColor original(net.minecraft.world.level.block.Block modern) {
+        if (Minecraft.getInstance() == null || Minecraft.getInstance().getBlockColors() == null) return null; // not built yet: ask again later
+        return ORIGINALS.computeIfAbsent(modern, b -> {
+            try {
+                if (providers == null) {
+                    for (var f : net.minecraft.client.color.block.BlockColors.class.getDeclaredFields()) {
+                        if (f.getType() == net.minecraft.core.IdMapper.class) {
+                            f.setAccessible(true);
+                            providers = f;
+                        }
+                    }
+                }
+                @SuppressWarnings("unchecked")
+                var ids = (net.minecraft.core.IdMapper<net.minecraft.client.color.block.BlockColor>) providers.get(Minecraft.getInstance().getBlockColors());
+                return java.util.Optional.ofNullable(ids.byId(net.minecraft.core.registries.BuiltInRegistries.BLOCK.getId(b)));
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                return java.util.Optional.empty();
+            }
+        }).orElse(null);
+    }
+
+    /**
+     * The game's own colour of a state, never a legacy handler (the vanilla handler mods take from BlockColors.blockColorMap to wrap:
+     * Quark wraps grass's and registers the wrapper for grass, so asking the game's colours again looped until the stack overflowed).
+     */
+    public static int originalBlockColor(IBlockState state, BlockPos pos, int tint) {
+        try {
+            var modernState = StatesBridge1122.toModern(state);
+            var provider = original(modernState.getBlock());
+            if (provider == null) return 0xFFFFFF;
+            var level = Minecraft.getInstance().level;
+            var modernPos = pos == null ? null : new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ());
+            return provider.getColor(modernState, modernPos == null ? null : level, modernPos, tint) & 0xFFFFFF;
+        } catch (RuntimeException | LinkageError e) {
+            return 0xFFFFFF;
+        }
     }
 
     public static void registerItem(Item item, IItemColor handler) {
@@ -96,7 +145,10 @@ public final class Colors1122 {
             RenderErrors1122.report("posting ColorHandlerEvent.Block", e);
         }
         for (var e : BLOCKS.mcc$handlers().entrySet()) {
-            if (e.getKey().mcc$modern instanceof net.minecraft.world.level.block.Block modern) event.register(modernBlock(e.getValue()), modern);
+            if (e.getKey().mcc$modern instanceof net.minecraft.world.level.block.Block modern) {
+                original(modern);
+                event.register(modernBlock(e.getValue()), modern);
+            }
         }
         blocksOpen = true;
     }

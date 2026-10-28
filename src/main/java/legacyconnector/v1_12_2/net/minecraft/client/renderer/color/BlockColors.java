@@ -24,7 +24,10 @@ public class BlockColors {
         public IBlockColor get(Object key) {
             if (!(key instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<?> d) || !(d.get() instanceof Block block)) return null;
             IBlockColor handler = handlers.get(block);
-            return handler != null ? handler : (state, world, pos, tint) -> Colors1122.modernBlockColor(state, pos, tint);
+            if (handler != null) return handler;
+            // the game's own handler, taken now: a mod wraps it and registers the wrapper for the same block (Quark's grass)
+            if (block.mcc$modern instanceof net.minecraft.world.level.block.Block modern) Colors1122.snapshot(modern);
+            return (state, world, pos, tint) -> Colors1122.originalBlockColor(state, pos, tint);
         }
 
         @Override

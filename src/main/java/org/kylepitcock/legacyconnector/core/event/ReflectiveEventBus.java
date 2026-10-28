@@ -96,6 +96,7 @@ public final class ReflectiveEventBus {
             for (Method m : c.getDeclaredMethods()) {
                 Annotation sub = m.getAnnotation(adapter.subscribeAnnotation());
                 if (sub == null) continue;
+                if (SkippedHandlers.skip(c.getName(), m.getName())) continue;
                 if (Modifier.isStatic(m.getModifiers()) != statics) continue;
                 if (m.getParameterCount() != 1 || !adapter.eventBaseClass().isAssignableFrom(m.getParameterTypes()[0])) {
                     LOG.warn("[{}] Ignoring @SubscribeEvent method {} with invalid signature", name, m);
