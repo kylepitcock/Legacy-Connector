@@ -737,6 +737,21 @@ public abstract class EntityPlayer extends EntityLivingBase {
         sp.awardRecipesByKey(ids);
     }
 
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFishHook fishEntity;
+
+    /** The player's fishing bobber (the modern one), or null. */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFishHook mcc$get$fishEntity(EntityPlayer p) {
+        Player m = p.mcc$player();
+        return m == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(m.fishing)
+                instanceof legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFishHook h ? h : null;
+    }
+
+    public static void mcc$set$fishEntity(EntityPlayer p, legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFishHook v) {
+        Player m = p.mcc$player();
+        if (m != null) m.fishing = v != null && v.mcc$entity instanceof net.minecraft.world.entity.projectile.FishingHook h ? h : null;
+    }
+
     /** Sleep results of trySleep. */
     public enum SleepResult {
         OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE

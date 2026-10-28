@@ -145,4 +145,10 @@ public class EntityIronGolem extends EntityGolem {
     protected ResourceLocation getLootTable() {
         return new ResourceLocation("minecraft", "entities/iron_golem");
     }
+
+    /** The village it guards (the nearest within 32 blocks). */
+    public legacyconnector.v1_12_2.net.minecraft.village.Village getVillage() {
+        var world = mcc$get$world(this);
+        return world == null ? null : world.getVillageCollection().getNearestVillage(new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(mcc$x(), mcc$y(), mcc$z()), 32);
+    }
 }
