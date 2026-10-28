@@ -47,6 +47,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/portal-gun",
    "date": "2026-10-26",
    "open": true
+  },
+  {
+   "issue": 103,
+   "mod": "Legends-1.7.10-8.6.2",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "As of now - Generator block creates an effect that is extraordinarily uneasy on the eyes when powered. - Symbiote Chamber does not mutate anything inside of it. - When ejected, the Symbiote does not leave the chamber, and I do not get any legacies from it. - When using an admin command to max out my skills, game does not recognize I have a legacy, even though the Symbiote Chamber recognizes it wh…",
+   "lc": "0.3.2 (CurseForge version)",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/the-legends-mod/files/4361818",
+   "date": "2026-10-28",
+   "open": true
   }
  ]
 }
