@@ -88,6 +88,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean pickBlock;
     private final boolean explosionResistance;
     private final boolean powerSource;
+    private final boolean expDrop;
     private final boolean weakPower;
     private final boolean strongPower;
     private int failures;
@@ -135,6 +136,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
                 || overrides(legacy, "getDrops", A, P, S, int.class);
         this.pickBlock = overrides(legacy, "getPickBlock", S, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.class, W, P, EntityPlayer.class);
         this.powerSource = overrides(legacy, "canProvidePower", S);
+        this.expDrop = overrides(legacy, "getExpDrop", S, A, P, int.class);
         this.weakPower = overrides(legacy, "getWeakPower", S, A, P, EnumFacing.class);
         this.strongPower = overrides(legacy, "getStrongPower", S, A, P, EnumFacing.class);
         this.explosionResistance = overrides(legacy, "getExplosionResistance", W, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class,
@@ -795,6 +797,23 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             return Math.max(0, Math.min(15, legacy.getStrongPower(state(state), WorldBridge1122.access(level), pos(pos), EnumFacing.mcc$of(direction))));
         } catch (RuntimeException | LinkageError e) {
             failure("getStrongPower", e);
+            return 0;
+        }
+    }
+
+    /** The experience a mod's block drops when broken (Forge's getExpDrop, with the tool's fortune). */
+    @Override
+    public int getExpDrop(BlockState state, LevelAccessor level, BlockPos pos, BlockEntity blockEntity, Entity breaker, net.minecraft.world.item.ItemStack tool) {
+        if (!expDrop) return super.getExpDrop(state, level, pos, blockEntity, breaker, tool);
+        try {
+            int fortune = 0;
+            if (tool != null && !tool.isEmpty() && level instanceof Level l) {
+                var enchants = l.registryAccess().lookupOrThrow(Registries.ENCHANTMENT);
+                fortune = EnchantmentHelper.getItemEnchantmentLevel(enchants.getOrThrow(Enchantments.FORTUNE), tool);
+            }
+            return Math.max(0, legacy.getExpDrop(state(state), WorldBridge1122.access(level), pos(pos), fortune));
+        } catch (RuntimeException | LinkageError e) {
+            failure("getExpDrop", e);
             return 0;
         }
     }

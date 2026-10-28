@@ -34,6 +34,7 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.registerStaticMethods();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.SynthMethods1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.SynthItems1122.register();
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.SynthBlocks1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.BlockFaces1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.World1122.register();
