@@ -327,7 +327,9 @@ public final class LegacyJarTransformer {
 
     /** Libraries the platform ships as modules: a bundled copy would split their packages and JPMS refuses to boot. */
     private static final List<String> PLATFORM_LIBRARIES = List.of("org/spongepowered/asm/", "org/spongepowered/tools/",
-            "com/llamalad7/mixinextras/");
+            "com/llamalad7/mixinextras/",
+            // the client ships JOrbis/JOgg (sound); mods that bundle them for their own sound code (MTS) would split the package
+            "com/jcraft/jorbis/", "com/jcraft/jogg/");
 
     /**
      * Drops bundled copies of {@link #PLATFORM_LIBRARIES} (1.12.2 mods shaded Mixin for their own mixins, which target 1.12
