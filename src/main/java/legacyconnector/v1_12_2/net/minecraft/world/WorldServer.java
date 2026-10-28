@@ -166,4 +166,12 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
             // nothing is sent
         }
     }
+
+    private legacyconnector.v1_12_2.net.minecraft.entity.EntityTracker mcc$tracker;
+
+    /** The world's entity tracker (area E: who sees which entity, sending packets to them). */
+    public legacyconnector.v1_12_2.net.minecraft.entity.EntityTracker getEntityTracker() {
+        if (mcc$tracker == null) mcc$tracker = new legacyconnector.v1_12_2.net.minecraft.entity.EntityTracker(this);
+        return mcc$tracker;
+    }
 }

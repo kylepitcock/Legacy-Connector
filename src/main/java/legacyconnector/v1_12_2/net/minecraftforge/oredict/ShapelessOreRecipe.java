@@ -11,6 +11,9 @@ import legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CraftingHelper
 
 public class ShapelessOreRecipe extends ShapelessRecipes {
     protected ItemStack output = ItemStack.EMPTY;
+    /** Whether every ingredient is a simple item match (vanilla's faster matcher could be used). */
+    protected boolean isSimple = true;
+    protected ResourceLocation group;
 
     public ShapelessOreRecipe(ResourceLocation group, Block result, Object... recipe) {
         this(group, new ItemStack(result), recipe);
@@ -23,11 +26,15 @@ public class ShapelessOreRecipe extends ShapelessRecipes {
     public ShapelessOreRecipe(ResourceLocation group, ItemStack result, Object... recipe) {
         super(group == null ? "" : group.toString(), result, ingredients(recipe));
         this.output = result;
+        this.group = group;
+        for (Ingredient i : recipeItems) isSimple &= i.isSimple();
     }
 
     public ShapelessOreRecipe(ResourceLocation group, NonNullList<Ingredient> input, ItemStack result) {
         super(group == null ? "" : group.toString(), result, input);
         this.output = result;
+        this.group = group;
+        for (Ingredient i : recipeItems) isSimple &= i.isSimple();
     }
 
     private static NonNullList<Ingredient> ingredients(Object[] recipe) {

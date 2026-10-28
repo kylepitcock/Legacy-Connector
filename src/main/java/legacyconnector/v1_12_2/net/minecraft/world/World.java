@@ -943,7 +943,8 @@ public class World implements IBlockAccess {
             return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
         }
         var be = access.getBlockEntity(p);
-        return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
+        if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l) return l.legacy();
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(this, be); // the game's own block entities
     }
 
     /** Puts a legacy tile entity at a position whose block hosts legacy tile entities (others have their own modern block entity). */
@@ -1869,6 +1870,29 @@ public class World implements IBlockAccess {
     public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getScoreboard() {
         var level = mcc$level();
         return level == null ? null : legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(level.getScoreboard());
+    }
+
+    // ------------------------------------------------------------------ villages (area E, 1.12.2)
+
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.village.VillageCollection villageCollection;
+    private legacyconnector.v1_12_2.net.minecraft.village.VillageCollection mcc$villages;
+
+    /** The world's villages (the modern villages found through their meeting points). */
+    public legacyconnector.v1_12_2.net.minecraft.village.VillageCollection getVillageCollection() {
+        if (mcc$villages == null) mcc$villages = new legacyconnector.v1_12_2.net.minecraft.village.VillageCollection(this);
+        return mcc$villages;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.village.VillageCollection mcc$get$villageCollection(World w) {
+        return w.getVillageCollection();
+    }
+
+    public static void mcc$set$villageCollection(World w, legacyconnector.v1_12_2.net.minecraft.village.VillageCollection v) {
+        if (v != null) {
+            v.setWorldsForAll(w);
+            w.mcc$villages = v;
+        }
     }
 
     public Chunk getChunkFromBlockCoords(BlockPos pos) {

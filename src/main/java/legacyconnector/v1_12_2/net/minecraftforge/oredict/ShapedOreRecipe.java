@@ -18,6 +18,8 @@ public class ShapedOreRecipe extends ShapedRecipes {
     protected NonNullList<Ingredient> input = NonNullList.create();
     protected int width;
     protected int height;
+    protected boolean mirrored = true;
+    protected ResourceLocation group;
 
     public ShapedOreRecipe(ResourceLocation group, Block result, Object... recipe) {
         this(group, new ItemStack(result), recipe);
@@ -37,13 +39,53 @@ public class ShapedOreRecipe extends ShapedRecipes {
         this.width = primer.width;
         this.height = primer.height;
         this.input = primer.input;
+        this.mirrored = primer.mirrored;
+        this.group = group;
+    }
+
+    @Override
+    protected int mcc$width() {
+        return width;
+    }
+
+    @Override
+    protected int mcc$height() {
+        return height;
+    }
+
+    @Override
+    protected NonNullList<Ingredient> mcc$items() {
+        return input;
+    }
+
+    @Override
+    public boolean matches(legacyconnector.v1_12_2.net.minecraft.inventory.InventoryCrafting inv, legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        for (int x = 0; x <= inv.getWidth() - width; x++) {
+            for (int y = 0; y <= inv.getHeight() - height; ++y) {
+                if (checkMatch(inv, x, y, false)) return true;
+                if (mirrored && checkMatch(inv, x, y, true)) return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean checkMatch(legacyconnector.v1_12_2.net.minecraft.inventory.InventoryCrafting inv, int startX, int startY, boolean mirror) {
+        return super.checkMatch(inv, startX, startY, mirror);
+    }
+
+    public ShapedOreRecipe setMirrored(boolean mirror) {
+        this.mirrored = mirror;
+        return this;
     }
 
     /** Forge IShapedRecipe: the pattern's width and height. */
+    @Override
     public int getRecipeWidth() {
         return width;
     }
 
+    @Override
     public int getRecipeHeight() {
         return height;
     }

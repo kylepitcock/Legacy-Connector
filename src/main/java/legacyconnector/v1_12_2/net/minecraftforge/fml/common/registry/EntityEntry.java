@@ -15,6 +15,8 @@ public class EntityEntry extends IForgeRegistryEntry.Impl<EntityEntry> {
     public int trackingRange;
     public int updateFrequency;
     public boolean sendsVelocityUpdates;
+    /** The mod's own network id given to the builder (EntityRegistry.lookupModSpawn finds entries by it). */
+    public int mcc$networkId = -1;
 
     public EntityEntry(Class<? extends Entity> cls, String name) {
         this.cls = cls;

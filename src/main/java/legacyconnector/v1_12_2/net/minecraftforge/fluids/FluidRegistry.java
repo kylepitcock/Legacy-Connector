@@ -115,4 +115,9 @@ public abstract class FluidRegistry {
 
     public static synchronized void registerFluidName(String name) {
     }
+
+    /** Whether the fluid is the one registered under its name (another mod's fluid of the same name may have won). */
+    public static boolean isFluidDefault(Fluid fluid) {
+        return fluid != null && getFluid(fluid.getName()) == fluid;
+    }
 }

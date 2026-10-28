@@ -204,4 +204,90 @@ public class EnchantmentHelper {
         return total;
     }
 
+
+    /** A random piece of the entity's equipment carrying the enchantment (EMPTY when none does). */
+    public static ItemStack getEnchantedItem(Enchantment enchantment, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        if (enchantment == null) return ItemStack.EMPTY;
+        java.util.List<ItemStack> list = enchantment.getEntityEquipment(entity);
+        if (list.isEmpty()) return ItemStack.EMPTY;
+        java.util.List<ItemStack> with = new java.util.ArrayList<>();
+        for (ItemStack s : list) if (!s.isEmpty() && getEnchantmentLevel(enchantment, s) > 0) with.add(s);
+        return with.isEmpty() ? ItemStack.EMPTY : with.get(entity.getRNG().nextInt(with.size()));
+    }
+
+    public static int getFishingSpeedBonus(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("lure"), stack);
+    }
+
+    public static int getFishingLuckBonus(ItemStack stack) {
+        return getEnchantmentLevel(Enchantment.getEnchantmentByLocation("luck_of_the_sea"), stack);
+    }
+
+    /** The enchanting table level offered in a row (0, 1, 2) for a bookshelf power, as 1.12 rolled it. */
+    public static int calcItemStackEnchantability(java.util.Random rand, int enchantNum, int power, ItemStack stack) {
+        int enchantability = stack.getItem().getItemEnchantability();
+        if (enchantability <= 0) return 0;
+        if (power > 15) power = 15;
+        int j = rand.nextInt(8) + 1 + (power >> 1) + rand.nextInt(power + 1);
+        if (enchantNum == 0) return Math.max(j / 3, 1);
+        return enchantNum == 1 ? j * 2 / 3 + 1 : Math.max(j, power * 2);
+    }
+
+    /** Enchants the stack as the enchanting table would at a level (a book becomes an enchanted book). */
+    public static ItemStack addRandomEnchantment(java.util.Random random, ItemStack stack, int level, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = buildEnchantmentList(random, stack, level, allowTreasure);
+        boolean book = stack.getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.BOOK;
+        if (book) {
+            stack = new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.ENCHANTED_BOOK);
+            Map<Enchantment, Integer> stored = new LinkedHashMap<>();
+            for (EnchantmentData d : list) stored.put(d.enchantment, d.enchantmentLevel);
+            setEnchantments(stored, stack);
+        } else {
+            for (EnchantmentData d : list) stack.addEnchantment(d.enchantment, d.enchantmentLevel);
+        }
+        return stack;
+    }
+
+    /** The enchantments the enchanting table would roll for the stack at a level. */
+    public static java.util.List<EnchantmentData> buildEnchantmentList(java.util.Random randomIn, ItemStack itemStackIn, int level, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = new java.util.ArrayList<>();
+        int enchantability = itemStackIn.getItem().getItemEnchantability();
+        if (enchantability <= 0) return list;
+        level = level + 1 + randomIn.nextInt(enchantability / 4 + 1) + randomIn.nextInt(enchantability / 4 + 1);
+        float f = (randomIn.nextFloat() + randomIn.nextFloat() - 1.0F) * 0.15F;
+        level = Math.max(1, Math.round((float) level + (float) level * f));
+        java.util.List<EnchantmentData> candidates = getEnchantmentDatas(level, itemStackIn, allowTreasure);
+        if (!candidates.isEmpty()) {
+            list.add(legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.getRandomItem(randomIn, candidates));
+            while (randomIn.nextInt(50) <= level) {
+                removeIncompatible(candidates, list.get(list.size() - 1));
+                if (candidates.isEmpty()) break;
+                list.add(legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.getRandomItem(randomIn, candidates));
+                level /= 2;
+            }
+        }
+        return list;
+    }
+
+    public static void removeIncompatible(java.util.List<EnchantmentData> list, EnchantmentData data) {
+        list.removeIf(e -> !data.enchantment.isCompatibleWith(e.enchantment));
+    }
+
+    /** Every enchantment (at the highest fitting level) the table may put on the stack at a level. */
+    public static java.util.List<EnchantmentData> getEnchantmentDatas(int level, ItemStack stack, boolean allowTreasure) {
+        java.util.List<EnchantmentData> list = new java.util.ArrayList<>();
+        boolean book = stack.getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.BOOK;
+        Enchantment.getEnchantmentByID(0); // vanilla constants registered
+        for (Enchantment enchantment : Enchantment.REGISTRY) {
+            if (enchantment == null || enchantment.isTreasureEnchantment() && !allowTreasure) continue;
+            if (!enchantment.canApplyAtEnchantingTable(stack) && !(book && enchantment.isAllowedOnBooks())) continue;
+            for (int i = enchantment.getMaxLevel(); i > enchantment.getMinLevel() - 1; --i) {
+                if (level >= enchantment.getMinEnchantability(i) && level <= enchantment.getMaxEnchantability(i)) {
+                    list.add(new EnchantmentData(enchantment, i));
+                    break;
+                }
+            }
+        }
+        return list;
+    }
 }

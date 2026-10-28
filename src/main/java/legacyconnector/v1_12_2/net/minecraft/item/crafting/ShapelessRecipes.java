@@ -37,9 +37,15 @@ public class ShapelessRecipes extends IForgeRegistryEntry.Impl<IRecipe> implemen
         return width * height >= recipeItems.size();
     }
 
+    /** Whether the grid's stacks match the ingredients one to one, in any order. */
     @Override
     public boolean matches(InventoryCrafting inv, World worldIn) {
-        return false;
+        java.util.List<ItemStack> inputs = new java.util.ArrayList<>();
+        for (int i = 0; i < inv.getSizeInventory(); ++i) {
+            ItemStack s = inv.getStackInSlot(i);
+            if (!s.isEmpty()) inputs.add(s);
+        }
+        return inputs.size() == recipeItems.size() && legacyconnector.v1_12_2.net.minecraftforge.common.util.RecipeMatcher.findMatches(inputs, recipeItems) != null;
     }
 
     @Override

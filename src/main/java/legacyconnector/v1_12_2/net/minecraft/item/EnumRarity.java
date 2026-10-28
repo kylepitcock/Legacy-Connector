@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraft.item;
 import legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting;
 
 /** Item rarity: the colour of the name (an enum in 1.12.2; a class here so mods can add their own through EnumHelper). */
-public class EnumRarity {
+public class EnumRarity implements legacyconnector.v1_12_2.net.minecraftforge.common.IRarity {
     private static final java.util.List<EnumRarity> ALL = new java.util.ArrayList<>();
     private final int ordinal;
 
@@ -51,5 +51,16 @@ public class EnumRarity {
     public static EnumRarity valueOf(String name) {
         for (EnumRarity v : values()) if (v.name().equals(name)) return v;
         throw new IllegalArgumentException("No enum constant " + name);
+    }
+
+    /** Forge's IRarity (area F). */
+    @Override
+    public TextFormatting getColor() {
+        return color;
+    }
+
+    @Override
+    public String getName() {
+        return rarityName;
     }
 }

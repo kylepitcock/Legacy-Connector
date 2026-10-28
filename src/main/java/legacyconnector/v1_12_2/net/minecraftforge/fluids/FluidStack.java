@@ -80,4 +80,17 @@ public class FluidStack {
     public final boolean equals(Object o) {
         return o instanceof FluidStack s && isFluidStackIdentical(s);
     }
+
+    /** Whether the stack holds this fluid as a filled container does. */
+    public boolean isFluidEqual(legacyconnector.v1_12_2.net.minecraft.item.ItemStack other) {
+        return other != null && !other.isEmpty() && isFluidEqual(FluidUtil.getFluidContained(other));
+    }
+
+    /** Whether both stacks carry equal NBT (both none counts as equal). */
+    public static boolean areFluidStackTagsEqual(FluidStack stack1, FluidStack stack2) {
+        if (stack1 == null && stack2 == null) return true;
+        if (stack1 == null || stack2 == null) return false;
+        if (stack1.tag == null && stack2.tag == null) return true;
+        return stack1.tag != null && stack1.tag.equals(stack2.tag);
+    }
 }

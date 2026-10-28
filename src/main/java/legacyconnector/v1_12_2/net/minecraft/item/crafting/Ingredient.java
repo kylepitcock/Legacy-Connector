@@ -62,4 +62,9 @@ public class Ingredient implements Predicate<ItemStack> {
     public static Ingredient fromBlock(Block block) {
         return fromStacks(new ItemStack(block, 1, 32767));
     }
+
+    /** One ingredient matching what any of the given ingredients matches. */
+    public static Ingredient merge(java.util.Collection<Ingredient> parts) {
+        return new legacyconnector.v1_12_2.net.minecraftforge.common.crafting.CompoundIngredient(parts);
+    }
 }

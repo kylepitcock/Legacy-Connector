@@ -81,6 +81,7 @@ public final class EntityEntryBuilder<E extends Entity> {
         entry.updateFrequency = updateFrequency;
         entry.sendsVelocityUpdates = sendsVelocityUpdates;
         entry.mcc$factory = factory;
+        entry.mcc$networkId = network;
         if (eggPrimary >= 0) entry.setEgg(new legacyconnector.v1_12_2.net.minecraft.entity.EntityList.EntityEggInfo(id, eggPrimary, eggSecondary));
         return entry;
     }
