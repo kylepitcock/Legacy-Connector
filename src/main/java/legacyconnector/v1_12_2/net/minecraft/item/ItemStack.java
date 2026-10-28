@@ -586,4 +586,32 @@ public final class ItemStack {
             legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, float hitX, float hitY, float hitZ) {
         return getItem().onItemUseFirst(playerIn, worldIn, pos, side, hitX, hitY, hitZ, hand);
     }
+
+    /**
+     * The tooltip as 1.12.2 built it: the name (italic when renamed), the item's own lines, the enchantments, and with advanced
+     * tooltips the durability and registry name. Server-safe (translations through the shim's I18n).
+     */
+    public java.util.List<String> getTooltip(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer playerIn,
+            legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag advanced) {
+        java.util.List<String> list = new java.util.ArrayList<>();
+        String s = getDisplayName();
+        if (hasDisplayName()) s = "\u00a7o" + s;
+        list.add(s + "\u00a7r");
+        if (item != null) {
+            try {
+                item.addInformation(this, playerIn == null ? null : playerIn.getEntityWorld(), list, advanced);
+            } catch (RuntimeException | LinkageError e) {
+                // a tooltip that needs the client shows without the item's lines
+            }
+        }
+        for (var e : legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getEnchantments(this).entrySet()) {
+            if (e.getKey() != null) list.add(e.getKey().getTranslatedName(e.getValue()));
+        }
+        if (advanced != null && advanced.isAdvanced()) {
+            if (isItemDamaged()) list.add("Durability: " + (getMaxDamage() - getItemDamage()) + " / " + getMaxDamage());
+            var name = getItem().getRegistryName();
+            if (name != null) list.add("\u00a78" + name);
+        }
+        return list;
+    }
 }

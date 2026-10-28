@@ -48,6 +48,7 @@ final class ItemCallbacks1122 {
     final boolean durability;
     final boolean durabilityColor;
     final boolean created;
+    final boolean tooltip;
     private int failures;
 
     ItemCallbacks1122(Item legacy) {
@@ -55,6 +56,9 @@ final class ItemCallbacks1122 {
         Class<?> S = ItemStack.class, W = World.class, P = EntityPlayer.class, L = EntityLivingBase.class, H = EnumHand.class, F = EnumFacing.class,
                 B = BlockPos.class, f = float.class;
         rightClick = o("onItemRightClick", W, P, H);
+        Class<?> T = legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag.class;
+        tooltip = o("addInformation", S, W, java.util.List.class, T) || legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib
+                && ib.getBlock() != null && Legacy1122Block.overrides(ib.getBlock(), "addInformation", S, W, java.util.List.class, T);
         use = o("onItemUse", P, W, B, H, F, f, f, f) || o("placeBlockAt", S, P, W, B, F, f, f, f, IBlockState.class);
         useFirst = o("onItemUseFirst", P, W, B, F, f, f, f, H);
         update = o("onUpdate", S, W, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class, int.class, boolean.class);
@@ -323,6 +327,20 @@ final class ItemCallbacks1122 {
             failure("onCreated", e);
         } finally {
             Stacks1122.flushViews();
+        }
+    }
+
+    /** The legacy tooltip lines (addInformation; a block item asks its block), added as text (section-sign formatting kept). */
+    void appendHoverText(net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.Item.TooltipContext context,
+            java.util.List<net.minecraft.network.chat.Component> lines, net.minecraft.world.item.TooltipFlag flag) {
+        try {
+            java.util.List<String> out = new java.util.ArrayList<>();
+            Level level = context == null ? null : context.level();
+            legacy.addInformation(Stacks1122.fromModern(stack), level == null ? null : world(level), out,
+                    legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag.mcc$of(flag != null && flag.isAdvanced()));
+            for (String s : out) if (s != null) lines.add(net.minecraft.network.chat.Component.literal(s));
+        } catch (RuntimeException | LinkageError e) {
+            failure("addInformation", e);
         }
     }
 }
