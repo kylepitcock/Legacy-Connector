@@ -166,6 +166,14 @@ public class RenderManager {
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityOcelot.class, new RenderOcelot(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityIronGolem.class, new RenderIronGolem(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityPolarBear.class, new RenderPolarBear(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityParrot.class, new RenderParrot(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityArmorStand.class, new RenderArmorStand(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityMinecart.class, new RenderMinecart<>(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityGhast.class, new RenderGhast(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySnowman.class, new RenderSnowMan(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityWitch.class, new RenderWitch(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityVindicator.class, new RenderVindicator(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityEvoker.class, new RenderEvoker(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class, new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
             mcc$vanillaRenderers = m;
         }

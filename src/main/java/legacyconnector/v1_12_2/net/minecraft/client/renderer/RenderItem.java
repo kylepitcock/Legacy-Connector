@@ -136,4 +136,71 @@ public class RenderItem {
         renderer.pos(x + width, y, 0.0D).color(red, green, blue, alpha).endVertex();
         Tessellator.getInstance().draw();
     }
+
+    // ------------------------------------------------------------------ overlays and raw model drawing (area R1)
+
+    /** The stack count, durability bar and cooldown shade over a slot (the modern GUI's item decorations). */
+    public void renderItemOverlays(legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer fr, ItemStack stack, int xPosition, int yPosition) {
+        renderItemOverlayIntoGUI(fr, stack, xPosition, yPosition, null);
+    }
+
+    public void renderItemOverlayIntoGUI(legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer fr, ItemStack stack, int xPosition, int yPosition, String text) {
+        if (stack == null || stack.isEmpty()) return;
+        var gui = RenderContext.gui();
+        if (gui == null) return;
+        gui.pose().pushPose();
+        try {
+            if (zLevel != 0) gui.pose().translate(0.0F, 0.0F, zLevel);
+            gui.renderItemDecorations(net.minecraft.client.Minecraft.getInstance().font, Stacks1122.toModern(stack), xPosition, yPosition, text);
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing item overlays", e);
+        } finally {
+            gui.pose().popPose();
+        }
+    }
+
+    /** A model's quads at the current matrix with the stack's tints (no display transform, no glint). */
+    public void renderModel(IBakedModel model, ItemStack stack) {
+        var pose = RenderContext.pose();
+        var buffers = RenderContext.buffers();
+        if (pose == null || buffers == null || model == null) return;
+        try {
+            var buffer = buffers.getBuffer(net.minecraft.client.renderer.Sheets.translucentItemSheet());
+            modernRenderer().renderModelLists(Models1122.modern(model), stack == null ? net.minecraft.world.item.ItemStack.EMPTY : Stacks1122.toModern(stack),
+                    RenderContext.vertexLight(), RenderContext.overlay(), pose, buffer);
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model's quads", e);
+        }
+    }
+
+    /** A model's quads in one ARGB colour. */
+    public void renderModel(IBakedModel model, int color) {
+        mcc$quads(model, net.minecraft.client.renderer.Sheets.translucentItemSheet(), color);
+    }
+
+    /** The enchantment glint over a model. */
+    public void renderEffect(IBakedModel model) {
+        mcc$quads(model, net.minecraft.client.renderer.RenderType.glint(), -1);
+    }
+
+    private void mcc$quads(IBakedModel model, net.minecraft.client.renderer.RenderType type, int color) {
+        var pose = RenderContext.pose();
+        var buffers = RenderContext.buffers();
+        if (pose == null || buffers == null || model == null) return;
+        try {
+            var modern = Models1122.modern(model);
+            var buffer = buffers.getBuffer(type);
+            var random = net.minecraft.util.RandomSource.create();
+            float a = (color >> 24 & 255) / 255.0F, r = (color >> 16 & 255) / 255.0F, g = (color >> 8 & 255) / 255.0F, b = (color & 255) / 255.0F;
+            if (color == -1) a = r = g = b = 1.0F;
+            for (net.minecraft.core.Direction d : net.minecraft.core.Direction.values()) {
+                random.setSeed(42L);
+                for (var quad : modern.getQuads(null, d, random)) buffer.putBulkData(pose.last(), quad, r, g, b, a, RenderContext.vertexLight(), RenderContext.overlay());
+            }
+            random.setSeed(42L);
+            for (var quad : modern.getQuads(null, null, random)) buffer.putBulkData(pose.last(), quad, r, g, b, a, RenderContext.vertexLight(), RenderContext.overlay());
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model's quads", e);
+        }
+    }
 }

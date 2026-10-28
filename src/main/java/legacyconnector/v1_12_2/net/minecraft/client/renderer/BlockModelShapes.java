@@ -43,4 +43,23 @@ public class BlockModelShapes {
     /** Blocks drawn by code only (no model): their states show what their renderers draw. */
     public void registerBuiltInBlocks(Block... builtIns) {
     }
+
+    private final legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.BlockStateMapper blockStateMapper =
+            new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.BlockStateMapper();
+    /** Vanilla's state-to-model cache; filled on demand from the game's models (states asked for so far). */
+    public final java.util.Map<IBlockState, IBakedModel> bakedModelStore = new java.util.AbstractMap<>() {
+        @Override
+        public IBakedModel get(Object key) {
+            return key instanceof IBlockState state ? getModelForState(state) : null;
+        }
+
+        @Override
+        public java.util.Set<java.util.Map.Entry<IBlockState, IBakedModel>> entrySet() {
+            return java.util.Collections.emptySet();
+        }
+    };
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.BlockStateMapper getBlockStateMapper() {
+        return blockStateMapper;
+    }
 }
