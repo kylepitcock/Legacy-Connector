@@ -70,6 +70,7 @@ public final class LegacyConnector {
 
         CompatComponents.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.REGISTER.register(modBus);
         FEATURES.register(modBus);
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);

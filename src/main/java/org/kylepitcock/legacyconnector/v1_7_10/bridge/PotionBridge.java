@@ -123,6 +123,13 @@ public final class PotionBridge {
             this.potion = potion;
         }
 
+        /** The 1.7.10 name key ({@code potion.<name>}, from the mod's lang), set after the potion was constructed. */
+        @Override
+        public String getDescriptionId() {
+            String name = potion.getName();
+            return name == null || name.isEmpty() ? super.getDescriptionId() : name;
+        }
+
         @Override
         public boolean shouldApplyEffectTickThisTick(int duration, int amplifier) {
             try {

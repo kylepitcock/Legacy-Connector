@@ -291,6 +291,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         injectObjectHolders();
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.ensureListener();
         legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager.getInstance().mcc$syncSwappedList();
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.AVAILABLE);
         List<LegacyBlockAdapter> adapters = new ArrayList<>();

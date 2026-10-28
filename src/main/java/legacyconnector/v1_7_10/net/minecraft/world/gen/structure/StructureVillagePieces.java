@@ -105,6 +105,20 @@ public class StructureVillagePieces {
             return count == 0 ? -1 : total / count;
         }
 
+        /** The plot of a vanilla building at a path (see VanillaVillageBuildings), or null where it does not fit. */
+        protected static StructureBoundingBox mcc$plot(String kind, Start start, List list, int x, int y, int z, int facing) {
+            int[] size = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaVillageBuildings.size(kind, start != null && start.inDesert, facing);
+            if (size == null) return null;
+            StructureBoundingBox box = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, size[0], size[1], size[2], facing);
+            return canVillageGoDeeper(box) && StructureComponent.findIntersecting(list, box) == null ? box : null;
+        }
+
+        /** Builds the vanilla building of this plot inside {@code clip}. */
+        protected boolean mcc$build(String kind, World world, Random rand, StructureBoundingBox clip) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaVillageBuildings.place(kind, this.field_143014_b, this.coordBaseMode, this.boundingBox, world, rand, clip);
+            return true;
+        }
+
         protected static boolean canVillageGoDeeper(StructureBoundingBox box) {
             return box != null && box.minY > 10;
         }
@@ -237,8 +251,8 @@ public class StructureVillagePieces {
     }
 
     // Vanilla's village buildings. Their factories (func_749xx_a) are what mods' own village layouts call to add a vanilla
-    // house; the vanilla houses are the modern jigsaw ones, so each factory answers as 1.7.10 did for a plot where the building
-    // does not fit (null: the caller tries another piece), and a building a mod constructs directly places nothing.
+    // house: each is the modern village building of the same use (see VanillaVillageBuildings), on a plot sized from it that
+    // lies against the path; null, as in 1.7.10, when the plot is taken or too deep (the caller tries another piece).
 
     public static class House1 extends Village {
         public House1() {
@@ -252,12 +266,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("library", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static House1 func_74898_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("library", start, list, x, y, z, facing);
+            return plot == null ? null : new House1(start, type, rand, plot, facing);
         }
     }
 
@@ -273,12 +287,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("smithy", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static House2 func_74915_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("smithy", start, list, x, y, z, facing);
+            return plot == null ? null : new House2(start, type, rand, plot, facing);
         }
     }
 
@@ -294,12 +308,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("big_house", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static House3 func_74921_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("big_house", start, list, x, y, z, facing);
+            return plot == null ? null : new House3(start, type, rand, plot, facing);
         }
     }
 
@@ -315,12 +329,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("garden_house", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static House4Garden func_74912_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("garden_house", start, list, x, y, z, facing);
+            return plot == null ? null : new House4Garden(start, type, rand, plot, facing);
         }
     }
 
@@ -336,12 +350,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("hut", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static WoodHut func_74908_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("hut", start, list, x, y, z, facing);
+            return plot == null ? null : new WoodHut(start, type, rand, plot, facing);
         }
     }
 
@@ -357,12 +371,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("hall", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static Hall func_74906_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("hall", start, list, x, y, z, facing);
+            return plot == null ? null : new Hall(start, type, rand, plot, facing);
         }
     }
 
@@ -378,12 +392,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("large_field", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static Field1 func_74900_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("large_field", start, list, x, y, z, facing);
+            return plot == null ? null : new Field1(start, type, rand, plot, facing);
         }
     }
 
@@ -399,12 +413,12 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("field", world, rand, box);
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static Field2 func_74902_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("field", start, list, x, y, z, facing);
+            return plot == null ? null : new Field2(start, type, rand, plot, facing);
         }
     }
 
@@ -420,7 +434,7 @@ public class StructureVillagePieces {
 
         @Override
         public boolean addComponentParts(World world, Random rand, StructureBoundingBox box) {
-            return true;
+            return mcc$build("church", world, rand, box);
         }
 
         /** The church's villager is a priest. */
@@ -428,14 +442,79 @@ public class StructureVillagePieces {
             return 2;
         }
 
-        /** Null: vanilla's answer when the building does not fit (see above). */
         public static Church func_74919_a(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
-            return null;
+            StructureBoundingBox plot = mcc$plot("church", start, list, x, y, z, facing);
+            return plot == null ? null : new Church(start, type, rand, plot, facing);
         }
     }
 
-    /** Layout of vanilla villages is the modern jigsaw one: nothing continues from a legacy component. */
+    /**
+     * The vanilla buildings' weights for a layout a mod continues from its own path (1.7.10's base list; the modern village
+     * already has its own houses, so each kind comes once or twice).
+     */
+    public static List<PieceWeight> mcc$vanillaWeights() {
+        List<PieceWeight> out = new java.util.ArrayList<>();
+        out.add(new PieceWeight(House4Garden.class, 4, 2));
+        out.add(new PieceWeight(Church.class, 20, 1));
+        out.add(new PieceWeight(House1.class, 20, 1));
+        out.add(new PieceWeight(WoodHut.class, 3, 2));
+        out.add(new PieceWeight(Hall.class, 15, 1));
+        out.add(new PieceWeight(Field1.class, 3, 1));
+        out.add(new PieceWeight(Field2.class, 3, 2));
+        out.add(new PieceWeight(House2.class, 15, 1));
+        out.add(new PieceWeight(House3.class, 8, 1));
+        return out;
+    }
+
+    /** One building of a weight: a vanilla one through its factory, a mod's through its village creation handler. */
+    private static StructureComponent mcc$create(PieceWeight w, Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+        Class<?> c = w.villagePieceClass;
+        if (c == House4Garden.class) return House4Garden.func_74912_a(start, list, rand, x, y, z, facing, type);
+        if (c == Church.class) return Church.func_74919_a(start, list, rand, x, y, z, facing, type);
+        if (c == House1.class) return House1.func_74898_a(start, list, rand, x, y, z, facing, type);
+        if (c == WoodHut.class) return WoodHut.func_74908_a(start, list, rand, x, y, z, facing, type);
+        if (c == Hall.class) return Hall.func_74906_a(start, list, rand, x, y, z, facing, type);
+        if (c == Field1.class) return Field1.func_74900_a(start, list, rand, x, y, z, facing, type);
+        if (c == Field2.class) return Field2.func_74902_a(start, list, rand, x, y, z, facing, type);
+        if (c == House2.class) return House2.func_74915_a(start, list, rand, x, y, z, facing, type);
+        if (c == House3.class) return House3.func_74921_a(start, list, rand, x, y, z, facing, type);
+        for (var handler : org.kylepitcock.legacyconnector.v1_7_10.bridge.VillagerBridge.creationHandlers()) {
+            if (handler.getComponentClass() != c) continue;
+            Object built = handler.buildComponent(w, start, list, rand, x, y, z, facing, type);
+            return built instanceof StructureComponent component ? component : null;
+        }
+        return null;
+    }
+
+    /**
+     * The next building at a path of a legacy layout, as 1.7.10 chose it: weighted among the start's pieces that may still
+     * spawn, five tries, within 112 blocks of the start. The building joins the pieces and the start's pending list, whose
+     * entries the planner lets extend the layout in turn.
+     */
     private static StructureComponent getNextVillageStructureComponent(Start start, List list, Random rand, int x, int y, int z, int facing, int type) {
+        if (start == null || type > 50 || start.getBoundingBox() == null) return null;
+        if (Math.abs(x - start.getBoundingBox().minX) > 112 || Math.abs(z - start.getBoundingBox().minZ) > 112) return null;
+        List<?> weights = start.structureVillageWeightedPieceList;
+        if (weights == null || weights.isEmpty()) return null;
+        for (int attempt = 0; attempt < 5; attempt++) {
+            int total = 0;
+            for (Object o : weights) if (o instanceof PieceWeight w && w.canSpawnMoreVillagePieces()) total += w.villagePieceWeight;
+            if (total <= 0) return null;
+            int r = rand.nextInt(total);
+            for (Object o : weights) {
+                if (!(o instanceof PieceWeight w) || !w.canSpawnMoreVillagePieces()) continue;
+                r -= w.villagePieceWeight;
+                if (r >= 0) continue;
+                StructureComponent piece = mcc$create(w, start, list, rand, x, y, z, facing, type + 1);
+                if (piece != null) {
+                    w.villagePiecesSpawned++;
+                    list.add(piece);
+                    start.field_74932_i.add(piece);
+                    return piece;
+                }
+                break;
+            }
+        }
         return null;
     }
 }

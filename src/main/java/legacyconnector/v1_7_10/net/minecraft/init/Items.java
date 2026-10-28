@@ -183,4 +183,24 @@ public class Items {
     public static legacyconnector.v1_7_10.net.minecraft.item.Item mcc$potion() {
         return potionitem;
     }
+
+    // 1.7.10's brewing ingredients and their effect on a potion's value (Item.getPotionEffect), as vanilla set them
+    static {
+        try {
+            nether_wart.setPotionEffect("+4");
+            sugar.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.sugarEffect);
+            ghast_tear.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.ghastTearEffect);
+            spider_eye.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.spiderEyeEffect);
+            fermented_spider_eye.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.fermentedSpiderEyeEffect);
+            speckled_melon.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.speckledMelonEffect);
+            blaze_powder.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.blazePowderEffect);
+            magma_cream.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.magmaCreamEffect);
+            redstone.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.redstoneEffect);
+            glowstone_dust.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.glowstoneEffect);
+            gunpowder.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.gunpowderEffect);
+            golden_carrot.setPotionEffect(legacyconnector.v1_7_10.net.minecraft.potion.PotionHelper.goldenCarrotEffect);
+        } catch (RuntimeException e) {
+            // a wrapper that is missing keeps no expression
+        }
+    }
 }

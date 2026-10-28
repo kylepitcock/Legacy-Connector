@@ -23,7 +23,7 @@ public class PotionHelper {
     public static final String glowstoneEffect = "+5-6-7";
     public static final String gunpowderEffect = "+14&13-13";
     public static final String goldenCarrotEffect = "-0+1+2-3+13&4-4";
-    public static final String field_151423_m = "+0-1+2-3+13&4-4";
+    public static final String field_151423_m = "+0-1+2+3+13&4-4";
 
     public static final HashMap potionRequirements = new HashMap();
     public static final HashMap potionAmplifiers = new HashMap();
@@ -41,6 +41,7 @@ public class PotionHelper {
         potionRequirements.put(Potion.damageBoost.getId(), "0 & !1 & !2 & 3 & 3+6");
         potionRequirements.put(Potion.nightVision.getId(), "!0 & 1 & 2 & !3 & 2+6");
         potionRequirements.put(Potion.invisibility.getId(), "!0 & 1 & 2 & 3 & 2+6");
+        potionRequirements.put(Potion.waterBreathing.getId(), "0 & !1 & 2 & 3 & 2+6");
         potionAmplifiers.put(Potion.moveSpeed.getId(), "5");
         potionAmplifiers.put(Potion.digSpeed.getId(), "5");
         potionAmplifiers.put(Potion.damageBoost.getId(), "5");

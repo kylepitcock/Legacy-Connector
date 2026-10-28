@@ -337,7 +337,7 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     private static final String ACHIEVEMENTS_TAG = "legacyconnector_achievements";
 
-    /** Achievements earned are remembered in the player's persistent data; counts of other stats are not tracked. */
+    /** Achievements earned are remembered in the player's persistent data; other stats count in the modern statistics. */
     public boolean hasAchievementUnlocked(legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement) {
         var data = mcc$player().getPersistentData();
         if (!data.contains(ACHIEVEMENTS_TAG, 9)) return false;
@@ -346,7 +346,10 @@ public abstract class EntityPlayer extends EntityLivingBase {
     }
 
     public void addStat(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat, int amount) {
-        if (!(stat instanceof legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement)) return;
+        if (!(stat instanceof legacyconnector.v1_7_10.net.minecraft.stats.Achievement achievement)) {
+            if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) org.kylepitcock.legacyconnector.v1_7_10.bridge.StatBridge1710.award(sp, stat, amount);
+            return;
+        }
         // an achievement needs its parent first, and is only earned once
         if (achievement.parentAchievement != null && !hasAchievementUnlocked(achievement.parentAchievement)) return;
         if (hasAchievementUnlocked(achievement)) return;

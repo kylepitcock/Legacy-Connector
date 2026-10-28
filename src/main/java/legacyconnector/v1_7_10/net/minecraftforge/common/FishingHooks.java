@@ -13,13 +13,16 @@ import legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomFishable;
 
 /**
  * Forge 1.7.10 fishing loot lists. Additions are recorded and served to legacy code that draws from them
- * ({@link #getRandomFishable}); modern fishing uses its own loot table and is not changed.
+ * ({@link #getRandomFishable}), and modern fishing catches them too: {@code LegacyFishingLoot} swaps a catch for an
+ * added entry of the same category with the share of the category's weight the entry had in 1.7.10.
  */
 public class FishingHooks {
     private static final List<WeightedRandomFishable> junk = new ArrayList<>();
     private static final List<WeightedRandomFishable> treasure = new ArrayList<>();
     private static final List<WeightedRandomFishable> fish = new ArrayList<>();
     private static boolean defaults;
+    /** Forge's own entries (vanilla's catches, which the modern loot tables already give). */
+    private static final java.util.Set<WeightedRandomFishable> DEFAULTS = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
     private static synchronized void ensureDefaults() {
         if (defaults) return;
@@ -41,6 +44,29 @@ public class FishingHooks {
         fish.add(new WeightedRandomFishable(new ItemStack(Items.fish, 1, 1), 25));
         fish.add(new WeightedRandomFishable(new ItemStack(Items.fish, 1, 2), 2));
         fish.add(new WeightedRandomFishable(new ItemStack(Items.fish, 1, 3), 13));
+        DEFAULTS.addAll(junk);
+        DEFAULTS.addAll(treasure);
+        DEFAULTS.addAll(fish);
+    }
+
+    /**
+     * A catch of the category from the entries mods added, drawn with their share of the whole category's weight; null
+     * when the vanilla catch stays (no additions, or the roll fell on Forge's own entries).
+     */
+    public static ItemStack mcc$rollAdded(FishableCategory category, Random rand) {
+        List<WeightedRandomFishable> added = new ArrayList<>();
+        int total = 0, addedWeight = 0;
+        synchronized (FishingHooks.class) {
+            for (WeightedRandomFishable w : category.list()) {
+                total += w.itemWeight;
+                if (!DEFAULTS.contains(w)) {
+                    added.add(w);
+                    addedWeight += w.itemWeight;
+                }
+            }
+        }
+        if (addedWeight <= 0 || rand.nextInt(total) >= addedWeight) return null;
+        return ((WeightedRandomFishable) WeightedRandom.getRandomItem(rand, added, addedWeight)).getItemStack(rand);
     }
 
     public static ItemStack getRandomFishable(Random rand, float chance) {

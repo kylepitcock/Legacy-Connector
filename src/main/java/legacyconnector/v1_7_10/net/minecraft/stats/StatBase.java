@@ -6,7 +6,7 @@ import legacyconnector.v1_7_10.net.minecraft.util.ChatComponentTranslation;
 import legacyconnector.v1_7_10.net.minecraft.util.IChatComponent;
 import legacyconnector.v1_7_10.net.minecraft.util.StatCollector;
 
-/** 1.7.10 statistic bookkeeping; the modern stat system is not driven by these (counts are not tracked yet). */
+/** 1.7.10 statistic bookkeeping; counts go to the modern statistics (see {@code StatBridge1710}). */
 public class StatBase {
     public final String statId;
     private final IChatComponent statName;
@@ -44,6 +44,7 @@ public class StatBase {
     public StatBase registerStat() {
         StatList.allStats.add(this);
         StatList.oneShotStats.put(statId, this);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.StatBridge1710.registered(this);
         return this;
     }
 

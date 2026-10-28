@@ -57,18 +57,33 @@ public class StatFileWriter {
         func_150873_a(player, stat, writeStat(stat) + amount);
     }
 
-    /** Sets a statistic (an achievement is earned at 1). */
+    /** Sets a statistic (an achievement is earned at 1); a stat with a modern counterpart is set in the player's modern stats. */
     public void func_150873_a(EntityPlayer player, StatBase stat, int value) {
         if (stat == null) return;
         mcc$values.put(stat.statId, value);
+        if (!(stat instanceof Achievement)) {
+            var sp = mcc$modernPlayer(player);
+            var modern = org.kylepitcock.legacyconnector.v1_7_10.bridge.StatBridge1710.modern(stat);
+            if (sp != null && modern != null) sp.getStats().setValue(sp, modern, value);
+        }
         if (stat instanceof Achievement a && value > 0) {
             EntityPlayer owner = player != null ? player : mcc$serverPlayer();
             if (owner != null && !owner.hasAchievementUnlocked(a)) owner.addStat(a, 1);
         }
     }
 
+    private net.minecraft.server.level.ServerPlayer mcc$modernPlayer(EntityPlayer player) {
+        EntityPlayer owner = player != null ? player : mcc$serverPlayer();
+        return owner != null && owner.mcc$entity instanceof net.minecraft.server.level.ServerPlayer sp ? sp : null;
+    }
+
     public int writeStat(StatBase stat) {
         if (stat == null) return 0;
+        if (!(stat instanceof Achievement)) {
+            var sp = mcc$modernPlayer(null);
+            int value = sp == null ? -1 : org.kylepitcock.legacyconnector.v1_7_10.bridge.StatBridge1710.value(sp, stat);
+            if (value >= 0) return value;
+        }
         if (stat instanceof Achievement a && hasAchievementUnlocked(a)) return Math.max(1, mcc$values.getOrDefault(stat.statId, 0));
         return mcc$values.getOrDefault(stat.statId, 0);
     }

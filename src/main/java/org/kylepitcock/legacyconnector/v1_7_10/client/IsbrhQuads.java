@@ -26,26 +26,56 @@ final class IsbrhQuads {
             double[][] c = capture.quads.get(q);
             float[] n = capture.normals.get(q);
             int[] data = new int[32];
-            // A colour the renderer set (Thaumcraft's aspect tint on infused stone) was the final colour in 1.7.10: kept, and
-            // the quad is not shaded again. Uncoloured quads stay white and get modern shading and AO.
+            // A colour the renderer set (Thaumcraft's aspect tint on infused stone, a colorMultiplier) was the final colour in
+            // 1.7.10. Uncoloured quads stay white and get modern shading and AO. A single colour on a face lying along an axis
+            // had 1.7.10's face shade in it (0.5 down, 1 up, 0.8 north/south, 0.6 east/west): that is divided out and the
+            // modern pipeline shades it again, with AO, as 1.7.10 did with smooth lighting on. Any other single colour keeps
+            // its shade and gets AO; corners of different colours were lit by the renderer itself and are kept as drawn.
             boolean coloured = false;
             for (double[] v : c) coloured |= v.length > 7 && v[7] != 0.0D;
+            Direction dir = Direction.getNearest(n[0], n[1], n[2]);
+            boolean uniform = coloured && (long) c[0][5] == (long) c[1][5] && (long) c[0][5] == (long) c[2][5] && (long) c[0][5] == (long) c[3][5];
+            float unshade = 1.0F;
+            if (uniform && Math.abs(n[0] * dir.getStepX() + n[1] * dir.getStepY() + n[2] * dir.getStepZ()) > 0.999F) {
+                float shade = legacyShade(dir);
+                int argb = (int) (long) c[0][5];
+                float max = Math.max((argb >> 16 & 255), Math.max((argb >> 8 & 255), (argb & 255))) / 255.0F;
+                if (max <= shade + 0.01F) unshade = 1.0F / shade;
+            }
             for (int i = 0; i < 4; i++) {
                 double[] v = c[i];
                 int o = i * 8;
                 data[o] = Float.floatToRawIntBits((float) (v[0] - bx));
                 data[o + 1] = Float.floatToRawIntBits((float) (v[1] - by));
                 data[o + 2] = Float.floatToRawIntBits((float) (v[2] - bz));
-                data[o + 3] = coloured ? abgr((long) v[5]) : 0xFFFFFFFF;
+                data[o + 3] = coloured ? abgr(unshade == 1.0F ? (long) v[5] : scale((int) (long) v[5], unshade)) : 0xFFFFFFFF;
                 data[o + 4] = Float.floatToRawIntBits((float) v[3]);
                 data[o + 5] = Float.floatToRawIntBits((float) v[4]);
                 data[o + 6] = 0;
                 data[o + 7] = pack(n);
             }
-            Direction dir = Direction.getNearest(n[0], n[1], n[2]);
-            out.add(coloured ? new BakedQuad(data, -1, dir, sprite, false, false) : new BakedQuad(data, -1, dir, sprite, true));
+            if (!coloured) out.add(new BakedQuad(data, -1, dir, sprite, true));
+            else out.add(new BakedQuad(data, -1, dir, sprite, unshade != 1.0F, uniform));
         }
         return out;
+    }
+
+    /** 1.7.10's (and the modern) directional shade of a face. */
+    private static float legacyShade(Direction d) {
+        return switch (d) {
+            case DOWN -> 0.5F;
+            case UP -> 1.0F;
+            case NORTH, SOUTH -> 0.8F;
+            case WEST, EAST -> 0.6F;
+        };
+    }
+
+    /** The colour's RGB multiplied by {@code f} (alpha kept, channels capped). */
+    private static long scale(int argb, float f) {
+        int r = Math.min(255, Math.round((argb >> 16 & 255) * f));
+        int g = Math.min(255, Math.round((argb >> 8 & 255) * f));
+        int b = Math.min(255, Math.round((argb & 255) * f));
+        return argb & 0xFF000000L | r << 16 | g << 8 | b;
     }
 
     /** Captured ARGB to the vertex format's ABGR. */
