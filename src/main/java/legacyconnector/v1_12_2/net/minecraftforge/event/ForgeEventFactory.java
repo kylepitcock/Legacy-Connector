@@ -193,4 +193,103 @@ public class ForgeEventFactory {
         }
         return event;
     }
+
+    // ---- area F: placement and spawn events
+
+    private static net.neoforged.neoforge.common.util.BlockSnapshot mcc$modernSnapshot(legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot snapshot) {
+        if (snapshot == null) return null;
+        if (snapshot.mcc$modern != null) return snapshot.mcc$modern;
+        var world = snapshot.getWorld();
+        var level = world == null ? null : world.mcc$level();
+        return level == null ? null : net.neoforged.neoforge.common.util.BlockSnapshot.create(level.dimension(), level, pos(snapshot.getPos()), snapshot.getFlag());
+    }
+
+    /** The placement event for a block a player placed (canceled when a mod canceled the placement). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.PlaceEvent onPlayerBlockPlace(EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction,
+            EnumHand hand) {
+        var world = blockSnapshot.getWorld();
+        var placedAgainst = world == null ? null : world.getBlockState(blockSnapshot.getPos().offset(direction.getOpposite()));
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.PlaceEvent(blockSnapshot, placedAgainst, player, hand);
+        var modern = mcc$modernSnapshot(blockSnapshot);
+        if (modern != null && EventHooks.onBlockPlace(player(player), modern, direction.mcc$modern())) event.setCanceled(true);
+        return event;
+    }
+
+    /** Whether a mod canceled the placement of a block by an entity (a modern placement event is fired). */
+    public static boolean onBlockPlace(Entity entity, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction) {
+        var modern = mcc$modernSnapshot(blockSnapshot);
+        return modern != null && EventHooks.onBlockPlace(entity == null ? null : entity.mcc$modern(), modern, direction.mcc$modern());
+    }
+
+    private static net.minecraft.world.entity.Mob mcc$mob(Object entity) {
+        return entity instanceof Entity e && e.mcc$modern() instanceof net.minecraft.world.entity.Mob m ? m : null;
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result mcc$positionCheck(Object entity, World world, boolean spawner) {
+        var mob = mcc$mob(entity);
+        var level = world == null ? null : world.mcc$level();
+        if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) {
+            return legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+        }
+        var event = new net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck(mob, accessor,
+                spawner ? net.minecraft.world.entity.MobSpawnType.SPAWNER : net.minecraft.world.entity.MobSpawnType.NATURAL, null);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event);
+        return switch (event.getResult()) {
+            case SUCCEED -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW;
+            case FAIL -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DENY;
+            default -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+        };
+    }
+
+    /** Whether mods allow (ALLOW), forbid (DENY) or leave to the mob's own rules (DEFAULT) a spawn at the entity's position. */
+    public static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result canEntitySpawn(
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z, boolean isSpawner) {
+        return mcc$positionCheck(entity, world, isSpawner);
+    }
+
+    public static boolean canEntitySpawnSpawner(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
+        var result = mcc$positionCheck(entity, world, true);
+        if (result == legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT) {
+            var mob = mcc$mob(entity);
+            var level = world == null ? null : world.mcc$level();
+            return mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor a)
+                    || mob.checkSpawnRules(a, net.minecraft.world.entity.MobSpawnType.SPAWNER) && mob.checkSpawnObstruction(a);
+        }
+        return result == legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW;
+    }
+
+    /**
+     * Fires the spawn finalization event: true when a mod took over (canceled it), and the caller then skips the mob's own
+     * {@code onInitialSpawn}.
+     */
+    public static boolean doSpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
+        var mob = mcc$mob(entity);
+        var level = world == null ? null : world.mcc$level();
+        if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return false;
+        var event = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(mob, accessor, x, y, z,
+                accessor.getCurrentDifficultyAt(mob.blockPosition()), net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
+        return net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled();
+    }
+
+    /** Whether mods force (ALLOW), forbid (DENY) or leave to the mob (DEFAULT) its despawning. */
+    public static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result canEntityDespawn(
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity) {
+        var mob = mcc$mob(entity);
+        if (mob == null || !(mob.level() instanceof net.minecraft.server.level.ServerLevel level)) {
+            return legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+        }
+        var event = net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.living.MobDespawnEvent(mob, level));
+        return switch (event.getResult()) {
+            case ALLOW -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW;
+            case DENY -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DENY;
+            default -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+        };
+    }
+
+    public static int getMaxSpawnPackSize(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity) {
+        var mob = mcc$mob(entity);
+        return mob == null ? 4 : EventHooks.getMaxSpawnClusterSize(mob);
+    }
 }

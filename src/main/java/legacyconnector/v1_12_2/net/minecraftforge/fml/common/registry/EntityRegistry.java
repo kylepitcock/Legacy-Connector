@@ -46,4 +46,78 @@ public class EntityRegistry {
         EntityEntry e = getEntry(entity.getClass());
         return e == null ? null : e.getRegistryName();
     }
+
+    // ---- area F: FML's registration records
+
+    private static final EntityRegistry INSTANCE = new EntityRegistry();
+
+    public static EntityRegistry instance() {
+        return INSTANCE;
+    }
+
+    /** The registration of a mod entity class (its registry entry); null when none. */
+    public EntityRegistration lookupModSpawn(Class<? extends Entity> clazz, boolean keepLooking) {
+        for (Class<?> c = clazz; c != null && Entity.class.isAssignableFrom(c); c = keepLooking ? c.getSuperclass() : null) {
+            for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
+                if (e.getEntityClass() == c) return new EntityRegistration(e);
+            }
+        }
+        return null;
+    }
+
+    /** The registration a mod made under its own network id. */
+    public EntityRegistration lookupModSpawn(legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModContainer mc, int modEntityId) {
+        String modId = mc == null ? null : mc.getModId();
+        for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
+            if (e.mcc$networkId == modEntityId && e.getRegistryName() != null && (modId == null || modId.equals(e.getRegistryName().getNamespace()))) {
+                return new EntityRegistration(e);
+            }
+        }
+        return null;
+    }
+
+    public static class EntityRegistration {
+        private final EntityEntry entry;
+
+        EntityRegistration(EntityEntry entry) {
+            this.entry = entry;
+        }
+
+        public ResourceLocation getRegistryName() {
+            return entry.getRegistryName();
+        }
+
+        public Class<? extends Entity> getEntityClass() {
+            return entry.getEntityClass();
+        }
+
+        public legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModContainer getContainer() {
+            var name = entry.getRegistryName();
+            return name == null ? null : legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.instance().getIndexedModList().get(name.getNamespace());
+        }
+
+        public String getEntityName() {
+            return entry.getName();
+        }
+
+        public int getModEntityId() {
+            return entry.mcc$networkId;
+        }
+
+        public int getTrackingRange() {
+            return entry.trackingRange;
+        }
+
+        public int getUpdateFrequency() {
+            return entry.updateFrequency;
+        }
+
+        public boolean sendsVelocityUpdates() {
+            return entry.sendsVelocityUpdates;
+        }
+
+        public boolean usesVanillaSpawning() {
+            return false;
+        }
+    }
 }

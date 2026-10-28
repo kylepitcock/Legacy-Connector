@@ -146,4 +146,38 @@ public class CreativeTabs {
         for (var t : mcc$enchantmentTypes) if (t == type) return true;
         return false;
     }
+
+    // ---- area F: the tab's place and look in the creative screen (the modern screen lays tabs out itself)
+
+    public int getTabPage() {
+        return getTabIndex() > 11 ? (getTabIndex() - 12) / 10 + 1 : 0;
+    }
+
+    public int getColumn() {
+        return getTabIndex() > 11 ? (getTabIndex() - 12) % 10 % 5 : getTabIndex() % 6;
+    }
+
+    public boolean isOnTopRow() {
+        return getTabIndex() > 11 ? (getTabIndex() - 12) % 10 < 5 : getTabIndex() < 6;
+    }
+
+    public boolean isAlignedRight() {
+        return getColumn() == 5;
+    }
+
+    public boolean hasScrollbar() {
+        return hasScrollbar;
+    }
+
+    public int getSearchbarWidth() {
+        return 89;
+    }
+
+    public int getLabelColor() {
+        return 4210752;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation getBackgroundImage() {
+        return new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("textures/gui/container/creative_inventory/tab_" + getBackgroundImageName());
+    }
 }

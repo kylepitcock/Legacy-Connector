@@ -109,17 +109,19 @@ public class BlockEvent extends Event {
     @Cancelable
     public static class PlaceEvent extends BlockEvent {
         private final EntityPlayer player;
-        private final Object blockSnapshot;
+        private final legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot;
         private final IBlockState placedBlock;
         private final IBlockState placedAgainst;
         private final EnumHand hand;
 
-        public PlaceEvent(Object blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
-            this(null, null, null, blockSnapshot, placedAgainst, player, hand);
+        public PlaceEvent(legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+            this(blockSnapshot == null ? null : blockSnapshot.getWorld(), blockSnapshot == null ? null : blockSnapshot.getPos(),
+                    blockSnapshot == null || blockSnapshot.getWorld() == null ? null : blockSnapshot.getWorld().getBlockState(blockSnapshot.getPos()),
+                    blockSnapshot, placedAgainst, player, hand);
         }
 
         /** The modern placement as the legacy event: the world, position and placed state are known directly. */
-        public PlaceEvent(World world, BlockPos pos, IBlockState placed, Object blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+        public PlaceEvent(World world, BlockPos pos, IBlockState placed, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
             super(world, pos, placed);
             this.player = player;
             this.blockSnapshot = blockSnapshot;
@@ -132,7 +134,7 @@ public class BlockEvent extends Event {
             return player;
         }
 
-        public Object getBlockSnapshot() {
+        public legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot getBlockSnapshot() {
             return blockSnapshot;
         }
 
@@ -151,14 +153,14 @@ public class BlockEvent extends Event {
 
     @Cancelable
     public static class MultiPlaceEvent extends PlaceEvent {
-        private final List<Object> blockSnapshots;
+        private final List<legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot> blockSnapshots;
 
-        public MultiPlaceEvent(List<Object> blockSnapshots, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+        public MultiPlaceEvent(List<legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot> blockSnapshots, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
             super(blockSnapshots == null || blockSnapshots.isEmpty() ? null : blockSnapshots.get(0), placedAgainst, player, hand);
             this.blockSnapshots = blockSnapshots;
         }
 
-        public List<Object> getReplacedBlockSnapshots() {
+        public List<legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot> getReplacedBlockSnapshots() {
             return blockSnapshots;
         }
     }
