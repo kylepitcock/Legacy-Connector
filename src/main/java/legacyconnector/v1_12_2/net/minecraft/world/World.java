@@ -298,7 +298,14 @@ public class World implements IBlockAccess {
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         }
         BlockState off = offThreadState(p);
-        return off != null ? off : access.getBlockState(p);
+        if (off != null) return off;
+        if (access instanceof ServerLevel sl) {
+            // never wait for a chunk here: a known chunk that is still being finished made Level.getBlockState block the server thread
+            // for good (SRParasites' spawner reads blocks around players every tick)
+            var chunk = sl.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4);
+            return chunk == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : chunk.getBlockState(p);
+        }
+        return access.getBlockState(p);
     }
 
     /** Legacy generators spill past the chunk being decorated; a generation region only accepts writes within one chunk of its centre. */
