@@ -209,4 +209,63 @@ public class CraftingHelper {
         }
         return found ? success : defaultUnfoundRoot;
     }
+
+    private static final java.util.Map<String, IConditionFactory> CONDITIONS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<String, IIngredientFactory> INGREDIENTS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.Map<String, IRecipeFactory> RECIPES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IConditionFactory factory) {
+        if (key != null && factory != null) CONDITIONS.put(key.toString(), factory);
+    }
+
+    public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IIngredientFactory factory) {
+        if (key != null && factory != null) INGREDIENTS.put(key.toString(), factory);
+    }
+
+    public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IRecipeFactory factory) {
+        if (key != null && factory != null) RECIPES.put(key.toString(), factory);
+    }
+
+    /** True when every condition of a recipe's {@code conditions} array holds (Forge's built-in ones and the registered factories). */
+    public static boolean processConditions(com.google.gson.JsonArray conditions, JsonContext context) {
+        for (int x = 0; x < conditions.size(); x++) {
+            if (!conditions.get(x).isJsonObject()) throw new com.google.gson.JsonSyntaxException("Conditions must be an array of JsonObjects");
+            if (!getCondition(conditions.get(x).getAsJsonObject(), context).getAsBoolean()) return false;
+        }
+        return true;
+    }
+
+    public static java.util.function.BooleanSupplier getCondition(com.google.gson.JsonObject json, JsonContext context) {
+        String type = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "type");
+        if (type.indexOf(':') < 0 && context != null && context.getModId() != null) type = context.getModId() + ":" + type;
+        switch (type) {
+            case "forge:mod_loaded":
+                String modid = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "modid");
+                return () -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.isModLoaded(modid);
+            case "forge:item_exists":
+                String item = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "item");
+                return () -> Item.REGISTRY.containsKey(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(item));
+            case "forge:not":
+                java.util.function.BooleanSupplier child = getCondition(legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonObject(json, "value"), context);
+                return () -> !child.getAsBoolean();
+            case "forge:or": {
+                java.util.List<java.util.function.BooleanSupplier> children = new java.util.ArrayList<>();
+                for (com.google.gson.JsonElement e : legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonArray(json, "values")) children.add(getCondition(e.getAsJsonObject(), context));
+                return () -> children.stream().anyMatch(java.util.function.BooleanSupplier::getAsBoolean);
+            }
+            case "forge:and": {
+                java.util.List<java.util.function.BooleanSupplier> children = new java.util.ArrayList<>();
+                for (com.google.gson.JsonElement e : legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getJsonArray(json, "values")) children.add(getCondition(e.getAsJsonObject(), context));
+                return () -> children.stream().allMatch(java.util.function.BooleanSupplier::getAsBoolean);
+            }
+            case "forge:false":
+                return () -> false;
+            default:
+                break;
+        }
+        IConditionFactory factory = CONDITIONS.get(type);
+        if (factory == null && customFactory(context, type, "conditions") instanceof IConditionFactory f) factory = f;
+        if (factory == null) throw new com.google.gson.JsonSyntaxException("Unknown condition type: " + type);
+        return factory.parse(context, json);
+    }
 }

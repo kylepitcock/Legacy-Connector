@@ -133,4 +133,9 @@ public class OreDictionary {
             return ore;
         }
     }
+
+    /** Forge's NonNullList form of {@link #containsMatch(boolean, List, ItemStack...)}. */
+    public static boolean containsMatch(boolean strict, legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> inputs, ItemStack... targets) {
+        return containsMatch(strict, (List<ItemStack>) inputs, targets);
+    }
 }
