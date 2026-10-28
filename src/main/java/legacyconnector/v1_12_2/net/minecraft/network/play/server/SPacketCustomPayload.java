@@ -5,7 +5,7 @@ import legacyconnector.v1_12_2.net.minecraft.network.Packet;
 import legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer;
 import legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayClient;
 
-/** A custom payload on a named channel. Raw 1.12 channels have no modern receiver, so it is not sent. */
+/** A custom payload on a named channel. */
 public class SPacketCustomPayload implements Packet<INetHandlerPlayClient> {
     private String channel;
     private legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer data;
@@ -46,8 +46,11 @@ public class SPacketCustomPayload implements Packet<INetHandlerPlayClient> {
     public void processPacket(INetHandlerPlayClient handler) {
     }
 
+    /** Sent as the layer's mod channel payload: the client's legacy channel of that name gets it. */
     @Override
     public net.minecraft.network.protocol.Packet<?> mcc$modern() {
-        return null;
+        var proxy = new legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.internal.FMLProxyPacket(
+                new legacyconnector.v1_12_2.net.minecraft.network.PacketBuffer(data.copy()), channel);
+        return new net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket(org.kylepitcock.legacyconnector.v1_12_2.bridge.FmlChannelBridge1122.payload(proxy));
     }
 }

@@ -78,4 +78,13 @@ public class NetworkManager {
     /** The modern connection handles its own packets; nothing is queued here. */
     public void processReceivedPackets() {
     }
+
+    /** The channel attribute 1.12 kept the connection state in. */
+    public static final io.netty.util.AttributeKey<EnumConnectionState> PROTOCOL_ATTRIBUTE_KEY = io.netty.util.AttributeKey.valueOf("legacy_protocol");
+
+    /** The game switches the connection's protocol itself; the requested state is only remembered on the channel. */
+    public void setConnectionState(EnumConnectionState state) {
+        var ch = channel();
+        if (ch != null) ch.attr(PROTOCOL_ATTRIBUTE_KEY).set(state);
+    }
 }

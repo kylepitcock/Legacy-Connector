@@ -118,4 +118,11 @@ public class NetHandlerPlayServer implements legacyconnector.v1_12_2.net.minecra
         }
         m.teleport(x, y, z, yaw, pitch, relative);
     }
+
+    /** Handles a digging packet a mod builds for its player (as the game's player action). */
+    public void processPlayerDigging(legacyconnector.v1_12_2.net.minecraft.network.play.client.CPacketPlayerDigging packet) {
+        var p = player == null ? null : player.mcc$serverPlayer();
+        if (p == null || packet == null || p.connection == null) return;
+        p.connection.handlePlayerAction(packet.mcc$modern());
+    }
 }
