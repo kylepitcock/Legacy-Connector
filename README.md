@@ -66,8 +66,6 @@ fallout-tinted sky and the scorched crater, all from HBM's own explosion and eff
 
 ![Scape and Run: Parasites on 1.21.1](docs/images/srparasites.png)
 
-![Scape and Run: Parasites up close](docs/images/srparasites-close.png)
-
 ## How it works
 
 ```
