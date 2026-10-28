@@ -25,6 +25,67 @@ public abstract class GenLayer {
         }
     }
 
+    /** A biome's 1.12 numeric id (vanilla's ids for the vanilla biomes). */
+    protected static int id(Biome biome) {
+        return Biome.getIdForBiome(biome);
+    }
+
+    /**
+     * The vanilla 1.12 overworld biome stack: index 0 is the 1:4 biome map (generation), 1 the per-block map; Forge's
+     * InitBiomeGens event may replace them (mod world types call this and pass their own biome layer through the world type).
+     */
+    public static GenLayer[] initializeAllBiomeGenerators(long seed, WorldType worldType,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings settings) {
+        GenLayer layer = new GenLayerIsland(1L);
+        layer = new GenLayerFuzzyZoom(2000L, layer);
+        layer = new GenLayerAddIsland(1L, layer);
+        layer = new GenLayerZoom(2001L, layer);
+        layer = new GenLayerAddIsland(2L, layer);
+        layer = new GenLayerAddIsland(50L, layer);
+        layer = new GenLayerAddIsland(70L, layer);
+        layer = new GenLayerRemoveTooMuchOcean(2L, layer);
+        layer = new GenLayerAddSnow(2L, layer);
+        layer = new GenLayerAddIsland(3L, layer);
+        layer = new GenLayerEdge(2L, layer, GenLayerEdge.Mode.COOL_WARM);
+        layer = new GenLayerEdge(2L, layer, GenLayerEdge.Mode.HEAT_ICE);
+        layer = new GenLayerEdge(3L, layer, GenLayerEdge.Mode.SPECIAL);
+        layer = new GenLayerZoom(2002L, layer);
+        layer = new GenLayerZoom(2003L, layer);
+        layer = new GenLayerAddIsland(4L, layer);
+        layer = new GenLayerAddMushroomIsland(5L, layer);
+        layer = new GenLayerDeepOcean(4L, layer);
+        GenLayer land = GenLayerZoom.magnify(1000L, layer, 0);
+        int biomeSize = 4;
+        int riverSize = biomeSize;
+        if (settings != null) {
+            biomeSize = settings.biomeSize;
+            riverSize = settings.riverSize;
+        }
+        if (worldType == WorldType.LARGE_BIOMES) biomeSize = 6;
+        biomeSize = getModdedBiomeSize(worldType, biomeSize);
+        GenLayer riverInit = GenLayerZoom.magnify(1000L, land, 0);
+        riverInit = new GenLayerRiverInit(100L, riverInit);
+        GenLayer biomes = worldType.getBiomeLayer(seed, land, settings);
+        GenLayer hillsInput = GenLayerZoom.magnify(1000L, riverInit, 2);
+        GenLayer hills = new GenLayerHills(1000L, biomes, hillsInput);
+        GenLayer rivers = GenLayerZoom.magnify(1000L, riverInit, 2);
+        rivers = GenLayerZoom.magnify(1000L, rivers, riverSize);
+        rivers = new GenLayerRiver(1L, rivers);
+        rivers = new GenLayerSmooth(1000L, rivers);
+        hills = new GenLayerRareBiome(1001L, hills);
+        for (int k = 0; k < biomeSize; ++k) {
+            hills = new GenLayerZoom(1000 + k, hills);
+            if (k == 0) hills = new GenLayerAddIsland(3L, hills);
+            if (k == 1 || biomeSize == 1) hills = new GenLayerShore(1000L, hills);
+        }
+        GenLayer smooth = new GenLayerSmooth(1000L, hills);
+        GenLayer mix = new GenLayerRiverMix(100L, smooth, rivers);
+        GenLayer voronoi = new GenLayerVoronoiZoom(10L, mix);
+        mix.initWorldGenSeed(seed);
+        voronoi.initWorldGenSeed(seed);
+        return new GenLayer[] {mix, voronoi, mix};
+    }
+
     /** Forge's WorldTypeEvent.BiomeSize hook: the zoom count of the biome layers (mods' own stacks call it too). */
     public static int getModdedBiomeSize(WorldType worldType, int original) {
         var event = new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.WorldTypeEvent.BiomeSize(worldType, original);

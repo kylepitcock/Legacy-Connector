@@ -43,4 +43,9 @@ public enum EnumDifficulty {
     public net.minecraft.world.Difficulty mcc$modern() {
         return net.minecraft.world.Difficulty.byId(id);
     }
+
+    /** Forge's older name of {@link #getId}. */
+    public int getDifficultyId() {
+        return getId();
+    }
 }

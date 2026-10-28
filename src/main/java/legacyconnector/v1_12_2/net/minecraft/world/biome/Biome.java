@@ -128,12 +128,83 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
         return enableSnow;
     }
 
+    /**
+     * The 1.12 numeric id of a biome: vanilla's own ids for the vanilla biomes (ocean 0, plains 1, ... void 127, mutated 129-167;
+     * biome layers and mods compare against them), and for every other biome the first free id below 256 in the order they are
+     * first asked for (1.12 kept biome ids in a byte per column).
+     */
     public static int getIdForBiome(Biome biome) {
-        return REGISTRY.getIDForObject(biome);
+        if (biome == null) return -1;
+        Integer id = MCC_IDS.get(biome);
+        if (id != null) return id;
+        synchronized (MCC_BY_ID) {
+            mcc$vanillaIds();
+            id = MCC_IDS.get(biome);
+            if (id != null) return id;
+            int free = -1;
+            for (int i = 40; i < 256 && free < 0; i++) if (MCC_BY_ID[i] == null) free = i;
+            if (free < 0) return REGISTRY.getIDForObject(biome);
+            MCC_BY_ID[free] = biome;
+            MCC_IDS.put(biome, free);
+            return free;
+        }
     }
 
     public static Biome getBiomeForId(int id) {
-        return REGISTRY.getObjectById(id);
+        if (id >= 0 && id < 256) {
+            Biome b = MCC_BY_ID[id];
+            if (b != null) return b;
+            synchronized (MCC_BY_ID) {
+                if (mcc$vanillaIds()) {
+                    b = MCC_BY_ID[id];
+                    if (b != null) return b;
+                }
+            }
+            if (id >= 40) {
+                // a mod biome nobody numbered yet: number the registered biomes in registration order
+                synchronized (MCC_BY_ID) {
+                    for (Biome r : REGISTRY) getIdForBiome(r);
+                    return MCC_BY_ID[id];
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+
+    private static final Biome[] MCC_BY_ID = new Biome[256];
+    private static final java.util.Map<Biome, Integer> MCC_IDS = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
+    private static boolean mcc$numbered;
+    private static final String[] MCC_VANILLA = {
+            "OCEAN 0", "PLAINS 1", "DESERT 2", "EXTREME_HILLS 3", "FOREST 4", "TAIGA 5", "SWAMPLAND 6", "RIVER 7", "HELL 8", "SKY 9",
+            "FROZEN_OCEAN 10", "FROZEN_RIVER 11", "ICE_PLAINS 12", "ICE_MOUNTAINS 13", "MUSHROOM_ISLAND 14", "MUSHROOM_ISLAND_SHORE 15", "BEACH 16",
+            "DESERT_HILLS 17", "FOREST_HILLS 18", "TAIGA_HILLS 19", "EXTREME_HILLS_EDGE 20", "JUNGLE 21", "JUNGLE_HILLS 22", "JUNGLE_EDGE 23",
+            "DEEP_OCEAN 24", "STONE_BEACH 25", "COLD_BEACH 26", "BIRCH_FOREST 27", "BIRCH_FOREST_HILLS 28", "ROOFED_FOREST 29", "COLD_TAIGA 30",
+            "COLD_TAIGA_HILLS 31", "REDWOOD_TAIGA 32", "REDWOOD_TAIGA_HILLS 33", "EXTREME_HILLS_WITH_TREES 34", "SAVANNA 35", "SAVANNA_PLATEAU 36",
+            "MESA 37", "MESA_ROCK 38", "MESA_CLEAR_ROCK 39", "VOID 127", "MUTATED_PLAINS 129", "MUTATED_DESERT 130", "MUTATED_EXTREME_HILLS 131",
+            "MUTATED_FOREST 132", "MUTATED_TAIGA 133", "MUTATED_SWAMPLAND 134", "MUTATED_ICE_FLATS 140", "MUTATED_JUNGLE 149",
+            "MUTATED_JUNGLE_EDGE 151", "MUTATED_BIRCH_FOREST 155", "MUTATED_BIRCH_FOREST_HILLS 156", "MUTATED_ROOFED_FOREST 157",
+            "MUTATED_TAIGA_COLD 158", "MUTATED_REDWOOD_TAIGA 160", "MUTATED_REDWOOD_TAIGA_HILLS 161", "MUTATED_EXTREME_HILLS_WITH_TREES 162",
+            "MUTATED_SAVANNA 163", "MUTATED_SAVANNA_ROCK 164", "MUTATED_MESA 165", "MUTATED_MESA_ROCK 166", "MUTATED_MESA_CLEAR_ROCK 167"};
+
+    /** Puts the vanilla biomes at their 1.12 ids (once); true when it ran now. */
+    private static boolean mcc$vanillaIds() {
+        if (mcc$numbered) return false;
+        mcc$numbered = true;
+        for (String e : MCC_VANILLA) {
+            String[] p = e.split(" ");
+            try {
+                Biome b = (Biome) legacyconnector.v1_12_2.net.minecraft.init.Biomes.class.getField(p[0]).get(null);
+                if (b != null && !MCC_IDS.containsKey(b)) {
+                    int id = Integer.parseInt(p[1]);
+                    MCC_BY_ID[id] = b;
+                    MCC_IDS.put(b, id);
+                }
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError ex) {
+                // a constant that cannot be made yet keeps no id
+            }
+        }
+        return true;
     }
 
     public static Biome getBiome(int id) {
@@ -396,5 +467,31 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
             this.minGroupCount = min;
             this.maxGroupCount = max;
         }
+    }
+
+    // ------------------------------------------------------------------ area W: vanilla feature generators
+
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees(false);
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree BIG_TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree(false);
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant DOUBLE_PLANT_GENERATOR = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant();
+
+    /** A random tree generator: big oaks one time in ten, else small oaks (vanilla's default). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenAbstractTree getRandomTreeFeature(java.util.Random rand) {
+        return rand.nextInt(10) == 0 ? BIG_TREE_FEATURE : TREE_FEATURE;
+    }
+
+    /** The grass generator of this biome: a patch of tall grass (the modern game's grass patch). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator getRandomWorldGenForGrass(java.util.Random rand) {
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenerator() {
+            @Override
+            public boolean generate(legacyconnector.v1_12_2.net.minecraft.world.World world, java.util.Random r, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+                return org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(world, net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_GRASS, r, pos);
+            }
+        };
+    }
+
+    /** Vanilla's flower pick: a poppy one time in three, else a dandelion. */
+    public legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType pickRandomFlower(java.util.Random rand, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return rand.nextInt(3) > 0 ? legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType.DANDELION : legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerType.POPPY;
     }
 }

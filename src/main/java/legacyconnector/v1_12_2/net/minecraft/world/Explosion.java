@@ -130,4 +130,7 @@ public class Explosion {
     public Entity mcc$exploder() {
         return exploder;
     }
+
+    /** The explosion's random (1.12 used it for particles and block drops). */
+    public final java.util.Random random = new java.util.Random();
 }

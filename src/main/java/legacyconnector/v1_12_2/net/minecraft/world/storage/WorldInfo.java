@@ -389,4 +389,20 @@ public class WorldInfo {
     public String getVersionName() {
         return "1.12.2";
     }
+
+    /** Forge: a copy of the level.dat data compound with the player tag. */
+    public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound cloneNBTCompound(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound playerNbt) {
+        legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag = new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound();
+        tag.setString("LevelName", getWorldName() == null ? "" : getWorldName());
+        tag.setLong("RandomSeed", getSeed());
+        tag.setLong("Time", getWorldTotalTime());
+        tag.setLong("DayTime", getWorldTime());
+        tag.setLong("LastPlayed", getLastTimePlayed());
+        tag.setBoolean("hardcore", isHardcoreModeEnabled());
+        tag.setBoolean("allowCommands", areCommandsAllowed());
+        tag.setString("generatorName", getTerrainType() == null ? "default" : getTerrainType().getName());
+        tag.setString("generatorOptions", getGeneratorOptions() == null ? "" : getGeneratorOptions());
+        if (playerNbt != null) tag.setTag("Player", playerNbt);
+        return tag;
+    }
 }

@@ -47,7 +47,9 @@ public final class GeneratedPack implements PackResources {
         this.location = location;
         this.type = type;
         if (type == PackType.CLIENT_RESOURCES) GeneratedTranslations.contribute(files);
-        for (Contributor c : CONTRIBUTORS) {
+        List<Contributor> all = new java.util.ArrayList<>(CONTRIBUTORS);
+        all.addAll(LATE_CONTRIBUTORS);
+        for (Contributor c : all) {
             try {
                 c.contribute(type, files);
             } catch (RuntimeException | LinkageError e) {
@@ -59,6 +61,13 @@ public final class GeneratedPack implements PackResources {
 
     public static void addContributor(Contributor c) {
         CONTRIBUTORS.add(c);
+    }
+
+    private static final List<Contributor> LATE_CONTRIBUTORS = new CopyOnWriteArrayList<>();
+
+    /** A contributor that runs after all others (it reads what they generated or collected, e.g. sprites for the block atlas). */
+    public static void addLateContributor(Contributor c) {
+        LATE_CONTRIBUTORS.add(c);
     }
 
     public static void onAddPackFinders(AddPackFindersEvent event) {

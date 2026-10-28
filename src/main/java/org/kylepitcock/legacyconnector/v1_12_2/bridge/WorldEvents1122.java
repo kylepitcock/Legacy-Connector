@@ -92,7 +92,7 @@ public final class WorldEvents1122 {
             if (!listens(BlockEvent.PlaceEvent.class) || !(e.getLevel() instanceof Level l)) return;
             var hand = e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living && living.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND
                     ? legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND : legacyconnector.v1_12_2.net.minecraft.util.EnumHand.MAIN_HAND;
-            var legacy = new BlockEvent.PlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), e.getBlockSnapshot(), state(e.getPlacedAgainst()),
+            var legacy = new BlockEvent.PlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot.mcc$of(e.getBlockSnapshot()), state(e.getPlacedAgainst()),
                     player(e.getEntity()), hand);
             if (post(legacy)) e.setCanceled(true);
         });

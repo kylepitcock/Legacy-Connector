@@ -57,19 +57,25 @@ public class CompressedStreamTools {
         NbtIo.write(tag.mcc$modern(), out);
     }
 
+    /**
+     * An uncompressed NBT file, as 1.12.2's read(File) read it (write(File) and safeWrite write that form); a gzipped file, which
+     * earlier versions of this layer wrote here, is still read.
+     */
     public static NBTTagCompound read(File file) throws IOException {
         if (!file.exists()) return null;
-        try (InputStream in = new FileInputStream(file)) {
-            return readCompressed(in);
+        try (InputStream raw = new java.io.BufferedInputStream(new FileInputStream(file))) {
+            raw.mark(2);
+            int b0 = raw.read(), b1 = raw.read();
+            raw.reset();
+            if (b0 == 0x1f && b1 == 0x8b) return readCompressed(raw);
+            return read((DataInput) new java.io.DataInputStream(raw));
         }
     }
 
     public static void safeWrite(NBTTagCompound tag, File file) throws IOException {
         File tmp = new File(file.getAbsolutePath() + "_tmp");
         if (tmp.exists()) tmp.delete();
-        try (OutputStream out = new FileOutputStream(tmp)) {
-            writeCompressed(tag, out);
-        }
+        write(tag, tmp); // uncompressed, as 1.12.2's safeWrite
         if (file.exists()) file.delete();
         if (file.exists()) throw new IOException("Failed to delete " + file);
         tmp.renameTo(file);

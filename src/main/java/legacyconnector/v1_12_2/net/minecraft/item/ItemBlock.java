@@ -107,4 +107,12 @@ public class ItemBlock extends Item {
         var own = super.getCreativeTab();
         return own != null ? own : block.getCreativeTabToDisplayOn();
     }
+
+    /** A block item's tooltip is its block's. */
+    @Override
+    public void addInformation(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.List<String> tooltip,
+            legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag flagIn) {
+        super.addInformation(stack, worldIn, tooltip, flagIn);
+        block.addInformation(stack, worldIn, tooltip, flagIn);
+    }
 }

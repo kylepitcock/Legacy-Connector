@@ -21,7 +21,8 @@ public final class Client1122 {
     private Client1122() {}
 
     public static void register(IEventBus modBus) {
-        GeneratedPack.addContributor((type, out) -> {
+        // late: after Assets1122, whose OBJ models collect the material textures registered here
+        GeneratedPack.addLateContributor((type, out) -> {
             if (type != PackType.CLIENT_RESOURCES || !present()) return;
             try {
                 MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));

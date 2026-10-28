@@ -50,4 +50,26 @@ public class CrashReport {
     public String toString() {
         return getCompleteReport();
     }
+
+    // ---- area F
+
+    private java.io.File mcc$file;
+
+    public java.io.File getFile() {
+        return mcc$file;
+    }
+
+    /** Writes the complete report to the file (its folder is created); false when it could not be written. */
+    public boolean saveToFile(java.io.File toFile) {
+        if (mcc$file != null) return false;
+        try {
+            if (toFile.getParentFile() != null) toFile.getParentFile().mkdirs();
+            java.nio.file.Files.writeString(toFile.toPath(), getCompleteReport(), java.nio.charset.StandardCharsets.UTF_8);
+            mcc$file = toFile;
+            return true;
+        } catch (java.io.IOException | RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/1.12.2").error("Could not save crash report to {}", toFile, e);
+            return false;
+        }
+    }
 }

@@ -111,8 +111,6 @@ public final class RuntimeApis1122 {
 
     // ------------------------------------------------------------------ registries
 
-    /** CriteriaTriggers.REGISTRY: trigger id -> trigger (only the mods' triggers; vanilla's are modern advancements). */
-    private static final Map<Object, Object> TRIGGERS = new LinkedHashMap<>();
     /** Forge's ItemPredicates: name -> factory of an item predicate from its JSON. */
     private static final Map<Object, Object> ITEM_PREDICATES = new LinkedHashMap<>();
     /** StatList.ALL_STATS / BASIC_STATS of the stats mods register. */
@@ -216,29 +214,7 @@ public final class RuntimeApis1122 {
     // ------------------------------------------------------------------ registration of the resolvers
 
     public static void register() {
-        String adv = "net.minecraft.advancements.CriteriaTriggers.";
-        Synth.addStaticMethod(adv + "register", args -> {
-            Object trigger = args.length > 0 ? args[0] : null;
-            if (trigger == null) return null;
-            Object id = invoke(trigger, "getId");
-            synchronized (TRIGGERS) {
-                Object key = id != null ? id : trigger;
-                if (TRIGGERS.containsKey(key) && TRIGGERS.get(key) != trigger) LOG.warn("Duplicate criterion id {}; keeping the first", id);
-                else TRIGGERS.put(key, trigger);
-            }
-            return trigger;
-        });
-        Synth.addStaticMethod(adv + "get", args -> {
-            synchronized (TRIGGERS) {
-                return args.length > 0 && args[0] != null ? TRIGGERS.get(args[0]) : null;
-            }
-        });
-        Synth.addStaticMethod(adv + "getAll", args -> {
-            synchronized (TRIGGERS) {
-                return List.copyOf(TRIGGERS.values());
-            }
-        });
-
+        // CriteriaTriggers is a real shim class (register/get/getAll live there)
         String preds = "net.minecraftforge.advancements.critereon.ItemPredicates.";
         Synth.addStaticMethod(preds + "register", args -> {
             if (args.length < 2 || args[0] == null) return null;
@@ -609,5 +585,13 @@ public final class RuntimeApis1122 {
         tag.add("values", values);
         byte[] bytes = tag.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
         out.merge("data/minecraft/tags/block/enderman_holdable.json", () -> bytes, (a, b) -> a);
+    }
+
+    /** The BiomeManager entries mods added for a biome type (DESERT, WARM, COOL, ICY), as legacy BiomeEntry objects. */
+    public static List<Object> mcc$biomeEntries(String type) {
+        synchronized (BIOME_ENTRIES) {
+            List<Object> list = BIOME_ENTRIES.get(type);
+            return list == null ? new ArrayList<>() : new ArrayList<>(list);
+        }
     }
 }

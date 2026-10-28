@@ -623,4 +623,8 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         return legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.mcc$of(hit);
     }
 
+    /** Tooltip lines under the name (client; a server never asks). */
+    public void addInformation(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.List<String> tooltip,
+            legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag flagIn) {
+    }
 }

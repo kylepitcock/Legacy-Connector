@@ -100,7 +100,7 @@ public class BlockWall extends Block {
         Block block = iblockstate.getBlock();
         BlockFaceShape shape = iblockstate.getBlockFaceShape(worldIn, pos, facing);
         boolean pole = shape == BlockFaceShape.MIDDLE_POLE_THICK || shape == BlockFaceShape.MIDDLE_POLE
-                && Block.mcc$named(block, "fence_gate", "spruce_fence_gate", "birch_fence_gate", "jungle_fence_gate", "dark_oak_fence_gate", "acacia_fence_gate");
+                && (block instanceof BlockFenceGate || Block.mcc$named(block, "fence_gate", "spruce_fence_gate", "birch_fence_gate", "jungle_fence_gate", "dark_oak_fence_gate", "acacia_fence_gate"));
         return !isExceptBlockForAttachWithPiston(block) && shape == BlockFaceShape.SOLID || pole || block instanceof BlockWall
                 || Block.mcc$named(block, "cobblestone_wall");
     }
