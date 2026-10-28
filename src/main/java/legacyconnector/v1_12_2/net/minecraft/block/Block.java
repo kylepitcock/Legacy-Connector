@@ -1146,4 +1146,71 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     public void addInformation(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World player,
             java.util.List<String> tooltip, legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag advanced) {
     }
+
+    /** Forge: whether pistons drag neighbours along with this block (slime). */
+    public boolean isStickyBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return mcc$named(this, "slime");
+    }
+
+    /** Forge: the experience the block drops when broken (ores override it); none by default. */
+    public int getExpDrop(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int fortune) {
+        return 0;
+    }
+
+    /** Forge: the facings rotateBlock accepts (those of a FACING property, if any). */
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumFacing[] getValidRotations(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var state = world.getBlockState(pos);
+        for (var prop : state.getPropertyKeys()) {
+            if (prop.getName().equals("facing") && prop.getValueClass() == legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.class) {
+                @SuppressWarnings("unchecked")
+                java.util.Collection<legacyconnector.v1_12_2.net.minecraft.util.EnumFacing> values =
+                        (java.util.Collection<legacyconnector.v1_12_2.net.minecraft.util.EnumFacing>) prop.getAllowedValues();
+                return values.toArray(new legacyconnector.v1_12_2.net.minecraft.util.EnumFacing[0]);
+            }
+        }
+        return new legacyconnector.v1_12_2.net.minecraft.util.EnumFacing[0];
+    }
+
+    /** Forge: whether the block is a bed for the entity (vanilla beds). */
+    public boolean isBed(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity player) {
+        return mcc$vanillaTagged(net.minecraft.tags.BlockTags.BEDS);
+    }
+
+    /** Forge: the direction a bed's head points (its FACING, else north). */
+    public legacyconnector.v1_12_2.net.minecraft.util.EnumFacing getBedDirection(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        for (var prop : state.getPropertyKeys()) {
+            if (prop.getName().equals("facing") && state.getValue(prop) instanceof legacyconnector.v1_12_2.net.minecraft.util.EnumFacing f) return f;
+        }
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.NORTH;
+    }
+
+    /** Forge: whether an entity counts as inside a material here (null: decide by the block's material). */
+    public Boolean isEntityInsideMaterial(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos blockpos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState iblockstate, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, double yToTest,
+            legacyconnector.v1_12_2.net.minecraft.block.material.Material materialIn, boolean testingHead) {
+        return null;
+    }
+
+    /** Forge: whether an AABB counts as inside a material here (null: decide by the block's material). */
+    public Boolean isAABBInsideMaterial(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB boundingBox, legacyconnector.v1_12_2.net.minecraft.block.material.Material materialIn) {
+        return null;
+    }
+
+    /** How the block pushes an entity moving through it (flowing liquids push); unchanged by default. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d modifyAcceleration(legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn,
+            legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d motion) {
+        return motion;
+    }
+
+    /** Forge: whether the block passes weak power through (normal cubes do). */
+    public boolean shouldCheckWeakPower(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
+        return state.isNormalCube();
+    }
 }
