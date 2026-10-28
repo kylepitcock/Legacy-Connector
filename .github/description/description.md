@@ -12,12 +12,12 @@
 
 | Legacy version | Support |
 | --- | --- |
-| **1.7.10** | ✅ Supported (alpha) |
-| **1.12.2** | 🧪 Experimental |
+| **1.7.10** | ✅ Supported (beta) |
+| **1.12.2** | ✅ Supported (alpha) |
 
 Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
-**⚠ Alpha:** 1.7.10 content mods like Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion, Botania, Biomes O' Plenty and Witchery load with their blocks, items, mobs, recipes, GUIs, world generation and dimensions. Galacticraft and its addons run, with each planet's own gravity. 1.12.2 mods register their blocks, items and recipes; entities, GUIs, world generation and client rendering are still being built. Some features are still missing or untested, so **back up your worlds**.
+**Beta:** 1.7.10 content mods like Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion, Botania, Biomes O' Plenty and Witchery run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions. Galacticraft and its addons run, with each planet's own gravity. 1.12.2 support is in alpha: big content mods like Botania, Blood Magic, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct and Scape and Run: Parasites load and play with their own models, mobs, GUIs and world generation. Back up your worlds before trying a new mod set.
 
 **[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you.
 
@@ -102,7 +102,7 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 - **Coremods that patch other mods** (CoFH, AE2, OpenMods and more)
 - **Scala mods,** plus the libraries 1.7.10 shipped (Scala 2.11, Trove, vecmath)
 
-## What's bridged (1.12.2, experimental)
+## What's bridged (1.12.2, alpha)
 
 - **Registries:** blocks, items, potions, enchantments, sounds, biomes, entities, recipes, villager professions, and mods' own custom registries
 - **Blocks and items:** block states, items with subtypes, tile entities with client sync, tools, armour and food
@@ -144,9 +144,9 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 
 ## Current status
 
-**1.7.10 (alpha):** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game. Galacticraft and its addons run with per-planet gravity. In the latest startup test, which included the 230-mod **GT New Horizons** pack, **282 mods** loaded without errors and **52** failed during loading.
+**1.7.10 (beta):** Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion and others work in game. Galacticraft and its addons run with per-planet gravity. In the latest startup test, which included the 230-mod **GT New Horizons** pack, **282 mods** loaded without errors and **52** failed during loading.
 
-**1.12.2 (experimental):** mostly tested on a server so far; the client starts but rendering is far from done. In a server test of 32 big mods (Applied Energistics 2, Blood Magic, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), every mod but BuildCraft Silicon loaded fully: about 2,060 blocks, 3,480 items and 3,670 recipes. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
+**1.12.2 (alpha):** content mods load and play in a real client: blocks and items with their models, mobs with their own renderers and AI (Scape and Run: Parasites' parasites hunt you), GUIs, world generation, loot, natural spawning and Forge events. In a server test of 32 big mods (Applied Energistics 2, Blood Magic, Botania, Biomes O' Plenty, Chisel, EnderIO, Forestry, Immersive Engineering, Mekanism, Thaumcraft, Thermal Expansion, Tinkers' Construct, Twilight Forest and more), every mod but BuildCraft Silicon loaded fully: about 2,060 blocks, 3,480 items and 3,680 recipes. Performance and bug-fix mods like FoamFix, BetterFPS and VanillaFix are skipped.
 
 See the **[compatibility site](https://kylepitcock.github.io/Legacy-Connector/)** for per-mod results.
 
