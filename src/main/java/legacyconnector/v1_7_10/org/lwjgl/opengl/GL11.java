@@ -376,7 +376,29 @@ public class GL11 extends GL11Guard {
     public static void glDepthMask(boolean flag) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.record(() -> glDepthMask(flag))) return;
+        RenderContext.setDepthWrite(flag);
         RenderSystem.depthMask(flag);
+    }
+
+    public static void glDepthFunc(int func) {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (DisplayLists.record(() -> glDepthFunc(func))) return;
+        RenderContext.setDepthFunc(func);
+        RenderSystem.depthFunc(func);
+    }
+
+    public static void glColorMask(boolean r, boolean g, boolean b, boolean a) {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (DisplayLists.record(() -> glColorMask(r, g, b, a))) return;
+        RenderContext.setColorWrite(r, g, b, a);
+        RenderSystem.colorMask(r, g, b, a);
+    }
+
+    public static void glClear(int mask) {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (DisplayLists.record(() -> glClear(mask))) return;
+        RenderContext.beforeClear();
+        org.lwjgl.opengl.GL11.glClear(mask);
     }
 
     public static void glAlphaFunc(int func, float ref) {

@@ -75,6 +75,14 @@ public final class JavaCompatRedirects {
                 COMPAT + "DialogCompat", "showOptionDialog");
         // A mod giving up must not end the game: System.exit fails that mod instead.
         staticToStatic("java/lang/System", "exit", "(I)V", COMPAT + "JdkCompat", "exit");
+        // log4j 2.0-beta9 factories, replaced by builders (JourneyMap's own log file)
+        staticToStatic("org/apache/logging/log4j/core/layout/PatternLayout", "createLayout",
+                "(Ljava/lang/String;Lorg/apache/logging/log4j/core/config/Configuration;Lorg/apache/logging/log4j/core/pattern/RegexReplacement;"
+                        + "Ljava/lang/String;Ljava/lang/String;)Lorg/apache/logging/log4j/core/layout/PatternLayout;", COMPAT + "Log4jCompat", "createLayout");
+        staticToStatic("org/apache/logging/log4j/core/appender/RandomAccessFileAppender", "createAppender",
+                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/logging/log4j/core/Layout;"
+                        + "Lorg/apache/logging/log4j/core/Filter;Ljava/lang/String;Ljava/lang/String;Lorg/apache/logging/log4j/core/config/Configuration;)"
+                        + "Lorg/apache/logging/log4j/core/appender/RandomAccessFileAppender;", COMPAT + "Log4jCompat", "createAppender");
         staticToStatic("java/lang/System", "setSecurityManager", "(Ljava/lang/SecurityManager;)V", COMPAT + "JdkCompat", "setSecurityManager");
         // ASM 5 -> 9: descriptor parsing became strict.
         staticToStatic("org/objectweb/asm/Type", "getType", "(Ljava/lang/String;)Lorg/objectweb/asm/Type;", COMPAT + "LibraryCompat", "asmGetType");

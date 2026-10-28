@@ -68,6 +68,7 @@ public final class LegacyLifecycle {
         List<LegacyModRecord> mods = LegacyMods.ordered();
         if (mods.isEmpty()) return;
         LOG.info("Loading {} legacy mod(s): {}", mods.size(), mods);
+        org.kylepitcock.legacyconnector.compat.jdk.JdkInternals.exportToLegacyMods();
         long start = System.currentTimeMillis();
 
         phase(mods, "construction", m -> LegacyMods.platform(m.version).construct(m));

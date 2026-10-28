@@ -38,6 +38,9 @@ public final class LegacyRemapper extends Remapper {
             Map.entry("com/google/common/base/Objects$ToStringHelper", "com/google/common/base/MoreObjects$ToStringHelper"),
             // commons-lang 2 was bundled with 1.7.10; only commons-lang3 ships today.
             Map.entry("org/apache/commons/lang/WordUtils", "org/apache/commons/lang3/text/WordUtils"),
+            // log4j's string helpers moved to the API jar (JourneyMap's version check)
+            Map.entry("org/apache/logging/log4j/core/helpers/Strings", "org/apache/logging/log4j/util/Strings"),
+            Map.entry("org/apache/logging/log4j/core/util/Strings", "org/apache/logging/log4j/util/Strings"),
             // commons-codec's Charsets constants are the JDK's StandardCharsets (same field names); not on every runtime.
             Map.entry("org/apache/commons/codec/Charsets", "java/nio/charset/StandardCharsets"));
 

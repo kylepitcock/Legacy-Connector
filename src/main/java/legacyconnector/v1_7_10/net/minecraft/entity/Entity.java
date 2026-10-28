@@ -96,6 +96,10 @@ public abstract class Entity implements ICommandSender {
     @Deprecated
     public boolean isDead;
     private boolean mcc$local_isDead;
+    /** Phantom field: accesses are redirected to {@code mcc$get$addedToChunk}. */
+    @Deprecated
+    public boolean addedToChunk;
+    private boolean mcc$local_addedToChunk;
     /** Phantom field: accesses are redirected to {@code mcc$get$ticksExisted}. */
     @Deprecated
     public int ticksExisted;
@@ -554,6 +558,17 @@ public abstract class Entity implements ICommandSender {
     public static boolean mcc$get$isDead(Entity e) {
         var m = e.mcc$entity;
         return m != null ? m.isRemoved() : e.mcc$local_isDead;
+    }
+
+    /** Whether the entity is in its world (JourneyMap maps only while the player is: the declared field stayed false). */
+    public static boolean mcc$get$addedToChunk(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.isAddedToLevel() && !m.isRemoved() : e.mcc$local_addedToChunk;
+    }
+
+    /** Chunk bookkeeping of the legacy world: the modern entity keeps its own. */
+    public static void mcc$set$addedToChunk(Entity e, boolean v) {
+        e.mcc$local_addedToChunk = v;
     }
 
     public static void mcc$set$isDead(Entity e, boolean v) {

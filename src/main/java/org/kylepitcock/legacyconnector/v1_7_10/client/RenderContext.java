@@ -276,19 +276,73 @@ public final class RenderContext {
 
     /** Buffer for raw legacy geometry (Tessellator, glBegin), chosen from the emulated texture and blend state. */
     public static VertexConsumer geometryBuffer() {
-        if (gui() != null && additive && texture2d) return buffers().getBuffer(LegacyRenderTypes.guiAdditive(texture));
+        if (gui() != null && additive && texture2d) return buffers().getBuffer(stated(LegacyRenderTypes.guiAdditive(texture)));
         // a screen drawing with GL lighting off (Thaumcraft's aspect icons): the lit entity shader dimmed it
         // and a flat screen quad without a normal of its own, lighting or not: GUI item lighting left on by drawing items (the
         // Thaumonomicon's frame after its research icons) made the lit shader draw it black
-        if (gui() != null && (!lighting || flatGuiQuad) && texture2d && depthTest) return buffers().getBuffer(LegacyRenderTypes.guiUnlit(texture));
-        if (blend && additiveAlpha && texture2d) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
+        if (gui() != null && (!lighting || flatGuiQuad) && texture2d && depthTest) return buffers().getBuffer(stated(LegacyRenderTypes.guiUnlit(texture)));
+        if (blend && additiveAlpha && texture2d) return buffers().getBuffer(stated(LegacyRenderTypes.additiveAlpha(texture, depthTest)));
         if (!depthTest && !additive) {
-            if (!texture2d) return buffers().getBuffer(LegacyRenderTypes.untexturedNoDepth());
-            return buffers().getBuffer(blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture));
+            if (!texture2d) return buffers().getBuffer(stated(LegacyRenderTypes.untexturedNoDepth()));
+            return buffers().getBuffer(stated(blend ? LegacyRenderTypes.translucentNoDepth(texture) : LegacyRenderTypes.cutoutNoDepth(texture)));
         }
-        if (!texture2d) return buffers().getBuffer(additive ? RenderType.lightning() : RenderType.debugQuads());
-        if (additive) return buffers().getBuffer(RenderType.eyes(texture));
-        return buffers().getBuffer(blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture));
+        if (!texture2d) return buffers().getBuffer(stated(additive ? RenderType.lightning() : RenderType.debugQuads()));
+        if (additive) return buffers().getBuffer(stated(RenderType.eyes(texture)));
+        return buffers().getBuffer(stated(blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture)));
+    }
+
+    // Depth function, depth writes and colour writes. Batched legacy geometry draws through modern render types, which set
+    // their own (LEQUAL, both writes on) when the batch is drawn, so a screen that masks with the depth buffer lost the mask:
+    // JourneyMap draws its minimap shape into depth only (colour writes off) and then the map with GL_GREATER, and the map
+    // covered the screen around the minimap instead. In a screen the legacy values travel with the render type, and a
+    // change or a depth clear first draws what was batched under the previous state.
+
+    private static int depthFunc = 515; // GL_LEQUAL
+    private static boolean depthWrite = true;
+    private static int colorWrite = 0xF; // r, g, b, a bits
+    private record Stated(RenderType base, int depthFunc, boolean depthWrite, int colorWrite) {}
+    private static final java.util.Map<Stated, RenderType> STATED = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void setDepthFunc(int func) {
+        if (func == depthFunc) return;
+        if (gui() != null) flushBatch();
+        depthFunc = func;
+    }
+
+    public static void setDepthWrite(boolean on) {
+        if (on == depthWrite) return;
+        if (gui() != null) flushBatch();
+        depthWrite = on;
+    }
+
+    public static void setColorWrite(boolean r, boolean g, boolean b, boolean a) {
+        int bits = (r ? 1 : 0) | (g ? 2 : 0) | (b ? 4 : 0) | (a ? 8 : 0);
+        if (bits == colorWrite) return;
+        if (gui() != null) flushBatch();
+        colorWrite = bits;
+    }
+
+    /** Before a legacy glClear: what a screen batched was drawn before the clear in 1.7.10. */
+    public static void beforeClear() {
+        if (gui() != null && RenderSystem.isOnRenderThread()) flushBatch();
+    }
+
+    /** The render type, drawing with the legacy depth function and write masks when a screen changed them. */
+    private static RenderType stated(RenderType base) {
+        if (gui() == null || depthFunc == 515 && depthWrite && colorWrite == 0xF) return base;
+        return STATED.computeIfAbsent(new Stated(base, depthFunc, depthWrite, colorWrite), k -> new RenderType(
+                base + "/legacy_depth_" + k.depthFunc() + (k.depthWrite() ? "w" : "") + "_c" + k.colorWrite(), base.format(), base.mode(),
+                base.bufferSize(), base.affectsCrumbling(), base.sortOnUpload(), () -> {
+                    base.setupRenderState();
+                    RenderSystem.depthFunc(k.depthFunc());
+                    RenderSystem.depthMask(k.depthWrite());
+                    RenderSystem.colorMask((k.colorWrite() & 1) != 0, (k.colorWrite() & 2) != 0, (k.colorWrite() & 4) != 0, (k.colorWrite() & 8) != 0);
+                }, () -> {
+                    base.clearRenderState();
+                    RenderSystem.depthFunc(515);
+                    RenderSystem.depthMask(true);
+                    RenderSystem.colorMask(true, true, true, true);
+                }) {});
     }
 
     /** Whether the current geometry buffer takes the full entity vertex format (uv, overlay, light, normal). */
@@ -365,6 +419,9 @@ public final class RenderContext {
         blendSrc = 770;
         blendDst = 771;
         depthTest = true;
+        depthFunc = 515;
+        depthWrite = true;
+        colorWrite = 0xF;
         additive = false;
         additiveAlpha = false;
         lighting = true;
