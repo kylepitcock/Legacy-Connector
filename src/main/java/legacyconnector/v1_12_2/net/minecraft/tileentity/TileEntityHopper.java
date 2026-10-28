@@ -350,6 +350,12 @@ public class TileEntityHopper extends TileEntityLockableLoot implements IHopper,
         return inventory;
     }
 
+    /** Forge: the hopper's item handler respects its transfer cooldown. */
+    @Override
+    protected legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler createUnSidedHandler() {
+        return new legacyconnector.v1_12_2.net.minecraftforge.items.VanillaHopperItemHandler(this);
+    }
+
     public long getLastUpdateTime() {
         return tickedGameTime;
     }

@@ -322,4 +322,45 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
             }
         }
     }
+
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+        return renderLayer;
+    }
+
+    /** A face is drawn unless the neighbour there is the same fluid (or a solid block, except on top). */
+    @Override
+    public boolean shouldSideBeRendered(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        IBlockState neighbor = world.getBlockState(pos.offset(side));
+        if (neighbor.getMaterial() == state.getMaterial()) return false;
+        if (side == (densityDir < 0 ? EnumFacing.UP : EnumFacing.DOWN)) return true;
+        return super.shouldSideBeRendered(state, world, pos, side);
+    }
+
+    /** The average of corner heights that are not air (-1 marks air), for the rendered surface. */
+    protected float getFluidHeightAverage(float... flow) {
+        float total = 0;
+        int count = 0;
+        for (float f : flow) {
+            if (f >= quantaFraction) {
+                total += f * 10;
+                count += 10;
+            }
+            if (f >= 0) {
+                total += f;
+                count++;
+            }
+        }
+        return count == 0 ? 0 : total / count;
+    }
+
+    /** Forge: whether an entity's eyes (or body) are inside this fluid at the height it has here. */
+    public Boolean isEntityInsideMaterial(IBlockAccess world, BlockPos blockpos, IBlockState iblockstate, Entity entity, double yToTest,
+            Material materialIn, boolean testingHead) {
+        if (materialIn == null || materialIn != getDefaultState().getMaterial()) return null;
+        if (!testingHead) return true;
+        float height = getFluidHeightForRender(world, blockpos, iblockstate);
+        double top = blockpos.getY() + (densityDir < 0 ? height : 1.0D - height);
+        return densityDir < 0 ? yToTest < top : yToTest > top;
+    }
 }

@@ -16,6 +16,8 @@ public class TileEntitySkull extends TileEntity implements ITickable, org.kylepi
     private int dragonAnimatedTicks;
     private boolean dragonAnimated;
     private static com.mojang.authlib.minecraft.MinecraftSessionService sessionService;
+    /** The server's profile cache as set by the server (the game's own cache answers lookups). */
+    private static legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache;
     private final net.minecraft.world.level.block.entity.SkullBlockEntity mcc$skull;
 
     public TileEntitySkull() {
@@ -52,6 +54,7 @@ public class TileEntitySkull extends TileEntity implements ITickable, org.kylepi
 
     /** Server-wide profile cache (the modern server keeps its own). */
     public static void setProfileCache(legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCacheIn) {
+        profileCache = profileCacheIn;
     }
 
     @Override
