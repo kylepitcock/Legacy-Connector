@@ -99,6 +99,14 @@ public class RenderManager {
     private Render<?> mcc$create(Object factory) {
         if (factory instanceof Render<?> r) return r;
         try {
+            // the factory's own method: IRenderFactory may be only synthesized, without the method (no renderer was ever created)
+            for (var m : factory.getClass().getMethods()) {
+                if (m.getName().equals("createRenderFor") && m.getParameterCount() == 1 && !m.isBridge()) {
+                    m.setAccessible(true);
+                    Object r = m.invoke(factory, this);
+                    if (r instanceof Render<?> render) return render;
+                }
+            }
             for (Class<?> c = factory.getClass(); c != null; c = c.getSuperclass()) {
                 for (Class<?> i : c.getInterfaces()) {
                     for (var m : i.getMethods()) {
