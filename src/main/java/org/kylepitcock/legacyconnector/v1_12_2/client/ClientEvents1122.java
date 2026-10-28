@@ -91,7 +91,6 @@ public final class ClientEvents1122 {
         bus.addListener(ClientEvents1122::onScreenshot);
         bus.addListener(ClientEvents1122::onSoundSource);
         bus.addListener(ClientEvents1122::onStreamingSource);
-        bus.addListener(ClientEvents1122::onSoundEngineLoad);
         bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> tickMusic());
         bus.addListener((net.neoforged.neoforge.client.event.SelectMusicEvent e) -> {
             if (replacedMusic() != null) e.setMusic(null);
@@ -665,7 +664,8 @@ public final class ClientEvents1122 {
                 Integer.toHexString(System.identityHashCode(e.getChannel()))), "streaming sound source");
     }
 
-    private static void onSoundEngineLoad(net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent e) {
+    /** On the mod bus (SoundEngineLoadEvent is a mod-bus event; the game bus refuses it). */
+    static void onSoundEngineLoad(net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent e) {
         if (!wants(legacyconnector.v1_12_2.net.minecraftforge.client.event.sound.SoundLoadEvent.class)) return;
         post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.sound.SoundLoadEvent(legacyconnector.v1_12_2.net.minecraft.client.audio.SoundManager.mcc$INSTANCE),
                 "sound load");

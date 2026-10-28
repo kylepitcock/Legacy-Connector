@@ -72,6 +72,7 @@ public final class Client1122 {
         ParticleDraw1122.install();
         ScreenEvents1122.register();
         ClientEvents1122.register();
+        modBus.addListener(ClientEvents1122::onSoundEngineLoad);
         ClientCommands1122.register();
         // 1.12 told its resource reload listeners again after every resource reload
         modBus.addListener((net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent e) -> e.registerReloadListener(
