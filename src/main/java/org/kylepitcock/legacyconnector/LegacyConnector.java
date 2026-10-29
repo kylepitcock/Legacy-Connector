@@ -103,8 +103,17 @@ public final class LegacyConnector {
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Data1122());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Assets1122());
         GeneratedPack.addContributor(new Assets1710());
+        GeneratedPack.addRecipeContributor((type, out) -> {
+            if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
+        });
+        GeneratedPack.addRecipeContributor((type, out) -> {
+            if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.generate(out);
+        });
+        org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge::changedSinceGenerate);
+        org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122::changedSinceGenerate);
 
         IEventBus game = NeoForge.EVENT_BUS;
+        org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.register(game);
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);

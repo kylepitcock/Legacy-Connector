@@ -75,7 +75,7 @@ public class CraftingManager {
     public ItemStack findMatchingRecipe(InventoryCrafting inv, World world) {
         for (Object o : recipes) {
             IRecipe r = (IRecipe) o;
-            if (r.matches(inv, world)) return r.getCraftingResult(inv);
+            if (r.matches(inv, world) && !RecipeBridge.removedByDataPack(r)) return r.getCraftingResult(inv);
         }
         return mcc$findModern(inv, world);
     }
@@ -140,6 +140,12 @@ public class CraftingManager {
             }
         }
         return recipes;
+    }
+
+    /** A copy of the list (the recipe bridge compares it with what it translated); throws if it is being edited. */
+    @SuppressWarnings("unchecked")
+    public List<Object> mcc$snapshot() {
+        return new ArrayList<Object>(recipes);
     }
 
     /** Recipes added straight to a list a mod swapped in are translated once loading is over. */

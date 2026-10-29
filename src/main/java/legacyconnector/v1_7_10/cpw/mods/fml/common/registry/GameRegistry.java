@@ -10,6 +10,7 @@ import legacyconnector.v1_7_10.net.minecraft.block.Block;
 import legacyconnector.v1_7_10.net.minecraft.item.Item;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemBlock;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
+import legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes;
 import legacyconnector.v1_7_10.net.minecraft.item.crafting.IRecipe;
 import legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
@@ -118,16 +119,17 @@ public class GameRegistry {
         RecipeBridge.add(recipe);
     }
 
+    // As in 1.7.10 these go through the smelting list, so lookups and removals (MineTweaker's furnace.remove) see them.
     public static void addSmelting(Block input, ItemStack output, float xp) {
-        RecipeBridge.addSmelting(new ItemStack(input, 1, Short.MAX_VALUE), output, xp);
+        FurnaceRecipes.smelting().addSmeltingRecipe(new ItemStack(input, 1, Short.MAX_VALUE), output, xp);
     }
 
     public static void addSmelting(Item input, ItemStack output, float xp) {
-        RecipeBridge.addSmelting(new ItemStack(input, 1, Short.MAX_VALUE), output, xp);
+        FurnaceRecipes.smelting().addSmeltingRecipe(new ItemStack(input, 1, Short.MAX_VALUE), output, xp);
     }
 
     public static void addSmelting(ItemStack input, ItemStack output, float xp) {
-        RecipeBridge.addSmelting(input, output, xp);
+        FurnaceRecipes.smelting().addSmeltingRecipe(input, output, xp);
     }
 
     public static int getFuelValue(ItemStack stack) {

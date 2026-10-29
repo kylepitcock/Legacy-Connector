@@ -75,7 +75,7 @@ public class GameRegistry {
     }
 
     public static void addSmelting(legacyconnector.v1_12_2.net.minecraft.item.ItemStack input, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, float xp) {
-        org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.addSmelting(input, output, xp);
+        legacyconnector.v1_12_2.net.minecraft.item.crafting.FurnaceRecipes.instance().addSmeltingRecipe(input, output, xp);
     }
 
     public static void addSmelting(Item input, legacyconnector.v1_12_2.net.minecraft.item.ItemStack output, float xp) {

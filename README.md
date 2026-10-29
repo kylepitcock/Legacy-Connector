@@ -281,6 +281,29 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 - Handler quads of one colour get modern face shading and ambient occlusion (1.7.10's baked-in face shade is divided out).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.
 
+## Changing legacy recipes
+
+Legacy recipes are ordinary modern recipes in a data pack (`legacyconnector_legacy_recipes`) placed below world data packs, so
+they are changed like any mod's recipes:
+
+- **Data packs:** each recipe has a stable id, `<mod>:<kind>/<output item>` (`<kind>` is `shaped`, `shapeless`, `smelting` or
+  `custom`; the output's namespace is added for another mod's item, `_2`, `_3`, ... for more recipes of one output), e.g.
+  `ic2:shaped/macerator` or `legacytest:shaped/minecraft/diamond`. 1.12.2 recipes keep their registry name
+  (`<mod>:<name>_code`); 1.12.2 smelting is `legacyconnector:smelting_1122/<output item>`. A file at the same path in a world
+  data pack replaces the recipe; `{"neoforge:conditions":[{"type":"neoforge:false"}]}` removes it.
+- **KubeJS:** `event.remove({id: 'ic2:shaped/macerator'})`, `event.remove({mod: 'ic2'})`, `event.replaceInput(...)` and so on
+  work as for modern mods.
+- **MineTweaker 3 (1.7.10):** the legacy jar loads and runs its `scripts/*.zs` against the legacy recipe lists;
+  `recipes.addShaped/addShapeless/remove` and `furnace.addRecipe/remove` become modern recipes. MineTweaker runs its scripts when
+  the server starts (after data packs loaded), so the data packs are reloaded once when a script changed the recipes;
+  `/minetweaker reload` is picked up the same way within about 30 seconds. For 1.12.2, recipes removed from the legacy recipe
+  registry or smelting list are left out the same way (CraftTweaker 1.12 itself is not tested yet).
+
+A recipe removed by a data pack or KubeJS is also skipped by the legacy crafting and smelting lookups that mod machines and
+crafting tables use. Not yet: MineTweaker/CraftTweaker removing vanilla recipes (they are not in the legacy lists; remove them
+with a data pack or KubeJS), and a recipe a data pack *replaced* still crafts in its legacy form in mod machines that look it up
+through the legacy `CraftingManager`.
+
 ## Configuration
 
 Settings live in `config/legacyconnector.properties`, written with defaults and comments on first start.

@@ -37,7 +37,7 @@ public class FurnaceRecipes {
     public ItemStack getSmeltingResult(ItemStack input) {
         for (Object o : smeltingList.entrySet()) {
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
-            if (func_151397_a(input, (ItemStack) e.getKey())) return (ItemStack) e.getValue();
+            if (func_151397_a(input, (ItemStack) e.getKey()) && !RecipeBridge.removedByDataPack(e.getKey())) return (ItemStack) e.getValue();
         }
         return mcc$modernResult(input);
     }

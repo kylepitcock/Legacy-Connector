@@ -29,7 +29,9 @@ import org.slf4j.LoggerFactory;
 /**
  * An in-memory resource/data pack whose content is computed from the loaded legacy mods every time packs reload:
  * translated recipes, ore dictionary tags, mining tags, world generation hooks, and (client) block states, models
- * and code-registered translations. Always enabled and placed on top.
+ * and code-registered translations. Always enabled and placed on top, except the translated recipes (and the item tags
+ * they use): those are a second pack placed at the bottom, so world data packs and KubeJS replace or remove a legacy
+ * recipe by its id like any mod's recipe.
  */
 public final class GeneratedPack implements PackResources {
     /** Produces files for one pack type, keyed by full path ({@code data/ns/recipe/x.json}). */
@@ -43,12 +45,12 @@ public final class GeneratedPack implements PackResources {
     private final PackType type;
     private final Map<String, Supplier<byte[]>> files = new TreeMap<>();
 
-    private GeneratedPack(PackLocationInfo location, PackType type) {
+    private GeneratedPack(PackLocationInfo location, PackType type, boolean recipes) {
         this.location = location;
         this.type = type;
         if (type == PackType.CLIENT_RESOURCES) GeneratedTranslations.contribute(files);
-        List<Contributor> all = new java.util.ArrayList<>(CONTRIBUTORS);
-        all.addAll(LATE_CONTRIBUTORS);
+        List<Contributor> all = new java.util.ArrayList<>(recipes ? RECIPE_CONTRIBUTORS : CONTRIBUTORS);
+        if (!recipes) all.addAll(LATE_CONTRIBUTORS);
         for (Contributor c : all) {
             try {
                 c.contribute(type, files);
@@ -65,6 +67,13 @@ public final class GeneratedPack implements PackResources {
 
     private static final List<Contributor> LATE_CONTRIBUTORS = new CopyOnWriteArrayList<>();
 
+    private static final List<Contributor> RECIPE_CONTRIBUTORS = new CopyOnWriteArrayList<>();
+
+    /** A contributor of translated recipes and the item tags they use (server data only), served by the bottom pack. */
+    public static void addRecipeContributor(Contributor c) {
+        RECIPE_CONTRIBUTORS.add(c);
+    }
+
     /** A contributor that runs after all others (it reads what they generated or collected, e.g. sprites for the block atlas). */
     public static void addLateContributor(Contributor c) {
         LATE_CONTRIBUTORS.add(c);
@@ -73,19 +82,24 @@ public final class GeneratedPack implements PackResources {
     public static void onAddPackFinders(AddPackFindersEvent event) {
         PackType type = event.getPackType();
         String id = type == PackType.SERVER_DATA ? "legacyconnector_legacy_data" : "legacyconnector_legacy_assets";
-        PackLocationInfo info = new PackLocationInfo(id, Component.literal("Legacy Connector: legacy mod content"), PackSource.BUILT_IN, Optional.empty());
+        addPack(event, id, "Legacy Connector: legacy mod content", type, false, Pack.Position.TOP);
+        if (type == PackType.SERVER_DATA) addPack(event, "legacyconnector_legacy_recipes", "Legacy Connector: legacy mod recipes", type, true, Pack.Position.BOTTOM);
+    }
+
+    private static void addPack(AddPackFindersEvent event, String id, String title, PackType type, boolean recipes, Pack.Position position) {
+        PackLocationInfo info = new PackLocationInfo(id, Component.literal(title), PackSource.BUILT_IN, Optional.empty());
         Pack.ResourcesSupplier supplier = new Pack.ResourcesSupplier() {
             @Override
             public PackResources openPrimary(PackLocationInfo location) {
-                return new GeneratedPack(location, type);
+                return new GeneratedPack(location, type, recipes);
             }
 
             @Override
             public PackResources openFull(PackLocationInfo location, Pack.Metadata metadata) {
-                return new GeneratedPack(location, type);
+                return new GeneratedPack(location, type, recipes);
             }
         };
-        Pack pack = Pack.readMetaAndCreate(info, supplier, type, new PackSelectionConfig(true, Pack.Position.TOP, false));
+        Pack pack = Pack.readMetaAndCreate(info, supplier, type, new PackSelectionConfig(true, position, false));
         if (pack != null) event.addRepositorySource(consumer -> consumer.accept(pack));
     }
 

@@ -13,10 +13,9 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.packs.PackType;
 import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
-import org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge;
 
 /**
- * Generated data for 1.7.10 content: recipes and ore dictionary tags, plus mining tags derived from legacy
+ * Generated data for 1.7.10 content (recipes and ore dictionary tags are the recipe pack: {@code RecipeBridge}): mining tags derived from legacy
  * {@code setHarvestLevel(tool, level)} so modern tools mine legacy blocks at the right speed and only drop items
  * when the legacy harvest level is met.
  */
@@ -26,7 +25,6 @@ public final class Data1710 implements GeneratedPack.Contributor {
     @Override
     public void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
         if (type != PackType.SERVER_DATA) return;
-        RecipeBridge.generate(out);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomes.contribute(out);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyWorldPresets.contributeData(out);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.contribute(out);

@@ -28,13 +28,21 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.OreDictBridge;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Recipes registered by 1.12.2 code (shaped, shapeless, ore dictionary and furnace) become data pack recipes. */
+/**
+ * Recipes registered by 1.12.2 code (shaped, shapeless, ore dictionary and furnace) become data pack recipes, named after their
+ * registry name ({@code <mod>:<name>_code}) or, for smelting, {@code legacyconnector:smelting_1122/<output item>}, so data packs and
+ * KubeJS can replace or remove them. A recipe removed from the legacy registries (CraftTweaker's {@code recipes.remove},
+ * {@code furnace.remove}) is left out.
+ */
 public final class RecipeBridge1122 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Recipes");
     private static final Gson GSON = new Gson();
     private static final List<IRecipe> RECIPES = new ArrayList<>();
     private static final List<Object[]> SMELTING = new ArrayList<>();
     private static final Set<String> TAG_NAMES = new LinkedHashSet<>();
+    /** The id each smelting input key got in the last generated pack. */
+    private static volatile Map<Object, net.minecraft.resources.ResourceLocation> smeltingIds = Map.of();
+    private static long generatedState;
 
     private RecipeBridge1122() {}
 
@@ -44,9 +52,11 @@ public final class RecipeBridge1122 {
 
     /** The result a mod registered for a smelting input (empty when none; vanilla's own smelting recipes are not listed here). */
     public static synchronized Object[] smeltingFor(ItemStack stack) {
+        var listed = legacyconnector.v1_12_2.net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingList();
         for (Object[] s : SMELTING) {
             ItemStack in = (ItemStack) s[0];
-            if (in.getItem() == stack.getItem() && (in.getMetadata() == 32767 || in.getMetadata() == stack.getMetadata())) return s;
+            if (in.getItem() == stack.getItem() && (in.getMetadata() == 32767 || in.getMetadata() == stack.getMetadata())
+                    && listed.containsKey(in) && !removedByDataPack(in)) return s;
         }
         return null;
     }
@@ -57,8 +67,12 @@ public final class RecipeBridge1122 {
 
     public static synchronized void generate(Map<String, Supplier<byte[]>> out) {
         TAG_NAMES.clear();
-        int n = 0;
+        generatedState = state();
+        var listed = legacyconnector.v1_12_2.net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingList();
+        Map<Object, net.minecraft.resources.ResourceLocation> ids = new java.util.IdentityHashMap<>();
+        Set<String> used = new java.util.HashSet<>();
         for (IRecipe r : RECIPES) {
+            if (!Registries1122.RECIPES.containsValue(r)) continue; // removed (CraftTweaker, mods)
             try {
                 JsonObject json = r instanceof ShapedRecipes s ? shaped(s) : r instanceof ShapelessRecipes s ? shapeless(s) : null;
                 if (json == null) {
@@ -75,6 +89,7 @@ public final class RecipeBridge1122 {
             }
         }
         for (Object[] s : SMELTING) {
+            if (!listed.containsKey(s[0])) continue;
             try {
                 JsonObject o = new JsonObject();
                 o.addProperty("type", "minecraft:smelting");
@@ -86,12 +101,41 @@ public final class RecipeBridge1122 {
                 o.addProperty("experience", (Float) s[2]);
                 o.addProperty("cookingtime", 200);
                 byte[] bytes = GSON.toJson(o).getBytes(StandardCharsets.UTF_8);
-                out.put("data/legacyconnector/recipe/smelting_1122_" + (n++) + ".json", () -> bytes);
+                var outId = BuiltInRegistries.ITEM.getKey(Stacks1122.toModern((ItemStack) s[1]).getItem());
+                String base = "smelting_1122/" + outId.getNamespace() + "/" + outId.getPath();
+                String path = base;
+                for (int k = 2; !used.add(path); k++) path = base + "_" + k;
+                out.put("data/legacyconnector/recipe/" + path + ".json", () -> bytes);
+                ids.put(s[0], net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", path));
             } catch (RuntimeException e) {
                 LOG.warn("Could not translate a legacy furnace recipe: {}", e.toString());
             }
         }
+        smeltingIds = ids;
         generateTags(out);
+    }
+
+    /** A digest of the legacy recipe registry and smelting list, to notice recipes added or removed after the last generation. */
+    private static long state() {
+        long h = RECIPES.size() * 31L + SMELTING.size();
+        for (IRecipe r : Registries1122.RECIPES.getValues()) h = h * 31 + System.identityHashCode(r);
+        var listed = legacyconnector.v1_12_2.net.minecraft.item.crafting.FurnaceRecipes.instance().getSmeltingList();
+        synchronized (listed) {
+            for (var e : listed.entrySet()) h += System.identityHashCode(e.getKey()) * 31L + System.identityHashCode(e.getValue());
+        }
+        return h;
+    }
+
+    public static boolean changedSinceGenerate() {
+        return (!RECIPES.isEmpty() || !SMELTING.isEmpty()) && state() != generatedState;
+    }
+
+    /** Whether a data pack or KubeJS removed the modern smelting recipe made from this legacy input key. */
+    private static boolean removedByDataPack(Object input) {
+        var id = smeltingIds.get(input);
+        if (id == null) return false;
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server != null && server.getRecipeManager().byKey(id).isEmpty();
     }
 
     private static JsonObject shaped(ShapedRecipes s) {

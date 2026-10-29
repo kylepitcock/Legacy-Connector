@@ -7,6 +7,8 @@ import com.google.gson.JsonObject;
 import com.mojang.serialization.JsonOps;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +19,7 @@ import legacyconnector.v1_7_10.net.minecraft.block.Block;
 import legacyconnector.v1_7_10.net.minecraft.item.Item;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 import legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager;
+import legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes;
 import legacyconnector.v1_7_10.net.minecraft.item.crafting.IRecipe;
 import legacyconnector.v1_7_10.net.minecraft.item.crafting.ShapedRecipes;
 import legacyconnector.v1_7_10.net.minecraft.item.crafting.ShapelessRecipes;
@@ -26,6 +29,7 @@ import legacyconnector.v1_7_10.net.minecraftforge.oredict.ShapelessOreRecipe;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.RegistryOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
 import org.kylepitcock.legacyconnector.core.data.CompatComponents;
 import org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710;
@@ -40,6 +44,9 @@ import org.slf4j.LoggerFactory;
  *     <li>specific metadata -> the flattened variant (or a component ingredient for unflattened metadata);</li>
  *     <li>ore dictionary name -> the equivalent item tag (see {@link OreDictBridge}).</li>
  * </ul>
+ * Each recipe gets a stable id, {@code <mod>:<kind>/<output item>} ({@code ic2:shaped/macerator}, {@code _2}... for further recipes
+ * of the same output), so data packs and KubeJS can replace or remove it. A recipe that left the legacy registries (MineTweaker's
+ * {@code recipes.remove}, {@code furnace.remove}, mods editing the lists) is left out the next time the pack is generated.
  */
 public final class RecipeBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Recipes");
@@ -47,19 +54,24 @@ public final class RecipeBridge {
 
     private sealed interface Spec permits Shaped, Shapeless, Smelting, Custom {}
 
-    private record Shaped(String owner, ItemStack output, List<String> pattern, Map<Character, Object> key) implements Spec {}
+    // source: the IRecipe in the legacy crafting list, or the input key in the legacy smelting list; the recipe lives while it is listed.
+    private record Shaped(String owner, Object source, ItemStack output, List<String> pattern, Map<Character, Object> key) implements Spec {}
 
-    private record Shapeless(String owner, ItemStack output, List<Object> inputs) implements Spec {}
+    private record Shapeless(String owner, Object source, ItemStack output, List<Object> inputs) implements Spec {}
 
-    private record Smelting(String owner, ItemStack input, ItemStack output, float xp) implements Spec {}
+    private record Smelting(String owner, Object source, ItemStack input, ItemStack output, float xp) implements Spec {}
 
     /** A custom legacy IRecipe, kept as the object itself and named by its index in {@link #CUSTOM}. */
-    private record Custom(String owner, int index) implements Spec {}
+    private record Custom(String owner, Object source, int index) implements Spec {}
 
     private static final List<IRecipe> CUSTOM = new ArrayList<>();
 
     private static final List<Spec> RECIPES = new ArrayList<>();
     private static final Set<String> TAG_NAMES = new LinkedHashSet<>();
+    /** The id each live recipe got in the last generated pack, by source (replaced as a whole on every generation). */
+    private static volatile Map<Object, ResourceLocation> idOf = Map.of();
+    /** {@link #state()} as the last generation saw it. */
+    private static long generatedState;
 
     private RecipeBridge() {}
 
@@ -84,25 +96,27 @@ public final class RecipeBridge {
         for (; i + 1 < params.length; i += 2) {
             key.put((Character) params[i], params[i + 1]);
         }
+        ShapedOreRecipe recipe = new ShapedOreRecipe(output, params);
         if (output == null || pattern.isEmpty()) {
             LOG.warn("Ignoring malformed legacy shaped recipe for {}", output);
         } else {
-            RECIPES.add(new Shaped(owner(), output.copy(), pattern, key));
+            RECIPES.add(new Shaped(owner(), recipe, output.copy(), pattern, key));
         }
-        ShapedOreRecipe recipe = new ShapedOreRecipe(output, params);
         CraftingManager.getInstance().mcc$track(recipe);
         return recipe;
     }
 
     public static synchronized void addShapeless(ItemStack output, Object[] params) {
         if (output == null) return;
-        RECIPES.add(new Shapeless(owner(), output.copy(), new ArrayList<>(List.of(params))));
-        CraftingManager.getInstance().mcc$track(new ShapelessOreRecipe(output, params));
+        ShapelessOreRecipe recipe = new ShapelessOreRecipe(output, params);
+        RECIPES.add(new Shapeless(owner(), recipe, output.copy(), new ArrayList<>(List.of(params))));
+        CraftingManager.getInstance().mcc$track(recipe);
     }
 
+    /** Called by the legacy smelting list for every registration; {@code input} is the key it stored. */
     public static synchronized void addSmelting(ItemStack input, ItemStack output, float xp) {
         if (input == null || output == null) return;
-        RECIPES.add(new Smelting(owner(), input.copy(), output.copy(), xp));
+        RECIPES.add(new Smelting(owner(), input, input.copy(), output.copy(), xp));
     }
 
     /** GameRegistry.addRecipe(IRecipe): listed in the legacy CraftingManager, which translates it. */
@@ -114,9 +128,9 @@ public final class RecipeBridge {
     public static synchronized void addLegacyRecipe(IRecipe recipe) {
         if (recipe == null) return;
         if (recipe instanceof ShapedOreRecipe s) {
-            addShapedSpec(s.getRecipeOutput(), s.mcc$args);
+            addShapedSpec(s, s.getRecipeOutput(), s.mcc$args);
         } else if (recipe instanceof ShapelessOreRecipe s) {
-            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
         } else if (recipe instanceof ShapedRecipes s) {
             List<String> pattern = new ArrayList<>();
             Map<Character, Object> key = new LinkedHashMap<>();
@@ -136,18 +150,18 @@ public final class RecipeBridge {
                 }
                 pattern.add(row.toString());
             }
-            if (s.getRecipeOutput() != null) RECIPES.add(new Shaped(owner(), s.getRecipeOutput().copy(), pattern, key));
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shaped(owner(), s, s.getRecipeOutput().copy(), pattern, key));
         } else if (recipe instanceof ShapelessRecipes s) {
-            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
+            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<Object>(s.recipeItems)));
         } else {
             // NEI recipe wrappers (Thermal Expansion's NEIRecipeWrapper) are IRecipes only so NEI can list them; they never match
             if (recipe.getClass().getName().contains(".nei.")) return;
-            RECIPES.add(new Custom(owner(), CUSTOM.size()));
+            RECIPES.add(new Custom(owner(), recipe, CUSTOM.size()));
             CUSTOM.add(recipe);
         }
     }
 
-    private static void addShapedSpec(ItemStack output, Object[] params) {
+    private static void addShapedSpec(IRecipe source, ItemStack output, Object[] params) {
         List<String> pattern = new ArrayList<>();
         Map<Character, Object> key = new LinkedHashMap<>();
         int i = 0;
@@ -161,7 +175,7 @@ public final class RecipeBridge {
             }
         }
         for (; i + 1 < params.length; i += 2) key.put((Character) params[i], params[i + 1]);
-        if (output != null && !pattern.isEmpty()) RECIPES.add(new Shaped(owner(), output.copy(), pattern, key));
+        if (output != null && !pattern.isEmpty()) RECIPES.add(new Shaped(owner(), source, output.copy(), pattern, key));
     }
 
     // ------------------------------------------------------------------ data pack generation
@@ -169,9 +183,23 @@ public final class RecipeBridge {
     /** Writes recipe JSON (and the item tags they and the ore dictionary need) into {@code out}. */
     public static synchronized void generate(Map<String, Supplier<byte[]>> out) {
         TAG_NAMES.clear();
-        int n = 0;
+        generatedState = state();
+        Set<Object> crafting = liveCrafting();
+        Map<Object, ResourceLocation> ids = new IdentityHashMap<>();
+        Set<String> used = new HashSet<>();
+        int removed = 0;
         for (Spec spec : RECIPES) {
             try {
+                Object source = switch (spec) {
+                    case Shaped s -> s.source;
+                    case Shapeless s -> s.source;
+                    case Smelting s -> s.source;
+                    case Custom c -> c.source;
+                };
+                if (spec instanceof Smelting ? !FurnaceRecipes.smelting().getSmeltingList().containsKey(source) : !crafting.contains(source)) {
+                    removed++;
+                    continue;
+                }
                 JsonObject json = switch (spec) {
                     case Shaped s -> shaped(s);
                     case Shapeless s -> shapeless(s);
@@ -185,13 +213,86 @@ public final class RecipeBridge {
                     case Smelting s -> s.owner;
                     case Custom c -> c.owner;
                 };
+                String path = uniquePath(ns, spec, used);
                 byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
-                out.put("data/" + ns + "/recipe/legacy_" + (n++) + ".json", () -> bytes);
+                out.put("data/" + ns + "/recipe/" + path + ".json", () -> bytes);
+                ids.put(source, ResourceLocation.fromNamespaceAndPath(ns, path));
             } catch (RuntimeException e) {
                 LOG.warn("Could not translate legacy recipe {}: {}", spec, e.toString());
             }
         }
+        idOf = ids;
+        if (removed > 0) LOG.info("Left out {} legacy recipe(s) removed from the legacy registries (scripts or mods)", removed);
         generateTags(out);
+    }
+
+    /** {@code <kind>/<output item path>} (the output's namespace too when it is another mod's item), unique within {@code ns}. */
+    private static String uniquePath(String ns, Spec spec, Set<String> used) {
+        String kind = switch (spec) {
+            case Shaped s -> "shaped";
+            case Shapeless s -> "shapeless";
+            case Smelting s -> "smelting";
+            case Custom c -> "custom";
+        };
+        String item = "recipe";
+        try {
+            ItemStack output = switch (spec) {
+                case Shaped s -> s.output;
+                case Shapeless s -> s.output;
+                case Smelting s -> s.output;
+                case Custom c -> CUSTOM.get(c.index).getRecipeOutput();
+            };
+            if (output != null && output.getItem() != null) {
+                ResourceLocation id = BuiltInRegistries.ITEM.getKey(output.mcc$modern().getItem());
+                item = id.getNamespace().equals(ns) ? id.getPath() : id.getNamespace() + "/" + id.getPath();
+            }
+        } catch (RuntimeException | LinkageError ignored) {
+            // a custom recipe whose output needs a crafting grid
+        }
+        String base = kind + "/" + item;
+        String path = base;
+        for (int n = 2; !used.add(ns + ":" + path); n++) path = base + "_" + n;
+        return path;
+    }
+
+    private static Set<Object> liveCrafting() {
+        Set<Object> live = java.util.Collections.newSetFromMap(new IdentityHashMap<>());
+        live.addAll(CraftingManager.getInstance().mcc$snapshot());
+        return live;
+    }
+
+    /**
+     * A digest of the legacy crafting and smelting lists (which recipe objects they hold). It differs from the one the last
+     * generation saw when recipes were added or removed since, e.g. by MineTweaker scripts that run when the server starts.
+     */
+    private static synchronized long state() {
+        try {
+            long h = RECIPES.size();
+            for (Object o : CraftingManager.getInstance().mcc$snapshot()) h = h * 31 + System.identityHashCode(o);
+            long smelting = 0;
+            for (Object o : new ArrayList<>(FurnaceRecipes.smelting().getSmeltingList().entrySet())) {
+                Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+                smelting += System.identityHashCode(e.getKey()) * 31L + System.identityHashCode(e.getValue());
+            }
+            return h * 31 + smelting;
+        } catch (java.util.ConcurrentModificationException e) {
+            return generatedState; // being edited: looked at again on the next check
+        }
+    }
+
+    public static boolean changedSinceGenerate() {
+        return !RECIPES.isEmpty() && state() != generatedState;
+    }
+
+    /**
+     * Whether a data pack or KubeJS removed the modern recipe translated from this legacy recipe (or smelting input key):
+     * the legacy crafting and smelting lookups that mod machines and crafting tables use then skip it too.
+     */
+    public static boolean removedByDataPack(Object source) {
+        ResourceLocation id = idOf.get(source);
+        if (id == null) return false;
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server != null && server.getRecipeManager().byKey(id).isEmpty();
     }
 
     public static synchronized IRecipe custom(int index) {
