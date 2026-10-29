@@ -59,6 +59,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/the-legends-mod/files/4361818",
    "date": "2026-10-28",
    "open": true
+  },
+  {
+   "issue": 105,
+   "mod": "Traincraft-4.4.1_CE_7.1",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "-Loads 3D models of Train [for now checked only 1 steam train], trainstock, and rails [although rails should be present in a lighter color and not dark like that] -Placing rails works [even the curved ones] -Placing Locomotives and trainstock works -Connecting trainstock works [as seen by chat], but i couldn't test if they really connected [aka. if they drive together in-line] -Trains and trainst…",
+   "lc": "0.3.4",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/traincraft/files/5083289",
+   "date": "2026-10-29",
+   "open": true
   }
  ]
 }
