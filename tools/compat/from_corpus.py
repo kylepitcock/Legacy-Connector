@@ -70,5 +70,8 @@ for modern, (name, version, jarname) in sorted(mods.items()):
     added += 1
 
 data["mods"].sort(key=lambda e: e["name"].lower())
+# mods listed in "hidden" (nothing to do on 1.21.1, or client mods with their own 1.21.1 version) stay off the site
+hidden = {norm(h) for h in data.get("hidden", [])}
+data["mods"] = [e for e in data["mods"] if norm(e["name"]) not in hidden]
 DATA.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
 print(f"{added} mod(s) added, {len(data['mods'])} total")

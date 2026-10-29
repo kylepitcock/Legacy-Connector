@@ -1,5 +1,5 @@
 {
- "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml.",
+ "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml. Mods in \"hidden\" are not listed (engine patches and other mods with nothing to do on 1.21.1, client-side mods that have their own 1.21.1 version); the tools/compat scripts skip them.",
  "mods": [
   {
    "name": "/dank/null",
@@ -306,15 +306,6 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "AppleSkin",
-   "version": "1.0.14",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
    "name": "Applied Energistics",
    "version": "2 rv6-stable-7",
    "mc": "1.12.2",
@@ -338,24 +329,6 @@
    "mc": "1.7.10",
    "status": "partial",
    "notes": "Loads, 16 GUIs open, blocks and items render. Some cable/part inventory icons are blank."
-  },
-  {
-   "name": "ArchaicFix",
-   "version": "0.7.7",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "ArchaicFix",
-   "version": "0.7.7",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "ArchitectureCraft",
@@ -428,15 +401,6 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.IllegalArgumentException: Mod/API 'OpenComputersAPI|Internal' does not exist!"
-  },
-  {
-   "name": "Attribute Fix",
-   "version": "1.0.4",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Atum",
@@ -800,24 +764,6 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "Better Achievements",
-   "version": "0.3.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Better Achievements",
-   "version": "0.3.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Better Builder's Wands",
    "version": "0.13.2",
    "mc": "1.12.2",
@@ -825,24 +771,6 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Better Loading Screen GTNH",
-   "version": "1.7.2-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Better Loading Screen GTNH",
-   "version": "1.7.2-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BetterBuildersWands",
@@ -861,24 +789,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BetterCrashes",
-   "version": "1.4.0-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BetterCrashes",
-   "version": "1.4.0-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BetterP2P",
@@ -1273,24 +1183,6 @@
    "notes": "Library: every mod tested that requires it works (1: Draconic Evolution)."
   },
   {
-   "name": "BugTorch",
-   "version": "1.2.14",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "BugTorch",
-   "version": "1.2.14",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "BuildCraft",
    "version": "7.1.23",
    "mc": "1.7.10",
@@ -1549,15 +1441,6 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "Clumps",
-   "version": "3.1.2",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
    "name": "CodeChicken Lib",
    "version": "3.2.3.358",
    "mc": "1.12.2",
@@ -1666,33 +1549,6 @@
    "notes": "In the GT New Horizons server test 27 items, 16 blocks, 1 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.NoSuchMethodError: 'void li.cil.oc.api.prefab.ResourceContentProvider.<init>(java.lang.String, java.la"
   },
   {
-   "name": "Controlling",
-   "version": "2.1.2",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Controlling",
-   "version": "3.0.10",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
-   "name": "Controlling",
-   "version": "2.1.2",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Cooking For Blockheads",
    "version": "1.4.4-GTNH",
    "mc": "1.7.10",
@@ -1718,24 +1574,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 30 items, 26 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "CoreTweaks",
-   "version": "0.3.3.6-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "CoreTweaks",
-   "version": "0.3.3.6-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CraftPresence",
@@ -1846,15 +1684,6 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
-   "name": "CTM MC1.12.2-1.0.2.31",
-   "version": "",
-   "mc": "1.12.2",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
-  },
-  {
    "name": "Custom Main Menu",
    "version": "1.9.2",
    "mc": "1.7.10",
@@ -1899,24 +1728,6 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "debug",
-   "version": "0.0.0-legacy",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "debug",
-   "version": "0.0.0-legacy",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Decocraft",
    "version": "2.4.2",
    "mc": "1.7.10",
@@ -1946,24 +1757,6 @@
   {
    "name": "Default Configs",
    "version": "1.3.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "Default World Generator",
-   "version": "0.4.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Default World Generator",
-   "version": "0.4.0",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
@@ -2076,24 +1869,6 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "Self-tested in the GT New Horizons server test: 45 items, 10 blocks, 4 entity types; every block placed and used, every item used, every entity spawned; 14 threw errors (24%)."
-  },
-  {
-   "name": "Embeddium",
-   "version": "1.0.0-beta66b",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Embeddium",
-   "version": "1.0.0-beta66b",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO",
@@ -2472,42 +2247,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 1178 items, 25 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 23 blocks did not stay placed."
-  },
-  {
-   "name": "Fast Leaf Decay",
-   "version": "1.4",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Fast Leaf Decay",
-   "version": "1.4",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "fc-dummy",
-   "version": "0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "fc-dummy",
-   "version": "0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "FindIt",
@@ -3340,42 +3079,6 @@
    "notes": "Self-tested in a 130-jar server self test: 5 items, 3 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
-   "name": "HelpFixer",
-   "version": "1.3.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "HelpFixer",
-   "version": "1.3.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "Hodgepodge",
-   "version": "2.6.112",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Hodgepodge",
-   "version": "2.6.112",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Holo Inventory",
    "version": "2.5.5-GTNH",
    "mc": "1.7.10",
@@ -3831,24 +3534,6 @@
    "notes": "In the GT New Horizons server test 46 items, 2 blocks, 0 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.ExceptionInInitializerError"
   },
   {
-   "name": "Let's Encrypt Craft @VERSION@",
-   "version": "",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Let's Encrypt Craft @VERSION@",
-   "version": "",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "LittleTiles",
    "version": "1.5.14-GTNH",
    "mc": "1.7.10",
@@ -3919,15 +3604,6 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "lwjgl3ify",
-   "version": "2.1.16",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Magic Bees",
@@ -4045,24 +3721,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 2 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "MCPatcherForge",
-   "version": "1.0.0-alpha",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "MCPatcherForge",
-   "version": "1.0.0-alpha",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Mekanism",
@@ -4270,42 +3928,6 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.IllegalArgumentException: UUID string too large"
-  },
-  {
-   "name": "Morpheus",
-   "version": "1.7.10-1.6.21",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Morpheus",
-   "version": "1.7.10-1.6.21",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "Mouse Tweaks Unofficial",
-   "version": "1.2.68-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Mouse Tweaks Unofficial",
-   "version": "1.2.68-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MrTJPCore",
@@ -4587,24 +4209,6 @@
    "notes": "Self-tested in a 130-jar server self test: 33 items, 5 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
-   "name": "Nether Portal Fix",
-   "version": "1.4.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Nether Portal Fix",
-   "version": "1.4.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "NodalMechanics",
    "version": "1.3.1-GTNH",
    "mc": "1.7.10",
@@ -4659,42 +4263,6 @@
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
-   "name": "NotEnoughIDs",
-   "version": "2.1.10",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "NotEnoughIDs",
-   "version": "2.1.10",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "NotFine",
-   "version": "1.0.0-beta66b",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "NotFine",
-   "version": "1.0.0-beta66b",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Nuclear Control",
    "version": "2 2.6.20",
    "mc": "1.7.10",
@@ -4729,24 +4297,6 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "OAuth",
-   "version": "1.3.3-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "OAuth",
-   "version": "1.3.3-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "OC Glasses",
@@ -4927,24 +4477,6 @@
    "notes": "In the GT New Horizons server test 24 items, 14 blocks, 1 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.NoSuchMethodError: 'legacyconnector.v1_7_10.net.minecraft.item.ItemStack li.cil.oc.api.Items.registerF"
   },
   {
-   "name": "Opis",
-   "version": "1.4.6-mapless",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Opis",
-   "version": "1.4.6-mapless",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "OreSpawn",
    "version": "1.7.10.20.3",
    "mc": "1.7.10",
@@ -4961,24 +4493,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 684 items, 211 blocks, 134 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 2 blocks did not stay placed."
-  },
-  {
-   "name": "Overloaded Armor Bar",
-   "version": "1.1.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Overloaded Armor Bar",
-   "version": "1.1.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Pam's Harvest the Nether",
@@ -5375,24 +4889,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 23 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "Resource Loader",
-   "version": "1.3",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-27",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Resource Loader",
-   "version": "1.3",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "RFTools",
@@ -6494,24 +5990,6 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
-   "name": "ToroHealth Damage Indicators",
-   "version": "1.2.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "ToroHealth Damage Indicators",
-   "version": "1.2.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "Translocator",
    "version": "1.3.1",
    "mc": "1.7.10",
@@ -6548,168 +6026,6 @@
   {
    "name": "UniLib",
    "version": "1.1.1",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: Compatibility",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: Compatibility",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: GasStation",
-   "version": "0.5.1",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: GasStation",
-   "version": "0.5.1",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: GTNHMixins",
-   "version": "2.2.0",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: GTNHMixins",
-   "version": "2.2.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: Mixin (UniMix)",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: Mixin (UniMix)",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: MixinBooterLegacy",
-   "version": "1.2.1",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: MixinBooterLegacy",
-   "version": "1.2.1",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: MixinExtras",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: MixinExtras",
-   "version": "0.1.23",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: Mixingasm",
-   "version": "0.3",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: Mixingasm",
-   "version": "0.3",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "UniMixins: SpongeMixins",
-   "version": "2.0.1",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "UniMixins: SpongeMixins",
-   "version": "2.0.1",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
@@ -6995,5 +6311,47 @@
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 49 items, 41 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
   }
+ ],
+ "hidden": [
+  "AppleSkin",
+  "ArchaicFix",
+  "Attribute Fix",
+  "Better Achievements",
+  "Better Loading Screen GTNH",
+  "BetterCrashes",
+  "BugTorch",
+  "Clumps",
+  "Controlling",
+  "CoreTweaks",
+  "CTM MC1.12.2-1.0.2.31",
+  "debug",
+  "Default World Generator",
+  "Embeddium",
+  "Fast Leaf Decay",
+  "fc-dummy",
+  "HelpFixer",
+  "Hodgepodge",
+  "Let's Encrypt Craft @VERSION@",
+  "lwjgl3ify",
+  "MCPatcherForge",
+  "Morpheus",
+  "Mouse Tweaks Unofficial",
+  "Nether Portal Fix",
+  "NotEnoughIDs",
+  "NotFine",
+  "OAuth",
+  "Opis",
+  "Overloaded Armor Bar",
+  "Resource Loader",
+  "ToroHealth Damage Indicators",
+  "UniMixins",
+  "UniMixins: Compatibility",
+  "UniMixins: GasStation",
+  "UniMixins: GTNHMixins",
+  "UniMixins: Mixin (UniMix)",
+  "UniMixins: MixinBooterLegacy",
+  "UniMixins: MixinExtras",
+  "UniMixins: Mixingasm",
+  "UniMixins: SpongeMixins"
  ]
 }
