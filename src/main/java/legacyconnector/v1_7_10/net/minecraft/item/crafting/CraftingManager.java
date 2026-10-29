@@ -75,7 +75,13 @@ public class CraftingManager {
     public ItemStack findMatchingRecipe(InventoryCrafting inv, World world) {
         for (Object o : recipes) {
             IRecipe r = (IRecipe) o;
-            if (r.matches(inv, world) && !RecipeBridge.removedByDataPack(r)) return r.getCraftingResult(inv);
+            RecipeBridge.Replacement replaced = RecipeBridge.replacementOf(r);
+            if (replaced != null) {
+                ItemStack out = mcc$craftReplacement(replaced, inv, world);
+                if (out != null) return out;
+            } else if (r.matches(inv, world)) {
+                return r.getCraftingResult(inv);
+            }
         }
         return mcc$findModern(inv, world);
     }
@@ -99,6 +105,21 @@ public class CraftingManager {
             return null;
         } finally {
             MODERN_LOOKUP.set(Boolean.FALSE);
+        }
+    }
+
+    /** A legacy recipe a data pack or KubeJS changed crafts as the changed recipe (and not at all once removed). */
+    private static ItemStack mcc$craftReplacement(RecipeBridge.Replacement replaced, InventoryCrafting inv, World world) {
+        if (!(replaced.recipe() instanceof net.minecraft.world.item.crafting.CraftingRecipe recipe) || inv == null) return null;
+        net.minecraft.world.level.Level level = world == null ? null : world.mcc$liveLevel();
+        if (level == null) return null;
+        var input = inv.mcc$craftingInput();
+        try {
+            if (input == null || !recipe.matches(input, level)) return null;
+            net.minecraft.world.item.ItemStack result = recipe.assemble(input, level.registryAccess());
+            return result.isEmpty() ? null : ItemStack.mcc$wrap(result);
+        } catch (RuntimeException e) {
+            return null;
         }
     }
 

@@ -59,7 +59,16 @@ public final class BlockBridge {
 
     public static RegistryNamespaced legacyRegistry() {
         return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Block>(name -> byName(name), o -> nameOf((Block) o), BlockBridge::byId, o -> idOf((Block) o),
-                () -> snapshot().iterator());
+                () -> all().iterator());
+    }
+
+    /**
+     * Every registered block, vanilla ones included: their wrappers are made when the legacy Blocks class first loads, so a
+     * mod iterating the registry (MineTweaker's {@code <minecraft:...>} brackets) before anything touched them saw only mod blocks.
+     */
+    public static List<Object> all() {
+        ensureVanilla();
+        return snapshot();
     }
 
     public static List<Block> modBlocks() {

@@ -73,7 +73,31 @@ public final class ItemBridge {
 
     public static RegistryNamespaced legacyRegistry() {
         return new legacyconnector.v1_7_10.cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry<Item>(ItemBridge::byName, o -> nameOf((Item) o), ItemBridge::byId, o -> idOf((Item) o),
-                () -> snapshot().iterator(), ItemBridge::addDirect);
+                () -> all().iterator(), ItemBridge::addDirect);
+    }
+
+    private static volatile boolean vanillaListed;
+
+    /**
+     * Every registered item, vanilla ones included. Vanilla wrappers are made on first use (the legacy Items class, a block's
+     * item on {@link #fromBlock}), so a mod iterating the registry (MineTweaker's {@code <minecraft:dirt>} brackets) before
+     * anything touched them saw only mod items: they are all made before the first iteration.
+     */
+    private static List<Object> all() {
+        if (!vanillaListed) {
+            ensureVanilla();
+            for (Object o : BlockBridge.all()) {
+                if (o instanceof Block b && b.mcc$vanilla != null) {
+                    try {
+                        fromBlock(b);
+                    } catch (RuntimeException | LinkageError e) {
+                        LOG.debug("No legacy item for vanilla block {}: {}", b, e.toString());
+                    }
+                }
+            }
+            vanillaListed = true;
+        }
+        return snapshot();
     }
 
     /**

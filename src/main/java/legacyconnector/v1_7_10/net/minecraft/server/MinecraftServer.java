@@ -28,7 +28,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
 
     public static synchronized MinecraftServer mcc$wrap(net.minecraft.server.MinecraftServer server) {
         return server == null ? null : VIEWS.computeIfAbsent(server,
-                s -> s.isDedicatedServer() ? new MinecraftServer(s) : new legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer(s));
+                s -> s.isDedicatedServer() ? new legacyconnector.v1_7_10.net.minecraft.server.dedicated.DedicatedServer(s) : new legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer(s));
     }
 
     public net.minecraft.server.MinecraftServer mcc$modern() {

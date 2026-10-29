@@ -19,7 +19,7 @@ import org.slf4j.LoggerFactory;
 public final class LegacyRecipeSync {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Recipes");
     private static final int CHECK_TICKS = 100;
-    private static final long MIN_INTERVAL_MS = 30_000;
+    private static final long MIN_INTERVAL_MS = 10_000;
 
     private static final List<BooleanSupplier> SOURCES = new CopyOnWriteArrayList<>();
     private static volatile boolean reloading;
@@ -36,7 +36,7 @@ public final class LegacyRecipeSync {
     public static void register(IEventBus gameBus) {
         // LOWEST: after the legacy FMLServerStartedEvent handlers ran (the server-start events are all past then).
         gameBus.addListener(EventPriority.LOWEST, (ServerStartedEvent e) -> check(e.getServer(), true));
-        gameBus.addListener((ServerTickEvent.Post e) -> {
+        gameBus.addListener(ServerTickEvent.Post.class, e -> {
             if (++ticks % CHECK_TICKS == 0) check(e.getServer(), false);
         });
     }

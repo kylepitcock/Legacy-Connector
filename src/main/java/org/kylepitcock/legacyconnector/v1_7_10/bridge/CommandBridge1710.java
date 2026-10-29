@@ -27,13 +27,41 @@ import org.slf4j.LoggerFactory;
 public final class CommandBridge1710 {
     private CommandBridge1710() {}
 
+    /** The legacy commands of the running server: a data pack reload builds a new dispatcher, they are added to it again. */
+    private static final Set<ICommand> REGISTERED = java.util.Collections.synchronizedSet(new java.util.LinkedHashSet<>());
+    private static boolean listening;
+
     public static void register(net.minecraft.server.MinecraftServer server, ICommand command) {
-        var dispatcher = server.getCommands().getDispatcher();
-        String name = command.getCommandName();
-        dispatcher.register(build(name, command));
+        ensureListener();
+        REGISTERED.add(command);
+        addTo(server.getCommands().getDispatcher(), command);
+        for (var p : server.getPlayerList().getPlayers()) server.getCommands().sendCommands(p);
+    }
+
+    private static void addTo(com.mojang.brigadier.CommandDispatcher<CommandSourceStack> dispatcher, ICommand command) {
+        dispatcher.register(build(command.getCommandName(), command));
         List<?> aliases = command.getCommandAliases();
         if (aliases != null) for (Object alias : aliases) dispatcher.register(build(String.valueOf(alias), command));
-        for (var p : server.getPlayerList().getPlayers()) server.getCommands().sendCommands(p);
+    }
+
+    private static synchronized void ensureListener() {
+        if (listening) return;
+        listening = true;
+        var bus = net.neoforged.neoforge.common.NeoForge.EVENT_BUS;
+        bus.addListener(net.neoforged.neoforge.event.RegisterCommandsEvent.class, e -> {
+            List<ICommand> all;
+            synchronized (REGISTERED) {
+                all = new java.util.ArrayList<>(REGISTERED);
+            }
+            for (ICommand c : all) {
+                try {
+                    addTo(e.getDispatcher(), c);
+                } catch (RuntimeException | LinkageError ex) {
+                    LoggerFactory.getLogger("LegacyConnector/Commands").warn("Could not register legacy command {} again: {}", c, ex.toString());
+                }
+            }
+        });
+        bus.addListener(net.neoforged.neoforge.event.server.ServerStoppedEvent.class, e -> REGISTERED.clear());
     }
 
     private static LiteralArgumentBuilder<CommandSourceStack> build(String name, ICommand command) {

@@ -70,6 +70,8 @@ public final class RecipeBridge {
     private static final Set<String> TAG_NAMES = new LinkedHashSet<>();
     /** The id each live recipe got in the last generated pack, by source (replaced as a whole on every generation). */
     private static volatile Map<Object, ResourceLocation> idOf = Map.of();
+    /** The JSON generated for each id in the last pack, to tell a recipe a data pack or KubeJS changed from the translation. */
+    private static volatile Map<ResourceLocation, JsonObject> jsonOf = Map.of();
     /** {@link #state()} as the last generation saw it. */
     private static long generatedState;
 
@@ -186,6 +188,7 @@ public final class RecipeBridge {
         generatedState = state();
         Set<Object> crafting = liveCrafting();
         Map<Object, ResourceLocation> ids = new IdentityHashMap<>();
+        Map<ResourceLocation, JsonObject> jsons = new java.util.HashMap<>();
         Set<String> used = new HashSet<>();
         int removed = 0;
         for (Spec spec : RECIPES) {
@@ -216,12 +219,15 @@ public final class RecipeBridge {
                 String path = uniquePath(ns, spec, used);
                 byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
                 out.put("data/" + ns + "/recipe/" + path + ".json", () -> bytes);
-                ids.put(source, ResourceLocation.fromNamespaceAndPath(ns, path));
+                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(ns, path);
+                ids.put(source, id);
+                jsons.put(id, json);
             } catch (RuntimeException e) {
                 LOG.warn("Could not translate legacy recipe {}: {}", spec, e.toString());
             }
         }
         idOf = ids;
+        jsonOf = jsons;
         if (removed > 0) LOG.info("Left out {} legacy recipe(s) removed from the legacy registries (scripts or mods)", removed);
         generateTags(out);
     }
@@ -284,16 +290,49 @@ public final class RecipeBridge {
         return !RECIPES.isEmpty() && state() != generatedState;
     }
 
+    /** What now stands for a legacy recipe a data pack or KubeJS changed: {@code recipe} is null when it was removed. */
+    public record Replacement(net.minecraft.world.item.crafting.Recipe<?> recipe) {}
+
+    private static final Replacement UNCHANGED = new Replacement(null);
+    private static volatile Object replacementsOwner;
+    private static final Map<ResourceLocation, Replacement> REPLACEMENTS = new java.util.concurrent.ConcurrentHashMap<>();
+
     /**
-     * Whether a data pack or KubeJS removed the modern recipe translated from this legacy recipe (or smelting input key):
-     * the legacy crafting and smelting lookups that mod machines and crafting tables use then skip it too.
+     * The modern recipe that replaced this legacy recipe (or smelting input key), or null while the translation is what the
+     * recipe manager holds. The legacy crafting and smelting lookups that mod crafting tables, autocrafters and machines use
+     * follow it, so what a data pack or KubeJS did to a legacy recipe (remove, replace an input, change the result) applies
+     * there too. Compared once per recipe and data pack reload.
      */
-    public static boolean removedByDataPack(Object source) {
+    public static Replacement replacementOf(Object source) {
         ResourceLocation id = idOf.get(source);
-        if (id == null) return false;
+        if (id == null) return null;
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-        return server != null && server.getRecipeManager().byKey(id).isEmpty();
+        if (server == null) return null;
+        var manager = server.getRecipeManager();
+        if (replacementsOwner != manager) {
+            REPLACEMENTS.clear();
+            replacementsOwner = manager;
+        }
+        Replacement r = REPLACEMENTS.computeIfAbsent(id, k -> compare(server, k));
+        return r == UNCHANGED ? null : r;
     }
+
+    private static Replacement compare(net.minecraft.server.MinecraftServer server, ResourceLocation id) {
+        var holder = server.getRecipeManager().byKey(id);
+        if (holder.isEmpty()) return new Replacement(null);
+        JsonObject generated = jsonOf.get(id);
+        if (generated == null) return UNCHANGED;
+        try {
+            var ops = server.registryAccess().createSerializationContext(JsonOps.INSTANCE);
+            var codec = net.minecraft.world.item.crafting.Recipe.CODEC;
+            JsonElement now = codec.encodeStart(ops, holder.get().value()).getOrThrow();
+            JsonElement translated = codec.encodeStart(ops, codec.parse(ops, generated).getOrThrow()).getOrThrow();
+            return now.equals(translated) ? UNCHANGED : new Replacement(holder.get().value());
+        } catch (RuntimeException e) {
+            return UNCHANGED; // cannot tell: the legacy object keeps working as registered
+        }
+    }
+
 
     public static synchronized IRecipe custom(int index) {
         return index >= 0 && index < CUSTOM.size() ? CUSTOM.get(index) : null;
