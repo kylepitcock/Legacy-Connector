@@ -130,6 +130,13 @@ Thaumcraft 4 measured against no legacy mods in a real client: about +38 MB of h
 time vary more between identical runs than between the two setups. Loading Thaumcraft takes about 5.5 s per launch;
 translating its jar adds about 0.5 s on the first launch only (the result is cached). Details are in the README on GitHub.
 
+## Changing legacy recipes
+
+Legacy recipes are normal modern recipes with stable ids (`<mod>:<kind>/<output item>`, e.g. `ic2:shaped/macerator`), in a pack
+below your world data packs. Replace or remove them with a data pack, edit them with KubeJS (`event.remove({mod: 'ic2'})`), or
+keep using MineTweaker 3 scripts (1.7.10): `recipes.addShaped`, `recipes.remove`, `furnace.addRecipe` and `furnace.remove`
+become modern recipes. KubeJS changes also apply in mod crafting tables, autocrafters and furnaces. Removing vanilla recipes from MineTweaker scripts is not supported yet; use a data pack or KubeJS for those.
+
 ## Configuration
 
 Settings are in `config/legacyconnector.properties`, which is created with comments on first launch.
