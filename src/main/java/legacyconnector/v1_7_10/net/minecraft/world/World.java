@@ -324,10 +324,12 @@ public class World implements IBlockAccess {
     /**
      * A server level that has not loaded the chunk: legacy code read such blocks as air, while the modern level would load the
      * chunk and wait for it, which deadlocks when a tile entity reads its neighbours as its own chunk unloads (world save and exit hang).
+     * Likewise a chunk outside the generation region a generator runs in (the region throws; Galacticraft's moon dungeons read
+     * past the chunks being decorated).
      */
     private boolean unloaded(int x, int z) {
-        return lvl() instanceof net.minecraft.server.level.ServerLevel sl && !(lvl() instanceof net.minecraft.server.level.WorldGenRegion)
-                && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
+        if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) return !region.hasChunk(x >> 4, z >> 4);
+        return lvl() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getChunkSource().hasChunk(x >> 4, z >> 4);
     }
 
     /**
@@ -861,9 +863,16 @@ public class World implements IBlockAccess {
         return getChunkFromChunkCoords(x >> 4, z >> 4);
     }
 
-    /** A view of the chunk; null when it is not available here (outside a generation region, or not loaded). */
+    /**
+     * A view of the chunk. On the server thread of a running world a chunk that is not loaded is loaded or generated, as
+     * 1.7.10's chunk provider did (Extra Utilities' teleporter scans the chunks around its destination for a portal and
+     * failed on a null one); elsewhere (a generation region, another thread) null when it is not available.
+     */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromChunkCoords(int cx, int cz) {
         var access = lvl().getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
+        if (access == null && lvl() == mcc$liveLevel() && mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level && level.getServer().isSameThread()) {
+            access = level.getChunk(cx, cz);
+        }
         return access == null ? null : new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(this, access);
     }
 

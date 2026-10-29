@@ -419,6 +419,16 @@ public final class BlockBridge {
         if (state.getBlock() instanceof LegacyBlockAdapter a) return (Block) a.legacy();
         Block wrapper = MODERN_WRAPPERS.get(state.getBlock());
         if (wrapper != null) return wrapper;
+        // void and cave air (above the build height, in caves) are 1.7.10's air: as wrappers they had a full collision box
+        // (Mystcraft's linking raised the player through "solid" void air forever)
+        if (state.isAir() && state.getBlock() != net.minecraft.world.level.block.Blocks.AIR) {
+            ensureVanilla();
+            Block air = BY_ID.get(0);
+            if (air != null) {
+                MODERN_WRAPPERS.put(state.getBlock(), air);
+                return air;
+            }
+        }
         ensureVanilla();
         int key = VanillaFlattening.legacyKey(state);
         Block b = key >= 0 ? BY_ID.get(key >> 4) : null;

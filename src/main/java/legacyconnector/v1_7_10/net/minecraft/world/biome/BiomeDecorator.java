@@ -31,6 +31,14 @@ public class BiomeDecorator {
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator redstoneGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.redstone_ore, 7);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator diamondGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.diamond_ore, 7);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator lapisGen = minable(legacyconnector.v1_7_10.net.minecraft.init.Blocks.lapis_ore, 6);
+    // the plant generators 1.7.10's constructor made; mods' decorators call them (Mystcraft's ages: they were null)
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers yellowFlowerGen =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers(legacyconnector.v1_7_10.net.minecraft.init.Blocks.yellow_flower);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator mushroomBrownGen =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers(legacyconnector.v1_7_10.net.minecraft.init.Blocks.brown_mushroom);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator mushroomRedGen =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers(legacyconnector.v1_7_10.net.minecraft.init.Blocks.red_mushroom);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator bigMushroomGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigMushroom();
 
     private static legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator minable(legacyconnector.v1_7_10.net.minecraft.block.Block block, int size) {
         return new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenMinable(block, size);

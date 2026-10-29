@@ -141,6 +141,12 @@ public final class EntityBridge {
         // 1.7.10 added a dead entity and dropped it on the next tick; the modern level refuses it (and logs every attempt).
         if (entity.mcc$entity.isRemoved()) return false;
         if (level instanceof net.minecraft.server.level.ServerLevel sl && sl.getEntity(entity.mcc$entity.getUUID()) == entity.mcc$entity) return true;
+        // A player a mod moves to another world by hand (Mystcraft's linking: respawn packet, removed from the old world's
+        // lists, position set, then spawned into the new world): the modern player changes level here, at that position.
+        if (entity.mcc$entity instanceof ServerPlayer sp && level instanceof ServerLevel target && sp.level() != target) {
+            sp.teleportTo(target, sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
+            return true;
+        }
         if (entity.mcc$hosted() && !level.isClientSide()) {
             ((org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHost) entity.mcc$entity).mcc$syncWatcher(entity.mcc$dataWatcher().mcc$toTag());
         }
@@ -153,11 +159,36 @@ public final class EntityBridge {
         if (target == null) return;
         var m = entity.mcc$entity;
         if (m instanceof ServerPlayer sp) {
-            sp.teleportTo(target, sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
+            // 1.7.10's default teleporter found or built a portal at a safe spot; the coordinates are kept, out of the rock
+            net.minecraft.core.BlockPos safe = safeSpot(target, sp.blockPosition());
+            sp.teleportTo(target, safe.getX() + 0.5D, safe.getY(), safe.getZ() + 0.5D, sp.getYRot(), sp.getXRot());
         } else {
             m.changeDimension(new net.minecraft.world.level.portal.DimensionTransition(target, m.position(), m.getDeltaMovement(), m.getYRot(),
                     m.getXRot(), net.minecraft.world.level.portal.DimensionTransition.DO_NOTHING));
         }
+    }
+
+    /**
+     * {@code pos} if a player fits there, else the nearest place in its column with two free blocks over solid ground
+     * (above first, then below), else the top of the column.
+     */
+    static net.minecraft.core.BlockPos safeSpot(ServerLevel level, net.minecraft.core.BlockPos pos) {
+        level.getChunk(pos);
+        if (fits(level, pos)) return pos;
+        for (int y = pos.getY() + 1; y < level.getMaxBuildHeight() - 1; y++) {
+            var p = pos.atY(y);
+            if (fits(level, p)) return p;
+        }
+        for (int y = pos.getY() - 1; y > level.getMinBuildHeight(); y--) {
+            var p = pos.atY(y);
+            if (fits(level, p)) return p;
+        }
+        return level.getHeightmapPos(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, pos);
+    }
+
+    private static boolean fits(ServerLevel level, net.minecraft.core.BlockPos p) {
+        return level.getBlockState(p).getCollisionShape(level, p).isEmpty() && level.getBlockState(p.above()).getCollisionShape(level, p.above()).isEmpty()
+                && !level.getBlockState(p.below()).getCollisionShape(level, p.below()).isEmpty();
     }
 
     public static String legacyName(Entity entity) {

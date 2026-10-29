@@ -9,19 +9,21 @@ public class WorldClient extends World {
         super(level);
     }
 
-    public legacyconnector.v1_7_10.net.minecraft.util.Vec3 getSkyColor(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partial) {
+    /**
+     * The modern sky colour where the dimension's provider keeps the default (1.7.10's client asked the provider first:
+     * Galacticraft's planets colour their own sky; this override had skipped them and Mars had the overworld's blue).
+     */
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.util.Vec3 getSkyColorBody(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, float partial) {
         var level = net.minecraft.client.Minecraft.getInstance().level;
         if (level == null) return legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(0.5D, 0.7D, 1.0D);
         var color = level.getSkyColor(net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition(), partial);
         return legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(color.x, color.y, color.z);
     }
 
-    public double getHorizon() {
-        return 63.0D;
-    }
-
-    /** How bright the stars are: full at night, none by day. */
-    public float getStarBrightness(float partialTicks) {
+    /** How bright the stars are where the provider keeps the default: full at night, none by day. */
+    @Override
+    public float getStarBrightnessBody(float partialTicks) {
         float angle = getCelestialAngle(partialTicks);
         float brightness = 1.0F - (net.minecraft.util.Mth.cos(angle * (float) Math.PI * 2.0F) * 2.0F + 0.25F);
         brightness = Math.max(0.0F, Math.min(1.0F, brightness));

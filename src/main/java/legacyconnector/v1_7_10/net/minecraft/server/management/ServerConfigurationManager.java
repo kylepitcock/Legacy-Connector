@@ -63,7 +63,17 @@ public class ServerConfigurationManager {
             } catch (RuntimeException | LinkageError e) {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Dimensions").error("The teleporter {} failed", teleporter.getClass().getName(), e);
             }
+            mcc$syncPosition(sp);
         }
+    }
+
+    /**
+     * Sends the place the teleporter chose to the client, as 1.7.10's transfer ended with {@code setPlayerLocation}: the
+     * teleporter only moves the player on the server, and the client's next movement put them back (Extra Utilities'
+     * Deep Dark room was built, the player stayed in the rock).
+     */
+    private static void mcc$syncPosition(net.minecraft.server.level.ServerPlayer sp) {
+        if (sp.connection != null) sp.connection.teleport(sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
     }
 
     public void transferEntityToWorld(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity, int fromDimension,
@@ -168,6 +178,7 @@ public class ServerConfigurationManager {
         } catch (RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Dimensions").error("The teleporter {} failed", teleporter.getClass().getName(), e);
         }
+        if (moved.mcc$entity instanceof net.minecraft.server.level.ServerPlayer sp) mcc$syncPosition(sp);
     }
 
     // ------------------------------------------------------------------ user lists
