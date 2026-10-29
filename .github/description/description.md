@@ -88,12 +88,13 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 
 - **Blocks, items and tile entities:** metadata subtypes become real items, and NBT is preserved
 - **Recipes and smelting:** converted to data-pack recipes, including mods' custom recipe types (IC2, AE2, Blood Magic, Witchery). The Ore Dictionary becomes tags
-- **Loot:** items mods add to dungeon, mineshaft, temple, stronghold and village chests appear in the matching vanilla loot tables
+- **Loot and fishing:** items mods add to dungeon, mineshaft, temple, stronghold and village chests appear in the matching vanilla loot tables, and mods' fishing catches are caught in modern fishing
+- **Brewing:** mod ingredients and mod potions brew in the brewing stand as on 1.7.10, and redstone, glowstone and gunpowder apply to them
 - **Entities:** legacy mobs spawn naturally, tick, use their own AI, fight and save. Their renderers and models draw in game, including custom player rendering. Projectiles fly and hit as on 1.7.10. Legacy bosses get a boss health bar
 - **GUIs and HUD:** mods' own custom GUIs (Thaumcraft, AE2, HBM, RFTools), anvils and HUD overlays. Custom Main Menu can replace the title screen
 - **Networking, commands, sounds, potions, creative tabs, dispensers and events**
-- **Achievements:** earned per player and shown as toasts
-- **Villagers and villages:** modded professions and trades appear on villagers. Mods' village buildings, such as Witchery's shops and towers and AgriCraft's greenhouses, generate inside modern villages
+- **Achievements and statistics:** achievements are earned per player and shown as toasts; mod statistics count in the modern statistics screen
+- **Villagers and villages:** modded professions and trades appear on villagers. Mods' village buildings, such as Witchery's shops and towers and AgriCraft's greenhouses, generate inside modern villages along the village streets
 - **Fluids:** flow, render and expose NeoForge fluid capabilities
 - **World generation:** mod biomes become real 1.21 biomes placed by the mod's own biome layers. Mod world types (e.g. Biomes O' Plenty's) appear on the Create World screen. Ore generators, dungeons and structures run normally
 - **Deepslate ores:** legacy ores also generate below y=0 and get an automatic deepslate variant with the same drops and behaviour
@@ -150,7 +151,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 
 See the **[compatibility site](https://kylepitcock.github.io/Legacy-Connector/)** for per-mod results.
 
-**Not done yet (1.7.10):** ambient occlusion on handler-drawn blocks, statistics counting, mod potions in the brewing stand, and mod fishing loot. Portals other than Twilight Forest's and skies in other mods' dimensions haven't all been verified. Village buildings from mods don't connect to village paths yet.
+**Not done yet (1.7.10):** per-vertex colour on handler-drawn blocks. Portals other than Twilight Forest's and skies in other mods' dimensions haven't all been verified.
 
 **Not supported:** coremods and tweakers that patch *Minecraft's own* classes. They're reported in the log, and the rest of the mod still loads. When a coremod only changes engine behaviour that has a modern equivalent, like Galacticraft's gravity, Legacy Connector recreates that behaviour instead.
 
