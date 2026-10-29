@@ -3,6 +3,7 @@
 already listed becomes "loads" (registered at startup without errors) or "fails" (listed as failed to load, with the reason).
 
 usage: from_corpus.py <legacyconnector-report.txt> <latest.log> [mc-version] [date]
+Only jars the report marks with mc-version are taken (a pack can mix versions: run once per version).
 Maintainer entries (hand written) are never overwritten; earlier corpus entries (source "corpus") are refreshed with this run.
 Player reports (docs/data/reports.json) always outrank both on the site.
 """
@@ -21,9 +22,10 @@ def norm(s):
 mods = {}   # modern id -> (name, version, jar)
 jar = None
 for line in report.read_text(encoding="utf-8", errors="replace").splitlines():
-    m = re.match(r"^(\S.*\.jar)\s+\[", line)
+    m = re.match(r"^(\S.*\.jar)\s+\[(\d[\d.]*)?", line)
     if m:
-        jar = m.group(1)
+        # jars of another legacy version are left to a run with that version
+        jar = m.group(1) if m.group(2) in (None, mc) else None
         continue
     m = re.match(r"^  mod (.+?) -> (\S+)\s+\((.*)\)\s*$", line)
     if m and jar:
@@ -42,8 +44,7 @@ for m in re.finditer(r"\]:\s+(\S+): Legacy mod \S+ \([^)]*\) failed during (\w+)
 
 LOADS_NOTE = {
     "1.7.10": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet.",
-    "1.12.2": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: "
-              "client rendering, GUIs, entities and world generation are not done yet.",
+    "1.12.2": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet.",
 }
 data = json.loads(DATA.read_text(encoding="utf-8"))
 # entries are per Minecraft version: a 1.12.2 run never replaces or hides the 1.7.10 entry of the same mod

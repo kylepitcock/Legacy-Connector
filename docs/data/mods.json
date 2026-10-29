@@ -2,6 +2,15 @@
  "_comment": "Maintainer-tested results. Community reports (GitHub issues labelled 'compatibility') are merged in docs/data/reports.json by .github/workflows/compat-data.yml.",
  "mods": [
   {
+   "name": "/dank/null",
+   "version": "1.7.101",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.NoClassDefFoundError: p455w0rdslib.LibGlobals$Mods"
+  },
+  {
    "name": "Advanced Solar Panels",
    "version": "1.7.10-3.5.1",
    "mc": "1.7.10",
@@ -144,13 +153,31 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "AppleCore",
+   "version": "3.4.0",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "AppleSkin",
+   "version": "1.0.14",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
    "name": "Applied Energistics",
    "version": "2 rv6-stable-7",
    "mc": "1.12.2",
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Applied Energistics 2",
@@ -191,7 +218,7 @@
    "version": "1.0.2.16",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -203,6 +230,24 @@
    "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Attribute Fix",
+   "version": "1.0.4",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Atum",
+   "version": "2 2.0.20",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Automagy",
@@ -218,16 +263,16 @@
    "version": "1.3-32",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Avaritia",
-   "version": "1.77",
+   "version": "1.13",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -287,21 +332,21 @@
   },
   {
    "name": "Baubles",
-   "version": "2.1.19-GTNH",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Baubles",
    "version": "1.5.2",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Baubles",
+   "version": "1.0.1.10",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Baubles Expanded",
@@ -314,64 +359,64 @@
   },
   {
    "name": "BC Builders",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Energy",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Factory",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Robotics",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Silicon",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "BC Transport",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
-   "name": "BD lib",
-   "version": "1.11.0-GTNH",
+   "name": "BD Lib",
+   "version": "1.9.4.109",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -392,6 +437,15 @@
    "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Better Builder's Wands",
+   "version": "0.13.2",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Better Loading Screen GTNH",
@@ -450,7 +504,7 @@
    "version": "1.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -459,7 +513,7 @@
    "version": "1.7",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -468,7 +522,7 @@
    "version": "1.5",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -477,7 +531,7 @@
    "version": "0.4.3A",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -504,9 +558,17 @@
    "version": "7.0.1.2441",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Biomes O' Plenty",
+   "version": "2.1.0",
+   "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Biomes and the BoP world type generate with their plants and blocks (#4, #58 fixed)."
   },
   {
    "name": "BlockLimiter. Restrict your Blocks",
@@ -551,16 +613,25 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Blood Magic: Alchemical Wizardry v1.3.3",
    "version": "",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Bookshelf",
+   "version": "2.3.590",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "fails",
+   "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"languageList\" because the return value of \"legacyconnector_synth.v1_12_2.net.minecraft.util.text.translation."
   },
   {
    "name": "Botania",
@@ -574,9 +645,9 @@
    "version": "",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "botanichorizons",
@@ -603,14 +674,14 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Brandon's Core",
-   "version": "1.2.0-GTNH",
+   "version": "1.0.0.12",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -637,7 +708,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Builders",
@@ -646,7 +717,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Compat",
@@ -664,7 +735,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Energy",
@@ -673,7 +744,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Factory",
@@ -682,7 +753,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Lib",
@@ -691,7 +762,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Oil Tweak",
@@ -709,7 +780,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "BuildCraft Silicon",
@@ -727,14 +798,32 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Building Gadgets",
+   "version": "2.8.4",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Capsule",
+   "version": "1.12.2-3.3.11",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Carpenter's Blocks",
-   "version": "3.7.0-GTNH",
+   "version": "3.3.8.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -752,9 +841,18 @@
    "version": "1.12-4.1.3",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Charm",
+   "version": "1.4",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Chisel",
@@ -766,13 +864,21 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Chisel",
+   "version": "2.16.15-GTNH",
+   "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Chiseled blocks render in the world and inventory (#28 fixed); limestone and marble generate."
+  },
+  {
    "name": "Chisel MC1.12.2-1.0.2.45",
    "version": "",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Chisel Tones",
@@ -784,22 +890,22 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Clumps",
+   "version": "3.1.2",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
    "name": "CodeChicken Lib",
    "version": "3.2.3.358",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
-   "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
-  },
-  {
-   "name": "CoFH Core",
-   "version": "1.7.10R3.1.4",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "date": "2026-10-27",
+   "status": "fails",
+   "notes": "Fails during postInit: EntityItem does not have a Render bound... This is likely a bug.."
   },
   {
    "name": "CoFH Core",
@@ -808,7 +914,16 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "CoFH Core",
+   "version": "1.7.10R3.1.4",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Command Blocks for Better Questing",
@@ -833,7 +948,7 @@
    "version": "1.75",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -856,6 +971,15 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "Controlling",
+   "version": "3.0.10",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
    "name": "Cooking For Blockheads",
    "version": "1.4.4-GTNH",
    "mc": "1.7.10",
@@ -863,6 +987,15 @@
    "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "Cooking for Blockheads",
+   "version": "6.5.0",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "CoreTweaks",
@@ -883,6 +1016,24 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "CraftTweaker JEI Support",
+   "version": "2.0.3",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.ClassFormatError: StackMapTable format error: bad offset for Uninitialized in method 'void crafttweaker.mods.jei.commands.ConflictCommand.gatherRecipe"
+  },
+  {
+   "name": "CraftTweaker2",
+   "version": "4.1.20",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
    "name": "CreativeCore",
    "version": "1.5.14-GTNH",
    "mc": "1.7.10",
@@ -890,6 +1041,15 @@
    "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "CreativeCore",
+   "version": "1.10.0",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "CropLoadCore",
@@ -910,22 +1070,39 @@
    "notes": "Fails during postInit: java.lang.IllegalAccessError: The Enum 'Circuit_Integrated' has not been set to an Item at this time!"
   },
   {
+   "name": "CT-GUI",
+   "version": "1.0.0",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
    "name": "CTM MC1.12.2-1.0.2.31",
    "version": "",
    "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-25",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Custom Main Menu",
-   "version": "1.12.2",
+   "version": "1.9.2",
    "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "partial",
+   "notes": "Replaces the title screen: panorama, logo and splash texts draw. Buttons not all verified."
+  },
+  {
+   "name": "Cyclic",
+   "version": "1.20.8",
+   "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Darkerer",
@@ -982,13 +1159,30 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
-   "name": "Draconic Evolution",
-   "version": "1.4.27-GTNH",
-   "mc": "1.7.10",
+   "name": "Dimensional Doors",
+   "version": "3.0.10",
+   "mc": "1.12.2",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
+   "status": "fails",
+   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"org.dimdev.dimdoors.shared.tileentities.TileEntityEntranceRift.setPos(legacyconnector.v1_12_2.net.minecraft.util."
+  },
+  {
+   "name": "Doggy Talents",
+   "version": "1.15.1.6",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
    "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Draconic Evolution",
+   "version": "1.0.2h",
+   "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Draconium ore generates in the right dimensions (#45), the custom dragon and Chaos Guardian fight (#15)."
   },
   {
    "name": "DummyCore",
@@ -1033,7 +1227,16 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO",
+   "version": "1.7.10-2.3.0.429_beta",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Ender IO Applied Energistics Conduits",
@@ -1042,7 +1245,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Base",
@@ -1051,7 +1254,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Conduits",
@@ -1060,7 +1263,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Integration with Forestry",
@@ -1069,7 +1272,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Integration with Tinkers' Construct",
@@ -1078,7 +1281,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Inventory Panel",
@@ -1087,7 +1290,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Machines",
@@ -1096,7 +1299,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Open Computers Conduits",
@@ -1105,7 +1308,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Powertools",
@@ -1114,7 +1317,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender IO Refined Storage Conduits",
@@ -1123,20 +1326,11 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Ender Zoo",
    "version": "1.3.3",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "EnderCore",
-   "version": "0.4.8",
    "mc": "1.7.10",
    "source": "corpus",
    "date": "2026-10-24",
@@ -1150,14 +1344,16 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
-   "name": "EnderIO",
-   "version": "2.3.0.429 beta",
+   "name": "EnderCore",
+   "version": "1.7.10-0.2.0.39_beta",
    "mc": "1.7.10",
-   "status": "fails",
-   "notes": "Fails during init: EnderCore's Techne model loader (TechneModel) is not implemented yet."
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "EnderStorage",
@@ -1167,6 +1363,15 @@
    "date": "2026-10-24",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+  },
+  {
+   "name": "EnderStorage",
+   "version": "2.4.6.137",
+   "mc": "1.12.2",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "EnderTech",
@@ -1244,10 +1449,9 @@
    "name": "Extra Utilities",
    "version": "1.2.12",
    "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "date": "2026-10-28",
+   "status": "partial",
+   "notes": "Loads; the Deep Dark portal builds its room and the player lands in it. Other machines not verified."
   },
   {
    "name": "ExtraTiC",
@@ -1272,7 +1476,7 @@
    "version": "0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1289,17 +1493,16 @@
    "name": "Fisk's Superheroes",
    "version": "2.4.0",
    "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Suits, abilities and their rendering (Doctor Octopus' arms) verified in game; ores generate."
   },
   {
    "name": "FiskTag",
    "version": "3.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1335,23 +1538,23 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Forge Microblocks",
-   "version": "1.7.2",
+   "version": "1.2.0.345",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Forge Multipart",
-   "version": "1.7.2",
+   "version": "1.2.0.345",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1366,10 +1569,10 @@
   },
   {
    "name": "ForgeRelocation",
-   "version": "0.3.4",
+   "version": "0.0.1.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1387,9 +1590,9 @@
    "version": "1.0.18.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"com.mojang.authlib.GameProfile.getId()\" because the return value of \"legacyconnector_synth.v1_7_10.net.minecraft."
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "FTBUtilities",
@@ -1405,7 +1608,7 @@
    "version": "1.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1429,30 +1632,28 @@
   },
   {
    "name": "Galacticraft Core",
-   "version": "3.3.13-GTNH",
+   "version": "3.0.12",
    "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "fails",
-   "notes": "Fails during preInit: "
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Rockets fly and are heard, space is silent (#39, #43), the Catalog and galaxy map draw (#32, #37), planets apply their own gravity (#42) and sky colours."
   },
   {
    "name": "Galacticraft Planets",
-   "version": "3.3.13-GTNH",
+   "version": "3.0.12",
    "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "fails",
-   "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"micdoodle8.mods.galacticraft.core.network.GalacticraftChannelHandler.addDiscriminator(int, java.lang.Class)\" beca"
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Planets generate with their own gravity, terrain and sky colour (Mars has its own sky); moon dungeons generate."
   },
   {
    "name": "GalaxySpace",
-   "version": "1.1.121-GTNH",
+   "version": "1.2.15 Pre-Final",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
-   "status": "fails",
-   "notes": "Fails during init: Registering satellite without a parent!!!"
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Gendustry",
@@ -1630,7 +1831,7 @@
    "version": "1.7.10-1.0.1-20",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1648,7 +1849,7 @@
    "version": "4.4.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1675,7 +1876,7 @@
    "version": "1.0.27 BETA (5687)",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1763,7 +1964,7 @@
    "version": "4.2.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1778,21 +1979,21 @@
   },
   {
    "name": "Immersive Engineering",
-   "version": "0.7.7",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Immersive Engineering",
    "version": "0.12-98",
    "mc": "1.12.2",
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Immersive Engineering",
+   "version": "0.7.7",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Immersive Integration",
@@ -1805,10 +2006,10 @@
   },
   {
    "name": "IndustrialCraft",
-   "version": "2 2.2.828-experimental",
+   "version": "2 2.2.827-experimental",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1842,9 +2043,9 @@
    "version": "1.7.10R1.0.0B9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"org.apache.logging.log4j.core.Logger.addFilter(org.apache.logging.log4j.core.Filter)\" because \"legacyconnector.v1"
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Inventory Bogo Sorter",
@@ -1860,16 +2061,7 @@
    "version": "1.59-dev-152-cf6e263",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
-   "status": "fails",
-   "notes": "Fails during preInit: java.lang.VerifyError: Catch type is not a subclass of Throwable in exception handler 32"
-  },
-  {
-   "name": "Iron Chest",
-   "version": "6.0.62.742",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -1880,7 +2072,15 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Iron Chest",
+   "version": "6.0.62.742",
+   "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Chests, upgrades and their GUIs verified in game."
   },
   {
    "name": "Iron Chest Minecarts",
@@ -1928,6 +2128,14 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "JourneyMap",
+   "version": "5.2.10",
+   "mc": "1.7.10",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Minimap and full-screen map draw and map the world (0.3.5)."
+  },
+  {
    "name": "KekzTech",
    "version": "5.09.51.482",
    "mc": "1.7.10",
@@ -1965,12 +2173,12 @@
   },
   {
    "name": "Logistics Pipes",
-   "version": "1.4.24-GTNH",
+   "version": "0.9.3.132",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
-   "status": "fails",
-   "notes": "Fails during construction: LogisticsPipes FMLLoadingPlugin wasn't loaded. Your download seems to be corrupt/modified. Please redownload LP from our Jenkins [http://ci.thezorro266.com/] an"
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "LootGames",
@@ -2028,21 +2236,21 @@
   },
   {
    "name": "Mantle",
-   "version": "0.5.1",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-24",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
-  },
-  {
-   "name": "Mantle",
    "version": "1.12-1.3.3.55",
    "mc": "1.12.2",
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Mantle",
+   "version": "1.7.10-0.3.2.jenkins191",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Matter Manipulator",
@@ -2055,10 +2263,10 @@
   },
   {
    "name": "MCFrames",
-   "version": "0.3.4",
+   "version": "0.0.0-legacy",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2078,7 +2286,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Mekanism: Generators",
@@ -2087,7 +2295,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Mekanism: Tools",
@@ -2096,14 +2304,14 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "MFR Compat: Vanilla",
    "version": "1.7.10R2.8.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2118,10 +2326,10 @@
   },
   {
    "name": "Minecraft Multipart Plugin",
-   "version": "1.7.2",
+   "version": "1.2.0.345",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2130,7 +2338,7 @@
    "version": "1.7.10R2.8.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2208,10 +2416,10 @@
   },
   {
    "name": "MrTJPCore",
-   "version": "1.3.4",
+   "version": "1.1.0.33",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2219,15 +2427,16 @@
    "name": "Mystcraft",
    "version": "0.12.3.04",
    "mc": "1.7.10",
+   "date": "2026-10-28",
    "status": "partial",
-   "notes": "Loads, 6 GUIs open. Writing desk screen draws incorrectly."
+   "notes": "Linking books and their GUI work (#33), ages generate and linking moves the player into them. Writing desk screen not verified since the GUI fixes."
   },
   {
    "name": "Natura",
-   "version": "2.8.9",
+   "version": "2.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2335,7 +2544,7 @@
    "version": "1.7.10R2.3.1",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2456,10 +2665,10 @@
   },
   {
    "name": "OpenMods",
-   "version": "0.10.11",
+   "version": "0.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2477,7 +2686,7 @@
    "version": "1.4",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2522,7 +2731,7 @@
    "version": "1.7.10.20.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2677,14 +2886,14 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Railcraft",
-   "version": "9.16.33",
+   "version": "9.12.2.0",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2711,7 +2920,7 @@
    "version": "1.7.10R1.1.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2722,14 +2931,14 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "RelocationFMP",
-   "version": "0.2.0",
+   "version": "0.0.1.2",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2747,7 +2956,7 @@
    "version": "1.3",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-23",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2819,7 +3028,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Share Where I am",
@@ -2895,10 +3104,10 @@
   },
   {
    "name": "Steve's Carts",
-   "version": "2 2.3.12",
+   "version": "2 2.0.0.b18",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -2936,7 +3145,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Storage Drawers: Biomes O' Plenty Pack",
@@ -3078,7 +3287,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Thaumcraft Mob Aspects",
@@ -3204,16 +3413,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
-  },
-  {
-   "name": "Thermal Dynamics",
-   "version": "1.7.10R1.2.1",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Thermal Dynamics",
@@ -3222,7 +3422,16 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Thermal Dynamics",
+   "version": "1.7.10R1.2.1",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "Thermal Expansion",
@@ -3238,16 +3447,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
-  },
-  {
-   "name": "Thermal Foundation",
-   "version": "1.7.10R1.2.6",
-   "mc": "1.7.10",
-   "source": "corpus",
-   "date": "2026-10-23",
-   "status": "loads",
-   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Thermal Foundation",
@@ -3256,7 +3456,16 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Thermal Foundation",
+   "version": "1.7.10R1.2.6",
+   "mc": "1.7.10",
+   "source": "corpus",
+   "date": "2026-10-27",
+   "status": "loads",
+   "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "TiC Tooltips",
@@ -3299,7 +3508,7 @@
    "source": "corpus",
    "date": "2026-10-25",
    "status": "loads",
-   "notes": "Loads in a dedicated-server test without errors (blocks, items and recipes register). 1.12.2 support is experimental: client rendering, GUIs, entities and world generation are not done yet."
+   "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
    "name": "Tinkers' Gregworks",
@@ -3454,10 +3663,10 @@
   },
   {
    "name": "Waila",
-   "version": "1.8.15",
+   "version": "1.5.10",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
@@ -3510,8 +3719,9 @@
    "name": "Witchery",
    "version": "0.24.1",
    "mc": "1.7.10",
+   "date": "2026-10-28",
    "status": "partial",
-   "notes": "Loads, village walls and towers generate. The Dream World teleport returns the player to the overworld."
+   "notes": "Rituals and their workshop models, town walls and towers in modern villages and shops generate. Dream World teleport not re-verified after the teleporter fix."
   },
   {
    "name": "Witching Gadgets",
@@ -3524,28 +3734,28 @@
   },
   {
    "name": "WR-CBE Addons",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "WR-CBE Core",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
    "name": "WR-CBE Logic",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "corpus",
-   "date": "2026-10-24",
+   "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
