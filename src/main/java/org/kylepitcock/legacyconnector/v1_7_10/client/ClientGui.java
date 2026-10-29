@@ -50,6 +50,15 @@ public final class ClientGui {
             return;
         }
         net.minecraft.client.gui.screens.Screen vanilla = vanillaEquivalent(mc, screen);
+        if (vanilla == null && screen instanceof GuiContainer gc && gc.inventorySlots != null && mc.player != null) {
+            // a container GUI the client opens by itself (OpenBlocks' guide book on a dummy container): the container screen
+            // draws its background layer, components and labels; a plain screen only ran drawScreen, which for a
+            // GuiContainer draws just the buttons. The container keeps its own window id, as in 1.7.10.
+            var inv = mc.player.getInventory();
+            var menu = new LegacyMenu(GuiBridge.menuType(), gc.inventorySlots.windowId, inv, gc.inventorySlots, gc);
+            mc.setScreen(new LegacyContainerScreen(menu, inv, net.minecraft.network.chat.Component.empty()));
+            return;
+        }
         mc.setScreen(vanilla != null ? vanilla : new LegacyScreen(screen));
     }
 

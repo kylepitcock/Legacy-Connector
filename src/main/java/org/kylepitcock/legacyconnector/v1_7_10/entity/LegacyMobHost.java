@@ -98,13 +98,22 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     private net.minecraft.server.level.ServerBossEvent bossEvent;
 
     private void updateBossBar() {
-        if (!(level() instanceof ServerLevel sl) || !(legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.boss.IBossDisplayData boss)) return;
+        if (!(level() instanceof ServerLevel sl)) return;
+        float health, max;
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.boss.IBossDisplayData boss) {
+            health = boss.getHealth();
+            max = boss.getMaxHealth();
+        } else if (org.kylepitcock.legacyconnector.compat.mods.OreSpawnBosses.isBoss(legacy)) {
+            health = getHealth();
+            max = getMaxHealth();
+        } else {
+            return;
+        }
         if (bossEvent == null) {
             bossEvent = new net.minecraft.server.level.ServerBossEvent(getDisplayName(), net.minecraft.world.BossEvent.BossBarColor.PURPLE,
                     net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
         }
-        float max = boss.getMaxHealth();
-        bossEvent.setProgress(max <= 0 ? 0 : Math.max(0, Math.min(1, boss.getHealth() / max)));
+        bossEvent.setProgress(max <= 0 ? 0 : Math.max(0, Math.min(1, health / max)));
         bossEvent.setName(getDisplayName());
         if (tickCount % 20 != 0) return;
         for (var player : sl.players()) {

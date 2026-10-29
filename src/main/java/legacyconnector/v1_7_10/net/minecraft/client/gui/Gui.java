@@ -60,8 +60,21 @@ public class Gui {
     public void drawTexturedModelRectFromIcon(int x, int y, IIcon icon, int width, int height) {
         var gui = RenderContext.gui();
         if (gui == null || icon == null) return;
+        if (!(icon instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureAtlasSprite)
+                && !icon.getClass().getName().startsWith("legacyconnector.")) {
+            // a mod's own IIcon is a UV rectangle on the texture the mod bound (OpenMods' FakeIcons on the guide book
+            // sheet; the left page mirrored, minU > maxU): drawn as 1.7.10 did, a quad on the bound texture
+            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
+            t.startDrawingQuads();
+            t.addVertexWithUV(x, y + height, zLevel, icon.getMinU(), icon.getMaxV());
+            t.addVertexWithUV(x + width, y + height, zLevel, icon.getMaxU(), icon.getMaxV());
+            t.addVertexWithUV(x + width, y, zLevel, icon.getMaxU(), icon.getMinV());
+            t.addVertexWithUV(x, y, zLevel, icon.getMinU(), icon.getMinV());
+            t.draw();
+            return;
+        }
         RenderContext.mcc$flushGui(gui);
-        var sprite = net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
+        var sprite =net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
                 .apply(net.minecraft.resources.ResourceLocation.parse(icon.getIconName()));
         gui.blit(x, y, 0, width, height, sprite);
     }

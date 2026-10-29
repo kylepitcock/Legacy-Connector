@@ -1,0 +1,1298 @@
+net/minecraft/block/Block blockRegistry displayOnCreativeTab textureName soundTypeStone soundTypeWood soundTypeGravel soundTypeGrass soundTypePiston soundTypeMetal soundTypeGlass soundTypeCloth soundTypeSand soundTypeSnow soundTypeLadder soundTypeAnvil fullBlock lightOpacity translucent lightValue useNeighborBrightness blockHardness blockResistance blockConstructorCalled enableStats needsRandomTick isBlockContainer minX minY minZ maxX maxY maxZ stepSound blockParticleGravity blockMaterial slipperiness unlocalizedName blockIcon
+net/minecraft/block/Block$SoundType soundName volume frequency
+net/minecraft/block/BlockAnvil anvilDamageNames anvilIconNames anvilRenderSide anvilIcons
+net/minecraft/block/BlockBasePressurePlate name
+net/minecraft/block/BlockBed bedDirections iconEnd iconSide iconTop
+net/minecraft/block/BlockBreakable ignoreSimilarity name
+net/minecraft/block/BlockBrewingStand rand iconBrewingStandBase
+net/minecraft/block/BlockButton wooden
+net/minecraft/block/BlockCactus iconTop iconBottom
+net/minecraft/block/BlockCake iconTop iconBottom iconInner
+net/minecraft/block/BlockCarrot field_149868_a
+net/minecraft/block/BlockCauldron iconInner iconTop iconBottom
+net/minecraft/block/BlockChest rand chestType
+net/minecraft/block/BlockCocoa field_149989_a
+net/minecraft/block/BlockColored field_150033_a
+net/minecraft/block/BlockCompressed field_150202_a
+net/minecraft/block/BlockCrops icons
+net/minecraft/block/BlockDaylightDetector field_149958_a
+net/minecraft/block/BlockDirt field_150009_a field_150008_b field_150010_M
+net/minecraft/block/BlockDispenser dispenseBehaviorRegistry field_149942_b field_149944_M field_149945_N field_149946_O
+net/minecraft/block/BlockDoor field_150017_a field_150016_b
+net/minecraft/block/BlockDoublePlant field_149892_a doublePlantBottomIcons doublePlantTopIcons sunflowerIcons
+net/minecraft/block/BlockDropper field_149947_P
+net/minecraft/block/BlockDynamicLiquid field_149815_a field_149814_b field_149816_M
+net/minecraft/block/BlockEnchantmentTable field_149950_a field_149949_b
+net/minecraft/block/BlockEndPortal field_149948_a
+net/minecraft/block/BlockEndPortalFrame iconEndPortalFrameTop iconEndPortalFrameEye
+net/minecraft/block/BlockEventData coordX coordY coordZ field_151344_d eventID eventParameter
+net/minecraft/block/BlockFalling fallInstantly
+net/minecraft/block/BlockFarmland iconDry iconWet
+net/minecraft/block/BlockFence field_149827_a
+net/minecraft/block/BlockFire field_149849_a field_149848_b field_149850_M
+net/minecraft/block/BlockFlower field_149860_M field_149859_a field_149858_b field_149861_N field_149862_O
+net/minecraft/block/BlockFurnace field_149933_a isBurning field_149934_M iconTop iconFront
+net/minecraft/block/BlockGrass logger field_149991_b field_149993_M field_149994_N
+net/minecraft/block/BlockHopper field_149922_a hopperOutsideIcon hopperTopIcon hopperInsideIcon
+net/minecraft/block/BlockHugeMushroom field_149793_a field_149792_b field_149794_M field_149795_N field_149796_O
+net/minecraft/block/BlockJukebox field_149927_a
+net/minecraft/block/BlockJukebox$TileEntityJukebox field_145858_a
+net/minecraft/block/BlockLeaves field_150128_a field_150127_b field_150129_M
+net/minecraft/block/BlockLeavesBase field_150121_P
+net/minecraft/block/BlockLiquid field_149806_a
+net/minecraft/block/BlockLog field_150167_a field_150166_b
+net/minecraft/block/BlockMelon melonTopIcon
+net/minecraft/block/BlockMycelium field_150200_a field_150199_b
+net/minecraft/block/BlockNetherWart field_149883_a
+net/minecraft/block/BlockNewLeaf field_150132_N field_150133_O
+net/minecraft/block/BlockNewLog field_150169_M
+net/minecraft/block/BlockOldLeaf field_150130_N field_150131_O
+net/minecraft/block/BlockOldLog field_150168_M
+net/minecraft/block/BlockPane field_150100_a field_150099_b field_150101_M field_150102_N
+net/minecraft/block/BlockPistonBase isSticky innerTopIcon bottomIcon topIcon
+net/minecraft/block/BlockPistonExtension field_150088_a
+net/minecraft/block/BlockPortal field_150001_a
+net/minecraft/block/BlockPortal$Size field_150867_a field_150865_b field_150866_c field_150863_d field_150864_e field_150861_f field_150862_g field_150868_h
+net/minecraft/block/BlockPotato field_149869_a
+net/minecraft/block/BlockPressurePlate field_150069_a
+net/minecraft/block/BlockPressurePlate$Sensitivity everything mobs players $VALUES
+net/minecraft/block/BlockPressurePlateWeighted field_150068_a
+net/minecraft/block/BlockPumpkin field_149985_a field_149984_b field_149986_M
+net/minecraft/block/BlockQuartz field_150191_a field_150189_b field_150192_M field_150193_N field_150194_O field_150190_P field_150188_Q
+net/minecraft/block/BlockRail field_150056_b
+net/minecraft/block/BlockRailBase isPowered
+net/minecraft/block/BlockRailBase$Rail field_150660_b field_150661_c field_150658_d field_150659_e field_150656_f field_150657_g field_150662_a
+net/minecraft/block/BlockRailDetector field_150055_b
+net/minecraft/block/BlockRailPowered field_150059_b
+net/minecraft/block/BlockRedstoneDiode isRepeaterPowered
+net/minecraft/block/BlockRedstoneLight field_150171_a
+net/minecraft/block/BlockRedstoneOre field_150187_a
+net/minecraft/block/BlockRedstoneRepeater repeaterTorchOffset repeaterState
+net/minecraft/block/BlockRedstoneTorch field_150113_a field_150112_b
+net/minecraft/block/BlockRedstoneTorch$Toggle field_150847_a field_150845_b field_150846_c field_150844_d
+net/minecraft/block/BlockRedstoneWire canProvidePower field_150179_b redstoneCrossIcon redstoneLineIcon redstoneCrossOverlayIcon redstoneLineOverlayIcon
+net/minecraft/block/BlockRotatedPillar field_150164_N
+net/minecraft/block/BlockSand field_149838_a sandIcon redSandIcon
+net/minecraft/block/BlockSandStone field_150157_a field_150156_b field_150158_M field_150159_N field_150160_O
+net/minecraft/block/BlockSapling field_149882_a field_149881_b
+net/minecraft/block/BlockSign field_149968_a field_149967_b
+net/minecraft/block/BlockSilverfish field_150198_a
+net/minecraft/block/BlockSlab isFullBlock
+net/minecraft/block/BlockSourceImpl worldObj xPos yPos zPos
+net/minecraft/block/BlockStainedGlass field_149998_a
+net/minecraft/block/BlockStainedGlassPane field_150106_a field_150105_b
+net/minecraft/block/BlockStairs field_150150_a field_150149_b field_150151_M field_150152_N field_150153_O
+net/minecraft/block/BlockStem field_149877_a field_149876_b
+net/minecraft/block/BlockStoneBrick field_150142_a field_150141_b field_150143_M
+net/minecraft/block/BlockStoneSlab field_150006_b field_150007_M
+net/minecraft/block/BlockTNT field_150116_a field_150115_b
+net/minecraft/block/BlockTallGrass field_149871_a field_149870_b
+net/minecraft/block/BlockWall field_150092_a
+net/minecraft/block/BlockWood field_150096_a field_150095_b
+net/minecraft/block/BlockWoodSlab field_150005_b
+net/minecraft/block/BlockWorkbench field_150035_a field_150034_b
+net/minecraft/block/material/MapColor mapColorArray airColor grassColor sandColor clothColor tntColor iceColor ironColor foliageColor snowColor clayColor dirtColor stoneColor waterColor woodColor quartzColor adobeColor magentaColor lightBlueColor yellowColor limeColor pinkColor grayColor silverColor cyanColor purpleColor blueColor brownColor greenColor redColor blackColor goldColor diamondColor lapisColor emeraldColor obsidianColor netherrackColor colorValue colorIndex
+net/minecraft/block/material/Material air grass ground wood rock iron anvil water lava leaves plants vine sponge cloth fire sand circuits carpet glass redstoneLight tnt coral ice packedIce snow craftedSnow cactus clay gourd dragonEgg portal cake web piston canBurn replaceable isTranslucent materialMapColor requiresNoTool mobilityFlag isAdventureModeExempt
+net/minecraft/client/LoadingScreenRenderer field_73727_a mc currentlyDisplayedText field_73723_d field_73724_e field_146587_f field_146588_g
+net/minecraft/client/Minecraft logger locationMojangPng isRunningOnMac memoryReserve macDisplayModes fileResourcepacks twitchDetails currentServerData renderEngine theMinecraft playerController fullscreen hasCrashed crashReporter displayWidth displayHeight timer usageSnooper theWorld renderGlobal thePlayer renderViewEntity pointedEntity effectRenderer session isGamePaused fontRendererObj standardGalacticFontRenderer currentScreen loadingScreen entityRenderer leftClickCounter tempDisplayWidth tempDisplayHeight theIntegratedServer guiAchievement ingameGUI skipRenderWorld objectMouseOver gameSettings mouseHelper mcDataDir fileAssets launchedVersion proxy saveLoader debugFPS rightClickDelayTimer refreshTexturePacksScheduled serverName serverPort inGameHasFocus systemTime joinPlayerCounter jvm64bit isDemo myNetworkManager integratedServerIsRunning mcProfiler debugCrashKeyPressTime mcResourceManager metadataSerializer_ defaultResourcePacks mcDefaultResourcePack mcResourcePackRepository mcLanguageManager stream framebufferMc textureMapBlocks mcSoundHandler mcMusicTicker mojangLogo sessionService skinManager scheduledTasks mcThread running debug debugUpdateTime fpsCounter prevFrameTime debugProfilerName
+net/minecraft/client/Minecraft$1 field_74532_a
+net/minecraft/client/Minecraft$10 field_90051_a
+net/minecraft/client/Minecraft$11 field_90046_a
+net/minecraft/client/Minecraft$12 field_90048_a
+net/minecraft/client/Minecraft$13 field_142056_a
+net/minecraft/client/Minecraft$14 field_151425_a
+net/minecraft/client/Minecraft$15 field_152389_a
+net/minecraft/client/Minecraft$16 field_152128_a
+net/minecraft/client/Minecraft$2 field_74536_a
+net/minecraft/client/Minecraft$3 field_90055_a
+net/minecraft/client/Minecraft$4 field_90053_a
+net/minecraft/client/Minecraft$5 field_74421_a
+net/minecraft/client/Minecraft$6 field_74503_a
+net/minecraft/client/Minecraft$7 field_79002_a
+net/minecraft/client/Minecraft$8 field_74500_a
+net/minecraft/client/Minecraft$9 field_82887_a
+net/minecraft/client/Minecraft$SwitchMovingObjectType field_152390_a
+net/minecraft/client/audio/ISound$AttenuationType NONE LINEAR field_148589_c $VALUES
+net/minecraft/client/audio/MovingSound donePlaying
+net/minecraft/client/audio/MovingSoundMinecart field_147670_k field_147669_l
+net/minecraft/client/audio/MovingSoundMinecartRiding field_147672_k field_147671_l
+net/minecraft/client/audio/MusicTicker rand mc currentMusic timeUntilNextMusic
+net/minecraft/client/audio/MusicTicker$MusicType MENU GAME CREATIVE CREDITS NETHER END_BOSS END field_148645_h minDelay maxDelay $VALUES
+net/minecraft/client/audio/PositionedSound positionedSoundLocation volume pitch xPosF yPosF zPosF repeat repeatDelay attenuationType
+net/minecraft/client/audio/SoundCategory MASTER MUSIC RECORDS WEATHER BLOCKS MOBS ANIMALS PLAYERS AMBIENT field_147168_j field_147169_k categoryName categoryId $VALUES
+net/minecraft/client/audio/SoundEventAccessor field_148739_a field_148738_b
+net/minecraft/client/audio/SoundEventAccessorComposite soundPool rnd field_148735_c field_148732_d eventPitch eventVolume
+net/minecraft/client/audio/SoundHandler logger field_147699_c field_147696_d missing_sound sndRegistry sndManager mcResourceManager
+net/minecraft/client/audio/SoundHandler$2 field_148726_a field_148724_b field_148725_c field_148723_d
+net/minecraft/client/audio/SoundHandler$SwitchType field_148765_a
+net/minecraft/client/audio/SoundList field_148577_a replaceExisting field_148576_c
+net/minecraft/client/audio/SoundList$SoundEntry field_148569_a field_148567_b field_148568_c field_148565_d field_148566_e field_148564_f
+net/minecraft/client/audio/SoundList$SoundEntry$Type FILE SOUND_EVENT field_148583_c $VALUES
+net/minecraft/client/audio/SoundManager LOG_MARKER logger sndHandler options sndSystem loaded playTime playingSounds invPlayingSounds playingSoundPoolEntries categorySounds tickableSounds delayedSounds playingSoundsStopTime
+net/minecraft/client/audio/SoundManager$1 field_148631_a
+net/minecraft/client/audio/SoundManager$2 field_148592_a
+net/minecraft/client/audio/SoundManager$2$1 field_148593_a
+net/minecraft/client/audio/SoundManager$SoundSystemStarterThread field_148591_a
+net/minecraft/client/audio/SoundPoolEntry field_148656_a field_148654_b field_148655_c field_148653_d
+net/minecraft/client/audio/SoundRegistry field_148764_a
+net/minecraft/client/entity/AbstractClientPlayer locationStevePng locationSkin locationCape
+net/minecraft/client/entity/AbstractClientPlayer$SwitchType SKIN_PART_TYPES
+net/minecraft/client/entity/EntityClientPlayerMP sendQueue field_146108_bO oldPosX oldMinY oldPosY oldPosZ oldRotationYaw oldRotationPitch wasOnGround wasSneaking wasSprinting ticksSinceMovePacket hasSetHealth clientBrand
+net/minecraft/client/entity/EntityOtherPlayerMP isItemInUse otherPlayerMPPosRotationIncrements otherPlayerMPX otherPlayerMPY otherPlayerMPZ otherPlayerMPYaw otherPlayerMPPitch
+net/minecraft/client/entity/EntityPlayerSP movementInput mc sprintToggleTimer sprintingTicksLeft renderArmYaw renderArmPitch prevRenderArmYaw prevRenderArmPitch horseJumpPowerCounter horseJumpPower field_71162_ch field_71160_ci field_71161_cj timeInPortal prevTimeInPortal
+net/minecraft/client/gui/ChatLine updateCounterCreated lineString chatLineID
+net/minecraft/client/gui/FontRenderer unicodePageLocations charWidth FONT_HEIGHT fontRandom glyphWidth colorCode locationFontTexture renderEngine posX posY unicodeFlag bidiFlag red blue green alpha textColor randomStyle boldStyle italicStyle underlineStyle strikethroughStyle
+net/minecraft/client/gui/Gui optionsBackground statIcons icons zLevel
+net/minecraft/client/gui/GuiButton buttonTextures width height xPosition yPosition displayString id enabled visible hovered
+net/minecraft/client/gui/GuiButtonRealmsProxy field_154318_o
+net/minecraft/client/gui/GuiChat supportedProtocols logger historyBuffer sentHistoryCursor playerNamesFound waitingOnAutocomplete autocompleteIndex foundPlayerNames clickedURI inputField defaultInputFieldText
+net/minecraft/client/gui/GuiCommandBlock field_146488_a commandTextField field_146486_g localCommandBlock doneBtn cancelBtn
+net/minecraft/client/gui/GuiConfirmOpenLink openLinkWarning copyLinkButtonText linkText showSecurityWarning
+net/minecraft/client/gui/GuiControls optionsArr parentScreen screenTitle options buttonId time keyBindingList buttonReset
+net/minecraft/client/gui/GuiCreateFlatWorld field_146392_a createWorldGui theFlatGeneratorInfo field_146393_h field_146394_i field_146391_r createFlatWorldListSlotGui field_146389_t field_146388_u field_146386_v
+net/minecraft/client/gui/GuiCreateFlatWorld$Details field_148228_k field_148227_l
+net/minecraft/client/gui/GuiCreateWorld field_146332_f field_146333_g field_146335_h field_146336_i field_146342_r field_146341_s field_146340_t field_146339_u field_146338_v field_146337_w field_146345_x field_146344_y field_146343_z field_146324_A field_146325_B field_146326_C field_146320_D field_146321_E field_146322_F field_146323_G field_146328_H field_146329_I field_146330_J field_146331_K field_146334_a field_146327_L
+net/minecraft/client/gui/GuiDisconnected reason message multilineMessage parentScreen
+net/minecraft/client/gui/GuiDownloadTerrain netHandlerPlayClient progress
+net/minecraft/client/gui/GuiEnchantment field_147078_C field_147070_D field_147072_E field_147074_F field_147075_G field_147073_u field_147071_v field_147069_w field_147082_x field_147081_y field_147080_z field_147076_A field_147077_B field_147079_H
+net/minecraft/client/gui/GuiErrorScreen field_146313_a field_146312_f
+net/minecraft/client/gui/GuiFlatPresets field_146437_a field_146431_f field_146432_g field_146438_h field_146439_i field_146436_r field_146435_s field_146434_t field_146433_u
+net/minecraft/client/gui/GuiFlatPresets$LayerItem field_148234_a field_148232_b field_148233_c
+net/minecraft/client/gui/GuiFlatPresets$ListSlot field_148175_k field_148174_l
+net/minecraft/client/gui/GuiGameOver field_146347_a field_146346_f
+net/minecraft/client/gui/GuiHopper field_147085_u field_147084_v field_147083_w
+net/minecraft/client/gui/GuiIngame vignetteTexPath widgetsTexPath pumpkinBlurTexPath itemRenderer rand mc persistantChatGUI streamIndicator updateCounter recordPlaying recordPlayingUpFor recordIsPlaying prevVignetteBrightness remainingHighlightTicks highlightingItemStack
+net/minecraft/client/gui/GuiIngameMenu field_146445_a field_146444_f
+net/minecraft/client/gui/GuiKeyBindingList field_148191_k mc listEntries maxListLabelWidth
+net/minecraft/client/gui/GuiKeyBindingList$CategoryEntry labelText labelWidth field_148287_a
+net/minecraft/client/gui/GuiKeyBindingList$KeyEntry field_148282_b field_148283_c btnChangeKeyBinding btnReset field_148284_a
+net/minecraft/client/gui/GuiLabel field_146167_a field_146161_f field_146162_g field_146174_h field_146173_k centered visible labelBgEnabled field_146168_n field_146169_o field_146166_p field_146165_q fontRenderer field_146163_s
+net/minecraft/client/gui/GuiLanguage field_146453_a field_146450_f game_settings_3 field_146454_h field_146455_i field_146452_r
+net/minecraft/client/gui/GuiLanguage$List field_148176_l field_148177_m field_148178_k
+net/minecraft/client/gui/GuiMainMenu logger rand updateCounter splashText buttonResetDemo panoramaTimer viewportTexture field_104025_t field_92025_p field_146972_A field_104024_v splashTexts minecraftTitleTextures titlePanoramaPaths field_96138_a field_92024_r field_92023_s field_92022_t field_92021_u field_92020_v field_92019_w field_110351_G
+net/minecraft/client/gui/GuiMerchant logger field_147038_v field_147037_w field_147043_x field_147042_y field_147041_z field_147040_A
+net/minecraft/client/gui/GuiMerchant$MerchantButton field_146157_o
+net/minecraft/client/gui/GuiMultiplayer logger oldServerPinger parentScreen serverListSelector savedServerList btnEditServer btnSelectServer btnDeleteServer deletingServer addingServer editingServer directConnect field_146812_y selectedServer lanServerList lanServerDetector initialized
+net/minecraft/client/gui/GuiNewChat logger mc sentMessages chatLines field_146253_i scrollPos isScrolled
+net/minecraft/client/gui/GuiOptionButton enumOptions
+net/minecraft/client/gui/GuiOptionSlider sliderValue dragging options field_146132_r field_146131_s
+net/minecraft/client/gui/GuiOptions field_146440_f field_146441_g game_settings_1 field_146442_a
+net/minecraft/client/gui/GuiOptions$1 field_146130_o
+net/minecraft/client/gui/GuiOptionsRowList field_148184_k
+net/minecraft/client/gui/GuiOptionsRowList$Row field_148325_a field_148323_b field_148324_c
+net/minecraft/client/gui/GuiPlayerInfo name nameinLowerCase responseTime
+net/minecraft/client/gui/GuiRenameWorld field_146585_a field_146583_f field_146584_g
+net/minecraft/client/gui/GuiRepair anvilResource anvil nameField playerInventory
+net/minecraft/client/gui/GuiResourcePackList mc field_148204_l
+net/minecraft/client/gui/GuiScreen itemRender mc width height buttonList labelList allowUserInput fontRendererObj selectedButton eventButton lastMouseEvent touchValue
+net/minecraft/client/gui/GuiScreenAddServer parentScreen serverData serverIPField serverNameField serverResourcePacks
+net/minecraft/client/gui/GuiScreenBook logger bookGuiTextures editingPlayer bookObj bookIsUnsigned bookIsModified bookGettingSigned updateCount bookImageWidth bookImageHeight bookTotalPages currPage bookPages bookTitle buttonNextPage buttonPreviousPage buttonDone buttonSign buttonFinalize buttonCancel
+net/minecraft/client/gui/GuiScreenBook$NextPageButton field_146151_o
+net/minecraft/client/gui/GuiScreenDemo logger field_146348_f
+net/minecraft/client/gui/GuiScreenOptionsSounds field_146505_f game_settings_4 field_146507_a field_146508_h
+net/minecraft/client/gui/GuiScreenOptionsSounds$Button field_146153_r field_146152_s field_146156_o field_146155_p field_146154_q
+net/minecraft/client/gui/GuiScreenRealmsProxy field_154330_a
+net/minecraft/client/gui/GuiScreenResourcePacks logger field_146965_f field_146966_g field_146969_h field_146970_i field_146967_r
+net/minecraft/client/gui/GuiScreenServerList field_146303_a field_146301_f field_146302_g
+net/minecraft/client/gui/GuiScreenWorking field_146591_a field_146589_f field_146590_g field_146592_h
+net/minecraft/client/gui/GuiSelectWorld logger field_146633_h field_146632_a field_146628_f field_146634_i field_146640_r field_146639_s field_146638_t field_146637_u field_146636_v field_146635_w field_146643_x field_146642_y field_146641_z field_146630_A field_146631_B
+net/minecraft/client/gui/GuiSelectWorld$List field_148207_k
+net/minecraft/client/gui/GuiShareToLan field_146598_a field_146596_f field_146597_g field_146599_h field_146600_i
+net/minecraft/client/gui/GuiSlot mc width height top bottom right left slotHeight scrollUpButtonID scrollDownButtonID mouseX mouseY field_148163_i initialClickY scrollMultiplier amountScrolled selectedElement lastClicked showSelectionBox hasListHeader headerPadding enabled
+net/minecraft/client/gui/GuiSlotRealmsProxy selectionList
+net/minecraft/client/gui/GuiSnooper field_146608_a game_settings_2 field_146604_g field_146609_h field_146610_i field_146607_r field_146606_s field_146605_t
+net/minecraft/client/gui/GuiSnooper$List field_148206_k
+net/minecraft/client/gui/GuiStreamIndicator locationStreamIndicator mc field_152443_c field_152444_d
+net/minecraft/client/gui/GuiTextField fontRendererInstance xPosition yPosition width height text maxStringLength cursorCounter enableBackgroundDrawing canLoseFocus isFocused isEnabled lineScrollOffset cursorPosition selectionEnd enabledColor disabledColor visible
+net/minecraft/client/gui/GuiVideoSettings parentGuiScreen screenTitle guiGameSettings optionsRowList videoOptions
+net/minecraft/client/gui/GuiWinGame logger field_146576_f field_146577_g field_146581_h field_146582_i field_146579_r field_146578_s
+net/minecraft/client/gui/GuiYesNo parentScreen messageLine1 messageLine2 confirmButtonText cancelButtonText parentButtonClickedId ticksUntilEnable
+net/minecraft/client/gui/IProgressMeter lanSearchStates
+net/minecraft/client/gui/MapItemRenderer mapIcons textureManager loadedMaps
+net/minecraft/client/gui/MapItemRenderer$Instance field_148242_b field_148243_c field_148240_d field_148241_e field_148244_a
+net/minecraft/client/gui/ScaledResolution scaledWidth scaledHeight scaledWidthD scaledHeightD scaleFactor
+net/minecraft/client/gui/ScreenChatOptions field_146399_a field_146395_f field_146396_g game_settings field_146401_i field_146398_r field_146397_s
+net/minecraft/client/gui/ServerListEntryLanDetected field_148292_c field_148293_a field_148291_b field_148290_d
+net/minecraft/client/gui/ServerListEntryLanScan field_148288_a
+net/minecraft/client/gui/ServerListEntryNormal logger field_148302_b field_148303_c field_148300_d field_148301_e field_148298_f field_148299_g field_148305_h field_148306_i
+net/minecraft/client/gui/ServerListEntryNormal$1 field_148521_a
+net/minecraft/client/gui/ServerSelectionList owner field_148198_l field_148199_m lanScanEntry field_148197_o
+net/minecraft/client/gui/achievement/GuiAchievement achievementBg mc width height achievementTitle achievementDescription theAchievement notificationTime renderItem permanentNotification
+net/minecraft/client/gui/achievement/GuiAchievements field_146572_y field_146571_z field_146559_A field_146560_B field_146561_C parentScreen field_146555_f field_146557_g field_146563_h field_146564_i field_146570_r field_146569_s field_146568_t field_146567_u field_146566_v field_146565_w field_146573_x field_146554_D statFileWriter loadingAchievements
+net/minecraft/client/gui/achievement/GuiStats renderItem parentScreen screenTitle generalStats itemStats blockStats mobStats field_146546_t displaySlot doesGuiPauseGame
+net/minecraft/client/gui/achievement/GuiStats$Stats field_148218_l statsHolder statSorter field_148217_o field_148215_p field_148214_q
+net/minecraft/client/gui/achievement/GuiStats$StatsBlock field_148221_k
+net/minecraft/client/gui/achievement/GuiStats$StatsBlock$1 field_148341_a field_148340_b
+net/minecraft/client/gui/achievement/GuiStats$StatsGeneral field_148208_k
+net/minecraft/client/gui/achievement/GuiStats$StatsItem field_148220_k
+net/minecraft/client/gui/achievement/GuiStats$StatsItem$1 field_148344_a field_148343_b
+net/minecraft/client/gui/achievement/GuiStats$StatsMobsList field_148222_l field_148223_k
+net/minecraft/client/gui/inventory/CreativeCrafting mc
+net/minecraft/client/gui/inventory/GuiBeacon logger beaconGuiTextures tileBeacon beaconConfirmButton buttonsNotDrawn
+net/minecraft/client/gui/inventory/GuiBeacon$Button field_146145_o field_146144_p field_146143_q field_146142_r
+net/minecraft/client/gui/inventory/GuiBeacon$CancelButton field_146146_o
+net/minecraft/client/gui/inventory/GuiBeacon$ConfirmButton field_146147_o
+net/minecraft/client/gui/inventory/GuiBeacon$PowerButton field_146149_p field_146148_q field_146150_o
+net/minecraft/client/gui/inventory/GuiBrewingStand brewingStandGuiTextures tileBrewingStand
+net/minecraft/client/gui/inventory/GuiChest field_147017_u upperChestInventory lowerChestInventory inventoryRows
+net/minecraft/client/gui/inventory/GuiContainer inventoryBackground xSize ySize inventorySlots guiLeft guiTop theSlot clickedSlot isRightMouseClick draggedStack touchUpX touchUpY returningStackDestSlot returningStackTime returningStack currentDragTargetSlot dragItemDropDelay dragSplittingSlots dragSplitting dragSplittingLimit dragSplittingButton ignoreMouseUp dragSplittingRemnant lastClickTime lastClickSlot lastClickButton doubleClick shiftClickedSlot
+net/minecraft/client/gui/inventory/GuiContainerCreative creativeInventoryTabs field_147060_v selectedTabIndex currentScroll isScrolling wasClicking searchField field_147063_B field_147064_C field_147057_D field_147059_E
+net/minecraft/client/gui/inventory/GuiContainerCreative$ContainerCreative itemList
+net/minecraft/client/gui/inventory/GuiContainerCreative$CreativeSlot field_148332_b field_148333_a
+net/minecraft/client/gui/inventory/GuiCrafting craftingTableGuiTextures
+net/minecraft/client/gui/inventory/GuiDispenser dispenserGuiTextures tileDispenser
+net/minecraft/client/gui/inventory/GuiEditSign tileSign updateCounter editLine doneBtn
+net/minecraft/client/gui/inventory/GuiFurnace furnaceGuiTextures tileFurnace
+net/minecraft/client/gui/inventory/GuiInventory oldMouseX oldMouseY
+net/minecraft/client/gui/inventory/GuiScreenHorseInventory horseGuiTextures field_147030_v field_147029_w field_147034_x field_147033_y field_147032_z
+net/minecraft/client/gui/stream/GuiIngestServers field_152309_a field_152310_f field_152311_g
+net/minecraft/client/gui/stream/GuiIngestServers$ServerList field_152435_k
+net/minecraft/client/gui/stream/GuiStreamOptions field_152312_a field_152316_f field_152317_g field_152318_h field_152319_i field_152313_r field_152314_s field_152315_t
+net/minecraft/client/gui/stream/GuiStreamUnavailable field_152322_a field_152324_f field_152325_g field_152326_h field_152327_i field_152323_r
+net/minecraft/client/gui/stream/GuiStreamUnavailable$Reason NO_FBO LIBRARY_ARCH_MISMATCH LIBRARY_FAILURE UNSUPPORTED_OS_WINDOWS UNSUPPORTED_OS_MAC UNSUPPORTED_OS_OTHER ACCOUNT_NOT_MIGRATED ACCOUNT_NOT_BOUND FAILED_TWITCH_AUTH FAILED_TWITCH_AUTH_ERROR INITIALIZATION_FAILURE UNKNOWN field_152574_m field_152575_n $VALUES
+net/minecraft/client/gui/stream/GuiStreamUnavailable$SwitchReason field_152577_a field_152578_b field_152579_c
+net/minecraft/client/gui/stream/GuiTwitchUserMode field_152331_a field_152335_f field_152336_g field_152337_h field_152338_i field_152332_r field_152333_s field_152334_t
+net/minecraft/client/main/Main field_152370_a
+net/minecraft/client/main/Main$1$1 field_152580_a
+net/minecraft/client/main/Main$2 field_152581_a field_152582_b
+net/minecraft/client/model/ModelBase swingProgress isRiding boxList isChild modelTextureMap textureWidth textureHeight
+net/minecraft/client/model/ModelBat batHead batBody batRightWing batLeftWing batOuterRightWing batOuterLeftWing
+net/minecraft/client/model/ModelBiped bipedHead bipedHeadwear bipedBody bipedRightArm bipedLeftArm bipedRightLeg bipedLeftLeg bipedEars bipedCloak heldItemLeft heldItemRight isSneak aimedBow
+net/minecraft/client/model/ModelBlaze blazeSticks blazeHead
+net/minecraft/client/model/ModelBoat boatSides
+net/minecraft/client/model/ModelBook coverRight coverLeft pagesRight pagesLeft flippingPageRight flippingPageLeft bookSpine
+net/minecraft/client/model/ModelBox vertexPositions quadList posX1 posY1 posZ1 posX2 posY2 posZ2 field_78247_g
+net/minecraft/client/model/ModelChest chestLid chestBelow chestKnob
+net/minecraft/client/model/ModelChicken head body rightLeg leftLeg rightWing leftWing bill chin
+net/minecraft/client/model/ModelCreeper head field_78133_b body leg1 leg2 leg3 leg4
+net/minecraft/client/model/ModelDragon head spine jaw body rearLeg frontLeg rearLegTip frontLegTip rearFoot frontFoot wing wingTip partialTicks
+net/minecraft/client/model/ModelEnderCrystal cube glass base
+net/minecraft/client/model/ModelEnderman isCarrying isAttacking
+net/minecraft/client/model/ModelGhast body tentacles
+net/minecraft/client/model/ModelHorse head mouthTop mouthBottom horseLeftEar horseRightEar muleLeftEar muleRightEar neck horseFaceRopes mane body tailBase tailMiddle tailTip backLeftLeg backLeftShin backLeftHoof backRightLeg backRightShin backRightHoof frontLeftLeg frontLeftShin frontLeftHoof frontRightLeg frontRightShin frontRightHoof muleLeftChest muleRightChest horseSaddleBottom horseSaddleFront horseSaddleBack horseLeftSaddleRope horseLeftSaddleMetal horseRightSaddleRope horseRightSaddleMetal horseLeftFaceMetal horseRightFaceMetal horseLeftRein horseRightRein
+net/minecraft/client/model/ModelIronGolem ironGolemHead ironGolemBody ironGolemRightArm ironGolemLeftArm ironGolemLeftLeg ironGolemRightLeg
+net/minecraft/client/model/ModelLeashKnot field_110723_a
+net/minecraft/client/model/ModelMagmaCube field_78109_a field_78108_b
+net/minecraft/client/model/ModelMinecart sideModels
+net/minecraft/client/model/ModelOcelot ocelotBackLeftLeg ocelotBackRightLeg ocelotFrontLeftLeg ocelotFrontRightLeg ocelotTail ocelotTail2 ocelotHead ocelotBody field_78163_i
+net/minecraft/client/model/ModelQuadruped head body leg1 leg2 leg3 leg4 field_78145_g field_78151_h
+net/minecraft/client/model/ModelRenderer textureWidth textureHeight textureOffsetX textureOffsetY rotationPointX rotationPointY rotationPointZ rotateAngleX rotateAngleY rotateAngleZ compiled displayList mirror showModel isHidden cubeList childModels boxName baseModel offsetX offsetY offsetZ
+net/minecraft/client/model/ModelSheep1 headRotationAngleX
+net/minecraft/client/model/ModelSheep2 field_78153_i
+net/minecraft/client/model/ModelSign signBoard signStick
+net/minecraft/client/model/ModelSilverfish silverfishBodyParts silverfishWings field_78170_c silverfishBoxLength silverfishTexturePositions
+net/minecraft/client/model/ModelSkeletonHead skeletonHead
+net/minecraft/client/model/ModelSlime slimeBodies slimeRightEye slimeLeftEye slimeMouth
+net/minecraft/client/model/ModelSnowMan body bottomBody head rightHand leftHand
+net/minecraft/client/model/ModelSpider spiderHead spiderNeck spiderBody spiderLeg1 spiderLeg2 spiderLeg3 spiderLeg4 spiderLeg5 spiderLeg6 spiderLeg7 spiderLeg8
+net/minecraft/client/model/ModelSquid squidBody squidTentacles
+net/minecraft/client/model/ModelVillager villagerHead villagerBody villagerArms rightVillagerLeg leftVillagerLeg villagerNose
+net/minecraft/client/model/ModelWitch field_82900_g field_82901_h witchHat
+net/minecraft/client/model/ModelWither field_82905_a field_82904_b
+net/minecraft/client/model/ModelWolf wolfHeadMain wolfBody wolfLeg1 wolfLeg2 wolfLeg3 wolfLeg4 wolfTail wolfMane
+net/minecraft/client/model/PositionTextureVertex vector3D texturePositionX texturePositionY
+net/minecraft/client/model/TextureOffset textureOffsetX textureOffsetY
+net/minecraft/client/model/TexturedQuad vertexPositions nVertices invertNormal
+net/minecraft/client/multiplayer/ChunkProviderClient logger blankChunk chunkMapping chunkListing worldObj
+net/minecraft/client/multiplayer/GuiConnecting CONNECTION_ID logger networkManager cancel previousGuiScreen
+net/minecraft/client/multiplayer/GuiConnecting$1 field_148231_a field_148229_b field_148230_c
+net/minecraft/client/multiplayer/PlayerControllerMP mc netClientHandler currentBlockX currentBlockY currentblockZ currentItemHittingBlock curBlockDamageMP stepSoundTickCounter blockHitDelay isHittingBlock currentGameType currentPlayerItem
+net/minecraft/client/multiplayer/ServerAddress ipAddress serverPort
+net/minecraft/client/multiplayer/ServerData serverName serverIP populationInfo serverMOTD pingToServer version gameVersion field_78841_f playerList resourceMode serverIcon lanServer
+net/minecraft/client/multiplayer/ServerData$ServerResourceMode ENABLED DISABLED PROMPT motd $VALUES
+net/minecraft/client/multiplayer/ServerList logger mc servers
+net/minecraft/client/multiplayer/ThreadLanServerPing field_148658_a logger motd socket isStopping address
+net/minecraft/client/multiplayer/WorldClient sendQueue clientChunkProvider entityHashSet entityList entitySpawnQueue mc previousActiveChunkSet
+net/minecraft/client/multiplayer/WorldClient$1 field_78833_a
+net/minecraft/client/multiplayer/WorldClient$2 field_78835_a
+net/minecraft/client/multiplayer/WorldClient$3 field_142027_a
+net/minecraft/client/multiplayer/WorldClient$4 field_142029_a
+net/minecraft/client/network/LanServerDetector field_148551_a logger
+net/minecraft/client/network/LanServerDetector$LanServer lanServerMotd lanServerIpPort timeLastSeen
+net/minecraft/client/network/LanServerDetector$LanServerList listOfLanServers wasUpdated
+net/minecraft/client/network/LanServerDetector$ThreadLanServerFind localServerList broadcastAddress socket
+net/minecraft/client/network/NetHandlerHandshakeMemory field_147385_a field_147384_b
+net/minecraft/client/network/NetHandlerHandshakeMemory$SwitchEnumConnectionState field_151263_a
+net/minecraft/client/network/NetHandlerLoginClient logger field_147394_b field_147395_c field_147393_d
+net/minecraft/client/network/NetHandlerLoginClient$1 field_147495_a field_147494_b
+net/minecraft/client/network/NetHandlerPlayClient logger netManager gameController clientWorldController doneLoadingTerrain mapStorageOrigin playerInfoMap playerInfoList currentServerMaxPlayers guiScreenServer field_147308_k avRandomizer
+net/minecraft/client/network/NetHandlerPlayClient$1 field_146300_a field_146299_f
+net/minecraft/client/network/OldServerPinger PING_RESPONSE_SPLITTER logger pingDestinations
+net/minecraft/client/network/OldServerPinger$1 field_147403_d field_147406_a field_147404_b field_147405_c
+net/minecraft/client/network/OldServerPinger$2 field_147218_a field_147216_b field_147217_c
+net/minecraft/client/network/OldServerPinger$2$1 field_147220_a
+net/minecraft/client/particle/EffectRenderer particleTextures worldObj fxLayers renderer rand
+net/minecraft/client/particle/EffectRenderer$1 field_147214_a field_147213_b
+net/minecraft/client/particle/EffectRenderer$2 field_147898_a field_147897_b
+net/minecraft/client/particle/EffectRenderer$3 field_147901_a field_147900_b
+net/minecraft/client/particle/EffectRenderer$4 field_147904_a field_147903_b
+net/minecraft/client/particle/EntityCloudFX field_70569_a
+net/minecraft/client/particle/EntityCrit2FX theEntity currentLife maximumLife particleName
+net/minecraft/client/particle/EntityCritFX initialParticleScale
+net/minecraft/client/particle/EntityDiggingFX field_145784_a
+net/minecraft/client/particle/EntityDropParticleFX materialType bobTimer
+net/minecraft/client/particle/EntityEnchantmentTableParticleFX field_70565_a field_70568_aq field_70567_ar field_70566_as
+net/minecraft/client/particle/EntityFX particleTextureIndexX particleTextureIndexY particleTextureJitterX particleTextureJitterY particleAge particleMaxAge particleScale particleGravity particleRed particleGreen particleBlue particleAlpha particleIcon interpPosX interpPosY interpPosZ
+net/minecraft/client/particle/EntityFireworkSparkFX baseTextureIndex field_92054_ax field_92048_ay field_92047_az fadeColourRed fadeColourGreen fadeColourBlue hasFadeColour
+net/minecraft/client/particle/EntityFireworkStarterFX fireworkAge theEffectRenderer fireworkExplosions twinkle
+net/minecraft/client/particle/EntityFlameFX flameScale
+net/minecraft/client/particle/EntityFootStepFX field_110126_a footstepAge footstepMaxAge currentFootSteps
+net/minecraft/client/particle/EntityHeartFX particleScaleOverTime
+net/minecraft/client/particle/EntityHugeExplodeFX timeSinceStart maximumTime
+net/minecraft/client/particle/EntityLargeExplodeFX field_110127_a field_70581_a field_70584_aq theRenderEngine field_70582_as
+net/minecraft/client/particle/EntityLavaFX lavaParticleScale
+net/minecraft/client/particle/EntityNoteFX noteParticleScale
+net/minecraft/client/particle/EntityPickupFX entityToPickUp entityPickingUp age maxAge yOffs
+net/minecraft/client/particle/EntityPortalFX portalParticleScale portalPosX portalPosY portalPosZ
+net/minecraft/client/particle/EntityReddustFX reddustParticleScale
+net/minecraft/client/particle/EntitySmokeFX smokeParticleScale
+net/minecraft/client/particle/EntitySnowShovelFX snowDigParticleScale
+net/minecraft/client/particle/EntitySpellParticleFX baseSpellTextureIndex
+net/minecraft/client/renderer/ActiveRenderInfo objectX objectY objectZ viewport modelview projection objectCoords rotationX rotationXZ rotationZ rotationYZ rotationXY
+net/minecraft/client/renderer/DestroyBlockProgress miningPlayerEntId partialBlockX partialBlockY partialBlockZ partialBlockProgress createdAtCloudUpdateTick
+net/minecraft/client/renderer/EntityRenderer logger locationRainPng locationSnowPng anaglyphEnable anaglyphField mc farPlaneDistance itemRenderer theMapItemRenderer rendererUpdateCount pointedEntity mouseFilterXAxis mouseFilterYAxis mouseFilterDummy1 mouseFilterDummy2 mouseFilterDummy3 mouseFilterDummy4 thirdPersonDistance thirdPersonDistanceTemp debugCamYaw prevDebugCamYaw debugCamPitch prevDebugCamPitch smoothCamYaw smoothCamPitch smoothCamFilterX smoothCamFilterY smoothCamPartialTicks debugCamFOV prevDebugCamFOV camRoll prevCamRoll lightmapTexture lightmapColors locationLightMap fovModifierHand fovModifierHandPrev fovMultiplierTemp bossColorModifier bossColorModifierPrev cloudFog resourceManager theShaderGroup shaderResourceLocations shaderCount shaderIndex cameraZoom cameraYaw cameraPitch prevFrameTime renderEndNanoTime lightmapUpdateNeeded torchFlickerX torchFlickerDX torchFlickerY torchFlickerDY random rainSoundCounter rainXCoords rainYCoords fogColorBuffer fogColorRed fogColorGreen fogColorBlue fogColor2 fogColor1 debugViewDirection
+net/minecraft/client/renderer/EntityRenderer$1 field_90032_a
+net/minecraft/client/renderer/EntityRenderer$2 field_90026_a field_90024_b field_90025_c
+net/minecraft/client/renderer/EntityRenderer$3 field_90029_a field_90028_b
+net/minecraft/client/renderer/EntitySorter entityPosX entityPosY entityPosZ
+net/minecraft/client/renderer/GLAllocation mapDisplayLists listDummy
+net/minecraft/client/renderer/IconFlipped baseIcon flipU flipV
+net/minecraft/client/renderer/ImageBufferDownload imageData imageWidth imageHeight
+net/minecraft/client/renderer/InventoryEffectRenderer hasActivePotionEffects
+net/minecraft/client/renderer/ItemRenderer RES_ITEM_GLINT RES_MAP_BACKGROUND RES_UNDERWATER_OVERLAY mc itemToRender equippedProgress prevEquippedProgress renderBlocksIr equippedItemSlot
+net/minecraft/client/renderer/OpenGlHelper openGL21 defaultTexUnit lightmapTexUnit field_153197_d field_153198_e field_153199_f field_153200_g field_153201_h field_153202_i field_153203_j field_153204_k field_153205_l field_153206_m field_153212_w framebufferSupported field_153213_x field_153214_y GL_LINK_STATUS GL_COMPILE_STATUS GL_VERTEX_SHADER GL_FRAGMENT_SHADER anisotropicFilteringSupported anisotropicFilteringMax field_153215_z openGL14 field_153211_u shadersSupported field_153196_B
+net/minecraft/client/renderer/RenderBlocks blockAccess overrideBlockTexture flipTexture field_152631_f renderAllFaces fancyGrass useInventoryTint renderFromInside renderMinX renderMaxX renderMinY renderMaxY renderMinZ renderMaxZ lockBlockBounds partialRenderBounds minecraftRB uvRotateEast uvRotateWest uvRotateSouth uvRotateNorth uvRotateTop uvRotateBottom enableAO aoLightValueScratchXYZNNN aoLightValueScratchXYNN aoLightValueScratchXYZNNP aoLightValueScratchYZNN aoLightValueScratchYZNP aoLightValueScratchXYZPNN aoLightValueScratchXYPN aoLightValueScratchXYZPNP aoLightValueScratchXYZNPN aoLightValueScratchXYNP aoLightValueScratchXYZNPP aoLightValueScratchYZPN aoLightValueScratchXYZPPN aoLightValueScratchXYPP aoLightValueScratchYZPP aoLightValueScratchXYZPPP aoLightValueScratchXZNN aoLightValueScratchXZPN aoLightValueScratchXZNP aoLightValueScratchXZPP aoBrightnessXYZNNN aoBrightnessXYNN aoBrightnessXYZNNP aoBrightnessYZNN aoBrightnessYZNP aoBrightnessXYZPNN aoBrightnessXYPN aoBrightnessXYZPNP aoBrightnessXYZNPN aoBrightnessXYNP aoBrightnessXYZNPP aoBrightnessYZPN aoBrightnessXYZPPN aoBrightnessXYPP aoBrightnessYZPP aoBrightnessXYZPPP aoBrightnessXZNN aoBrightnessXZPN aoBrightnessXZNP aoBrightnessXZPP brightnessTopLeft brightnessBottomLeft brightnessBottomRight brightnessTopRight colorRedTopLeft colorRedBottomLeft colorRedBottomRight colorRedTopRight colorGreenTopLeft colorGreenBottomLeft colorGreenBottomRight colorGreenTopRight colorBlueTopLeft colorBlueBottomLeft colorBlueBottomRight colorBlueTopRight
+net/minecraft/client/renderer/RenderGlobal logger locationMoonPhasesPng locationSunPng locationCloudsPng locationEndSkyPng tileEntities theWorld renderEngine worldRenderersToUpdate sortedWorldRenderers worldRenderers renderChunksWide renderChunksTall renderChunksDeep glRenderListBase mc renderBlocksRg glOcclusionQueryBase occlusionEnabled cloudTickCounter starGLCallList glSkyList glSkyList2 minBlockX minBlockY minBlockZ maxBlockX maxBlockY maxBlockZ damagedBlocks mapSoundPositions destroyBlockIcons displayListEntitiesDirty displayListEntities renderDistanceChunks renderEntitiesStartupCounter countEntitiesTotal countEntitiesRendered countEntitiesHidden occlusionResult renderersLoaded renderersBeingClipped renderersBeingOccluded renderersBeingRendered renderersSkippingRenderPass dummyRenderInt worldRenderersCheckIndex glRenderLists allRenderLists prevSortX prevSortY prevSortZ prevRenderSortX prevRenderSortY prevRenderSortZ prevChunkSortX prevChunkSortY prevChunkSortZ frustumCheckOffset
+net/minecraft/client/renderer/RenderGlobal$1 field_85101_a field_85099_b field_85100_c field_85098_d
+net/minecraft/client/renderer/RenderHelper colorBuffer field_82884_b field_82885_c
+net/minecraft/client/renderer/RenderList renderChunkX renderChunkY renderChunkZ cameraX cameraY cameraZ glLists valid bufferFlipped
+net/minecraft/client/renderer/RenderSorter baseEntity
+net/minecraft/client/renderer/StitcherException field_98149_a
+net/minecraft/client/renderer/Tessellator byteBuffer intBuffer floatBuffer shortBuffer rawBuffer vertexCount textureU textureV brightness color hasColor hasTexture hasBrightness hasNormals rawBufferIndex addedVertices isColorDisabled drawMode xOffset yOffset zOffset normal instance isDrawing bufferSize
+net/minecraft/client/renderer/ThreadDownloadImageData logger threadDownloadCounter field_152434_e imageUrl imageBuffer bufferedImage imageThread textureUploaded
+net/minecraft/client/renderer/ThreadDownloadImageData$1 field_110932_a
+net/minecraft/client/renderer/WorldRenderer vertexState worldObj glRenderList tessellator chunksUpdated posX posY posZ posXMinus posYMinus posZMinus posXClip posYClip posZClip isInFrustum skipRenderPass posXPlus posYPlus posZPlus needsUpdate rendererBoundingBox chunkIndex isVisible isWaitingOnOcclusionQuery glOcclusionQuery isChunkLit isInitialized tileEntityRenderers tileEntities bytesDrawn
+net/minecraft/client/renderer/culling/ClippingHelper frustum projectionMatrix modelviewMatrix clippingMatrix
+net/minecraft/client/renderer/culling/ClippingHelperImpl instance projectionMatrixBuffer modelviewMatrixBuffer field_78564_h
+net/minecraft/client/renderer/culling/Frustrum clippingHelper xPosition yPosition zPosition
+net/minecraft/client/renderer/entity/Render shadowTextures renderManager field_147909_c shadowSize shadowOpaque staticEntity
+net/minecraft/client/renderer/entity/RenderArrow arrowTextures
+net/minecraft/client/renderer/entity/RenderBat batTextures renderedBatSize
+net/minecraft/client/renderer/entity/RenderBiped modelBipedMain field_77070_b modelArmourChestplate field_82425_h field_110859_k bipedArmorFilenamePrefix
+net/minecraft/client/renderer/entity/RenderBlaze blazeTextures field_77068_a
+net/minecraft/client/renderer/entity/RenderBoat boatTextures modelBoat
+net/minecraft/client/renderer/entity/RenderCaveSpider caveSpiderTextures
+net/minecraft/client/renderer/entity/RenderChicken chickenTextures
+net/minecraft/client/renderer/entity/RenderCow cowTextures
+net/minecraft/client/renderer/entity/RenderCreeper armoredCreeperTextures creeperTextures creeperModel
+net/minecraft/client/renderer/entity/RenderDragon enderDragonExplodingTextures enderDragonCrystalBeamTextures enderDragonEyesTextures enderDragonTextures modelDragon
+net/minecraft/client/renderer/entity/RenderEnchantmentTable field_147540_b field_147541_c
+net/minecraft/client/renderer/entity/RenderEnderman endermanEyesTexture endermanTextures endermanModel rnd
+net/minecraft/client/renderer/entity/RenderFallingBlock field_147920_a
+net/minecraft/client/renderer/entity/RenderFireball scale
+net/minecraft/client/renderer/entity/RenderFish field_110792_a
+net/minecraft/client/renderer/entity/RenderGhast ghastTextures ghastShootingTextures
+net/minecraft/client/renderer/entity/RenderGiantZombie zombieTextures scale
+net/minecraft/client/renderer/entity/RenderHorse field_110852_a whiteHorseTextures muleTextures donkeyTextures zombieHorseTextures skeletonHorseTextures
+net/minecraft/client/renderer/entity/RenderIronGolem ironGolemTextures ironGolemModel
+net/minecraft/client/renderer/entity/RenderItem RES_ITEM_GLINT renderBlocksRi random renderWithColor zLevel renderInFrame
+net/minecraft/client/renderer/entity/RenderItem$1 field_147929_a field_147928_b
+net/minecraft/client/renderer/entity/RenderItem$2 field_147926_a field_147925_b
+net/minecraft/client/renderer/entity/RenderItem$3 field_147935_a field_147934_b
+net/minecraft/client/renderer/entity/RenderItem$4 field_147932_a field_147931_b
+net/minecraft/client/renderer/entity/RenderLeashKnot leashKnotTextures leashKnotModel
+net/minecraft/client/renderer/entity/RenderMagmaCube magmaCubeTextures
+net/minecraft/client/renderer/entity/RenderManager entityRenderMap instance textRenderer renderPosX renderPosY renderPosZ renderEngine itemRenderer worldObj livingPlayer field_147941_i playerViewY playerViewX options viewerPosX viewerPosY viewerPosZ debugBoundingBox
+net/minecraft/client/renderer/entity/RenderMinecart minecartTextures modelMinecart field_94145_f
+net/minecraft/client/renderer/entity/RenderMooshroom mooshroomTextures
+net/minecraft/client/renderer/entity/RenderOcelot blackOcelotTextures ocelotTextures redOcelotTextures siameseOcelotTextures
+net/minecraft/client/renderer/entity/RenderPainting field_110807_a
+net/minecraft/client/renderer/entity/RenderPig saddledPigTextures pigTextures
+net/minecraft/client/renderer/entity/RenderPlayer steveTextures modelBipedMain modelArmorChestplate modelArmor
+net/minecraft/client/renderer/entity/RenderSheep sheepTextures shearedSheepTextures
+net/minecraft/client/renderer/entity/RenderSilverfish silverfishTextures
+net/minecraft/client/renderer/entity/RenderSkeleton skeletonTextures witherSkeletonTextures
+net/minecraft/client/renderer/entity/RenderSlime slimeTextures scaleAmount
+net/minecraft/client/renderer/entity/RenderSnowMan snowManTextures snowmanModel
+net/minecraft/client/renderer/entity/RenderSnowball itemForRender metadata
+net/minecraft/client/renderer/entity/RenderSpider spiderEyesTextures spiderTextures
+net/minecraft/client/renderer/entity/RenderSquid squidTextures
+net/minecraft/client/renderer/entity/RenderTNTPrimed blockRenderer
+net/minecraft/client/renderer/entity/RenderVillager villagerTextures farmerVillagerTextures librarianVillagerTextures priestVillagerTextures smithVillagerTextures butcherVillagerTextures villagerModel
+net/minecraft/client/renderer/entity/RenderWitch witchTextures witchModel
+net/minecraft/client/renderer/entity/RenderWither invulnerableWitherTextures witherTextures field_82419_a
+net/minecraft/client/renderer/entity/RenderWolf wolfTextures tamedWolfTextures anrgyWolfTextures wolfCollarTextures
+net/minecraft/client/renderer/entity/RenderXPOrb experienceOrbTextures
+net/minecraft/client/renderer/entity/RenderZombie zombiePigmanTextures zombieTextures zombieVillagerTextures field_82434_o zombieVillagerModel field_82437_k field_82435_l field_82436_m field_82433_n field_82431_q
+net/minecraft/client/renderer/entity/RendererLivingEntity logger RES_ITEM_GLINT mainModel renderPassModel
+net/minecraft/client/renderer/texture/AbstractTexture glTextureId
+net/minecraft/client/renderer/texture/DynamicTexture dynamicTextureData width height
+net/minecraft/client/renderer/texture/LayeredTexture logger layeredTextureNames
+net/minecraft/client/renderer/texture/SimpleTexture logger textureLocation
+net/minecraft/client/renderer/texture/Stitcher mipmapLevelStitcher setStitchHolders stitchSlots currentWidth currentHeight maxWidth maxHeight forcePowerOf2 maxTileDimension
+net/minecraft/client/renderer/texture/Stitcher$Holder theTexture width height mipmapLevelHolder rotated scaleFactor
+net/minecraft/client/renderer/texture/Stitcher$Slot originX originY width height subSlots holder
+net/minecraft/client/renderer/texture/TextureAtlasSprite iconName framesTextureData animationMetadata rotated useAnisotropicFiltering originX originY width height minU maxU minV maxV frameCounter tickCounter
+net/minecraft/client/renderer/texture/TextureAtlasSprite$1 field_147983_a field_147982_b
+net/minecraft/client/renderer/texture/TextureClock field_94239_h field_94240_i
+net/minecraft/client/renderer/texture/TextureCompass currentAngle angleDelta
+net/minecraft/client/renderer/texture/TextureManager logger mapTextureObjects mapResourceLocations listTickables mapTextureCounters theResourceManager
+net/minecraft/client/renderer/texture/TextureManager$1 field_135062_a field_135061_b
+net/minecraft/client/renderer/texture/TextureMap logger locationBlocksTexture locationItemsTexture listAnimatedSprites mapRegisteredSprites mapUploadedSprites textureType basePath mipmapLevels anisotropicFiltering missingImage
+net/minecraft/client/renderer/texture/TextureMap$1 field_147980_a field_147979_b
+net/minecraft/client/renderer/texture/TextureMap$2 field_147977_a field_147976_b
+net/minecraft/client/renderer/texture/TextureMap$3 field_147974_a field_147973_b
+net/minecraft/client/renderer/texture/TextureUtil logger dataBuffer missingTexture missingTextureData field_147958_e field_147956_f field_152779_g field_147957_g
+net/minecraft/client/renderer/tileentity/RenderEndPortal field_147529_c field_147526_d field_147527_e field_147528_b
+net/minecraft/client/renderer/tileentity/RenderEnderCrystal enderCrystalTextures field_76995_b
+net/minecraft/client/renderer/tileentity/RenderItemFrame mapBackgroundTextures field_147916_f field_147917_g field_94147_f
+net/minecraft/client/renderer/tileentity/RenderWitherSkull invulnerableWitherTextures witherTextures skeletonHeadModel
+net/minecraft/client/renderer/tileentity/TileEntityBeaconRenderer beaconBeam
+net/minecraft/client/renderer/tileentity/TileEntityChestRenderer textureTrappedDouble textureChristmasDouble textureNormalDouble textureTrapped textureChristmas textureNormal simpleChest largeChest isChristams
+net/minecraft/client/renderer/tileentity/TileEntityEnderChestRenderer field_147520_b field_147521_c
+net/minecraft/client/renderer/tileentity/TileEntityRendererChestHelper instance field_147717_b field_147718_c field_147716_d
+net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher mapSpecialRenderers instance field_147557_n staticPlayerX staticPlayerY staticPlayerZ renderEngine worldObj field_147551_g field_147562_h field_147563_i field_147560_j field_147561_k field_147558_l
+net/minecraft/client/renderer/tileentity/TileEntityRendererPiston field_147516_b
+net/minecraft/client/renderer/tileentity/TileEntitySignRenderer field_147513_b model
+net/minecraft/client/renderer/tileentity/TileEntitySkullRenderer field_147537_c field_147534_d field_147535_e field_147532_f field_147536_b field_147533_g field_147538_h
+net/minecraft/client/renderer/tileentity/TileEntitySpecialRenderer field_147501_a
+net/minecraft/client/resources/AbstractResourcePack resourceLog resourcePackFile
+net/minecraft/client/resources/DefaultResourcePack defaultResourceDomains field_152781_b
+net/minecraft/client/resources/FallbackResourceManager resourcePacks frmMetadataSerializer
+net/minecraft/client/resources/FileResourcePack entryNameSplitter resourcePackZipFile
+net/minecraft/client/resources/FoliageColorReloadListener field_130079_a
+net/minecraft/client/resources/GrassColorReloadListener field_130078_a
+net/minecraft/client/resources/I18n i18nLocale
+net/minecraft/client/resources/Language languageCode region name bidirectional
+net/minecraft/client/resources/LanguageManager logger theMetadataSerializer currentLanguage currentLocale languageMap
+net/minecraft/client/resources/Locale splitter field_135031_c field_135032_a field_135029_d
+net/minecraft/client/resources/ResourceIndex field_152783_a field_152784_b
+net/minecraft/client/resources/ResourcePackListEntry field_148316_c field_148317_a field_148315_b
+net/minecraft/client/resources/ResourcePackListEntryDefault logger field_148320_d field_148321_e
+net/minecraft/client/resources/ResourcePackListEntryFound field_148319_c
+net/minecraft/client/resources/ResourcePackRepository resourcePackFilter dirResourcepacks rprDefaultResourcePack field_148534_e rprMetadataSerializer field_148532_f field_148533_g repositoryEntriesAll repositoryEntries
+net/minecraft/client/resources/ResourcePackRepository$2 field_148523_a
+net/minecraft/client/resources/ResourcePackRepository$Entry resourcePackFile reResourcePack rePackMetadataSection texturePackIcon locationTexturePackIcon field_110525_a
+net/minecraft/client/resources/SimpleReloadableResourceManager logger joinerResourcePacks domainResourceManagers reloadListeners setResourceDomains rmMetadataSerializer
+net/minecraft/client/resources/SimpleReloadableResourceManager$1 field_130076_a
+net/minecraft/client/resources/SimpleResource mapMetadataSections srResourceLocation resourceInputStream mcmetaInputStream srMetadataSerializer mcmetaJsonChecked mcmetaJson
+net/minecraft/client/resources/SkinManager DEFAULT_SKIN THREAD_POOL textureManager skinCacheDir sessionService skinCacheLoader
+net/minecraft/client/resources/SkinManager$1 field_152787_a
+net/minecraft/client/resources/SkinManager$2 field_152635_a field_152636_b field_152637_c field_152638_d field_152639_e
+net/minecraft/client/resources/SkinManager$3 field_152799_a field_152800_b field_152801_c field_152802_d
+net/minecraft/client/resources/SkinManager$3$1 field_152803_a field_152804_b
+net/minecraft/client/resources/data/AnimationFrame frameIndex frameTime
+net/minecraft/client/resources/data/AnimationMetadataSection animationFrames frameWidth frameHeight frameTime
+net/minecraft/client/resources/data/FontMetadataSection charWidths charLefts charSpacings
+net/minecraft/client/resources/data/IMetadataSerializer metadataSectionSerializerRegistry gsonBuilder gson
+net/minecraft/client/resources/data/IMetadataSerializer$Registration field_110502_a field_110500_b field_110501_c
+net/minecraft/client/resources/data/LanguageMetadataSection languages
+net/minecraft/client/resources/data/PackMetadataSection packDescription packFormat
+net/minecraft/client/resources/data/TextureMetadataSection textureBlur textureClamp listMipmaps
+net/minecraft/client/settings/GameSettings logger gson typeListString GUISCALES PARTICLES AMBIENT_OCCLUSIONS STREAM_COMPRESSIONS STREAM_CHAT_MODES STREAM_CHAT_FILTER_MODES STREAM_MIC_MODES mouseSensitivity invertMouse renderDistanceChunks viewBobbing anaglyph advancedOpengl fboEnable limitFramerate fancyGraphics ambientOcclusion clouds resourcePacks chatVisibility chatColours chatLinks chatLinksPrompt chatOpacity snooperEnabled fullScreen enableVsync hideServerAddress advancedItemTooltips pauseOnLostFocus showCape touchscreen overrideWidth overrideHeight heldItemTooltips chatScale chatWidth chatHeightUnfocused chatHeightFocused showInventoryAchievementHint mipmapLevels anisotropicFiltering mapSoundLevels streamBytesPerPixel streamMicVolume streamGameVolume streamKbps streamFps streamCompression streamSendMetadata streamPreferredServer streamChatEnabled streamChatUserFilter streamMicToggleBehavior keyBindForward keyBindLeft keyBindBack keyBindRight keyBindJump keyBindSneak keyBindInventory keyBindUseItem keyBindDrop keyBindAttack keyBindPickBlock keyBindSprint keyBindChat keyBindPlayerList keyBindCommand keyBindScreenshot keyBindTogglePerspective keyBindSmoothCamera keyBindFullscreen keyBindStreamStartStop keyBindStreamPauseUnpause keyBindStreamCommercials keyBindStreamToggleMic keyBindsHotbar keyBindings mc optionsFile difficulty hideGUI thirdPersonView showDebugInfo showDebugProfilerChart lastServer noclip smoothCamera debugCamEnable noclipRate debugCamRate fovSetting gammaSetting saturation guiScale particleSetting language forceUnicodeFont
+net/minecraft/client/settings/GameSettings$Options INVERT_MOUSE SENSITIVITY FOV GAMMA SATURATION RENDER_DISTANCE VIEW_BOBBING ANAGLYPH ADVANCED_OPENGL FRAMERATE_LIMIT FBO_ENABLE DIFFICULTY GRAPHICS AMBIENT_OCCLUSION GUI_SCALE RENDER_CLOUDS PARTICLES CHAT_VISIBILITY CHAT_COLOR CHAT_LINKS CHAT_OPACITY CHAT_LINKS_PROMPT SNOOPER_ENABLED USE_FULLSCREEN ENABLE_VSYNC SHOW_CAPE TOUCHSCREEN CHAT_SCALE CHAT_WIDTH CHAT_HEIGHT_FOCUSED CHAT_HEIGHT_UNFOCUSED MIPMAP_LEVELS ANISOTROPIC_FILTERING FORCE_UNICODE_FONT STREAM_BYTES_PER_PIXEL STREAM_VOLUME_MIC STREAM_VOLUME_SYSTEM STREAM_KBPS STREAM_FPS STREAM_COMPRESSION STREAM_SEND_METADATA STREAM_CHAT_ENABLED STREAM_CHAT_USER_FILTER STREAM_MIC_TOGGLE_BEHAVIOR enumFloat enumBoolean enumString valueStep valueMin valueMax $VALUES
+net/minecraft/client/settings/GameSettings$SwitchOptions optionIds
+net/minecraft/client/settings/KeyBinding keybindArray hash keybindSet keyDescription keyCodeDefault keyCategory keyCode pressed pressTime
+net/minecraft/client/shader/Framebuffer framebufferTextureWidth framebufferTextureHeight framebufferWidth framebufferHeight useDepth framebufferObject framebufferTexture depthBuffer framebufferColor framebufferFilter
+net/minecraft/client/shader/Shader manager framebufferIn framebufferOut listAuxFramebuffers listAuxNames listAuxWidths listAuxHeights projectionMatrix
+net/minecraft/client/shader/ShaderGroup mainFramebuffer resourceManager shaderGroupName listShaders mapFramebuffers listFramebuffers projectionMatrix mainFramebufferWidth mainFramebufferHeight field_148036_j field_148037_k
+net/minecraft/client/shader/ShaderLinkHelper logger staticShaderLinkHelper
+net/minecraft/client/shader/ShaderLoader shaderType shaderFilename shader shaderAttachCount
+net/minecraft/client/shader/ShaderLoader$ShaderType VERTEX FRAGMENT shaderName shaderExtension shaderMode loadedShaders $VALUES
+net/minecraft/client/shader/ShaderManager logger defaultShaderUniform staticShaderManager currentProgram field_148000_e shaderSamplers samplerNames shaderSamplerLocations shaderUniforms shaderUniformLocations mappedShaderUniforms program programFilename useFaceCulling isDirty field_148016_p field_148015_q field_148014_r vertexShaderLoader fragmentShaderLoader
+net/minecraft/client/shader/ShaderUniform logger uniformLocation uniformCount uniformType uniformIntBuffer uniformFloatBuffer shaderName field_148105_h shaderManager
+net/minecraft/client/shader/TesselatorVertexState rawBuffer rawBufferIndex vertexCount hasTexture hasBrightness hasNormals hasColor
+net/minecraft/client/stream/BroadcastController logger field_152865_a field_152866_b field_152862_C field_152863_D field_152867_c field_152868_d field_152869_e field_152870_f field_152871_g field_152872_h field_152873_i field_152874_j field_152875_k field_152876_l field_152877_m field_152878_n broadcastState field_152880_p field_152881_q field_152882_r field_152883_s field_152884_t field_152885_u channelInfo field_152887_w field_152888_x field_152889_y field_152890_z field_152860_A field_152864_E
+net/minecraft/client/stream/BroadcastController$BroadcastState Uninitialized Initialized Authenticating Authenticated LoggingIn LoggedIn FindingIngestServer ReceivedIngestServers ReadyToBroadcast Starting Broadcasting Stopping Paused IngestTesting $VALUES
+net/minecraft/client/stream/BroadcastController$SwitchBroadcastState field_152815_a
+net/minecraft/client/stream/ChatController LOGGER field_153003_a field_153004_b field_153005_c field_153006_d field_153007_e field_153008_f field_153009_g field_153010_h field_153011_i field_153012_j field_153013_k field_153014_l field_153015_m field_153016_n field_153017_o
+net/minecraft/client/stream/ChatController$ChatState Uninitialized Initialized Connecting Connected Disconnected $VALUES
+net/minecraft/client/stream/ChatController$SwitchChatState field_152982_a field_152983_b
+net/minecraft/client/stream/IStream$AuthFailureReason ERROR INVALID_TOKEN $VALUES
+net/minecraft/client/stream/IngestServerTester field_153043_a field_153044_b field_153045_c field_153046_d field_153047_e field_153048_f field_153049_g field_153050_h field_153051_i field_153052_j field_153053_k field_153054_l field_153055_m field_153056_n field_153057_o field_153058_p field_153059_q field_153060_r field_153061_s field_153062_t field_153063_u field_153064_v field_153065_w field_153066_x field_153067_y
+net/minecraft/client/stream/IngestServerTester$IngestTestState Uninitalized Starting ConnectingToServer TestingServer DoneTestingServer Finished Cancelled Failed $VALUES
+net/minecraft/client/stream/IngestServerTester$SwitchStatType field_153026_a field_153027_b
+net/minecraft/client/stream/Metadata field_152811_a field_152812_b field_152813_c field_152814_d
+net/minecraft/client/stream/NullStream field_152938_a
+net/minecraft/client/stream/TwitchStream field_152950_b field_152949_a broadcastController field_152952_d field_152953_e field_152954_f field_152955_g field_152956_h field_152957_i field_152958_j field_152959_k field_152960_l field_152961_m field_152962_n field_152963_o field_152964_p field_152965_q
+net/minecraft/client/stream/TwitchStream$1 field_153083_a field_153084_b
+net/minecraft/client/stream/TwitchStream$1$1 field_153082_a
+net/minecraft/client/util/JsonBlendingMode field_148118_a field_148116_b field_148117_c field_148114_d field_148115_e field_148112_f field_148113_g field_148119_h
+net/minecraft/client/util/JsonException field_151383_a field_151382_b
+net/minecraft/client/util/JsonException$Entry field_151376_a field_151375_b
+net/minecraft/client/util/QuadComparator field_147630_a field_147628_b field_147629_c field_147627_d
+net/minecraft/client/util/RenderDistanceSorter field_152632_a field_152633_b
+net/minecraft/command/CommandBase theAdmin
+net/minecraft/command/CommandDebug logger field_147206_b field_147207_c
+net/minecraft/command/CommandException errorObjects
+net/minecraft/command/CommandHandler logger commandMap commandSet
+net/minecraft/command/CommandSpreadPlayers$Position field_111101_a field_111100_b
+net/minecraft/command/IEntitySelector selectAnything field_152785_b selectInventories
+net/minecraft/command/IEntitySelector$ArmoredMob field_96567_c
+net/minecraft/command/PlayerSelector tokenPattern intListPattern keyValueListPattern
+net/minecraft/command/server/CommandBanIp field_147211_a
+net/minecraft/command/server/CommandBlockLogic timestampFormat successCount trackOutput lastOutput commandStored customName
+net/minecraft/crash/CrashReport logger description cause theReportCategory crashReportSections crashReportFile field_85059_f stacktrace
+net/minecraft/crash/CrashReport$1 field_71494_a
+net/minecraft/crash/CrashReport$2 field_71496_a
+net/minecraft/crash/CrashReport$3 field_71490_a
+net/minecraft/crash/CrashReport$4 field_71492_a
+net/minecraft/crash/CrashReport$5 field_71486_a
+net/minecraft/crash/CrashReport$6 field_71488_a
+net/minecraft/crash/CrashReport$7 field_83004_a
+net/minecraft/crash/CrashReport$8 field_85086_a
+net/minecraft/crash/CrashReportCategory theCrashReport field_85076_b field_85077_c stackTrace
+net/minecraft/crash/CrashReportCategory$1 field_85080_a field_147151_b
+net/minecraft/crash/CrashReportCategory$2 field_85063_a
+net/minecraft/crash/CrashReportCategory$3 field_85067_a field_85065_b field_85066_c
+net/minecraft/crash/CrashReportCategory$Entry field_85092_a field_85091_b
+net/minecraft/creativetab/CreativeTabs creativeTabArray tabBlock tabDecorations tabRedstone tabTransport tabMisc tabAllSearch tabFood tabTools tabCombat tabBrewing tabMaterials tabInventory tabIndex tabLabel theTexture hasScrollbar drawTitle enchantmentTypes iconItemStack
+net/minecraft/dispenser/IBehaviorDispenseItem itemDispenseBehaviorProvider
+net/minecraft/dispenser/PositionImpl x y z
+net/minecraft/enchantment/Enchantment enchantmentsList enchantmentsBookList protection fireProtection featherFalling blastProtection projectileProtection respiration aquaAffinity thorns sharpness smite baneOfArthropods knockback fireAspect looting efficiency silkTouch unbreaking fortune power punch flame infinity luckOfTheSea lure effectId weight type name
+net/minecraft/enchantment/EnchantmentDamage protectionName baseEnchantability levelEnchantability thresholdEnchantability damageType
+net/minecraft/enchantment/EnchantmentData enchantmentobj enchantmentLevel
+net/minecraft/enchantment/EnchantmentHelper enchantmentRand enchantmentModifierDamage enchantmentModifierLiving field_151388_d field_151389_e
+net/minecraft/enchantment/EnchantmentHelper$DamageIterator field_151366_a field_151365_b
+net/minecraft/enchantment/EnchantmentHelper$HurtIterator field_151364_a field_151363_b
+net/minecraft/enchantment/EnchantmentHelper$ModifierDamage damageModifier source
+net/minecraft/enchantment/EnchantmentHelper$ModifierLiving livingModifier entityLiving
+net/minecraft/enchantment/EnchantmentProtection protectionName baseEnchantability levelEnchantability thresholdEnchantability protectionType
+net/minecraft/enchantment/EnumEnchantmentType all armor armor_feet armor_legs armor_torso armor_head weapon digger fishing_rod breakable bow $VALUES
+net/minecraft/entity/DataWatcher field_151511_a isBlank dataTypes watchedObjects objectChanged lock
+net/minecraft/entity/DataWatcher$WatchableObject objectType dataValueId watchedObject watched
+net/minecraft/entity/Entity nextEntityID entityId renderDistanceWeight preventEntitySpawning riddenByEntity ridingEntity forceSpawn worldObj prevPosX prevPosY prevPosZ posX posY posZ motionX motionY motionZ rotationYaw rotationPitch prevRotationYaw prevRotationPitch boundingBox onGround isCollidedHorizontally isCollidedVertically isCollided velocityChanged isInWeb field_70135_K isDead yOffset width height prevDistanceWalkedModified distanceWalkedModified distanceWalkedOnStepModified fallDistance nextStepDistance lastTickPosX lastTickPosY lastTickPosZ yOffset2 stepHeight noClip entityCollisionReduction rand ticksExisted fireResistance fire inWater hurtResistantTime firstUpdate isImmuneToFire dataWatcher entityRiderPitchDelta entityRiderYawDelta addedToChunk chunkCoordX chunkCoordY chunkCoordZ serverPosX serverPosY serverPosZ ignoreFrustumCheck isAirBorne timeUntilPortal inPortal portalCounter dimension teleportDirection invulnerable entityUniqueID myEntitySize
+net/minecraft/entity/Entity$1 field_85155_a
+net/minecraft/entity/Entity$2 field_96564_a
+net/minecraft/entity/Entity$EnumEntitySize SIZE_1 SIZE_2 SIZE_3 SIZE_4 SIZE_5 SIZE_6 $VALUES
+net/minecraft/entity/Entity$SwitchEnumEntitySize field_96565_a
+net/minecraft/entity/EntityAgeable field_98056_d field_98057_e
+net/minecraft/entity/EntityBodyHelper theLiving rotationTickCounter prevRenderYawHead
+net/minecraft/entity/EntityCreature field_110179_h field_110181_i pathToEntity entityToAttack hasAttacked fleeingTick homePosition maximumHomeDistance aiBase field_110180_bt
+net/minecraft/entity/EntityHanging tickCounter1 hangingDirection field_146063_b field_146064_c field_146062_d
+net/minecraft/entity/EntityList logger stringToClassMapping classToStringMapping idToClassMap classToIDMapping stringToIDMapping entityEggs
+net/minecraft/entity/EntityList$EntityEggInfo spawnedID primaryColor secondaryColor field_151512_d field_151513_e
+net/minecraft/entity/EntityLiving livingSoundTime experienceValue lookHelper moveHelper jumpHelper bodyHelper navigator tasks targetTasks attackTarget senses equipment equipmentDropChances canPickUpLoot persistenceRequired defaultPitch currentTarget numTicksToChaseTarget isLeashed leashedToEntity leashNBTTag
+net/minecraft/entity/EntityLivingBase sprintingSpeedBoostModifierUUID sprintingSpeedBoostModifier attributeMap _combatTracker activePotionsMap previousEquipment isSwingInProgress swingProgressInt arrowHitTimer prevHealth hurtTime maxHurtTime attackedAtYaw deathTime attackTime prevSwingProgress swingProgress prevLimbSwingAmount limbSwingAmount limbSwing maxHurtResistantTime prevCameraPitch cameraPitch field_70769_ao field_70770_ap renderYawOffset prevRenderYawOffset rotationYawHead prevRotationYawHead jumpMovementFactor attackingPlayer recentlyHit dead entityAge field_70768_au field_110154_aX field_70764_aw field_70763_ax field_70741_aB scoreValue lastDamage isJumping moveStrafing moveForward randomYawVelocity newPosRotationIncrements newPosX newPosY newPosZ newRotationYaw newRotationPitch potionsNeedUpdate entityLivingToAttack revengeTimer lastAttacker lastAttackerTime landMovementFactor jumpTicks field_110151_bq
+net/minecraft/entity/EntityMinecartCommandBlock field_145824_a field_145823_b
+net/minecraft/entity/EntityMinecartCommandBlock$1 field_145768_a
+net/minecraft/entity/EntityTracker logger theWorld trackedEntities trackedEntityHashTable maxTrackingDistanceThreshold
+net/minecraft/entity/EntityTracker$1 field_96570_a field_96569_b
+net/minecraft/entity/EntityTrackerEntry logger trackedEntity trackingDistanceThreshold updateFrequency encodedPosX encodedPosY encodedPosZ encodedRotationYaw encodedRotationPitch lastHeadMotion lastTrackedEntityMotionX lastTrackedEntityMotionY motionZ updateCounter lastTrackedEntityPosX lastTrackedEntityPosY lastTrackedEntityPosZ firstUpdateDone sendVelocityUpdates ticksSinceLastForcedTeleport field_85178_v ridingEntity playerEntitiesUpdated trackingPlayers
+net/minecraft/entity/EnumCreatureAttribute UNDEFINED UNDEAD ARTHROPOD $VALUES
+net/minecraft/entity/EnumCreatureType monster creature ambient waterCreature creatureClass maxNumberOfCreature creatureMaterial isPeacefulCreature isAnimal $VALUES
+net/minecraft/entity/NpcMerchant theMerchantInventory customer recipeList
+net/minecraft/entity/SharedMonsterAttributes logger maxHealth followRange knockbackResistance movementSpeed attackDamage
+net/minecraft/entity/ai/EntityAIArrowAttack entityHost rangedAttackEntityHost attackTarget rangedAttackTime entityMoveSpeed field_75318_f field_96561_g maxRangedAttackTime field_96562_i maxAttackDistance
+net/minecraft/entity/ai/EntityAIAttackOnCollide worldObj attacker attackTick speedTowardsTarget longMemory entityPathEntity classTarget field_75445_i field_151497_i field_151495_j field_151496_k
+net/minecraft/entity/ai/EntityAIAvoidEntity field_98218_a theEntity farSpeed nearSpeed closestLivingEntity distanceFromEntity entityPathEntity entityPathNavigate targetEntityClass
+net/minecraft/entity/ai/EntityAIAvoidEntity$1 field_98219_c
+net/minecraft/entity/ai/EntityAIBase mutexBits
+net/minecraft/entity/ai/EntityAIBeg theWolf thePlayer worldObject minPlayerDistance field_75384_e
+net/minecraft/entity/ai/EntityAIBreakDoor breakingTime field_75358_j
+net/minecraft/entity/ai/EntityAIControlledByPlayer thisEntity maxSpeed currentSpeed speedBoosted speedBoostTime maxSpeedBoostTime
+net/minecraft/entity/ai/EntityAICreeperSwell swellingCreeper creeperAttackTarget
+net/minecraft/entity/ai/EntityAIDefendVillage irongolem villageAgressorTarget
+net/minecraft/entity/ai/EntityAIDoorInteract theEntity entityPosX entityPosY entityPosZ doorBlock hasStoppedDoorInteraction entityPositionX entityPositionZ
+net/minecraft/entity/ai/EntityAIEatGrass grassEaterEntity entityWorld eatingGrassTimer
+net/minecraft/entity/ai/EntityAIFleeSun theCreature shelterX shelterY shelterZ movementSpeed theWorld
+net/minecraft/entity/ai/EntityAIFollowGolem theVillager theGolem takeGolemRoseTick tookGolemRose
+net/minecraft/entity/ai/EntityAIFollowOwner thePet theOwner theWorld field_75336_f petPathfinder field_75343_h maxDist minDist field_75344_i
+net/minecraft/entity/ai/EntityAIFollowParent childAnimal parentAnimal field_75347_c field_75345_d
+net/minecraft/entity/ai/EntityAIHurtByTarget entityCallsForHelp revengeTimerOld
+net/minecraft/entity/ai/EntityAILeapAtTarget leaper leapTarget leapMotionY
+net/minecraft/entity/ai/EntityAILookAtTradePlayer theMerchant
+net/minecraft/entity/ai/EntityAILookAtVillager theGolem theVillager lookTime
+net/minecraft/entity/ai/EntityAILookIdle idleEntity lookX lookZ idleTime
+net/minecraft/entity/ai/EntityAIMate theAnimal theWorld targetMate spawnBabyDelay moveSpeed
+net/minecraft/entity/ai/EntityAIMoveIndoors entityObj doorInfo insidePosX insidePosZ
+net/minecraft/entity/ai/EntityAIMoveThroughVillage theEntity movementSpeed entityPathNavigate doorInfo isNocturnal doorList
+net/minecraft/entity/ai/EntityAIMoveTowardsRestriction theEntity movePosX movePosY movePosZ movementSpeed
+net/minecraft/entity/ai/EntityAIMoveTowardsTarget theEntity targetEntity movePosX movePosY movePosZ speed maxTargetDistance
+net/minecraft/entity/ai/EntityAINearestAttackableTarget targetClass targetChance theNearestAttackableTargetSorter targetEntitySelector targetEntity
+net/minecraft/entity/ai/EntityAINearestAttackableTarget$1 field_111103_c field_111102_d
+net/minecraft/entity/ai/EntityAINearestAttackableTarget$Sorter theEntity
+net/minecraft/entity/ai/EntityAIOcelotAttack theWorld theEntity theVictim attackCountdown
+net/minecraft/entity/ai/EntityAIOcelotSit field_151493_a field_151491_b field_151492_c field_151489_d field_151490_e field_151487_f field_151488_g field_151494_h
+net/minecraft/entity/ai/EntityAIOpenDoor closeDoor closeDoorTemporisation
+net/minecraft/entity/ai/EntityAIOwnerHurtByTarget theDefendingTameable theOwnerAttacker field_142051_e
+net/minecraft/entity/ai/EntityAIOwnerHurtTarget theEntityTameable theTarget field_142050_e
+net/minecraft/entity/ai/EntityAIPanic theEntityCreature speed randPosX randPosY randPosZ
+net/minecraft/entity/ai/EntityAIPlay villagerObj targetVillager field_75261_c playTime
+net/minecraft/entity/ai/EntityAIRestrictOpenDoor entityObj frontDoor
+net/minecraft/entity/ai/EntityAIRestrictSun theEntity
+net/minecraft/entity/ai/EntityAIRunAroundLikeCrazy horseHost field_111178_b field_111179_c field_111176_d field_111177_e
+net/minecraft/entity/ai/EntityAISit theEntity isSitting
+net/minecraft/entity/ai/EntityAISwimming theEntity
+net/minecraft/entity/ai/EntityAITarget taskOwner shouldCheckSight nearbyOnly targetSearchStatus targetSearchDelay targetUnseenTicks
+net/minecraft/entity/ai/EntityAITargetNonTamed theTameable
+net/minecraft/entity/ai/EntityAITasks logger taskEntries executingTaskEntries theProfiler tickCount tickRate
+net/minecraft/entity/ai/EntityAITasks$EntityAITaskEntry action priority field_75732_c
+net/minecraft/entity/ai/EntityAITempt temptedEntity field_75282_b targetX targetY targetZ field_75278_f field_75279_g temptingPlayer delayTemptCounter isRunning field_151484_k scaredByPlayerMovement field_75286_m
+net/minecraft/entity/ai/EntityAITradePlayer villager
+net/minecraft/entity/ai/EntityAIVillagerMate villagerObj mate worldObj matingTimeout villageObj
+net/minecraft/entity/ai/EntityAIWander entity xPosition yPosition zPosition speed
+net/minecraft/entity/ai/EntityAIWatchClosest theWatcher closestEntity maxDistanceForPlayer lookTime field_75331_e watchedClass
+net/minecraft/entity/ai/EntityJumpHelper entity isJumping
+net/minecraft/entity/ai/EntityLookHelper entity deltaLookYaw deltaLookPitch isLooking posX posY posZ
+net/minecraft/entity/ai/EntityMinecartMobSpawner mobSpawnerLogic
+net/minecraft/entity/ai/EntityMinecartMobSpawner$1 field_98296_a
+net/minecraft/entity/ai/EntityMoveHelper entity posX posY posZ speed update
+net/minecraft/entity/ai/EntitySenses entityObj seenEntities unseenEntities
+net/minecraft/entity/ai/RandomPositionGenerator staticVector
+net/minecraft/entity/ai/attributes/AttributeModifier amount operation name id isSaved
+net/minecraft/entity/ai/attributes/BaseAttribute unlocalizedName defaultValue shouldWatch
+net/minecraft/entity/ai/attributes/BaseAttributeMap attributes attributesByName
+net/minecraft/entity/ai/attributes/ModifiableAttributeInstance attributeMap genericAttribute mapByOperation mapByName mapByUUID baseValue needsUpdate cachedValue
+net/minecraft/entity/ai/attributes/RangedAttribute minimumValue maximumValue description
+net/minecraft/entity/ai/attributes/ServersideAttributeMap attributeInstanceSet descriptionToAttributeInstanceMap
+net/minecraft/entity/boss/BossStatus healthScale statusBarTime bossName hasColorModifier
+net/minecraft/entity/boss/EntityDragon targetX targetY targetZ ringBuffer ringBufferIndex dragonPartArray dragonPartHead dragonPartBody dragonPartTail1 dragonPartTail2 dragonPartTail3 dragonPartWing1 dragonPartWing2 prevAnimTime animTime forceNewTarget slowed target deathTicks healingEnderCrystal
+net/minecraft/entity/boss/EntityDragonPart entityDragonObj field_146032_b
+net/minecraft/entity/boss/EntityWither field_82220_d field_82221_e field_82217_f field_82218_g field_82223_h field_82224_i field_82222_j attackEntitySelector
+net/minecraft/entity/effect/EntityLightningBolt lightningState boltVertex boltLivingTime
+net/minecraft/entity/item/EntityBoat isBoatEmpty speedMultiplier boatPosRotationIncrements boatX boatY boatZ boatYaw boatPitch velocityX velocityY velocityZ
+net/minecraft/entity/item/EntityEnderCrystal innerRotation health
+net/minecraft/entity/item/EntityEnderEye targetX targetY targetZ despawnTimer shatterOrDrop
+net/minecraft/entity/item/EntityFallingBlock blockObj metadata fallTime shouldDropItem field_145808_f hurtEntities fallHurtMax fallHurtAmount tileEntityData
+net/minecraft/entity/item/EntityFireworkRocket fireworkAge lifetime
+net/minecraft/entity/item/EntityItem logger age delayBeforeCanPickup health field_145801_f field_145802_g hoverStart
+net/minecraft/entity/item/EntityItemFrame itemDropChance
+net/minecraft/entity/item/EntityMinecart isInReverse entityName matrix turnProgress minecartX minecartY minecartZ minecartYaw minecartPitch velocityX velocityY velocityZ
+net/minecraft/entity/item/EntityMinecartContainer minecartContainerItems dropContentsWhenDead
+net/minecraft/entity/item/EntityMinecartFurnace fuel pushX pushZ
+net/minecraft/entity/item/EntityMinecartHopper isBlocked transferTicker
+net/minecraft/entity/item/EntityMinecartTNT minecartTNTFuse
+net/minecraft/entity/item/EntityPainting art
+net/minecraft/entity/item/EntityPainting$EnumArt Kebab Aztec Alban Aztec2 Bomb Plant Wasteland Pool Courbet Sea Sunset Creebet Wanderer Graham Match Bust Stage Void SkullAndRoses Wither Fighters Pointer Pigscene BurningSkull Skeleton DonkeyKong maxArtTitleLength title sizeX sizeY offsetX offsetY $VALUES
+net/minecraft/entity/item/EntityTNTPrimed fuse tntPlacedBy
+net/minecraft/entity/item/EntityXPOrb xpColor xpOrbAge field_70532_c xpOrbHealth xpValue closestPlayer xpTargetColor
+net/minecraft/entity/monster/EntityBlaze heightOffset heightOffsetUpdateTime field_70846_g
+net/minecraft/entity/monster/EntityCreeper lastActiveTime timeSinceIgnited fuseTime explosionRadius
+net/minecraft/entity/monster/EntityEnderman attackingSpeedBoostModifierUUID attackingSpeedBoostModifier carriableBlocks teleportDelay stareTimer lastEntityToAttack isAggressive
+net/minecraft/entity/monster/EntityGhast courseChangeCooldown waypointX waypointY waypointZ targetedEntity aggroCooldown prevAttackCounter attackCounter explosionStrength
+net/minecraft/entity/monster/EntityIronGolem homeCheckTimer villageObj attackTimer holdRoseTick
+net/minecraft/entity/monster/EntityPigZombie field_110189_bq field_110190_br angerLevel randomSoundDelay field_110191_bu
+net/minecraft/entity/monster/EntitySilverfish allySummonCooldown
+net/minecraft/entity/monster/EntitySkeleton aiArrowAttack aiAttackOnCollide
+net/minecraft/entity/monster/EntitySlime squishAmount squishFactor prevSquishFactor slimeJumpDelay
+net/minecraft/entity/monster/EntitySpider$GroupData field_111105_a
+net/minecraft/entity/monster/EntityWitch field_110184_bp field_110185_bq witchDrops witchAttackTimer
+net/minecraft/entity/monster/EntityZombie field_110186_bp babySpeedBoostUUID babySpeedBoostModifier field_146075_bs conversionTime field_146076_bu field_146074_bv field_146073_bw
+net/minecraft/entity/monster/EntityZombie$GroupData field_142048_a field_142046_b field_142047_c
+net/minecraft/entity/monster/IMob mobSelector
+net/minecraft/entity/passive/EntityAnimal inLove breeding playerInLove
+net/minecraft/entity/passive/EntityBat spawnPosition
+net/minecraft/entity/passive/EntityChicken field_70886_e destPos field_70884_g field_70888_h field_70889_i timeUntilNextEgg field_152118_bv
+net/minecraft/entity/passive/EntityHorse horseBreedingSelector horseJumpStrength horseArmorTextures field_110273_bx armorValues horseTextures field_110269_bA horseMarkingTextures field_110292_bC eatingHaystackCounter openMouthCounter jumpRearingCounter field_110278_bp field_110279_bq horseJumping horseChest hasReproduced temper jumpPower field_110294_bI headLean prevHeadLean rearingAmount prevRearingAmount mouthOpenness prevMouthOpenness gallopTime field_110286_bQ field_110280_bR
+net/minecraft/entity/passive/EntityHorse$GroupData field_111107_a field_111106_b
+net/minecraft/entity/passive/EntityOcelot aiTempt
+net/minecraft/entity/passive/EntityPig aiControlledByPlayer
+net/minecraft/entity/passive/EntitySheep inventoryCrafting fleeceColorTable sheepTimer entityAIEatGrass
+net/minecraft/entity/passive/EntitySheep$1 field_90034_a
+net/minecraft/entity/passive/EntitySquid squidPitch prevSquidPitch squidYaw prevSquidYaw squidRotation prevSquidRotation tentacleAngle lastTentacleAngle randomMotionSpeed rotationVelocity field_70871_bB randomMotionVecX randomMotionVecY randomMotionVecZ
+net/minecraft/entity/passive/EntityTameable aiSit
+net/minecraft/entity/passive/EntityVillager randomTickDivider isMating isPlaying villageObj buyingPlayer buyingList timeUntilReset needsInitilization wealth lastBuyingPlayer isLookingForHome field_82191_bN villagersSellingList blacksmithSellingList
+net/minecraft/entity/passive/EntityWolf headRotationCourse headRotationCourseOld isWet isShaking timeWolfIsShaking prevTimeWolfIsShaking
+net/minecraft/entity/player/EntityPlayer inventory theInventoryEnderChest inventoryContainer openContainer foodStats flyToggleTimer prevCameraYaw cameraYaw xpCooldown field_71091_bM field_71096_bN field_71097_bO field_71094_bP field_71095_bQ field_71085_bR sleeping playerLocation sleepTimer field_71079_bU field_71082_cx field_71089_bV spawnChunk spawnForced startMinecartRidingCoordinate capabilities experienceLevel experienceTotal experience itemInUse itemInUseCount speedOnGround speedInAir field_82249_h gameProfile fishEntity
+net/minecraft/entity/player/EntityPlayer$EnumChatVisibility FULL SYSTEM HIDDEN field_151432_d chatVisibility resourceKey $VALUES
+net/minecraft/entity/player/EntityPlayer$EnumStatus OK NOT_POSSIBLE_HERE NOT_POSSIBLE_NOW TOO_FAR_AWAY OTHER_PROBLEM NOT_SAFE $VALUES
+net/minecraft/entity/player/EntityPlayerMP logger translator playerNetServerHandler mcServer theItemInWorldManager managedPosX managedPosZ loadedChunks destroyedItemsNetCache field_147103_bO field_130068_bO lastHealth lastFoodLevel wasHungry lastExperience field_147101_bU chatVisibility chatColours playerLastActiveTime currentWindowId isChangingQuantityOnly ping playerConqueredTheEnd
+net/minecraft/entity/player/InventoryPlayer mainInventory armorInventory currentItem currentItemStack player itemStack inventoryChanged
+net/minecraft/entity/player/InventoryPlayer$1 field_96634_a field_96633_b
+net/minecraft/entity/player/PlayerCapabilities disableDamage isFlying allowFlying isCreativeMode allowEdit flySpeed walkSpeed
+net/minecraft/entity/projectile/EntityArrow field_145791_d field_145792_e field_145789_f field_145790_g inData inGround canBePickedUp arrowShake shootingEntity ticksInGround ticksInAir damage knockbackStrength
+net/minecraft/entity/projectile/EntityFireball field_145795_e field_145793_f field_145794_g field_145796_h inGround shootingEntity ticksAlive ticksInAir accelerationX accelerationY accelerationZ
+net/minecraft/entity/projectile/EntityFishHook JUNK VALUABLES FISH xTile yTile zTile inTile inGround shake angler ticksInGround ticksInAir ticksCatchable ticksCaughtDelay ticksCatchableDelay fishApproachAngle caughtEntity fishPosRotationIncrements fishX fishY fishZ fishYaw fishPitch clientMotionX clientMotionY clientMotionZ
+net/minecraft/entity/projectile/EntityLargeFireball field_92057_e
+net/minecraft/entity/projectile/EntityPotion potionDamage
+net/minecraft/entity/projectile/EntityThrowable xTile yTile zTile inBlock inGround throwableShake thrower throwerName ticksInGround ticksInAir
+net/minecraft/event/ClickEvent action value
+net/minecraft/event/ClickEvent$Action OPEN_URL OPEN_FILE RUN_COMMAND TWITCH_USER_INFO SUGGEST_COMMAND nameMapping allowedInChat canonicalName $VALUES
+net/minecraft/event/HoverEvent action value
+net/minecraft/event/HoverEvent$Action SHOW_TEXT SHOW_ACHIEVEMENT SHOW_ITEM nameMapping allowedInChat canonicalName $VALUES
+net/minecraft/init/Blocks air stone grass dirt cobblestone planks sapling bedrock flowing_water water flowing_lava lava sand gravel gold_ore iron_ore coal_ore log log2 leaves leaves2 sponge glass lapis_ore lapis_block dispenser sandstone noteblock bed golden_rail detector_rail sticky_piston web tallgrass deadbush piston piston_head wool piston_extension yellow_flower red_flower brown_mushroom red_mushroom gold_block iron_block double_stone_slab stone_slab brick_block tnt bookshelf mossy_cobblestone obsidian torch fire mob_spawner oak_stairs chest redstone_wire diamond_ore diamond_block crafting_table wheat farmland furnace lit_furnace standing_sign wooden_door ladder rail stone_stairs wall_sign lever stone_pressure_plate iron_door wooden_pressure_plate redstone_ore lit_redstone_ore unlit_redstone_torch redstone_torch stone_button snow_layer ice snow cactus clay reeds jukebox fence pumpkin netherrack soul_sand glowstone portal lit_pumpkin cake unpowered_repeater powered_repeater trapdoor monster_egg stonebrick brown_mushroom_block red_mushroom_block iron_bars glass_pane melon_block pumpkin_stem melon_stem vine fence_gate brick_stairs stone_brick_stairs mycelium waterlily nether_brick nether_brick_fence nether_brick_stairs nether_wart enchanting_table brewing_stand cauldron end_portal end_portal_frame end_stone dragon_egg redstone_lamp lit_redstone_lamp double_wooden_slab wooden_slab cocoa sandstone_stairs emerald_ore ender_chest tripwire_hook tripwire emerald_block spruce_stairs birch_stairs jungle_stairs command_block beacon cobblestone_wall flower_pot carrots potatoes wooden_button skull anvil trapped_chest light_weighted_pressure_plate heavy_weighted_pressure_plate unpowered_comparator powered_comparator daylight_detector redstone_block quartz_ore hopper quartz_block quartz_stairs activator_rail dropper stained_hardened_clay hay_block carpet hardened_clay coal_block packed_ice acacia_stairs dark_oak_stairs double_plant stained_glass stained_glass_pane
+net/minecraft/init/Bootstrap alreadyRegistered
+net/minecraft/init/Bootstrap$10 field_150841_b
+net/minecraft/init/Bootstrap$11 field_150840_b
+net/minecraft/init/Bootstrap$12 field_150839_b
+net/minecraft/init/Bootstrap$13 field_150838_b
+net/minecraft/init/Bootstrap$5 field_150843_b
+net/minecraft/init/Bootstrap$5$1 field_150836_b field_150837_c
+net/minecraft/init/Bootstrap$9 field_150842_b
+net/minecraft/init/Items iron_shovel iron_pickaxe iron_axe flint_and_steel apple bow arrow coal diamond iron_ingot gold_ingot iron_sword wooden_sword wooden_shovel wooden_pickaxe wooden_axe stone_sword stone_shovel stone_pickaxe stone_axe diamond_sword diamond_shovel diamond_pickaxe diamond_axe stick bowl mushroom_stew golden_sword golden_shovel golden_pickaxe golden_axe string feather gunpowder wooden_hoe stone_hoe iron_hoe diamond_hoe golden_hoe wheat_seeds wheat bread leather_helmet leather_chestplate leather_leggings leather_boots chainmail_helmet chainmail_chestplate chainmail_leggings chainmail_boots iron_helmet iron_chestplate iron_leggings iron_boots diamond_helmet diamond_chestplate diamond_leggings diamond_boots golden_helmet golden_chestplate golden_leggings golden_boots flint porkchop cooked_porkchop painting golden_apple sign wooden_door bucket water_bucket lava_bucket minecart saddle iron_door redstone snowball boat leather milk_bucket brick clay_ball reeds paper book slime_ball chest_minecart furnace_minecart egg compass fishing_rod clock glowstone_dust fish cooked_fish dye bone sugar cake bed repeater cookie filled_map shears melon pumpkin_seeds melon_seeds beef cooked_beef chicken cooked_chicken rotten_flesh ender_pearl blaze_rod ghast_tear gold_nugget nether_wart potionitem glass_bottle spider_eye fermented_spider_eye blaze_powder magma_cream brewing_stand cauldron ender_eye speckled_melon spawn_egg experience_bottle fire_charge writable_book written_book emerald item_frame flower_pot carrot potato baked_potato poisonous_potato map golden_carrot skull carrot_on_a_stick nether_star pumpkin_pie fireworks firework_charge enchanted_book comparator netherbrick quartz tnt_minecart hopper_minecart iron_horse_armor golden_horse_armor diamond_horse_armor lead name_tag command_block_minecart record_13 record_cat record_blocks record_chirp record_far record_mall record_mellohi record_stal record_strad record_ward record_11 record_wait
+net/minecraft/inventory/Container inventoryItemStacks inventorySlots windowId transactionID dragMode dragEvent dragSlots crafters playerList
+net/minecraft/inventory/ContainerBeacon tileBeacon beaconSlot field_82865_g field_82867_h field_82868_i
+net/minecraft/inventory/ContainerBeacon$BeaconSlot field_82876_a
+net/minecraft/inventory/ContainerBrewingStand tileBrewingStand theSlot brewTime
+net/minecraft/inventory/ContainerBrewingStand$Ingredient field_75226_a
+net/minecraft/inventory/ContainerBrewingStand$Potion player
+net/minecraft/inventory/ContainerChest lowerChestInventory numRows
+net/minecraft/inventory/ContainerDispenser tileEntityDispenser
+net/minecraft/inventory/ContainerEnchantment tableInventory worldPointer posX posY posZ rand nameSeed enchantLevels
+net/minecraft/inventory/ContainerEnchantment$1 field_70484_a
+net/minecraft/inventory/ContainerEnchantment$2 field_75227_a
+net/minecraft/inventory/ContainerFurnace tileFurnace lastCookTime lastBurnTime lastItemBurnTime
+net/minecraft/inventory/ContainerHopper field_94538_a
+net/minecraft/inventory/ContainerHorseInventory field_111243_a theHorse
+net/minecraft/inventory/ContainerHorseInventory$1 field_111239_a
+net/minecraft/inventory/ContainerHorseInventory$2 field_111241_a field_111240_b
+net/minecraft/inventory/ContainerMerchant theMerchant merchantInventory theWorld
+net/minecraft/inventory/ContainerPlayer craftMatrix craftResult isLocalWorld thePlayer
+net/minecraft/inventory/ContainerPlayer$1 field_75236_a field_75235_b
+net/minecraft/inventory/ContainerRepair logger outputSlot inputSlots theWorld field_82861_i field_82858_j field_82859_k maximumCost materialCost repairedItemName thePlayer
+net/minecraft/inventory/ContainerRepair$1 field_135010_a
+net/minecraft/inventory/ContainerRepair$2 field_135071_a field_135069_b field_135070_c field_135067_d field_135068_e
+net/minecraft/inventory/ContainerWorkbench craftMatrix craftResult worldObj posX posY posZ
+net/minecraft/inventory/InventoryBasic inventoryTitle slotsCount inventoryContents field_70480_d hasCustomName
+net/minecraft/inventory/InventoryCraftResult stackResult
+net/minecraft/inventory/InventoryCrafting stackList inventoryWidth eventHandler
+net/minecraft/inventory/InventoryEnderChest associatedChest
+net/minecraft/inventory/InventoryLargeChest name upperChest lowerChest
+net/minecraft/inventory/InventoryMerchant theMerchant theInventory thePlayer currentRecipe currentRecipeIndex
+net/minecraft/inventory/Slot slotIndex inventory slotNumber xDisplayPosition yDisplayPosition
+net/minecraft/inventory/SlotCrafting craftMatrix thePlayer amountCrafted
+net/minecraft/inventory/SlotFurnace thePlayer field_75228_b
+net/minecraft/inventory/SlotMerchantResult theMerchantInventory thePlayer field_75231_g theMerchant
+net/minecraft/item/EnumAction none eat drink block bow $VALUES
+net/minecraft/item/EnumRarity common uncommon rare epic rarityColor rarityName $VALUES
+net/minecraft/item/Item itemRegistry itemModifierUUID tabToDisplayOn itemRand maxStackSize maxDurability bFull3D hasSubtypes containerItem potionEffect unlocalizedName itemIcon iconString
+net/minecraft/item/Item$ToolMaterial WOOD STONE IRON EMERALD GOLD harvestLevel maxUses efficiencyOnProperMaterial damageVsEntity enchantability $VALUES
+net/minecraft/item/ItemArmor maxDamageArray CLOTH_OVERLAY_NAMES EMPTY_SLOT_NAMES dispenserBehavior armorType damageReduceAmount renderIndex material overlayIcon emptySlotIcon
+net/minecraft/item/ItemArmor$ArmorMaterial CLOTH CHAIN IRON GOLD DIAMOND maxDamageFactor damageReductionAmountArray enchantability $VALUES
+net/minecraft/item/ItemAxe field_150917_c
+net/minecraft/item/ItemBlock blockInstance field_150938_b
+net/minecraft/item/ItemBlockWithMetadata field_150950_b
+net/minecraft/item/ItemBow bowPullIconNameArray iconArray
+net/minecraft/item/ItemBucket isFull
+net/minecraft/item/ItemCoal field_111220_a
+net/minecraft/item/ItemColored field_150944_b field_150945_c
+net/minecraft/item/ItemDoor doorMaterial
+net/minecraft/item/ItemDye dyeColorNames dyeIcons dyeColors dyeIconArray
+net/minecraft/item/ItemFireworkCharge field_150904_a
+net/minecraft/item/ItemFishFood cooked
+net/minecraft/item/ItemFishFood$FishType COD SALMON CLOWNFISH PUFFERFISH itemDamageToFishTypeMap itemDamage unlocalizedNamePart uncookedIcon cookedIcon uncookedHealAmount uncookedSaturationModifier cookedHealAmount cookedSaturationModifier cookable $VALUES
+net/minecraft/item/ItemFishingRod theIcon
+net/minecraft/item/ItemFood itemUseDuration healAmount saturationModifier isWolfsFavoriteMeat alwaysEdible potionId potionDuration potionAmplifier potionEffectProbability
+net/minecraft/item/ItemHangingEntity hangingEntityClass
+net/minecraft/item/ItemHoe theToolMaterial
+net/minecraft/item/ItemLeaves field_150940_b
+net/minecraft/item/ItemMinecart dispenserMinecartBehavior minecartType
+net/minecraft/item/ItemMinecart$1 behaviourDefaultDispenseItem
+net/minecraft/item/ItemMonsterPlacer theIcon
+net/minecraft/item/ItemMultiTexture field_150941_b field_150942_c
+net/minecraft/item/ItemPickaxe effectiveBlocks
+net/minecraft/item/ItemPotion effectCache field_77835_b field_94591_c field_94590_d field_94592_ct
+net/minecraft/item/ItemRecord field_150928_b recordName
+net/minecraft/item/ItemReed field_150935_a
+net/minecraft/item/ItemSeedFood field_150908_b soilId
+net/minecraft/item/ItemSeeds field_150925_a soilBlockID
+net/minecraft/item/ItemSkull skullTypes field_94587_a field_94586_c
+net/minecraft/item/ItemSlab field_150948_b field_150949_c field_150947_d
+net/minecraft/item/ItemSpade field_150916_c
+net/minecraft/item/ItemStack field_111284_a stackSize animationsToGo theItem stackTagCompound metadata itemFrame
+net/minecraft/item/ItemSword field_150934_a repairMaterial
+net/minecraft/item/ItemTool effectiveBlocksTool efficiencyOnProperMaterial damageVsEntity toolMaterial
+net/minecraft/item/crafting/CraftingManager instance recipes
+net/minecraft/item/crafting/CraftingManager$1 field_77582_a
+net/minecraft/item/crafting/FurnaceRecipes smeltingBase smeltingList experienceList
+net/minecraft/item/crafting/RecipeFireworks field_92102_a
+net/minecraft/item/crafting/RecipesArmor recipePatterns recipeItems
+net/minecraft/item/crafting/RecipesIngots recipeItems
+net/minecraft/item/crafting/RecipesTools recipePatterns recipeItems
+net/minecraft/item/crafting/RecipesWeapons recipePatterns recipeItems
+net/minecraft/item/crafting/ShapedRecipes recipeWidth recipeHeight recipeItems recipeOutput field_92101_f
+net/minecraft/item/crafting/ShapelessRecipes recipeOutput recipeItems
+net/minecraft/nbt/JsonToNBT logger
+net/minecraft/nbt/JsonToNBT$Any field_150490_a
+net/minecraft/nbt/JsonToNBT$Compound field_150491_b
+net/minecraft/nbt/JsonToNBT$List field_150492_b
+net/minecraft/nbt/JsonToNBT$Primitive field_150493_b
+net/minecraft/nbt/NBTBase NBT_TYPES
+net/minecraft/nbt/NBTSizeTracker INFINITE spaceAllocated spaceRead
+net/minecraft/nbt/NBTTagByte data
+net/minecraft/nbt/NBTTagByteArray byteArray
+net/minecraft/nbt/NBTTagCompound logger tagMap
+net/minecraft/nbt/NBTTagCompound$1 field_82585_a field_82584_b
+net/minecraft/nbt/NBTTagCompound$2 field_82588_a field_82587_b
+net/minecraft/nbt/NBTTagDouble data
+net/minecraft/nbt/NBTTagFloat data
+net/minecraft/nbt/NBTTagInt data
+net/minecraft/nbt/NBTTagIntArray intArray
+net/minecraft/nbt/NBTTagList tagList tagType
+net/minecraft/nbt/NBTTagLong data
+net/minecraft/nbt/NBTTagShort data
+net/minecraft/nbt/NBTTagString data
+net/minecraft/network/EnumConnectionState HANDSHAKING PLAY STATUS LOGIN STATES_BY_ID STATES_BY_CLASS id field_150769_h field_150770_i $VALUES
+net/minecraft/network/NetHandlerPlayServer logger netManager serverController playerEntity networkTickCount floatingTickCount field_147366_g field_147378_h lastPingTime field_147376_j lastSentPingPacket chatSpamThresholdCount itemDropThreshold field_147372_n lastPosX lastPosY lastPosZ hasMoved
+net/minecraft/network/NetHandlerPlayServer$1 field_151289_a field_151288_b
+net/minecraft/network/NetHandlerPlayServer$2 field_151287_a field_151286_b
+net/minecraft/network/NetHandlerPlayServer$SwitchEnumState field_151290_a
+net/minecraft/network/NettyEncryptingDecoder decryptionCodec
+net/minecraft/network/NettyEncryptingEncoder encryptionCodec
+net/minecraft/network/NettyEncryptionTranslator cipher field_150505_b field_150506_c
+net/minecraft/network/NetworkManager logger logMarkerNetwork logMarkerPackets logMarkerStat attrKeyConnectionState attrKeyReceivable attrKeySendable eventLoops STATISTICS isClientSide receivedPacketsQueue outboundPacketsQueue channel socketAddress packetListener connectionState terminationReason isEncrypted
+net/minecraft/network/NetworkManager$1 field_150717_a field_150715_b field_150716_c field_150713_d field_150714_e
+net/minecraft/network/NetworkManager$2 field_150705_a
+net/minecraft/network/NetworkManager$3 field_150778_a
+net/minecraft/network/NetworkManager$InboundHandlerTuplePacketListener packet futureListeners
+net/minecraft/network/NetworkStatistics LOGGER NETSTAT_MARKER field_152480_c field_152481_d
+net/minecraft/network/NetworkStatistics$PacketStat packetId data
+net/minecraft/network/NetworkStatistics$PacketStatData totalBytes count averageBytes
+net/minecraft/network/NetworkStatistics$Tracker field_152490_a
+net/minecraft/network/NetworkSystem logger eventLoops mcServer isAlive endpoints networkManagers
+net/minecraft/network/NetworkSystem$1 field_151264_a
+net/minecraft/network/NetworkSystem$2 field_151281_a
+net/minecraft/network/NetworkSystem$3 field_151280_a field_151279_b
+net/minecraft/network/NetworkSystem$4 field_151284_a field_151282_b field_151283_c
+net/minecraft/network/Packet logger
+net/minecraft/network/PacketBuffer buf
+net/minecraft/network/PingResponseHandler logger networkSystem
+net/minecraft/network/ServerStatusResponse serverMotd playerCount protocolVersion favicon
+net/minecraft/network/ServerStatusResponse$MinecraftProtocolVersionIdentifier name protocol
+net/minecraft/network/ServerStatusResponse$PlayerCountData maxPlayers onlinePlayerCount players
+net/minecraft/network/handshake/client/C00Handshake protocolVersion ip port requestedState
+net/minecraft/network/login/client/C00PacketLoginStart profile
+net/minecraft/network/login/client/C01PacketEncryptionResponse field_149302_a field_149301_b
+net/minecraft/network/login/server/S00PacketDisconnect reason
+net/minecraft/network/login/server/S01PacketEncryptionRequest hashedServerId publicKey field_149611_c
+net/minecraft/network/login/server/S02PacketLoginSuccess profile
+net/minecraft/network/play/client/C00PacketKeepAlive key
+net/minecraft/network/play/client/C01PacketChatMessage message
+net/minecraft/network/play/client/C02PacketUseEntity entityId action
+net/minecraft/network/play/client/C02PacketUseEntity$Action INTERACT ATTACK ACTIONS id $VALUES
+net/minecraft/network/play/client/C03PacketPlayer x y z stance yaw pitch field_149474_g field_149480_h rotating
+net/minecraft/network/play/client/C07PacketPlayerDigging diggedBlockX diggedBlockY diggedBlockZ diggingBlockFace status
+net/minecraft/network/play/client/C08PacketPlayerBlockPlacement placedBlockX placedBlockY placedBlockZ placedBlockDirection stack facingX facingY facingZ
+net/minecraft/network/play/client/C09PacketHeldItemChange slotId
+net/minecraft/network/play/client/C0APacketAnimation id type
+net/minecraft/network/play/client/C0BPacketEntityAction field_149517_a field_149515_b field_149516_c
+net/minecraft/network/play/client/C0CPacketInput strafeSpeed forwardSpeed jumping sneaking
+net/minecraft/network/play/client/C0DPacketCloseWindow windowId
+net/minecraft/network/play/client/C0EPacketClickWindow windowId slotId usedButton actionNumber clickedItem mode
+net/minecraft/network/play/client/C0FPacketConfirmTransaction id uid accepted
+net/minecraft/network/play/client/C10PacketCreativeInventoryAction slotId stack
+net/minecraft/network/play/client/C11PacketEnchantItem id button
+net/minecraft/network/play/client/C12PacketUpdateSign x y z lines
+net/minecraft/network/play/client/C13PacketPlayerAbilities invulnerable flying allowFlying creativeMode flySpeed walkSpeed
+net/minecraft/network/play/client/C14PacketTabComplete message
+net/minecraft/network/play/client/C15PacketClientSettings lang view chatVisibility enableColors difficulty showCape
+net/minecraft/network/play/client/C16PacketClientStatus status
+net/minecraft/network/play/client/C16PacketClientStatus$EnumState PERFORM_RESPAWN REQUEST_STATS OPEN_INVENTORY_ACHIEVEMENT id BY_ID $VALUES
+net/minecraft/network/play/client/C17PacketCustomPayload channel length data
+net/minecraft/network/play/server/S00PacketKeepAlive field_149136_a
+net/minecraft/network/play/server/S01PacketJoinGame field_149206_a field_149204_b field_149205_c field_149202_d field_149203_e field_149200_f field_149201_g
+net/minecraft/network/play/server/S02PacketChat chatComponent isChat
+net/minecraft/network/play/server/S03PacketTimeUpdate field_149369_a field_149368_b
+net/minecraft/network/play/server/S04PacketEntityEquipment field_149394_a field_149392_b field_149393_c
+net/minecraft/network/play/server/S05PacketSpawnPosition field_149364_a field_149362_b field_149363_c
+net/minecraft/network/play/server/S06PacketUpdateHealth health foodLevel saturationLevel
+net/minecraft/network/play/server/S07PacketRespawn field_149088_a field_149086_b field_149087_c field_149085_d
+net/minecraft/network/play/server/S08PacketPlayerPosLook field_148940_a field_148938_b field_148939_c field_148936_d field_148937_e field_148935_f
+net/minecraft/network/play/server/S09PacketHeldItemChange field_149387_a
+net/minecraft/network/play/server/S0APacketUseBed playerID x y z
+net/minecraft/network/play/server/S0BPacketAnimation entityId type
+net/minecraft/network/play/server/S0CPacketSpawnPlayer field_148957_a field_148955_b field_148956_c field_148953_d field_148954_e field_148951_f field_148952_g field_148959_h field_148960_i field_148958_j
+net/minecraft/network/play/server/S0DPacketCollectItem field_149357_a field_149356_b
+net/minecraft/network/play/server/S0EPacketSpawnObject field_149018_a field_149016_b field_149017_c field_149014_d field_149015_e field_149012_f field_149013_g field_149021_h field_149022_i field_149019_j field_149020_k
+net/minecraft/network/play/server/S0FPacketSpawnMob field_149042_a field_149040_b field_149041_c field_149038_d field_149039_e field_149036_f field_149037_g field_149047_h field_149048_i field_149045_j field_149046_k field_149043_l field_149044_m
+net/minecraft/network/play/server/S10PacketSpawnPainting field_148973_a field_148971_b field_148972_c field_148969_d field_148970_e field_148968_f
+net/minecraft/network/play/server/S11PacketSpawnExperienceOrb field_148992_a field_148990_b field_148991_c field_148988_d field_148989_e
+net/minecraft/network/play/server/S12PacketEntityVelocity field_149417_a field_149415_b field_149416_c field_149414_d
+net/minecraft/network/play/server/S13PacketDestroyEntities field_149100_a
+net/minecraft/network/play/server/S14PacketEntity field_149074_a field_149072_b field_149073_c field_149070_d field_149071_e field_149068_f field_149069_g
+net/minecraft/network/play/server/S18PacketEntityTeleport field_149458_a field_149456_b field_149457_c field_149454_d field_149455_e field_149453_f
+net/minecraft/network/play/server/S19PacketEntityHeadLook field_149384_a field_149383_b
+net/minecraft/network/play/server/S19PacketEntityStatus field_149164_a field_149163_b
+net/minecraft/network/play/server/S1BPacketEntityAttach field_149408_a field_149406_b field_149407_c
+net/minecraft/network/play/server/S1CPacketEntityMetadata field_149379_a field_149378_b
+net/minecraft/network/play/server/S1DPacketEntityEffect field_149434_a field_149432_b field_149433_c field_149431_d
+net/minecraft/network/play/server/S1EPacketRemoveEntityEffect field_149079_a field_149078_b
+net/minecraft/network/play/server/S1FPacketSetExperience field_149401_a field_149399_b field_149400_c
+net/minecraft/network/play/server/S20PacketEntityProperties field_149445_a field_149444_b
+net/minecraft/network/play/server/S20PacketEntityProperties$Snapshot field_151412_b field_151413_c field_151411_d field_151414_a
+net/minecraft/network/play/server/S21PacketChunkData field_149284_a field_149282_b field_149283_c field_149280_d field_149281_e field_149278_f field_149279_g field_149285_h field_149286_i
+net/minecraft/network/play/server/S21PacketChunkData$Extracted field_150282_a field_150280_b field_150281_c
+net/minecraft/network/play/server/S22PacketMultiBlockChange logger field_148925_b field_148926_c field_148924_d
+net/minecraft/network/play/server/S23PacketBlockChange field_148887_a field_148885_b field_148886_c field_148883_d field_148884_e
+net/minecraft/network/play/server/S24PacketBlockAction field_148876_a field_148874_b field_148875_c field_148872_d field_148873_e field_148871_f
+net/minecraft/network/play/server/S25PacketBlockBreakAnim field_148852_a field_148850_b field_148851_c field_148848_d field_148849_e
+net/minecraft/network/play/server/S26PacketMapChunkBulk field_149266_a field_149264_b field_149265_c field_149262_d field_149263_e field_149260_f field_149261_g field_149267_h field_149268_i
+net/minecraft/network/play/server/S27PacketExplosion field_149158_a field_149156_b field_149157_c field_149154_d field_149155_e field_149152_f field_149153_g field_149159_h
+net/minecraft/network/play/server/S28PacketEffect soundType soundData xPos yPos zPos serverWide
+net/minecraft/network/play/server/S29PacketSoundEffect field_149219_a field_149217_b field_149218_c field_149215_d field_149216_e field_149214_f
+net/minecraft/network/play/server/S2APacketParticles field_149236_a field_149234_b field_149235_c field_149232_d field_149233_e field_149230_f field_149231_g field_149237_h field_149238_i
+net/minecraft/network/play/server/S2BPacketChangeGameState MESSAGE_NAMES state field_149141_c
+net/minecraft/network/play/server/S2CPacketSpawnGlobalEntity field_149059_a field_149057_b field_149058_c field_149055_d field_149056_e
+net/minecraft/network/play/server/S2DPacketOpenWindow windowId inventoryType windowTitle slotCount useProvidedTitle entityId
+net/minecraft/network/play/server/S2EPacketCloseWindow field_148896_a
+net/minecraft/network/play/server/S2FPacketSetSlot field_149179_a field_149177_b field_149178_c
+net/minecraft/network/play/server/S30PacketWindowItems field_148914_a field_148913_b
+net/minecraft/network/play/server/S31PacketWindowProperty field_149186_a field_149184_b field_149185_c
+net/minecraft/network/play/server/S32PacketConfirmTransaction field_148894_a field_148892_b field_148893_c
+net/minecraft/network/play/server/S33PacketUpdateSign field_149352_a field_149350_b field_149351_c field_149349_d
+net/minecraft/network/play/server/S34PacketMaps mapId field_149190_b
+net/minecraft/network/play/server/S35PacketUpdateTileEntity x y z metadata nbt
+net/minecraft/network/play/server/S36PacketSignEditorOpen field_149133_a field_149131_b field_149132_c
+net/minecraft/network/play/server/S37PacketStatistics field_148976_a
+net/minecraft/network/play/server/S38PacketPlayerListItem field_149126_a field_149124_b field_149125_c
+net/minecraft/network/play/server/S39PacketPlayerAbilities invulnerable flying allowFlying creativeMode flySpeed walkSpeed
+net/minecraft/network/play/server/S3APacketTabComplete field_149632_a
+net/minecraft/network/play/server/S3BPacketScoreboardObjective field_149343_a field_149341_b field_149342_c
+net/minecraft/network/play/server/S3CPacketUpdateScore field_149329_a field_149327_b field_149328_c field_149326_d
+net/minecraft/network/play/server/S3DPacketDisplayScoreboard field_149374_a field_149373_b
+net/minecraft/network/play/server/S3EPacketTeams field_149320_a field_149318_b field_149319_c field_149316_d field_149317_e field_149314_f field_149315_g
+net/minecraft/network/play/server/S3FPacketCustomPayload channel data
+net/minecraft/network/play/server/S40PacketDisconnect reason
+net/minecraft/network/rcon/RConConsoleSource instance buffer
+net/minecraft/network/status/client/C01PacketPing clientTime
+net/minecraft/network/status/server/S00PacketServerInfo GSON response
+net/minecraft/network/status/server/S01PacketPong clientTime
+net/minecraft/pathfinding/Path pathPoints count
+net/minecraft/pathfinding/PathEntity points currentPathIndex pathLength
+net/minecraft/pathfinding/PathFinder worldMap path pointMap pathOptions canPassOpenWoodenDoors canPassClosedWoodenDoor avoidsWater canEntitySwim
+net/minecraft/pathfinding/PathNavigate theEntity worldObj currentPath speed pathSearchRange avoidSun totalTicks ticksAtLastPos lastPosCheck canPassOpenWoodenDoors canPassClosedWoodenDoors avoidsWater canSwim
+net/minecraft/pathfinding/PathPoint xCoord yCoord zCoord hash index totalPathDistance distanceToNext distanceToTarget previous visited
+net/minecraft/potion/Potion potionTypes field_76423_b moveSpeed moveSlowdown digSpeed digSlowdown damageBoost heal harm jump confusion regeneration resistance fireResistance waterBreathing invisibility blindness nightVision hunger weakness poison wither healthBoost absorption saturation field_76442_z field_76409_A field_76410_B field_76411_C field_76405_D field_76406_E field_76407_F field_76408_G id attributeModifierMap isBadEffect liquidColor name statusIconIndex effectiveness usable
+net/minecraft/potion/PotionEffect potionID duration amplifier isSplashPotion isAmbient isPotionDurationMax
+net/minecraft/potion/PotionHelper field_77924_a sugarEffect ghastTearEffect spiderEyeEffect fermentedSpiderEyeEffect speckledMelonEffect blazePowderEffect magmaCreamEffect redstoneEffect glowstoneEffect gunpowderEffect goldenCarrotEffect field_151423_m potionRequirements potionAmplifiers field_77925_n potionPrefixes
+net/minecraft/profiler/PlayerUsageSnooper field_152773_a field_152774_b uniqueID serverUrl playerStatsCollector threadTrigger syncLock minecraftStartTimeMilis isRunning selfCounter
+net/minecraft/profiler/PlayerUsageSnooper$1 field_76344_a
+net/minecraft/profiler/Profiler logger sectionList timestampList profilingEnabled profilingSection profilingMap
+net/minecraft/profiler/Profiler$Result field_76332_a field_76330_b field_76331_c
+net/minecraft/realms/DisconnectedOnlineScreen title reason lines parent
+net/minecraft/realms/RealmsAnvilLevelStorageSource levelStorageSource
+net/minecraft/realms/RealmsBridge LOGGER previousScreen
+net/minecraft/realms/RealmsButton proxy
+net/minecraft/realms/RealmsConnect LOGGER onlineScreen aborted connection
+net/minecraft/realms/RealmsConnect$1 field_154355_a field_154356_b field_154357_c
+net/minecraft/realms/RealmsEditBox BACKWARDS FORWARDS CURSOR_INSERT_WIDTH CURSOR_INSERT_COLOR CURSOR_APPEND_CHARACTER font x y width height value maxLength frame bordered canLoseFocus inFocus isEditable displayPos cursorPos highlightPos textColor textColorUneditable visible
+net/minecraft/realms/RealmsLevelSummary levelSummary
+net/minecraft/realms/RealmsScreen SKIN_HEAD_U SKIN_HEAD_V SKIN_HEAD_WIDTH SKIN_HEAD_HEIGHT SKIN_TEX_WIDTH SKIN_TEX_HEIGHT SKIN_HAT_U SKIN_HAT_V SKIN_HAT_WIDTH SKIN_HAT_HEIGHT minecraft width height proxy
+net/minecraft/realms/RealmsScrolledSelectionList proxy
+net/minecraft/realms/RealmsServerAddress host port
+net/minecraft/realms/RealmsServerStatusPinger LOGGER connections
+net/minecraft/realms/RealmsServerStatusPinger$1 field_154345_e field_154341_a field_154342_b field_154343_c field_154344_d
+net/minecraft/realms/RealmsSharedConstants NETWORK_PROTOCOL_VERSION TICKS_PER_SECOND VERSION_STRING
+net/minecraft/realms/RealmsSliderButton value sliding minValue maxValue steps
+net/minecraft/realms/ServerPing nrOfPlayers lastPingSnapshot
+net/minecraft/realms/Tezzelator t instance
+net/minecraft/scoreboard/IScoreObjectiveCriteria INSTANCES DUMMY deathCount playerKillCount totalKillCount health
+net/minecraft/scoreboard/Score scoreComparator theScoreboard theScoreObjective scorePlayerName scorePoints
+net/minecraft/scoreboard/ScoreDummyCriteria field_96644_g
+net/minecraft/scoreboard/ScoreObjective theScoreboard name objectiveCriteria displayName
+net/minecraft/scoreboard/ScorePlayerTeam theScoreboard field_96675_b membershipSet teamNameSPT namePrefixSPT colorSuffix allowFriendlyFire canSeeFriendlyInvisibles
+net/minecraft/scoreboard/Scoreboard scoreObjectives scoreObjectiveCriterias field_96544_c objectiveDisplaySlots teams teamMemberships
+net/minecraft/scoreboard/ScoreboardSaveData logger theScoreboard field_96506_b
+net/minecraft/scoreboard/ServerScoreboard scoreboardMCServer field_96553_b field_96554_c
+net/minecraft/server/MinecraftServer logger USER_CACHE_FILE mcServer anvilConverterForAnvilFile usageSnooper anvilFile playersOnline commandManager theProfiler networkSystem statusResponse random serverPort worldServers serverConfigManager serverRunning serverStopped tickCounter serverProxy currentTask percentDone onlineMode canSpawnAnimals canSpawnNPCs pvpEnabled allowFlight motd buildLimit maxPlayerIdleMinutes tickTimeArray timeOfLastDimensionTick serverKeyPair serverOwner folderName worldName isDemo enableBonusChest worldIsBeingDeleted serverTexturePack serverIsRunning timeOfLastWarning userMessage startProfiling isGamemodeForced authService sessionService nanoTimeSinceStatusRefresh profileRepo profileCache
+net/minecraft/server/MinecraftServer$1 field_96245_b field_74267_a
+net/minecraft/server/MinecraftServer$3 field_73716_a
+net/minecraft/server/MinecraftServer$4 field_74274_a
+net/minecraft/server/MinecraftServer$5 field_74272_a
+net/minecraft/server/MinecraftServer$6 field_74270_a
+net/minecraft/server/integrated/IntegratedPlayerList hostPlayerData
+net/minecraft/server/integrated/IntegratedServer logger mc theWorldSettings isGamePaused isPublic lanServerPing
+net/minecraft/server/integrated/IntegratedServer$1 field_76974_a
+net/minecraft/server/integrated/IntegratedServer$2 field_76972_a
+net/minecraft/server/management/BanEntry dateFormat banStartDate bannedBy banEndDate reason
+net/minecraft/server/management/ItemInWorldManager theWorld thisPlayerMP gameType isDestroyingBlock initialDamage curBlockX curBlockY curBlockZ curblockDamage receivedFinishDiggingPacket posX posY posZ initialBlockDamage durabilityRemainingOnBlock
+net/minecraft/server/management/LowerStringMap internalMap
+net/minecraft/server/management/PlayerManager field_152627_a theWorldServer players playerInstances playerInstancesToUpdate playerInstanceList playerViewRadius previousTotalWorldTime xzDirectionsConst
+net/minecraft/server/management/PlayerManager$PlayerInstance playersWatchingChunk currentChunk locationOfBlockChange numBlocksToUpdate flagsYAreasToUpdate previousWorldTime field_73265_a
+net/minecraft/server/management/PlayerPositionComparator theChunkCoordinates
+net/minecraft/server/management/PlayerProfileCache dateFormat field_152661_c field_152662_d field_152663_e field_152664_f gson usercacheFile field_152666_h
+net/minecraft/server/management/PlayerProfileCache$1 field_152667_a
+net/minecraft/server/management/PlayerProfileCache$ProfileEntry field_152672_b field_152673_c field_152671_a
+net/minecraft/server/management/PlayerProfileCache$Serializer field_152677_a
+net/minecraft/server/management/PreYggdrasilConverter LOGGER OLD_IPBAN_FILE OLD_PLAYERBAN_FILE OLD_OPS_FILE OLD_WHITELIST_FILE
+net/minecraft/server/management/PreYggdrasilConverter$5 field_152741_a field_152742_b
+net/minecraft/server/management/ServerConfigurationManager FILE_PLAYERBANS FILE_IPBANS FILE_OPS FILE_WHITELIST logger dateFormat mcServer playerEntityList bannedPlayers bannedIPs ops whiteListedPlayers playerStatFiles playerNBTManagerObj whiteListEnforced maxPlayers viewDistance gameType commandsAllowedForAll playerPingIndex
+net/minecraft/server/management/UserList logger gson saveFile values lanServer saveFileFormat
+net/minecraft/server/management/UserList$Serializer field_152752_a
+net/minecraft/server/management/UserListEntry value
+net/minecraft/server/management/UserListOpsEntry field_152645_a
+net/minecraft/server/network/NetHandlerHandshakeTCP server networkManager
+net/minecraft/server/network/NetHandlerHandshakeTCP$SwitchEnumConnectionState VALUES
+net/minecraft/server/network/NetHandlerLoginServer AUTHENTICATOR_THREAD_ID logger RANDOM field_147330_e server networkManager currentLoginState connectionTimer loginGameProfile serverId secretKey
+net/minecraft/server/network/NetHandlerLoginServer$1 field_151292_a
+net/minecraft/server/network/NetHandlerLoginServer$LoginState HELLO KEY AUTHENTICATING READY_TO_ACCEPT ACCEPTED $VALUES
+net/minecraft/server/network/NetHandlerStatusServer server networkManager
+net/minecraft/stats/Achievement displayColumn displayRow parentAchievement achievementDescription statStringFormatter theItemStack isSpecial
+net/minecraft/stats/AchievementList minDisplayColumn minDisplayRow maxDisplayColumn maxDisplayRow achievementList openInventory mineWood buildWorkBench buildPickaxe buildFurnace acquireIron buildHoe makeBread bakeCake buildBetterPickaxe cookFish onARail buildSword killEnemy killCow flyPig snipeSkeleton diamonds field_150966_x portal ghast blazeRod potion theEnd theEnd2 enchantments overkill bookcase breedCow spawnWither killWither fullBeacon exploreAllBiomes
+net/minecraft/stats/ObjectiveStat field_151459_g
+net/minecraft/stats/StatBase statId statName isIndependent type field_150957_c field_150956_d numberFormat simpleStatType decimalFormat timeStatType distanceStatType field_111202_k
+net/minecraft/stats/StatCrafting field_150960_a
+net/minecraft/stats/StatFileWriter field_150875_a
+net/minecraft/stats/StatList oneShotStats allStats generalStats itemStats objectMineStats leaveGameStat minutesPlayedStat distanceWalkedStat distanceSwumStat distanceFallenStat distanceClimbedStat distanceFlownStat distanceDoveStat distanceByMinecartStat distanceByBoatStat distanceByPigStat field_151185_q jumpStat dropStat damageDealtStat damageTakenStat deathsStat mobKillsStat animalsBredStat playerKillsStat fishCaughtStat field_151183_A field_151184_B mineBlockStatArray objectCraftStats objectUseStats objectBreakStats
+net/minecraft/stats/StatisticsFile logger field_150890_c field_150887_d field_150888_e field_150885_f field_150886_g
+net/minecraft/tileentity/MobSpawnerBaseLogic spawnDelay mobID minecartToSpawn randomEntity field_98287_c field_98284_d minSpawnDelay maxSpawnDelay spawnCount cachedEntity maxNearbyEntities activatingRangeFromPlayer spawnRange
+net/minecraft/tileentity/MobSpawnerBaseLogic$WeightedRandomMinecart field_98222_b entityType field_98221_d
+net/minecraft/tileentity/TileEntity logger nameToClassMap classToNameMap worldObj xCoord yCoord zCoord tileEntityInvalid blockMetadata blockType
+net/minecraft/tileentity/TileEntity$1 field_150830_a
+net/minecraft/tileentity/TileEntity$2 field_150832_a
+net/minecraft/tileentity/TileEntity$3 field_150834_a
+net/minecraft/tileentity/TileEntityBeacon effectsList field_146016_i field_146014_j isComplete levels primaryEffect secondaryEffect payment field_146008_p
+net/minecraft/tileentity/TileEntityBrewingStand inputSlots outputSlots brewingItemStacks brewTime filledSlots ingredientID field_145942_n
+net/minecraft/tileentity/TileEntityChest chestContents adjacentChestChecked adjacentChestZNeg adjacentChestXPos adjacentChestXNeg adjacentChestZPos lidAngle prevLidAngle numPlayersUsing ticksSinceSync cachedChestType customName
+net/minecraft/tileentity/TileEntityCommandBlock field_145994_a
+net/minecraft/tileentity/TileEntityCommandBlock$1 field_145767_a
+net/minecraft/tileentity/TileEntityComparator outputSignal
+net/minecraft/tileentity/TileEntityDispenser field_146022_i field_146021_j field_146020_a
+net/minecraft/tileentity/TileEntityEnchantmentTable tickCount pageFlip pageFlipPrev field_145932_k field_145929_l bookSpread bookSpreadPrev bookRotation bookRotationPrev field_145924_q field_145923_r field_145922_s
+net/minecraft/tileentity/TileEntityEnderChest field_145972_a prevLidAngle field_145973_j field_145974_k
+net/minecraft/tileentity/TileEntityFlowerPot flowerPotItem flowerPotData
+net/minecraft/tileentity/TileEntityFurnace slotsTop slotsBottom slotsSides furnaceItemStacks furnaceBurnTime currentItemBurnTime furnaceCookTime furnaceCustomName
+net/minecraft/tileentity/TileEntityHopper field_145900_a field_145902_i transferCooldown
+net/minecraft/tileentity/TileEntityMobSpawner field_145882_a
+net/minecraft/tileentity/TileEntityMobSpawner$1 field_150825_a
+net/minecraft/tileentity/TileEntityNote note previousRedstoneState
+net/minecraft/tileentity/TileEntityPiston storedBlock storedMetadata storedOrientation extending shouldHeadBeRendered progress lastProgress pushedObjects
+net/minecraft/tileentity/TileEntitySign signText lineBeingEdited isEditable field_145917_k
+net/minecraft/tileentity/TileEntitySkull skullType skullRotation field_152110_j
+net/minecraft/util/AxisAlignedBB minX minY minZ maxX maxY maxZ
+net/minecraft/util/ChatAllowedCharacters allowedCharactersArray
+net/minecraft/util/ChatComponentStyle siblings style
+net/minecraft/util/ChatComponentText text
+net/minecraft/util/ChatComponentTranslation key formatArgs syncLock lastTranslationUpdateTimeInMilliseconds children stringVariablePattern
+net/minecraft/util/ChatStyle parentStyle color bold italic underlined strikethrough obfuscated chatClickEvent chatHoverEvent rootStyle
+net/minecraft/util/ChunkCoordinates posX posY posZ
+net/minecraft/util/CombatEntry damageSrc field_94567_b field_94568_c field_94565_d field_94566_e field_94564_f
+net/minecraft/util/CombatTracker combatEntries fighter field_94555_c field_152775_d field_152776_e field_94552_d field_94553_e field_94551_f
+net/minecraft/util/DamageSource inFire onFire lava inWall drown starve cactus fall outOfWorld generic magic wither anvil fallingBlock isUnblockable isDamageAllowedInCreativeMode damageIsAbsolute hungerDamage fireDamage projectile difficultyScaled magicDamage explosion damageType
+net/minecraft/util/Direction offsetX offsetZ directions directionToFacing facingToDirection rotateOpposite enderEyeMetaToDirection rotateLeft bedDirection
+net/minecraft/util/EnchantmentNameParts instance rand namePartsArray
+net/minecraft/util/EntityDamageSource damageSourceEntity
+net/minecraft/util/EntityDamageSourceIndirect indirectEntity
+net/minecraft/util/EnumChatFormatting BLACK DARK_BLUE DARK_GREEN DARK_AQUA DARK_RED DARK_PURPLE GOLD GRAY DARK_GRAY BLUE GREEN AQUA RED LIGHT_PURPLE YELLOW WHITE OBFUSCATED BOLD STRIKETHROUGH UNDERLINE ITALIC RESET formattingCodeMapping nameMapping formattingCodePattern formattingCode fancyStyling controlString $VALUES
+net/minecraft/util/EnumFacing DOWN UP NORTH SOUTH EAST WEST order_a order_b frontOffsetX frontOffsetY frontOffsetZ faceList $VALUES
+net/minecraft/util/EnumTypeAdapterFactory$1 field_151231_a field_151230_b
+net/minecraft/util/Facing oppositeSide offsetsXForSide offsetsYForSide offsetsZForSide facings
+net/minecraft/util/FoodStats foodLevel foodSaturationLevel foodExhaustionLevel foodTimer prevFoodLevel
+net/minecraft/util/HttpUtil downloadThreadsStarted logger
+net/minecraft/util/HttpUtil$1 field_151199_a field_151197_b field_151198_c field_151195_d field_151196_e field_151193_f field_151194_g
+net/minecraft/util/IChatComponent$Serializer GSON
+net/minecraft/util/IntHashMap slots count threshold growFactor versionStamp keySet
+net/minecraft/util/IntHashMap$Entry hashEntry valueEntry nextEntry slotHash
+net/minecraft/util/JsonSerializableSet underlyingSet
+net/minecraft/util/LongHashMap hashArray numHashElements capacity percentUseable modCount
+net/minecraft/util/LongHashMap$Entry key value nextEntry hash
+net/minecraft/util/MathHelper SIN_TABLE multiplyDeBruijnBitPosition
+net/minecraft/util/MessageDeserializer logger field_150799_b field_152499_c
+net/minecraft/util/MessageSerializer logger field_150797_b field_152500_c
+net/minecraft/util/MouseFilter field_76336_a field_76334_b field_76335_c
+net/minecraft/util/MouseHelper deltaX deltaY
+net/minecraft/util/MovementInput moveStrafe moveForward jump sneak
+net/minecraft/util/MovementInputFromOptions gameSettings
+net/minecraft/util/MovingObjectPosition typeOfHit blockX blockY blockZ sideHit hitVec entityHit
+net/minecraft/util/MovingObjectPosition$MovingObjectType MISS BLOCK ENTITY $VALUES
+net/minecraft/util/ObjectIntIdentityMap field_148749_a field_148748_b
+net/minecraft/util/RegistryDefaulted defaultObject
+net/minecraft/util/RegistryNamespaced underlyingIntegerMap field_148758_b
+net/minecraft/util/RegistryNamespacedDefaultedByKey field_148760_d field_148761_e
+net/minecraft/util/RegistrySimple logger registryObjects
+net/minecraft/util/ReportedException theReportedExceptionCrashReport
+net/minecraft/util/ResourceLocation resourceDomain resourcePath
+net/minecraft/util/ScreenShotHelper logger dateFormat pixelBuffer pixelValues
+net/minecraft/util/Session username playerID token sessionType
+net/minecraft/util/Session$Type LEGACY MOJANG field_152425_c sessionType $VALUES
+net/minecraft/util/StatCollector localizedName fallbackTranslator
+net/minecraft/util/StringTranslate numericVariablePattern equalSignSplitter instance languageList lastUpdateTimeInMilliseconds
+net/minecraft/util/StringUtils patternControlCode
+net/minecraft/util/ThreadSafeBoundList field_152759_a field_152760_b field_152761_c field_152762_d field_152763_e
+net/minecraft/util/Timer ticksPerSecond lastHRTime elapsedTicks renderPartialTicks timerSpeed elapsedPartialTicks lastSyncSysClock lastSyncHRClock field_74285_i timeSyncAdjustment
+net/minecraft/util/Tuple first second
+net/minecraft/util/TupleIntJsonSerializable integerValue jsonSerializableValue
+net/minecraft/util/Util$EnumOS LINUX SOLARIS WINDOWS OSX UNKNOWN $VALUES
+net/minecraft/util/Vec3 xCoord yCoord zCoord
+net/minecraft/util/WeightedRandom$Item itemWeight
+net/minecraft/util/WeightedRandomChestContent theItemId theMinimumChanceToGenerateItem theMaximumChanceToGenerateItem
+net/minecraft/util/WeightedRandomFishable returnStack maxDamagePercent enchantable
+net/minecraft/village/MerchantRecipe itemToBuy secondItemToBuy itemToSell toolUses maxTradeUses
+net/minecraft/village/Village worldObj villageDoorInfoList centerHelper center villageRadius lastAddDoorTimestamp tickCounter numVillagers noBreedTicks playerReputation villageAgressors numIronGolems
+net/minecraft/village/Village$VillageAgressor agressor agressionTime field_75591_c
+net/minecraft/village/VillageCollection worldObj villagerPositionsList newDoors villageList tickCounter
+net/minecraft/village/VillageDoorInfo posX posY posZ insideDirectionX insideDirectionZ lastActivityTimestamp isDetachedFromVillageFlag doorOpeningRestrictionCounter
+net/minecraft/village/VillageSiege worldObj field_75535_b field_75536_c field_75533_d field_75534_e theVillage field_75532_g field_75538_h field_75539_i
+net/minecraft/world/ChunkCache chunkX chunkZ chunkArray hasExtendedLevels worldObj
+net/minecraft/world/ChunkCoordIntPair chunkXPos chunkZPos
+net/minecraft/world/ChunkPosition chunkPosX chunkPosY chunkPosZ
+net/minecraft/world/ColorizerFoliage foliageBuffer
+net/minecraft/world/ColorizerGrass grassBuffer
+net/minecraft/world/EnumDifficulty PEACEFUL EASY NORMAL HARD difficultyEnums difficultyId difficultyResourceKey $VALUES
+net/minecraft/world/EnumSkyBlock Sky Block defaultLightValue $VALUES
+net/minecraft/world/Explosion isFlaming isSmoking field_77289_h explosionRNG worldObj explosionX explosionY explosionZ exploder explosionSize affectedBlockPositions field_77288_k
+net/minecraft/world/GameRules theGameRules
+net/minecraft/world/GameRules$Value valueString valueBoolean valueInteger valueDouble
+net/minecraft/world/NextTickListEntry nextTickEntryID field_151352_g xCoord yCoord zCoord scheduledTime priority tickEntryID
+net/minecraft/world/SpawnerAnimals eligibleChunksForSpawning
+net/minecraft/world/Teleporter worldServerInstance random destinationCoordinateCache destinationCoordinateKeys
+net/minecraft/world/Teleporter$PortalPosition lastUpdateTime field_85088_e
+net/minecraft/world/World scheduledUpdatesAreImmediate loadedEntityList unloadedEntityList loadedTileEntityList addedTileEntityList tileEntitiesToBeRemoved playerEntities weatherEffects cloudColour skylightSubtracted updateLCG DIST_HASH_MAGIC prevRainingStrength rainingStrength prevThunderingStrength thunderingStrength lastLightningBolt difficultySetting rand provider worldAccesses chunkProvider saveHandler worldInfo findingSpawnPoint mapStorage villageCollectionObj villageSiegeObj theProfiler theCalendar worldScoreboard isRemote activeChunkSet ambientTickCountdown spawnHostileMobs spawnPeacefulMobs collidingBoundingBoxes processingLoadedTiles lightUpdateBlockList
+net/minecraft/world/World$1 field_151302_a field_151301_b field_77485_a
+net/minecraft/world/World$2 field_151300_a field_77405_a
+net/minecraft/world/World$3 field_77440_a
+net/minecraft/world/World$4 field_151308_a
+net/minecraft/world/WorldManager mcServer theWorldServer
+net/minecraft/world/WorldProvider moonPhaseFactors worldObj terrainType field_82913_c worldChunkMgr isHellWorld hasNoSky lightBrightnessTable dimensionId colorsSunriseSunset
+net/minecraft/world/WorldSavedData mapName dirty
+net/minecraft/world/WorldServer logger mcServer theEntityTracker thePlayerManager pendingTickListEntriesHashSet pendingTickListEntriesTreeSet theChunkProviderServer disableLevelSaving allPlayersSleeping updateEntityTick worldTeleporter animalSpawner field_147490_S blockEventCacheIndex bonusChestContent pendingTickListEntriesThisTick entityIdMap
+net/minecraft/world/WorldSettings seed theGameType mapFeaturesEnabled hardcoreEnabled terrainType commandsAllowed bonusChestEnabled field_82751_h
+net/minecraft/world/WorldSettings$GameType NOT_SET SURVIVAL CREATIVE ADVENTURE id name $VALUES
+net/minecraft/world/WorldType worldTypes DEFAULT FLAT LARGE_BIOMES AMPLIFIED DEFAULT_1_1 worldTypeId worldType generatorVersion canBeCreated isWorldTypeVersioned hasNotificationData
+net/minecraft/world/biome/BiomeCache chunkManager lastCleanupTime cacheMap cache
+net/minecraft/world/biome/BiomeCache$Block rainfallValues biomes xPosition zPosition lastAccessTime field_76887_g
+net/minecraft/world/biome/BiomeDecorator currentWorld randomGenerator chunk_X chunk_Z clayGen sandGen gravelAsSandGen dirtGen gravelGen coalGen ironGen goldGen redstoneGen diamondGen lapisGen yellowFlowerGen mushroomBrownGen mushroomRedGen bigMushroomGen reedGen cactusGen waterlilyGen waterlilyPerChunk treesPerChunk flowersPerChunk grassPerChunk deadBushPerChunk mushroomsPerChunk reedsPerChunk cactiPerChunk sandPerChunk sandPerChunk2 clayPerChunk bigMushroomsPerChunk generateLakes
+net/minecraft/world/biome/BiomeEndDecorator spikeGen
+net/minecraft/world/biome/BiomeGenBase logger height_Default height_ShallowWaters height_Oceans height_DeepOceans height_LowPlains height_MidPlains height_LowHills height_HighPlateaus height_MidHills height_Shores height_RockyWaters height_LowIslands height_PartiallySubmerged biomeList explorationBiomesList ocean plains desert extremeHills forest taiga swampland river hell sky frozenOcean frozenRiver icePlains iceMountains mushroomIsland mushroomIslandShore beach desertHills forestHills taigaHills extremeHillsEdge jungle jungleHills jungleEdge deepOcean stoneBeach coldBeach birchForest birchForestHills roofedForest coldTaiga coldTaigaHills megaTaiga megaTaigaHills extremeHillsPlus savanna savannaPlateau mesa mesaPlateau_F mesaPlateau temperatureNoise plantNoise genTallFlowers biomeName color field_150609_ah topBlock topBlockMetadata fillerBlock fillerBlockMetadata minHeight maxHeight temperature rainfall waterColorMultiplier theBiomeDecorator spawnableMonsterList spawnableCreatureList spawnableWaterCreatureList spawnableCaveCreatureList enableSnow enableRain biomeID worldGeneratorTrees worldGeneratorBigTree worldGeneratorSwamp
+net/minecraft/world/biome/BiomeGenBase$Height rootHeight variation
+net/minecraft/world/biome/BiomeGenBase$SpawnListEntry entityClass minGroupCount maxGroupCount
+net/minecraft/world/biome/BiomeGenBase$TempCategory OCEAN COLD MEDIUM WARM $VALUES
+net/minecraft/world/biome/BiomeGenForest field_150632_aF field_150629_aC field_150630_aD field_150631_aE
+net/minecraft/world/biome/BiomeGenForest$1 field_150612_aC
+net/minecraft/world/biome/BiomeGenForest$2 field_150613_aC
+net/minecraft/world/biome/BiomeGenHills theWorldGenerator field_150634_aD field_150635_aE field_150636_aF field_150637_aG field_150638_aH
+net/minecraft/world/biome/BiomeGenJungle field_150614_aC
+net/minecraft/world/biome/BiomeGenMesa field_150621_aC field_150622_aD field_150623_aE field_150624_aF field_150625_aG field_150626_aH field_150620_aI
+net/minecraft/world/biome/BiomeGenMutated baseBiome
+net/minecraft/world/biome/BiomeGenPlains field_150628_aC
+net/minecraft/world/biome/BiomeGenSavanna field_150627_aC
+net/minecraft/world/biome/BiomeGenSnow field_150615_aC field_150616_aD field_150617_aE
+net/minecraft/world/biome/BiomeGenTaiga field_150639_aC field_150640_aD field_150641_aE field_150642_aF field_150643_aG field_150644_aH
+net/minecraft/world/biome/WorldChunkManager genBiomes biomeIndexLayer biomeCache biomesToSpawnIn
+net/minecraft/world/biome/WorldChunkManagerHell biomeGenerator rainfall
+net/minecraft/world/chunk/Chunk logger isLit storageArrays blockBiomeArray precipitationHeightMap updateSkylightColumns isChunkLoaded worldObj heightMap xPosition zPosition isGapLightingUpdated chunkTileEntityMap entityLists isTerrainPopulated isLightPopulated field_150815_m isModified hasEntities lastSaveTime sendUpdates heightMapMinimum inhabitedTime queuedLightChecks
+net/minecraft/world/chunk/Chunk$1 field_150824_a field_150822_b field_150823_c field_150821_d
+net/minecraft/world/chunk/NibbleArray data depthBits depthBitsPlusFour
+net/minecraft/world/chunk/storage/AnvilChunkLoader logger chunksToRemove pendingAnvilChunksCoordinates syncLockObject chunkSaveLocation
+net/minecraft/world/chunk/storage/AnvilChunkLoader$PendingChunk chunkCoordinate nbtTags
+net/minecraft/world/chunk/storage/AnvilSaveConverter logger
+net/minecraft/world/chunk/storage/AnvilSaveConverter$1 field_76172_a
+net/minecraft/world/chunk/storage/ChunkLoader$AnvilConverterData lastUpdated terrainPopulated heightmap blockLight skyLight data blocks entities field_151564_i field_151563_j x z
+net/minecraft/world/chunk/storage/ExtendedBlockStorage yBase blockRefCount tickRefCount blockLSBArray blockMSBArray blockMetadataArray blocklightArray skylightArray
+net/minecraft/world/chunk/storage/NibbleArrayReader data depthBits depthBitsPlusFour
+net/minecraft/world/chunk/storage/RegionFile emptySector fileName dataFile offsets chunkTimestamps sectorFree sizeDelta lastModified
+net/minecraft/world/chunk/storage/RegionFile$ChunkBuffer chunkX chunkZ field_76724_a
+net/minecraft/world/chunk/storage/RegionFileCache regionsByFilename
+net/minecraft/world/demo/DemoWorldManager field_73105_c demoTimeExpired field_73104_e field_73102_f
+net/minecraft/world/demo/DemoWorldServer demoWorldSeed demoWorldSettings
+net/minecraft/world/gen/ChunkProviderEnd endRNG noiseGen1 noiseGen2 noiseGen3 noiseGen4 noiseGen5 endWorld densities biomesForGeneration noiseData1 noiseData2 noiseData3 noiseData4 noiseData5 field_73203_h
+net/minecraft/world/gen/ChunkProviderFlat worldObj random cachedBlockIDs cachedBlockMetadata flatWorldGenInfo structureGenerators hasDecoration hasDungeons waterLakeGenerator lavaLakeGenerator
+net/minecraft/world/gen/ChunkProviderGenerate rand field_147431_j field_147432_k field_147429_l field_147430_m noiseGen5 noiseGen6 mobSpawnerNoise worldObj mapFeaturesEnabled field_147435_p field_147434_q parabolicField stoneNoise caveGenerator strongholdGenerator villageGenerator mineshaftGenerator scatteredFeatureGenerator ravineGenerator biomesForGeneration field_147427_d field_147428_e field_147425_f field_147426_g field_73219_j
+net/minecraft/world/gen/ChunkProviderHell hellRNG netherNoiseGen1 netherNoiseGen2 netherNoiseGen3 slowsandGravelNoiseGen netherrackExculsivityNoiseGen netherNoiseGen6 netherNoiseGen7 worldObj noiseField genNetherBridge slowsandNoise gravelNoise netherrackExclusivityNoise netherCaveGenerator noiseData1 noiseData2 noiseData3 noiseData4 noiseData5
+net/minecraft/world/gen/ChunkProviderServer logger droppedChunksSet dummyChunk serverChunkGenerator chunkLoader chunkLoadOverride id2ChunkMap loadedChunks worldObj
+net/minecraft/world/gen/FlatGeneratorInfo flatLayers worldFeatures biomeToUse
+net/minecraft/world/gen/FlatLayerInfo field_151537_a layerCount layerFillBlockMeta layerMinimumY
+net/minecraft/world/gen/MapGenBase range rand worldObj
+net/minecraft/world/gen/MapGenRavine field_75046_d
+net/minecraft/world/gen/NoiseGeneratorImproved permutations xCoord yCoord zCoord field_152381_e field_152382_f field_152383_g field_152384_h field_152385_i
+net/minecraft/world/gen/NoiseGeneratorOctaves generatorCollection octaves
+net/minecraft/world/gen/NoiseGeneratorPerlin field_151603_a field_151602_b
+net/minecraft/world/gen/NoiseGeneratorSimplex field_151611_e field_151614_a field_151608_f field_151612_b field_151613_c field_151610_d field_151609_g field_151615_h
+net/minecraft/world/gen/feature/WorldGenBigMushroom mushroomType
+net/minecraft/world/gen/feature/WorldGenBigTree otherCoordPairs rand worldObj basePos heightLimit height heightAttenuation branchDensity branchSlope scaleWidth leafDensity trunkSize heightLimitLimit leafDistanceLimit leafNodes
+net/minecraft/world/gen/feature/WorldGenBlockBlob field_150545_a field_150544_b
+net/minecraft/world/gen/feature/WorldGenClay field_150546_a numberOfBlocks
+net/minecraft/world/gen/feature/WorldGenDeadBush field_150547_a
+net/minecraft/world/gen/feature/WorldGenDoublePlant field_150549_a
+net/minecraft/world/gen/feature/WorldGenDungeons field_111189_a
+net/minecraft/world/gen/feature/WorldGenFlowers field_150552_a field_150551_b
+net/minecraft/world/gen/feature/WorldGenForest field_150531_a
+net/minecraft/world/gen/feature/WorldGenHellLava field_150553_a field_94524_b
+net/minecraft/world/gen/feature/WorldGenHugeTrees baseHeight woodMetadata leavesMetadata field_150538_d
+net/minecraft/world/gen/feature/WorldGenIcePath field_150555_a field_150554_b
+net/minecraft/world/gen/feature/WorldGenLakes field_150556_a
+net/minecraft/world/gen/feature/WorldGenLiquids field_150521_a
+net/minecraft/world/gen/feature/WorldGenMegaPineTree field_150542_e
+net/minecraft/world/gen/feature/WorldGenMinable field_150519_a numberOfBlocks field_150518_c
+net/minecraft/world/gen/feature/WorldGenSand field_150517_a radius
+net/minecraft/world/gen/feature/WorldGenShrub field_150528_a field_150527_b
+net/minecraft/world/gen/feature/WorldGenSpikes field_150520_a
+net/minecraft/world/gen/feature/WorldGenTallGrass field_150522_a tallGrassMetadata
+net/minecraft/world/gen/feature/WorldGenTrees minTreeHeight vinesGrow metaWood metaLeaves
+net/minecraft/world/gen/feature/WorldGenerator doBlockNotify
+net/minecraft/world/gen/feature/WorldGeneratorBonusChest theBonusChestGenerator itemsToGenerateInBonusChest
+net/minecraft/world/gen/layer/GenLayer worldGenSeed parent chunkSeed baseSeed
+net/minecraft/world/gen/layer/GenLayer$1 field_151684_a
+net/minecraft/world/gen/layer/GenLayer$2 field_151682_a
+net/minecraft/world/gen/layer/GenLayerBiome field_151623_c field_151621_d field_151622_e field_151620_f
+net/minecraft/world/gen/layer/GenLayerEdge field_151627_c
+net/minecraft/world/gen/layer/GenLayerEdge$Mode COOL_WARM HEAT_ICE SPECIAL $VALUES
+net/minecraft/world/gen/layer/GenLayerEdge$SwitchMode field_151642_a
+net/minecraft/world/gen/layer/GenLayerHills logger field_151628_d
+net/minecraft/world/gen/layer/GenLayerRiverMix biomePatternGeneratorChain riverPatternGeneratorChain
+net/minecraft/world/gen/layer/IntCache intCacheSize freeSmallArrays inUseSmallArrays freeLargeArrays inUseLargeArrays
+net/minecraft/world/gen/structure/ComponentScatteredFeaturePieces$DesertPyramid field_74940_h itemsToGenerateInTemple
+net/minecraft/world/gen/structure/ComponentScatteredFeaturePieces$Feature scatteredFeatureSizeX scatteredFeatureSizeY scatteredFeatureSizeZ field_74936_d
+net/minecraft/world/gen/structure/ComponentScatteredFeaturePieces$JunglePyramid field_74947_h field_74948_i field_74945_j field_74946_k junglePyramidsChestContents junglePyramidsDispenserContents junglePyramidsRandomScatteredStones
+net/minecraft/world/gen/structure/ComponentScatteredFeaturePieces$SwampHut hasWitch
+net/minecraft/world/gen/structure/MapGenMineshaft field_82673_e
+net/minecraft/world/gen/structure/MapGenNetherBridge spawnList
+net/minecraft/world/gen/structure/MapGenScatteredFeature biomelist scatteredFeatureSpawnList maxDistanceBetweenScatteredFeatures minDistanceBetweenScatteredFeatures
+net/minecraft/world/gen/structure/MapGenStronghold field_151546_e ranBiomeCheck structureCoords field_82671_h field_82672_i
+net/minecraft/world/gen/structure/MapGenStructure field_143029_e structureMap
+net/minecraft/world/gen/structure/MapGenStructure$1 field_85169_a field_85167_b field_85168_c
+net/minecraft/world/gen/structure/MapGenStructure$2 field_85165_a field_85163_b field_85164_c
+net/minecraft/world/gen/structure/MapGenStructure$3 field_85161_a
+net/minecraft/world/gen/structure/MapGenStructureData field_143044_a
+net/minecraft/world/gen/structure/MapGenStructureIO logger field_143040_a field_143038_b field_143039_c field_143037_d
+net/minecraft/world/gen/structure/MapGenVillage villageSpawnBiomes terrainType field_82665_g field_82666_h
+net/minecraft/world/gen/structure/MapGenVillage$Start hasMoreThanTwoComponents
+net/minecraft/world/gen/structure/StructureBoundingBox minX minY minZ maxX maxY maxZ
+net/minecraft/world/gen/structure/StructureComponent boundingBox coordBaseMode componentType
+net/minecraft/world/gen/structure/StructureComponent$BlockSelector field_151562_a selectedBlockMetaData
+net/minecraft/world/gen/structure/StructureMineshaftPieces mineshaftChestContents
+net/minecraft/world/gen/structure/StructureMineshaftPieces$Corridor hasRails hasSpiders spawnerPlaced sectionCount
+net/minecraft/world/gen/structure/StructureMineshaftPieces$Cross corridorDirection isMultipleFloors
+net/minecraft/world/gen/structure/StructureMineshaftPieces$Room roomsLinkedToTheRoom
+net/minecraft/world/gen/structure/StructureNetherBridgePieces primaryComponents secondaryComponents
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$Corridor field_111021_b
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$Corridor2 field_111020_b
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$End fillSeed
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$Piece field_111019_a
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$PieceWeight weightClass field_78826_b field_78827_c field_78824_d field_78825_e
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$Start theNetherBridgePieceWeight primaryWeights secondaryWeights field_74967_d
+net/minecraft/world/gen/structure/StructureNetherBridgePieces$Throne hasSpawner
+net/minecraft/world/gen/structure/StructureStart components boundingBox field_143024_c field_143023_d
+net/minecraft/world/gen/structure/StructureStrongholdPieces pieceWeightArray structurePieceList strongComponentType totalWeight strongholdStones
+net/minecraft/world/gen/structure/StructureStrongholdPieces$ChestCorridor strongholdChestContents hasMadeChest
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Corridor field_74993_a
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Crossing field_74996_b field_74997_c field_74995_d field_74999_h
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Library strongholdLibraryChestContents isLargeRoom
+net/minecraft/world/gen/structure/StructureStrongholdPieces$PieceWeight pieceClass pieceWeight instancesSpawned instancesLimit
+net/minecraft/world/gen/structure/StructureStrongholdPieces$PortalRoom hasSpawner
+net/minecraft/world/gen/structure/StructureStrongholdPieces$RoomCrossing strongholdRoomCrossingChestContents roomType
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Stairs field_75024_a
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Stairs2 strongholdPieceWeight strongholdPortalRoom field_75026_c
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Straight expandsX expandsZ
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Stronghold field_143013_d
+net/minecraft/world/gen/structure/StructureStrongholdPieces$Stronghold$Door OPENING WOOD_DOOR GRATES IRON_DOOR $VALUES
+net/minecraft/world/gen/structure/StructureStrongholdPieces$SwitchDoor doorEnum
+net/minecraft/world/gen/structure/StructureVillagePieces$Field1 cropTypeA cropTypeB cropTypeC cropTypeD
+net/minecraft/world/gen/structure/StructureVillagePieces$Field2 cropTypeA cropTypeB
+net/minecraft/world/gen/structure/StructureVillagePieces$House2 villageBlacksmithChestContents hasMadeChest
+net/minecraft/world/gen/structure/StructureVillagePieces$House4Garden isRoofAccessible
+net/minecraft/world/gen/structure/StructureVillagePieces$Path averageGroundLevel
+net/minecraft/world/gen/structure/StructureVillagePieces$PieceWeight villagePieceClass villagePieceWeight villagePiecesSpawned villagePiecesLimit
+net/minecraft/world/gen/structure/StructureVillagePieces$Start worldChunkMngr inDesert terrainType structVillagePieceWeight structureVillageWeightedPieceList field_74932_i field_74930_j
+net/minecraft/world/gen/structure/StructureVillagePieces$Village field_143015_k villagersSpawned field_143014_b
+net/minecraft/world/gen/structure/StructureVillagePieces$WoodHut isTallHouse tablePosition
+net/minecraft/world/storage/DerivedWorldInfo theWorldInfo
+net/minecraft/world/storage/MapData xCenter zCenter dimension scale colors playersArrayList playersHashMap playersVisibleOnMap
+net/minecraft/world/storage/MapData$MapCoord iconSize centerX centerZ iconRotation field_76213_e
+net/minecraft/world/storage/MapData$MapInfo entityplayerObj field_76209_b field_76210_c currentRandomNumber ticksUntilPlayerLocationMapUpdate lastPlayerLocationOnMap field_82569_d field_82570_i field_76207_d
+net/minecraft/world/storage/MapStorage saveHandler loadedDataMap loadedDataList idCounts
+net/minecraft/world/storage/SaveFormatComparator fileName displayName lastTimePlayed sizeOnDisk requiresConversion theEnumGameType hardcore cheatsEnabled
+net/minecraft/world/storage/SaveFormatOld logger savesDirectory
+net/minecraft/world/storage/SaveHandler logger worldDirectory playersDirectory mapDataDir initializationTime saveDirectoryName
+net/minecraft/world/storage/ThreadedFileIOBase threadedIOInstance threadedIOQueue writeQueuedCounter savedIOCounter isThreadWaiting
+net/minecraft/world/storage/WorldInfo randomSeed terrainType generatorOptions spawnX spawnY spawnZ totalTime worldTime lastTimePlayed sizeOnDisk playerTag dimension levelName saveVersion raining rainTime thundering thunderTime theGameType mapFeaturesEnabled hardcore allowCommands initialized theGameRules
+net/minecraft/world/storage/WorldInfo$1 field_85143_a
+net/minecraft/world/storage/WorldInfo$2 field_85139_a
+net/minecraft/world/storage/WorldInfo$3 field_85141_a
+net/minecraft/world/storage/WorldInfo$4 field_85135_a
+net/minecraft/world/storage/WorldInfo$5 field_85137_a
+net/minecraft/world/storage/WorldInfo$6 field_85115_a
+net/minecraft/world/storage/WorldInfo$7 field_85113_a
+net/minecraft/world/storage/WorldInfo$8 field_85111_a
+net/minecraft/world/storage/WorldInfo$9 field_85109_a

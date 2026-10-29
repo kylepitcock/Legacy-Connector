@@ -85,6 +85,10 @@ public class EntityItem extends Entity {
         if (stack == null && !(mcc$entity instanceof ItemEntity)) {
             return new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone);
         }
+        // a modern item entity whose stack emptied (picked up or merged, removed at the end of the tick) is still in the
+        // entity lists; in 1.7.10 it kept its item with size 0, so loops over item entities never got null (Aether's
+        // world tick threw every tick); a detached empty stack keeps them safe and changes nothing
+        if (stack == null) return new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone, 0);
         return stack;
     }
 

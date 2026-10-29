@@ -51,6 +51,10 @@ Fisk's own HUD:
 
 ![Fisk's Superheroes Doctor Octopus](docs/images/fisk-doc-ock.png)
 
+OreSpawn's The King on the plains, with a modern boss bar (OreSpawn itself shows its bosses' health only while you aim at them from 16 blocks or closer):
+
+![OreSpawn's The King with its boss bar](docs/images/orespawn-king-bossbar.png)
+
 A modern village enclosed by Witchery's town walls, with its gatehouses and watchtowers and AgriCraft's greenhouses, all built by
 their legacy village code:
 
