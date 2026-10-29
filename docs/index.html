@@ -97,7 +97,7 @@
 
   <footer>
     <span id="updated"></span>
-    <b>Works</b> = tested in game; <b>Partial</b> = some features broken; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
+    <b>Works</b> = tested in game (by hand, or the in-game test found problems in under 10% of its blocks, items and mobs); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
   </footer>
 </div>
 
@@ -105,7 +105,7 @@
 (function () {
   var REPO = "kylepitcock/Legacy-Connector";
   var LABEL = { works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
-  var TIER = ["community", "maintainer", "corpus"];
+  var TIER = ["community", "maintainer", "client", "corpus"];
   var ORDER = ["works", "partial", "loads", "fails", "crashes"];
   var state = { q: "", status: "all", mods: [] };
 
@@ -139,13 +139,20 @@
     });
     return Object.keys(byKey).map(function (k) {
       var m = byKey[k];
-      // Weight: a user's report beats the maintainer's hand-tested result, which beats the automated startup test.
-      // Within the winning tier the most common status wins, ties go to the newest entry.
-      var pool = [];
-      ["community", "maintainer", "corpus"].some(function (tier) {
+      // Weight: a user's report beats the maintainer's hand-tested result, which beats the in-game test, which beats the
+      // automated startup test.
+      // Within the winning tier the most common status wins, ties go to the newest entry. In-game tests take their best
+      // result: a plain session only shows that content loads, a self test of the same mod shows that it functions.
+      var pool = [], tierUsed = "";
+      TIER.some(function (tier) {
         pool = m.entries.filter(function (e) { return e.source === tier; });
+        tierUsed = tier;
         return pool.length > 0;
       });
+      if (tierUsed === "client") {
+        var best = Math.min.apply(null, pool.map(function (e) { var i = ORDER.indexOf(e.status); return i < 0 ? ORDER.length : i; }));
+        pool = pool.filter(function (e) { return ORDER.indexOf(e.status) === best; });
+      }
       var counts = {}, newest = {};
       pool.forEach(function (e) {
         counts[e.status] = (counts[e.status] || 0) + 1;
@@ -216,7 +223,7 @@
         var row = el("div", "entry");
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
-        var who = en.source === "maintainer" ? "Maintainer" : en.source === "corpus" ? "Startup test" : "Player report";
+        var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : "Player report";
         top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "") + (en.mc ? " · MC " + en.mc : "")));
         if (en.issue) {
           var a = el("a", null, "#" + en.issue);

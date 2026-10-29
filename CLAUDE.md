@@ -22,7 +22,9 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 - The CurseForge/Modrinth description pages come from `.github/description/description.md` (`sync-description.yml` pushes it to Modrinth on
   master; CurseForge has no description API, so its rendering is a workflow artifact to paste). Whenever you update `README.md`, update that file too.
 - Every report line the layer prints for a mod ends up on the compatibility site (`docs/`), so keep
-  `docs/data/mods.json` complete: `tools/compat/from_corpus.py <report> <latest.log>` adds corpus results.
+  `docs/data/mods.json` complete: `tools/compat/from_corpus.py <report> <latest.log>` adds corpus results;
+  `tools/compat/from_client.py <report> <latest.log> "<pack label>"` rates mods from a real client session or a server
+  self-test run (works / partial / loads / fails, source "client", ranked between maintainer entries and the corpus).
 
 ## Build and test
 

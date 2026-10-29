@@ -625,6 +625,9 @@ public class World implements IBlockAccess {
         // Generation workers (lighting passes of mod chunk providers) must not read the live level: that waits for the
         // main thread, which may be waiting for the chunk being generated. Nothing is sent to clients for them yet anyway.
         if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) return;
+        // Nor a chunk that is not loaded: no client sees it, and reading it waits for a load that never finishes when the
+        // chunk is the one unloading (Thaumcraft's vis relays mark their neighbours from invalidate(): the shutdown save hung)
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getChunkSource().hasChunk(x >> 4, z >> 4)) return;
         BlockPos p = pos(x, y, z);
         BlockState s = level.getBlockState(p);
         level.sendBlockUpdated(p, s, s, 3);
