@@ -395,6 +395,24 @@ public final class Platform1122 implements LegacyPlatform {
         }
     }
 
+    /** The registry whose entry type the field type is or extends (a holder may be typed by the entry's own class), quietly null if none. */
+    private static legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry<?> registryFor(Class<?> type) {
+        java.util.List<legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistry> all = new java.util.ArrayList<>();
+        java.util.Collections.addAll(all, legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.POTIONS,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.ENCHANTMENTS,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.SOUND_EVENTS,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.BIOMES,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.ENTITIES,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.VILLAGER_PROFESSIONS,
+                legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.ForgeRegistries.POTION_TYPES);
+        all.addAll(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries());
+        for (var reg : all) {
+            Class<?> superType = reg == null ? null : reg.getRegistrySuperType();
+            if (superType != null && superType.isAssignableFrom(type)) return reg;
+        }
+        return null;
+    }
+
     private static void holderField(Field f, String name) {
         var key = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(name);
         Object value = null;
@@ -402,13 +420,8 @@ public final class Platform1122 implements LegacyPlatform {
         else if (legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS.getValue(key);
         else if (legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.class.isAssignableFrom(f.getType())) {
             // any other registry, mods' own included (TerraFirmaCraft's Metal holders, read by its item registration)
-            try {
-                @SuppressWarnings({"unchecked", "rawtypes"})
-                var reg = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.findRegistry((Class) f.getType());
-                if (reg != null && reg.containsKey(key)) value = reg.getValue(key);
-            } catch (RuntimeException | LinkageError e) {
-                // no registry of that type yet
-            }
+            var reg = registryFor(f.getType());
+            if (reg != null && reg.containsKey(key)) value = reg.getValue(key);
         }
         if (value == null || !f.getType().isInstance(value)) {
             if (value == null && (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())
