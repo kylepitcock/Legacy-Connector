@@ -137,6 +137,34 @@ public class ForgeHooksClient {
                 new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderHandEvent(context, partialTicks, renderPass));
     }
 
+    /** Posts RenderSpecificHandEvent for one hand; true when a handler drew the hand itself (cancelled it). */
+    public static boolean renderSpecificFirstPersonHand(legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, float partialTicks, float interpPitch,
+            float swingProgress, float equipProgress, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderSpecificHandEvent(hand, partialTicks, interpPitch, swingProgress, equipProgress, stack));
+    }
+
+    /** The biome sky colour at a position, averaged over the biome blend radius of the video settings (RGB). */
+    public static int getSkyBlendColour(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos center) {
+        var level = world == null ? null : world.mcc$level();
+        if (level == null || center == null) return 0x78A7FF;
+        var options = net.minecraft.client.Minecraft.getInstance().options;
+        int radius = options == null ? 2 : options.biomeBlendRadius().get();
+        int r = 0, g = 0, b = 0, n = 0;
+        var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
+        for (int x = -radius; x <= radius; ++x) {
+            for (int z = -radius; z <= radius; ++z) {
+                pos.set(center.getX() + x, center.getY(), center.getZ() + z);
+                int c = level.getBiome(pos).value().getSkyColor();
+                r += (c & 0xFF0000) >> 16;
+                g += (c & 0x00FF00) >> 8;
+                b += c & 0x0000FF;
+                ++n;
+            }
+        }
+        return (r / n & 0xFF) << 16 | (g / n & 0xFF) << 8 | b / n & 0xFF;
+    }
+
     /** Forge drew its version lines on the title screen here; the game's title screen shows NeoForge's. Returns the splash text. */
     public static String renderMainMenu(legacyconnector.v1_12_2.net.minecraft.client.gui.GuiMainMenu gui, legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer font,
             int width, int height, String splashText) {

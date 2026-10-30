@@ -42,6 +42,8 @@ public final class BlockBridge1122 {
             if (m.getCanBurn()) p.ignitedByLava();
             if (m.isReplaceable()) p.replaceable();
         }
+        var spawn = creatureSpawnHook(block);
+        if (spawn != null) p.isValidSpawn((state, level, pos, type) -> canCreatureSpawn(block, spawn, state, level, pos, type));
         boolean entity = false;
         try {
             entity = block.hasTileEntity(block.getDefaultState());
@@ -66,6 +68,51 @@ public final class BlockBridge1122 {
     public static net.minecraft.world.level.block.Block modern(Block block) {
         synchronized (MODERN) {
             return MODERN.get(block);
+        }
+    }
+
+    /**
+     * The mod's own Forge {@code canCreatureSpawn(state, world, pos, placementType)} (its last parameter is a synthesized enum, so it is
+     * found by name), or null when the block keeps the modern rule (a sturdy top face).
+     */
+    private static java.lang.reflect.Method creatureSpawnHook(Block block) {
+        for (Class<?> c = block.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+            String name = c.getName();
+            if (name.startsWith("legacyconnector.") || name.startsWith("legacyconnector_synth.")) return null;
+            try {
+                for (var m : c.getDeclaredMethods()) {
+                    if (m.getName().equals("canCreatureSpawn") && m.getParameterCount() == 4 && m.getReturnType() == boolean.class
+                            && !java.lang.reflect.Modifier.isStatic(m.getModifiers())) {
+                        m.setAccessible(true);
+                        return m;
+                    }
+                }
+            } catch (LinkageError | RuntimeException e) {
+                return null;
+            }
+        }
+        return null;
+    }
+
+    private static int spawnFailures;
+
+    /** Asks the legacy block whether a mob of this type may spawn on it, with the 1.12 placement type of the entity type. */
+    private static boolean canCreatureSpawn(Block block, java.lang.reflect.Method hook, net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.world.level.BlockGetter level, net.minecraft.core.BlockPos pos, net.minecraft.world.entity.EntityType<?> type) {
+        try {
+            var placement = net.minecraft.world.entity.SpawnPlacements.getPlacementType(type);
+            String legacy = placement == net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER ? "IN_WATER"
+                    : placement == net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS ? "IN_AIR" : "ON_GROUND";
+            Object legacyType = null;
+            Object[] constants = hook.getParameterTypes()[3].getEnumConstants();
+            if (constants != null) for (Object c : constants) if (((Enum<?>) c).name().equals(legacy)) legacyType = c;
+            return (Boolean) hook.invoke(block, StatesBridge1122.toLegacy(state), WorldBridge1122.access(level),
+                    legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(pos), legacyType);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            if (spawnFailures++ < 3) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("canCreatureSpawn of {} failed; the modern rule applies", block.getClass().getName(), e);
+            }
+            return state.isFaceSturdy(level, pos, net.minecraft.core.Direction.UP) && state.getLightEmission(level, pos) < 14;
         }
     }
 

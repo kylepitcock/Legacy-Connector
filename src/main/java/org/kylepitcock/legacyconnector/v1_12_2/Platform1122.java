@@ -96,10 +96,23 @@ public final class Platform1122 implements LegacyPlatform {
         // the active container is set before the mod class loads: static initializers ask FML which mod they belong to
         LegacyModContainer1122.setActive(container);
         try {
-            mod.mainClass = Class.forName(mod.mainClassName, true, loader);
-            var ctor = mod.mainClass.getDeclaredConstructor();
-            ctor.setAccessible(true);
-            mod.instance = ctor.newInstance();
+            // FML's Scala adapter (OpenComputers): an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$
+            Class<?> scalaModule;
+            try {
+                scalaModule = Class.forName(mod.mainClassName + "$", false, loader);
+                scalaModule.getField("MODULE$");
+            } catch (ClassNotFoundException | NoSuchFieldException e) {
+                scalaModule = null;
+            }
+            if (scalaModule != null) {
+                mod.mainClass = scalaModule;
+                mod.instance = scalaModule.getField("MODULE$").get(null);
+            } else {
+                mod.mainClass = Class.forName(mod.mainClassName, true, loader);
+                var ctor = mod.mainClass.getDeclaredConstructor();
+                ctor.setAccessible(true);
+                mod.instance = ctor.newInstance();
+            }
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
             registerSubscribers(mod, loader);

@@ -623,4 +623,118 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     public static boolean mcc$get$renderChunksMany(Minecraft m) {
         return true;
     }
+
+    // ------------------------------------------------------------------ input and scheduling internals (runtime list, client)
+
+    /** 1.12 kept 10 MB to free when it ran out of memory; mods free it the same way before showing their own out-of-memory screen. */
+    public static byte[] memoryReserve = new byte[0];
+
+    /**
+     * Tasks waiting for the client thread. Mods add to it directly (synchronizing on it); what they add runs on the client thread
+     * through the modern executor, so the queue itself always looks empty.
+     */
+    public final java.util.Queue<java.util.concurrent.FutureTask<?>> scheduledTasks = new java.util.AbstractQueue<>() {
+        @Override
+        public boolean offer(java.util.concurrent.FutureTask<?> task) {
+            if (task == null) return false;
+            addScheduledTask(task);
+            return true;
+        }
+
+        @Override
+        public java.util.concurrent.FutureTask<?> poll() {
+            return null;
+        }
+
+        @Override
+        public java.util.concurrent.FutureTask<?> peek() {
+            return null;
+        }
+
+        @Override
+        public java.util.Iterator<java.util.concurrent.FutureTask<?>> iterator() {
+            return java.util.Collections.emptyIterator();
+        }
+
+        @Override
+        public int size() {
+            return 0;
+        }
+    };
+
+    private static java.lang.reflect.Method mcc$startAttack, mcc$continueAttack;
+    private static java.lang.reflect.Field mcc$rightClickDelay;
+    private static boolean mcc$inputReflected;
+
+    private static synchronized void mcc$reflectInput() {
+        if (mcc$inputReflected) return;
+        mcc$inputReflected = true;
+        Class<?> c = net.minecraft.client.Minecraft.class;
+        try {
+            mcc$startAttack = c.getDeclaredMethod("startAttack");
+            mcc$startAttack.setAccessible(true);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            mcc$startAttack = null;
+        }
+        try {
+            mcc$continueAttack = c.getDeclaredMethod("continueAttack", boolean.class);
+            mcc$continueAttack.setAccessible(true);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            mcc$continueAttack = null;
+        }
+        try {
+            mcc$rightClickDelay = c.getDeclaredField("rightClickDelay");
+            mcc$rightClickDelay.setAccessible(true);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            mcc$rightClickDelay = null;
+        }
+    }
+
+    /** A left click: attacks the entity or starts breaking the block under the crosshair (the modern client's attack). */
+    public void clickMouse() {
+        if (!client()) return;
+        mcc$reflectInput();
+        if (mcc$startAttack == null) return;
+        try {
+            mcc$startAttack.invoke(mc());
+        } catch (ReflectiveOperationException e) {
+            // no attack this time
+        }
+    }
+
+    /** Holding left click: keeps breaking the block under the crosshair ({@code leftClick} false stops it). */
+    public void sendClickBlockToController(boolean leftClick) {
+        if (!client()) return;
+        mcc$reflectInput();
+        if (mcc$continueAttack == null) return;
+        try {
+            mcc$continueAttack.invoke(mc(), leftClick);
+        } catch (ReflectiveOperationException e) {
+            // nothing this tick
+        }
+    }
+
+    /** Phantom: ticks until the next right click may use an item again (the modern client's delay). */
+    @Deprecated
+    public int rightClickDelayTimer;
+
+    public static int mcc$get$rightClickDelayTimer(Minecraft m) {
+        if (!client()) return 0;
+        mcc$reflectInput();
+        try {
+            return mcc$rightClickDelay == null ? 0 : mcc$rightClickDelay.getInt(mc());
+        } catch (ReflectiveOperationException e) {
+            return 0;
+        }
+    }
+
+    public static void mcc$set$rightClickDelayTimer(Minecraft m, int value) {
+        if (!client()) return;
+        mcc$reflectInput();
+        try {
+            if (mcc$rightClickDelay != null) mcc$rightClickDelay.setInt(mc(), value);
+        } catch (ReflectiveOperationException e) {
+            // unchanged
+        }
+    }
 }

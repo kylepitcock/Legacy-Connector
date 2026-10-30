@@ -61,4 +61,9 @@ public class BlockStairs extends Block {
             return name;
         }
     }
+
+    /** Whether the state is of a stairs block. */
+    public static boolean isBlockStairs(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state.getBlock() instanceof BlockStairs;
+    }
 }

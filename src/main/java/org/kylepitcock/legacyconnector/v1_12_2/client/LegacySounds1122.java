@@ -80,6 +80,21 @@ public final class LegacySounds1122 {
         return instance != null && Minecraft.getInstance().getSoundManager().isActive(instance);
     }
 
+    /**
+     * The legacy sounds still playing, each with a source name (1.12's {@code SoundManager.invPlayingSounds}: sound to paulscode source).
+     * A snapshot: changing it changes nothing.
+     */
+    public static Map<ISound, String> playing() {
+        Map<ISound, String> out = new java.util.LinkedHashMap<>();
+        var manager = Minecraft.getInstance().getSoundManager();
+        synchronized (PLAYING) {
+            for (var e : PLAYING.entrySet()) {
+                if (manager.isActive(e.getValue())) out.put(e.getKey(), Integer.toHexString(System.identityHashCode(e.getValue())));
+            }
+        }
+        return out;
+    }
+
     public static void stop(ISound sound) {
         SoundInstance instance;
         synchronized (PLAYING) {

@@ -112,6 +112,26 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
         else mc.execute(show);
     }
 
+    /**
+     * A tile entity update a mod hands to the client: the vanilla kinds (spawner, command block, beacon, skull, flower pot, banner,
+     * structure block, end gateway, sign, shulker box, bed) load the tag, any other goes to the tile entity's {@code onDataPacket}.
+     */
+    public void handleUpdateTileEntity(legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketUpdateTileEntity packet) {
+        if (packet == null || packet.getPos() == null) return;
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        Runnable apply = () -> {
+            var world = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$world(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft());
+            if (world == null || !world.isBlockLoaded(packet.getPos())) return;
+            var te = world.getTileEntity(packet.getPos());
+            if (te == null) return;
+            int type = packet.getTileEntityType();
+            if (type >= 1 && type <= 11 && packet.getNbtCompound() != null) te.readFromNBT(packet.getNbtCompound());
+            else te.onDataPacket(getNetworkManager(), packet);
+        };
+        if (mc.isSameThread()) apply.run();
+        else mc.execute(apply);
+    }
+
     /** The connection was closed: leaves the server with the reason. */
     @Override
     public void onDisconnect(ITextComponent reason) {

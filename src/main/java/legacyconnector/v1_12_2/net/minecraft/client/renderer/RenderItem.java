@@ -203,4 +203,57 @@ public class RenderItem {
             org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model's quads", e);
         }
     }
+
+    // ------------------------------------------------------------------ registration and model drawing (runtime list, client)
+
+    /** Shows {@code item}'s subtype with the item model of that name ({@code <identifier>#inventory}). */
+    public void registerItem(legacyconnector.v1_12_2.net.minecraft.item.Item itm, int subType, String identifier) {
+        itemModelMesher.register(itm, subType, new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation(identifier, "inventory"));
+    }
+
+    /** Draws a stack with the given model under a display transform, at the current matrix. */
+    public void renderItemModel(ItemStack stack, IBakedModel bakedmodel, ItemCameraTransforms.TransformType transform, boolean leftHanded) {
+        if (stack == null || stack.isEmpty() || bakedmodel == null) return;
+        var pose = RenderContext.pose();
+        if (pose == null) return;
+        try {
+            modernRenderer().render(Stacks1122.toModern(stack), transform == null ? ItemDisplayContext.NONE : transform.mcc$modern(), leftHanded, pose,
+                    RenderContext.buffers(), RenderContext.vertexLight(), RenderContext.overlay(), Models1122.modern(bakedmodel));
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model", e);
+        }
+    }
+
+    /** Draws a stack with the given model in a GUI slot at (x, y), as the screen draws items (16x16, GUI transform, flat lighting for 2D models). */
+    public void renderItemModelIntoGUI(ItemStack stack, int x, int y, IBakedModel bakedmodel) {
+        if (stack == null || stack.isEmpty() || bakedmodel == null) return;
+        var gui = RenderContext.gui();
+        if (gui == null) return;
+        var modern = Models1122.modern(bakedmodel);
+        gui.pose().pushPose();
+        try {
+            gui.pose().translate((float) (x + 8), (float) (y + 8), 150.0F + zLevel);
+            gui.pose().scale(16.0F, -16.0F, 16.0F);
+            boolean flat = !modern.usesBlockLight();
+            if (flat) com.mojang.blaze3d.platform.Lighting.setupForFlatItems();
+            modernRenderer().render(Stacks1122.toModern(stack), ItemDisplayContext.GUI, false, gui.pose(), gui.bufferSource(), 15728880,
+                    net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, modern);
+            gui.flush();
+            if (flat) com.mojang.blaze3d.platform.Lighting.setupFor3DItems();
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing an item model in a screen", e);
+        } finally {
+            gui.pose().popPose();
+        }
+    }
+
+    /** The GUI slot transform 1.12 applied before drawing an item model: to the slot's centre, y flipped, 16 units per block. */
+    public void setupGuiTransform(int xPosition, int yPosition, boolean isGui3d) {
+        GlStateManager.translate((float) xPosition, (float) yPosition, 100.0F + zLevel);
+        GlStateManager.translate(8.0F, 8.0F, 0.0F);
+        GlStateManager.scale(1.0F, -1.0F, 1.0F);
+        GlStateManager.scale(16.0F, 16.0F, 16.0F);
+        if (isGui3d) GlStateManager.enableLighting();
+        else GlStateManager.disableLighting();
+    }
 }

@@ -404,6 +404,46 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
                 "glowstone", "ice", "sea_lantern", "stained_glass");
     }
 
+    /** Whether a player may spawn inside the block (not solid, not liquid: signs, flowers). */
+    public boolean canSpawnInBlock() {
+        Material m = getMaterialLegacy();
+        return !m.isSolid() && !m.isLiquid();
+    }
+
+    /** Whether the block draws its own breaking cracks (beds, chests in a TESR). */
+    public boolean hasCustomBreakingProgress(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
+    /** Forge: drops spawned while capturing are collected instead (leaves gather their drops for shears this way). */
+    protected static final ThreadLocal<Boolean> captureDrops = ThreadLocal.withInitial(() -> false);
+    protected static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> capturedDrops = ThreadLocal.withInitial(legacyconnector.v1_12_2.net.minecraft.util.NonNullList::create);
+
+    /** Starts capturing drops (returns an empty list) or stops and returns what was captured. */
+    protected legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> captureDrops(boolean start) {
+        if (start) {
+            captureDrops.set(true);
+            capturedDrops.get().clear();
+            return legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+        }
+        captureDrops.set(false);
+        legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+        out.addAll(capturedDrops.get());
+        capturedDrops.get().clear();
+        return out;
+    }
+
+    /** Forge: the colour a beacon beam takes through this block (null: unchanged). */
+    public float[] getBeaconColorMultiplier(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos beaconPos) {
+        return null;
+    }
+
+    /** Forge: whether the bed block at a position is the foot half. */
+    public boolean isBedFoot(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state = world.getBlockState(pos);
+        return state.getBlock() instanceof BlockBed && state.getValue(BlockBed.PART) == BlockBed.EnumPartType.FOOT;
+    }
+
     /** How a block's model is shifted per position (flowers and grass sit off-centre). */
     public enum EnumOffsetType {
         NONE,
@@ -559,6 +599,10 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Drops a stack as an item entity with 1.12's random offset in the block. */
     public static void spawnAsEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
         if (world == null || world.isRemote || stack == null || stack.isEmpty()) return;
+        if (captureDrops.get()) {
+            capturedDrops.get().add(stack);
+            return;
+        }
         var level = world.mcc$level();
         if (!(level instanceof net.minecraft.server.level.ServerLevel)) return;
         double dx = level.random.nextFloat() * 0.5F + 0.25D;
@@ -1311,5 +1355,38 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     public boolean shouldCheckWeakPower(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
             legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
         return state.isNormalCube();
+    }
+
+    /** Forge: spawns the block's own particles where an entity lands on it; true replaces the default dust (none by default). */
+    public boolean addLandingEffects(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.WorldServer worldObj,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos blockPosition, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState iblockstate,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, int numberOfParticles) {
+        return false;
+    }
+
+    /** Forge: a block next to an observer-like block changed (comparators and observers hear it); nothing by default. */
+    public void observedNeighborChange(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState observerState, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos observerPos, Block changedBlock, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos changedBlockPos) {
+    }
+
+    /**
+     * Forge: the fog colour while the camera is inside this block: water's blue (lighter with respiration), lava's red, otherwise
+     * the colour the game computed.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getFogColor(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d originalColor, float partialTicks) {
+        var material = state.getMaterial();
+        if (material == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER) {
+            float f = 0.0F;
+            if (entity instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living) {
+                f = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getRespirationModifier(living) * 0.2F;
+            }
+            return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(0.02F + f, 0.02F + f, 0.2F + f);
+        }
+        if (material == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LAVA) {
+            return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(0.6F, 0.1F, 0.0F);
+        }
+        return originalColor;
     }
 }

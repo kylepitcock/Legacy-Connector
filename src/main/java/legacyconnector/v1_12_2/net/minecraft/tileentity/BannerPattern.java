@@ -97,7 +97,7 @@ public enum BannerPattern {
     }
 
     public boolean hasPattern() {
-        return !hasPatternItem() && patterns[0] != null;
+        return hasPatternItem() || patterns[0] != null;
     }
 
     public boolean hasPatternItem() {

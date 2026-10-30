@@ -24,4 +24,14 @@ public class GuiCreateWorld extends GuiScreen {
     public boolean doesGuiPauseGame() {
         return false;
     }
+
+    /** A save folder name for a world name: unsafe characters and reserved device names escaped, then "-" added until it is free. */
+    public static String getUncollidingSaveDirName(legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat saveLoader, String name) {
+        name = name.replaceAll("[\\./\"]", "_");
+        for (String s : DISALLOWED_FILENAMES) {
+            if (name.equalsIgnoreCase(s)) name = "_" + name + "_";
+        }
+        while (saveLoader != null && saveLoader.getWorldInfo(name) != null) name = name + "-";
+        return name;
+    }
 }

@@ -49,6 +49,9 @@ final class ItemCallbacks1122 {
     final boolean durabilityColor;
     final boolean created;
     final boolean tooltip;
+    final boolean entityItemUpdate;
+    final boolean sneakBypass;
+    final boolean creativeDestroy;
     private int failures;
 
     ItemCallbacks1122(Item legacy) {
@@ -77,6 +80,9 @@ final class ItemCallbacks1122 {
         durability = o("getDurabilityForDisplay", S);
         durabilityColor = o("getRGBDurabilityForDisplay", S);
         created = o("onCreated", S, W, P);
+        entityItemUpdate = o("onEntityItemUpdate", legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class);
+        sneakBypass = o("doesSneakBypassUse", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, B, P);
+        creativeDestroy = o("canDestroyBlockInCreative", W, B, S, P) || legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemSword;
     }
 
     private boolean o(String name, Class<?>... params) {
@@ -341,6 +347,38 @@ final class ItemCallbacks1122 {
             for (String s : out) if (s != null) lines.add(net.minecraft.network.chat.Component.literal(s));
         } catch (RuntimeException | LinkageError e) {
             failure("addInformation", e);
+        }
+    }
+
+    /** Forge's per-tick hook of a dropped stack's item entity: true skips the entity's own update. */
+    boolean entityItemUpdate(net.minecraft.world.entity.item.ItemEntity entity) {
+        try {
+            return EntityBridge1122.wrap(entity) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem e && legacy.onEntityItemUpdate(e);
+        } catch (RuntimeException | LinkageError e) {
+            failure("onEntityItemUpdate", e);
+            return false;
+        } finally {
+            Stacks1122.flushViews();
+        }
+    }
+
+    /** Whether a sneaking player still activates the clicked block with this item. */
+    boolean sneakBypass(net.minecraft.world.item.ItemStack stack, net.minecraft.world.level.LevelReader level, net.minecraft.core.BlockPos pos, Player player) {
+        try {
+            return legacy.doesSneakBypassUse(Stacks1122.view(stack), WorldBridge1122.access(level), BlockPos.mcc$of(pos), player(player));
+        } catch (RuntimeException | LinkageError e) {
+            failure("doesSneakBypassUse", e);
+            return false;
+        }
+    }
+
+    /** Forge's canDestroyBlockInCreative: false keeps a creative player from breaking blocks with the item (swords). */
+    boolean creativeDestroy(net.minecraft.world.item.ItemStack stack, Level level, net.minecraft.core.BlockPos pos, Player player) {
+        try {
+            return legacy.canDestroyBlockInCreative(world(level), BlockPos.mcc$of(pos), Stacks1122.view(stack), player(player));
+        } catch (RuntimeException | LinkageError e) {
+            failure("canDestroyBlockInCreative", e);
+            return true;
         }
     }
 }

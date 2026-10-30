@@ -56,4 +56,9 @@ public class Variant {
         i = 31 * i + (uvLock ? 1 : 0);
         return 31 * i + weight;
     }
+
+    /** Forge: applies this variant's options (its uv lock) to the model it names before baking. */
+    public legacyconnector.v1_12_2.net.minecraftforge.client.model.IModel process(legacyconnector.v1_12_2.net.minecraftforge.client.model.IModel base) {
+        return base == null ? null : base.uvlock(isUvLock());
+    }
 }

@@ -11,6 +11,18 @@ public class SoundManager {
     /** The paulscode sound system as mods reach it by reflection (named sources). */
     public final SoundSystemStarterThread sndSystem = new SoundSystemStarterThread();
 
+    /** Phantom: the legacy sounds playing now, by sound (a snapshot of what the game's engine still plays). */
+    @Deprecated
+    public java.util.Map<ISound, String> invPlayingSounds;
+
+    public static java.util.Map<ISound, String> mcc$get$invPlayingSounds(SoundManager m) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return new java.util.HashMap<>();
+        return org.kylepitcock.legacyconnector.v1_12_2.client.LegacySounds1122.playing();
+    }
+
+    public static void mcc$set$invPlayingSounds(SoundManager m, java.util.Map<ISound, String> value) {
+    }
+
     public SoundManager(SoundHandler handler, legacyconnector.v1_12_2.net.minecraft.client.settings.GameSettings options) {
         this.sndHandler = handler;
     }

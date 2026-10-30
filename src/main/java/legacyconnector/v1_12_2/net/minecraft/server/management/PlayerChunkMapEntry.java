@@ -19,7 +19,7 @@ public class PlayerChunkMapEntry {
     }
 
     public static List<EntityPlayerMP> mcc$get$players(PlayerChunkMapEntry e) {
-        return e.getWatchingPlayers();
+        return e.mcc$base$getWatchingPlayers();
     }
 
     public ChunkPos getPos() {
@@ -27,8 +27,14 @@ public class PlayerChunkMapEntry {
     }
 
     public List<EntityPlayerMP> getWatchingPlayers() {
+        return mcc$base$getWatchingPlayers();
+    }
+
+    /** The value of {@link #getWatchingPlayers()}, for the phantom field accessor (mods override the getter to read the field). */
+    private List<EntityPlayerMP> mcc$base$getWatchingPlayers() {
         return playerChunkMap.mcc$players(pos.x, pos.z);
     }
+
 
     public boolean containsPlayer(EntityPlayerMP player) {
         return playerChunkMap.isPlayerWatchingChunk(player, pos.x, pos.z);

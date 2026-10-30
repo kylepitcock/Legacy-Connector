@@ -97,4 +97,9 @@ public class ItemBow extends Item {
     public int getItemEnchantability() {
         return 1;
     }
+
+    /** Forge: lets a bow change the arrow it is about to shoot (mod bows add damage, effects or a different arrow). */
+    public legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityArrow customizeArrow(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityArrow arrow) {
+        return arrow;
+    }
 }

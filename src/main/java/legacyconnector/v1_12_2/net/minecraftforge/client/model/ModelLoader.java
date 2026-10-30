@@ -8,8 +8,11 @@ import legacyconnector.v1_12_2.net.minecraft.item.Item;
 import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 
-/** Item model registration: which model file shows an item (and each of its subtypes). */
-public class ModelLoader {
+/**
+ * Item model registration: which model file shows an item (and each of its subtypes). An instance is handed to {@code ModelBakeEvent}
+ * (a {@link legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBakery}, as in Forge).
+ */
+public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBakery {
     private static final Map<Item, Map<Integer, ModelResourceLocation>> CUSTOM = new java.util.IdentityHashMap<>();
     private static final Map<Item, ItemMeshDefinition> MESH = new java.util.IdentityHashMap<>();
 

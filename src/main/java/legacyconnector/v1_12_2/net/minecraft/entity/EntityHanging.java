@@ -40,7 +40,7 @@ public abstract class EntityHanging extends Entity {
     }
 
     public static BlockPos mcc$get$hangingPosition(EntityHanging e) {
-        return e.getHangingPosition();
+        return e.mcc$base$getHangingPosition();
     }
 
     public static void mcc$set$hangingPosition(EntityHanging e, BlockPos v) {
@@ -247,7 +247,13 @@ public abstract class EntityHanging extends Entity {
     }
 
     public BlockPos getHangingPosition() {
+        return mcc$base$getHangingPosition();
+    }
+
+    /** The value of {@link #getHangingPosition()}, for the phantom field accessor (mods override the getter to read the field). */
+    private BlockPos mcc$base$getHangingPosition() {
         var h = mcc$hanging();
         return h != null ? BlockPos.mcc$of(h.getPos()) : mcc$hangingPosition;
     }
+
 }

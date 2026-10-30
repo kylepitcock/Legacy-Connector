@@ -46,13 +46,26 @@ public final class EntitySelfTest {
     }
 
     private static final java.util.Set<Long> FORCED = new java.util.HashSet<>();
+    private static int TYPES;
+
+    /** The legacy object a host runs (1.7.10 or 1.12.2), or null. */
+    private static Object legacyOf(Entity e) {
+        if (e instanceof LegacyHost h) return h.mcc$legacy();
+        if (e instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.Host1122 h) return h.mcc$legacy();
+        return null;
+    }
 
     private static void start(MinecraftServer server) {
         ServerLevel level = server.overworld();
         BlockPos spawn = level.getSharedSpawnPos();
         int i = 0;
-        for (LegacyHosts.Info info : LegacyHosts.all()) {
-            String name = info.id().toString();
+        java.util.Map<String, EntityType<?>> types = new java.util.LinkedHashMap<>();
+        for (LegacyHosts.Info info : LegacyHosts.all()) types.put(info.id().toString(), info.type());
+        for (var info : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.all()) types.put(info.id().toString(), info.type());
+        TYPES = types.size();
+        for (var entry : types.entrySet()) {
+            String name = entry.getKey();
+            EntityType<?> type = entry.getValue();
             try {
                 // away from the block self test, which runs at the same time around spawn (mobs broke its blocks)
                 int x = spawn.getX() + 1000 + (i % 16) * 3 - 24;
@@ -62,12 +75,12 @@ public final class EntitySelfTest {
                 if (FORCED.add(net.minecraft.world.level.ChunkPos.asLong(x >> 4, z >> 4))) level.setChunkForced(x >> 4, z >> 4, true);
                 level.getChunk(x >> 4, z >> 4);
                 int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z);
-                Entity e = info.type().create(level);
+                Entity e = type.create(level);
                 if (e == null) {
                     RESULT.put(name, "create returned null");
                     continue;
                 }
-                if (!(e instanceof LegacyHost h) || h.mcc$legacy() == null) {
+                if (legacyOf(e) == null) {
                     RESULT.put(name, "no legacy object (construction failed)");
                     continue;
                 }
@@ -78,7 +91,7 @@ public final class EntitySelfTest {
                 // Save and load into a fresh entity.
                 CompoundTag tag = new CompoundTag();
                 e.saveWithoutId(tag);
-                Entity copy = info.type().create(level);
+                Entity copy = type.create(level);
                 if (copy == null) {
                     RESULT.put(name, "second create returned null");
                     continue;
@@ -118,8 +131,9 @@ public final class EntitySelfTest {
         int alive = 0, gone = 0, failed = 0;
         for (Entity e : SPAWNED) {
             String name = EntityType.getKey(e.getType()).toString();
-            Object legacy = e instanceof LegacyHost h ? h.mcc$legacy() : null;
-            if (legacy == null || LegacyHosts.hadServerTickFailure(legacy.getClass())) {
+            Object legacy = legacyOf(e);
+            if (legacy == null || LegacyHosts.hadServerTickFailure(legacy.getClass())
+                    || org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.hasFailed(legacy.getClass())) {
                 failed++;
                 RESULT.put(name, "FAILED (see log)");
             } else if (e.isAlive()) {
@@ -149,6 +163,6 @@ public final class EntitySelfTest {
         }
         FORCED.clear();
         LOG.info("ENTITY SELF TEST: {} alive, {} removed, {} failed, {} not spawned of {} types{}", alive, gone, failed,
-                LegacyHosts.all().size() - SPAWNED.size(), LegacyHosts.all().size(), sb);
+                TYPES - SPAWNED.size(), TYPES, sb);
     }
 }

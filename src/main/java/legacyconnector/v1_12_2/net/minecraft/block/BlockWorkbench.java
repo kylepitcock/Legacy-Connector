@@ -34,4 +34,42 @@ public class BlockWorkbench extends Block {
         }, net.minecraft.network.chat.Component.translatable("container.crafting")));
         return true;
     }
+
+    /** The crafting table as an interaction object (EntityPlayer.displayGui opens it): a 3x3 crafting container at a position. */
+    public static class InterfaceCraftingTable implements legacyconnector.v1_12_2.net.minecraft.world.IInteractionObject {
+        private final World world;
+        private final BlockPos position;
+
+        public InterfaceCraftingTable(World worldIn, BlockPos pos) {
+            this.world = worldIn;
+            this.position = pos;
+        }
+
+        @Override
+        public String getName() {
+            return "crafting_table";
+        }
+
+        @Override
+        public boolean hasCustomName() {
+            return false;
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+            return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation(
+                    legacyconnector.v1_12_2.net.minecraft.init.Blocks.CRAFTING_TABLE.getTranslationKey() + ".name");
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.inventory.Container createContainer(legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer playerInventory,
+                EntityPlayer playerIn) {
+            return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerWorkbench(playerInventory, world, position);
+        }
+
+        @Override
+        public String getGuiID() {
+            return "minecraft:crafting_table";
+        }
+    }
 }

@@ -71,6 +71,30 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/traincraft/files/5083289",
    "date": "2026-10-29",
    "open": true
+  },
+  {
+   "issue": 106,
+   "mod": "Starminer 1.7.10",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "I created a new world, running the mod. The world loads, but most things that Starminer adds are either not functional, or barely functional. Any and all gravity related blocks (like the Gravity Core, or the Gravity Wall) do not work at all. In 1.7.10, it's meant to create a gravitational field that attracts you to its surface, rotating the player as they walk across the surface. On 1.21, nothing…",
+   "lc": "0.3.6",
+   "neoforge": "21.1.264",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/star-miner/files/3151097",
+   "date": "2026-10-30",
+   "open": true
+  },
+  {
+   "issue": 107,
+   "mod": "Witchery",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "First of all what you have managed to achieve is very impressive, though I am generally speaking staunchly against generative AI I do think its use in coding etc is more of an exception than others. My hope is that you have used your own expertise and merely been supplemented with it but regardless in the aim of not preaching I hope to contribute regarding some of my favourite mods regarding issu…",
+   "lc": "0.3.5",
+   "neoforge": "21.1.264",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410",
+   "date": "2026-10-30",
+   "open": true
   }
  ]
 }

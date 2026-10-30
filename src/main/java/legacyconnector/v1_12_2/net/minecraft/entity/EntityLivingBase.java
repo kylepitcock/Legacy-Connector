@@ -762,9 +762,15 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public int getTicksElytraFlying() {
+        return mcc$base$getTicksElytraFlying();
+    }
+
+    /** The value of {@link #getTicksElytraFlying()}, for the phantom field accessor (mods override the getter to read the field). */
+    private int mcc$base$getTicksElytraFlying() {
         var l = mcc$living();
         return l != null ? l.getFallFlyingTicks() : 0;
     }
+
 
     public boolean isPlayerSleeping() {
         var l = mcc$living();
@@ -823,9 +829,15 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public EntityLivingBase getRevengeTarget() {
+        return mcc$base$getRevengeTarget();
+    }
+
+    /** The value of {@link #getRevengeTarget()}, for the phantom field accessor (mods override the getter to read the field). */
+    private EntityLivingBase mcc$base$getRevengeTarget() {
         var l = mcc$living();
         return l == null ? null : EntityBridge1122.wrap(l.getLastHurtByMob()) instanceof EntityLivingBase t ? t : null;
     }
+
 
     public int getRevengeTimer() {
         var l = mcc$living();
@@ -1300,7 +1312,7 @@ public abstract class EntityLivingBase extends Entity {
     private legacyconnector.v1_12_2.net.minecraft.util.CombatTracker mcc$combatTracker;
 
     public static EntityLivingBase mcc$get$revengeTarget(EntityLivingBase e) {
-        return e.getRevengeTarget();
+        return e.mcc$base$getRevengeTarget();
     }
 
     public static void mcc$set$revengeTarget(EntityLivingBase e, EntityLivingBase v) {
@@ -1319,7 +1331,7 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public static int mcc$get$ticksElytraFlying(EntityLivingBase e) {
-        return e.getTicksElytraFlying();
+        return e.mcc$base$getTicksElytraFlying();
     }
 
     public static void mcc$set$ticksElytraFlying(EntityLivingBase e, int v) {

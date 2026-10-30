@@ -66,7 +66,8 @@ public class EntityFallingBlock extends Entity {
     }
 
     public static IBlockState mcc$get$fallTile(EntityFallingBlock e) {
-        return e.getBlock();
+        // not through getBlock(): subclasses override it to return fallTile (TerraFirmaCraft), which recursed forever
+        return e.mcc$fallingState();
     }
 
     public static void mcc$set$fallTile(EntityFallingBlock e, IBlockState v) {
@@ -172,6 +173,10 @@ public class EntityFallingBlock extends Entity {
     }
 
     public IBlockState getBlock() {
+        return mcc$fallingState();
+    }
+
+    private IBlockState mcc$fallingState() {
         var f = mcc$falling();
         return f != null ? StatesBridge1122.toLegacy(f.getBlockState()) : mcc$fallTile;
     }

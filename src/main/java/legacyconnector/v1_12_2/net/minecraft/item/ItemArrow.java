@@ -12,4 +12,12 @@ public class ItemArrow extends Item {
                 legacyconnector.v1_12_2.net.minecraft.enchantment.Enchantment.getEnchantmentByLocation("infinity"), bow);
         return level > 0 && getClass() == ItemArrow.class;
     }
+
+    /** The arrow entity this item shoots: a tipped arrow carrying the stack's potion effects (none for plain arrows). */
+    public legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityArrow createArrow(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase shooter) {
+        var arrow = new legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityTippedArrow(worldIn, shooter);
+        arrow.setPotionEffect(stack);
+        return arrow;
+    }
 }

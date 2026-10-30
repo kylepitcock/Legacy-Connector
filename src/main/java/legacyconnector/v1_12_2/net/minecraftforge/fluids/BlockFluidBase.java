@@ -24,6 +24,26 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
     /** The fluid level of the block (0 is a source block), stored as its metadata. */
     public static final legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger LEVEL =
             legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyInteger.create("level", 0, 15);
+    /** Forge's unlisted render data of a fluid block: the flow angle, the heights of the four top corners and the side overlays. */
+    public static final legacyconnector.v1_12_2.net.minecraftforge.common.property.PropertyFloat FLOW_DIRECTION =
+            new legacyconnector.v1_12_2.net.minecraftforge.common.property.PropertyFloat("flow_direction", -1000.0F, 1000.0F);
+    public static final legacyconnector.v1_12_2.net.minecraftforge.common.property.PropertyFloat[] LEVEL_CORNERS = new legacyconnector.v1_12_2.net.minecraftforge.common.property.PropertyFloat[4];
+    public static final UnlistedPropertyBool[] SIDE_OVERLAYS = new UnlistedPropertyBool[4];
+
+    static {
+        for (int i = 0; i < 4; i++) {
+            LEVEL_CORNERS[i] = new legacyconnector.v1_12_2.net.minecraftforge.common.property.PropertyFloat("level_corner_" + i, 0.0F, 1.0F);
+            SIDE_OVERLAYS[i] = new UnlistedPropertyBool("side_overlay_" + i);
+        }
+    }
+
+    /** An unlisted boolean property (a listed one used as unlisted). */
+    public static final class UnlistedPropertyBool extends legacyconnector.v1_12_2.net.minecraftforge.common.property.Properties.PropertyAdapter<Boolean> {
+        public UnlistedPropertyBool(String name) {
+            super(legacyconnector.v1_12_2.net.minecraft.block.properties.PropertyBool.create(name));
+        }
+    }
+
     /** Blocks every fluid washes away (true) or leaves alone (false), whatever their material says. */
     protected static final Map<Block, Boolean> defaultDisplacements = new HashMap<>();
 

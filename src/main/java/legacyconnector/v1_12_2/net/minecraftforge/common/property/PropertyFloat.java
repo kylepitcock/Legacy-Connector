@@ -3,7 +3,7 @@ package legacyconnector.v1_12_2.net.minecraftforge.common.property;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
-/** An unlisted float property (model data a tile entity supplies), optionally limited by a validator. */
+/** Forge: an unlisted float property (fluid corner heights, flow direction), optionally limited to a range. */
 public class PropertyFloat implements IUnlistedProperty<Float> {
     private final String name;
     private final Predicate<Float> validator;

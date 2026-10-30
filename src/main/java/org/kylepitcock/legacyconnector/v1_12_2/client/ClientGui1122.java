@@ -100,6 +100,7 @@ public final class ClientGui1122 {
             case "GuiVideoSettings" -> new net.minecraft.client.gui.screens.options.VideoSettingsScreen(parent, mc, mc.options);
             case "GuiControls" -> new net.minecraft.client.gui.screens.options.controls.ControlsScreen(parent, mc.options);
             case "GuiIngameMenu" -> new net.minecraft.client.gui.screens.PauseScreen(true);
+            case "GuiStats" -> mc.player == null ? null : new net.minecraft.client.gui.screens.achievement.StatsScreen(parent, mc.player.getStats());
             case "GuiModList" -> new net.neoforged.neoforge.client.gui.ModListScreen(parent);
             case "GuiInventory" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.InventoryScreen(mc.player);
             case "GuiContainerCreative" -> mc.player == null ? null : new net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen(mc.player,

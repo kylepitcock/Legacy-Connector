@@ -627,4 +627,101 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     public void addInformation(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn, java.util.List<String> tooltip,
             legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag flagIn) {
     }
+
+    // ------------------------------------------------------------------ client hooks and more Forge item hooks
+
+    private legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer teisr;
+
+    /** Forge: the renderer of items whose model is "builtin/entity" (chests, shields, mod items drawn in code). */
+    public void setTileEntityItemStackRenderer(legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer renderer) {
+        this.teisr = renderer;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer getTileEntityItemStackRenderer() {
+        var r = teisr;
+        return r != null ? r : legacyconnector.v1_12_2.net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer.instance;
+    }
+
+    /** Forge: the font the tooltip of a stack is drawn with; null is the game's font. */
+    public legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer getFontRenderer(ItemStack stack) {
+        return null;
+    }
+
+    /** Forge: the rarity (name colour) of a stack, vanilla's or a mod's own. */
+    public legacyconnector.v1_12_2.net.minecraftforge.common.IRarity getForgeRarity(ItemStack stack) {
+        return getRarity(stack);
+    }
+
+    /** Forge: the model an armor item is drawn with on an entity; null draws the default armor model. */
+    public legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped getArmorModel(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityLiving,
+            ItemStack itemStack, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot armorSlot,
+            legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped _default) {
+        return null;
+    }
+
+    /** Forge: each tick of the item entity of a dropped stack; true skips the entity's own update. */
+    public boolean onEntityItemUpdate(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem entityItem) {
+        return false;
+    }
+
+    /** Forge: whether a sneaking player still activates the block clicked with this item (wrenches and the like). */
+    public boolean doesSneakBypassUse(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return false;
+    }
+
+    /** Forge: whether a creative player breaks blocks with this item (swords do not). */
+    public boolean canDestroyBlockInCreative(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return !(this instanceof ItemSword);
+    }
+
+    /** Called when a stack's tag arrives from an old save; true when the item changed it. */
+    public boolean updateItemStackNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound nbt) {
+        return false;
+    }
+
+    /** Whether the item is a map (sent its map data while held). */
+    public boolean isMap() {
+        return false;
+    }
+
+    /** Right-click in the air with the modern vanilla item's behaviour (buckets, bottles, maps...): its result stack for the hand. */
+    protected static legacyconnector.v1_12_2.net.minecraft.util.ActionResult<ItemStack> mcc$useModern(net.minecraft.world.item.Item vanilla,
+            legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        ItemStack held = mcc$held(player, hand);
+        var p = player == null ? null : player.mcc$player();
+        var level = world == null ? null : world.mcc$level();
+        if (p == null || level == null) return new legacyconnector.v1_12_2.net.minecraft.util.ActionResult<>(legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS, held);
+        var r = vanilla.use(level, p, hand == legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND
+                : net.minecraft.world.InteractionHand.MAIN_HAND);
+        var type = r.getResult().consumesAction() ? legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.SUCCESS
+                : r.getResult() == net.minecraft.world.InteractionResult.FAIL ? legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.FAIL
+                : legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+        var out = r.getObject();
+        var inHand = p.getItemInHand(hand == legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND
+                : net.minecraft.world.InteractionHand.MAIN_HAND);
+        ItemStack result = out == inHand ? org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.view(out)
+                : org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(out);
+        return new legacyconnector.v1_12_2.net.minecraft.util.ActionResult<>(type, result);
+    }
+
+    /** Use on a block with the modern vanilla item's behaviour (placing armor stands, snow, filling bottles...). */
+    protected static legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult mcc$useOnModern(net.minecraft.world.item.Item vanilla,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing, float hitX, float hitY, float hitZ) {
+        var p = player == null ? null : player.mcc$player();
+        var level = world == null ? null : world.mcc$level();
+        if (p == null || level == null || pos == null) return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+        var mp = pos.mcc$modern();
+        var dir = facing == null ? net.minecraft.core.Direction.UP : facing.mcc$modern();
+        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(mp.getX() + hitX, mp.getY() + hitY, mp.getZ() + hitZ), dir, mp, false);
+        var mh = hand == legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND;
+        var r = vanilla.useOn(new net.minecraft.world.item.context.UseOnContext(level, p, mh, p.getItemInHand(mh), hit));
+        if (r.consumesAction()) return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.SUCCESS;
+        return r == net.minecraft.world.InteractionResult.FAIL ? legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.FAIL
+                : legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+    }
 }

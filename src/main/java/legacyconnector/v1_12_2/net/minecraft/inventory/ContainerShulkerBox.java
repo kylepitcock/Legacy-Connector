@@ -7,6 +7,11 @@ import legacyconnector.v1_12_2.net.minecraft.item.ItemStack;
 public class ContainerShulkerBox extends Container {
     private final IInventory inventory;
 
+    /** The constructor as mods compiled against the player inventory type link it. */
+    public ContainerShulkerBox(legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer playerInventoryIn, IInventory inventoryIn, EntityPlayer player) {
+        this((IInventory) playerInventoryIn, inventoryIn, player);
+    }
+
     public ContainerShulkerBox(IInventory playerInventoryIn, IInventory inventoryIn, EntityPlayer player) {
         this.inventory = inventoryIn;
         inventoryIn.openInventory(player);

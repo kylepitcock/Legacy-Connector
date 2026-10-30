@@ -63,6 +63,11 @@ public enum EnumDyeColor implements IStringSerializable {
         return unlocalizedName;
     }
 
+    /** The colour's name as the banner and bed textures use it ("light_blue"). */
+    public String getDyeColorName() {
+        return name;
+    }
+
     public int getColorValue() {
         return color;
     }

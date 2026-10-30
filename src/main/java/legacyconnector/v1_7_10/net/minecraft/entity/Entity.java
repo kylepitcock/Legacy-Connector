@@ -803,9 +803,42 @@ public abstract class Entity implements ICommandSender {
         return m != null ? World.mcc$wrap(m.level()) : e.mcc$world;
     }
 
+    /** The box {@code boundingBox} answers with, and its bounds when last synchronised with the modern entity. */
+    private AxisAlignedBB mcc$bbLive;
+    private final double[] mcc$bbSeen = new double[6];
+
+    /**
+     * 1.7.10's {@code boundingBox} was one final, mutable box: mods move entities by changing it in place
+     * ({@code boundingBox.offset(...)}, {@code setBounds}, field writes) and derive the position from it (Traincraft rail
+     * movement). The same box is answered every time; changes a mod made since the last read go to the modern entity, otherwise
+     * it is refreshed from the modern entity's box.
+     */
     public static AxisAlignedBB mcc$get$boundingBox(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? AxisAlignedBB.mcc$of(m.getBoundingBox()) : AxisAlignedBB.getBoundingBox(e.mcc$local_posX - 0.3, e.mcc$local_posY, e.mcc$local_posZ - 0.3, e.mcc$local_posX + 0.3, e.mcc$local_posY + 1.8, e.mcc$local_posZ + 0.3);
+        if (m == null) return AxisAlignedBB.getBoundingBox(e.mcc$local_posX - 0.3, e.mcc$local_posY, e.mcc$local_posZ - 0.3, e.mcc$local_posX + 0.3, e.mcc$local_posY + 1.8, e.mcc$local_posZ + 0.3);
+        var live = e.mcc$bbLive;
+        double[] seen = e.mcc$bbSeen;
+        if (live == null) {
+            live = e.mcc$bbLive = AxisAlignedBB.mcc$of(m.getBoundingBox());
+        } else if (live.minX != seen[0] || live.minY != seen[1] || live.minZ != seen[2]
+                || live.maxX != seen[3] || live.maxY != seen[4] || live.maxZ != seen[5]) {
+            m.setBoundingBox(new net.minecraft.world.phys.AABB(live.minX, live.minY, live.minZ, live.maxX, live.maxY, live.maxZ));
+        } else {
+            var box = m.getBoundingBox();
+            live.minX = box.minX;
+            live.minY = box.minY;
+            live.minZ = box.minZ;
+            live.maxX = box.maxX;
+            live.maxY = box.maxY;
+            live.maxZ = box.maxZ;
+        }
+        seen[0] = live.minX;
+        seen[1] = live.minY;
+        seen[2] = live.minZ;
+        seen[3] = live.maxX;
+        seen[4] = live.maxY;
+        seen[5] = live.maxZ;
+        return live;
     }
 
     public static Entity mcc$get$riddenByEntity(Entity e) {
