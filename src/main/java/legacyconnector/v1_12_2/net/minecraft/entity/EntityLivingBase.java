@@ -1299,4 +1299,33 @@ public abstract class EntityLivingBase extends Entity {
         var equippable = modern.getItem() instanceof net.minecraft.world.item.ArmorItem armor ? armor.getEquipSound().value() : net.minecraft.sounds.SoundEvents.ARMOR_EQUIP_GENERIC.value();
         l.playSound(equippable, 1.0F, 1.0F);
     }
+
+    /** Turns the body towards the movement direction, at most 75 degrees from the head; returns the walk animation direction. */
+    protected float updateDistance(float yaw, float distance) {
+        float body = mcc$get$renderYawOffset(this);
+        float f = net.minecraft.util.Mth.wrapDegrees(yaw - body);
+        body += f * 0.3F;
+        float rotationYaw = mcc$get$rotationYaw(this);
+        float f1 = net.minecraft.util.Mth.wrapDegrees(rotationYaw - body);
+        boolean backwards = f1 < -90.0F || f1 >= 90.0F;
+        if (f1 < -75.0F) f1 = -75.0F;
+        if (f1 >= 75.0F) f1 = 75.0F;
+        body = rotationYaw - f1;
+        if (f1 * f1 > 2500.0F) body += f1 * 0.2F;
+        mcc$set$renderYawOffset(this, body);
+        return backwards ? -distance : distance;
+    }
+
+    private static final java.lang.reflect.Method MCC$HURT_SHIELD = mcc$method(LivingEntity.class, "hurtCurrentlyUsedShield", float.class);
+
+    /** Wears the raised shield by the blocked damage (players' shields; other entities have none to wear). */
+    protected void damageShield(float damage) {
+        var l = mcc$living();
+        if (l == null || MCC$HURT_SHIELD == null) return;
+        try {
+            MCC$HURT_SHIELD.invoke(l, damage);
+        } catch (ReflectiveOperationException e) {
+            // the shield keeps its durability
+        }
+    }
 }

@@ -7,11 +7,13 @@ import legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttribute;
 import legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.IAttributeInstance;
 
 /** A legacy instance over a modern one; modifiers keep their legacy identity by the UUID inside the modern modifier id. */
-public final class AttributeView1122 implements IAttributeInstance {
+public final class AttributeView1122 extends legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.ModifiableAttributeInstance {
     private final IAttribute attribute;
     private final net.minecraft.world.entity.ai.attributes.AttributeInstance modern;
 
     public AttributeView1122(IAttribute attribute, net.minecraft.world.entity.ai.attributes.AttributeInstance modern) {
+        // a ModifiableAttributeInstance (1.12's AttributeMap hands those out) whose state is all the modern instance's
+        super(null, attribute);
         this.attribute = attribute;
         this.modern = modern;
     }
@@ -29,6 +31,10 @@ public final class AttributeView1122 implements IAttributeInstance {
             uuid = UUID.nameUUIDFromBytes(m.id().toString().getBytes());
         }
         return new AttributeModifier(uuid, m.id().toString(), m.amount(), m.operation().ordinal());
+    }
+
+    @Override
+    protected void flagForUpdate() {
     }
 
     @Override

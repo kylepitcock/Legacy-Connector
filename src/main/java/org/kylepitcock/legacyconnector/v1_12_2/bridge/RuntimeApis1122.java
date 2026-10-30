@@ -368,6 +368,31 @@ public final class RuntimeApis1122 {
             return a == null ? Synth.NONE : a.hash();
         });
         Synth.addInstanceMethod(horse + ".getOrdinal", (self, args) -> self instanceof Enum<?> e ? e.ordinal() : Synth.NONE);
+        Synth.addStaticMethod(horse + ".getByItemStack", args -> {
+            String name = "NONE";
+            if (args.length > 0 && args[0] instanceof ItemStack stack && !stack.isEmpty()) {
+                var modern = Stacks1122.toModern(stack).getItem();
+                if (modern == net.minecraft.world.item.Items.IRON_HORSE_ARMOR) name = "IRON";
+                else if (modern == net.minecraft.world.item.Items.GOLDEN_HORSE_ARMOR) name = "GOLD";
+                else if (modern == net.minecraft.world.item.Items.DIAMOND_HORSE_ARMOR) name = "DIAMOND";
+                else {
+                    // Forge: the item says which armor it is (Item.getHorseArmorType, overridden by mod armor)
+                    for (Method m : stack.getItem().getClass().getMethods()) {
+                        if (m.getName().equals("getHorseArmorType") && m.getParameterCount() == 1) {
+                            try {
+                                Object type = m.invoke(stack.getItem(), stack);
+                                if (type != null) return type;
+                            } catch (ReflectiveOperationException | RuntimeException e) {
+                                // treated as no armor
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            Object type = enumConstant(horse, name);
+            return type != null ? type : Synth.NONE;
+        });
     }
 
     /**
