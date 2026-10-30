@@ -35,6 +35,33 @@ public class ConfigElement<T> implements IConfigElement<T> {
         return this;
     }
 
+    /**
+     * The config screen element of a {@link Config} class (EpicFight reads its custom weapon list through it): the class's category, or for an
+     * empty category the file's top-level categories under one element. The class is synced first if the mod has not done it yet.
+     */
+    public static IConfigElement from(Class<?> configClass) {
+        Config annot = configClass.getAnnotation(Config.class);
+        if (annot == null) throw new RuntimeException(configClass + " is missing the @Config annotation");
+        String name = annot.name().isEmpty() ? annot.modid() : annot.name();
+        Configuration config = ConfigManager.getConfiguration(annot.modid(), name);
+        if (config == null) {
+            ConfigManager.mcc$register(configClass);
+            ConfigManager.sync(annot.modid(), annot.type());
+            config = ConfigManager.getConfiguration(annot.modid(), name);
+        }
+        if (config == null) return new legacyconnector.v1_12_2.net.minecraftforge.fml.client.config.DummyConfigElement.DummyCategoryElement<>(name, name, new ArrayList<>());
+        if (annot.category().isEmpty()) {
+            List<IConfigElement> elements = new ArrayList<>();
+            for (String cat : config.getCategoryNames()) {
+                ConfigCategory category = config.getCategory(cat);
+                if (category.isChild()) continue;
+                elements.add(new ConfigElement<>(category));
+            }
+            return new legacyconnector.v1_12_2.net.minecraftforge.fml.client.config.DummyConfigElement.DummyCategoryElement<>(name, name, elements);
+        }
+        return new ConfigElement<>(config.getCategory(annot.category()));
+    }
+
     /** The element of a property, typed by its value type (Boolean, Double, Integer, else String: one class after erasure). */
     public static ConfigElement<?> getTypedElement(Property prop) {
         return new ConfigElement<>(prop);

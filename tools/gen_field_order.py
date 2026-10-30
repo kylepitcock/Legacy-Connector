@@ -1,26 +1,40 @@
 #!/usr/bin/env python3
-"""Writes src/main/resources/legacyconnector/v1_7_10/field-order.txt: the declared fields of every vanilla 1.7.10 class in
+"""Writes src/main/resources/legacyconnector/v<version>/field-order.txt: the declared fields of every vanilla class in
 declaration order (MCP names), for FML's index-based reflection (ReflectionHelper/ObfuscationReflectionHelper with a field
 index: Aether swaps EntityRenderer field #7, the item renderer). The shim classes declare their fields in another order.
 One line per class: `net/minecraft/Class field0 field1 ...`.
-usage: tools/gen_field_order.py   (needs build/devtools/mcp/client1710.jar, srg1710.zip, mcp_stable-12-1.7.10.zip:
-       tools/fetch_devtools.sh, the client jar from Mojang's version manifest)"""
-import csv, io, os, struct, zipfile
+usage: tools/gen_field_order.py [1.7.10|1.12.2]   (needs build/devtools/mcp/client1710.jar, srg1710.zip,
+       mcp_stable-12-1.7.10.zip, or client1122.jar, srg1122.zip, mcp_stable-39-1.12.zip: tools/fetch_devtools.sh, the client
+       jar from Mojang's version manifest)"""
+import csv, io, os, struct, sys, zipfile
+
+version = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
+V = {"1.7.10": ("1710", "mcp_stable-12-1.7.10.zip"), "1.12.2": ("1122", "mcp_stable-39-1.12.zip")}[version]
 
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 mcp = os.path.join(root, "build", "devtools", "mcp")
-out = os.path.join(root, "src", "main", "resources", "legacyconnector", "v1_7_10", "field-order.txt")
+out = os.path.join(root, "src", "main", "resources", "legacyconnector", "v" + version.replace(".", "_"), "field-order.txt")
 
 classes, fields_srg = {}, {}
-with zipfile.ZipFile(os.path.join(mcp, "srg1710.zip")) as z:
-    for line in z.read("joined.srg").decode().splitlines():
-        p = line.split()
-        if p[0] == "CL:":
-            classes[p[1]] = p[2]
-        elif p[0] == "FD:":
-            obf_owner, obf_name = p[1].rsplit("/", 1)
-            fields_srg[(obf_owner, obf_name)] = p[2].rsplit("/", 1)[1]
-with zipfile.ZipFile(os.path.join(mcp, "mcp_stable-12-1.7.10.zip")) as z:
+with zipfile.ZipFile(os.path.join(mcp, "srg" + V[0] + ".zip")) as z:
+    if version == "1.7.10":
+        for line in z.read("joined.srg").decode().splitlines():
+            p = line.split()
+            if p[0] == "CL:":
+                classes[p[1]] = p[2]
+            elif p[0] == "FD:":
+                obf_owner, obf_name = p[1].rsplit("/", 1)
+                fields_srg[(obf_owner, obf_name)] = p[2].rsplit("/", 1)[1]
+    else:  # tsrg: "obf deobf" class lines, then tab-indented "obf srg" fields and "obf desc srg" methods
+        owner = None
+        for line in z.read("config/joined.tsrg").decode().splitlines():
+            p = line.split()
+            if not line.startswith("	"):
+                owner = p[0]
+                classes[p[0]] = p[1]
+            elif len(p) == 2:
+                fields_srg[(owner, p[0])] = p[1]
+with zipfile.ZipFile(os.path.join(mcp, V[1])) as z:
     names = {r["searge"]: r["name"] for r in csv.DictReader(io.StringIO(z.read("fields.csv").decode()))}
 
 
@@ -56,7 +70,7 @@ def field_names(data):
 
 
 lines = []
-with zipfile.ZipFile(os.path.join(mcp, "client1710.jar")) as z:
+with zipfile.ZipFile(os.path.join(mcp, "client" + V[0] + ".jar")) as z:
     for entry in z.namelist():
         if not entry.endswith(".class"):
             continue

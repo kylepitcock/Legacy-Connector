@@ -98,6 +98,40 @@ public class ReflectionHelper {
         throw new UnableToFindFieldException(fieldNames, null);
     }
 
+    private static final String SHIM = "legacyconnector.v1_12_2.";
+    private static volatile java.util.Map<String, String[]> vanillaOrder;
+
+    /**
+     * Field number {@code index} of a class as vanilla 1.12.2 declared it (SecurityCraft sets Block field #18, the material): the shim
+     * declares its fields in another order, so vanilla classes go through the table from {@code tools/gen_field_order.py}.
+     */
+    private static Field indexed(Class<?> cls, int index) {
+        if (cls.getName().startsWith(SHIM + "net.minecraft.")) {
+            String[] order = vanillaOrder().get(cls.getName().substring(SHIM.length()).replace('.', '/'));
+            if (order != null && index >= 0 && index < order.length) return findField(cls, order[index]);
+        }
+        Field f = cls.getDeclaredFields()[index];
+        f.setAccessible(true);
+        return f;
+    }
+
+    private static java.util.Map<String, String[]> vanillaOrder() {
+        var order = vanillaOrder;
+        if (order != null) return order;
+        order = new java.util.HashMap<>();
+        try (var in = ReflectionHelper.class.getResourceAsStream("/legacyconnector/v1_12_2/field-order.txt")) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
+                    String[] p = line.trim().split(" ");
+                    if (p.length > 1) order.put(p[0], java.util.Arrays.copyOfRange(p, 1, p.length));
+                }
+            }
+        } catch (java.io.IOException ignored) {
+            // no table: indices follow the shim's declaration order
+        }
+        return vanillaOrder = order;
+    }
+
     /** The 1.12.2 form: deobfuscated and SRG name. */
     public static Field findField(Class<?> clazz, String fieldName, String fieldObfName) {
         return findField(clazz, new String[] {fieldName, fieldObfName});
@@ -133,11 +167,11 @@ public class ReflectionHelper {
     @SuppressWarnings("unchecked")
     public static <T, E> T getPrivateValue(Class<? super E> classToAccess, E instance, int fieldIndex) {
         try {
-            Field f = classToAccess.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            Field f = indexed(classToAccess, fieldIndex);
+            if (f.getDeclaringClass() == Dummy.class) return null;
             return (T) f.get(instance);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            throw new UnableToAccessFieldException(new String[0], e instanceof Exception ex ? ex : null);
+            throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e instanceof Exception ex ? ex : null);
         }
     }
 
@@ -154,11 +188,11 @@ public class ReflectionHelper {
 
     public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, int fieldIndex) {
         try {
-            Field f = classToAccess.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            Field f = indexed(classToAccess, fieldIndex);
+            if (f.getDeclaringClass() == Dummy.class) return;
             f.set(instance, value);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            throw new UnableToAccessFieldException(new String[0], e instanceof Exception ex ? ex : null);
+            throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e instanceof Exception ex ? ex : null);
         }
     }
 

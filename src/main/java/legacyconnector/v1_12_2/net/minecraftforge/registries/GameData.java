@@ -7,6 +7,18 @@ import legacyconnector.v1_12_2.net.minecraft.item.Item;
 
 /** Forge's registry bookkeeping; mods read the block to item association (Quark swaps entries in it). */
 public class GameData {
+    /** The registry names (RegistryManager.ACTIVE.getRegistry(GameData.RECIPES): Cucumber). */
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation BLOCKS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:blocks");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ITEMS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:items");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation POTIONS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:potions");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation BIOMES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:biomes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation SOUNDEVENTS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:soundevents");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation POTIONTYPES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:potiontypes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ENCHANTMENTS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:enchantments");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ENTITIES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:entities");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation RECIPES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:recipes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation PROFESSIONS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:villagerprofessions");
+
     private static final BiMap<Block, Item> BLOCK_ITEM = HashBiMap.create();
 
     /** An item block was created for a block. */

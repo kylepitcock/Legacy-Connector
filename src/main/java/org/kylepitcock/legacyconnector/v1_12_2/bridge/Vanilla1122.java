@@ -146,6 +146,12 @@ public final class Vanilla1122 {
             Block block = blockForModern(blockItem.getBlock());
             if (block != null) return new VanillaItemBlock(block);
         }
+        var food = modern == null ? null : modern.components().get(net.minecraft.core.component.DataComponents.FOOD);
+        if (food != null) {
+            // mods cast vanilla food to ItemFood (Project Vibrant Journeys); 1.12 kept the modifier, 1.21 the absolute saturation
+            int nutrition = food.nutrition();
+            return new VanillaFood(nutrition, nutrition == 0 ? 0F : food.saturation() / (nutrition * 2F));
+        }
         return new VanillaItem();
     }
 
@@ -672,6 +678,13 @@ public final class Vanilla1122 {
 
     /** A vanilla item as a legacy object. */
     public static final class VanillaItem extends Item {
+    }
+
+    /** A vanilla food item as a legacy {@code ItemFood}. */
+    public static final class VanillaFood extends legacyconnector.v1_12_2.net.minecraft.item.ItemFood {
+        VanillaFood(int amount, float saturation) {
+            super(amount, saturation, false);
+        }
     }
 
     /** A vanilla block item as a legacy object. */

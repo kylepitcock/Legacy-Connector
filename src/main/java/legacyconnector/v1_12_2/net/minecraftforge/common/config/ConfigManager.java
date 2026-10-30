@@ -15,6 +15,8 @@ public final class ConfigManager {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Config");
     private static final Map<String, List<Class<?>>> CLASSES = new ConcurrentHashMap<>();
     private static final Map<String, Configuration> FILES = new ConcurrentHashMap<>();
+    /** Forge's table of loaded config files by absolute path (First Aid reads it by reflection). */
+    private static final Map<String, Configuration> CONFIGS = new ConcurrentHashMap<>();
     private static File configDir = new File("config");
 
     private ConfigManager() {}
@@ -38,13 +40,23 @@ public final class ConfigManager {
             if (c.type() != type) continue;
             try {
                 String name = c.name().isEmpty() ? modid : c.name();
-                Configuration cfg = FILES.computeIfAbsent(modid + "/" + name, k -> new Configuration(new File(configDir, name + ".cfg")));
+                Configuration cfg = FILES.computeIfAbsent(modid + "/" + name, k -> {
+                    File file = new File(configDir, name + ".cfg");
+                    Configuration created = new Configuration(file);
+                    CONFIGS.put(file.getAbsolutePath(), created);
+                    return created;
+                });
                 sync(cfg, cls, c.category());
                 cfg.save();
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Could not sync the config of {}: {}", cls.getName(), e.toString());
             }
         }
+    }
+
+    /** The loaded config file of a mod's {@link Config} class (null before the class was synced, as in Forge). */
+    public static Configuration getConfiguration(String modid, String name) {
+        return FILES.get(modid + "/" + (name == null || name.isEmpty() ? modid : name));
     }
 
     /** The categories of a mod's {@link Config} classes in their config files (what Forge's config GUI lists for the mod). */
@@ -130,6 +142,7 @@ public final class ConfigManager {
     }
 
     private static void syncInstance(Configuration cfg, Object holder, String category) throws ReflectiveOperationException {
+        cfg.getCategory(category); // the category exists even when it only holds sub-objects (EpicFight's custom_weaponry)
         for (Field f : holder.getClass().getDeclaredFields()) {
             int mod = f.getModifiers();
             if (!Modifier.isPublic(mod) || Modifier.isStatic(mod) || Modifier.isFinal(mod) || f.isAnnotationPresent(Config.Ignore.class)) continue;
@@ -140,6 +153,19 @@ public final class ConfigManager {
             else if (t == boolean.class) f.setBoolean(holder, cfg.get(category, key, f.getBoolean(holder)).getBoolean());
             else if (t == double.class) f.setDouble(holder, cfg.get(category, key, f.getDouble(holder)).getDouble());
             else if (t == String.class) f.set(holder, cfg.get(category, key, (String) f.get(holder)).getString());
+            else if (t == float.class) f.setFloat(holder, (float) cfg.get(category, key, (double) f.getFloat(holder)).getDouble());
+            else if (t == long.class) f.setLong(holder, (long) cfg.get(category, key, (double) f.getLong(holder)).getDouble());
+            else if (t == String[].class) {
+                String[] cur = (String[]) f.get(holder);
+                f.set(holder, cfg.get(category, key, cur == null ? new String[0] : cur).getStringList());
+            } else if (t.isEnum()) {
+                Object cur = f.get(holder);
+                String v = cfg.get(category, key, cur == null ? t.getEnumConstants()[0].toString() : cur.toString()).getString();
+                for (Object constant : t.getEnumConstants()) if (constant.toString().equalsIgnoreCase(v)) f.set(holder, constant);
+            } else if (!t.isPrimitive() && !t.isArray() && !Map.class.isAssignableFrom(t) && !t.getName().startsWith("java.")) {
+                Object child = f.get(holder);
+                if (child != null) syncInstance(cfg, child, category + "." + key);
+            }
         }
     }
 }
