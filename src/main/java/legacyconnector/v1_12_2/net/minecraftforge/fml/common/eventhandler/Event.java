@@ -58,6 +58,13 @@ public class Event {
         phase = value;
     }
 
+    private static final java.util.Map<Class<?>, ListenerList> mcc$LISTS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The event class's listener list (Forge's per-class registry; the layer's bus keeps its own listeners). */
+    public ListenerList getListenerList() {
+        return mcc$LISTS.computeIfAbsent(getClass(), c -> new ListenerList());
+    }
+
     private static boolean annotated(Class<?> c, Class<? extends java.lang.annotation.Annotation> a) {
         for (; c != null && c != Object.class; c = c.getSuperclass()) {
             if (c.isAnnotationPresent(a)) return true;

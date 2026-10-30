@@ -10,6 +10,9 @@ public class SoundHandler implements legacyconnector.v1_12_2.net.minecraft.clien
     public static final Sound MISSING_SOUND = new Sound("meta:missing_sound", 1.0F, 1.0F, 1, Sound.Type.FILE, false);
     private final java.util.Map<ISoundEventListener, net.minecraft.client.sounds.SoundEventListener> listeners = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** The sound events by name (a live view of the game's). */
+    public final SoundRegistry soundRegistry = new SoundRegistry();
+
     /** Phantom: the sound engine (redirected to {@link #mcc$get$sndManager}). */
     @Deprecated
     public SoundManager sndManager;

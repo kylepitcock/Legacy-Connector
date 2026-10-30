@@ -505,6 +505,18 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.launchIntegratedServer(folderName);
     }
 
+    /** The game timer (partial tick and ticks per frame, from the game's delta tracker). */
+    public final legacyconnector.v1_12_2.net.minecraft.util.Timer timer = legacyconnector.v1_12_2.net.minecraft.util.Timer.mcc$client();
+    /** The last 240 frame times (fed every frame by the layer). */
+    public final legacyconnector.v1_12_2.net.minecraft.util.FrameTimer frameTimer = new legacyconnector.v1_12_2.net.minecraft.util.FrameTimer();
+    /** Grabs and releases the cursor; mods may replace it (the game reads the mouse itself). */
+    public legacyconnector.v1_12_2.net.minecraft.util.MouseHelper mouseHelper = CLIENT ? new legacyconnector.v1_12_2.net.minecraft.util.MouseHelper() : null;
+
+    /** Runs one client tick now (video renderers step the game frame by frame). */
+    public void runTick() {
+        if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.runTick();
+    }
+
     private legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat saveLoader;
 
     /** The client's saves folder: its worlds, their level.dat and save handlers. */

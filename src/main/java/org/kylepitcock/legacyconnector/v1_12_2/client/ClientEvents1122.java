@@ -78,6 +78,7 @@ public final class ClientEvents1122 {
         bus.addListener(ClientEvents1122::onPlayerPre);
         bus.addListener(ClientEvents1122::onPlayerPost);
         bus.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Pre e) -> frame++);
+        bus.addListener((net.neoforged.neoforge.client.event.RenderFrameEvent.Post e) -> Minecraft1122.recordFrame());
         bus.addListener(ClientEvents1122::onHand);
         bus.addListener(ClientEvents1122::onBlockOverlay);
         bus.addListener(ClientEvents1122::onItemInFrame);
