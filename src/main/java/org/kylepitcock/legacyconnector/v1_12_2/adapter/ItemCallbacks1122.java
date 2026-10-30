@@ -51,6 +51,7 @@ final class ItemCallbacks1122 {
     final boolean tooltip;
     final boolean entityItemUpdate;
     final boolean sneakBypass;
+    final boolean creativeDestroy;
     private int failures;
 
     ItemCallbacks1122(Item legacy) {
@@ -81,6 +82,7 @@ final class ItemCallbacks1122 {
         created = o("onCreated", S, W, P);
         entityItemUpdate = o("onEntityItemUpdate", legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class);
         sneakBypass = o("doesSneakBypassUse", S, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class, B, P);
+        creativeDestroy = o("canDestroyBlockInCreative", W, B, S, P) || legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemSword;
     }
 
     private boolean o(String name, Class<?>... params) {
@@ -367,6 +369,16 @@ final class ItemCallbacks1122 {
         } catch (RuntimeException | LinkageError e) {
             failure("doesSneakBypassUse", e);
             return false;
+        }
+    }
+
+    /** Forge's canDestroyBlockInCreative: false keeps a creative player from breaking blocks with the item (swords). */
+    boolean creativeDestroy(net.minecraft.world.item.ItemStack stack, Level level, net.minecraft.core.BlockPos pos, Player player) {
+        try {
+            return legacy.canDestroyBlockInCreative(world(level), BlockPos.mcc$of(pos), Stacks1122.view(stack), player(player));
+        } catch (RuntimeException | LinkageError e) {
+            failure("canDestroyBlockInCreative", e);
+            return true;
         }
     }
 }
