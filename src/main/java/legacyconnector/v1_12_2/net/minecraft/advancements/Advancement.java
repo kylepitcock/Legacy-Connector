@@ -60,8 +60,4 @@ public class Advancement {
     public String toString() {
         return "SimpleAdvancement{id=" + holder.id() + '}';
     }
-
-    public DisplayInfo getDisplay() {
-        return holder.value().display().map(DisplayInfo::new).orElse(null);
-    }
 }
