@@ -98,6 +98,11 @@ TYPED_BLOCKS = {
     "GOLDEN_RAIL": "new %sBlockRailPowered() {}" % B,
     "ACTIVATOR_RAIL": "new %sBlockRailPowered(true) {}" % B,
     "DETECTOR_RAIL": "new %sBlockRailDetector()" % B,
+    "CAULDRON": "new %sBlockCauldron()" % B,
+    "HOPPER": "new %sBlockHopper()" % B,
+    "FURNACE": "new %sBlockFurnace(false)" % B,
+    "LIT_FURNACE": "new %sBlockFurnace(true)" % B,
+    "BED": "new %sBlockBed()" % B,
     "REDSTONE_BLOCK": "new %sBlockCompressedPowered(%sIRON, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor.TNT)" % (B, M),
 }
 for color in ["WHITE", "ORANGE", "MAGENTA", "LIGHT_BLUE", "YELLOW", "LIME", "PINK", "GRAY", "SILVER", "CYAN", "PURPLE", "BLUE", "BROWN", "GREEN", "RED", "BLACK"]:
@@ -108,6 +113,9 @@ SLOTS = {"HELMET": "HEAD", "CHESTPLATE": "CHEST", "LEGGINGS": "LEGS", "BOOTS": "
 TYPED_ITEMS = {
     "BOW": "new %sItemBow()" % I,
     "SHEARS": "new %sItemShears()" % I,
+    "POTIONITEM": "new %sItemPotion()" % I,
+    "SPLASH_POTION": "new %sItemSplashPotion()" % I,
+    "LINGERING_POTION": "new %sItemLingeringPotion()" % I,
 }
 for tier, (material, index) in ARMOR.items():
     for piece, slot in SLOTS.items():

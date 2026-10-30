@@ -131,6 +131,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmor LEATHER_CHESTPLATE = VanillaBlocks1122.item("LEATHER_CHESTPLATE", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER, 0, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.CHEST));
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmor LEATHER_HELMET = VanillaBlocks1122.item("LEATHER_HELMET", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER, 0, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.HEAD));
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmor LEATHER_LEGGINGS = VanillaBlocks1122.item("LEATHER_LEGGINGS", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER, 0, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.LEGS));
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemPotion LINGERING_POTION = VanillaBlocks1122.item("LINGERING_POTION", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemLingeringPotion());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MAGMA_CREAM = Vanilla1122.item("MAGMA_CREAM");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MELON = Vanilla1122.item("MELON");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MELON_SEEDS = Vanilla1122.item("MELON_SEEDS");
@@ -148,6 +149,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item POISONOUS_POTATO = Vanilla1122.item("POISONOUS_POTATO");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item PORKCHOP = Vanilla1122.item("PORKCHOP");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item POTATO = Vanilla1122.item("POTATO");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemPotion POTIONITEM = VanillaBlocks1122.item("POTIONITEM", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemPotion());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item PRISMARINE_CRYSTALS = Vanilla1122.item("PRISMARINE_CRYSTALS");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item PRISMARINE_SHARD = Vanilla1122.item("PRISMARINE_SHARD");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item PUMPKIN_PIE = Vanilla1122.item("PUMPKIN_PIE");
@@ -185,6 +187,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item SPECKLED_MELON = Vanilla1122.item("SPECKLED_MELON");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item SPECTRAL_ARROW = Vanilla1122.item("SPECTRAL_ARROW");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item SPIDER_EYE = Vanilla1122.item("SPIDER_EYE");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemPotion SPLASH_POTION = VanillaBlocks1122.item("SPLASH_POTION", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemSplashPotion());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item SPRUCE_BOAT = Vanilla1122.item("SPRUCE_BOAT");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item SPRUCE_DOOR = Vanilla1122.item("SPRUCE_DOOR");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item STICK = Vanilla1122.item("STICK");

@@ -404,6 +404,11 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
                 "glowstone", "ice", "sea_lantern", "stained_glass");
     }
 
+    /** Whether the block draws its own breaking cracks (beds, chests in a TESR). */
+    public boolean hasCustomBreakingProgress(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return false;
+    }
+
     /** How a block's model is shifted per position (flowers and grass sit off-centre). */
     public enum EnumOffsetType {
         NONE,

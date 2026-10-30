@@ -13,7 +13,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block AIR = Vanilla1122.block("AIR");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block ANVIL = Vanilla1122.block("ANVIL");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block BARRIER = Vanilla1122.block("BARRIER");
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block BED = Vanilla1122.block("BED");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block BED = VanillaBlocks1122.block("BED", new legacyconnector.v1_12_2.net.minecraft.block.BlockBed());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block BEDROCK = Vanilla1122.block("BEDROCK");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block BEETROOTS = Vanilla1122.block("BEETROOTS");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockDoor BIRCH_DOOR = VanillaBlocks1122.block("BIRCH_DOOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockDoor(legacyconnector.v1_12_2.net.minecraft.block.material.Material.WOOD) {});
@@ -37,6 +37,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block CAKE = VanillaBlocks1122.block("CAKE", new legacyconnector.v1_12_2.net.minecraft.block.BlockCake() {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block CARPET = Vanilla1122.block("CARPET");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block CARROTS = Vanilla1122.block("CARROTS");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockCauldron CAULDRON = VanillaBlocks1122.block("CAULDRON", new legacyconnector.v1_12_2.net.minecraft.block.BlockCauldron());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block CHAIN_COMMAND_BLOCK = Vanilla1122.block("CHAIN_COMMAND_BLOCK");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockChest CHEST = VanillaBlocks1122.block("CHEST", new legacyconnector.v1_12_2.net.minecraft.block.BlockChest(legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.BASIC) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block CHORUS_FLOWER = Vanilla1122.block("CHORUS_FLOWER");
@@ -85,7 +86,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockDynamicLiquid FLOWING_LAVA = VanillaBlocks1122.block("FLOWING_LAVA", new legacyconnector.v1_12_2.net.minecraft.block.BlockDynamicLiquid(legacyconnector.v1_12_2.net.minecraft.block.material.Material.LAVA) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockDynamicLiquid FLOWING_WATER = VanillaBlocks1122.block("FLOWING_WATER", new legacyconnector.v1_12_2.net.minecraft.block.BlockDynamicLiquid(legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block FROSTED_ICE = Vanilla1122.block("FROSTED_ICE");
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block FURNACE = Vanilla1122.block("FURNACE");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block FURNACE = VanillaBlocks1122.block("FURNACE", new legacyconnector.v1_12_2.net.minecraft.block.BlockFurnace(false));
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block GLASS = Vanilla1122.block("GLASS");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block GLASS_PANE = Vanilla1122.block("GLASS_PANE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block GLOWSTONE = VanillaBlocks1122.block("GLOWSTONE", new legacyconnector.v1_12_2.net.minecraft.block.BlockGlowstone(legacyconnector.v1_12_2.net.minecraft.block.material.Material.GLASS));
@@ -102,6 +103,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block HARDENED_CLAY = Vanilla1122.block("HARDENED_CLAY");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block HAY_BLOCK = Vanilla1122.block("HAY_BLOCK");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block HEAVY_WEIGHTED_PRESSURE_PLATE = Vanilla1122.block("HEAVY_WEIGHTED_PRESSURE_PLATE");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockHopper HOPPER = VanillaBlocks1122.block("HOPPER", new legacyconnector.v1_12_2.net.minecraft.block.BlockHopper());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block ICE = VanillaBlocks1122.block("ICE", new legacyconnector.v1_12_2.net.minecraft.block.BlockIce());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_BARS = Vanilla1122.block("IRON_BARS");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block IRON_BLOCK = Vanilla1122.block("IRON_BLOCK");
@@ -125,7 +127,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIGHT_WEIGHTED_PRESSURE_PLATE = Vanilla1122.block("LIGHT_WEIGHTED_PRESSURE_PLATE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIME_GLAZED_TERRACOTTA = Vanilla1122.block("LIME_GLAZED_TERRACOTTA");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIME_SHULKER_BOX = VanillaBlocks1122.block("LIME_SHULKER_BOX", new legacyconnector.v1_12_2.net.minecraft.block.BlockShulkerBox(legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.LIME));
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIT_FURNACE = Vanilla1122.block("LIT_FURNACE");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIT_FURNACE = VanillaBlocks1122.block("LIT_FURNACE", new legacyconnector.v1_12_2.net.minecraft.block.BlockFurnace(true));
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIT_PUMPKIN = VanillaBlocks1122.block("LIT_PUMPKIN", new legacyconnector.v1_12_2.net.minecraft.block.BlockPumpkin() {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIT_REDSTONE_LAMP = Vanilla1122.block("LIT_REDSTONE_LAMP");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block LIT_REDSTONE_ORE = Vanilla1122.block("LIT_REDSTONE_ORE");
