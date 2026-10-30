@@ -157,4 +157,15 @@ public class NBTTagList extends NBTBase implements Iterable<NBTBase> {
     public java.util.Iterator<NBTBase> iterator() {
         return mcc$get$tagList(this).iterator();
     }
+
+    /** Declared so mods' calls link here (Forge's NBTTagList is Iterable). */
+    @Override
+    public void forEach(java.util.function.Consumer<? super NBTBase> action) {
+        for (NBTBase tag : this) action.accept(tag);
+    }
+
+    @Override
+    public java.util.Spliterator<NBTBase> spliterator() {
+        return mcc$get$tagList(this).spliterator();
+    }
 }

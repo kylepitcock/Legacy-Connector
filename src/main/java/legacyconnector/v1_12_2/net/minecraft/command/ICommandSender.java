@@ -8,10 +8,7 @@ import legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent;
 import legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString;
 import legacyconnector.v1_12_2.net.minecraft.world.World;
 
-/**
- * Who runs a command: entities, players, the server, command blocks. {@code setCommandStat(CommandResultStats.Type, int)} names a
- * synthesized type and is reached through the synthesized helpers (it does nothing by default, as vanilla's default did).
- */
+/** Who runs a command: entities, players, the server, command blocks. */
 public interface ICommandSender {
     String getName();
 
@@ -43,4 +40,8 @@ public interface ICommandSender {
     }
 
     MinecraftServer getServer();
+
+    /** A command's result for the sender's {@code /stats} targets: nothing by default, as vanilla's default (entities keep their own). */
+    default void setCommandStat(CommandResultStats.Type type, int amount) {
+    }
 }

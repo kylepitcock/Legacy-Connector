@@ -127,11 +127,6 @@ public final class RuntimeApis1122 {
     private static final Set<Object> INFO_NOTICE = Collections.newSetFromMap(new IdentityHashMap<>());
     /** BlockMatcher -> the block it matches. */
     private static final Map<Object, Block> BLOCK_MATCHERS = new IdentityHashMap<>();
-    /** Forge's BiomeManager lists. */
-    private static final Map<String, List<Object>> BIOME_ENTRIES = new HashMap<>();
-    private static final Set<Object> VILLAGE_BIOMES = new LinkedHashSet<>();
-    private static final Set<Object> SPAWN_BIOMES = new LinkedHashSet<>();
-    private static final Set<Object> STRONGHOLD_BIOMES = new LinkedHashSet<>();
     /** EnumHelper.addSpawnPlacementType: the predicate of each added placement type. */
     private static final Map<Object, BiPredicate<Object, Object>> PLACEMENT_PREDICATES = new IdentityHashMap<>();
     /** EntitySpawnPlacementRegistry: entity class -> placement type. */
@@ -325,65 +320,9 @@ public final class RuntimeApis1122 {
             return args.length > 0 && args[0] instanceof IBlockState s && s.getBlock() == block;
         });
 
-        registerBiomeManager();
         registerEnums();
         registerEntities();
         registerItems();
-    }
-
-    /** Forge's BiomeManager: the biome lists of the legacy world types, the village and spawn biomes. Kept as data. */
-    private static void registerBiomeManager() {
-        String bm = "net.minecraftforge.common.BiomeManager.";
-        Synth.addStaticMethod(bm + "addBiome", args -> {
-            if (args.length < 2 || args[0] == null || args[1] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                BIOME_ENTRIES.computeIfAbsent(enumName(args[0]), k -> new ArrayList<>()).add(args[1]);
-            }
-            return null;
-        });
-        Synth.addStaticMethod(bm + "removeBiome", args -> {
-            if (args.length < 2 || args[0] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = BIOME_ENTRIES.get(enumName(args[0]));
-                if (list != null) list.remove(args[1]);
-            }
-            return null;
-        });
-        Synth.addStaticMethod(bm + "getBiomes", args -> {
-            if (args.length < 1 || args[0] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = BIOME_ENTRIES.get(enumName(args[0]));
-                return list == null ? ImmutableList.of() : ImmutableList.copyOf(list);
-            }
-        });
-        Synth.addStaticMethod(bm + "isTypeListModded", args -> {
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = args.length > 0 && args[0] != null ? BIOME_ENTRIES.get(enumName(args[0])) : null;
-                return list != null && !list.isEmpty();
-            }
-        });
-        biomeSet(bm + "addVillageBiome", bm + "removeVillageBiome", VILLAGE_BIOMES);
-        biomeSet(bm + "addSpawnBiome", bm + "removeSpawnBiome", SPAWN_BIOMES);
-        biomeSet(bm + "addStrongholdBiome", bm + "removeStrongholdBiome", STRONGHOLD_BIOMES);
-    }
-
-    private static void biomeSet(String add, String remove, Set<Object> set) {
-        Synth.addStaticMethod(add, args -> {
-            if (args.length > 0 && args[0] != null) {
-                synchronized (set) {
-                    set.add(args[0]);
-                }
-            }
-            return null;
-        });
-        Synth.addStaticMethod(remove, args -> {
-            if (args.length > 0) {
-                synchronized (set) {
-                    set.remove(args[0]);
-                }
-            }
-            return null;
-        });
     }
 
     /** Enum constants Forge added at runtime (spawn placement and horse armor types, plant types) and what they carry. */
@@ -589,9 +528,6 @@ public final class RuntimeApis1122 {
 
     /** The BiomeManager entries mods added for a biome type (DESERT, WARM, COOL, ICY), as legacy BiomeEntry objects. */
     public static List<Object> mcc$biomeEntries(String type) {
-        synchronized (BIOME_ENTRIES) {
-            List<Object> list = BIOME_ENTRIES.get(type);
-            return list == null ? new ArrayList<>() : new ArrayList<>(list);
-        }
+        return new ArrayList<>(legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager.mcc$modEntries(type));
     }
 }

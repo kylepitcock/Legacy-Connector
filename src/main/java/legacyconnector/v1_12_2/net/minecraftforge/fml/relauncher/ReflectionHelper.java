@@ -28,12 +28,20 @@ public class ReflectionHelper {
     }
 
     public static class UnableToFindFieldException extends RuntimeException {
+        public UnableToFindFieldException(Exception cause) {
+            super(cause);
+        }
+
         public UnableToFindFieldException(String[] names, Exception cause) {
             super("Could not find any of " + java.util.Arrays.toString(names), cause);
         }
     }
 
     public static class UnableToAccessFieldException extends RuntimeException {
+        public UnableToAccessFieldException(Exception cause) {
+            super(cause);
+        }
+
         public UnableToAccessFieldException(String[] names, Exception cause) {
             super("Could not access " + java.util.Arrays.toString(names), cause);
         }
@@ -207,6 +215,33 @@ public class ReflectionHelper {
             }
         } catch (ReflectiveOperationException e) {
             throw new UnableToAccessFieldException(fieldNames, e);
+        }
+    }
+
+    /** A field's value by its deobfuscated or its obfuscated (SRG) name. */
+    public static <T, E> T getPrivateValue(Class<? super E> classToAccess, E instance, String fieldName, String fieldObfName) {
+        return getPrivateValue(classToAccess, instance, new String[] {fieldName, fieldObfName});
+    }
+
+    /** Sets a field found by its deobfuscated or its obfuscated (SRG) name. */
+    public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, String fieldName, String fieldObfName) {
+        setPrivateValue(classToAccess, instance, value, new String[] {fieldName, fieldObfName});
+    }
+
+    /** The (accessible) constructor of {@code klass} with these parameter types. */
+    public static <T> java.lang.reflect.Constructor<T> findConstructor(Class<T> klass, Class<?>... parameterTypes) {
+        try {
+            java.lang.reflect.Constructor<T> c = klass.getDeclaredConstructor(parameterTypes);
+            c.setAccessible(true);
+            return c;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new UnknownConstructorException("Could not find constructor " + java.util.Arrays.toString(parameterTypes) + " in " + klass, e);
+        }
+    }
+
+    public static class UnknownConstructorException extends RuntimeException {
+        public UnknownConstructorException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 
