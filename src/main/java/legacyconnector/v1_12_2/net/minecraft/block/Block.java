@@ -1356,4 +1356,37 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
             legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side) {
         return state.isNormalCube();
     }
+
+    /** Forge: spawns the block's own particles where an entity lands on it; true replaces the default dust (none by default). */
+    public boolean addLandingEffects(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.WorldServer worldObj,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos blockPosition, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState iblockstate,
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity, int numberOfParticles) {
+        return false;
+    }
+
+    /** Forge: a block next to an observer-like block changed (comparators and observers hear it); nothing by default. */
+    public void observedNeighborChange(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState observerState, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos observerPos, Block changedBlock, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos changedBlockPos) {
+    }
+
+    /**
+     * Forge: the fog colour while the camera is inside this block: water's blue (lighter with respiration), lava's red, otherwise
+     * the colour the game computed.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getFogColor(legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d originalColor, float partialTicks) {
+        var material = state.getMaterial();
+        if (material == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER) {
+            float f = 0.0F;
+            if (entity instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living) {
+                f = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getRespirationModifier(living) * 0.2F;
+            }
+            return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(0.02F + f, 0.02F + f, 0.2F + f);
+        }
+        if (material == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LAVA) {
+            return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(0.6F, 0.1F, 0.0F);
+        }
+        return originalColor;
+    }
 }

@@ -225,6 +225,47 @@ public class FluidUtil {
         }
     }
 
+    /**
+     * Places fluid from a handler into the world (a bucket's worth through the fluid's block: a Forge fluid block, vanilla water or lava,
+     * or a plain block); fluids that vaporize do so where water does.
+     */
+    public static boolean tryPlaceFluid(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, IFluidHandler fluidSource, FluidStack resource) {
+        if (world == null || resource == null || pos == null || fluidSource == null) return false;
+        Fluid fluid = resource.getFluid();
+        if (fluid == null || !fluid.canBePlacedInWorld()) return false;
+        if (fluidSource.drain(resource, false) == null) return false;
+        var state = world.getBlockState(pos);
+        var material = state.getMaterial();
+        boolean nonSolid = !material.isSolid();
+        boolean replaceable = state.getBlock().isReplaceable(world, pos);
+        if (!world.isAirBlock(pos) && !nonSolid && !replaceable) return false;
+        var level = world.mcc$level();
+        if (level != null && level.dimensionType().ultraWarm() && fluid.doesVaporize(resource)) {
+            FluidStack result = fluidSource.drain(resource, true);
+            if (result != null) {
+                result.getFluid().vaporize(player, world, pos, result);
+                return true;
+            }
+            return false;
+        }
+        destroyBlockOnFluidPlacement(world, pos);
+        FluidStack result = tryFluidTransfer(mcc$blockHandler(fluid, world, pos), fluidSource, resource, true);
+        if (result == null) return false;
+        world.playSound(player, pos, fluid.getEmptySound(resource), legacyconnector.v1_12_2.net.minecraft.util.SoundCategory.BLOCKS, 1.0F, 1.0F);
+        return true;
+    }
+
+    private static IFluidHandler mcc$blockHandler(Fluid fluid, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var block = fluid.getBlock();
+        if (block instanceof IFluidBlock fluidBlock) return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.FluidBlockWrapper(fluidBlock, world, pos);
+        if (block instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockLiquid liquid) {
+            return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.BlockLiquidWrapper(liquid, world, pos);
+        }
+        return new legacyconnector.v1_12_2.net.minecraftforge.fluids.capability.wrappers.BlockWrapper(block, world, pos);
+    }
+
     /** Breaks a non-solid, non-liquid block (a flower, grass) where fluid is placed, dropping it. */
     public static void destroyBlockOnFluidPlacement(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
         if (world == null || world.isRemote) return;

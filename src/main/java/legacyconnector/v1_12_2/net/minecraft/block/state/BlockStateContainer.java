@@ -24,7 +24,12 @@ public class BlockStateContainer {
         this.properties = ImmutableList.copyOf(sorted);
         List<StateImplementation> states = new ArrayList<>();
         combine(states, new LinkedHashMapHolder(), 0);
-        for (StateImplementation s : states) s.link(states);
+        Map<Map<IProperty<?>, Comparable<?>>, StateImplementation> byValues = new java.util.LinkedHashMap<>();
+        for (StateImplementation s : states) byValues.put(s.getProperties(), s);
+        for (StateImplementation s : states) {
+            s.link(states);
+            s.buildPropertyValueTable(byValues);
+        }
         this.validStates = ImmutableList.copyOf(states);
     }
 
@@ -61,6 +66,12 @@ public class BlockStateContainer {
         return new StateImplementation(block, properties);
     }
 
+    /** Forge's form with the unlisted properties' values (null for a plain container); mods override it to make their own states. */
+    protected StateImplementation createState(Block block, ImmutableMap<IProperty<?>, Comparable<?>> properties,
+            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, com.google.common.base.Optional<?>> unlistedProperties) {
+        return createState(block, properties);
+    }
+
     /** Insertion-ordered value assignment being built. */
     private static final class LinkedHashMapHolder {
         final Map<IProperty<?>, Comparable<?>> values = new java.util.LinkedHashMap<>();
@@ -68,7 +79,7 @@ public class BlockStateContainer {
 
     private void combine(List<StateImplementation> out, LinkedHashMapHolder current, int index) {
         if (index == properties.size()) {
-            out.add(createState(block, ImmutableMap.copyOf(current.values)));
+            out.add(createState(block, ImmutableMap.copyOf(current.values), null));
             return;
         }
         IProperty<?> p = properties.get(index);
@@ -100,7 +111,7 @@ public class BlockStateContainer {
         return null;
     }
 
-    public static class StateImplementation implements IBlockState {
+    public static class StateImplementation extends BlockStateBase {
         private final Block block;
         private final ImmutableMap<IProperty<?>, Comparable<?>> values;
         private final Map<String, StateImplementation> neighbours = new HashMap<>();
@@ -108,6 +119,25 @@ public class BlockStateContainer {
         protected StateImplementation(Block block, ImmutableMap<IProperty<?>, Comparable<?>> values) {
             this.block = block;
             this.values = values;
+        }
+
+        /** The state for each other value of each property (vanilla's neighbour table; mods' state classes read it). */
+        protected com.google.common.collect.ImmutableTable<IProperty<?>, Comparable<?>, IBlockState> propertyValueTable;
+
+        /** Builds {@link #propertyValueTable} from all states of the container by their property values. */
+        public void buildPropertyValueTable(Map<Map<IProperty<?>, Comparable<?>>, StateImplementation> map) {
+            com.google.common.collect.Table<IProperty<?>, Comparable<?>, IBlockState> table = com.google.common.collect.HashBasedTable.create();
+            for (var entry : values.entrySet()) {
+                IProperty<?> property = entry.getKey();
+                for (Comparable<?> value : property.getAllowedValues()) {
+                    if (value.equals(entry.getValue())) continue;
+                    Map<IProperty<?>, Comparable<?>> wanted = new HashMap<>(values);
+                    wanted.put(property, value);
+                    StateImplementation other = map.get(wanted);
+                    if (other != null) table.put(property, value, other);
+                }
+            }
+            this.propertyValueTable = com.google.common.collect.ImmutableTable.copyOf(table);
         }
 
         void link(List<StateImplementation> all) {
