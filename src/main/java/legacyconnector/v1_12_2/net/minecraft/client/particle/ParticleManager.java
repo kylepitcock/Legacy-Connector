@@ -37,6 +37,11 @@ public class ParticleManager {
     public ParticleManager() {
     }
 
+    /** 1.12's constructor: a separate manager (mods draw particles of their own GUIs or worlds with one); textures are the shared ones. */
+    public ParticleManager(World worldIn, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager rendererIn) {
+        this.world = worldIn;
+    }
+
     public void addEffect(Particle effect) {
         if (effect == null) return;
         synchronized (queue) {
