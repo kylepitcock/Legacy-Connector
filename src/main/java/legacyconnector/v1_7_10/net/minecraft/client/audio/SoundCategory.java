@@ -29,6 +29,11 @@ public enum SoundCategory {
         }
     }
 
+    /** 1.7.10's constructor, which mods call through EnumHelper to add a category (DragonAPI: ChromatiCraft's music); it plays as master. */
+    SoundCategory(String name, int id) {
+        this(name, id, SoundSource.MASTER);
+    }
+
     SoundCategory(String name, int id, SoundSource source) {
         this.categoryName = name;
         this.categoryId = id;
@@ -45,7 +50,11 @@ public enum SoundCategory {
 
     /** The category by its sounds.json name ("master", "block", ...). */
     public static SoundCategory func_147154_a(String name) {
-        return BY_NAME.get(name);
+        SoundCategory c = BY_NAME.get(name);
+        if (c != null) return c;
+        // categories mods added at runtime (EnumHelper) are only in values()
+        for (SoundCategory v : values()) if (v.categoryName.equals(name)) return v;
+        return null;
     }
 
     public SoundSource mcc$source() {

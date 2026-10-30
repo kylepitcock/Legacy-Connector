@@ -9,7 +9,11 @@ public class OpenGlHelper {
     public static int lightmapTexUnit = 33985;
     public static float lastBrightnessX;
     public static float lastBrightnessY;
-    public static boolean shadersSupported = false;
+    /**
+     * True as on every machine 1.7.10 ran on: mods assume it (DragonAPI's shader registry returned null otherwise and its mods
+     * failed to load). Shader programs are emulated by GlCompat, compile "successfully" and draw nothing.
+     */
+    public static boolean shadersSupported = true;
     public static boolean openGL21 = false;
     public static boolean framebufferSupported = true;
     public static boolean anisotropicFilteringSupported = true;
