@@ -26,6 +26,18 @@ public class EntityWitherSkull extends EntityFireball {
         super(modern);
     }
 
+    private boolean mcc$local_invulnerable;
+
+    /** A blue (dangerous) skull: breaks blast-resistant blocks and flies slower (the modern dangerous flag). */
+    public boolean isInvulnerable() {
+        return mcc$entity instanceof net.minecraft.world.entity.projectile.WitherSkull s ? s.isDangerous() : mcc$local_invulnerable;
+    }
+
+    public void setInvulnerable(boolean invulnerable) {
+        if (mcc$entity instanceof net.minecraft.world.entity.projectile.WitherSkull s) s.setDangerous(invulnerable);
+        else mcc$local_invulnerable = invulnerable;
+    }
+
     private boolean mcc$server() {
         return mcc$entity != null && !mcc$entity.level().isClientSide();
     }

@@ -26,6 +26,11 @@ public class ItemTooltipEvent extends PlayerEvent {
         this.mcc$advanced = advanced;
     }
 
+    /** Whether advanced tooltips (F3+H) are on. */
+    public legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag getFlags() {
+        return legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag.mcc$of(mcc$advanced);
+    }
+
     public ItemStack getItemStack() {
         return itemStack;
     }

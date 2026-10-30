@@ -42,4 +42,159 @@ public final class ModernAccess1122 {
             // keeps the modern value
         }
     }
+
+    private static final Field DEAD = find(LivingEntity.class, "dead");
+    private static final Field ANIM_STEP = find(LivingEntity.class, "animStep");
+    private static final Field ANIM_STEP_O = find(LivingEntity.class, "animStepO");
+    private static final Field BOARDING_COOLDOWN = find(net.minecraft.world.entity.Entity.class, "boardingCooldown");
+    private static final Field PISTON_DELTAS = find(net.minecraft.world.entity.Entity.class, "pistonDeltas");
+    private static final Field PISTON_DELTAS_GAME_TIME = find(net.minecraft.world.entity.Entity.class, "pistonDeltasGameTime");
+    private static final Field HAS_GLOWING_TAG = find(net.minecraft.world.entity.Entity.class, "hasGlowingTag");
+
+    private static boolean getBoolean(Field f, Object o) {
+        try {
+            return f != null && f.getBoolean(o);
+        } catch (IllegalAccessException ex) {
+            return false;
+        }
+    }
+
+    private static void setBoolean(Field f, Object o, boolean v) {
+        try {
+            if (f != null) f.setBoolean(o, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern value
+        }
+    }
+
+    private static float getFloat(Field f, Object o) {
+        try {
+            return f == null ? 0.0F : f.getFloat(o);
+        } catch (IllegalAccessException ex) {
+            return 0.0F;
+        }
+    }
+
+    private static void setFloat(Field f, Object o, float v) {
+        try {
+            if (f != null) f.setFloat(o, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern value
+        }
+    }
+
+    private static int getInt(Field f, Object o) {
+        try {
+            return f == null ? 0 : f.getInt(o);
+        } catch (IllegalAccessException ex) {
+            return 0;
+        }
+    }
+
+    private static void setInt(Field f, Object o, int v) {
+        try {
+            if (f != null) f.setInt(o, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern value
+        }
+    }
+
+    /** LivingEntity.dead: the death was handled (1.12 EntityLivingBase.dead). */
+    public static boolean dead(LivingEntity e) {
+        return getBoolean(DEAD, e);
+    }
+
+    public static void setDead(LivingEntity e, boolean v) {
+        setBoolean(DEAD, e, v);
+    }
+
+    /** LivingEntity.animStep / animStepO (1.12 onGroundSpeedFactor / prevOnGroundSpeedFactor). */
+    public static float animStep(LivingEntity e, boolean previous) {
+        return getFloat(previous ? ANIM_STEP_O : ANIM_STEP, e);
+    }
+
+    public static void setAnimStep(LivingEntity e, boolean previous, float v) {
+        setFloat(previous ? ANIM_STEP_O : ANIM_STEP, e, v);
+    }
+
+    /** Entity.boardingCooldown (1.12 rideCooldown). */
+    public static int boardingCooldown(net.minecraft.world.entity.Entity e) {
+        return getInt(BOARDING_COOLDOWN, e);
+    }
+
+    public static void setBoardingCooldown(net.minecraft.world.entity.Entity e, int v) {
+        setInt(BOARDING_COOLDOWN, e, v);
+    }
+
+    /** Entity.pistonDeltas: the live array of the modern entity (or null). */
+    public static double[] pistonDeltas(net.minecraft.world.entity.Entity e) {
+        try {
+            return PISTON_DELTAS == null ? null : (double[]) PISTON_DELTAS.get(e);
+        } catch (IllegalAccessException ex) {
+            return null;
+        }
+    }
+
+    public static long pistonDeltasGameTime(net.minecraft.world.entity.Entity e) {
+        try {
+            return PISTON_DELTAS_GAME_TIME == null ? 0L : PISTON_DELTAS_GAME_TIME.getLong(e);
+        } catch (IllegalAccessException ex) {
+            return 0L;
+        }
+    }
+
+    public static void setPistonDeltasGameTime(net.minecraft.world.entity.Entity e, long v) {
+        try {
+            if (PISTON_DELTAS_GAME_TIME != null) PISTON_DELTAS_GAME_TIME.setLong(e, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern value
+        }
+    }
+
+    /** Entity.hasGlowingTag (1.12 glowing). */
+    public static boolean glowing(net.minecraft.world.entity.Entity e) {
+        return getBoolean(HAS_GLOWING_TAG, e);
+    }
+
+    private static final Field HOOK_LIFE = find(net.minecraft.world.entity.projectile.FishingHook.class, "life");
+    private static final Field HOOK_NIBBLE = find(net.minecraft.world.entity.projectile.FishingHook.class, "nibble");
+    private static final java.lang.reflect.Method HOOK_PULL = method(net.minecraft.world.entity.projectile.FishingHook.class, "pullEntity",
+            net.minecraft.world.entity.Entity.class);
+    private static final java.lang.reflect.Method CAN_HIT_ENTITY = method(net.minecraft.world.entity.projectile.Projectile.class, "canHitEntity",
+            net.minecraft.world.entity.Entity.class);
+
+    private static java.lang.reflect.Method method(Class<?> owner, String name, Class<?>... params) {
+        try {
+            return ObfuscationReflectionHelper.findMethod(owner, name, params);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** FishingHook.life (ticks the hook lay on the ground, 1.12 ticksInGround) and nibble (ticks a fish is biting, 1.12 ticksCatchable). */
+    public static int hookTicks(net.minecraft.world.entity.projectile.FishingHook h, boolean nibble) {
+        return getInt(nibble ? HOOK_NIBBLE : HOOK_LIFE, h);
+    }
+
+    public static void setHookTicks(net.minecraft.world.entity.projectile.FishingHook h, boolean nibble, int v) {
+        setInt(nibble ? HOOK_NIBBLE : HOOK_LIFE, h, v);
+    }
+
+    /** FishingHook.pullEntity: pulls the entity towards the hook's owner. */
+    public static void pullEntity(net.minecraft.world.entity.projectile.FishingHook h, net.minecraft.world.entity.Entity target) {
+        try {
+            if (HOOK_PULL != null && target != null) HOOK_PULL.invoke(h, target);
+        } catch (ReflectiveOperationException e) {
+            // nothing pulled
+        }
+    }
+
+    /** Projectile.canHitEntity: whether the projectile may hit the entity (not its owner while leaving, not spectators). */
+    public static boolean canHitEntity(net.minecraft.world.entity.projectile.Projectile p, net.minecraft.world.entity.Entity target) {
+        try {
+            return CAN_HIT_ENTITY != null && target != null && (boolean) CAN_HIT_ENTITY.invoke(p, target);
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
 }
