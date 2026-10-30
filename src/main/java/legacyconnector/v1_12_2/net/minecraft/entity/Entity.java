@@ -199,6 +199,11 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public Entity(World world) {
         this.mcc$local_world = world;
+        // made by a world generator (1.12's world-gen mob spawning): blocks are read through the generation region, never the level,
+        // which would wait for the chunk being generated
+        if (world != null && world.mcc$access() != null && !(world.mcc$access() instanceof net.minecraft.world.level.Level)) {
+            this.mcc$worldOverride = world.mcc$access();
+        }
         this.dataManager = new legacyconnector.v1_12_2.net.minecraft.network.datasync.EntityDataManager(this);
         // a view of an existing modern entity (the bridge constructing a vanilla class through its World constructor)
         var viewed = EntityBridge1122.takeViewBinding();
@@ -257,7 +262,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public static World mcc$get$world(Entity e) {
         var override = e.mcc$worldOverride;
-        if (override instanceof net.minecraft.world.level.Level l) return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(l);
+        if (override != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(override);
         var m = e.mcc$entity;
         return m != null ? org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(m.level()) : e.mcc$local_world;
     }
