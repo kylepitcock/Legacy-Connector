@@ -843,32 +843,4 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public enum SleepResult {
         OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE
     }
-
-    /** Which chat messages a player wants to see (client setting). */
-    public enum EnumChatVisibility {
-        FULL(0, "options.chat.visibility.full"),
-        SYSTEM(1, "options.chat.visibility.system"),
-        HIDDEN(2, "options.chat.visibility.hidden");
-
-        private final int chatVisibility;
-        private final String resourceKey;
-
-        EnumChatVisibility(int id, String resourceKey) {
-            this.chatVisibility = id;
-            this.resourceKey = resourceKey;
-        }
-
-        public int getChatVisibility() {
-            return chatVisibility;
-        }
-
-        public static EnumChatVisibility getEnumChatVisibility(int id) {
-            EnumChatVisibility[] all = values();
-            return all[Math.floorMod(id, all.length)];
-        }
-
-        public String getResourceKey() {
-            return resourceKey;
-        }
-    }
 }
