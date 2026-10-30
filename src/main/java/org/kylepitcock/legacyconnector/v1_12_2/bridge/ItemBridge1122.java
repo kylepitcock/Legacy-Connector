@@ -72,6 +72,7 @@ public final class ItemBridge1122 {
             v.put(0, modern);
             VARIANTS.put(item, v);
             MOD_ITEMS.add(item);
+            Dispensers1122.onItemRegistered(item);
             return;
         }
         Map<Integer, net.minecraft.world.item.Item> variants = new LinkedHashMap<>();
@@ -84,6 +85,7 @@ public final class ItemBridge1122 {
         item.mcc$modern = variants.values().iterator().next();
         VARIANTS.put(item, variants);
         MOD_ITEMS.add(item);
+        Dispensers1122.onItemRegistered(item);
     }
 
     /** The metadata values the creative inventory lists for this item (at least 0). */
