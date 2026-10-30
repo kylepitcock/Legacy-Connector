@@ -86,19 +86,30 @@ public class InventoryEnderChest extends InventoryBasic {
         mcc$modern.setChanged();
     }
 
+    /** The ender chest block the inventory is open at (its lid opens and closes with it), or null. */
+    private legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityEnderChest associatedChest;
+
+    public void setChestTileEntity(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityEnderChest chestTileEntity) {
+        this.associatedChest = chestTileEntity;
+    }
+
     @Override
     public boolean isUsableByPlayer(EntityPlayer player) {
+        if (associatedChest != null && !associatedChest.canBeUsed(player)) return false;
         if (mcc$modern == null || player == null || !(player.mcc$entity instanceof net.minecraft.world.entity.player.Player p)) return true;
         return mcc$modern.stillValid(p);
     }
 
     @Override
     public void openInventory(EntityPlayer player) {
+        if (associatedChest != null) associatedChest.openChest();
         if (mcc$modern != null && player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player p) mcc$modern.startOpen(p);
     }
 
     @Override
     public void closeInventory(EntityPlayer player) {
+        if (associatedChest != null) associatedChest.closeChest();
+        associatedChest = null;
         if (mcc$modern != null && player != null && player.mcc$entity instanceof net.minecraft.world.entity.player.Player p) mcc$modern.stopOpen(p);
         super.closeInventory(player);
     }

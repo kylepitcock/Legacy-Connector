@@ -599,6 +599,17 @@ public final class ItemStack {
         if (b != null && (frame == null || frame.mcc$entity instanceof net.minecraft.world.entity.decoration.ItemFrame)) b.setEntityRepresentation(frame == null ? null : frame.mcc$entity);
     }
 
+    /** Adventure mode: whether the stack's {@code CanDestroy} list names the block. */
+    public boolean canDestroy(legacyconnector.v1_12_2.net.minecraft.block.Block blockIn) {
+        NBTTagCompound tag = getTagCompound();
+        if (blockIn == null || tag == null || !tag.hasKey("CanDestroy", 9)) return false;
+        var list = tag.getTagList("CanDestroy", 8);
+        for (int i = 0; i < list.tagCount(); ++i) {
+            if (legacyconnector.v1_12_2.net.minecraft.block.Block.getBlockFromName(list.getStringTagAt(i)) == blockIn) return true;
+        }
+        return false;
+    }
+
     /** Forge: whether a sneaking player still activates the clicked block with this stack. */
     public boolean doesSneakBypassUse(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {

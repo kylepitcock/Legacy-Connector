@@ -62,6 +62,37 @@ public final class SynthBlocks1122 {
             String id = tag.getCompoundTag("EntityTag").getString("id");
             return id.isEmpty() ? null : new ResourceLocation(id);
         });
+        // ItemMonsterPlacer.applyItemEntityDataToEntity(world, player, stack, entity): the egg's EntityTag merged into the entity
+        // (the modern rule: operators only for entities that guard their data)
+        Synth.addStaticMethod("net.minecraft.item.ItemMonsterPlacer.applyItemEntityDataToEntity", args -> {
+            if (args.length != 4 || !(args[0] instanceof World w) || !(args[2] instanceof ItemStack s)
+                    || !(args[3] instanceof legacyconnector.v1_12_2.net.minecraft.entity.Entity e)) {
+                return Synth.NONE;
+            }
+            var level = w.mcc$level();
+            NBTTagCompound tag = s.getTagCompound();
+            if (level == null || e.mcc$entity == null || tag == null || !tag.hasKey("EntityTag", 10)) return null;
+            var player = args[1] instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer p ? p.mcc$player() : null;
+            net.minecraft.world.entity.EntityType.updateCustomEntityTag(level, player, e.mcc$entity,
+                    net.minecraft.world.item.component.CustomData.of(tag.getCompoundTag("EntityTag").mcc$modern()));
+            return null;
+        });
+        // ItemMonsterPlacer.spawnCreature(world, id, x, y, z): a mob of that id facing a random way, set up for its spawn and added
+        Synth.addStaticMethod("net.minecraft.item.ItemMonsterPlacer.spawnCreature", args -> {
+            if (args.length != 5 || !(args[0] instanceof World w)) return Synth.NONE;
+            if (!(args[1] instanceof ResourceLocation id)) return null;
+            var entity = legacyconnector.v1_12_2.net.minecraft.entity.EntityList.createEntityByIDFromName(id, w);
+            if (entity instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving living) {
+                float yaw = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.wrapDegrees(w.rand.nextFloat() * 360.0F);
+                entity.setLocationAndAngles(Synth.toDouble(args[2]), Synth.toDouble(args[3]), Synth.toDouble(args[4]), yaw, 0.0F);
+                legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$set$rotationYawHead(living, yaw);
+                legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.mcc$set$renderYawOffset(living, yaw);
+                living.onInitialSpawn(w.getDifficultyForLocation(new BlockPos(living)), null);
+                w.spawnEntity(entity);
+                living.playLivingSound();
+            }
+            return entity;
+        });
         // ItemBanner.makeBanner(color, patterns): a banner stack with its base colour and patterns in BlockEntityTag
         Synth.addStaticMethod("net.minecraft.item.ItemBanner.makeBanner", args -> {
             if (args.length != 2 || !(args[0] instanceof legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor color)) return Synth.NONE;

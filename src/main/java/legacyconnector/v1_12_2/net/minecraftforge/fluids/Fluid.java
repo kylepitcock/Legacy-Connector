@@ -220,6 +220,11 @@ public class Fluid {
         return getFlowing();
     }
 
+    /** The still texture of the fluid at a position (the same everywhere unless a fluid varies it). */
+    public ResourceLocation getStill(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return getStill();
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getFillSound(FluidStack stack) {
         return getFillSound();
     }

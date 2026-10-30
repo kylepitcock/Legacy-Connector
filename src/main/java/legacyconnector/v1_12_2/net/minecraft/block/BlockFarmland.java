@@ -19,6 +19,8 @@ import legacyconnector.v1_12_2.net.minecraftforge.common.IPlantable;
 public class BlockFarmland extends Block {
     public static final PropertyInteger MOISTURE = PropertyInteger.create("moisture", 0, 7);
     protected static final AxisAlignedBB FARMLAND_AABB = new AxisAlignedBB(0.0D, 0.0D, 0.0D, 1.0D, 0.9375D, 1.0D);
+    /** The top sixteenth above the farmland's box (the part an entity standing on farmland would sink into). */
+    protected static final AxisAlignedBB field_194405_c = new AxisAlignedBB(0.0D, 0.9375D, 0.0D, 1.0D, 1.0D, 1.0D);
 
     protected BlockFarmland() {
         super(Material.GROUND);

@@ -38,6 +38,28 @@ public class Ingredient implements Predicate<ItemStack> {
         return false;
     }
 
+    /** The matching stacks packed as recipe-helper ids (item id and metadata; wildcards expanded to the item's subtypes), sorted. */
+    public it.unimi.dsi.fastutil.ints.IntList getValidItemStacksPacked() {
+        it.unimi.dsi.fastutil.ints.IntArrayList packed = new it.unimi.dsi.fastutil.ints.IntArrayList();
+        for (ItemStack stack : getMatchingStacks()) {
+            if (stack == null || stack.isEmpty()) continue;
+            if (stack.getMetadata() == 32767) {
+                legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> subs = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+                try {
+                    stack.getItem().getSubItems(legacyconnector.v1_12_2.net.minecraft.creativetab.CreativeTabs.SEARCH, subs);
+                } catch (RuntimeException | LinkageError e) {
+                    // the item lists no subtypes outside the client
+                }
+                if (subs.isEmpty()) subs.add(new ItemStack(stack.getItem()));
+                for (ItemStack sub : subs) packed.add(legacyconnector.v1_12_2.net.minecraft.client.util.RecipeItemHelper.pack(sub));
+            } else {
+                packed.add(legacyconnector.v1_12_2.net.minecraft.client.util.RecipeItemHelper.pack(stack));
+            }
+        }
+        packed.sort(it.unimi.dsi.fastutil.ints.IntComparators.NATURAL_COMPARATOR);
+        return packed;
+    }
+
     public boolean isSimple() {
         return true;
     }

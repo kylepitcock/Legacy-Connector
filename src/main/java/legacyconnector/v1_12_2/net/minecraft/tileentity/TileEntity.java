@@ -263,4 +263,13 @@ public abstract class TileEntity implements ICapabilityProvider {
     public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
         return null;
     }
+
+    /** Adds the tile entity's name and its block to a crash report section. */
+    public void addInfoToCrashReport(legacyconnector.v1_12_2.net.minecraft.crash.CrashReportCategory reportCategory) {
+        reportCategory.addDetail("Name", () -> getKey(getClass()) + " // " + getClass().getCanonicalName());
+        if (world != null) {
+            legacyconnector.v1_12_2.net.minecraft.crash.CrashReportCategory.addBlockInfo(reportCategory, pos, getBlockType(), getBlockMetadata());
+            reportCategory.addDetail("Actual block", () -> String.valueOf(world.getBlockState(pos)));
+        }
+    }
 }

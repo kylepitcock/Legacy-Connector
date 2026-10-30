@@ -670,6 +670,17 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         return false;
     }
 
+    /** Forge: whether a creative player breaks blocks with this item (swords do not). */
+    public boolean canDestroyBlockInCreative(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        return !(this instanceof ItemSword);
+    }
+
+    /** Called when a stack's tag arrives from an old save; true when the item changed it. */
+    public boolean updateItemStackNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound nbt) {
+        return false;
+    }
+
     /** Whether the item is a map (sent its map data while held). */
     public boolean isMap() {
         return false;
