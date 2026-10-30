@@ -160,7 +160,11 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PACKED_ICE = VanillaBlocks1122.block("PACKED_ICE", new legacyconnector.v1_12_2.net.minecraft.block.BlockPackedIce());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PINK_GLAZED_TERRACOTTA = Vanilla1122.block("PINK_GLAZED_TERRACOTTA");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PINK_SHULKER_BOX = VanillaBlocks1122.block("PINK_SHULKER_BOX", new legacyconnector.v1_12_2.net.minecraft.block.BlockShulkerBox(legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.PINK));
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase PISTON = VanillaBlocks1122.block("PISTON", new legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase(false));
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPistonMoving PISTON_EXTENSION = VanillaBlocks1122.block("PISTON_EXTENSION", new legacyconnector.v1_12_2.net.minecraft.block.BlockPistonMoving());
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPistonExtension PISTON_HEAD = VanillaBlocks1122.block("PISTON_HEAD", new legacyconnector.v1_12_2.net.minecraft.block.BlockPistonExtension());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PLANKS = VanillaBlocks1122.block("PLANKS", new legacyconnector.v1_12_2.net.minecraft.block.BlockPlanks());
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPortal PORTAL = VanillaBlocks1122.block("PORTAL", new legacyconnector.v1_12_2.net.minecraft.block.BlockPortal());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block POTATOES = Vanilla1122.block("POTATOES");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PRISMARINE = VanillaBlocks1122.block("PRISMARINE", new legacyconnector.v1_12_2.net.minecraft.block.BlockPrismarine());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PUMPKIN = VanillaBlocks1122.block("PUMPKIN", new legacyconnector.v1_12_2.net.minecraft.block.BlockPumpkin() {});
@@ -211,6 +215,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STAINED_HARDENED_CLAY = VanillaBlocks1122.block("STAINED_HARDENED_CLAY", new legacyconnector.v1_12_2.net.minecraft.block.BlockStainedHardenedClay());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STANDING_BANNER = Vanilla1122.block("STANDING_BANNER");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STANDING_SIGN = Vanilla1122.block("STANDING_SIGN");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase STICKY_PISTON = VanillaBlocks1122.block("STICKY_PISTON", new legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase(true));
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STONE = VanillaBlocks1122.block("STONE", new legacyconnector.v1_12_2.net.minecraft.block.BlockStone());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STONEBRICK = VanillaBlocks1122.block("STONEBRICK", new legacyconnector.v1_12_2.net.minecraft.block.BlockStoneBrick());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STONE_BRICK_STAIRS = Vanilla1122.block("STONE_BRICK_STAIRS");
