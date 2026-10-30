@@ -106,32 +106,32 @@ public class BlockEvent extends Event {
         }
     }
 
+    /** A block placed by any entity (or by nothing: a null entity); {@link PlaceEvent} is the player's placement. */
     @Cancelable
-    public static class PlaceEvent extends BlockEvent {
-        private final EntityPlayer player;
+    public static class EntityPlaceEvent extends BlockEvent {
+        private final Entity entity;
         private final legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot;
         private final IBlockState placedBlock;
         private final IBlockState placedAgainst;
-        private final EnumHand hand;
 
-        public PlaceEvent(legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+        public EntityPlaceEvent(legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, Entity entity) {
             this(blockSnapshot == null ? null : blockSnapshot.getWorld(), blockSnapshot == null ? null : blockSnapshot.getPos(),
                     blockSnapshot == null || blockSnapshot.getWorld() == null ? null : blockSnapshot.getWorld().getBlockState(blockSnapshot.getPos()),
-                    blockSnapshot, placedAgainst, player, hand);
+                    blockSnapshot, placedAgainst, entity);
         }
 
         /** The modern placement as the legacy event: the world, position and placed state are known directly. */
-        public PlaceEvent(World world, BlockPos pos, IBlockState placed, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+        public EntityPlaceEvent(World world, BlockPos pos, IBlockState placed, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot,
+                IBlockState placedAgainst, Entity entity) {
             super(world, pos, placed);
-            this.player = player;
+            this.entity = entity;
             this.blockSnapshot = blockSnapshot;
             this.placedBlock = placed;
             this.placedAgainst = placedAgainst;
-            this.hand = hand;
         }
 
-        public EntityPlayer getPlayer() {
-            return player;
+        public Entity getEntity() {
+            return entity;
         }
 
         public legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot getBlockSnapshot() {
@@ -144,6 +144,29 @@ public class BlockEvent extends Event {
 
         public IBlockState getPlacedAgainst() {
             return placedAgainst;
+        }
+    }
+
+    @Cancelable
+    public static class PlaceEvent extends EntityPlaceEvent {
+        private final EntityPlayer player;
+        private final EnumHand hand;
+
+        public PlaceEvent(legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+            this(blockSnapshot == null ? null : blockSnapshot.getWorld(), blockSnapshot == null ? null : blockSnapshot.getPos(),
+                    blockSnapshot == null || blockSnapshot.getWorld() == null ? null : blockSnapshot.getWorld().getBlockState(blockSnapshot.getPos()),
+                    blockSnapshot, placedAgainst, player, hand);
+        }
+
+        /** The modern placement as the legacy event: the world, position and placed state are known directly. */
+        public PlaceEvent(World world, BlockPos pos, IBlockState placed, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, IBlockState placedAgainst, EntityPlayer player, EnumHand hand) {
+            super(world, pos, placed, blockSnapshot, placedAgainst, player);
+            this.player = player;
+            this.hand = hand;
+        }
+
+        public EntityPlayer getPlayer() {
+            return player;
         }
 
         public EnumHand getHand() {

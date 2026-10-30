@@ -89,7 +89,17 @@ public final class WorldEvents1122 {
                     new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(e.getData())));
         });
         b.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent e) -> {
-            if (!listens(BlockEvent.PlaceEvent.class) || !(e.getLevel() instanceof Level l)) return;
+            if (!(e.getLevel() instanceof Level l)) return;
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)) {
+                // placed by a mob, a dispenser-like machine or nothing: only the entity form of the event
+                if (!listens(BlockEvent.EntityPlaceEvent.class)) return;
+                var entity = e.getEntity() == null ? null : EntityBridge1122.wrap(e.getEntity());
+                var legacy = new BlockEvent.EntityPlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()),
+                        legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot.mcc$of(e.getBlockSnapshot()), state(e.getPlacedAgainst()), entity);
+                if (post(legacy)) e.setCanceled(true);
+                return;
+            }
+            if (!listens(BlockEvent.PlaceEvent.class)) return;
             var hand = e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living && living.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND
                     ? legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND : legacyconnector.v1_12_2.net.minecraft.util.EnumHand.MAIN_HAND;
             var legacy = new BlockEvent.PlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot.mcc$of(e.getBlockSnapshot()), state(e.getPlacedAgainst()),

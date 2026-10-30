@@ -240,4 +240,226 @@ public class ForgeHooks {
         double max = maxXZDistance * visibility;
         return xzDistance >= max ? max : xzDistance;
     }
+
+    // ---- area F: living, interaction and loot hooks
+
+    private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.EventBus mcc$bus() {
+        return MinecraftForge.EVENT_BUS;
+    }
+
+    private static net.minecraft.world.entity.LivingEntity mcc$living(Entity e) {
+        return e != null && e.mcc$modern() instanceof net.minecraft.world.entity.LivingEntity l ? l : null;
+    }
+
+    /** The looting level of a kill: the killer's looting enchantment, then mods' {@code LootingLevelEvent} handlers. */
+    public static int getLootingLevel(Entity target, Entity killer, legacyconnector.v1_12_2.net.minecraft.util.DamageSource cause) {
+        int looting = 0;
+        if (killer instanceof EntityLivingBase living) looting = legacyconnector.v1_12_2.net.minecraft.enchantment.EnchantmentHelper.getLootingModifier(living);
+        if (target instanceof EntityLivingBase living) looting = getLootingLevel(living, cause, looting);
+        return looting;
+    }
+
+    public static int getLootingLevel(EntityLivingBase target, legacyconnector.v1_12_2.net.minecraft.util.DamageSource cause, int level) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LootingLevelEvent(target, cause, level);
+        mcc$bus().post(event);
+        return event.getLootingLevel();
+    }
+
+    /** The damage after armour, as mods' {@code LivingDamageEvent} handlers change it (0 when one canceled it). */
+    public static float onLivingDamage(EntityLivingBase entity, legacyconnector.v1_12_2.net.minecraft.util.DamageSource src, float amount) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDamageEvent(entity, src, amount);
+        return mcc$bus().post(event) ? 0 : event.getAmount();
+    }
+
+    /** The damage before armour, as mods' {@code LivingHurtEvent} handlers change it (0 when one canceled it). */
+    public static float onLivingHurt(EntityLivingBase entity, legacyconnector.v1_12_2.net.minecraft.util.DamageSource src, float amount) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingHurtEvent(entity, src, amount);
+        return mcc$bus().post(event) ? 0 : event.getAmount();
+    }
+
+    /** True when a mod stopped the death (fires the modern death event; 1.12 handlers see it through the event bridge). */
+    public static boolean onLivingDeath(EntityLivingBase entity, legacyconnector.v1_12_2.net.minecraft.util.DamageSource src) {
+        var living = mcc$living(entity);
+        if (living == null || src == null) {
+            return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDeathEvent(entity, src));
+        }
+        return CommonHooks.onLivingDeath(living, src.mcc$modern(living.level()));
+    }
+
+    /** True when a mod canceled the drops; handlers may change the list. */
+    public static boolean onLivingDrops(EntityLivingBase entity, legacyconnector.v1_12_2.net.minecraft.util.DamageSource source,
+            java.util.ArrayList<legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem> drops, int lootingLevel, boolean recentlyHit) {
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDropsEvent(entity, source, drops, lootingLevel, recentlyHit));
+    }
+
+    /** The knockback after mods' handlers (they may change strength and direction, or cancel it). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingKnockBackEvent onLivingKnockBack(EntityLivingBase target,
+            Entity attacker, float strength, double ratioX, double ratioZ) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingKnockBackEvent(target, attacker, strength, ratioX, ratioZ);
+        mcc$bus().post(event);
+        return event;
+    }
+
+    /** Tells mods (legacy and modern) that a mob picked a new attack target. */
+    public static void onLivingSetAttackTarget(EntityLivingBase entity, EntityLivingBase target) {
+        mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent(entity, target));
+        var living = mcc$living(entity);
+        if (living != null) {
+            CommonHooks.onLivingChangeTarget(living, mcc$living(target),
+                    net.neoforged.neoforge.event.entity.living.LivingChangeTargetEvent.LivingTargetType.MOB_TARGET);
+        }
+    }
+
+    /**
+     * True when a mod canceled the entity's update. An entity in a modern world had its update event posted by the game's own tick
+     * (the event bridge posts {@code LivingUpdateEvent} before every living entity's tick, and skips the tick when it is canceled), so
+     * only an entity outside the modern game gets it posted here.
+     */
+    public static boolean onLivingUpdate(EntityLivingBase entity) {
+        if (entity == null || entity.mcc$modern() != null) return false;
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingEvent.LivingUpdateEvent(entity));
+    }
+
+    /** False when a mod canceled the note change; otherwise the tile entity's note is what the handlers made it. */
+    public static boolean onNoteChange(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityNote te, byte old) {
+        if (te == null) return true;
+        var world = te.getWorld();
+        var level = world == null ? null : world.mcc$level();
+        var pos = te.getPos();
+        if (level == null || pos == null) return true;
+        var p = pos(pos);
+        int result = CommonHooks.onNoteChange(level, p, level.getBlockState(p), old, te.note);
+        if (result == -1) {
+            te.note = old;
+            return false;
+        }
+        te.note = (byte) result;
+        return true;
+    }
+
+    /** The critical hit of a player's attack, or null when it is not one (vanilla's rule, as mods' handlers change it). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.CriticalHitEvent getCriticalHit(EntityPlayer player, Entity target,
+            boolean vanillaCritical, float damageModifier) {
+        var p = player == null ? null : player.mcc$player();
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.CriticalHitEvent(player, target, damageModifier, vanillaCritical);
+        if (p == null || target == null || target.mcc$modern() == null) {
+            mcc$bus().post(event);
+            var r = event.getResult();
+            boolean crit = r == legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW
+                    || vanillaCritical && r == legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+            return crit ? event : null;
+        }
+        // the modern event reaches 1.12 handlers through the event bridge
+        var modern = CommonHooks.fireCriticalHit(p, target.mcc$modern(), vanillaCritical, damageModifier);
+        if (!modern.isCriticalHit()) return null;
+        event.setDamageModifier(modern.getDamageMultiplier());
+        if (!vanillaCritical) event.setResult(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW);
+        return event;
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result mcc$result(net.neoforged.neoforge.common.util.TriState s) {
+        return s == net.neoforged.neoforge.common.util.TriState.TRUE ? legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW
+                : s == net.neoforged.neoforge.common.util.TriState.FALSE ? legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DENY
+                : legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT;
+    }
+
+    /** The left-click event of a player starting to break a block (the modern event; its decisions are copied into the returned one). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock onLeftClickBlock(EntityPlayer player,
+            BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face, Vec3d hitVec) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.LeftClickBlock(player, pos, face, hitVec);
+        var p = player == null ? null : player.mcc$player();
+        if (p == null || pos == null) {
+            mcc$bus().post(event);
+            return event;
+        }
+        var modern = net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock(p,
+                pos(pos), face == null ? net.minecraft.core.Direction.UP : face.mcc$modern(),
+                net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock.Action.START));
+        if (modern.isCanceled()) {
+            event.setCanceled(true);
+        } else {
+            event.setUseBlock(mcc$result(modern.getUseBlock()));
+            event.setUseItem(mcc$result(modern.getUseItem()));
+        }
+        return event;
+    }
+
+    /** The right-click event of a player using a block (the modern event; its decisions are copied into the returned one). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock onRightClickBlock(EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand, BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing face, Vec3d hitVec) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerInteractEvent.RightClickBlock(player, hand, pos, face, hitVec);
+        var p = player == null ? null : player.mcc$player();
+        if (p == null || pos == null) {
+            mcc$bus().post(event);
+            return event;
+        }
+        var direction = face == null ? net.minecraft.core.Direction.UP : face.mcc$modern();
+        var location = hitVec != null ? hitVec.mcc$modern() : net.minecraft.world.phys.Vec3.atCenterOf(pos(pos));
+        var modern = CommonHooks.onRightClickBlock(p, hand == null ? net.minecraft.world.InteractionHand.MAIN_HAND : hand.mcc$modern(), pos(pos),
+                new net.minecraft.world.phys.BlockHitResult(location, direction, pos(pos), false));
+        if (modern.isCanceled()) {
+            event.setCanceled(true);
+            event.setCancellationResult(legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.mcc$of(modern.getCancellationResult()));
+        } else {
+            event.setUseBlock(mcc$result(modern.getUseBlock()));
+            event.setUseItem(mcc$result(modern.getUseItem()));
+        }
+        return event;
+    }
+
+    /**
+     * Uses the item on the block the way a player's click does, with the placement events: the modern hook captures the blocks the
+     * item places and undoes them when a mod cancels the placement.
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult onPlaceItemIntoWorld(ItemStack itemstack, EntityPlayer player, World world,
+            BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, float hitX, float hitY, float hitZ,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        var level = world == null ? null : world.mcc$level();
+        if (level == null || pos == null || itemstack == null || itemstack.isEmpty()) return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.PASS;
+        var modernHand = hand == null ? net.minecraft.world.InteractionHand.MAIN_HAND : hand.mcc$modern();
+        var p = player == null ? null : player.mcc$player();
+        boolean live = itemstack.mcc$backing() != null;
+        net.minecraft.world.item.ItemStack stack = Stacks1122.toModernLive(itemstack);
+        var direction = side == null ? net.minecraft.core.Direction.UP : side.mcc$modern();
+        var hit = new net.minecraft.world.phys.BlockHitResult(new net.minecraft.world.phys.Vec3(pos.getX() + hitX, pos.getY() + hitY, pos.getZ() + hitZ),
+                direction, pos(pos), false);
+        var result = CommonHooks.onPlaceItemIntoWorld(new net.minecraft.world.item.context.UseOnContext(level, p, modernHand, stack, hit));
+        if (!live) itemstack.setCount(stack.getCount());
+        return legacyconnector.v1_12_2.net.minecraft.util.EnumActionResult.mcc$of(result);
+    }
+
+    /** The unnamed pools read so far of the table being loaded, and whether it is a custom (data pack) table. */
+    private static final ThreadLocal<int[]> POOL_COUNT = new ThreadLocal<>();
+
+    /**
+     * Reads a loot table from json as 1.12's loader did: mods' {@code LootTableLoadEvent} handlers see the tables that are not custom
+     * (data pack replacements), a canceled table is empty, and the result is frozen.
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable loadLootTable(com.google.gson.Gson gson,
+            legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name, String data, boolean custom,
+            legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager lootTableManager) {
+        int[] previous = POOL_COUNT.get();
+        POOL_COUNT.set(new int[] {0, custom ? 1 : 0});
+        legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable ret;
+        try {
+            ret = gson.fromJson(data, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable.class);
+        } finally {
+            POOL_COUNT.set(previous);
+        }
+        if (!custom) {
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.LootTableLoadEvent(name, ret, lootTableManager);
+            ret = mcc$bus().post(event) ? legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable.EMPTY_LOOT_TABLE : event.getTable();
+        }
+        if (ret != null) ret.freeze();
+        return ret;
+    }
+
+    /** The name of a loot pool being read: its own, else "main", "pool1", ... as 1.12 named the unnamed pools of vanilla tables. */
+    public static String readPoolName(com.google.gson.JsonObject json) {
+        if (json.has("name")) return json.get("name").getAsString();
+        int[] ctx = POOL_COUNT.get();
+        if (ctx == null || ctx[1] == 1) return "custom#" + json.hashCode();
+        ctx[0]++;
+        return ctx[0] == 1 ? "main" : "pool" + (ctx[0] - 1);
+    }
 }
