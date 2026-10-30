@@ -12,6 +12,8 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.LegacySoundSources;
  */
 public class SoundSystem {
     private final Map<String, LegacySoundSources.Source> sources = new ConcurrentHashMap<>();
+    /** paulscode's library; mods reflect on this field to reach its stream thread (DragonAPI). */
+    private final Library soundLibrary = new Library();
     private volatile float masterVolume = 1.0F;
     private int quickPlayCount;
 

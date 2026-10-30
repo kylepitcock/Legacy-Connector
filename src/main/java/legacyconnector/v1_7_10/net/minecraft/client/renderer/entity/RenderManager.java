@@ -22,7 +22,53 @@ public class RenderManager {
     public legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings options;
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer itemRenderer = new legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer();
     /** Legacy entity class -> renderer (RenderingRegistry.registerEntityRenderingHandler). */
-    public final java.util.Map<Class<?>, Render> entityRenderMap = new java.util.concurrent.ConcurrentHashMap<>();
+    public final java.util.Map<Class<?>, Render> entityRenderMap = new RenderMap();
+
+    /**
+     * The renderer map. Mods read 1.7.10's vanilla renderers straight out of it (ChromatiCraft swaps the slime's model): a
+     * vanilla entity class absent from it answers a legacy renderer built on first read. Lookups for drawing
+     * ({@link #getEntityClassRenderObject}) only see what mods registered, so vanilla entities keep their modern rendering.
+     */
+    private static final class RenderMap extends java.util.concurrent.ConcurrentHashMap<Class<?>, Render> {
+        private final java.util.Map<Class<?>, Render> vanilla = new java.util.concurrent.ConcurrentHashMap<>();
+
+        Render registered(Class<?> cls) {
+            return super.get(cls);
+        }
+
+        @Override
+        public Render get(Object key) {
+            Render r = super.get(key);
+            if (r != null || !(key instanceof Class<?> cls)) return r;
+            java.util.function.Supplier<Render> factory = VANILLA.get(cls);
+            return factory == null ? null : vanilla.computeIfAbsent(cls, c -> factory.get());
+        }
+    }
+
+    private static final java.util.Map<Class<?>, java.util.function.Supplier<Render>> VANILLA = java.util.Map.ofEntries(
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySlime.class,
+                    () -> new RenderSlime(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSlime(16), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSlime(0), 0.25F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityPig.class,
+                    () -> new RenderPig(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelPig(), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelPig(0.5F), 0.7F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntitySheep.class,
+                    () -> new RenderSheep(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSheep2(), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSheep1(), 0.7F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityCow.class,
+                    () -> new RenderCow(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelCow(), 0.7F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityWolf.class,
+                    () -> new RenderWolf(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelWolf(), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelWolf(), 0.5F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityChicken.class,
+                    () -> new RenderChicken(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelChicken(), 0.3F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot.class,
+                    () -> new RenderOcelot(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelOcelot(), 0.4F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySilverfish.class, RenderSilverfish::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySpider.class, RenderSpider::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityCreeper.class, RenderCreeper::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager.class, RenderVillager::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityZombie.class, RenderZombie::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityBat.class, RenderBat::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.boss.EntityWither.class, RenderWither::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityBoat.class, RenderBoat::new),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart.class, RenderMinecart::new));
 
     public FontRenderer getFontRenderer() {
         return fontRenderer;
@@ -56,7 +102,7 @@ public class RenderManager {
     /** The renderer of a legacy entity class (the closest registered superclass). */
     public Render getEntityClassRenderObject(Class<?> cls) {
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
-            Render r = entityRenderMap.get(c);
+            Render r = ((RenderMap) entityRenderMap).registered(c);
             if (r != null) {
                 if (c != cls) entityRenderMap.put(cls, r);
                 return r;
