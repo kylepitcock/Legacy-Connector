@@ -469,6 +469,17 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
             this.minGroupCount = min;
             this.maxGroupCount = max;
         }
+
+        /** A new entity of the entry's class, made with its (World) constructor as 1.12 did (Forge's factory hook). */
+        public legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving newInstance(legacyconnector.v1_12_2.net.minecraft.world.World world) throws Exception {
+            return (legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving) entityClass.getConstructor(legacyconnector.v1_12_2.net.minecraft.world.World.class)
+                    .newInstance(world);
+        }
+
+        @Override
+        public String toString() {
+            return (entityClass == null ? "null" : entityClass.getSimpleName()) + "*(" + minGroupCount + "-" + maxGroupCount + "):" + itemWeight;
+        }
     }
 
     // ------------------------------------------------------------------ area W: vanilla feature generators

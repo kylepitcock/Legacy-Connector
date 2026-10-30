@@ -43,6 +43,41 @@ public class EntityBoat extends Entity {
         super(modern);
     }
 
+    private static final java.lang.reflect.Method MCC$TICK_LERP = mcc$method(net.minecraft.world.entity.vehicle.Boat.class, "tickLerp");
+    private static final java.lang.reflect.Method MCC$CONTROL = mcc$method(net.minecraft.world.entity.vehicle.Boat.class, "controlBoat");
+    private static final java.lang.reflect.Method MCC$FLOAT = mcc$method(net.minecraft.world.entity.vehicle.Boat.class, "floatBoat");
+
+    private boolean mcc$invoke(java.lang.reflect.Method method) {
+        var b = mcc$boat();
+        if (b == null || method == null) return false;
+        try {
+            method.invoke(b);
+            return true;
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
+
+    /** Steps towards the position and rotation the server sent (client interpolation of the modern boat). */
+    protected void tickLerp() {
+        mcc$invoke(MCC$TICK_LERP);
+    }
+
+    /** Applies the paddling input of the controlling passenger (the modern boat's controls). */
+    protected void controlBoat() {
+        mcc$invoke(MCC$CONTROL);
+    }
+
+    /** Buoyancy, gravity and drag of the boat for its status (in water, under water, on land, in air). */
+    protected void updateMotion() {
+        if (mcc$invoke(MCC$FLOAT)) return;
+        double gravity = hasNoGravity() ? 0.0D : -0.04D;
+        float drag = isInWater() ? 0.9F : mcc$get$onGround(this) ? 0.5F : 0.9F;
+        mcc$set$motionX(this, mcc$get$motionX(this) * drag);
+        mcc$set$motionZ(this, mcc$get$motionZ(this) * drag);
+        mcc$set$motionY(this, isInWater() ? mcc$get$motionY(this) * 0.5D + 0.01D : mcc$get$motionY(this) + gravity);
+    }
+
     private net.minecraft.world.entity.vehicle.Boat mcc$boat() {
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.vehicle.Boat b ? b : null;
     }

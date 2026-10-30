@@ -39,6 +39,8 @@ public class World implements IBlockAccess {
 
     public final boolean isRemote;
     public final Random rand = new Random();
+    /** 1.12's linear congruential generator state for random block ticks (mods step it: {@code updateLCG * 3 + 1013904223}). */
+    protected int updateLCG = new Random().nextInt();
     public final legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler = new legacyconnector.v1_12_2.net.minecraft.profiler.Profiler();
     /** Forge: how far an entity's box may reach past its chunk. */
     public static double MAX_ENTITY_RADIUS = 2.0D;
@@ -1900,6 +1902,10 @@ public class World implements IBlockAccess {
             v.setWorldsForAll(w);
             w.mcc$villages = v;
         }
+    }
+
+    /** Sends a packet to the server: only a client world does ({@code WorldClient}); a server world has nowhere to send it. */
+    public void sendPacketToServer(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packet) {
     }
 
     public Chunk getChunkFromBlockCoords(BlockPos pos) {

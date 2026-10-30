@@ -17,6 +17,10 @@ public class PlayerCapabilities {
     public boolean isCreativeMode;
     @Deprecated
     public boolean allowEdit;
+    @Deprecated
+    public float flySpeed;
+    @Deprecated
+    public float walkSpeed;
     private final EntityPlayer mcc$player;
     private final net.minecraft.world.entity.player.Abilities mcc$local = new net.minecraft.world.entity.player.Abilities();
 
@@ -72,6 +76,22 @@ public class PlayerCapabilities {
 
     public static void mcc$set$allowEdit(PlayerCapabilities c, boolean v) {
         a(c).mayBuild = v;
+    }
+
+    public static float mcc$get$flySpeed(PlayerCapabilities c) {
+        return a(c).getFlyingSpeed();
+    }
+
+    public static void mcc$set$flySpeed(PlayerCapabilities c, float v) {
+        a(c).setFlyingSpeed(v);
+    }
+
+    public static float mcc$get$walkSpeed(PlayerCapabilities c) {
+        return a(c).getWalkingSpeed();
+    }
+
+    public static void mcc$set$walkSpeed(PlayerCapabilities c, float v) {
+        a(c).setWalkingSpeed(v);
     }
 
     public void writeCapabilitiesToNBT(NBTTagCompound tag) {

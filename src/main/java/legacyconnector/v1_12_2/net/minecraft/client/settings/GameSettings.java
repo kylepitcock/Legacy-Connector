@@ -732,6 +732,19 @@ public class GameSettings {
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty difficulty;
 
+    /** Phantom: which chat messages show (the game's chat visibility option). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility chatVisibility;
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility mcc$get$chatVisibility(GameSettings s) {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) return legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility.FULL;
+        return legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility.mcc$of(net.minecraft.client.Minecraft.getInstance().options.chatVisibility().get());
+    }
+
+    public static void mcc$set$chatVisibility(GameSettings s, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.EnumChatVisibility v) {
+        if (v != null && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) net.minecraft.client.Minecraft.getInstance().options.chatVisibility().set(v.mcc$modern());
+    }
+
     public static boolean mcc$get$chatColours(GameSettings s) {
         return Opt.bool(Options.CHAT_COLOR);
     }

@@ -61,4 +61,24 @@ public final class EntitySelectors {
             return true;
         };
     }
+
+    /** Entities that could wear the armour piece (a dispenser equips them): alive, that slot empty, and able to wear it. */
+    public static class ArmoredMob implements Predicate<Entity> {
+        private final legacyconnector.v1_12_2.net.minecraft.item.ItemStack armor;
+
+        public ArmoredMob(legacyconnector.v1_12_2.net.minecraft.item.ItemStack armor) {
+            this.armor = armor;
+        }
+
+        @Override
+        public boolean apply(Entity entity) {
+            if (entity == null || !entity.isEntityAlive()) return false;
+            if (!(entity instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase living)) return false;
+            var slot = legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.getSlotForItemStack(armor);
+            if (!living.getItemStackFromSlot(slot).isEmpty()) return false;
+            if (living instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving mob) return mob.canPickUpLoot();
+            if (living instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityArmorStand) return true;
+            return living instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;
+        }
+    }
 }

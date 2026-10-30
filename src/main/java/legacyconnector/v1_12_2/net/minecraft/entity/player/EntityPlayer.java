@@ -17,6 +17,10 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
 
 /** 1.12.2 player: a view over a modern player (inventory, abilities, food, experience, cooldowns). */
 public abstract class EntityPlayer extends EntityLivingBase {
+    /** Vanilla's absorption key: the modern player's absorption amount. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Float> ABSORPTION = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(11, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.FLOAT, EntityPlayer.class, 0.0F, e -> e.mcc$living().getAbsorptionAmount(),
+            (e, v) -> e.mcc$living().setAbsorptionAmount(v));
+
     /** Forge's block reach attribute (the modern block interaction range). */
     public static final IAttribute REACH_DISTANCE = new RangedAttribute(null, "generic.reachDistance", 5.0D, 0.0D, 1024.0D).setShouldWatch(true);
 
@@ -548,9 +552,19 @@ public abstract class EntityPlayer extends EntityLivingBase {
     }
 
     /** Forge: refreshes the display name (after a NameFormat handler changed). */
-    public String refreshDisplayName() {
+    public void refreshDisplayName() {
         mcc$player().refreshDisplayName();
-        return getDisplayNameString();
+    }
+
+    /** The scoreboard of the player's world. */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getWorldScoreboard() {
+        return legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(mcc$player().level().getScoreboard());
+    }
+
+    /** Opens the sign editor for a sign of the game (front text). */
+    public void openEditSign(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySign sign) {
+        var modern = sign == null ? null : sign.mcc$modern();
+        if (modern != null) mcc$player().openTextEdit(modern, true);
     }
 
     // ------------------------------------------------------------------ containers, GUIs and statistics (area E, 1.12.2)
@@ -723,6 +737,35 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return mcc$player().getArmorCoverPercentage();
     }
 
+    private static java.lang.reflect.Method mcc$shoulderSetter(String name) {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(Player.class, name, net.minecraft.nbt.CompoundTag.class);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static final java.lang.reflect.Method MCC$SET_LEFT = mcc$shoulderSetter("setShoulderEntityLeft");
+    private static final java.lang.reflect.Method MCC$SET_RIGHT = mcc$shoulderSetter("setShoulderEntityRight");
+
+    private void mcc$setShoulder(java.lang.reflect.Method setter, legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        if (setter == null) return;
+        try {
+            setter.invoke(mcc$player(), tag == null ? new net.minecraft.nbt.CompoundTag() : tag.mcc$modern().copy());
+        } catch (ReflectiveOperationException e) {
+            // keeps the current shoulder entity
+        }
+    }
+
+    /** Puts the saved form of an entity (a parrot) on the left shoulder (an empty tag clears it). */
+    protected void setLeftShoulderEntity(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        mcc$setShoulder(MCC$SET_LEFT, tag);
+    }
+
+    protected void setRightShoulderEntity(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        mcc$setShoulder(MCC$SET_RIGHT, tag);
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getLeftShoulderEntity() {
         return new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(mcc$player().getShoulderEntityLeft().copy());
     }
@@ -758,6 +801,42 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public static void mcc$set$fishEntity(EntityPlayer p, legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFishHook v) {
         Player m = p.mcc$player();
         if (m != null) m.fishing = v != null && v.mcc$entity instanceof net.minecraft.world.entity.projectile.FishingHook h ? h : null;
+    }
+
+    /** Which chat messages a player sees (the client's chat option). */
+    public enum EnumChatVisibility {
+        FULL(0, "options.chat.visibility.full"),
+        SYSTEM(1, "options.chat.visibility.system"),
+        HIDDEN(2, "options.chat.visibility.hidden");
+
+        private final int chatVisibility;
+        private final String resourceKey;
+
+        EnumChatVisibility(int id, String resourceKey) {
+            this.chatVisibility = id;
+            this.resourceKey = resourceKey;
+        }
+
+        public int getChatVisibility() {
+            return chatVisibility;
+        }
+
+        public static EnumChatVisibility getEnumChatVisibility(int id) {
+            for (EnumChatVisibility v : values()) if (v.chatVisibility == id) return v;
+            return FULL;
+        }
+
+        public String getResourceKey() {
+            return resourceKey;
+        }
+
+        public net.minecraft.world.entity.player.ChatVisiblity mcc$modern() {
+            return net.minecraft.world.entity.player.ChatVisiblity.byId(chatVisibility);
+        }
+
+        public static EnumChatVisibility mcc$of(net.minecraft.world.entity.player.ChatVisiblity modern) {
+            return modern == null ? FULL : getEnumChatVisibility(modern.getId());
+        }
     }
 
     /** Sleep results of trySleep. */

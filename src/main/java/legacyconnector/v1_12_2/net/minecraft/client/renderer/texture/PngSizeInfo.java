@@ -18,4 +18,12 @@ public class PngSizeInfo {
         pngHeight = in.readInt();
         textureStream.close();
     }
+
+    public static PngSizeInfo makeFromResource(legacyconnector.v1_12_2.net.minecraft.client.resources.IResource resource) throws IOException {
+        try {
+            return new PngSizeInfo(resource.toString(), resource.getInputStream());
+        } finally {
+            resource.close();
+        }
+    }
 }

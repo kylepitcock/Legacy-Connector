@@ -30,4 +30,22 @@ public class GuiPlayerTabOverlay extends Gui {
     public void resetFooterHeader() {
         tab().reset();
     }
+
+    /** Draws the list (for a screen width) with the objective's scores, through the screen's or HUD's GuiGraphics. */
+    public void renderPlayerlist(int width, legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard scoreboardIn,
+            legacyconnector.v1_12_2.net.minecraft.scoreboard.ScoreObjective scoreObjectiveIn) {
+        var gui = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.gui();
+        if (gui == null) return;
+        var modernBoard = scoreboardIn != null ? scoreboardIn.mcc$modern() : null;
+        if (modernBoard == null) {
+            var level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null) return;
+            modernBoard = level.getScoreboard();
+        }
+        try {
+            tab().render(gui, width, modernBoard, scoreObjectiveIn == null ? null : scoreObjectiveIn.mcc$modern());
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing the player list", e);
+        }
+    }
 }

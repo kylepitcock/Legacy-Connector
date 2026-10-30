@@ -12,7 +12,7 @@ public class LanguageMap {
     private static final Pattern NUMERIC_VARIABLE_PATTERN = Pattern.compile("%(\\d+\\$)?[\\d\\.]*[df]");
     private static final Splitter EQUAL_SIGN_SPLITTER = Splitter.on('=').limit(2);
     private static final LanguageMap instance = new LanguageMap();
-    private final Map<String, String> languageList = new java.util.concurrent.ConcurrentHashMap<>();
+    public final Map<String, String> languageList = new java.util.concurrent.ConcurrentHashMap<>();
     private long lastUpdateTimeInMilliseconds = System.currentTimeMillis();
 
     public LanguageMap() {

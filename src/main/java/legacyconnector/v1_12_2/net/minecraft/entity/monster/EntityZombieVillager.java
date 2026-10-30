@@ -25,6 +25,41 @@ public class EntityZombieVillager extends EntityZombie {
         super(modern);
     }
 
+    /** Phantom: the player who started curing the zombie villager (the modern conversion starter). */
+    @Deprecated
+    public java.util.UUID converstionStarter;
+    private java.util.UUID mcc$local_converstionStarter;
+    private static final java.lang.reflect.Field MCC$STARTER = mcc$starterField();
+
+    private static java.lang.reflect.Field mcc$starterField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.monster.ZombieVillager.class, "conversionStarter");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static java.util.UUID mcc$get$converstionStarter(EntityZombieVillager e) {
+        var m = e.mcc$self();
+        if (m == null || e.mcc$hosted() || MCC$STARTER == null) return e.mcc$local_converstionStarter;
+        try {
+            return (java.util.UUID) MCC$STARTER.get(m);
+        } catch (IllegalAccessException ex) {
+            return e.mcc$local_converstionStarter;
+        }
+    }
+
+    public static void mcc$set$converstionStarter(EntityZombieVillager e, java.util.UUID v) {
+        e.mcc$local_converstionStarter = v;
+        var m = e.mcc$self();
+        if (m == null || e.mcc$hosted() || MCC$STARTER == null) return;
+        try {
+            MCC$STARTER.set(m, v);
+        } catch (IllegalAccessException ex) {
+            // keeps the modern starter
+        }
+    }
+
     protected net.minecraft.world.entity.monster.ZombieVillager mcc$self() {
         return mcc$entity instanceof net.minecraft.world.entity.monster.ZombieVillager m ? m : null;
     }

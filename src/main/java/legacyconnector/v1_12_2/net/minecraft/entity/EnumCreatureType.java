@@ -28,13 +28,24 @@ public enum EnumCreatureType {
         return isAnimal;
     }
 
+    /** The creature class of the types {@code EnumHelper.addCreatureType} added. */
+    private static final java.util.Map<EnumCreatureType, Class<?>> mcc$ADDED_CLASSES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Records the creature class of an added type. */
+    public static void mcc$setCreatureClass(EnumCreatureType type, Class<?> creatureClass) {
+        if (type != null && creatureClass != null) mcc$ADDED_CLASSES.put(type, creatureClass);
+    }
+
     /** The legacy class a creature of this type is an instance of (Forge's spawn-cap check). */
     public Class<?> getCreatureClass() {
-        return switch (this) {
-            case MONSTER -> legacyconnector.v1_12_2.net.minecraft.entity.monster.IMob.class;
-            case CREATURE -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAnimal.class;
-            case AMBIENT -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAmbientCreature.class;
-            case WATER_CREATURE -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityWaterMob.class;
+        Class<?> added = mcc$ADDED_CLASSES.get(this);
+        if (added != null) return added;
+        return switch (name()) {
+            case "MONSTER" -> legacyconnector.v1_12_2.net.minecraft.entity.monster.IMob.class;
+            case "CREATURE" -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAnimal.class;
+            case "AMBIENT" -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAmbientCreature.class;
+            case "WATER_CREATURE" -> legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityWaterMob.class;
+            default -> Object.class;
         };
     }
 }

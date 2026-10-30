@@ -233,8 +233,19 @@ public abstract class TileEntity implements ICapabilityProvider {
     /** Vanilla's own registration of a tile entity class under a name. */
     public static void register(String id, Class<? extends TileEntity> clazz) {
         if (id == null || clazz == null) return;
-        org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerClass(clazz, id.indexOf(':') < 0 ? "minecraft:" + id : id);
+        REGISTRY.putObject(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id), clazz);
     }
+
+    /** Tile entity classes by id. Mods that put into it directly (instead of {@link #register}) register the class too. */
+    public static final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, Class<? extends TileEntity>> REGISTRY =
+            new legacyconnector.v1_12_2.net.minecraft.util.registry.RegistryNamespaced<>() {
+                @Override
+                public synchronized void putObject(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, Class<? extends TileEntity> value) {
+                    if (key == null || value == null) return;
+                    super.putObject(key, value);
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerClass(value, key.toString());
+                }
+            };
 
     /** Places a legacy view of a game block entity at its world and position (see {@code TileViews1122}). */
     public void mcc$bind(World worldIn, BlockPos posIn, net.minecraft.world.level.block.entity.BlockEntity host) {

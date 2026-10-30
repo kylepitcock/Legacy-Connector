@@ -10,8 +10,11 @@ import legacyconnector.v1_12_2.net.minecraft.command.ICommandManager;
  */
 public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.command.ICommandSender,
         legacyconnector.v1_12_2.net.minecraft.util.IThreadListener {
-    private static final MinecraftServer INSTANCE = new MinecraftServer();
-    private final CommandHandler commandManager = new CommandHandler();
+    /** The view: a {@code DedicatedServer} on a dedicated server, an {@code IntegratedServer} on a client (mods cast to them). */
+    private static final MinecraftServer INSTANCE = net.neoforged.fml.loading.FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER
+            ? new legacyconnector.v1_12_2.net.minecraft.server.dedicated.DedicatedServer()
+            : new legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer();
+    public final ICommandManager commandManager = new CommandHandler();
     private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList playerList =
             new legacyconnector.v1_12_2.net.minecraft.server.management.PlayerList(this);
     private final legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache =
@@ -56,6 +59,19 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
             out.put(org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.dimensionId(level.dimension()), times == null ? new long[100] : times);
         }
         return out;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager functionManager;
+
+    /** The server's functions (a view of the modern function manager). */
+    public synchronized legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager getFunctionManager() {
+        if (functionManager == null) functionManager = new legacyconnector.v1_12_2.net.minecraft.advancements.FunctionManager(null, this);
+        return functionManager;
+    }
+
+    /** The saves folder the running world is in (its worlds, level.dat and save handlers). */
+    public legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat getActiveAnvilConverter() {
+        return legacyconnector.v1_12_2.net.minecraft.world.storage.SaveFormatOld.mcc$server();
     }
 
     public ICommandManager getCommandManager() {

@@ -13,6 +13,13 @@ import org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122;
  * {@code entityItem.getItem().shrink(1)} changes the item on the ground.
  */
 public class EntityItem extends Entity {
+    /** Vanilla's item key: the modern item entity's stack. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<ItemStack> ITEM = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(6, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.ITEM_STACK, EntityItem.class, ItemStack.EMPTY,
+            e -> e.mcc$item() == null ? ItemStack.EMPTY : Stacks1122.view(e.mcc$item().getItem()),
+            (e, v) -> {
+                if (e.mcc$item() != null) e.mcc$item().setItem(Stacks1122.toModern(v));
+            });
+
     @Deprecated
     public float hoverStart;
     @Deprecated
@@ -149,6 +156,19 @@ public class EntityItem extends Entity {
 
     public void setNoPickupDelay() {
         setPickupDelay(0);
+    }
+
+    /** Merges with the item entities around (the modern merge). */
+    public void searchForOtherItemsNearby() {
+        var i = mcc$item();
+        if (i != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.mergeWithNeighbours(i);
+    }
+
+    /** A display-only item: never picked up, and gone on its next tick. */
+    public void makeFakeItem() {
+        setInfinitePickupDelay();
+        var i = mcc$item();
+        if (i != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.setAge(i, i.lifespan - 1);
     }
 
     public void setInfinitePickupDelay() {

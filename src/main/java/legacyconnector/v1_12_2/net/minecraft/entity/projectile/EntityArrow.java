@@ -15,6 +15,15 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * up. A mod's arrow class runs this flight itself on its host; views of modern arrows use the modern arrow's state.
  */
 public abstract class EntityArrow extends Entity implements IProjectile {
+    /** What arrows can hit: living, non-spectating, collidable entities. */
+    public static final com.google.common.base.Predicate<legacyconnector.v1_12_2.net.minecraft.entity.Entity> ARROW_TARGETS = com.google.common.base.Predicates.and(
+            legacyconnector.v1_12_2.net.minecraft.util.EntitySelectors.NOT_SPECTATING, legacyconnector.v1_12_2.net.minecraft.util.EntitySelectors.IS_ALIVE,
+            e -> e != null && e.canBeCollidedWith());
+
+    /** Data fixers of saved arrows: the layer reads saves with the modern game's fixers, so there is nothing to register. */
+    public static void registerFixesArrow(legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer fixer, String name) {
+    }
+
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;

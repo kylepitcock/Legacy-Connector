@@ -30,6 +30,40 @@ public class EntityFireworkRocket extends legacyconnector.v1_12_2.net.minecraft.
         super(modern);
     }
 
+    /** Phantom: the gliding entity the rocket boosts (the modern rocket's attached entity). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase boostedEntity;
+    private static final java.lang.reflect.Field MCC$ATTACHED = mcc$attachedField();
+
+    private static java.lang.reflect.Field mcc$attachedField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.projectile.FireworkRocketEntity.class, "attachedToEntity");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase mcc$get$boostedEntity(EntityFireworkRocket e) {
+        var m = e.mcc$self();
+        if (m == null || MCC$ATTACHED == null) return null;
+        try {
+            return MCC$ATTACHED.get(m) instanceof net.minecraft.world.entity.LivingEntity l
+                    && org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(l) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase v ? v : null;
+        } catch (IllegalAccessException ex) {
+            return null;
+        }
+    }
+
+    public static void mcc$set$boostedEntity(EntityFireworkRocket e, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase v) {
+        var m = e.mcc$self();
+        if (m == null || MCC$ATTACHED == null) return;
+        try {
+            MCC$ATTACHED.set(m, v == null ? null : v.mcc$living());
+        } catch (IllegalAccessException ex) {
+            // keeps the attached entity
+        }
+    }
+
     protected net.minecraft.world.entity.projectile.FireworkRocketEntity mcc$self() {
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.projectile.FireworkRocketEntity m ? m : null;
     }

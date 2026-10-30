@@ -210,20 +210,21 @@ public class CraftingHelper {
         return found ? success : defaultUnfoundRoot;
     }
 
-    private static final java.util.Map<String, IConditionFactory> CONDITIONS = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final java.util.Map<String, IIngredientFactory> INGREDIENTS = new java.util.concurrent.ConcurrentHashMap<>();
-    private static final java.util.Map<String, IRecipeFactory> RECIPES = new java.util.concurrent.ConcurrentHashMap<>();
+    /** Forge's names and key type: SuperMartijn642's core lib adds its conditions to {@code conditions} by reflection. */
+    private static java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, IConditionFactory> conditions = new java.util.concurrent.ConcurrentHashMap<>();
+    private static java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, IIngredientFactory> ingredients = new java.util.concurrent.ConcurrentHashMap<>();
+    private static java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation, IRecipeFactory> recipes = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IConditionFactory factory) {
-        if (key != null && factory != null) CONDITIONS.put(key.toString(), factory);
+        if (key != null && factory != null) conditions.put(key, factory);
     }
 
     public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IIngredientFactory factory) {
-        if (key != null && factory != null) INGREDIENTS.put(key.toString(), factory);
+        if (key != null && factory != null) ingredients.put(key, factory);
     }
 
     public static void register(legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation key, IRecipeFactory factory) {
-        if (key != null && factory != null) RECIPES.put(key.toString(), factory);
+        if (key != null && factory != null) recipes.put(key, factory);
     }
 
     /** True when every condition of a recipe's {@code conditions} array holds (Forge's built-in ones and the registered factories). */
@@ -263,7 +264,7 @@ public class CraftingHelper {
             default:
                 break;
         }
-        IConditionFactory factory = CONDITIONS.get(type);
+        IConditionFactory factory = conditions.get(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(type));
         if (factory == null && customFactory(context, type, "conditions") instanceof IConditionFactory f) factory = f;
         if (factory == null) throw new com.google.gson.JsonSyntaxException("Unknown condition type: " + type);
         return factory.parse(context, json);

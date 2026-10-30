@@ -30,6 +30,18 @@ public class EntityDragon extends legacyconnector.v1_12_2.net.minecraft.entity.E
         return mcc$entity instanceof net.minecraft.world.entity.boss.enderdragon.EnderDragon m ? m : null;
     }
 
+    /** The phases of the fight (the modern dragon's). */
+    public legacyconnector.v1_12_2.net.minecraft.entity.boss.dragon.phase.PhaseManager getPhaseManager() {
+        return new legacyconnector.v1_12_2.net.minecraft.entity.boss.dragon.phase.PhaseManager(this);
+    }
+
+    /** The dragon fight of the end this dragon belongs to, or null. */
+    public legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager getFightManager() {
+        var m = mcc$self();
+        var fight = m == null ? null : m.getDragonFight();
+        return fight == null ? null : new legacyconnector.v1_12_2.net.minecraft.world.end.DragonFightManager(fight);
+    }
+
     @Deprecated
     public int deathTicks;
     private int mcc$deathTicks;

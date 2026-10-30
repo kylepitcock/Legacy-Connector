@@ -54,8 +54,8 @@ public class ChunkGeneratorHell implements IChunkGenerator {
     private final WorldGenerator magmaGen = minable("magma", 33);
     private final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenHellLava lavaTrapGen = hellLava(true);
     private final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenHellLava hellSpringGen = hellLava(false);
-    private final WorldGenerator brownMushroomFeature = patch(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_BROWN_MUSHROOM);
-    private final WorldGenerator redMushroomFeature = patch(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_RED_MUSHROOM);
+    public final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBush brownMushroomFeature = bush(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_BROWN_MUSHROOM);
+    public final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBush redMushroomFeature = bush(net.minecraft.data.worldgen.features.VegetationFeatures.PATCH_RED_MUSHROOM);
     public legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenNetherBridge genNetherBridge = new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenNetherBridge();
     private MapGenBase genNetherCaves = new MapGenCavesHell();
     double[] pnr;
@@ -79,6 +79,16 @@ public class ChunkGeneratorHell implements IChunkGenerator {
 
     private static WorldGenerator patch(net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> key) {
         return new WorldGenerator() {
+            @Override
+            public boolean generate(World w, Random r, BlockPos p) {
+                return org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(w, key, r, p);
+            }
+        };
+    }
+
+    /** A mushroom patch as 1.12's {@code WorldGenBush} (the modern game's mushroom patch feature is placed). */
+    private static legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBush bush(net.minecraft.resources.ResourceKey<net.minecraft.world.level.levelgen.feature.ConfiguredFeature<?, ?>> key) {
+        return new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBush(null) {
             @Override
             public boolean generate(World w, Random r, BlockPos p) {
                 return org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(w, key, r, p);

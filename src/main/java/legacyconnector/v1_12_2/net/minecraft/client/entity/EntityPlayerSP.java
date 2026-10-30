@@ -6,6 +6,33 @@ public class EntityPlayerSP extends AbstractClientPlayer {
         super(modern);
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManager mcc$stats;
+    private legacyconnector.v1_12_2.net.minecraft.stats.RecipeBook mcc$recipeBook;
+
+    /**
+     * A client player a mod makes (a free camera, a replay viewer): an entity of the signed-in profile in the world given, with the
+     * statistics and recipe book given.
+     */
+    public EntityPlayerSP(legacyconnector.v1_12_2.net.minecraft.client.Minecraft p_i47378_1_, legacyconnector.v1_12_2.net.minecraft.world.World p_i47378_2_,
+            legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient p_i47378_3_, legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManager p_i47378_4_,
+            legacyconnector.v1_12_2.net.minecraft.stats.RecipeBook p_i47378_5_) {
+        super(p_i47378_2_, (p_i47378_1_ != null ? p_i47378_1_ : legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft()).getSession().getProfile());
+        this.mcc$stats = p_i47378_4_;
+        this.mcc$recipeBook = p_i47378_5_;
+    }
+
+    /** The recipe book: the local player's modern one, or the one a mod-made player was given. */
+    public legacyconnector.v1_12_2.net.minecraft.stats.RecipeBook getRecipeBook() {
+        if (mcc$entity instanceof net.minecraft.client.player.LocalPlayer lp) return legacyconnector.v1_12_2.net.minecraft.stats.RecipeBook.mcc$of(lp.getRecipeBook());
+        return mcc$recipeBook;
+    }
+
+    /** The statistics: the local player's (as the server last sent them), or the ones a mod-made player was given. */
+    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManager getStatFileWriter() {
+        if (mcc$entity instanceof net.minecraft.client.player.LocalPlayer lp) return legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManager.mcc$of(lp.getStats());
+        return mcc$stats;
+    }
+
     @Override
     public boolean isUser() {
         return true;

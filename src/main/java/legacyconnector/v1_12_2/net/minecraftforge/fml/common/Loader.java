@@ -35,6 +35,11 @@ public class Loader {
         if (container != null && container.getModId() != null) MCC$CORE_CONTAINERS.add(container);
     }
 
+    /** The coremods' containers. */
+    public static List<ModContainer> mcc$coreContainers() {
+        return java.util.Collections.unmodifiableList(MCC$CORE_CONTAINERS);
+    }
+
     public static boolean mcc$isLoading() {
         return mcc$state.ordinal() >= LoaderState.CONSTRUCTING.ordinal() && mcc$state.ordinal() <= LoaderState.POSTINITIALIZATION.ordinal();
     }
@@ -49,10 +54,13 @@ public class Loader {
      * API package-info first makes the check independent of the order mods load in.
      */
     private static volatile boolean mcc$apiPackagesLoaded;
+    /** The loader of the mods' classes (their API packages are found through it). */
+    static volatile ClassLoader mcc$apiLoader;
 
     public static void mcc$loadApiPackages(ClassLoader loader) {
         if (mcc$apiPackagesLoaded) return;
         mcc$apiPackagesLoaded = true;
+        mcc$apiLoader = loader;
         for (String pkg : System.getProperty("legacyconnector.legacyApiPackages", "").split(",")) {
             if (pkg.isEmpty()) continue;
             try {
@@ -136,6 +144,13 @@ public class Loader {
             if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
         }
         return out;
+    }
+
+    private static final MinecraftDummyContainer MCC$MINECRAFT = new MinecraftDummyContainer(MC_VERSION);
+
+    /** Minecraft's own mod container. */
+    public MinecraftDummyContainer getMinecraftModContainer() {
+        return MCC$MINECRAFT;
     }
 
     public ModContainer activeModContainer() {

@@ -65,26 +65,17 @@ public class PotionEffect implements Comparable<PotionEffect> {
         return potion == null ? "" : potion.getName();
     }
 
-    /** Keeps the stronger amplifier and the longer duration, like vanilla. */
-    public boolean combine(PotionEffect other) {
-        boolean changed = false;
+    /** Merges a reapplied effect: the stronger amplifier wins, then the longer duration, else a non-ambient source; particles follow it. */
+    public void combine(PotionEffect other) {
         if (other.amplifier > amplifier) {
             amplifier = other.amplifier;
             duration = other.duration;
-            changed = true;
         } else if (other.amplifier == amplifier && duration < other.duration) {
             duration = other.duration;
-            changed = true;
-        }
-        if (!other.isAmbient && isAmbient || changed) {
+        } else if (!other.isAmbient && isAmbient) {
             isAmbient = other.isAmbient;
-            changed = true;
         }
-        if (other.showParticles != showParticles) {
-            showParticles = other.showParticles;
-            changed = true;
-        }
-        return changed;
+        showParticles = other.showParticles;
     }
 
     public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound writeCustomPotionEffectToNBT(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {

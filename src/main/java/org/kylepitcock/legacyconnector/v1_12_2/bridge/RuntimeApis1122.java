@@ -127,11 +127,6 @@ public final class RuntimeApis1122 {
     private static final Set<Object> INFO_NOTICE = Collections.newSetFromMap(new IdentityHashMap<>());
     /** BlockMatcher -> the block it matches. */
     private static final Map<Object, Block> BLOCK_MATCHERS = new IdentityHashMap<>();
-    /** Forge's BiomeManager lists. */
-    private static final Map<String, List<Object>> BIOME_ENTRIES = new HashMap<>();
-    private static final Set<Object> VILLAGE_BIOMES = new LinkedHashSet<>();
-    private static final Set<Object> SPAWN_BIOMES = new LinkedHashSet<>();
-    private static final Set<Object> STRONGHOLD_BIOMES = new LinkedHashSet<>();
     /** EnumHelper.addSpawnPlacementType: the predicate of each added placement type. */
     private static final Map<Object, BiPredicate<Object, Object>> PLACEMENT_PREDICATES = new IdentityHashMap<>();
     /** EntitySpawnPlacementRegistry: entity class -> placement type. */
@@ -325,65 +320,9 @@ public final class RuntimeApis1122 {
             return args.length > 0 && args[0] instanceof IBlockState s && s.getBlock() == block;
         });
 
-        registerBiomeManager();
         registerEnums();
         registerEntities();
         registerItems();
-    }
-
-    /** Forge's BiomeManager: the biome lists of the legacy world types, the village and spawn biomes. Kept as data. */
-    private static void registerBiomeManager() {
-        String bm = "net.minecraftforge.common.BiomeManager.";
-        Synth.addStaticMethod(bm + "addBiome", args -> {
-            if (args.length < 2 || args[0] == null || args[1] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                BIOME_ENTRIES.computeIfAbsent(enumName(args[0]), k -> new ArrayList<>()).add(args[1]);
-            }
-            return null;
-        });
-        Synth.addStaticMethod(bm + "removeBiome", args -> {
-            if (args.length < 2 || args[0] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = BIOME_ENTRIES.get(enumName(args[0]));
-                if (list != null) list.remove(args[1]);
-            }
-            return null;
-        });
-        Synth.addStaticMethod(bm + "getBiomes", args -> {
-            if (args.length < 1 || args[0] == null) return null;
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = BIOME_ENTRIES.get(enumName(args[0]));
-                return list == null ? ImmutableList.of() : ImmutableList.copyOf(list);
-            }
-        });
-        Synth.addStaticMethod(bm + "isTypeListModded", args -> {
-            synchronized (BIOME_ENTRIES) {
-                List<Object> list = args.length > 0 && args[0] != null ? BIOME_ENTRIES.get(enumName(args[0])) : null;
-                return list != null && !list.isEmpty();
-            }
-        });
-        biomeSet(bm + "addVillageBiome", bm + "removeVillageBiome", VILLAGE_BIOMES);
-        biomeSet(bm + "addSpawnBiome", bm + "removeSpawnBiome", SPAWN_BIOMES);
-        biomeSet(bm + "addStrongholdBiome", bm + "removeStrongholdBiome", STRONGHOLD_BIOMES);
-    }
-
-    private static void biomeSet(String add, String remove, Set<Object> set) {
-        Synth.addStaticMethod(add, args -> {
-            if (args.length > 0 && args[0] != null) {
-                synchronized (set) {
-                    set.add(args[0]);
-                }
-            }
-            return null;
-        });
-        Synth.addStaticMethod(remove, args -> {
-            if (args.length > 0) {
-                synchronized (set) {
-                    set.remove(args[0]);
-                }
-            }
-            return null;
-        });
     }
 
     /** Enum constants Forge added at runtime (spawn placement and horse armor types, plant types) and what they carry. */
@@ -403,13 +342,7 @@ public final class RuntimeApis1122 {
             }
             return type;
         });
-        Synth.addInstanceMethod(placement + ".canSpawnAt", (self, args) -> {
-            BiPredicate<Object, Object> p;
-            synchronized (PLACEMENT_PREDICATES) {
-                p = PLACEMENT_PREDICATES.get(self);
-            }
-            return p == null || args.length < 2 ? Synth.NONE : p.test(args[0], args[1]);
-        });
+        Synth.addInstanceMethod(placement + ".canSpawnAt", (self, args) -> args.length < 2 ? Synth.NONE : placementAllows(self, args[0], args[1]));
 
         String horse = "net.minecraft.entity.passive.HorseArmorType";
         Synth.addStaticMethod(helper + "addHorseArmor", args -> {
@@ -435,6 +368,78 @@ public final class RuntimeApis1122 {
             return a == null ? Synth.NONE : a.hash();
         });
         Synth.addInstanceMethod(horse + ".getOrdinal", (self, args) -> self instanceof Enum<?> e ? e.ordinal() : Synth.NONE);
+
+        // a creature attribute (undead, arthropod, ...): only its identity matters (smite/bane of arthropods compare against vanilla's)
+        Synth.addStaticMethod(helper + "addCreatureAttribute", args -> {
+            if (args.length < 1 || !(args[0] instanceof String name)) return Synth.NONE;
+            Object type = enumConstant("net.minecraft.entity.EnumCreatureAttribute", name);
+            return type == null ? Synth.NONE : type;
+        });
+        Synth.addStaticMethod(horse + ".getByItemStack", args -> {
+            String name = "NONE";
+            if (args.length > 0 && args[0] instanceof ItemStack stack && !stack.isEmpty()) {
+                var modern = Stacks1122.toModern(stack).getItem();
+                if (modern == net.minecraft.world.item.Items.IRON_HORSE_ARMOR) name = "IRON";
+                else if (modern == net.minecraft.world.item.Items.GOLDEN_HORSE_ARMOR) name = "GOLD";
+                else if (modern == net.minecraft.world.item.Items.DIAMOND_HORSE_ARMOR) name = "DIAMOND";
+                else {
+                    // Forge: the item says which armor it is (Item.getHorseArmorType, overridden by mod armor)
+                    for (Method m : stack.getItem().getClass().getMethods()) {
+                        if (m.getName().equals("getHorseArmorType") && m.getParameterCount() == 1) {
+                            try {
+                                Object type = m.invoke(stack.getItem(), stack);
+                                if (type != null) return type;
+                            } catch (ReflectiveOperationException | RuntimeException e) {
+                                // treated as no armor
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            Object type = enumConstant(horse, name);
+            return type != null ? type : Synth.NONE;
+        });
+    }
+
+    /**
+     * EntitySpawnPlacementRegistry.getPlacementForEntity: the type registered for the class, else ON_GROUND (as in 1.12); null only
+     * when the placement enum is unavailable.
+     */
+    public static Object placementOf(Class<?> cls) {
+        synchronized (PLACEMENTS) {
+            Object type = PLACEMENTS.get(cls);
+            if (type != null) return type;
+        }
+        return enumConstant("net.minecraft.entity.EntityLiving$SpawnPlacementType", "ON_GROUND");
+    }
+
+    /**
+     * SpawnPlacementType.canSpawnAt (WorldEntitySpawner.canCreatureTypeSpawnBody): the predicate EnumHelper gave an added type, else
+     * the 1.12 water rule for IN_WATER (water here and below, no full block above) and the ground rule for the others, both through
+     * the modern placement checks.
+     */
+    public static boolean placementAllows(Object type, Object world, Object pos) {
+        BiPredicate<Object, Object> p;
+        synchronized (PLACEMENT_PREDICATES) {
+            p = PLACEMENT_PREDICATES.get(type);
+        }
+        if (p != null) return p.test(world, pos);
+        if (!(world instanceof legacyconnector.v1_12_2.net.minecraft.world.World w) || !(pos instanceof legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos bp)) {
+            return false;
+        }
+        var access = w.mcc$access();
+        if (access == null) return false;
+        var modern = bp.mcc$modern();
+        try {
+            if ("IN_WATER".equals(enumName(type))) {
+                return net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER.isSpawnPositionOk(access, modern, net.minecraft.world.entity.EntityType.SQUID)
+                        && access.getFluidState(modern.below()).is(net.minecraft.tags.FluidTags.WATER);
+            }
+            return net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND.isSpawnPositionOk(access, modern, net.minecraft.world.entity.EntityType.ZOMBIE);
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     private static HorseArmor horseArmor(Object type) {
@@ -459,10 +464,8 @@ public final class RuntimeApis1122 {
         });
         Synth.addStaticMethod(spawn + "getPlacementForEntity", args -> {
             if (args.length < 1 || !(args[0] instanceof Class<?> c)) return Synth.NONE;
-            synchronized (PLACEMENTS) {
-                Object type = PLACEMENTS.get(c);
-                return type != null ? type : Synth.NONE;
-            }
+            Object type = placementOf(c);
+            return type != null ? type : Synth.NONE;
         });
 
         Synth.addStaticMethod("net.minecraft.entity.passive.EntityParrot.registerMimicSound", args -> {
@@ -589,9 +592,6 @@ public final class RuntimeApis1122 {
 
     /** The BiomeManager entries mods added for a biome type (DESERT, WARM, COOL, ICY), as legacy BiomeEntry objects. */
     public static List<Object> mcc$biomeEntries(String type) {
-        synchronized (BIOME_ENTRIES) {
-            List<Object> list = BIOME_ENTRIES.get(type);
-            return list == null ? new ArrayList<>() : new ArrayList<>(list);
-        }
+        return new ArrayList<>(legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager.mcc$modEntries(type));
     }
 }

@@ -24,6 +24,43 @@ public class Display {
     public static void create() {
     }
 
+    /**
+     * Sets the window icon from square RGBA images (LWJGL 2 took 16x16, 32x32 and 128x128); answers how many were used.
+     * The pixels are copied, and GLFW is called on the main thread.
+     */
+    public static int setIcon(java.nio.ByteBuffer[] icons) {
+        Window w = window();
+        if (w == null || icons == null || icons.length == 0) return 0;
+        java.util.List<java.nio.ByteBuffer> pixels = new java.util.ArrayList<>();
+        java.util.List<Integer> sizes = new java.util.ArrayList<>();
+        for (java.nio.ByteBuffer icon : icons) {
+            if (icon == null) continue;
+            int size = (int) Math.sqrt(icon.remaining() / 4.0);
+            if (size <= 0 || size * size * 4 > icon.remaining()) continue;
+            java.nio.ByteBuffer copy = org.lwjgl.system.MemoryUtil.memAlloc(size * size * 4);
+            java.nio.ByteBuffer src = icon.duplicate();
+            src.limit(src.position() + size * size * 4);
+            copy.put(src).flip();
+            pixels.add(copy);
+            sizes.add(size);
+        }
+        if (pixels.isEmpty()) return 0;
+        Runnable apply = () -> {
+            try (org.lwjgl.glfw.GLFWImage.Buffer images = org.lwjgl.glfw.GLFWImage.malloc(pixels.size())) {
+                for (int i = 0; i < pixels.size(); i++) images.position(i).width(sizes.get(i)).height(sizes.get(i)).pixels(pixels.get(i));
+                images.position(0);
+                GLFW.glfwSetWindowIcon(w.getWindow(), images);
+            } catch (RuntimeException e) {
+                // platforms without window icons (macOS, Wayland) refuse it; LWJGL 2 ignored it there too
+            } finally {
+                for (java.nio.ByteBuffer b : pixels) org.lwjgl.system.MemoryUtil.memFree(b);
+            }
+        };
+        if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) apply.run();
+        else Minecraft.getInstance().execute(apply);
+        return pixels.size();
+    }
+
     public static void destroy() {
     }
 

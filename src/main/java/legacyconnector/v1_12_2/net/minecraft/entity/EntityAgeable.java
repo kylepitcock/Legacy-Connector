@@ -148,4 +148,22 @@ public abstract class EntityAgeable extends EntityCreature {
     protected final void setScale(float scale) {
         if (ageWidth > 0.0F) super.setSize(ageWidth * scale, ageHeight * scale);
     }
+
+    /** Whether the stack is a spawn egg of exactly that entity class. */
+    protected boolean holdingSpawnEggOfClass(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity> entityClass) {
+        if (stack == null || stack.isEmpty() || entityClass == null) return false;
+        var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
+        if (!(modern.getItem() instanceof net.minecraft.world.item.SpawnEggItem egg)) return false;
+        var type = egg.getType(modern);
+        var level = mcc$entity == null ? null : mcc$entity.level();
+        if (type == null || level == null) return false;
+        var probe = type.create(level);
+        if (probe == null) return false;
+        try {
+            var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(probe);
+            return view != null && view.getClass() == entityClass;
+        } finally {
+            probe.discard();
+        }
+    }
 }

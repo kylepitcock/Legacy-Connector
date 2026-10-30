@@ -25,9 +25,11 @@ for line in open(index, encoding='utf-8'):
 def shim_type(desc):
     def rep(m):
         name = m.group(1).replace('.', '/')
-        if name.startswith('synth/'):
-            name = name[len('synth/'):]
-        if name.startswith('net/minecraft') or name.startswith('net/minecraftforge'):
+        # descriptors name synthesized classes (synth/..., legacyconnector_synth/<version>/...) that the shim may have since gained
+        for p in ('synth/', 'legacyconnector_synth/' + prefix.split('/')[1] + '/', prefix):
+            if name.startswith(p):
+                name = name[len(p):]
+        if prefix + name in classes or name.startswith('net/minecraft') or name.startswith('net/minecraftforge'):
             return 'L' + prefix + name + ';'
         return 'L' + name + ';'
     return re.sub(r'L([\w.$/]+);', rep, desc)

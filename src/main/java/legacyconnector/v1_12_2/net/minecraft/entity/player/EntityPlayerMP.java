@@ -31,6 +31,12 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         if (player != null && type != null) player.setGameMode(type.mcc$modern());
     }
 
+    /** The chat messages the player's client wants (its chat visibility setting). */
+    public EntityPlayer.EnumChatVisibility getChatVisibility() {
+        var p = mcc$serverPlayer();
+        return p == null ? EntityPlayer.EnumChatVisibility.FULL : EntityPlayer.EnumChatVisibility.getEnumChatVisibility(p.getChatVisibility().getId());
+    }
+
     public net.minecraft.server.level.ServerPlayer mcc$serverPlayer() {
         return (net.minecraft.server.level.ServerPlayer) mcc$entity;
     }

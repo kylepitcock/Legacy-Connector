@@ -64,4 +64,13 @@ public interface ModContainer {
     default boolean shouldLoadInEnvironment() {
         return true;
     }
+
+    /** Whether the mod can be turned off in the mod list: never (mods are not disabled at runtime). */
+    default Disableable canBeDisabled() {
+        return Disableable.NEVER;
+    }
+
+    enum Disableable {
+        YES, RESTART, NEVER, DEPENDENCIES
+    }
 }

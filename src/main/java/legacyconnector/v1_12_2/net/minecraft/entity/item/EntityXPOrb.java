@@ -32,6 +32,19 @@ public class EntityXPOrb extends Entity {
         super(modern);
     }
 
+    /** Phantom: the orb's color cycle counter (the modern orb's tick count, which its renderer cycles on). */
+    @Deprecated
+    public int xpColor;
+    private int mcc$local_xpColor;
+
+    public static int mcc$get$xpColor(EntityXPOrb e) {
+        return e.mcc$entity != null ? e.mcc$entity.tickCount : e.mcc$local_xpColor;
+    }
+
+    public static void mcc$set$xpColor(EntityXPOrb e, int v) {
+        if (e.mcc$entity == null) e.mcc$local_xpColor = v;
+    }
+
     private ExperienceOrb mcc$orb() {
         return mcc$entity instanceof ExperienceOrb o ? o : null;
     }

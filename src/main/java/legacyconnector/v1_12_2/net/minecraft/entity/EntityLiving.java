@@ -312,6 +312,8 @@ public abstract class EntityLiving extends EntityLivingBase {
     public boolean isNotColliding() {
         Mob m = mcc$mob();
         if (m == null) return true;
+        var region = mcc$worldOverride;
+        if (region != null) return !region.containsAnyLiquid(m.getBoundingBox()) && region.noCollision(m) && region.isUnobstructed(m);
         var level = m.level();
         return !level.containsAnyLiquid(m.getBoundingBox()) && level.noCollision(m) && level.isUnobstructed(m);
     }

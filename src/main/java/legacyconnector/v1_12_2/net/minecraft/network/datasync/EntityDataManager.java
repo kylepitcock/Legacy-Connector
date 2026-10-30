@@ -61,6 +61,7 @@ public class EntityDataManager {
     }
 
     public synchronized <T> void register(DataParameter<T> key, T value) {
+        if (key instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122<T> v && v.handles(entity)) return;
         int id = key.getId();
         if (id > 254) throw new IllegalArgumentException("Data value id is too big with " + id + "! (Max is 254)");
         if (entries.containsKey(id)) throw new IllegalArgumentException("Duplicate id value for " + id + "!");
@@ -80,10 +81,15 @@ public class EntityDataManager {
     }
 
     public synchronized <T> T get(DataParameter<T> key) {
+        if (key instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122<T> v && v.handles(entity)) return v.read(entity);
         return getEntry(key).getValue();
     }
 
     public synchronized <T> void set(DataParameter<T> key, T value) {
+        if (key instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122<T> v && v.handles(entity)) {
+            v.write(entity, value);
+            return;
+        }
         DataEntry<T> e = getEntry(key);
         if (!java.util.Objects.equals(value, e.getValue())) {
             e.setValue(value);

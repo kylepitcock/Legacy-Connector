@@ -105,8 +105,28 @@ public class EntityLlama extends AbstractChestHorse {
     }
 
     @Override
-    public legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable createChild(legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable ageable) {
+    public EntityLlama createChild(legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable ageable) {
         return new EntityLlama(mcc$get$world(this));
+    }
+
+    /** The color of the carpet the llama wears, or null. */
+    public legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor getColor() {
+        var l = mcc$self();
+        if (l != null && !mcc$hosted()) {
+            var swag = l.getSwag();
+            return swag == null ? null : legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.byMetadata(swag.getId());
+        }
+        if (horseChest == null || horseChest.getSizeInventory() < 2) return null;
+        var decor = horseChest.getStackInSlot(1);
+        if (decor.isEmpty() || !(decor.getItem().mcc$modern instanceof net.minecraft.world.item.BlockItem b)
+                || !(b.getBlock() instanceof net.minecraft.world.level.block.WoolCarpetBlock carpet)) {
+            return null;
+        }
+        return legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.byMetadata(carpet.getColor().getId());
+    }
+
+    public boolean hasColor() {
+        return getColor() != null;
     }
 
     @Override

@@ -15,8 +15,17 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
 public class PlayerList {
     private final MinecraftServer server;
 
+    /** Phantom field: reads go to {@link #mcc$get$playerDataManager}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData playerDataManager;
+
     public PlayerList(MinecraftServer server) {
         this.server = server;
+    }
+
+    /** The players' saved data ({@code playerdata/} of the world). */
+    public static legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData mcc$get$playerDataManager(PlayerList list) {
+        return legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData.mcc$server();
     }
 
     private static net.minecraft.server.players.PlayerList modern() {
@@ -91,6 +100,32 @@ public class PlayerList {
     public UserListOps getOppedPlayers() {
         var m = modern();
         return new UserListOps(m == null ? null : m.getOps());
+    }
+
+    public UserListBans getBannedPlayers() {
+        var m = modern();
+        return m == null ? new UserListBans((java.io.File) null) : new UserListBans(m.getBans());
+    }
+
+    public UserListIPBans getBannedIPs() {
+        var m = modern();
+        return m == null ? new UserListIPBans((java.io.File) null) : new UserListIPBans(m.getIpBans());
+    }
+
+    public UserListWhitelist getWhitelistedPlayers() {
+        var m = modern();
+        return m == null ? new UserListWhitelist((java.io.File) null) : new UserListWhitelist(m.getWhiteList());
+    }
+
+    /**
+     * A player entity for a profile that is not (necessarily) online, in the overworld, as login made one (mods use it to read and
+     * edit offline players' data). Its saved data is not loaded: {@code readPlayerDataFromFile} does that.
+     */
+    public EntityPlayerMP createPlayerForUser(GameProfile profile) {
+        var s = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (s == null || profile == null) return null;
+        var sp = new net.minecraft.server.level.ServerPlayer(s, s.overworld(), profile, net.minecraft.server.level.ClientInformation.createDefault());
+        return view(sp);
     }
 
     public String[] getOppedPlayerNames() {

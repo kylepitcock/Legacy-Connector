@@ -26,6 +26,14 @@ public class SPacketChangeGameState implements Packet<INetHandlerPlayClient> {
         return value;
     }
 
+    public int getGameState() {
+        return state;
+    }
+
+    public float getValue() {
+        return value;
+    }
+
 
     @Override
     public void readPacketData(PacketBuffer buf) throws IOException {

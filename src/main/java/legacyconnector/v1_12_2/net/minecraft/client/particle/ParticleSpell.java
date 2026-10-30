@@ -51,4 +51,59 @@ public class ParticleSpell extends Particle {
     public void setBaseSpellTextureIndex(int baseSpellTextureIndexIn) {
         this.baseSpellTextureIndex = baseSpellTextureIndexIn;
     }
+
+    public static class Factory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            return new ParticleSpell(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+        }
+    }
+
+    /** Instant effects (instant health and damage): the sparkle frames. */
+    public static class InstantFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            ParticleSpell particle = new ParticleSpell(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+            particle.setBaseSpellTextureIndex(144);
+            return particle;
+        }
+    }
+
+    /** Mob effect swirls: the speed is the colour. */
+    public static class MobFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            Particle particle = new ParticleSpell(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+            particle.setRBGColorF((float) xSpeedIn, (float) ySpeedIn, (float) zSpeedIn);
+            return particle;
+        }
+    }
+
+    /** Beacon (ambient) effect swirls: the speed is the colour, mostly transparent. */
+    public static class AmbientMobFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            Particle particle = new ParticleSpell(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+            particle.setAlphaF(0.15F);
+            particle.setRBGColorF((float) xSpeedIn, (float) ySpeedIn, (float) zSpeedIn);
+            return particle;
+        }
+    }
+
+    /** Witch magic: the witch frames in purple shades. */
+    public static class WitchFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            ParticleSpell particle = new ParticleSpell(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+            particle.setBaseSpellTextureIndex(144);
+            float f = worldIn == null ? 0.85F : RANDOM.nextFloat() * 0.5F + 0.35F;
+            particle.setRBGColorF(1.0F * f, 0.0F * f, 1.0F * f);
+            return particle;
+        }
+    }
 }

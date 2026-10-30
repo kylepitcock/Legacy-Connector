@@ -120,6 +120,34 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     @Deprecated
     public int timeUntilPortal;
     private int mcc$local_timeUntilPortal;
+    /** Forge: the entity is in an unloaded area and does not update. */
+    public boolean updateBlocked;
+    @Deprecated
+    public int fire;
+    private int mcc$local_fire;
+    @Deprecated
+    public boolean inPortal;
+    private boolean mcc$local_inPortal;
+    @Deprecated
+    public int portalCounter;
+    private int mcc$local_portalCounter;
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos lastPortalPos;
+    private legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos mcc$local_lastPortalPos;
+    @Deprecated
+    public int rideCooldown;
+    private int mcc$local_rideCooldown;
+    @Deprecated
+    public double[] pistonDeltas;
+    private final double[] mcc$local_pistonDeltas = new double[3];
+    @Deprecated
+    public long pistonDeltasGameTime;
+    private long mcc$local_pistonDeltasGameTime;
+    @Deprecated
+    public boolean glowing;
+    private boolean mcc$local_glowing;
+    @Deprecated
+    public float distanceWalkedOnStepModified;
     @Deprecated
     public boolean inWater;
     private boolean mcc$local_inWater;
@@ -171,6 +199,11 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public Entity(World world) {
         this.mcc$local_world = world;
+        // made by a world generator (1.12's world-gen mob spawning): blocks are read through the generation region, never the level,
+        // which would wait for the chunk being generated
+        if (world != null && world.mcc$access() != null && !(world.mcc$access() instanceof net.minecraft.world.level.Level)) {
+            this.mcc$worldOverride = world.mcc$access();
+        }
         this.dataManager = new legacyconnector.v1_12_2.net.minecraft.network.datasync.EntityDataManager(this);
         // a view of an existing modern entity (the bridge constructing a vanilla class through its World constructor)
         var viewed = EntityBridge1122.takeViewBinding();
@@ -229,7 +262,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public static World mcc$get$world(Entity e) {
         var override = e.mcc$worldOverride;
-        if (override instanceof net.minecraft.world.level.Level l) return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(l);
+        if (override != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(override);
         var m = e.mcc$entity;
         return m != null ? org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(m.level()) : e.mcc$local_world;
     }
@@ -588,6 +621,96 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         var m = e.mcc$entity;
         if (m != null) m.hasImpulse = v;
         else e.mcc$local_isAirBorne = v;
+    }
+
+    public static int mcc$get$fire(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.getRemainingFireTicks() : e.mcc$local_fire;
+    }
+
+    public static void mcc$set$fire(Entity e, int v) {
+        var m = e.mcc$entity;
+        if (m != null) m.setRemainingFireTicks(v);
+        else e.mcc$local_fire = v;
+    }
+
+    /** inPortal / portalCounter / lastPortalPos: the modern portal process (entered this tick, ticks inside, entry block). */
+    public static boolean mcc$get$inPortal(Entity e) {
+        var m = e.mcc$entity;
+        if (m == null) return e.mcc$local_inPortal;
+        return m.portalProcess != null && m.portalProcess.isInsidePortalThisTick();
+    }
+
+    public static void mcc$set$inPortal(Entity e, boolean v) {
+        var m = e.mcc$entity;
+        if (m != null && m.portalProcess != null) m.portalProcess.setAsInsidePortalThisTick(v);
+        else e.mcc$local_inPortal = v;
+    }
+
+    public static int mcc$get$portalCounter(Entity e) {
+        var m = e.mcc$entity;
+        if (m == null) return e.mcc$local_portalCounter;
+        return m.portalProcess != null ? m.portalProcess.getPortalTime() : 0;
+    }
+
+    public static void mcc$set$portalCounter(Entity e, int v) {
+        if (e.mcc$entity == null) e.mcc$local_portalCounter = v;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos mcc$get$lastPortalPos(Entity e) {
+        var m = e.mcc$entity;
+        if (m == null || m.portalProcess == null) return e.mcc$local_lastPortalPos;
+        return legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos.mcc$of(m.portalProcess.getEntryPosition());
+    }
+
+    public static void mcc$set$lastPortalPos(Entity e, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos v) {
+        var m = e.mcc$entity;
+        if (m != null && m.portalProcess != null && v != null) m.portalProcess.updateEntryPosition(v.mcc$modern());
+        else e.mcc$local_lastPortalPos = v;
+    }
+
+    public static int mcc$get$rideCooldown(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.boardingCooldown(m) : e.mcc$local_rideCooldown;
+    }
+
+    public static void mcc$set$rideCooldown(Entity e, int v) {
+        var m = e.mcc$entity;
+        if (m != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setBoardingCooldown(m, v);
+        else e.mcc$local_rideCooldown = v;
+    }
+
+    public static double[] mcc$get$pistonDeltas(Entity e) {
+        var m = e.mcc$entity;
+        double[] live = m == null ? null : org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.pistonDeltas(m);
+        return live != null ? live : e.mcc$local_pistonDeltas;
+    }
+
+    public static void mcc$set$pistonDeltas(Entity e, double[] v) {
+        double[] target = mcc$get$pistonDeltas(e);
+        if (v != null && target != v) System.arraycopy(v, 0, target, 0, Math.min(v.length, target.length));
+    }
+
+    public static long mcc$get$pistonDeltasGameTime(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.pistonDeltasGameTime(m) : e.mcc$local_pistonDeltasGameTime;
+    }
+
+    public static void mcc$set$pistonDeltasGameTime(Entity e, long v) {
+        var m = e.mcc$entity;
+        if (m != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setPistonDeltasGameTime(m, v);
+        else e.mcc$local_pistonDeltasGameTime = v;
+    }
+
+    public static boolean mcc$get$glowing(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.glowing(m) : e.mcc$local_glowing;
+    }
+
+    public static void mcc$set$glowing(Entity e, boolean v) {
+        var m = e.mcc$entity;
+        if (m != null) m.setGlowingTag(v);
+        else e.mcc$local_glowing = v;
     }
 
     public static int mcc$get$timeUntilPortal(Entity e) {
@@ -2068,4 +2191,75 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     private boolean mcc$outsideBorder;
     private float mcc$local_distanceWalkedOnStepModified;
+
+    // ------------------------------------------------------------------ 1.12 helpers subclasses call
+
+    /** The chat hover of the entity: its type, uuid and name (as 1.12's SHOW_ENTITY hover). */
+    protected legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent getHoverEvent() {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        var m = mcc$entity;
+        tag.putString("id", m != null ? m.getStringUUID() : getUniqueID().toString());
+        if (m != null) tag.putString("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString());
+        tag.putString("name", getName());
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent(legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent.Action.SHOW_ENTITY,
+                new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(tag.toString()));
+    }
+
+    /** Sprinting particles: block dust of the block under the entity. */
+    public void spawnRunningParticles() {
+        if (isSprinting() && !isInWater()) createRunningParticles();
+    }
+
+    protected void createRunningParticles() {
+        var m = mcc$entity;
+        if (m == null || !m.level().isClientSide()) return;
+        var below = net.minecraft.core.BlockPos.containing(m.getX(), m.getY() - 0.2D, m.getZ());
+        var state = m.level().getBlockState(below);
+        if (state.getRenderShape() == net.minecraft.world.level.block.RenderShape.INVISIBLE) return;
+        var random = m.getRandom();
+        float w = m.getBbWidth();
+        m.level().addParticle(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, state).setPos(below),
+                m.getX() + (random.nextDouble() - 0.5D) * w, m.getBoundingBox().minY + 0.1D, m.getZ() + (random.nextDouble() - 0.5D) * w,
+                -m.getDeltaMovement().x * 4.0D, 1.5D, -m.getDeltaMovement().z * 4.0D);
+    }
+
+    /** Fall bookkeeping after a move: landing hands the fall to the block below, falling adds to the fall distance. */
+    protected void updateFallState(double y, boolean onGroundIn, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (onGroundIn) {
+            float fall = mcc$get$fallDistance(this);
+            if (fall > 0.0F && state != null && mcc$world() != null) state.getBlock().onFallenUpon(mcc$world(), pos, this, fall);
+            mcc$set$fallDistance(this, 0.0F);
+        } else if (y < 0.0D) {
+            mcc$set$fallDistance(this, (float) (mcc$get$fallDistance(this) - y));
+        }
+    }
+
+    protected void decrementTimeUntilPortal() {
+        int t = mcc$get$timeUntilPortal(this);
+        if (t > 0) mcc$set$timeUntilPortal(this, t - 1);
+    }
+
+    private static final java.lang.reflect.Method MCC$ADD_PASSENGER = mcc$method(net.minecraft.world.entity.Entity.class, "addPassenger",
+            net.minecraft.world.entity.Entity.class);
+
+    /** A modern method by its (official) name, or null. */
+    public static java.lang.reflect.Method mcc$method(Class<?> owner, String name, Class<?>... params) {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(owner, name, params);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Adds a rider to this entity's passengers (what startRiding calls on the vehicle). */
+    protected void addPassenger(Entity passenger) {
+        var m = mcc$entity;
+        if (m == null || passenger == null || passenger.mcc$entity == null || MCC$ADD_PASSENGER == null) return;
+        try {
+            MCC$ADD_PASSENGER.invoke(m, passenger.mcc$entity);
+        } catch (ReflectiveOperationException e) {
+            // not added
+        }
+    }
 }

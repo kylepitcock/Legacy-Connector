@@ -34,6 +34,11 @@ public class ChunkCache implements IBlockAccess {
         }
     }
 
+    /** The world the cache reads (path finding classifies its blocks through the modern level). */
+    public World mcc$world() {
+        return world;
+    }
+
     public boolean isEmpty() {
         return empty;
     }

@@ -32,6 +32,20 @@ public final class Brewing1122 {
     private static void register(RegisterBrewingRecipesEvent event) {
         var builder = event.getBuilder();
         int mixes = 0, recipes = 0;
+        // containers mods added to PotionHelper.POTION_ITEMS (the vanilla bottles are the modern defaults)
+        for (var ingredient : java.util.List.copyOf(PotionHelper.POTION_ITEMS)) {
+            try {
+                for (ItemStack s : ingredient.getMatchingStacks()) {
+                    var item = Stacks1122.toModern(s).getItem();
+                    if (item != net.minecraft.world.item.Items.AIR && item != net.minecraft.world.item.Items.POTION && item != net.minecraft.world.item.Items.SPLASH_POTION
+                            && item != net.minecraft.world.item.Items.LINGERING_POTION) {
+                        builder.addContainer(item);
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Cannot add a legacy potion container: {}", e.toString());
+            }
+        }
         for (PotionHelper.MixPredicate<PotionType> mix : PotionHelper.mcc$mixes()) {
             try {
                 var from = mix.input == null ? null : mix.input.mcc$modern();

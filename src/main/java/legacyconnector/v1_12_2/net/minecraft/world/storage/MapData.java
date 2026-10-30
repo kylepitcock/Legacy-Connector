@@ -15,7 +15,8 @@ import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
 public class MapData extends WorldSavedData {
     public int xCenter;
     public int zCenter;
-    public byte dimension;
+    /** The map's dimension id (Forge widened 1.12's byte to an int). */
+    public int dimension;
     public boolean trackingPosition;
     public boolean unlimitedTracking;
     public byte scale;
@@ -37,7 +38,7 @@ public class MapData extends WorldSavedData {
         d.trackingPosition = true;
         d.unlimitedTracking = false;
         System.arraycopy(modern.colors, 0, d.colors, 0, Math.min(d.colors.length, modern.colors.length));
-        d.dimension = (byte) (modern.dimension == net.minecraft.world.level.Level.NETHER ? -1 : modern.dimension == net.minecraft.world.level.Level.END ? 1 : 0);
+        d.dimension = legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$idOf(modern.dimension);
         for (var dec : modern.getDecorations()) {
             MapDecoration.Type type = MapDecoration.Type.PLAYER;
             for (MapDecoration.Type t : MapDecoration.Type.values()) if (t.mcc$modern().equals(dec.type())) type = t;
@@ -57,7 +58,7 @@ public class MapData extends WorldSavedData {
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
-        this.dimension = nbt.getByte("dimension");
+        this.dimension = nbt.getInteger("dimension");
         this.xCenter = nbt.getInteger("xCenter");
         this.zCenter = nbt.getInteger("zCenter");
         this.scale = (byte) Math.max(0, Math.min(4, nbt.getByte("scale")));
@@ -69,7 +70,7 @@ public class MapData extends WorldSavedData {
 
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound compound) {
-        compound.setByte("dimension", this.dimension);
+        compound.setInteger("dimension", this.dimension);
         compound.setInteger("xCenter", this.xCenter);
         compound.setInteger("zCenter", this.zCenter);
         compound.setByte("scale", this.scale);

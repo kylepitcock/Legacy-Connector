@@ -174,8 +174,110 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
         isPlaying = playing;
     }
 
+    /**
+     * Forge: the villager's spawn set-up. With {@code forgeCheck} a new villager takes a random profession first; then the living
+     * set-up and its trades.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData finalizeMobSpawn(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty,
+            legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData data, boolean forgeCheck) {
+        data = super.onInitialSpawn(difficulty, data);
+        if (forgeCheck && mcc$gameVillager() == null) setProfession(getRNG().nextInt(6));
+        if (mcc$gameVillager() == null) {
+            try {
+                populateBuyingList();
+            } catch (RuntimeException | LinkageError e) {
+                // trades are made again when a player opens them
+            }
+        }
+        return data;
+    }
+
     public InventoryBasic getVillagerInventory() {
         return villagerInventory;
+    }
+
+    // ------------------------------------------------------------------ food, farming and breeding (1.12 rules; a game villager answers with its own)
+
+    private boolean mcc$willingToMate;
+
+    private net.minecraft.world.entity.npc.Villager mcc$gameVillager() {
+        return mcc$hosted() ? null : mcc$villager();
+    }
+
+    private static Object mcc$modernItem(ItemStack stack) {
+        return stack == null || stack.isEmpty() ? null : stack.getItem().mcc$modern;
+    }
+
+    /** Whether the inventory holds bread or crops worth {@code multiplier} meals (farmers also count wheat). */
+    private boolean mcc$hasEnoughItems(int multiplier) {
+        boolean farmer = getProfession() == 0;
+        for (int i = 0; i < villagerInventory.getSizeInventory(); ++i) {
+            ItemStack stack = villagerInventory.getStackInSlot(i);
+            Object item = mcc$modernItem(stack);
+            if (item == null) continue;
+            int n = stack.getCount();
+            if (item == net.minecraft.world.item.Items.BREAD && n >= 3 * multiplier) return true;
+            if ((item == net.minecraft.world.item.Items.POTATO || item == net.minecraft.world.item.Items.CARROT
+                    || item == net.minecraft.world.item.Items.BEETROOT) && n >= 12 * multiplier) {
+                return true;
+            }
+            if (farmer && item == net.minecraft.world.item.Items.WHEAT && n >= 9 * multiplier) return true;
+        }
+        return false;
+    }
+
+    /** Wants more food: less than five meals for a farmer, less than one for the others. */
+    public boolean wantsMoreFood() {
+        var v = mcc$gameVillager();
+        if (v != null) return v.wantsMoreFood();
+        return !mcc$hasEnoughItems(getProfession() == 0 ? 5 : 1);
+    }
+
+    /** Has food to share (two meals or more). */
+    public boolean canAbondonItems() {
+        var v = mcc$gameVillager();
+        if (v != null) return v.hasExcessFood();
+        return mcc$hasEnoughItems(2);
+    }
+
+    /** Holds seeds or crops it can plant. */
+    public boolean isFarmItemInInventory() {
+        var v = mcc$gameVillager();
+        if (v != null) return v.hasFarmSeeds();
+        for (int i = 0; i < villagerInventory.getSizeInventory(); ++i) {
+            Object item = mcc$modernItem(villagerInventory.getStackInSlot(i));
+            if (item == net.minecraft.world.item.Items.WHEAT_SEEDS || item == net.minecraft.world.item.Items.POTATO
+                    || item == net.minecraft.world.item.Items.CARROT || item == net.minecraft.world.item.Items.BEETROOT_SEEDS) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Willing to breed; with {@code updateFirst} it eats a meal to become willing when it has one. */
+    public boolean getIsWillingToMate(boolean updateFirst) {
+        var v = mcc$gameVillager();
+        if (v != null) return v.canBreed();
+        if (!mcc$willingToMate && updateFirst && mcc$hasEnoughItems(1)) {
+            for (int i = 0; i < villagerInventory.getSizeInventory(); ++i) {
+                ItemStack stack = villagerInventory.getStackInSlot(i);
+                Object item = mcc$modernItem(stack);
+                if (item == null) continue;
+                int cost = item == net.minecraft.world.item.Items.BREAD ? 3 : item == net.minecraft.world.item.Items.POTATO
+                        || item == net.minecraft.world.item.Items.CARROT || item == net.minecraft.world.item.Items.BEETROOT ? 12 : 0;
+                if (cost > 0 && stack.getCount() >= cost) {
+                    stack.shrink(cost);
+                    if (stack.isEmpty()) villagerInventory.setInventorySlotContents(i, ItemStack.EMPTY);
+                    break;
+                }
+            }
+            mcc$willingToMate = true;
+        }
+        return mcc$willingToMate;
+    }
+
+    public void setIsWillingToMate(boolean willing) {
+        mcc$willingToMate = willing;
     }
 
     @Override

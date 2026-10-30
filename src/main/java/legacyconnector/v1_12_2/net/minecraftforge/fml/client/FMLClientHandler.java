@@ -123,6 +123,11 @@ public class FMLClientHandler {
 
     /** The resource pack of a mod's files (its jar or folder), or null for an unknown mod. */
     public legacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack getResourcePackFor(String modId) {
+        // a legacy mod: FML's pack over its jar or folder, which knows its mod container
+        var legacy = modId == null ? null : legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.instance().getIndexedModList().get(modId);
+        if (legacy != null && legacy.getSource() != null && legacy.getSource().exists()) {
+            return legacy.getSource().isDirectory() ? new FMLFolderResourcePack(legacy) : new FMLFileResourcePack(legacy);
+        }
         var file = modId == null ? null : net.neoforged.fml.ModList.get().getModFileById(modId);
         if (file == null) return null;
         java.io.File path = file.getFile().getFilePath().toFile();

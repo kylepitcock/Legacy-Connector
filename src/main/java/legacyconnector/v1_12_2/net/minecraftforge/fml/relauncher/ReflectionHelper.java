@@ -28,12 +28,20 @@ public class ReflectionHelper {
     }
 
     public static class UnableToFindFieldException extends RuntimeException {
+        public UnableToFindFieldException(Exception cause) {
+            super(cause);
+        }
+
         public UnableToFindFieldException(String[] names, Exception cause) {
             super("Could not find any of " + java.util.Arrays.toString(names), cause);
         }
     }
 
     public static class UnableToAccessFieldException extends RuntimeException {
+        public UnableToAccessFieldException(Exception cause) {
+            super(cause);
+        }
+
         public UnableToAccessFieldException(String[] names, Exception cause) {
             super("Could not access " + java.util.Arrays.toString(names), cause);
         }
@@ -98,6 +106,40 @@ public class ReflectionHelper {
         throw new UnableToFindFieldException(fieldNames, null);
     }
 
+    private static final String SHIM = "legacyconnector.v1_12_2.";
+    private static volatile java.util.Map<String, String[]> vanillaOrder;
+
+    /**
+     * Field number {@code index} of a class as vanilla 1.12.2 declared it (SecurityCraft sets Block field #18, the material): the shim
+     * declares its fields in another order, so vanilla classes go through the table from {@code tools/gen_field_order.py}.
+     */
+    private static Field indexed(Class<?> cls, int index) {
+        if (cls.getName().startsWith(SHIM + "net.minecraft.")) {
+            String[] order = vanillaOrder().get(cls.getName().substring(SHIM.length()).replace('.', '/'));
+            if (order != null && index >= 0 && index < order.length) return findField(cls, order[index]);
+        }
+        Field f = cls.getDeclaredFields()[index];
+        f.setAccessible(true);
+        return f;
+    }
+
+    private static java.util.Map<String, String[]> vanillaOrder() {
+        var order = vanillaOrder;
+        if (order != null) return order;
+        order = new java.util.HashMap<>();
+        try (var in = ReflectionHelper.class.getResourceAsStream("/legacyconnector/v1_12_2/field-order.txt")) {
+            if (in != null) {
+                for (String line : new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).split("\\R")) {
+                    String[] p = line.trim().split(" ");
+                    if (p.length > 1) order.put(p[0], java.util.Arrays.copyOfRange(p, 1, p.length));
+                }
+            }
+        } catch (java.io.IOException ignored) {
+            // no table: indices follow the shim's declaration order
+        }
+        return vanillaOrder = order;
+    }
+
     /** The 1.12.2 form: deobfuscated and SRG name. */
     public static Field findField(Class<?> clazz, String fieldName, String fieldObfName) {
         return findField(clazz, new String[] {fieldName, fieldObfName});
@@ -133,11 +175,11 @@ public class ReflectionHelper {
     @SuppressWarnings("unchecked")
     public static <T, E> T getPrivateValue(Class<? super E> classToAccess, E instance, int fieldIndex) {
         try {
-            Field f = classToAccess.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            Field f = indexed(classToAccess, fieldIndex);
+            if (f.getDeclaringClass() == Dummy.class) return null;
             return (T) f.get(instance);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            throw new UnableToAccessFieldException(new String[0], e instanceof Exception ex ? ex : null);
+            throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e instanceof Exception ex ? ex : null);
         }
     }
 
@@ -154,11 +196,11 @@ public class ReflectionHelper {
 
     public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, int fieldIndex) {
         try {
-            Field f = classToAccess.getDeclaredFields()[fieldIndex];
-            f.setAccessible(true);
+            Field f = indexed(classToAccess, fieldIndex);
+            if (f.getDeclaringClass() == Dummy.class) return;
             f.set(instance, value);
         } catch (ReflectiveOperationException | RuntimeException e) {
-            throw new UnableToAccessFieldException(new String[0], e instanceof Exception ex ? ex : null);
+            throw new UnableToAccessFieldException(new String[] {"#" + fieldIndex}, e instanceof Exception ex ? ex : null);
         }
     }
 
@@ -173,6 +215,33 @@ public class ReflectionHelper {
             }
         } catch (ReflectiveOperationException e) {
             throw new UnableToAccessFieldException(fieldNames, e);
+        }
+    }
+
+    /** A field's value by its deobfuscated or its obfuscated (SRG) name. */
+    public static <T, E> T getPrivateValue(Class<? super E> classToAccess, E instance, String fieldName, String fieldObfName) {
+        return getPrivateValue(classToAccess, instance, new String[] {fieldName, fieldObfName});
+    }
+
+    /** Sets a field found by its deobfuscated or its obfuscated (SRG) name. */
+    public static <T, E> void setPrivateValue(Class<? super T> classToAccess, T instance, E value, String fieldName, String fieldObfName) {
+        setPrivateValue(classToAccess, instance, value, new String[] {fieldName, fieldObfName});
+    }
+
+    /** The (accessible) constructor of {@code klass} with these parameter types. */
+    public static <T> java.lang.reflect.Constructor<T> findConstructor(Class<T> klass, Class<?>... parameterTypes) {
+        try {
+            java.lang.reflect.Constructor<T> c = klass.getDeclaredConstructor(parameterTypes);
+            c.setAccessible(true);
+            return c;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            throw new UnknownConstructorException("Could not find constructor " + java.util.Arrays.toString(parameterTypes) + " in " + klass, e);
+        }
+    }
+
+    public static class UnknownConstructorException extends RuntimeException {
+        public UnknownConstructorException(String message, Throwable cause) {
+            super(message, cause);
         }
     }
 

@@ -26,7 +26,8 @@ public final class VanillaBlocks1122 {
     /** Binds a legacy vanilla block made by {@code Blocks} to the modern block of the field and registers it under its 1.12 name. */
     public static <T extends Block> T block(String field, T b) {
         String path = legacyPath(field);
-        b.setRegistryName("minecraft", path);
+        // a block shared by two constants (EnumFlowerColor.getBlock() hands out RED_FLOWER) is named once
+        if (b.getRegistryName() == null) b.setRegistryName("minecraft", path);
         net.minecraft.world.level.block.Block modern = null;
         int id = VanillaFlattening.blockId(path);
         if (id >= 0) modern = VanillaFlattening.state(id, 0).getBlock();

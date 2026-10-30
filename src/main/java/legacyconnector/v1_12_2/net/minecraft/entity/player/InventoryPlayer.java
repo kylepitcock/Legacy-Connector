@@ -149,6 +149,40 @@ public class InventoryPlayer implements IInventory {
         return index >= 0 && index < 9;
     }
 
+    /** The first slot holding a stack the given one can merge into (selected slot and offhand first), or -1. */
+    public int storeItemStack(ItemStack stack) {
+        return stack == null || stack.isEmpty() ? -1 : inv().getSlotWithRemainingSpace(Stacks1122.toModern(stack));
+    }
+
+    /** Stores as much of the stack as fits in one slot (a mergeable one, else an empty one); returns the count left over. */
+    public int storePartialItemStack(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return 0;
+        int count = stack.getCount();
+        var modern = Stacks1122.toModern(stack);
+        Inventory inv = inv();
+        int slot = inv.getSlotWithRemainingSpace(modern);
+        if (slot == -1) slot = inv.getFreeSlot();
+        if (slot == -1) return count;
+        var current = inv.getItem(slot);
+        int limit = Math.min(modern.getMaxStackSize(), inv.getMaxStackSize());
+        if (current.isEmpty()) {
+            int moved = Math.min(count, limit);
+            inv.setItem(slot, modern.copyWithCount(moved));
+            inv.getItem(slot).setPopTime(5);
+            return count - moved;
+        }
+        int moved = Math.min(count, Math.min(current.getMaxStackSize(), inv.getMaxStackSize()) - current.getCount());
+        if (moved <= 0) return count;
+        current.grow(moved);
+        current.setPopTime(5);
+        return count - moved;
+    }
+
+    /** Whether the selected item harvests the block (or the block needs no tool). */
+    public boolean canHarvestBlock(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return state == null || player.canHarvestBlock(state);
+    }
+
     public int getFirstEmptyStack() {
         return inv().getFreeSlot();
     }

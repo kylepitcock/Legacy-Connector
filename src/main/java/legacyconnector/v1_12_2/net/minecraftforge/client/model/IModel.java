@@ -48,6 +48,11 @@ public interface IModel {
         return this;
     }
 
+    /** The vanilla json model behind this one, for code that reads its elements; Forge's own models answer empty. */
+    default java.util.Optional<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock> asVanillaModel() {
+        return java.util.Optional.empty();
+    }
+
     default IModel retexture(ImmutableMap<String, String> textures) {
         return this;
     }

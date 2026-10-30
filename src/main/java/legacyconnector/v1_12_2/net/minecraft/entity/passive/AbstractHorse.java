@@ -33,11 +33,187 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
     protected boolean horseJumping;
     protected float jumpPower;
     protected boolean canGallop = true;
+    /** Ticks of galloping, for the gallop sound (plain state: the modern counter is the host's own). */
+    protected int gallopTime;
+    protected legacyconnector.v1_12_2.net.minecraft.inventory.ContainerHorseChest horseChest;
 
     public AbstractHorse(World world) {
         super(world);
         setSize(1.3964844F, 1.6F);
         mcc$set$stepHeight(this, 1.0F);
+        try {
+            initHorseChest();
+        } catch (RuntimeException | LinkageError e) {
+            // a subclass's inventory size needing state its constructor sets later: made again on first use
+        }
+    }
+
+    // ------------------------------------------------------------------ inventory
+
+    /** Slots of the horse's inventory: saddle and armor. */
+    protected int getInventorySize() {
+        return 2;
+    }
+
+    /** (Re)makes the inventory at the current size, keeping what fits, and listens to it (saddle state). */
+    protected void initHorseChest() {
+        legacyconnector.v1_12_2.net.minecraft.inventory.ContainerHorseChest old = horseChest;
+        horseChest = new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerHorseChest("HorseChest", getInventorySize());
+        horseChest.setCustomName(getName());
+        if (old != null) {
+            old.removeInventoryChangeListener(this);
+            int n = Math.min(old.getSizeInventory(), horseChest.getSizeInventory());
+            for (int i = 0; i < n; ++i) {
+                var stack = old.getStackInSlot(i);
+                if (!stack.isEmpty()) horseChest.setInventorySlotContents(i, stack.copy());
+            }
+        } else {
+            var h = mcc$horse();
+            if (h != null) {
+                // a vanilla horse: start from its saddle and armor
+                if (h.isSaddled()) horseChest.setInventorySlotContents(0, new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(
+                        legacyconnector.v1_12_2.net.minecraft.init.Items.SADDLE));
+                if (horseChest.getSizeInventory() > 1 && !h.getBodyArmorItem().isEmpty()) {
+                    horseChest.setInventorySlotContents(1, org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(h.getBodyArmorItem()));
+                }
+            }
+        }
+        horseChest.addInventoryChangeListener(this);
+        updateHorseSlots();
+    }
+
+    /** Saddled while the saddle slot holds something. */
+    protected void updateHorseSlots() {
+        var world = mcc$get$world(this);
+        if (world != null && !world.isRemote && mcc$horse() == null && horseChest != null) {
+            setHorseSaddled(!horseChest.getStackInSlot(0).isEmpty() && canBeSaddled());
+        }
+    }
+
+    /** Opens the horse's inventory for its rider or owner (a tamed horse). */
+    public void openGUI(EntityPlayer player) {
+        var world = mcc$get$world(this);
+        if (world == null || world.isRemote || player == null || !isTame()) return;
+        if (isBeingRidden() && !isPassenger(player)) return;
+        var h = mcc$horse();
+        if (h != null && player.mcc$player() != null) h.openCustomInventoryScreen(player.mcc$player());
+    }
+
+    // ------------------------------------------------------------------ riding, mood, eating, breeding
+
+    /** The player takes the horse's facing and mounts it. */
+    protected void mountTo(EntityPlayer player) {
+        mcc$set$rotationYaw(player, mcc$get$rotationYaw(this));
+        mcc$set$rotationPitch(player, mcc$get$rotationPitch(this));
+        setEatingHaystack(false);
+        setRearing(false);
+        var world = mcc$get$world(this);
+        if (world != null && !world.isRemote) player.startRiding(this);
+    }
+
+    /** Rears up with its angry sound (bucking a rider off). */
+    public void makeMad() {
+        var h = mcc$horse();
+        if (h != null) {
+            h.makeMad();
+            return;
+        }
+        setRearing(true);
+        var sound = getAngrySound();
+        if (sound != null) playSound(sound, getSoundVolume(), getSoundPitch());
+    }
+
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getAngrySound() {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(net.minecraft.sounds.SoundEvents.HORSE_ANGRY);
+    }
+
+    /** Feeding: heals, grows foals, raises temper and puts tame adults in love (golden food), as 1.12's horse food did. */
+    protected boolean handleEating(EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        boolean ate = false;
+        float heal = 0.0F;
+        int growth = 0;
+        int temperGain = 0;
+        Object item = stack == null || stack.isEmpty() ? null : stack.getItem().mcc$modern;
+        if (item == net.minecraft.world.item.Items.WHEAT) {
+            heal = 2.0F;
+            growth = 20;
+            temperGain = 3;
+        } else if (item == net.minecraft.world.item.Items.SUGAR) {
+            heal = 1.0F;
+            growth = 30;
+            temperGain = 3;
+        } else if (item == net.minecraft.world.item.Items.HAY_BLOCK) {
+            heal = 20.0F;
+            growth = 180;
+        } else if (item == net.minecraft.world.item.Items.APPLE) {
+            heal = 3.0F;
+            growth = 60;
+            temperGain = 3;
+        } else if (item == net.minecraft.world.item.Items.GOLDEN_CARROT || item == net.minecraft.world.item.Items.GOLDEN_APPLE) {
+            boolean apple = item == net.minecraft.world.item.Items.GOLDEN_APPLE;
+            heal = apple ? 10.0F : 4.0F;
+            growth = apple ? 240 : 60;
+            temperGain = apple ? 10 : 5;
+            if (isTame() && getGrowingAge() == 0 && !isInLove()) {
+                ate = true;
+                setInLove(player);
+            }
+        }
+        if (getHealth() < getMaxHealth() && heal > 0.0F) {
+            heal(heal);
+            ate = true;
+        }
+        var world = mcc$get$world(this);
+        boolean server = world != null && !world.isRemote;
+        if (isChild() && growth > 0) {
+            if (server) addGrowth(growth);
+            ate = true;
+        }
+        if (temperGain > 0 && (ate || !isTame()) && getTemper() < getMaxTemper()) {
+            ate = true;
+            if (server) increaseTemper(temperGain);
+        }
+        if (ate && !isSilent()) {
+            playSound(org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(net.minecraft.sounds.SoundEvents.HORSE_EAT), 1.0F,
+                    1.0F + (getRNG().nextFloat() - getRNG().nextFloat()) * 0.2F);
+        }
+        return ate;
+    }
+
+    /** Ready to breed: a tame, healthy, in-love adult nobody rides. */
+    protected boolean canMate() {
+        return !isBeingRidden() && !isRiding() && isTame() && !isChild() && getHealth() >= getMaxHealth() && isInLove();
+    }
+
+    /** Random max health for a foal's average (15 to 30). */
+    protected float getModifiedMaxHealth() {
+        return 15.0F + getRNG().nextInt(8) + getRNG().nextInt(9);
+    }
+
+    /** Random jump strength for a foal's average (0.4 to 1.0). */
+    protected double getModifiedJumpStrength() {
+        return 0.4000000059604645D + getRNG().nextDouble() * 0.2D + getRNG().nextDouble() * 0.2D + getRNG().nextDouble() * 0.2D;
+    }
+
+    /** Random speed for a foal's average (0.1125 to 0.3375). */
+    protected double getModifiedMovementSpeed() {
+        return (0.44999998807907104D + getRNG().nextDouble() * 0.3D + getRNG().nextDouble() * 0.3D + getRNG().nextDouble() * 0.3D) * 0.25D;
+    }
+
+    /** A foal's health, jump strength and speed: the average of both parents and a random value. */
+    protected void setOffspringAttributes(legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable mate, AbstractHorse child) {
+        double health = getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue()
+                + mate.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).getBaseValue() + getModifiedMaxHealth();
+        child.getEntityAttribute(SharedMonsterAttributes.MAX_HEALTH).setBaseValue(health / 3.0D);
+        var jump = getEntityAttribute(JUMP_STRENGTH);
+        var mateJump = mate.getEntityAttribute(JUMP_STRENGTH);
+        var childJump = child.getEntityAttribute(JUMP_STRENGTH);
+        if (jump != null && mateJump != null && childJump != null) {
+            childJump.setBaseValue((jump.getBaseValue() + mateJump.getBaseValue() + getModifiedJumpStrength()) / 3.0D);
+        }
+        double speed = getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue()
+                + mate.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).getBaseValue() + getModifiedMovementSpeed();
+        child.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(speed / 3.0D);
     }
 
     protected AbstractHorse(net.minecraft.world.entity.LivingEntity modern) {

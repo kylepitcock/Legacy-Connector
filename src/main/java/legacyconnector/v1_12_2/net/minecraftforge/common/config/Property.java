@@ -397,9 +397,46 @@ public class Property {
         changed = false;
     }
 
-    public void setValue(String v) {
+    public Property setValue(String v) {
         value = v;
         changed = true;
+        return this;
+    }
+
+    public Property setValue(int v) {
+        return setValue(Integer.toString(v));
+    }
+
+    public Property setValue(double v) {
+        return setValue(Double.toString(v));
+    }
+
+    public Property setValue(boolean v) {
+        return setValue(Boolean.toString(v));
+    }
+
+    public Property setValues(String[] v) {
+        set(v);
+        return this;
+    }
+
+    public Property setValues(int[] v) {
+        set(v);
+        return this;
+    }
+
+    public Property setValues(double[] v) {
+        set(v);
+        return this;
+    }
+
+    public Property setValues(boolean[] v) {
+        set(v);
+        return this;
+    }
+
+    public void set(long v) {
+        setValue(Long.toString(v));
     }
 
     public void set(String v) {

@@ -11,10 +11,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 
 /**
  * 1.12.2 skull renderer ({@link #instance}): mob heads and player heads drawn by the modern skull renderer and models at the legacy
- * matrix (mods draw heads on graves, pedestals and mimics with {@link #renderSkull}). Typed with TileEntity as the shim has no
- * TileEntitySkull class.
+ * matrix (mods draw heads on graves, pedestals and mimics with {@link #renderSkull}, or a skull tile entity with {@link #render}).
  */
-public class TileEntitySkullRenderer extends TileEntitySpecialRenderer<TileEntity> {
+public class TileEntitySkullRenderer extends TileEntitySpecialRenderer<legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySkull> {
     public static TileEntitySkullRenderer instance = new TileEntitySkullRenderer();
     private static Map<SkullBlock.Type, SkullModelBase> models;
 
@@ -22,6 +21,36 @@ public class TileEntitySkullRenderer extends TileEntitySpecialRenderer<TileEntit
     public void setRendererDispatcher(TileEntityRendererDispatcher rendererDispatcherIn) {
         super.setRendererDispatcher(rendererDispatcherIn);
         instance = this;
+    }
+
+    @Override
+    public void render(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySkull te, double x, double y, double z, float partialTicks, int destroyStage,
+            float alpha) {
+        EnumFacing facing = mcc$facing(te);
+        float animation = te.getAnimationProgress(partialTicks);
+        renderSkull((float) x, (float) y, (float) z, facing, (float) (te.getSkullRotation() * 360) / 16.0F, te.getSkullType(), te.getPlayerProfile(),
+                destroyStage, animation);
+    }
+
+    /** The wall a skull hangs on (its modern block's facing), or UP for a floor skull; a mod's skull keeps 1.12's metadata facing. */
+    private static EnumFacing mcc$facing(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySkull te) {
+        net.minecraft.world.level.block.state.BlockState state = null;
+        if (te.mcc$host instanceof net.minecraft.world.level.block.entity.SkullBlockEntity skull) state = skull.getBlockState();
+        else if (te.getWorld() != null && te.getPos() != null && te.getWorld().mcc$level() != null) {
+            var p = te.getPos();
+            state = te.getWorld().mcc$level().getBlockState(new net.minecraft.core.BlockPos(p.getX(), p.getY(), p.getZ()));
+        }
+        if (state != null && state.getBlock() instanceof net.minecraft.world.level.block.AbstractSkullBlock) {
+            if (state.hasProperty(net.minecraft.world.level.block.WallSkullBlock.FACING)) {
+                return EnumFacing.byIndex(state.getValue(net.minecraft.world.level.block.WallSkullBlock.FACING).get3DDataValue());
+            }
+            return EnumFacing.UP;
+        }
+        try {
+            return EnumFacing.byIndex(te.getBlockMetadata() & 7);
+        } catch (RuntimeException e) {
+            return EnumFacing.UP;
+        }
     }
 
     /** 1.12 skull types: 0 skeleton, 1 wither skeleton, 2 zombie, 3 player, 4 creeper, 5 dragon. */

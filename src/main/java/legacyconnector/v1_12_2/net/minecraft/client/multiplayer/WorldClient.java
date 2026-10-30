@@ -10,6 +10,18 @@ public class WorldClient extends World {
         super(level);
     }
 
+    /**
+     * A client world a mod builds itself (a schematic preview, a replay): no level behind it (queries see empty space unless the mod's
+     * subclass answers them), with the settings' world info and the dimension's provider.
+     */
+    public WorldClient(legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient netHandler, legacyconnector.v1_12_2.net.minecraft.world.WorldSettings settings,
+            int dimension, legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty difficulty, legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profilerIn) {
+        super(null, new legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo(settings, "MpServer"),
+                legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.createProviderFor(dimension), profilerIn, true);
+        var provider = getProvider();
+        if (provider != null) provider.setWorld(this);
+    }
+
     // ------------------------------------------------------------------ area R2b: the client world's own methods
 
     @Override
@@ -40,6 +52,12 @@ public class WorldClient extends World {
         if (type == null) return;
         var options = type.mcc$modern(xSpeed, ySpeed, zSpeed, parameters);
         if (options != null) mcc$level().addParticle(options, ignoreRange, x, y, z, xSpeed, ySpeed, zSpeed);
+    }
+
+    /** Sends a packet to the server over the game's connection (added by area W: {@code World.sendPacketToServer}). */
+    @Override
+    public void sendPacketToServer(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packet) {
+        legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient.mcc$INSTANCE.sendPacket(packet);
     }
 
     /** Adds an entity to this client world under the network id (fake entities of client-side effects). */

@@ -216,11 +216,18 @@ public class ForgeEventFactory {
         return event;
     }
 
-    /** Whether a mod canceled the placement of a block by an entity (a modern placement event is fired). */
-    public static boolean onBlockPlace(Entity entity, legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot,
-            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction) {
+    /** The placement event of a block placed by an entity (canceled when a mod canceled the placement; a modern placement event is fired). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent onBlockPlace(Entity entity,
+            legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot blockSnapshot, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing direction) {
+        var world = blockSnapshot.getWorld();
+        var placedAgainst = world == null || direction == null ? null : world.getBlockState(blockSnapshot.getPos().offset(direction.getOpposite()));
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent(blockSnapshot, placedAgainst, entity);
         var modern = mcc$modernSnapshot(blockSnapshot);
-        return modern != null && EventHooks.onBlockPlace(entity == null ? null : entity.mcc$modern(), modern, direction.mcc$modern());
+        if (modern != null && EventHooks.onBlockPlace(entity == null ? null : entity.mcc$modern(), modern,
+                direction == null ? net.minecraft.core.Direction.UP : direction.mcc$modern())) {
+            event.setCanceled(true);
+        }
+        return event;
     }
 
     private static net.minecraft.world.entity.Mob mcc$mob(Object entity) {
@@ -291,5 +298,154 @@ public class ForgeEventFactory {
     public static int getMaxSpawnPackSize(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity) {
         var mob = mcc$mob(entity);
         return mob == null ? 4 : EventHooks.getMaxSpawnClusterSize(mob);
+    }
+
+    // ---- area F: terrain, explosion, projectile, bucket, tooltip and sound hooks
+
+    private static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.EventBus mcc$bus() {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+    }
+
+    /** False when a mod replaced the chunk's biome blocks itself (DENY): the generator then skips its own surface pass. */
+    public static boolean onReplaceBiomeBlocks(legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator gen, int x, int z,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.ChunkPrimer primer, World world) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.ChunkGeneratorEvent.ReplaceBiomeBlocks(gen, x, z, primer, world);
+        mcc$bus().post(event);
+        return event.getResult() != legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DENY;
+    }
+
+    /** Posts the population event before ({@code pre}) or after a mod generator populates a chunk. */
+    public static void onChunkPopulate(boolean pre, legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator gen, World world, java.util.Random rand,
+            int x, int z, boolean hasVillageGenerated) {
+        mcc$bus().post(pre ? new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.PopulateChunkEvent.Pre(gen, world, rand, x, z, hasVillageGenerated)
+                : new legacyconnector.v1_12_2.net.minecraftforge.event.terraingen.PopulateChunkEvent.Post(gen, world, rand, x, z, hasVillageGenerated));
+    }
+
+    /**
+     * True when a mod canceled a mod's explosion before it happened. Mods' handlers see the mod's own explosion object (as in 1.12);
+     * explosions the modern game carries out reach them through the event bridge instead.
+     */
+    public static boolean onExplosionStart(World world, legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion) {
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.ExplosionEvent.Start(world, explosion));
+    }
+
+    /** Lets mods' handlers remove blocks (from the explosion's list) and entities (from {@code list}) a mod's explosion affects. */
+    public static void onExplosionDetonate(World world, legacyconnector.v1_12_2.net.minecraft.world.Explosion explosion, List<Entity> list, double diameter) {
+        mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.world.ExplosionEvent.Detonate(world, explosion, list));
+    }
+
+    /** True when a mod canceled the arrow's impact. */
+    public static boolean onProjectileImpact(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityArrow arrow,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult ray) {
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.ProjectileImpactEvent.Arrow(arrow, ray));
+    }
+
+    /** True when a mod canceled the fireball's impact. */
+    public static boolean onProjectileImpact(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFireball fireball,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult ray) {
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.ProjectileImpactEvent.Fireball(fireball, ray));
+    }
+
+    /** True when a mod canceled the thrown entity's impact. */
+    public static boolean onProjectileImpact(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityThrowable throwable,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult ray) {
+        return mcc$bus().post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.ProjectileImpactEvent.Throwable(throwable, ray));
+    }
+
+    /** Spawn check of a mob at its position (a spawner's when {@code spawner} is not null). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result canEntitySpawn(
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
+            legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
+        return mcc$positionCheck(entity, world, spawner != null);
+    }
+
+    public static boolean canEntitySpawnSpawner(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
+            legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
+        return canEntitySpawnSpawner(entity, world, x, y, z);
+    }
+
+    /** The spawn finalization of a mob a spawner made: true when a mod took over. */
+    public static boolean doSpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
+            legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
+        var mob = mcc$mob(entity);
+        var level = world == null ? null : world.mcc$level();
+        if (mob == null || !(level instanceof net.minecraft.world.level.ServerLevelAccessor accessor)) return false;
+        var event = new net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent(mob, accessor, x, y, z,
+                accessor.getCurrentDifficultyAt(mob.blockPosition()),
+                spawner != null ? net.minecraft.world.entity.MobSpawnType.SPAWNER : net.minecraft.world.entity.MobSpawnType.NATURAL, null, null);
+        return net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(event).isCanceled();
+    }
+
+    /**
+     * A bucket used on the world: null when no mod handled it (the bucket then does its own thing), else the stack to hold
+     * (FAIL when a mod canceled the use; SUCCESS with a mod's filled bucket, given to the player).
+     */
+    public static ActionResult<ItemStack> onBucketUse(EntityPlayer player, World world, ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult target) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.FillBucketEvent(player, stack, world, target);
+        if (mcc$bus().post(event)) return new ActionResult<>(EnumActionResult.FAIL, stack);
+        if (event.getResult() != legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.ALLOW) return null;
+        var p = player(player);
+        if (p != null && p.getAbilities().instabuild) return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+        stack.shrink(1);
+        ItemStack filled = event.getFilledBucket();
+        if (stack.isEmpty()) return new ActionResult<>(EnumActionResult.SUCCESS, filled);
+        if (p != null && filled != null && !filled.isEmpty()) {
+            var modern = Stacks1122.toModern(filled);
+            if (!p.getInventory().add(modern)) p.drop(modern, false);
+        }
+        return new ActionResult<>(EnumActionResult.SUCCESS, stack);
+    }
+
+    /** Lets mods add lines to an item's tooltip (the list is the tooltip being built). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.ItemTooltipEvent onItemTooltip(ItemStack itemStack, EntityPlayer entityPlayer,
+            List<String> toolTip, legacyconnector.v1_12_2.net.minecraft.client.util.ITooltipFlag flags) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.ItemTooltipEvent(itemStack, entityPlayer, toolTip,
+                flags != null && flags.isAdvanced());
+        mcc$bus().post(event);
+        return event;
+    }
+
+    /**
+     * An entity plays a sound: 1.12 handlers, then modern ones (sound mufflers and the like) may change or cancel it. The returned
+     * event carries the sound to play.
+     */
+    public static legacyconnector.v1_12_2.net.minecraftforge.event.entity.PlaySoundAtEntityEvent onPlaySoundAtEntity(Entity entity,
+            legacyconnector.v1_12_2.net.minecraft.util.SoundEvent name, legacyconnector.v1_12_2.net.minecraft.util.SoundCategory category,
+            float volume, float pitch) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.PlaySoundAtEntityEvent(entity, name, category, volume, pitch);
+        if (mcc$bus().post(event)) return event;
+        var modern = entity == null ? null : entity.mcc$modern();
+        var sound = event.getSound() == null ? null : event.getSound().mcc$event();
+        if (modern == null || sound == null || event.getCategory() == null) return event;
+        var holder = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.wrapAsHolder(sound);
+        var result = EventHooks.onPlaySoundAtEntity(modern, holder, event.getCategory().mcc$modern(), event.getVolume(), event.getPitch());
+        if (result.isCanceled() || result.getSound() == null) {
+            event.setCanceled(true);
+            return event;
+        }
+        if (result.getSound() != holder) {
+            var id = result.getSound().unwrapKey().map(k -> k.location()).orElse(null);
+            var legacy = id == null ? null : legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.REGISTRY.getObject(
+                    new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(id.getNamespace(), id.getPath()));
+            if (legacy != null) event.setSound(legacy);
+        }
+        event.setCategory(legacyconnector.v1_12_2.net.minecraft.util.SoundCategory.mcc$of(result.getSource()));
+        event.setVolume(result.getNewVolume());
+        event.setPitch(result.getNewPitch());
+        return event;
+    }
+
+    /** The offers a merchant shows the player, after mods' {@code MerchantTradeOffersEvent} handlers (a copy; the merchant's own is kept). */
+    public static legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList listTradeOffers(legacyconnector.v1_12_2.net.minecraft.entity.IMerchant merchant,
+            EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList list) {
+        legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList copy = null;
+        if (list != null) {
+            copy = new legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList();
+            copy.addAll(list);
+        }
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.village.MerchantTradeOffersEvent(merchant, player, copy);
+        mcc$bus().post(event);
+        return event.getList();
     }
 }

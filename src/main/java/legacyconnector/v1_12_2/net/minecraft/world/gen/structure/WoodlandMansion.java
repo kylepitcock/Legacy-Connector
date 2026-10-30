@@ -14,7 +14,8 @@ public class WoodlandMansion extends MapGenStructure {
     public static final java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome> ALLOWED_BIOMES = java.util.Arrays.asList(
             legacyconnector.v1_12_2.net.minecraft.init.Biomes.ROOFED_FOREST, legacyconnector.v1_12_2.net.minecraft.init.Biomes.MUTATED_ROOFED_FOREST);
 
-    public WoodlandMansion(Object chunkGenerator) {
+    /** The mansion generator of an overworld generator (1.12 used it for the terrain height at a candidate). */
+    public WoodlandMansion(legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorOverworld chunkGenerator) {
     }
 
     @Override

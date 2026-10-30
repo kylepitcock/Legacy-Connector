@@ -43,8 +43,10 @@ public class MapGenScatteredFeature extends MapGenStructure {
 
     /** The mobs of a swamp hut (witches) when the position is in one. */
     public java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> getMonsters() {
-        return new java.util.ArrayList<>();
+        return monsters;
     }
+
+    private final java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> monsters = new java.util.ArrayList<>(java.util.List.of(new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityWitch.class, 1, 1, 1)));
 
     public boolean isSwampHut(BlockPos pos) {
         var level = this.world == null ? null : this.world.mcc$liveLevel();

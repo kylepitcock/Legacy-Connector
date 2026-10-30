@@ -51,4 +51,17 @@ public class ProjectileImpactEvent extends EntityEvent {
             return throwable;
         }
     }
+
+    public static class Fireball extends ProjectileImpactEvent {
+        private final legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFireball fireball;
+
+        public Fireball(legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFireball fireball, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult ray) {
+            super(fireball, ray);
+            this.fireball = fireball;
+        }
+
+        public legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityFireball getFireball() {
+            return fireball;
+        }
+    }
 }

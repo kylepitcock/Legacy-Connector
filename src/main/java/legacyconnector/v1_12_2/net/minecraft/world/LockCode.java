@@ -2,7 +2,7 @@ package legacyconnector.v1_12_2.net.minecraft.world;
 
 import legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound;
 
-/** The key a locked container needs (an item named like the code), saved as the "Lock" tag. */
+/** 1.12.2 container lock: the item name that opens it ("Lock" in NBT, as the modern game still stores it). */
 public class LockCode {
     public static final LockCode EMPTY_CODE = new LockCode("");
     private final String lock;
@@ -12,18 +12,19 @@ public class LockCode {
     }
 
     public boolean isEmpty() {
-        return lock == null || lock.isEmpty();
+        return this.lock == null || this.lock.isEmpty();
     }
 
     public String getLock() {
-        return lock;
+        return this.lock;
     }
 
     public void toNBT(NBTTagCompound nbt) {
-        nbt.setString("Lock", lock);
+        nbt.setString("Lock", this.lock);
     }
 
     public static LockCode fromNBT(NBTTagCompound nbt) {
-        return nbt.hasKey("Lock", 8) ? new LockCode(nbt.getString("Lock")) : EMPTY_CODE;
+        if (nbt.hasKey("Lock", 8)) return new LockCode(nbt.getString("Lock"));
+        return EMPTY_CODE;
     }
 }

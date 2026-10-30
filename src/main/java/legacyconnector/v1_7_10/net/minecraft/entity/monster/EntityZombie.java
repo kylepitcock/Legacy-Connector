@@ -14,6 +14,20 @@ public class EntityZombie extends EntityMob {
         setSize(0.6F, 1.8F);
     }
 
+    /** The chance a hurt zombie calls reinforcements (subclasses set it: Thaumcraft's brainy zombies turn it off). */
+    protected static final legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.IAttribute field_110186_bp =
+            new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.RangedAttribute("zombie.spawnReinforcements", 0.0D, 0.0D, 1.0D)
+                    .setDescription("Spawn Reinforcements Chance");
+
+    @Override
+    protected void applyEntityAttributes() {
+        super.applyEntityAttributes();
+        getEntityAttribute(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.followRange).setBaseValue(40.0D);
+        getEntityAttribute(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.movementSpeed).setBaseValue(0.23D);
+        getEntityAttribute(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage).setBaseValue(3.0D);
+        getAttributeMap().registerAttribute(field_110186_bp).setBaseValue(rand.nextDouble() * 0.1D);
+    }
+
     @Override
     protected void entityInit() {
         super.entityInit();

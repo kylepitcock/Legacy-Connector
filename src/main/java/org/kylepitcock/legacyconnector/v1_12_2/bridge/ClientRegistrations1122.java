@@ -31,14 +31,6 @@ public final class ClientRegistrations1122 {
             }
             return null;
         });
-        Synth.addStaticMethod("net.minecraftforge.fml.client.registry.RenderingRegistry.registerEntityRenderingHandler", args -> {
-            if (args.length > 1 && args[0] instanceof Class<?> c && args[1] != null) {
-                synchronized (ENTITY_RENDERERS) {
-                    ENTITY_RENDERERS.put(c, args[1]);
-                }
-            }
-            return null;
-        });
         Synth.addInstanceMethod("net.minecraft.client.resources.data.MetadataSerializer.registerMetadataSectionType", (self, args) -> {
             if (args.length > 1 && args[0] != null && args[1] instanceof Class<?> c) {
                 synchronized (METADATA_SERIALIZERS) {
@@ -62,6 +54,13 @@ public final class ClientRegistrations1122 {
             }
             return null;
         });
+    }
+
+    /** RenderingRegistry.registerEntityRenderingHandler: an IRenderFactory or (deprecated overload) a Render. */
+    public static void mcc$registerEntityRenderer(Class<?> entityClass, Object factoryOrRender) {
+        synchronized (ENTITY_RENDERERS) {
+            ENTITY_RENDERERS.put(entityClass, factoryOrRender);
+        }
     }
 
     /** ModelLoaderRegistry.registerLoader of the shim's class. */
