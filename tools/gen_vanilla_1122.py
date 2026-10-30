@@ -73,7 +73,28 @@ TYPED_BLOCKS = {
     "REEDS": "new %sBlockReed() {}" % B,
     "SNOW_LAYER": "new %sBlockSnow() {}" % B,
     "FARMLAND": "new %sBlockFarmland() {}" % B,
+    "ICE": "new %sBlockIce()" % B,
+    "PACKED_ICE": "new %sBlockPackedIce()" % B,
+    "GLOWSTONE": "new %sBlockGlowstone(%sGLASS)" % (B, M),
+    "GRASS_PATH": "new %sBlockGrassPath() {}" % B,
+    "GRAVEL": "new %sBlockGravel()" % B,
+    "BOOKSHELF": "new %sBlockBookshelf()" % B,
+    "MAGMA": "new %sBlockMagma()" % B,
+    "BONE_BLOCK": "new %sBlockBone()" % B,
+    "SPONGE": "new %sBlockSponge() {}" % B,
+    "NETHER_WART": "new %sBlockNetherWart() {}" % B,
+    "PUMPKIN": "new %sBlockPumpkin() {}" % B,
+    "LIT_PUMPKIN": "new %sBlockPumpkin() {}" % B,
+    "PUMPKIN_STEM": "new %sBlockStem(Blocks.PUMPKIN) {}" % B,
+    "MELON_STEM": "new %sBlockStem(Blocks.MELON_BLOCK) {}" % B,
+    "COCOA": "new %sBlockCocoa()" % B,
+    "CAKE": "new %sBlockCake() {}" % B,
+    "END_ROD": "new %sBlockEndRod() {}" % B,
+    "OBSERVER": "new %sBlockObserver()" % B,
+    "REDSTONE_BLOCK": "new %sBlockCompressedPowered(%sIRON, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor.TNT)" % (B, M),
 }
+for color in ["WHITE", "ORANGE", "MAGENTA", "LIGHT_BLUE", "YELLOW", "LIME", "PINK", "GRAY", "SILVER", "CYAN", "PURPLE", "BLUE", "BROWN", "GREEN", "RED", "BLACK"]:
+    TYPED_BLOCKS[color + "_SHULKER_BOX"] = "new %sBlockShulkerBox(legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.%s)" % (B, color)
 
 ARMOR = {"LEATHER": ("LEATHER", 0), "CHAINMAIL": ("CHAIN", 1), "IRON": ("IRON", 2), "DIAMOND": ("DIAMOND", 3), "GOLDEN": ("GOLD", 4)}
 SLOTS = {"HELMET": "HEAD", "CHESTPLATE": "CHEST", "LEGGINGS": "LEGS", "BOOTS": "FEET"}
