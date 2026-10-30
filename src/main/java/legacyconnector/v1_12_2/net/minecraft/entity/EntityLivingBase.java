@@ -152,6 +152,23 @@ public abstract class EntityLivingBase extends Entity {
 
     // ------------------------------------------------------------------ phantom fields
 
+    /** Phantom field: {@link #mcc$get$jumpTicks}. */
+    @Deprecated
+    protected int jumpTicks;
+    private int mcc$local_jumpTicks;
+
+    /** jumpTicks: the modern jump cooldown (noJumpDelay). */
+    public static int mcc$get$jumpTicks(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.noJumpDelay(l) : e.mcc$local_jumpTicks;
+    }
+
+    public static void mcc$set$jumpTicks(EntityLivingBase e, int v) {
+        var l = e.mcc$living();
+        if (l != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setNoJumpDelay(l, v);
+        else e.mcc$local_jumpTicks = v;
+    }
+
     /** dead: the death was handled (the modern flag). */
     public static boolean mcc$get$dead(EntityLivingBase e) {
         var l = e.mcc$living();
@@ -1103,6 +1120,29 @@ public abstract class EntityLivingBase extends Entity {
     public void resetActiveHand() {
         var l = mcc$living();
         if (l != null) l.stopUsingItem();
+    }
+
+    /**
+     * Ticks one arm swing takes: 6, shortened by haste (and the conduit power), lengthened by mining fatigue (1.12 private, mods
+     * reach it through access transformers to time their own swings).
+     */
+    public int getArmSwingAnimationEnd() {
+        var l = mcc$living();
+        if (l == null) return 6;
+        if (net.minecraft.world.effect.MobEffectUtil.hasDigSpeed(l)) return 6 - (1 + net.minecraft.world.effect.MobEffectUtil.getDigSpeedAmplification(l));
+        var fatigue = l.getEffect(net.minecraft.world.effect.MobEffects.DIG_SLOWDOWN);
+        return fatigue != null ? 6 + (1 + fatigue.getAmplifier()) * 2 : 6;
+    }
+
+    /** Whether a raised shield stops this damage (the source comes from the front and does not bypass shields). */
+    public boolean canBlockDamageSource(legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
+        var l = mcc$living();
+        if (l == null || source == null) return false;
+        try {
+            return l.isDamageSourceBlocked(source.mcc$modern(l.level()));
+        } catch (RuntimeException e) {
+            return false;
+        }
     }
 
     public boolean isActiveItemStackBlocking() {

@@ -133,4 +133,18 @@ public class EntitySpider extends EntityMob {
     protected ResourceLocation getLootTable() {
         return new ResourceLocation("minecraft", "entities/spider");
     }
+
+    /** The spawn-group data of spiders: on hard difficulty a group may share one permanent effect (speed, strength, regeneration, invisibility). */
+    public static class GroupData implements legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData {
+        public legacyconnector.v1_12_2.net.minecraft.potion.Potion effect;
+
+        /** Picks the effect: speed (2 in 5), strength, regeneration or invisibility. */
+        public void setRandomEffect(java.util.Random rand) {
+            int i = rand.nextInt(5);
+            if (i <= 1) effect = legacyconnector.v1_12_2.net.minecraft.init.MobEffects.SPEED;
+            else if (i <= 2) effect = legacyconnector.v1_12_2.net.minecraft.init.MobEffects.STRENGTH;
+            else if (i <= 3) effect = legacyconnector.v1_12_2.net.minecraft.init.MobEffects.REGENERATION;
+            else effect = legacyconnector.v1_12_2.net.minecraft.init.MobEffects.INVISIBILITY;
+        }
+    }
 }

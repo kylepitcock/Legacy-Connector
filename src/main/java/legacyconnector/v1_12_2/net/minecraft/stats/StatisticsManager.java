@@ -16,7 +16,7 @@ public class StatisticsManager {
         this(null);
     }
 
-    private StatisticsManager(net.minecraft.stats.StatsCounter modern) {
+    protected StatisticsManager(net.minecraft.stats.StatsCounter modern) {
         this.mcc$modern = modern;
     }
 

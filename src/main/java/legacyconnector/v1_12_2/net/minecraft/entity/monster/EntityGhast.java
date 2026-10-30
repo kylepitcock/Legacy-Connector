@@ -101,4 +101,35 @@ public class EntityGhast extends legacyconnector.v1_12_2.net.minecraft.entity.En
     protected ResourceLocation getLootTable() {
         return new ResourceLocation("minecraft", "entities/ghast");
     }
+
+    /** A ghast faces where it flies, or its target when that is within 64 blocks. */
+    public static class AILookAround extends legacyconnector.v1_12_2.net.minecraft.entity.ai.EntityAIBase {
+        private final EntityGhast parentEntity;
+
+        public AILookAround(EntityGhast ghast) {
+            this.parentEntity = ghast;
+            setMutexBits(2);
+        }
+
+        @Override
+        public boolean shouldExecute() {
+            return true;
+        }
+
+        @Override
+        public void updateTask() {
+            var g = parentEntity;
+            var target = g.getAttackTarget();
+            float yaw;
+            if (target == null) {
+                yaw = -((float) Math.atan2(mcc$get$motionX(g), mcc$get$motionZ(g))) * (180F / (float) Math.PI);
+            } else if (target.getDistanceSq(g) < 4096.0D) {
+                yaw = -((float) Math.atan2(mcc$get$posX(target) - mcc$get$posX(g), mcc$get$posZ(target) - mcc$get$posZ(g))) * (180F / (float) Math.PI);
+            } else {
+                return;
+            }
+            mcc$set$rotationYaw(g, yaw);
+            mcc$set$renderYawOffset(g, yaw);
+        }
+    }
 }

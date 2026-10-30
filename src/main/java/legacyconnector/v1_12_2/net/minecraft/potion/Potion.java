@@ -209,4 +209,9 @@ public class Potion extends IForgeRegistryEntry.Impl<Potion> {
 
     public void renderHUDEffect(PotionEffect effect, legacyconnector.v1_12_2.net.minecraft.client.gui.Gui gui, int x, int y, float z, float alpha) {
     }
+
+    /** The older form of the HUD hook (Forge kept both; the HUD calls the one above, whose default does nothing either). */
+    @Deprecated
+    public void renderHUDEffect(int x, int y, PotionEffect effect, legacyconnector.v1_12_2.net.minecraft.client.Minecraft mc, float alpha) {
+    }
 }

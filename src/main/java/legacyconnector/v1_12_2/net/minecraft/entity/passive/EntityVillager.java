@@ -199,6 +199,23 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
     // ------------------------------------------------------------------ food, farming and breeding (1.12 rules; a game villager answers with its own)
 
     private boolean mcc$willingToMate;
+    /** Phantom field: {@link #mcc$get$isWillingToMate}. */
+    @Deprecated
+    private boolean isWillingToMate;
+    /** Ticks until a trade that sold out is restocked (with {@link #needsInitilization}, a new trade tier is added then). */
+    private int timeUntilReset;
+    private boolean needsInitilization;
+    /** Emeralds the villager earned from trades. */
+    private int wealth;
+
+    /** isWillingToMate: the breeding readiness (the modern villager's for vanilla villagers). */
+    public static boolean mcc$get$isWillingToMate(EntityVillager v) {
+        return v.getIsWillingToMate(false);
+    }
+
+    public static void mcc$set$isWillingToMate(EntityVillager v, boolean value) {
+        v.setIsWillingToMate(value);
+    }
 
     private net.minecraft.world.entity.npc.Villager mcc$gameVillager() {
         return mcc$hosted() ? null : mcc$villager();
@@ -348,6 +365,11 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
         if (recipe == null) return;
         recipe.incrementToolUses();
         livingSoundTime = -getTalkInterval();
+        if (recipe.getToolUses() == 1 || rand.nextInt(5) == 0) {
+            timeUntilReset = 40;
+            needsInitilization = true;
+        }
+        if (recipe.getItemToBuy().getItem() == legacyconnector.v1_12_2.net.minecraft.init.Items.EMERALD) wealth += recipe.getItemToBuy().getCount();
         playSound(legacy(SoundEvents.VILLAGER_YES), getSoundVolume(), getSoundPitch());
         var m = mcc$entity;
         if (recipe.getRewardsExp() && m != null && !m.level().isClientSide()) {

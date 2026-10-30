@@ -48,8 +48,8 @@ public final class Brewing1122 {
         }
         for (PotionHelper.MixPredicate<PotionType> mix : PotionHelper.mcc$mixes()) {
             try {
-                var from = mix.input == null ? null : mix.input.mcc$modern();
-                var to = mix.output == null ? null : mix.output.mcc$modern();
+                var from = mix.mcc$input() == null ? null : mix.mcc$input().mcc$modern();
+                var to = mix.mcc$output() == null ? null : mix.mcc$output().mcc$modern();
                 ItemStack[] reagents = mix.reagent.getMatchingStacks();
                 if (from != null && to != null && reagents.length > 0) {
                     java.util.Set<net.minecraft.world.item.Item> done = new java.util.HashSet<>();
@@ -93,7 +93,7 @@ public final class Brewing1122 {
     private record LegacyMix(PotionHelper.MixPredicate<PotionType> mix) implements net.neoforged.neoforge.common.brewing.IBrewingRecipe {
         @Override
         public boolean isInput(net.minecraft.world.item.ItemStack input) {
-            return !input.isEmpty() && PotionUtils.getPotionFromItem(Stacks1122.fromModern(input)) == mix.input;
+            return !input.isEmpty() && PotionUtils.getPotionFromItem(Stacks1122.fromModern(input)) == mix.mcc$input();
         }
 
         @Override
@@ -104,7 +104,7 @@ public final class Brewing1122 {
         @Override
         public net.minecraft.world.item.ItemStack getOutput(net.minecraft.world.item.ItemStack input, net.minecraft.world.item.ItemStack ingredient) {
             if (!isInput(input) || !isIngredient(ingredient)) return net.minecraft.world.item.ItemStack.EMPTY;
-            return Stacks1122.toModern(PotionUtils.addPotionToItemStack(Stacks1122.fromModern(input).copy(), mix.output));
+            return Stacks1122.toModern(PotionUtils.addPotionToItemStack(Stacks1122.fromModern(input).copy(), mix.mcc$output()));
         }
     }
 

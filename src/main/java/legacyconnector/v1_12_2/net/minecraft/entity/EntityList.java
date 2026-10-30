@@ -104,6 +104,23 @@ public class EntityList {
         return modern == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(modern);
     }
 
+    /**
+     * A new entity of a class (not yet spawned): through its registered name when it has one (mod entities get their modern host),
+     * otherwise its {@code (World)} constructor. Null when neither works.
+     */
+    public static Entity newEntity(Class<? extends Entity> clazz, legacyconnector.v1_12_2.net.minecraft.world.World world) {
+        if (clazz == null) return null;
+        for (EntityEntry e : ForgeRegistries.ENTITIES.getValues()) {
+            if (e.getEntityClass() == clazz && !"minecraft".equals(e.getRegistryName().getNamespace())) return createEntityByIDFromName(e.getRegistryName(), world);
+        }
+        try {
+            var ctor = clazz.getConstructor(legacyconnector.v1_12_2.net.minecraft.world.World.class);
+            return ctor.newInstance(world);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** The modern type of a vanilla 1.12 entity name (renamed ids included), or null. */
     public static net.minecraft.world.entity.EntityType<?> mcc$modernType(ResourceLocation name) {
         if (name == null) return null;
