@@ -103,11 +103,37 @@ public class TileEntityRendererDispatcher {
     public void drawBatch(int pass) {
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer fontRenderer;
+
+    /** The font tile entity renderers draw text with (signs): the one {@link #prepare} was given, else the client's. */
+    public legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer getFontRenderer() {
+        if (fontRenderer != null) return fontRenderer;
+        var mc = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+        return mc == null ? null : mc.fontRenderer;
+    }
+
+    /** Phantom: what the crosshair is on this frame (the client's current hit result). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult cameraHitResult;
+    private legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult mcc$local_cameraHitResult;
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult mcc$get$cameraHitResult(TileEntityRendererDispatcher d) {
+        if (d.mcc$local_cameraHitResult != null) return d.mcc$local_cameraHitResult;
+        var mc = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft();
+        return mc == null ? null : legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$objectMouseOver(mc);
+    }
+
+    public static void mcc$set$cameraHitResult(TileEntityRendererDispatcher d, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult value) {
+        d.mcc$local_cameraHitResult = value;
+    }
+
     /** The frame's view for tile entity renderers: world, textures, viewer and its interpolated position and angles. */
     public void prepare(World worldIn, TextureManager renderEngineIn, legacyconnector.v1_12_2.net.minecraft.client.gui.FontRenderer fontRendererIn,
             Entity entityIn, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult cameraHitResultIn, float p_190056_6_) {
         if (world != worldIn) setWorld(worldIn);
         renderEngine = renderEngineIn;
+        if (fontRendererIn != null) fontRenderer = fontRendererIn;
+        mcc$local_cameraHitResult = cameraHitResultIn;
         entity = entityIn;
         if (entityIn == null) return;
         entityYaw = Entity.mcc$get$prevRotationYaw(entityIn) + (Entity.mcc$get$rotationYaw(entityIn) - Entity.mcc$get$prevRotationYaw(entityIn)) * p_190056_6_;

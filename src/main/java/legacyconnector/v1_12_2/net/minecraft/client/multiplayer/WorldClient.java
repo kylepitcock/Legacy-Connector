@@ -69,4 +69,9 @@ public class WorldClient extends World {
     public legacyconnector.v1_12_2.net.minecraft.entity.Entity removeEntityFromWorld(int entityId) {
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldClient1122.removeEntity(this, entityId);
     }
+
+    /** Sets a block from a server packet (1.12 also dropped the region's pending updates; the modern client level has none to drop). */
+    public boolean invalidateRegionAndSetBlock(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        return setBlockState(pos, state, 3);
+    }
 }

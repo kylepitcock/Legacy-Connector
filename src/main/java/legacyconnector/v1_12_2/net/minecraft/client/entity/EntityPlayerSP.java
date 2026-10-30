@@ -219,4 +219,10 @@ public class EntityPlayerSP extends AbstractClientPlayer {
     public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTrace(double blockReachDistance, float partialTicks) {
         return legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult.mcc$of(mcc$player().pick(blockReachDistance, partialTicks, false));
     }
+
+    /** Whether the player is paddling the boat they ride (steering it, which keeps the hands busy). */
+    public boolean isRowingBoat() {
+        var p = mcc$local();
+        return p.getControlledVehicle() instanceof net.minecraft.world.entity.vehicle.Boat && p.isHandsBusy();
+    }
 }

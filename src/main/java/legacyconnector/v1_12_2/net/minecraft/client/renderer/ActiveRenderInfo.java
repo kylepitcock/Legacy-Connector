@@ -62,4 +62,12 @@ public class ActiveRenderInfo {
     public static float getRotationXZ() {
         return (float) Math.cos(Math.toRadians(camera().getXRot()));
     }
+
+    /**
+     * 1.12 recomputed the camera facts from the player here each frame. The rotation values above are read from the modern camera when
+     * asked, so this only refreshes {@link #position}.
+     */
+    public static void updateRenderInfo(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer entityplayerIn, boolean p_74583_1_) {
+        if (net.minecraft.client.Minecraft.getInstance().gameRenderer != null) getCameraPosition();
+    }
 }

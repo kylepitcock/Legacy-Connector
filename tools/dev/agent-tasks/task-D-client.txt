@@ -1,26 +1,10 @@
 # ---- 1.12.2 client APIs logged at runtime (split from task-D.txt on 2026-10-30, pruned against the shim; most used first)
-synth.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.getFontRenderer()Lsynth.net.minecraft.client.gui.FontRenderer;   # 7 user(s): com.teammetallurgy.atum.utils.RenderUtils, org.cyclops.integrateddynamics.client.render.valuetype.FluidValueTypeWorldRenderer
-synth.net.minecraft.client.renderer.texture.TextureAtlasSprite.animationMetadata:Lsynth.net.minecraft.client.resources.data.AnimationMetadataSection;   # 5 user(s): com.rwtema.extrautils2.fluids.TexturePlasma, twilightforest.client.texture.GradientMappedTexture
 synth.net.minecraft.client.renderer.chunk.RenderChunk.getVertexBufferByLayer(I)Lsynth.net.minecraft.client.renderer.vertex.VertexBuffer;   # 4 user(s): com.creativemd.littletiles.client.render.cache.ChunkBlockLayerManager
-synth.net.minecraftforge.client.model.IModel.getClip(Ljava.lang.String;)Ljava.util.Optional;   # 4 user(s): codechicken.lib.model.forgemodel.WrappedIModel, openmods.model.eval.EvalModel, team.chisel.ctm.client.model.ModelCTM, thebetweenlands.client.render.model.baked.ModelTransform
-synth.net.minecraftforge.client.model.IModel.ignoreStates()Z   # 4 user(s): twilightforest.client.texture.type.TextureTypeCTMEast$1
-synth.net.minecraft.client.gui.MapItemRenderer.getData(Lsynth.net.minecraft.client.gui.MapItemRenderer$Instance;)Lsynth.net.minecraft.world.storage.MapData;   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap$Handler$1
-synth.net.minecraft.client.gui.MapItemRenderer.getMapInstanceIfExists(Ljava.lang.String;)Lsynth.net.minecraft.client.gui.MapItemRenderer$Instance;   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap$Handler$1
-synth.net.minecraft.client.renderer.EntityRenderer.smoothCamFilterX:F   # 3 user(s): hellfirepvp.astralsorcery.client.gui.GuiHandTelescope
-synth.net.minecraft.client.renderer.EntityRenderer.smoothCamFilterY:F   # 3 user(s): hellfirepvp.astralsorcery.client.gui.GuiHandTelescope
-synth.net.minecraft.client.renderer.EntityRenderer.smoothCamPartialTicks:F   # 3 user(s): hellfirepvp.astralsorcery.client.gui.GuiHandTelescope
-synth.net.minecraft.client.renderer.EntityRenderer.smoothCamPitch:F   # 3 user(s): hellfirepvp.astralsorcery.client.gui.GuiHandTelescope
-synth.net.minecraft.client.renderer.EntityRenderer.smoothCamYaw:F   # 3 user(s): hellfirepvp.astralsorcery.client.gui.GuiHandTelescope
 synth.net.minecraft.client.renderer.block.model.SimpleBakedModel$Builder.makeBakedModel()Lsynth.net.minecraft.client.renderer.block.model.IBakedModel;   # 3 user(s): org.cyclops.integrateddynamics.client.render.tileentity.RenderCable
-synth.net.minecraft.client.renderer.block.model.Variant.process(Lsynth.net.minecraftforge.client.model.IModel;)Lsynth.net.minecraftforge.client.model.IModel;   # 3 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader$WeightedRandomModel, forestry.arboriculture.models.SimpleModel
 synth.net.minecraft.client.renderer.chunk.RenderChunk.getPosition()Lnet.minecraft.util.math.BlockPos;   # 3 user(s): com.creativemd.littletiles.client.render.cache.RenderingThread
-synth.net.minecraft.client.audio.SoundManager.invPlayingSounds:Ljava.util.Map;   # 2 user(s): thebetweenlands.client.audio.SafeStreamSound
-synth.net.minecraft.client.multiplayer.WorldClient.invalidateRegionAndSetBlock(Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;)Z   # 2 user(s): com.creativemd.littletiles.common.packet.LittleBlockUpdatePacket
 synth.net.minecraft.client.renderer.BlockFluidRenderer.<init>(Lsynth.net.minecraft.client.renderer.color.BlockColors;)V   # 2 user(s): hellfirepvp.astralsorcery.client.util.BlockModelRenderHelper, reborncore.client.multiblock.RebornFluidRenderer
 synth.net.minecraft.client.renderer.BlockFluidRenderer.renderFluid(Lsynth.net.minecraft.world.IBlockAccess;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.util.math.BlockPos;Lsynth.net.minecraft.client.renderer.BufferBuilder;)Z   # 2 user(s): hellfirepvp.astralsorcery.client.util.BlockModelRenderHelper, reborncore.client.multiblock.MultiblockRenderEvent
-synth.net.minecraft.client.renderer.EntityRenderer.setupCameraTransform(FI)V   # 2 user(s): thebetweenlands.client.handler.ScreenRenderHandler
 synth.net.minecraft.client.renderer.block.model.BakedQuadRetextured.<init>(Lsynth.net.minecraft.client.renderer.block.model.BakedQuad;Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite;)V   # 2 user(s): com.rwtema.extrautils2.utils.helpers.QuadHelper, team.chisel.ctm.client.util.BakedQuadRetextured
-synth.net.minecraft.client.renderer.block.model.FaceBakery.getFacingFromVertexData([I)Lnet.minecraft.util.EnumFacing;   # 2 user(s): com.rwtema.extrautils2.blocks.BlockOpinium, thaumcraft.client.lib.obj.MeshModel
 synth.net.minecraft.client.renderer.block.model.ModelBlockDefinition.<init>(Ljava.util.List;)V   # 2 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader, forestry.core.utils.ModelUtil
 synth.net.minecraft.client.renderer.block.model.ModelBlockDefinition.getVariant(Ljava.lang.String;)Lsynth.net.minecraft.client.renderer.block.model.VariantList;   # 2 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader$VariantLoader, forestry.arboriculture.models.WoodModelLoader
 synth.net.minecraft.client.renderer.block.model.ModelBlockDefinition.hasMultipartData()Z   # 2 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader, forestry.arboriculture.models.WoodModelLoader
@@ -42,24 +26,6 @@ synth.net.minecraftforge.client.model.ForgeBlockStateV1$TRSRDeserializer.INSTANC
 synth.net.minecraftforge.client.model.ItemTextureQuadConverter.convertTexture(Lsynth.net.minecraft.client.renderer.vertex.VertexFormat;Lsynth.net.minecraftforge.common.model.TRSRTransformation;Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite;Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite;FLnet.minecraft.util.EnumFacing;I)Ljava.util.List;   # 2 user(s): cofh.thermalexpansion.render.item.ModelFlorb
 synth.net.minecraftforge.client.model.MultiModelState.<init>(Lcom.google.common.collect.ImmutableList;)V   # 2 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader$WeightedRandomModel, forestry.arboriculture.models.SimpleModel
 synth.net.minecraftforge.client.model.MultiModelState.getPartState(Lsynth.net.minecraftforge.common.model.IModelState;Lsynth.net.minecraftforge.client.model.IModel;I)Lsynth.net.minecraftforge.common.model.IModelState;   # 2 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader$WeightedRandomModel, forestry.arboriculture.models.SimpleModel
-net.minecraft.client.Minecraft.clickMouse()V   # 1 user(s): thebetweenlands.client.handler.ElixirClientHandler
-net.minecraft.client.Minecraft.memoryReserve:[B   # 1 user(s): cofh.core.proxy.ProxyClient
-net.minecraft.client.Minecraft.rightClickDelayTimer:I   # 1 user(s): com.rwtema.extrautils2.keyhandler.ConstantRightClickHandler
-net.minecraft.client.Minecraft.scheduledTasks:Ljava.util.Queue;   # 1 user(s): thebetweenlands.client.handler.WeedwoodRowboatHandler
-net.minecraft.client.Minecraft.sendClickBlockToController(Z)V   # 1 user(s): thebetweenlands.client.handler.ElixirClientHandler
-net.minecraftforge.client.model.ModelLoader.blockModelShapes:Lsynth.net.minecraft.client.renderer.BlockModelShapes;   # 1 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader
-net.minecraftforge.client.model.ModelLoader.resourceManager:Lnet.minecraft.client.resources.IResourceManager;   # 1 user(s): codechicken.lib.model.loader.blockstate.CCBlockStateLoader
-synth.net.minecraft.client.audio.SoundEventAccessor.accessorList:Ljava.util.List;   # 1 user(s): thebetweenlands.client.handler.MusicHandler
-synth.net.minecraft.client.entity.EntityPlayerSP.isRowingBoat()Z   # 1 user(s): com.rwtema.extrautils2.keyhandler.ConstantRightClickHandler
-synth.net.minecraft.client.gui.GuiCreateWorld.getUncollidingSaveDirName(Lsynth.net.minecraft.world.storage.ISaveFormat;Ljava.lang.String;)Ljava.lang.String;   # 1 user(s): org.cyclops.cyclopscore.client.gui.GuiMainMenuExtensionDevWorld
-synth.net.minecraft.client.gui.GuiIngame.getSpectatorGui()Lsynth.net.minecraft.client.gui.GuiSpectator;   # 1 user(s): epicsquid.roots.client.gui.GuiFakeSpectator
-synth.net.minecraft.client.gui.GuiIngame.prevVignetteBrightness:F   # 1 user(s): twilightforest.client.TFClientEvents
-synth.net.minecraft.client.gui.GuiIngame.spectatorGui:Lsynth.net.minecraft.client.gui.GuiSpectator;   # 1 user(s): epicsquid.roots.client.gui.GuiFakeSpectator
-synth.net.minecraft.client.gui.GuiSpectator.<init>(Lnet.minecraft.client.Minecraft;)V   # 1 user(s): epicsquid.roots.client.gui.GuiFakeSpectator
-synth.net.minecraft.client.gui.GuiSpectator.onSpectatorMenuClosed(Lsynth.net.minecraft.client.gui.spectator.SpectatorMenu;)V   # 1 user(s): epicsquid.roots.client.gui.GuiFakeSpectator
-synth.net.minecraft.client.gui.MapItemRenderer$Instance.mapTexture:Lsynth.net.minecraft.client.renderer.texture.DynamicTexture;   # 1 user(s): thebetweenlands.common.world.storage.AmateMapData
-synth.net.minecraft.client.gui.MapItemRenderer$Instance.mapTextureData:[I   # 1 user(s): thebetweenlands.common.world.storage.AmateMapData
-synth.net.minecraft.client.gui.MapItemRenderer.getMapRendererInstance(Lsynth.net.minecraft.world.storage.MapData;)Lsynth.net.minecraft.client.gui.MapItemRenderer$Instance;   # 1 user(s): thebetweenlands.common.world.storage.AmateMapData
 synth.net.minecraft.client.gui.achievement.GuiStats.<init>(Lsynth.net.minecraft.client.gui.GuiScreen;Lsynth.net.minecraft.stats.StatisticsManager;)V   # 1 user(s): baubles.client.gui.GuiPlayerExpanded
 synth.net.minecraft.client.gui.inventory.GuiChest.<init>(Lnet.minecraft.inventory.IInventory;Lnet.minecraft.inventory.IInventory;)V   # 1 user(s): com.teammetallurgy.atum.client.gui.AtumGuiHandler
 synth.net.minecraft.client.gui.inventory.GuiFurnace.<init>(Lsynth.net.minecraft.entity.player.InventoryPlayer;Lnet.minecraft.inventory.IInventory;)V   # 1 user(s): twilightforest.TFCommonProxy
@@ -70,31 +36,11 @@ synth.net.minecraft.client.gui.recipebook.RecipeBookPage.getLastClickedRecipe()L
 synth.net.minecraft.client.gui.recipebook.RecipeBookPage.mouseClicked(IIIIIII)Z   # 1 user(s): buildcraft.lib.gui.recipe.RecipeBookPagePhantom
 synth.net.minecraft.client.gui.recipebook.RecipeList.<init>()V   # 1 user(s): buildcraft.lib.gui.recipe.RecipeListPhantom
 synth.net.minecraft.client.gui.recipebook.RecipeList.getRecipes()Ljava.util.List;   # 1 user(s): buildcraft.lib.gui.recipe.RecipeListPhantom
-synth.net.minecraft.client.network.NetHandlerPlayClient.handleUpdateTileEntity(Lsynth.net.minecraft.network.play.server.SPacketUpdateTileEntity;)V   # 1 user(s): com.creativemd.littletiles.common.packet.LittleBlocksUpdatePacket
-synth.net.minecraft.client.renderer.ActiveRenderInfo.updateRenderInfo(Lnet.minecraft.entity.player.EntityPlayer;Z)V   # 1 user(s): hellfirepvp.astralsorcery.client.util.RenderingUtils
 synth.net.minecraft.client.renderer.BlockModelRenderer$AmbientOcclusionFace.<init>(Lsynth.net.minecraft.client.renderer.BlockModelRenderer;)V   # 1 user(s): lumien.randomthings.util.client.RenderUtils
 synth.net.minecraft.client.renderer.BlockModelRenderer$AmbientOcclusionFace.updateVertexBrightness(Lsynth.net.minecraft.world.IBlockAccess;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.util.EnumFacing;[FLjava.util.BitSet;)V   # 1 user(s): lumien.randomthings.util.client.RenderUtils
 synth.net.minecraft.client.renderer.BlockModelRenderer$AmbientOcclusionFace.vertexBrightness:[I   # 1 user(s): lumien.randomthings.util.client.RenderUtils
 synth.net.minecraft.client.renderer.BlockModelRenderer$AmbientOcclusionFace.vertexColorMultiplier:[F   # 1 user(s): lumien.randomthings.util.client.RenderUtils
-synth.net.minecraft.client.renderer.DestroyBlockProgress.getPartialBlockDamage()I   # 1 user(s): epicsquid.mysticallib.event.client.ToolOverlayRenderer
-synth.net.minecraft.client.renderer.DestroyBlockProgress.getPosition()Lnet.minecraft.util.math.BlockPos;   # 1 user(s): epicsquid.mysticallib.event.client.ToolOverlayRenderer
-synth.net.minecraft.client.renderer.EntityRenderer.renderHand(FI)V   # 1 user(s): thebetweenlands.client.handler.ShaderHandler
-synth.net.minecraft.client.renderer.ItemRenderer.getMapAngleFromPitch(F)F   # 1 user(s): codechicken.lib.render.item.map.MapRenderRegistry
-synth.net.minecraft.client.renderer.ItemRenderer.itemStackOffHand:Lnet.minecraft.item.ItemStack;   # 1 user(s): codechicken.lib.render.item.map.MapRenderRegistry
-synth.net.minecraft.client.renderer.ItemRenderer.renderArmFirstPerson(FFLsynth.net.minecraft.util.EnumHandSide;)V   # 1 user(s): codechicken.lib.render.item.map.MapRenderRegistry
-synth.net.minecraft.client.renderer.ItemRenderer.renderArms()V   # 1 user(s): codechicken.lib.render.item.map.MapRenderRegistry
 synth.net.minecraft.client.renderer.RegionRenderCacheBuilder.getWorldRendererByLayer(Lnet.minecraft.util.BlockRenderLayer;)Lsynth.net.minecraft.client.renderer.BufferBuilder;   # 1 user(s): com.creativemd.littletiles.client.render.world.LittleChunkDispatcher
-synth.net.minecraft.client.renderer.RenderGlobal.damagedBlocks:Ljava.util.Map;   # 1 user(s): epicsquid.mysticallib.event.client.ToolOverlayRenderer
-synth.net.minecraft.client.renderer.RenderGlobal.destroyBlockIcons:[Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite;   # 1 user(s): epicsquid.mysticallib.event.client.ToolOverlayRenderer
-synth.net.minecraft.client.renderer.RenderGlobal.getRenderedChunks()I   # 1 user(s): hellfirepvp.astralsorcery.client.event.ClientGatewayHandler
-synth.net.minecraft.client.renderer.RenderGlobal.renderClouds(FIDDD)V   # 1 user(s): thebetweenlands.client.render.sky.OverworldRiftSkyRenderer
-synth.net.minecraft.client.renderer.RenderGlobal.renderSky(FI)V   # 1 user(s): hellfirepvp.astralsorcery.client.sky.RenderSkybox
-synth.net.minecraft.client.renderer.RenderGlobal.renderSkyEnd()V   # 1 user(s): hellfirepvp.astralsorcery.client.sky.RenderSkybox
-synth.net.minecraft.client.renderer.RenderGlobal.sendBlockBreakProgress(ILnet.minecraft.util.math.BlockPos;I)V   # 1 user(s): thaumcraft.client.fx.FXDispatcher
-synth.net.minecraft.client.renderer.RenderItem.registerItem(Lnet.minecraft.item.Item;ILjava.lang.String;)V   # 1 user(s): codechicken.lib.render.item.CCRenderItem
-synth.net.minecraft.client.renderer.RenderItem.renderItemModel(Lnet.minecraft.item.ItemStack;Lsynth.net.minecraft.client.renderer.block.model.IBakedModel;Lsynth.net.minecraft.client.renderer.block.model.ItemCameraTransforms$TransformType;Z)V   # 1 user(s): codechicken.lib.render.item.CCRenderItem
-synth.net.minecraft.client.renderer.RenderItem.renderItemModelIntoGUI(Lnet.minecraft.item.ItemStack;IILsynth.net.minecraft.client.renderer.block.model.IBakedModel;)V   # 1 user(s): codechicken.lib.render.item.CCRenderItem
-synth.net.minecraft.client.renderer.RenderItem.setupGuiTransform(IIZ)V   # 1 user(s): codechicken.lib.render.item.CCRenderItem
 synth.net.minecraft.client.renderer.Vector3d.<init>()V   # 1 user(s): thebetweenlands.client.render.tile.RenderDruidAltar
 synth.net.minecraft.client.renderer.Vector3d.x:D   # 1 user(s): thebetweenlands.client.render.tile.RenderDruidAltar
 synth.net.minecraft.client.renderer.Vector3d.z:D   # 1 user(s): thebetweenlands.client.render.tile.RenderDruidAltar
@@ -123,11 +69,8 @@ synth.net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator.getStatus()L
 synth.net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator.getType()Lsynth.net.minecraft.client.renderer.chunk.ChunkCompileTaskGenerator$Type;   # 1 user(s): com.creativemd.littletiles.client.render.cache.RenderingThread
 synth.net.minecraft.client.renderer.chunk.CompiledChunk.isLayerStarted(Lnet.minecraft.util.BlockRenderLayer;)Z   # 1 user(s): com.creativemd.littletiles.client.render.world.LittleChunkDispatcher
 synth.net.minecraft.client.renderer.chunk.RenderChunk.getLockCompileTask()Ljava.util.concurrent.locks.ReentrantLock;   # 1 user(s): com.creativemd.littletiles.client.render.cache.RenderingThread
-synth.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.cameraHitResult:Lsynth.net.minecraft.util.math.RayTraceResult;   # 1 user(s): svenhjol.charm.crafting.client.RenderTileCrate
 synth.net.minecraft.client.util.RecipeBookClient.rebuildTable()V   # 1 user(s): techreborn.proxies.ClientProxy
 synth.net.minecraftforge.client.FluidContainerColorer.<init>()V   # 1 user(s): thebetweenlands.common.registries.ItemRegistry
-synth.net.minecraftforge.client.ForgeHooksClient.getSkyBlendColour(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)I   # 1 user(s): thebetweenlands.client.render.sky.OverworldRiftSkyRenderer
-synth.net.minecraftforge.client.ForgeHooksClient.renderSpecificFirstPersonHand(Lnet.minecraft.util.EnumHand;FFFFLnet.minecraft.item.ItemStack;)Z   # 1 user(s): thebetweenlands.common.item.tools.ItemGreatsword
 synth.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent.getEntityPlayer()Lnet.minecraft.entity.player.EntityPlayer;   # 1 user(s): thebetweenlands.common.capability.collision.RingOfDispersionEntityCapability
 synth.net.minecraftforge.client.gui.NotificationModUpdateScreen.drawScreen(IIF)V   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
 synth.net.minecraftforge.client.gui.NotificationModUpdateScreen.init(Lsynth.net.minecraft.client.gui.GuiMainMenu;Lsynth.net.minecraft.client.gui.GuiButton;)Lsynth.net.minecraftforge.client.gui.NotificationModUpdateScreen;   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu

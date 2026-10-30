@@ -161,4 +161,124 @@ public class RenderGlobal implements legacyconnector.v1_12_2.net.minecraft.clien
         }
         tessellator.draw();
     }
+
+    // ------------------------------------------------------------------ block breaking, sky and statistics (runtime list, client)
+
+    /**
+     * Block-breaking progress by breaker id: a live view of the modern renderer's (mods read the cracking blocks from it to draw cracks
+     * on their own models); putting or removing an entry starts or stops the cracks.
+     */
+    public final Map<Integer, DestroyBlockProgress> damagedBlocks = new DamagedBlocks();
+
+    /** Phantom: the ten crack stages of the block atlas ({@code blocks/destroy_stage_0..9}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite[] destroyBlockIcons;
+    private final legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite[] mcc$destroyIcons =
+            new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite[10];
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite[] mcc$get$destroyBlockIcons(RenderGlobal r) {
+        var icons = r.mcc$destroyIcons;
+        if (icons[9] == null) {
+            var mc = Minecraft.getMinecraft();
+            var map = mc == null ? null : mc.getTextureMapBlocks();
+            if (map != null) for (int i = 0; i < icons.length; ++i) icons[i] = map.getAtlasSprite("minecraft:blocks/destroy_stage_" + i);
+        }
+        return icons;
+    }
+
+    public static void mcc$set$destroyBlockIcons(RenderGlobal r, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite[] value) {
+        if (value != null) System.arraycopy(value, 0, r.mcc$destroyIcons, 0, Math.min(value.length, r.mcc$destroyIcons.length));
+    }
+
+    /** Shows (stage 0-9) or clears (any other stage) the cracks of a block being broken by {@code breakerId}. */
+    public void sendBlockBreakProgress(int breakerId, BlockPos pos, int progress) {
+        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        if (renderer != null && pos != null) renderer.destroyBlockProgress(breakerId, new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()), progress);
+    }
+
+    /** The chunk sections drawn last frame (the F3 "C:" count). */
+    public int getRenderedChunks() {
+        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        return renderer == null ? 0 : renderer.countRenderedSections();
+    }
+
+    /**
+     * Draws the vanilla sky. Mods' sky renderers call it before or after their own layers; the modern level renderer draws the sky
+     * itself whenever no legacy sky replaces it, so there is nothing to add here.
+     */
+    public void renderSky(float partialTicks, int pass) {
+    }
+
+    /** The End's sky box: drawn by the modern level renderer for End-like dimensions (see {@link #renderSky}). */
+    public void renderSkyEnd() {
+    }
+
+    /** Vanilla clouds: drawn by the modern level renderer at the dimension's cloud height (see {@link #renderSky}). */
+    public void renderClouds(float partialTicks, int pass, double x, double y, double z) {
+    }
+
+    /** {@link #damagedBlocks}: the modern renderer's blocks being broken, as 1.12 progress entries. */
+    private static final class DamagedBlocks extends java.util.AbstractMap<Integer, DestroyBlockProgress> {
+        private static java.lang.reflect.Field field;
+        private static boolean failed;
+
+        @SuppressWarnings("unchecked")
+        private static it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.server.level.BlockDestructionProgress> modern() {
+            var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+            if (renderer == null || failed) return null;
+            try {
+                if (field == null) {
+                    field = net.minecraft.client.renderer.LevelRenderer.class.getDeclaredField("destroyingBlocks");
+                    field.setAccessible(true);
+                }
+                return (it.unimi.dsi.fastutil.ints.Int2ObjectMap<net.minecraft.server.level.BlockDestructionProgress>) field.get(renderer);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                failed = true;
+                return null;
+            }
+        }
+
+        private static DestroyBlockProgress legacy(net.minecraft.server.level.BlockDestructionProgress p) {
+            var pos = p.getPos();
+            DestroyBlockProgress out = new DestroyBlockProgress(p.getId(), new BlockPos(pos.getX(), pos.getY(), pos.getZ()));
+            out.setPartialBlockDamage(p.getProgress());
+            out.setCloudUpdateTick(p.getUpdatedRenderTick());
+            return out;
+        }
+
+        @Override
+        public Set<Entry<Integer, DestroyBlockProgress>> entrySet() {
+            var modern = modern();
+            Map<Integer, DestroyBlockProgress> out = new java.util.LinkedHashMap<>();
+            if (modern != null) {
+                for (var p : new java.util.ArrayList<>(modern.values())) out.put(p.getId(), legacy(p));
+            }
+            return out.entrySet();
+        }
+
+        @Override
+        public DestroyBlockProgress get(Object key) {
+            var modern = modern();
+            if (modern == null || !(key instanceof Integer id)) return null;
+            var p = modern.get(id.intValue());
+            return p == null ? null : legacy(p);
+        }
+
+        @Override
+        public DestroyBlockProgress put(Integer key, DestroyBlockProgress value) {
+            var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+            if (value != null && renderer != null && value.getPosition() != null) {
+                BlockPos pos = value.getPosition();
+                renderer.destroyBlockProgress(key, new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()), value.getPartialBlockDamage());
+            }
+            return null;
+        }
+
+        @Override
+        public DestroyBlockProgress remove(Object key) {
+            var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+            if (renderer != null && key instanceof Integer id) renderer.destroyBlockProgress(id, net.minecraft.core.BlockPos.ZERO, -1);
+            return null;
+        }
+    }
 }
