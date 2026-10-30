@@ -53,4 +53,33 @@ public class ItemTransformVec3f {
         i = 31 * i + translation.hashCode();
         return 31 * i + scale.hashCode();
     }
+
+    /** Reads a transform from a model's {@code display} entry: translation in pixels (clamped to 5 blocks), scale clamped to 4. */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<ItemTransformVec3f> {
+        public static final Vector3f ROTATION_DEFAULT = new Vector3f(0.0F, 0.0F, 0.0F);
+        public static final Vector3f TRANSLATION_DEFAULT = new Vector3f(0.0F, 0.0F, 0.0F);
+        public static final Vector3f SCALE_DEFAULT = new Vector3f(1.0F, 1.0F, 1.0F);
+
+        @Override
+        public ItemTransformVec3f deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            com.google.gson.JsonObject o = json.getAsJsonObject();
+            Vector3f rotation = parseVector3f(o, "rotation", ROTATION_DEFAULT);
+            Vector3f translation = parseVector3f(o, "translation", TRANSLATION_DEFAULT);
+            translation.x = Math.max(-5.0F, Math.min(5.0F, translation.x * 0.0625F));
+            translation.y = Math.max(-5.0F, Math.min(5.0F, translation.y * 0.0625F));
+            translation.z = Math.max(-5.0F, Math.min(5.0F, translation.z * 0.0625F));
+            Vector3f scale = parseVector3f(o, "scale", SCALE_DEFAULT);
+            scale.x = Math.max(-4.0F, Math.min(4.0F, scale.x));
+            scale.y = Math.max(-4.0F, Math.min(4.0F, scale.y));
+            scale.z = Math.max(-4.0F, Math.min(4.0F, scale.z));
+            return new ItemTransformVec3f(rotation, translation, scale);
+        }
+
+        private Vector3f parseVector3f(com.google.gson.JsonObject json, String key, Vector3f fallback) {
+            if (!json.has(key)) return new Vector3f(fallback);
+            com.google.gson.JsonArray array = json.getAsJsonArray(key);
+            if (array.size() != 3) throw new com.google.gson.JsonParseException("Expected 3 " + key + " values, found: " + array.size());
+            return new Vector3f(array.get(0).getAsFloat(), array.get(1).getAsFloat(), array.get(2).getAsFloat());
+        }
+    }
 }
