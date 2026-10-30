@@ -123,4 +123,59 @@ public class BlockModelRenderer {
             tessellator.draw();
         }
     }
+
+    /**
+     * 1.12's smooth lighting of one quad face: the light and shade of its four corners from the neighbouring blocks. Computed by the
+     * modern block renderer's own ambient occlusion over the legacy block access.
+     */
+    public class AmbientOcclusionFace {
+        public final float[] vertexColorMultiplier = new float[4];
+        public final int[] vertexBrightness = new int[4];
+
+        public AmbientOcclusionFace() {
+        }
+
+        public void updateVertexBrightness(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess worldIn, IBlockState state, BlockPos centerPos, EnumFacing direction,
+                float[] faceShape, java.util.BitSet shapeState) {
+            var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(state);
+            if (modern == null || direction == null) return;
+            try {
+                Object face = mcc$aoFace();
+                if (face == null) return;
+                mcc$calculate.invoke(face, new org.kylepitcock.legacyconnector.v1_12_2.client.LegacyBlockGetter1122(worldIn), modern,
+                        new net.minecraft.core.BlockPos(centerPos.getX(), centerPos.getY(), centerPos.getZ()), direction.mcc$modern(), faceShape, shapeState, true);
+                System.arraycopy((float[]) mcc$brightness.get(face), 0, vertexColorMultiplier, 0, 4);
+                System.arraycopy((int[]) mcc$lightmap.get(face), 0, vertexBrightness, 0, 4);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("computing smooth lighting", e);
+            }
+        }
+    }
+
+    private static java.lang.reflect.Constructor<?> mcc$aoCtor;
+    private static java.lang.reflect.Method mcc$calculate;
+    private static java.lang.reflect.Field mcc$brightness, mcc$lightmap;
+    private static boolean mcc$aoReflected;
+
+    /** A fresh modern ambient occlusion face (the class is package-private), or null when it cannot be reached. */
+    private static synchronized Object mcc$aoFace() throws ReflectiveOperationException {
+        if (!mcc$aoReflected) {
+            mcc$aoReflected = true;
+            try {
+                Class<?> c = Class.forName("net.minecraft.client.renderer.block.ModelBlockRenderer$AmbientOcclusionFace");
+                mcc$aoCtor = c.getDeclaredConstructor();
+                mcc$aoCtor.setAccessible(true);
+                mcc$calculate = c.getDeclaredMethod("calculate", net.minecraft.world.level.BlockAndTintGetter.class, net.minecraft.world.level.block.state.BlockState.class,
+                        net.minecraft.core.BlockPos.class, net.minecraft.core.Direction.class, float[].class, java.util.BitSet.class, boolean.class);
+                mcc$calculate.setAccessible(true);
+                mcc$brightness = c.getDeclaredField("brightness");
+                mcc$brightness.setAccessible(true);
+                mcc$lightmap = c.getDeclaredField("lightmap");
+                mcc$lightmap.setAccessible(true);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                mcc$aoCtor = null;
+            }
+        }
+        return mcc$aoCtor == null ? null : mcc$aoCtor.newInstance();
+    }
 }
