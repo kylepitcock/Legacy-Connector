@@ -60,4 +60,34 @@ public class ParticleCrit extends Particle {
             motionZ *= 0.699999988079071D;
         }
     }
+
+    public static class Factory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            return new ParticleCrit(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+        }
+    }
+
+    public static class MagicFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            Particle particle = new ParticleCrit(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+            particle.setRBGColorF(particle.getRedColorF() * 0.3F, particle.getGreenColorF() * 0.8F, particle.getBlueColorF());
+            particle.nextTextureIndexX();
+            return particle;
+        }
+    }
+
+    public static class DamageIndicatorFactory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            Particle particle = new ParticleCrit(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn + 1.0D, zSpeedIn, 1.0F);
+            particle.setMaxAge(20);
+            particle.setParticleTextureIndex(67);
+            return particle;
+        }
+    }
 }
