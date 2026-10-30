@@ -10,7 +10,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemHolder;
 import org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts;
 import org.slf4j.LoggerFactory;
 
-/** Logs, once the server has started, how many items, blocks and entity types each legacy mod registered. */
+/** Logs, once the server has started, how many items, blocks and entity types each legacy mod (1.7.10 and 1.12.2) registered. */
 public final class LegacyContentSummary {
     private LegacyContentSummary() {}
 
@@ -21,12 +21,14 @@ public final class LegacyContentSummary {
     private static void log() {
         Map<String, int[]> byMod = new TreeMap<>();
         BuiltInRegistries.ITEM.entrySet().forEach(e -> {
-            if (e.getValue() instanceof LegacyItemHolder) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[0]++;
+            if (e.getValue() instanceof LegacyItemHolder || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Item
+                    || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockItem) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[0]++;
         });
         BuiltInRegistries.BLOCK.entrySet().forEach(e -> {
-            if (e.getValue() instanceof LegacyBlockAdapter) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[1]++;
+            if (e.getValue() instanceof LegacyBlockAdapter || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[1]++;
         });
         for (LegacyHosts.Info i : LegacyHosts.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;
+        for (var i : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;
         for (var id : org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs.ids()) byMod.computeIfAbsent(id.getNamespace(), k -> new int[4])[3]++;
         StringBuilder sb = new StringBuilder();
         int items = 0, blocks = 0, entities = 0;

@@ -27,7 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Development check ({@code -Dlegacyconnector.entitySelfTest=true}, with the entity test): places every legacy block (two
+ * Development check ({@code -Dlegacyconnector.entitySelfTest=true}, with the entity test): places every legacy block, 1.7.10 and 1.12.2 (two
  * metadata values) in a grid high above spawn, lets the world tick, right-clicks each with a fake player, and
  * reports blocks whose placement, tile entity, ticking or activation threw. Everything is removed afterwards.
  */
@@ -64,9 +64,11 @@ public final class BlockSelfTest {
         int i = 0;
         // Inside the spawn chunks (already loaded): generating chunks one by one from here would take minutes.
         int baseX = spawn.getX() - 40, baseZ = spawn.getZ() - 40, y0 = level.getMaxBuildHeight() - 60;
-        for (Block legacy : BlockBridge.modBlocks()) {
-            if (legacy.mcc$modern == null) continue;
-            var key = BuiltInRegistries.BLOCK.getKey(legacy.mcc$modern);
+        List<net.minecraft.world.level.block.Block> blocks = new ArrayList<>();
+        for (Block legacy : BlockBridge.modBlocks()) if (legacy.mcc$modern != null) blocks.add(legacy.mcc$modern);
+        for (var b : BuiltInRegistries.BLOCK) if (b instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block) blocks.add(b);
+        for (var modernBlock : blocks) {
+            var key = BuiltInRegistries.BLOCK.getKey(modernBlock);
             if (key == null) continue;
             for (int meta : METAS) {
                 int layer = i / 1600, cell = i % 1600;
@@ -79,9 +81,11 @@ public final class BlockSelfTest {
                         skipped++;
                         continue;
                     }
-                    BlockState state = legacy.mcc$modern.defaultBlockState();
-                    if (legacy.mcc$modern instanceof LegacyBlockAdapter) {
+                    BlockState state = modernBlock.defaultBlockState();
+                    if (modernBlock instanceof LegacyBlockAdapter) {
                         state = state.setValue(LegacyBlockAdapter.META, meta);
+                    } else if (modernBlock instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block) {
+                        state = state.setValue(org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.META, meta);
                     }
                     level.setBlock(pos, state, 3);
                     PLACED.add(pos);
@@ -251,30 +255,39 @@ public final class BlockSelfTest {
         Map<String, String> problems = new LinkedHashMap<>();
         BlockPos ground = level.getSharedSpawnPos().above(2);
         for (var item : org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.modItems()) {
-            for (var modern : item.mcc$variants.values()) {
-                String name = String.valueOf(BuiltInRegistries.ITEM.getKey(modern));
-                if (problems.containsKey(name)) continue;
-                var stack = new net.minecraft.world.item.ItemStack(modern);
-                String stage = "name";
-                try {
-                    modern.getName(stack);
-                    stage = "tooltip";
-                    stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(level), player, net.minecraft.world.item.TooltipFlag.ADVANCED);
-                    stage = "use";
-                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
-                    modern.use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);
-                    stage = "useOn";
-                    player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
-                    var hit = new BlockHitResult(Vec3.atCenterOf(ground), Direction.UP, ground, false);
-                    modern.useOn(new net.minecraft.world.item.context.UseOnContext(level, player, net.minecraft.world.InteractionHand.MAIN_HAND,
-                            player.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND), hit));
-                    player.closeContainer();
-                } catch (RuntimeException | LinkageError ex) {
-                    problems.put(name, stage + " threw " + describe(ex));
-                }
+            for (var modern : item.mcc$variants.values()) itemTest(level, player, modern, ground, problems);
+        }
+        for (var modern : BuiltInRegistries.ITEM) {
+            if (modern instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Item
+                    || modern instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockItem) {
+                itemTest(level, player, modern, ground, problems);
             }
         }
         player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, net.minecraft.world.item.ItemStack.EMPTY);
         return problems;
+    }
+
+    private static void itemTest(ServerLevel level, net.minecraft.server.level.ServerPlayer player, net.minecraft.world.item.Item modern, BlockPos ground,
+            Map<String, String> problems) {
+        String name = String.valueOf(BuiltInRegistries.ITEM.getKey(modern));
+        if (problems.containsKey(name)) return;
+        var stack = new net.minecraft.world.item.ItemStack(modern);
+        String stage = "name";
+        try {
+            modern.getName(stack);
+            stage = "tooltip";
+            stack.getTooltipLines(net.minecraft.world.item.Item.TooltipContext.of(level), player, net.minecraft.world.item.TooltipFlag.ADVANCED);
+            stage = "use";
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
+            modern.use(level, player, net.minecraft.world.InteractionHand.MAIN_HAND);
+            stage = "useOn";
+            player.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, stack.copy());
+            var hit = new BlockHitResult(Vec3.atCenterOf(ground), Direction.UP, ground, false);
+            modern.useOn(new net.minecraft.world.item.context.UseOnContext(level, player, net.minecraft.world.InteractionHand.MAIN_HAND,
+                    player.getItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND), hit));
+            player.closeContainer();
+        } catch (RuntimeException | LinkageError ex) {
+            problems.put(name, stage + " threw " + describe(ex));
+        }
     }
 }
