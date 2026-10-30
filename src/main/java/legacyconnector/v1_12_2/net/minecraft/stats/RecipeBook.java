@@ -18,7 +18,7 @@ public class RecipeBook {
         this(null);
     }
 
-    private RecipeBook(net.minecraft.stats.RecipeBook modern) {
+    protected RecipeBook(net.minecraft.stats.RecipeBook modern) {
         this.mcc$modern = modern;
     }
 

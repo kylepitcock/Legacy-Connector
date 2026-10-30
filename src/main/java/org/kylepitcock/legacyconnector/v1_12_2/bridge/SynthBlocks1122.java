@@ -62,6 +62,21 @@ public final class SynthBlocks1122 {
             String id = tag.getCompoundTag("EntityTag").getString("id");
             return id.isEmpty() ? null : new ResourceLocation(id);
         });
+        // ItemMonsterPlacer.applyItemEntityDataToEntity(world, player, stack, entity): the egg's EntityTag merged into the entity
+        // (the modern rule: operators only for entities that guard their data)
+        Synth.addStaticMethod("net.minecraft.item.ItemMonsterPlacer.applyItemEntityDataToEntity", args -> {
+            if (args.length != 4 || !(args[0] instanceof World w) || !(args[2] instanceof ItemStack s)
+                    || !(args[3] instanceof legacyconnector.v1_12_2.net.minecraft.entity.Entity e)) {
+                return Synth.NONE;
+            }
+            var level = w.mcc$level();
+            NBTTagCompound tag = s.getTagCompound();
+            if (level == null || e.mcc$entity == null || tag == null || !tag.hasKey("EntityTag", 10)) return null;
+            var player = args[1] instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer p ? p.mcc$player() : null;
+            net.minecraft.world.entity.EntityType.updateCustomEntityTag(level, player, e.mcc$entity,
+                    net.minecraft.world.item.component.CustomData.of(tag.getCompoundTag("EntityTag").mcc$modern()));
+            return null;
+        });
         // ItemBanner.makeBanner(color, patterns): a banner stack with its base colour and patterns in BlockEntityTag
         Synth.addStaticMethod("net.minecraft.item.ItemBanner.makeBanner", args -> {
             if (args.length != 2 || !(args[0] instanceof legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor color)) return Synth.NONE;

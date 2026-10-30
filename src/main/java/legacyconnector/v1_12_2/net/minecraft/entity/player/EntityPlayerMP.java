@@ -37,6 +37,18 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         return p == null ? EntityPlayer.EnumChatVisibility.FULL : EntityPlayer.EnumChatVisibility.getEnumChatVisibility(p.getChatVisibility().getId());
     }
 
+    /** The player's statistics (a view of the modern stats). */
+    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer getStatFile() {
+        var p = mcc$serverPlayer();
+        return p == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(p.getStats());
+    }
+
+    /** The player's recipe book (a view of the modern one). */
+    public legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer getRecipeBook() {
+        var p = mcc$serverPlayer();
+        return p == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer.mcc$of(p.getRecipeBook());
+    }
+
     public net.minecraft.server.level.ServerPlayer mcc$serverPlayer() {
         return (net.minecraft.server.level.ServerPlayer) mcc$entity;
     }

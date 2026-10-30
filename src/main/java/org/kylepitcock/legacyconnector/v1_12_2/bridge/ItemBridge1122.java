@@ -115,6 +115,8 @@ public final class ItemBridge1122 {
                         .nutrition(food.getHealAmount(legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY))
                         .saturationModifier(food.getSaturationModifier(legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY));
                 if (food.mcc$alwaysEdible()) b.alwaysEdible();
+                // soups (ItemSoup) leave their bowl
+                if (food instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemSoup) b.usingConvertsTo(net.minecraft.world.item.Items.BOWL);
                 var effect = food.mcc$potionEffect() == null ? null : food.mcc$potionEffect().mcc$toModern();
                 if (effect != null) b.effect(() -> new net.minecraft.world.effect.MobEffectInstance(effect), food.mcc$potionEffectProbability());
                 p.food(b.build());
