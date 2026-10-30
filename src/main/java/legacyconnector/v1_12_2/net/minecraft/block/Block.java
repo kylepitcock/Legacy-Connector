@@ -253,6 +253,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public Block disableStats() {
+        enableStats = false;
         return this;
     }
 
@@ -371,9 +372,94 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public void onPlayerDestroy(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        onBlockDestroyedByPlayer(world, pos, state);
+    }
+
+    /** The older MCP name of {@link #onPlayerDestroy} (mods built against those mappings override this one). */
+    public void onBlockDestroyedByPlayer(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
     }
 
     public void onEntityCollision(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        onEntityCollidedWithBlock(world, pos, state, entity);
+    }
+
+    /** The older MCP name of {@link #onEntityCollision}. */
+    public void onEntityCollidedWithBlock(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn) {
+    }
+
+    /** The older MCP name of {@link #onExplosionDestroy}. */
+    public void onBlockDestroyedByExplosion(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.world.Explosion explosionIn) {
+    }
+
+    /** How a block's model is shifted per position (flowers and grass sit off-centre). */
+    public enum EnumOffsetType {
+        NONE,
+        XZ,
+        XYZ;
+    }
+
+    public EnumOffsetType getOffsetType() {
+        return EnumOffsetType.NONE;
+    }
+
+    /** Whether the stats count this block (set by disableStats). */
+    protected boolean enableStats = true;
+
+    /** Every block state by its numeric id ({@link #getStateId}), as 1.12's identity map answered it. */
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState> BLOCK_STATE_IDS =
+            new legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<>() {
+                @Override
+                public int get(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState key) {
+                    return key == null ? -1 : getStateId(key);
+                }
+
+                @Override
+                public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getByValue(int value) {
+                    return getStateById(value);
+                }
+            };
+
+    /** Forge: whether the block sets entities in it on fire (fire and lava). */
+    public boolean isBurning(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return this == legacyconnector.v1_12_2.net.minecraft.init.Blocks.FIRE || getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.LAVA
+                || getMaterialLegacy() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.FIRE;
+    }
+
+    /** Forge: dyes the block (a block with a "color" property takes the colour), true when it changed. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public boolean recolorBlock(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor color) {
+        legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state = world.getBlockState(pos);
+        for (legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty prop : state.getPropertyKeys()) {
+            if (prop.getName().equals("color") && prop.getValueClass() == legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.class) {
+                if (state.getValue(prop) != color) {
+                    world.setBlockState(pos, state.withProperty(prop, color));
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Forge: the path node type of the block for mobs' path finding (null: decided from the block as vanilla does). */
+    public legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNodeType getAiPathNodeType(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return isBurning(world, pos) ? legacyconnector.v1_12_2.net.minecraft.pathfinding.PathNodeType.DAMAGE_FIRE : null;
+    }
+
+    /** Forge (client): the block's own particles when hit; false lets the game spawn the default ones. */
+    public boolean addHitEffects(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World worldObj,
+            legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult target, legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager manager) {
+        return false;
+    }
+
+    /** Forge (client): the block's own particles when broken; false lets the game spawn the default ones. */
+    public boolean addDestroyEffects(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.client.particle.ParticleManager manager) {
+        return false;
     }
 
     public void onEntityWalk(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
@@ -1063,6 +1149,7 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Called after an explosion removed the block (TNT primes itself here). */
     public void onExplosionDestroy(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.world.Explosion explosionIn) {
+        onBlockDestroyedByExplosion(worldIn, pos, explosionIn);
     }
 
     /** Whether an explosion drops the block's items (by chance) rather than destroying them. */

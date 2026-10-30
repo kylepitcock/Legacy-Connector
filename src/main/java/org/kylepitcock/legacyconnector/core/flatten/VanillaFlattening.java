@@ -42,6 +42,8 @@ public final class VanillaFlattening {
     private static Map<BlockState, Integer> reverseStates;
     private static Map<Block, Integer> reverseBlocks;
     private static Map<String, Integer> blockIds;
+    private static String[] blockNames;
+    private static Map<BlockState, Integer> nearest;
     private static final Map<Integer, Item> ITEMS = new HashMap<>();
     private static Map<String, Integer> itemIds;
 
@@ -64,9 +66,13 @@ public final class VanillaFlattening {
             reverseBlocks.putIfAbsent(s.getBlock(), key);
         }
         blockIds = new HashMap<>();
+        blockNames = new String[256];
         for (Object2IntMap.Entry<String> e : BlockStateData.ID_BY_OLD_NAME.object2IntEntrySet()) {
             blockIds.put(e.getKey(), e.getIntValue() >> 4);
+            int id = e.getIntValue() >> 4;
+            if (id >= 0 && id < 256 && (blockNames[id] == null || e.getKey().compareTo(blockNames[id]) < 0)) blockNames[id] = e.getKey();
         }
+        nearest = new java.util.concurrent.ConcurrentHashMap<>();
         LOG.debug("Built legacy block flattening table: {} states", reverseStates.size());
     }
 
@@ -99,6 +105,38 @@ public final class VanillaFlattening {
         if (exact != null) return exact;
         Integer byBlock = reverseBlocks.get(state.getBlock());
         return byBlock == null ? -1 : byBlock;
+    }
+
+    /**
+     * {@code id << 4 | meta} for a modern state: the exact legacy state, else the legacy state of the same block that shares the most
+     * property values (a waterlogged or powered state 1.12 never had), else -1.
+     */
+    public static int nearestLegacyKey(BlockState state) {
+        initBlocks();
+        Integer exact = reverseStates.get(state);
+        if (exact != null) return exact;
+        Integer known = nearest.get(state);
+        if (known != null) return known;
+        int best = -1;
+        int bestScore = -1;
+        for (int key = 0; key < states.length; key++) {
+            BlockState s = states[key];
+            if (s == null || s.getBlock() != state.getBlock() || reverseStates.get(s) != key) continue;
+            int score = 0;
+            for (var p : state.getProperties()) if (s.getValue(p).equals(state.getValue(p))) score++;
+            if (score > bestScore) {
+                bestScore = score;
+                best = key;
+            }
+        }
+        nearest.put(state, best);
+        return best;
+    }
+
+    /** The 1.12 registry name ("minecraft:stone") of a legacy numeric block id, or null. */
+    public static String legacyName(int legacyId) {
+        initBlocks();
+        return legacyId < 0 || legacyId >= blockNames.length ? null : blockNames[legacyId];
     }
 
     /** Numeric id of a legacy block name ("stone" or "minecraft:stone"), or -1. */

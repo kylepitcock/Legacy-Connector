@@ -20,6 +20,28 @@ public class ItemArmor extends Item {
         this.toughness = material.getToughness();
         setMaxDamage(material.getDurability(equipmentSlot));
         this.maxStackSize = 1;
+        legacyconnector.v1_12_2.net.minecraft.block.BlockDispenser.DISPENSE_BEHAVIOR_REGISTRY.putObject(this, DISPENSER_BEHAVIOR);
+    }
+
+    /** Dispensers put armour on the entity in front of them (or drop it when there is none). */
+    public static final legacyconnector.v1_12_2.net.minecraft.dispenser.IBehaviorDispenseItem DISPENSER_BEHAVIOR =
+            new legacyconnector.v1_12_2.net.minecraft.dispenser.BehaviorDefaultDispenseItem() {
+                @Override
+                protected ItemStack dispenseStack(legacyconnector.v1_12_2.net.minecraft.dispenser.IBlockSource source, ItemStack stack) {
+                    ItemStack rest = dispenseArmor(source, stack);
+                    return rest.isEmpty() ? super.dispenseStack(source, stack) : rest;
+                }
+            };
+
+    /** Equips one of the stack on the living entity in front of the dispenser that can wear it; EMPTY when there is none. */
+    public static ItemStack dispenseArmor(legacyconnector.v1_12_2.net.minecraft.dispenser.IBlockSource blockSource, ItemStack stack) {
+        var source = org.kylepitcock.legacyconnector.v1_12_2.bridge.Dispensers1122.modernSource(blockSource);
+        if (source == null || stack == null || stack.isEmpty()) return ItemStack.EMPTY;
+        if (!net.minecraft.world.item.ArmorItem.dispenseArmor(source, org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack))) {
+            return ItemStack.EMPTY;
+        }
+        stack.shrink(1);
+        return stack;
     }
 
     public ArmorMaterial getArmorMaterial() {
