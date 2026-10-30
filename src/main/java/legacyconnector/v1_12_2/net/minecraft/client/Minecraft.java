@@ -505,6 +505,16 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.launchIntegratedServer(folderName);
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat saveLoader;
+
+    /** The client's saves folder: its worlds, their level.dat and save handlers. */
+    public synchronized legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat getSaveLoader() {
+        if (saveLoader == null) {
+            saveLoader = new legacyconnector.v1_12_2.net.minecraft.world.storage.SaveFormatOld(new java.io.File(gameDir, "saves"), getDataFixer());
+        }
+        return saveLoader;
+    }
+
     /** Phantom: 1.12 skipped drawing the world while one loaded; the game decides that now. */
     @Deprecated
     public boolean skipRenderWorld;

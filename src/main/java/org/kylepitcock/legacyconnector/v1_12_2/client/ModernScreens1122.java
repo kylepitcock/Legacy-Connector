@@ -30,6 +30,7 @@ public final class ModernScreens1122 {
         try {
             if (screen instanceof TitleScreen) return new MainMenuView(screen);
             if (screen instanceof net.minecraft.client.gui.screens.options.controls.ControlsScreen cs) return new ControlsView(cs);
+            if (screen instanceof net.minecraft.client.gui.screens.worldselection.SelectWorldScreen ws) return new WorldSelectionView(ws);
             if (screen instanceof CreativeModeInventoryScreen cs) return new CreativeView(cs);
             if (screen instanceof InventoryScreen is) return new InventoryView(is);
             if (screen instanceof net.minecraft.client.gui.screens.inventory.MerchantScreen ms) return new MerchantView(ms);
@@ -90,6 +91,70 @@ public final class ModernScreens1122 {
             view.inventorySlots = ModernContainer1122.of(s.getMenu());
             view.mcc$setSize(s.getXSize(), s.getYSize());
             view.mcc$setOrigin(s.getGuiLeft(), s.getGuiTop());
+        }
+    }
+
+    /**
+     * The modern world list as GuiWorldSelection: its {@code selectionList} mirrors the modern list's worlds (in the modern order),
+     * position, scroll and selection, so mods that draw over the list or read its entries find them where the modern list has them.
+     */
+    public static final class WorldSelectionView extends legacyconnector.v1_12_2.net.minecraft.client.gui.GuiWorldSelection implements ScreenEvents1122.Modern {
+        private final java.lang.ref.WeakReference<Screen> modern;
+
+        WorldSelectionView(net.minecraft.client.gui.screens.worldselection.SelectWorldScreen modern) {
+            super(null);
+            this.modern = new java.lang.ref.WeakReference<>(modern);
+            init(this, modern);
+            mcc$sync();
+        }
+
+        @Override
+        public Screen mcc$modern() {
+            return modern.get();
+        }
+
+        @Override
+        public void mcc$sync() {
+            Screen s = modern.get();
+            if (s == null) return;
+            setGuiSize(s.width, s.height);
+            if (prevScreen == null) {
+                Object last = Fields1122.get(net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.class, s, "lastScreen");
+                if (last instanceof Screen ls) prevScreen = ScreenEvents1122.legacyOf(ls);
+            }
+            if (!(Fields1122.get(net.minecraft.client.gui.screens.worldselection.SelectWorldScreen.class, s, "list")
+                    instanceof net.minecraft.client.gui.screens.worldselection.WorldSelectionList list)) return;
+            int itemHeight = Fields1122.getInt(net.minecraft.client.gui.components.AbstractSelectionList.class, list, "itemHeight");
+            var legacy = mcc$selectionList();
+            if (legacy == null || legacy.top != list.getY() || legacy.bottom != list.getBottom() || legacy.width != s.width) {
+                legacy = legacyconnector.v1_12_2.net.minecraft.client.gui.GuiListWorldSelection.mcc$mirror(this, Minecraft.getMinecraft(), s.width, s.height,
+                        list.getY(), list.getBottom(), itemHeight > 0 ? itemHeight : 36);
+                mcc$setSelectionList(legacy);
+            }
+            java.util.List<legacyconnector.v1_12_2.net.minecraft.world.storage.WorldSummary> worlds = new java.util.ArrayList<>();
+            java.util.List<String> names = new java.util.ArrayList<>();
+            int selected = -1;
+            for (var entry : list.children()) {
+                if (!(entry instanceof net.minecraft.client.gui.screens.worldselection.WorldSelectionList.WorldListEntry w)) continue;
+                if (!(Fields1122.get(w.getClass(), w, "summary") instanceof net.minecraft.world.level.storage.LevelSummary summary)) continue;
+                if (entry == list.getSelected()) selected = worlds.size();
+                names.add(summary.getLevelId());
+                worlds.add(summaryOf(summary));
+            }
+            if (!names.equals(legacy.mcc$fileNames())) legacy.mcc$setWorlds(worlds, Minecraft.getMinecraft().getSaveLoader());
+            legacy.mcc$setSelected(selected);
+            legacy.mcc$setScroll((float) list.getScrollAmount());
+        }
+
+        /** A legacy summary of a modern one (no disk access: the size on disk is not known). */
+        private static legacyconnector.v1_12_2.net.minecraft.world.storage.WorldSummary summaryOf(net.minecraft.world.level.storage.LevelSummary s) {
+            var data = new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound();
+            data.setString("LevelName", s.getLevelName());
+            data.setLong("LastPlayed", s.getLastPlayed());
+            data.setBoolean("hardcore", s.isHardcore());
+            data.setBoolean("allowCommands", s.hasCommands());
+            return new legacyconnector.v1_12_2.net.minecraft.world.storage.WorldSummary(new legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo(data),
+                    s.getLevelId(), s.getLevelName(), 0L, s.requiresManualConversion());
         }
     }
 

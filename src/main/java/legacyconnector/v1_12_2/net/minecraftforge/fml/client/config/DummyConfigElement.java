@@ -207,7 +207,8 @@ public class DummyConfigElement<T> implements IConfigElement<T> {
     @Override public boolean showInGui() { return true; }
     @Override public boolean requiresMcRestart() { return requiresMcRestart; }
 
-    public DummyConfigElement setRequiresMcRestart(boolean requiresMcRestart) {
+    /** Forge returns the element as an IConfigElement (mods link to that descriptor). */
+    public IConfigElement setRequiresMcRestart(boolean requiresMcRestart) {
         this.requiresMcRestart = this.requiresWorldRestart = requiresMcRestart;
         return this;
     }
