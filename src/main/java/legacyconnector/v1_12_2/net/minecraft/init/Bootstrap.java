@@ -6,6 +6,9 @@ import legacyconnector.v1_12_2.net.minecraft.util.EnumFacing;
 
 /** The game's bootstrap; mods use its dispenser behaviour base that may fail (only that, since the modern game bootstraps itself). */
 public class Bootstrap {
+    /** The standard output as the game started (1.12 redirected System.out to its log; mods print to the original). */
+    public static final java.io.PrintStream SYSOUT = System.out;
+
     public static boolean isRegistered() {
         return true;
     }

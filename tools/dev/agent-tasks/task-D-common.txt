@@ -34,7 +34,6 @@ synth.net.minecraft.block.BlockWallSign.FACING:Lnet.minecraft.block.properties.P
 synth.net.minecraft.item.ItemMap.createMapDataPacket(Lnet.minecraft.item.ItemStack;Lnet.minecraft.world.World;Lnet.minecraft.entity.player.EntityPlayer;)Lsynth.net.minecraft.network.Packet;   # 4 user(s): thebetweenlands.common.entity.draeton.EntityDraeton, twilightforest.item.ItemTFMagicMap
 synth.net.minecraft.item.ItemSeedFood.<init>(IFLnet.minecraft.block.Block;Lnet.minecraft.block.Block;)V   # 4 user(s): com.pam.harvestcraft.item.ItemRegistry, de.ellpeck.actuallyadditions.mod.items.base.ItemFoodSeed, erebus.ModItems
 synth.net.minecraft.item.crafting.RecipesArmorDyes.<init>()V   # 4 user(s): erebus.recipes.RecipeGliderDye, thaumcraft.common.lib.crafting.RecipesRobeArmorDyes, twilightforest.item.recipe.TFArmorDyeingRecipe
-synth.net.minecraft.network.play.client.CPacketPlayerTryUseItemOnBlock.<init>(Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.util.EnumFacing;Lnet.minecraft.util.EnumHand;FFF)V   # 4 user(s): cofh.core.util.helpers.ServerHelper, com.rwtema.extrautils2.items.ItemFlatTransferNode$1, lumien.randomthings.item.ItemRedstoneActivator
 synth.net.minecraftforge.fluids.capability.wrappers.BlockLiquidWrapper.<init>(Lsynth.net.minecraft.block.BlockLiquid;Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)V   # 4 user(s): WayofTime.bloodmagic.item.sigil.ItemSigilFluidBase, crazypants.enderio.machines.machine.niard.EngineNiard, org.cyclops.integrateddynamics.part.aspect.Aspects$Read$Fluid
 net.minecraft.block.BlockContainer.observedNeighborChange(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.Block;Lnet.minecraft.util.math.BlockPos;)V   # 3 user(s): org.cyclops.integrateddynamics.block.BlockCable
 net.minecraft.item.ItemStack.setItemFrame(Lsynth.net.minecraft.entity.item.EntityItemFrame;)V   # 3 user(s): thebetweenlands.common.entity.EntityBLItemFrame, vazkii.quark.decoration.entity.EntityFlatItemFrame
@@ -49,13 +48,7 @@ synth.net.minecraft.block.state.pattern.BlockStateMatcher.where(Lnet.minecraft.b
 synth.net.minecraft.item.ItemFishingRod.<init>()V   # 3 user(s): cofh.core.item.tool.ItemFishingRodCore, com.blakebr0.mysticalagriculture.items.tools.ItemEssenceFishingRod, com.teammetallurgy.atum.items.artifacts.atum.ItemAtumsBounty
 synth.net.minecraft.item.ItemMapBase.<init>()V   # 3 user(s): thebetweenlands.common.item.misc.ItemEmptyAmateMap, twilightforest.item.ItemTFEmptyMagicMap
 synth.net.minecraft.item.ItemMonsterPlacer.applyEntityIdToItemStack(Lnet.minecraft.item.ItemStack;Lnet.minecraft.util.ResourceLocation;)V   # 3 user(s): biomesoplenty.common.util.inventory.CreativeTabBOP, com.pam.harvestcraft.tileentities.MarketItems, de.ellpeck.naturesaura.compat.patchouli.ProcessorAnimalSpawner
-synth.net.minecraft.network.play.server.SPacketMaps.<init>()V   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap
-synth.net.minecraft.network.play.server.SPacketMaps.readPacketData(Lnet.minecraft.network.PacketBuffer;)V   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap
-synth.net.minecraft.network.play.server.SPacketMaps.setMapdataTo(Lsynth.net.minecraft.world.storage.MapData;)V   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap$Handler$1
-synth.net.minecraft.network.play.server.SPacketMaps.writePacketData(Lnet.minecraft.network.PacketBuffer;)V   # 3 user(s): thebetweenlands.common.network.clientbound.MessageAmateMap, twilightforest.network.PacketMagicMap
 synth.net.minecraft.tileentity.TileEntityBeacon$BeamSegment.getColors()[F   # 3 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
-synth.net.minecraft.world.Teleporter$PortalPosition.<init>(Lsynth.net.minecraft.world.Teleporter;Lnet.minecraft.util.math.BlockPos;J)V   # 3 user(s): com.teammetallurgy.atum.world.teleporter.AtumTeleporter, erebus.world.teleporter.TeleporterErebus, twilightforest.TFTeleporter
-synth.net.minecraft.world.Teleporter$PortalPosition.lastUpdateTime:J   # 3 user(s): com.teammetallurgy.atum.world.teleporter.AtumTeleporter, erebus.world.teleporter.TeleporterErebus, twilightforest.TFTeleporter
 net.minecraft.block.Block.addLandingEffects(Lnet.minecraft.block.state.IBlockState;Lsynth.net.minecraft.world.WorldServer;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.entity.EntityLivingBase;I)Z   # 2 user(s): buildcraft.transport.block.BlockPipeHolder, com.rwtema.extrautils2.blocks.BlockCreativeHarvest
 net.minecraft.block.Block.canCreatureSpawn(Lnet.minecraft.block.state.IBlockState;Lsynth.net.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lsynth.net.minecraft.entity.EntityLiving$SpawnPlacementType;)Z   # 2 user(s): de.ellpeck.naturesaura.items.ItemCaveFinder, mekanism.common.block.BlockBasic
 net.minecraft.block.Block.getBeaconColorMultiplier(Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.util.math.BlockPos;)[F   # 2 user(s): com.teammetallurgy.atum.blocks.beacon.BlockRadiantBeacon
@@ -105,27 +98,16 @@ synth.net.minecraft.item.ItemLead.attachToFence(Lnet.minecraft.entity.player.Ent
 synth.net.minecraft.item.ItemMap.setupNewMap(Lnet.minecraft.world.World;DDBZZ)Lnet.minecraft.item.ItemStack;   # 2 user(s): blusunrize.immersiveengineering.common.util.IEVillagerHandler$OreveinMapForEmeralds, de.teamlapen.vampirism.core.TestCommand$3
 synth.net.minecraft.item.ItemShield.setTileEntityItemStackRenderer(Lsynth.net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;)V   # 2 user(s): crazypants.enderio.base.item.darksteel.ItemDarkSteelShield, erebus.proxy.ClientProxy
 synth.net.minecraft.item.ItemSoup.<init>(I)V   # 2 user(s): biomesoplenty.common.init.ModItems, twilightforest.item.ItemTFSoup
-synth.net.minecraft.network.play.client.CPacketCloseWindow.<init>(I)V   # 2 user(s): electroblob.wizardry.client.gui.GuiLectern, hellfirepvp.astralsorcery.client.gui.GuiObservatory
-synth.net.minecraft.network.play.client.CPacketPlayerTryUseItem.<init>(Lnet.minecraft.util.EnumHand;)V   # 2 user(s): com.rwtema.extrautils2.XUProxy$1
-synth.net.minecraft.network.play.server.SPacketEntityProperties.<init>(ILjava.util.Collection;)V   # 2 user(s): svenhjol.meson.helper.PlayerHelper, thebetweenlands.common.handler.PlayerDecayHandler
-synth.net.minecraft.server.management.PlayerChunkMapEntry.hasPlayerMatchingInRange(DLcom.google.common.base.Predicate;)Z   # 2 user(s): buildcraft.lib.misc.MessageUtil
 synth.net.minecraft.tileentity.TileEntityBeacon$BeamSegment.<init>([F)V   # 2 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
 synth.net.minecraft.tileentity.TileEntityBeacon$BeamSegment.getHeight()I   # 2 user(s): com.teammetallurgy.atum.client.render.tileentity.RenderHeartOfRaBase
-synth.net.minecraft.util.HttpUtil.DOWNLOADER_EXECUTOR:Lcom.google.common.util.concurrent.ListeningExecutorService;   # 2 user(s): com.rwtema.extrautils2.transfernodes.TileIndexer
-synth.net.minecraft.world.Teleporter.destinationCoordinateCache:Lit.unimi.dsi.fastutil.longs.Long2ObjectMap;   # 2 user(s): com.teammetallurgy.atum.world.teleporter.AtumTeleporter, twilightforest.TFTeleporter
 synth.net.minecraft.world.gen.ChunkProviderServer.loadedChunks:Lit.unimi.dsi.fastutil.longs.Long2ObjectMap;   # 2 user(s): com.rwtema.extrautils2.power.UnloadedChunkPower$FreqData
 synth.net.minecraft.world.gen.FlatGeneratorInfo.<init>()V   # 2 user(s): com.rwtema.extrautils2.dimensions.WorldWall
 synth.net.minecraft.world.gen.FlatGeneratorInfo.getFlatLayers()Ljava.util.List;   # 2 user(s): com.rwtema.extrautils2.dimensions.WorldWall
 synth.net.minecraft.world.gen.FlatGeneratorInfo.setBiome(I)V   # 2 user(s): com.rwtema.extrautils2.dimensions.WorldWall
 synth.net.minecraft.world.gen.FlatGeneratorInfo.updateLayers()V   # 2 user(s): com.rwtema.extrautils2.dimensions.WorldWall
 synth.net.minecraft.world.gen.FlatLayerInfo.<init>(ILnet.minecraft.block.Block;)V   # 2 user(s): com.rwtema.extrautils2.dimensions.WorldWall
-synth.net.minecraft.world.storage.MapData$MapInfo.step:I   # 2 user(s): thebetweenlands.common.item.misc.ItemAmateMap, twilightforest.item.ItemTFMazeMap
-synth.net.minecraft.world.storage.MapData.getMapInfo(Lnet.minecraft.entity.player.EntityPlayer;)Lsynth.net.minecraft.world.storage.MapData$MapInfo;   # 2 user(s): thebetweenlands.common.item.misc.ItemAmateMap, twilightforest.item.ItemTFMazeMap
-synth.net.minecraft.world.storage.MapData.updateVisiblePlayers(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.item.ItemStack;)V   # 2 user(s): thebetweenlands.common.entity.draeton.EntityDraeton, twilightforest.item.ItemTFMazeMap
-synth.net.minecraftforge.common.ForgeHooks.onPlayerTossEvent(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.item.ItemStack;Z)Lsynth.net.minecraft.entity.item.EntityItem;   # 2 user(s): thebetweenlands.common.block.container.BlockSteepingPot
 synth.net.minecraftforge.event.entity.living.PotionColorCalculationEvent.getEffects()Ljava.util.Collection; [skip: NeoForge 1.21.1 has no hook where effect particle colours are computed (would need a mixin into LivingEntity)]   # 2 user(s): electroblob.wizardry.potion.ICustomPotionParticles, vazkii.quark.world.effects.PotionColorizer
-synth.net.minecraftforge.fml.common.registry.EntityRegistry$EntityRegistration.setCustomSpawning(Ljava.util.function.Function;Z)V   # 2 user(s): com.creativemd.littletiles.client.LittleTilesClient, com.teammetallurgy.atum.utils.AtumRegistry
-synth.paulscode.sound.libraries.ChannelLWJGLOpenAL.ALSource:Ljava.nio.IntBuffer;   # 2 user(s): thebetweenlands.client.audio.GreeblingMusicSound
+synth.paulscode.sound.libraries.ChannelLWJGLOpenAL.ALSource:Ljava.nio.IntBuffer; [skip: paulscode sound engine internals; the modern game has its own OpenAL engine (client)]   # 2 user(s): thebetweenlands.client.audio.GreeblingMusicSound
 com.google.common.util.concurrent.Futures.immediateCheckedFuture(Ljava.lang.Object;)Lcom.google.common.util.concurrent.CheckedFuture; [REMOVED LIBRARY MEMBER] [skip: Guava 27 removed CheckedFuture, the type the call returns; no replacement class to hand back]   # 1 user(s): buildcraft.lib.path.MiniChunkCache
 net.minecraft.block.Block.captureDrops(Z)Lnet.minecraft.util.NonNullList;   # 1 user(s): lumien.randomthings.block.spectretree.BlockSpectreLeaf
 net.minecraft.block.Block.getFogColor(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lnet.minecraft.block.state.IBlockState;Lnet.minecraft.entity.Entity;Lnet.minecraft.util.math.Vec3d;F)Lnet.minecraft.util.math.Vec3d;   # 1 user(s): cofh.core.proxy.EventHandlerRender
@@ -150,13 +132,9 @@ net.minecraftforge.common.capabilities.ICapabilityProvider.canConnect(Lnet.minec
 net.minecraftforge.common.capabilities.ICapabilityProvider.canExtractItem(ILnet.minecraft.item.ItemStack;Lnet.minecraft.util.EnumFacing;)Z [skip: not Forge API: ISidedInventory method called through a Mekanism interface whose parents were stripped]   # 1 user(s): mekanism.common.tile.TileEntityAdvancedBoundingBlock
 net.minecraftforge.common.capabilities.ICapabilityProvider.canInsertItem(ILnet.minecraft.item.ItemStack;Lnet.minecraft.util.EnumFacing;)Z [skip: not Forge API: ISidedInventory method called through a Mekanism interface whose parents were stripped]   # 1 user(s): mekanism.common.tile.TileEntityAdvancedBoundingBlock
 net.minecraftforge.common.capabilities.ICapabilityProvider.getSlotsForFace(Lnet.minecraft.util.EnumFacing;)[I [skip: not Forge API: ISidedInventory method called through a Mekanism interface whose parents were stripped]   # 1 user(s): mekanism.common.tile.TileEntityAdvancedBoundingBlock
-net.minecraftforge.common.config.Configuration.getString(Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;Ljava.lang.String;[Ljava.lang.String;[Ljava.lang.String;)Ljava.lang.String;   # 1 user(s): mcjty.lib.thirteen.ConfigSpec$Builder$EV
 net.minecraftforge.fluids.BlockFluidClassic.canCreatureSpawn(Lnet.minecraft.block.state.IBlockState;Lsynth.net.minecraft.world.IBlockAccess;Lnet.minecraft.util.math.BlockPos;Lsynth.net.minecraft.entity.EntityLiving$SpawnPlacementType;)Z   # 1 user(s): slimeknights.tconstruct.shared.block.BlockLiquidSlime
 net.minecraftforge.fluids.Fluid.getStill(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;)Lnet.minecraft.util.ResourceLocation;   # 1 user(s): hellfirepvp.astralsorcery.client.render.tile.TESRWell
 org.lwjgl.opengl.KHRDebug.glDebugMessageCallback(Lorg.lwjgl.opengl.KHRDebugCallback;)V [REMOVED LIBRARY MEMBER] [skip: LWJGL 2's KHRDebugCallback class does not exist in LWJGL 3; a GL debug log hook only]   # 1 user(s): openmods.renderer.CommandGlDebug
-synth.net.minecraft.advancements.CriteriaTriggers.CONSTRUCT_BEACON:Lsynth.net.minecraft.advancements.critereon.ConstructBeaconTrigger;   # 1 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
-synth.net.minecraft.advancements.Criterion.getCriterionInstance()Lsynth.net.minecraft.advancements.ICriterionInstance;   # 1 user(s): thebetweenlands.common.advancments.SwatShieldTrigger$Listener
-synth.net.minecraft.advancements.critereon.ConstructBeaconTrigger.trigger(Lnet.minecraft.entity.player.EntityPlayerMP;Lsynth.net.minecraft.tileentity.TileEntityBeacon;)V   # 1 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
 synth.net.minecraft.block.BlockBeacon.<init>()V   # 1 user(s): com.teammetallurgy.atum.blocks.beacon.BlockRadiantBeacon
 synth.net.minecraft.block.BlockBed.<init>()V   # 1 user(s): thebetweenlands.common.block.misc.BlockMossBed
 synth.net.minecraft.block.BlockBeetroot.AGE:Lnet.minecraft.block.properties.PropertyInteger;   # 1 user(s): pokefenn.totemic.item.equipment.music.ItemNetherPipe
@@ -225,12 +203,9 @@ synth.net.minecraft.block.state.pattern.BlockPattern.getPalmLength()I   # 1 user
 synth.net.minecraft.block.state.pattern.BlockPattern.getThumbLength()I   # 1 user(s): com.teammetallurgy.atum.blocks.stone.khnumite.BlockKhnumiteFace
 synth.net.minecraft.block.state.pattern.BlockStateMatcher.ANY:Lcom.google.common.base.Predicate;   # 1 user(s): svenhjol.charm.world.block.BlockRunePortalFrame
 synth.net.minecraft.block.state.pattern.BlockStateMatcher.apply(Lnet.minecraft.block.state.IBlockState;)Z   # 1 user(s): thebetweenlands.util.BlockStatePropertiesMatcher
-synth.net.minecraft.command.CommandGive.getItemByText(Lnet.minecraft.command.ICommandSender;Ljava.lang.String;)Lnet.minecraft.item.Item;   # 1 user(s): slimeknights.mantle.client.book.data.element.ItemStackData
 synth.net.minecraft.enchantment.EnchantmentDamage.<init>(Lnet.minecraft.enchantment.Enchantment$Rarity;I[Lnet.minecraft.inventory.EntityEquipmentSlot;)V   # 1 user(s): electroblob.wizardry.enchantment.EnchantmentMagicSword
 synth.net.minecraft.enchantment.EnchantmentThorns.shouldHit(ILjava.util.Random;)Z   # 1 user(s): thebetweenlands.common.handler.AttackDamageHandler
-synth.net.minecraft.entity.EntityAreaEffectCloud.effects:Ljava.util.List;   # 1 user(s): hellfirepvp.astralsorcery.common.event.listener.EventHandlerEntity
 synth.net.minecraft.entity.passive.EntityTameable.NO_ANIMATION:Lnet.ilexiconn.llibrary.server.animation.Animation; [skip: a field LLibrary adds to vanilla EntityTameable with its own transformer; LLibrary's API, not Minecraft's]   # 1 user(s): com.github.alexthe666.iceandfire.entity.EntityDragonBase
-synth.net.minecraft.init.Bootstrap.SYSOUT:Ljava.io.PrintStream;   # 1 user(s): buildcraft.lib.nbt.NbtSquishMapWriter
 synth.net.minecraft.inventory.ContainerMerchant.getMerchantInventory()Lsynth.net.minecraft.inventory.InventoryMerchant;   # 1 user(s): electroblob.wizardry.client.ClientProxy
 synth.net.minecraft.inventory.ContainerPlayer.<init>(Lsynth.net.minecraft.entity.player.InventoryPlayer;ZLnet.minecraft.entity.player.EntityPlayer;)V   # 1 user(s): vazkii.quark.oddities.inventory.ContainerBackpack
 synth.net.minecraft.inventory.ContainerPlayer.craftMatrix:Lnet.minecraft.inventory.InventoryCrafting;   # 1 user(s): vazkii.quark.oddities.inventory.ContainerBackpack
@@ -256,17 +231,14 @@ synth.net.minecraft.item.ItemWritableBook.isNBTValid(Lnet.minecraft.nbt.NBTTagCo
 synth.net.minecraft.item.crafting.RecipesBanners$RecipeAddPattern.<init>()V   # 1 user(s): blusunrize.immersiveengineering.common.crafting.RecipeBannerAdvanced
 synth.net.minecraft.item.crafting.RecipesMapCloning.<init>()V   # 1 user(s): twilightforest.item.recipe.TFMapCloningRecipe
 synth.net.minecraft.item.crafting.ShieldRecipes$Decoration.<init>()V   # 1 user(s): crazypants.enderio.base.item.darksteel.DarkShieldRecipes
-synth.net.minecraft.network.play.server.SPacketMaps.getMapId()I   # 1 user(s): twilightforest.network.PacketMazeMap$Handler$1
-synth.net.minecraft.network.play.server.SPacketUseBed.<init>(Lnet.minecraft.entity.player.EntityPlayer;Lnet.minecraft.util.math.BlockPos;)V   # 1 user(s): de.teamlapen.vampirism.player.vampire.VampirePlayer
-synth.net.minecraft.pathfinding.PathNavigate.debugPathFinding()V   # 1 user(s): thebetweenlands.common.entity.movement.PathNavigateFlyingBL
-synth.net.minecraft.realms.RealmsBridge.<init>()V   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
-synth.net.minecraft.realms.RealmsBridge.getNotificationScreen(Lsynth.net.minecraft.client.gui.GuiScreen;)Lsynth.net.minecraft.client.gui.GuiScreenRealmsProxy;   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
-synth.net.minecraft.realms.RealmsBridge.switchToRealms(Lsynth.net.minecraft.client.gui.GuiScreen;)V   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
+synth.net.minecraft.realms.RealmsBridge.<init>()V [skip: Realms (client, online service)]   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
+synth.net.minecraft.realms.RealmsBridge.getNotificationScreen(Lsynth.net.minecraft.client.gui.GuiScreen;)Lsynth.net.minecraft.client.gui.GuiScreenRealmsProxy; [skip: Realms (client, online service)]   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
+synth.net.minecraft.realms.RealmsBridge.switchToRealms(Lsynth.net.minecraft.client.gui.GuiScreen;)V [skip: Realms (client, online service)]   # 1 user(s): thebetweenlands.client.gui.menu.GuiBLMainMenu
 synth.net.minecraft.tileentity.TileEntityBeacon$BeamSegment.incrementHeight()V   # 1 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
 synth.net.minecraft.tileentity.TileEntityBeacon.isComplete:Z   # 1 user(s): com.teammetallurgy.atum.blocks.beacon.tileentity.TileEntityRadiantBeacon
 synth.net.minecraft.tileentity.TileEntityBeacon.shouldBeamRender()F   # 1 user(s): com.teammetallurgy.atum.client.render.tileentity.RenderRadiantBeacon
 synth.net.minecraft.tileentity.TileEntityEnderChest.<init>()V   # 1 user(s): erebus.tileentity.TileEntityTitanEnderChest
-synth.net.minecraft.util.MovementInputFromOptions.<init>(Lsynth.net.minecraft.client.settings.GameSettings;)V   # 1 user(s): team.chisel.client.handler.BlockSpeedHandler
+synth.net.minecraft.util.MovementInputFromOptions.<init>(Lsynth.net.minecraft.client.settings.GameSettings;)V [skip: client input class built from GameSettings (client list)]   # 1 user(s): team.chisel.client.handler.BlockSpeedHandler
 synth.net.minecraft.world.biome.BiomeDesert.<init>(Lnet.minecraft.world.biome.Biome$BiomeProperties;)V   # 1 user(s): buildcraft.energy.generation.BiomeOilDesert
 synth.net.minecraft.world.biome.BiomeForest.addDoublePlants(Lnet.minecraft.world.World;Ljava.util.Random;Lnet.minecraft.util.math.BlockPos;I)V   # 1 user(s): twilightforest.biomes.TFBiomeFireflyForest
 synth.net.minecraft.world.biome.BiomeOcean.<init>(Lnet.minecraft.world.biome.Biome$BiomeProperties;)V   # 1 user(s): buildcraft.energy.generation.BiomeOilOcean
@@ -290,18 +262,9 @@ synth.net.minecraft.world.gen.structure.StructureVillagePieces$Field1.getXWithOf
 synth.net.minecraft.world.gen.structure.StructureVillagePieces$Field1.getYWithOffset(I)I   # 1 user(s): techreborn.world.village.VillageComponentRubberPlantaion
 synth.net.minecraft.world.gen.structure.StructureVillagePieces$Field1.getZWithOffset(II)I   # 1 user(s): techreborn.world.village.VillageComponentRubberPlantaion
 synth.net.minecraft.world.gen.structure.StructureVillagePieces$Field1.setBlockState(Lnet.minecraft.world.World;Lnet.minecraft.block.state.IBlockState;IIILsynth.net.minecraft.world.gen.structure.StructureBoundingBox;)V   # 1 user(s): techreborn.world.village.VillageComponentRubberPlantaion
-synth.net.minecraft.world.storage.MapData.getMapPacket(Lnet.minecraft.item.ItemStack;Lnet.minecraft.world.World;Lnet.minecraft.entity.player.EntityPlayer;)Lsynth.net.minecraft.network.Packet;   # 1 user(s): erebus.items.ItemErebusMap
-synth.net.minecraft.world.storage.SaveHandlerMP.<init>()V   # 1 user(s): buildcraft.builders.snapshot.FakeWorld
-synth.net.minecraft.world.storage.loot.ILootContainer.getLootTable()Lnet.minecraft.util.ResourceLocation;   # 1 user(s): thebetweenlands.common.tile.TileEntityLootInventory
-synth.net.minecraftforge.classloading.FMLForgePlugin.RUNTIME_DEOBF:Z   # 1 user(s): reborncore.CommonProxy
-synth.net.minecraftforge.common.config.FieldWrapper.hasWrapperFor(Ljava.lang.reflect.Field;)Z   # 1 user(s): thebetweenlands.common.config.ConfigHelper
 synth.net.minecraftforge.common.model.animation.IClip.apply(Lsynth.net.minecraftforge.common.model.animation.IJoint;)Lsynth.net.minecraftforge.common.model.animation.IJointClip;   # 1 user(s): openmods.model.eval.EvaluatorFactory
 synth.net.minecraftforge.common.model.animation.IJointClip.apply(F)Lsynth.net.minecraftforge.common.model.TRSRTransformation;   # 1 user(s): openmods.model.eval.EvaluatorFactory
-synth.net.minecraftforge.common.property.PropertyFloat.<init>(Ljava.lang.String;)V   # 1 user(s): appeng.block.misc.BlockSkyCompass
-synth.net.minecraftforge.common.util.JsonUtils.readNBT(Lcom.google.gson.JsonObject;Ljava.lang.String;)Lnet.minecraft.nbt.NBTTagCompound;   # 1 user(s): forestry.core.utils.JsonUtil
-synth.net.minecraftforge.event.ForgeEventFactory.canEntitySpawn(Lsynth.net.minecraft.entity.EntityLiving;Lnet.minecraft.world.World;FFF)Lnet.minecraftforge.fml.common.eventhandler.Event$Result;   # 1 user(s): org.cyclops.cyclopscore.helper.EntityHelpers
-synth.net.minecraftforge.event.ForgeEventFactory.getPotentialSpawns(Lsynth.net.minecraft.world.WorldServer;Lnet.minecraft.entity.EnumCreatureType;Lnet.minecraft.util.math.BlockPos;Ljava.util.List;)Ljava.util.List;   # 1 user(s): hellfirepvp.astralsorcery.common.entities.EntityNocturnalSpark
-synth.net.minecraftforge.event.ForgeEventFactory.onTrySpawnPortal(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lsynth.net.minecraft.block.BlockPortal$Size;)Z   # 1 user(s): mekanism.common.block.BlockBasic$BlockPortalOverride
+synth.net.minecraftforge.event.ForgeEventFactory.onTrySpawnPortal(Lnet.minecraft.world.World;Lnet.minecraft.util.math.BlockPos;Lsynth.net.minecraft.block.BlockPortal$Size;)Z [skip: its BlockPortal.Size argument and BlockEvent.PortalSpawnEvent belong to area I (blocks); left for the block shim]   # 1 user(s): mekanism.common.block.BlockBasic$BlockPortalOverride
 synth.net.minecraftforge.event.entity.living.PotionColorCalculationEvent.getEntityLiving()Lnet.minecraft.entity.EntityLivingBase; [skip: NeoForge 1.21.1 has no hook where effect particle colours are computed (would need a mixin into LivingEntity)]   # 1 user(s): vazkii.quark.world.effects.PotionColorizer
 synth.net.minecraftforge.event.entity.living.PotionColorCalculationEvent.setColor(I)V [skip: NeoForge 1.21.1 has no hook where effect particle colours are computed (would need a mixin into LivingEntity)]   # 1 user(s): electroblob.wizardry.potion.ICustomPotionParticles
 synth.net.minecraftforge.fluids.capability.ItemFluidContainer.<init>(I)V   # 1 user(s): org.cyclops.cyclopscore.item.DamageIndicatedItemFluidContainer
@@ -310,8 +273,8 @@ synth.net.minecraftforge.fluids.capability.ItemFluidContainer.capacity:I   # 1 u
 synth.net.minecraftforge.fluids.capability.ItemFluidContainer.rayTrace(Lnet.minecraft.world.World;Lnet.minecraft.entity.player.EntityPlayer;Z)Lsynth.net.minecraft.util.math.RayTraceResult;   # 1 user(s): org.cyclops.cyclopscore.config.configurable.ConfigurableDamageIndicatedItemFluidContainer
 synth.net.minecraftforge.fluids.capability.templates.FluidHandlerFluidMap.<init>()V   # 1 user(s): de.ellpeck.actuallyadditions.mod.tile.TileEntityFermentingBarrel
 synth.net.minecraftforge.fluids.capability.templates.FluidHandlerFluidMap.addHandler(Lnet.minecraftforge.fluids.Fluid;Lnet.minecraftforge.fluids.capability.IFluidHandler;)Lsynth.net.minecraftforge.fluids.capability.templates.FluidHandlerFluidMap;   # 1 user(s): de.ellpeck.actuallyadditions.mod.tile.TileEntityFermentingBarrel
-synth.net.minecraftforge.fml.client.FMLClientHandler.getClientPlayHandler()Lsynth.net.minecraft.network.INetHandler;   # 1 user(s): cofh.core.util.helpers.ServerHelper
-synth.net.minecraftforge.fml.client.FMLClientHandler.tryLoadExistingWorld(Lsynth.net.minecraft.client.gui.GuiWorldSelection;Lsynth.net.minecraft.world.storage.WorldSummary;)V   # 1 user(s): org.cyclops.cyclopscore.client.gui.GuiMainMenuExtensionDevWorld
+synth.net.minecraftforge.fml.client.FMLClientHandler.getClientPlayHandler()Lsynth.net.minecraft.network.INetHandler; [skip: client handler (client list)]   # 1 user(s): cofh.core.util.helpers.ServerHelper
+synth.net.minecraftforge.fml.client.FMLClientHandler.tryLoadExistingWorld(Lsynth.net.minecraft.client.gui.GuiWorldSelection;Lsynth.net.minecraft.world.storage.WorldSummary;)V [skip: client handler (client list)]   # 1 user(s): org.cyclops.cyclopscore.client.gui.GuiMainMenuExtensionDevWorld
 synth.net.minecraftforge.fml.common.asm.transformers.DeobfuscationTransformer.<init>()V   # 1 user(s): com.enderio.core.common.transform.NoClassloadClassWriter
 synth.net.minecraftforge.fml.common.discovery.ModDiscoverer.getASMTable()Lnet.minecraftforge.fml.common.discovery.ASMDataTable;   # 1 user(s): com.enderio.core.common.transform.EnderCorePlugin
 synth.net.minecraftforge.fml.common.eventhandler.ASMEventHandler.getPriority()Lnet.minecraftforge.fml.common.eventhandler.EventPriority;   # 1 user(s): openblocks.common.PlayerDeathHandler
@@ -324,20 +287,18 @@ synth.net.minecraftforge.fml.common.network.internal.FMLProxyPacket.setDispatche
 synth.net.minecraftforge.fml.common.network.simpleimpl.SimpleChannelHandlerWrapper.<init>(Lnet.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;Lnet.minecraftforge.fml.relauncher.Side;Ljava.lang.Class;)V   # 1 user(s): lumien.randomthings.network.RandomThingsNetworkWrapper
 synth.net.minecraftforge.fml.common.network.simpleimpl.SimpleIndexedCodec.<init>()V   # 1 user(s): lumien.randomthings.network.RandomThingsNetworkWrapper
 synth.net.minecraftforge.fml.common.network.simpleimpl.SimpleIndexedCodec.addDiscriminator(ILjava.lang.Class;)Lsynth.net.minecraftforge.fml.common.network.FMLIndexedMessageToMessageCodec;   # 1 user(s): lumien.randomthings.network.RandomThingsNetworkWrapper
-synth.net.minecraftforge.items.SlotItemHandler.getBackgroundSprite()Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite;   # 1 user(s): appeng.client.gui.Size1Slot
-synth.net.minecraftforge.items.VanillaInventoryCodeHooks.getItemHandler(Lnet.minecraft.world.World;DDDLnet.minecraft.util.EnumFacing;)Lorg.apache.commons.lang3.tuple.Pair;   # 1 user(s): thaumcraft.api.ThaumcraftInvHelper
-synth.net.minecraftforge.oredict.DyeUtils.metaFromStack(Lnet.minecraft.item.ItemStack;)Ljava.util.OptionalInt;   # 1 user(s): epicsquid.roots.recipe.DyeRecipe
-synth.org.lwjgl.opengl.GL15.glBufferData(ILjava.nio.DoubleBuffer;I)V   # 1 user(s): thebetweenlands.util.Mesh
-synth.org.lwjgl.util.glu.GLU.gluNewTess()Lsynth.org.lwjgl.util.glu.GLUtessellator;   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluDeleteTess()V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessBeginContour()V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessBeginPolygon(Ljava.lang.Object;)V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessCallback(ILsynth.org.lwjgl.util.glu.GLUtessellatorCallback;)V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessEndContour()V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessEndPolygon()V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessProperty(ID)V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.org.lwjgl.util.glu.GLUtessellator.gluTessVertex([DILjava.lang.Object;)V   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
-synth.paulscode.sound.SoundSystem.pause(Ljava.lang.String;)V   # 1 user(s): thebetweenlands.client.audio.SafeStreamSound
-synth.paulscode.sound.SoundSystemConfig.THREAD_SYNC:Ljava.lang.Object;   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess
-synth.paulscode.sound.libraries.ChannelLWJGLOpenAL.attachedSource:Lsynth.paulscode.sound.Source;   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess
-synth.paulscode.sound.libraries.SourceLWJGLOpenAL.channel:Lsynth.paulscode.sound.Channel;   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess
+synth.net.minecraftforge.items.SlotItemHandler.getBackgroundSprite()Lsynth.net.minecraft.client.renderer.texture.TextureAtlasSprite; [skip: returns a client texture sprite (client list)]   # 1 user(s): appeng.client.gui.Size1Slot
+synth.org.lwjgl.opengl.GL15.glBufferData(ILjava.nio.DoubleBuffer;I)V [skip: client rendering (client list)]   # 1 user(s): thebetweenlands.util.Mesh
+synth.org.lwjgl.util.glu.GLU.gluNewTess()Lsynth.org.lwjgl.util.glu.GLUtessellator; [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluDeleteTess()V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessBeginContour()V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessBeginPolygon(Ljava.lang.Object;)V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessCallback(ILsynth.org.lwjgl.util.glu.GLUtessellatorCallback;)V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessEndContour()V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessEndPolygon()V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessProperty(ID)V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.org.lwjgl.util.glu.GLUtessellator.gluTessVertex([DILjava.lang.Object;)V [skip: LWJGL 2 GLU tessellator; client rendering (client list)]   # 1 user(s): com.sasmaster.glelwjgl.java.CoreGLE
+synth.paulscode.sound.SoundSystem.pause(Ljava.lang.String;)V [skip: paulscode sound engine internals; the modern game has its own OpenAL engine (client)]   # 1 user(s): thebetweenlands.client.audio.SafeStreamSound
+synth.paulscode.sound.SoundSystemConfig.THREAD_SYNC:Ljava.lang.Object; [skip: paulscode sound engine internals; the modern game has its own OpenAL engine (client)]   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess
+synth.paulscode.sound.libraries.ChannelLWJGLOpenAL.attachedSource:Lsynth.paulscode.sound.Source; [skip: paulscode sound engine internals; the modern game has its own OpenAL engine (client)]   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess
+synth.paulscode.sound.libraries.SourceLWJGLOpenAL.channel:Lsynth.paulscode.sound.Channel; [skip: paulscode sound engine internals; the modern game has its own OpenAL engine (client)]   # 1 user(s): thebetweenlands.client.audio.SoundSystemOpenALAccess

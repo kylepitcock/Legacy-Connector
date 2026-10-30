@@ -10,6 +10,8 @@ import legacyconnector.v1_12_2.net.minecraft.entity.Entity;
 public class Teleporter implements legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter {
     protected final WorldServer world;
     protected final Random random;
+    /** Portals found recently, by packed chunk-column position (mods' teleporters cache their own portals here). */
+    protected final it.unimi.dsi.fastutil.longs.Long2ObjectMap<PortalPosition> destinationCoordinateCache = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>(4096);
 
     public Teleporter(WorldServer worldIn) {
         this.world = worldIn;
@@ -31,7 +33,21 @@ public class Teleporter implements legacyconnector.v1_12_2.net.minecraftforge.co
         return false;
     }
 
+    /** Every 100 ticks forgets cached portals not used in the last 300 ticks. */
     public void removeStalePortalLocations(long worldTime) {
+        if (worldTime % 100L != 0L) return;
+        long oldest = worldTime - 300L;
+        destinationCoordinateCache.values().removeIf(p -> p == null || p.lastUpdateTime < oldest);
+    }
+
+    /** A cached portal position and when it was last used. */
+    public class PortalPosition extends legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos {
+        public long lastUpdateTime;
+
+        public PortalPosition(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, long lastUpdate) {
+            super(pos.getX(), pos.getY(), pos.getZ());
+            this.lastUpdateTime = lastUpdate;
+        }
     }
 
     /** Forge's ITeleporter hook. */

@@ -28,9 +28,11 @@ public class Advancement {
         return parent == null || server == null ? null : mcc$of(server.getAdvancements().get(parent));
     }
 
-    /** The criteria by name (values are the modern criteria; mods only read the names). */
-    public java.util.Map<String, Object> getCriteria() {
-        return new java.util.LinkedHashMap<>(holder.value().criteria());
+    /** The criteria by name (each names its modern trigger). */
+    public java.util.Map<String, Criterion> getCriteria() {
+        java.util.Map<String, Criterion> out = new java.util.LinkedHashMap<>();
+        holder.value().criteria().forEach((name, c) -> out.put(name, Criterion.mcc$of(c)));
+        return out;
     }
 
     public AdvancementRewards getRewards() {

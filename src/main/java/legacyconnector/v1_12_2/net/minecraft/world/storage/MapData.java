@@ -23,6 +23,7 @@ public class MapData extends WorldSavedData {
     public byte[] colors = new byte[16384];
     public Map<String, MapDecoration> mapDecorations = new LinkedHashMap<>();
     public java.util.List<Object> playersArrayList = new java.util.ArrayList<>();
+    private final Map<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer, MapInfo> playersHashMap = new java.util.HashMap<>();
 
     public MapData(String mapName) {
         super(mapName);
@@ -84,6 +85,7 @@ public class MapData extends WorldSavedData {
 
     public void updateMapData(int x, int y) {
         markDirty();
+        for (Object o : playersArrayList) if (o instanceof MapInfo info) info.update(x, y);
     }
 
     /** Adds a target icon (treasure X, monument, mansion...) at a world position to a map stack. */
@@ -105,6 +107,122 @@ public class MapData extends WorldSavedData {
             }
         } catch (RuntimeException | LinkageError e) {
             // the legacy NBT keeps the icon
+        }
+    }
+
+    /** The map number of this data ({@code map_N}), or 0. */
+    private int mcc$mapId() {
+        try {
+            return mapName != null && mapName.startsWith("map_") ? Integer.parseInt(mapName.substring(4)) : 0;
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    /** The tracking state of a player holding this map (made on first use). */
+    public MapInfo getMapInfo(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        MapInfo info = playersHashMap.get(player);
+        if (info == null) {
+            info = new MapInfo(player);
+            playersHashMap.put(player, info);
+            playersArrayList.add(info);
+        }
+        return info;
+    }
+
+    /**
+     * Updates the player icons: players that left or no longer carry the map are dropped, and the holder's icon (with its heading) is
+     * placed where it stands, or at the map's edge when it is outside and the map tracks without limit.
+     */
+    public void updateVisiblePlayers(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, ItemStack mapStack) {
+        if (player == null) return;
+        if (!playersHashMap.containsKey(player)) getMapInfo(player);
+        for (var it = playersArrayList.iterator(); it.hasNext(); ) {
+            if (!(it.next() instanceof MapInfo info)) continue;
+            var p = info.player;
+            String name = p.getName();
+            boolean holds = p.mcc$player() != null && !p.mcc$player().isRemoved() && (mapStack == null || legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.mcc$get$inventory(p).hasItemStack(mapStack) || mapStack.isOnItemFrame());
+            if (!holds) {
+                playersHashMap.remove(p);
+                it.remove();
+                mapDecorations.remove(name);
+            } else if (trackingPosition && p.mcc$player().level() != null
+                    && legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.mcc$idOf(p.mcc$player().level().dimension()) == dimension) {
+                updateDecorations(MapDecoration.Type.PLAYER, name, p.mcc$player().getX(), p.mcc$player().getZ(), p.mcc$player().getYRot());
+            }
+        }
+    }
+
+    private void updateDecorations(MapDecoration.Type type, String name, double worldX, double worldZ, double rotation) {
+        int i = 1 << scale;
+        float f = (float) (worldX - xCenter) / i;
+        float f1 = (float) (worldZ - zCenter) / i;
+        byte b0 = (byte) ((int) (f * 2.0F + 0.5D));
+        byte b1 = (byte) ((int) (f1 * 2.0F + 0.5D));
+        byte b2;
+        if (f >= -63.0F && f1 >= -63.0F && f <= 63.0F && f1 <= 63.0F) {
+            rotation = rotation + (rotation < 0.0D ? -8.0D : 8.0D);
+            b2 = (byte) ((int) (rotation * 16.0D / 360.0D));
+        } else {
+            if (type != MapDecoration.Type.PLAYER || !unlimitedTracking && Math.abs(f) >= 320.0F && Math.abs(f1) >= 320.0F) {
+                mapDecorations.remove(name);
+                return;
+            }
+            type = Math.abs(f) < 320.0F && Math.abs(f1) < 320.0F ? MapDecoration.Type.PLAYER_OFF_MAP : MapDecoration.Type.PLAYER_OFF_LIMITS;
+            b2 = 0;
+            if (f <= -63.0F) b0 = -128;
+            if (f1 <= -63.0F) b1 = -128;
+            if (f >= 63.0F) b0 = 127;
+            if (f1 >= 63.0F) b1 = 127;
+        }
+        mapDecorations.put(name, new MapDecoration(type, b0, b1, b2));
+    }
+
+    /** The update packet for a player holding the map (null when nothing changed for it). */
+    public legacyconnector.v1_12_2.net.minecraft.network.Packet<?> getMapPacket(ItemStack mapStack, legacyconnector.v1_12_2.net.minecraft.world.World worldIn,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        MapInfo info = playersHashMap.get(player);
+        return info == null ? null : info.getPacket(mapStack);
+    }
+
+    /** One player's view of the map: which rectangle of colours changed since it was last sent. */
+    public class MapInfo {
+        public final legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player;
+        private boolean isDirty = true;
+        private int minX;
+        private int minY;
+        private int maxX = 127;
+        private int maxY = 127;
+        private int tick;
+        public int step;
+
+        public MapInfo(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+            this.player = player;
+        }
+
+        public legacyconnector.v1_12_2.net.minecraft.network.Packet<?> getPacket(ItemStack stack) {
+            if (isDirty) {
+                isDirty = false;
+                return new legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketMaps(mcc$mapId(), scale, trackingPosition, mapDecorations.values(),
+                        colors, minX, minY, maxX + 1 - minX, maxY + 1 - minY);
+            }
+            return tick++ % 5 == 0 ? new legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketMaps(mcc$mapId(), scale, trackingPosition,
+                    mapDecorations.values(), colors, 0, 0, 0, 0) : null;
+        }
+
+        public void update(int x, int y) {
+            if (isDirty) {
+                minX = Math.min(minX, x);
+                minY = Math.min(minY, y);
+                maxX = Math.max(maxX, x);
+                maxY = Math.max(maxY, y);
+            } else {
+                isDirty = true;
+                minX = x;
+                minY = y;
+                maxX = x;
+                maxY = y;
+            }
         }
     }
 }

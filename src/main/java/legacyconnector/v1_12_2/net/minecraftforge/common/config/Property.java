@@ -229,6 +229,18 @@ public class Property {
         return validValues;
     }
 
+    private String[] mcc$validValuesDisplay;
+
+    /** Forge: the names the config screen shows for the valid values (same order). */
+    public Property setValidValuesDisplay(String[] v) {
+        mcc$validValuesDisplay = v;
+        return this;
+    }
+
+    public String[] getValidValuesDisplay() {
+        return mcc$validValuesDisplay;
+    }
+
     public String getString() {
         return value;
     }
