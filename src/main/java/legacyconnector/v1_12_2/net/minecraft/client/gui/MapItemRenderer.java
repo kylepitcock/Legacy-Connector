@@ -36,6 +36,8 @@ public class MapItemRenderer {
     /** Marks the map's picture for upload (the game uploads it when drawn next). */
     public void updateMapTexture(MapData mapdataIn) {
         if (mapdataIn == null) return;
+        Instance instance = getMapInstanceIfExists(mapdataIn.mapName);
+        if (instance != null && instance.mapData == mapdataIn) instance.updateMapTexture();
         try {
             Detached d = detached(mapdataIn, false);
             if (d != null && fill(mapdataIn, d.data())) net.minecraft.client.Minecraft.getInstance().gameRenderer.getMapRenderer().update(d.id(), d.data());
@@ -115,6 +117,59 @@ public class MapItemRenderer {
     public void clearLoadedMaps() {
         synchronized (MapItemRenderer.class) {
             DETACHED.clear();
+        }
+        synchronized (loadedMaps) {
+            for (Instance i : loadedMaps.values()) i.mapTexture.deleteGlTexture();
+            loadedMaps.clear();
+        }
+    }
+
+    // ------------------------------------------------------------------ 1.12's per-map texture instances (mods reading map pixels)
+
+    private final Map<String, Instance> loadedMaps = new java.util.HashMap<>();
+
+    /** The map's texture instance, made (and filled from its colours) on first use. */
+    public Instance getMapRendererInstance(MapData mapdataIn) {
+        synchronized (loadedMaps) {
+            Instance instance = loadedMaps.get(mapdataIn.mapName);
+            if (instance == null) {
+                instance = new Instance(mapdataIn);
+                loadedMaps.put(mapdataIn.mapName, instance);
+            }
+            return instance;
+        }
+    }
+
+    public Instance getMapInstanceIfExists(String name) {
+        synchronized (loadedMaps) {
+            return loadedMaps.get(name);
+        }
+    }
+
+    public MapData getData(Instance instance) {
+        return instance != null ? instance.mapData : null;
+    }
+
+    /** A map's 128x128 texture: the map colours as pixels (transparent checkered where nothing was mapped). */
+    public class Instance {
+        private final MapData mapData;
+        public final legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture mapTexture;
+        public final int[] mapTextureData;
+
+        Instance(MapData mapdataIn) {
+            this.mapData = mapdataIn;
+            this.mapTexture = new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture(128, 128);
+            this.mapTextureData = mapTexture.getTextureData();
+            updateMapTexture();
+        }
+
+        void updateMapTexture() {
+            for (int i = 0; i < 16384 && i < mapTextureData.length; ++i) {
+                int j = mapData.colors[i] & 255;
+                var color = legacyconnector.v1_12_2.net.minecraft.block.material.MapColor.COLORS[j / 4];
+                mapTextureData[i] = j / 4 == 0 || color == null ? (i + i / 128 & 1) * 8 + 16 << 24 : color.getMapColor(j & 3);
+            }
+            mapTexture.updateDynamicTexture();
         }
     }
 }

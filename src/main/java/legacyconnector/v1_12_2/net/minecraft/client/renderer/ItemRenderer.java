@@ -49,4 +49,43 @@ public class ItemRenderer {
     /** The modern hand renderer ticks itself. */
     public void updateEquippedItem() {
     }
+
+    /** Phantom: the stack the first-person hand shows in the main hand (the modern hand renderer's). */
+    @Deprecated
+    public ItemStack itemStackMainHand;
+
+    public static ItemStack mcc$get$itemStackMainHand(ItemRenderer r) {
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(org.kylepitcock.legacyconnector.v1_12_2.client.Hands1122.shownStack(false));
+    }
+
+    public static void mcc$set$itemStackMainHand(ItemRenderer r, ItemStack value) {
+    }
+
+    /** Phantom: the stack the first-person hand shows in the off hand (the modern hand renderer's). */
+    @Deprecated
+    public ItemStack itemStackOffHand;
+
+    public static ItemStack mcc$get$itemStackOffHand(ItemRenderer r) {
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(org.kylepitcock.legacyconnector.v1_12_2.client.Hands1122.shownStack(true));
+    }
+
+    public static void mcc$set$itemStackOffHand(ItemRenderer r, ItemStack value) {
+    }
+
+    /** How far a held map is tilted towards the viewer for a pitch (looking down raises it into view). */
+    public float getMapAngleFromPitch(float pitch) {
+        float f = 1.0F - pitch / 45.0F + 0.1F;
+        f = Math.max(0.0F, Math.min(1.0F, f));
+        return -(float) Math.cos(f * (float) Math.PI) * 0.5F + 0.5F;
+    }
+
+    /** The local player's bare arm on one side, drawn at the current matrix by the modern hand renderer. */
+    public void renderArmFirstPerson(float equipProgress, float swingProgress, legacyconnector.v1_12_2.net.minecraft.util.EnumHandSide side) {
+        if (side != null) org.kylepitcock.legacyconnector.v1_12_2.client.Hands1122.renderArm(equipProgress, swingProgress, side.mcc$modern());
+    }
+
+    /** Both arms as they hold a map, at the current matrix. */
+    public void renderArms() {
+        org.kylepitcock.legacyconnector.v1_12_2.client.Hands1122.renderMapArms();
+    }
 }

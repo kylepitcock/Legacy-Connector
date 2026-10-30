@@ -61,4 +61,30 @@ public class FaceBakery {
             }
         };
     }
+
+    /** The side a baked quad faces, from the normal of its first three vertices (7 ints per vertex, position first); UP if none fits. */
+    public static EnumFacing getFacingFromVertexData(int[] faceData) {
+        float x0 = Float.intBitsToFloat(faceData[0]), y0 = Float.intBitsToFloat(faceData[1]), z0 = Float.intBitsToFloat(faceData[2]);
+        float x1 = Float.intBitsToFloat(faceData[7]), y1 = Float.intBitsToFloat(faceData[8]), z1 = Float.intBitsToFloat(faceData[9]);
+        float x2 = Float.intBitsToFloat(faceData[14]), y2 = Float.intBitsToFloat(faceData[15]), z2 = Float.intBitsToFloat(faceData[16]);
+        float ax = x0 - x1, ay = y0 - y1, az = z0 - z1;
+        float bx = x2 - x1, by = y2 - y1, bz = z2 - z1;
+        float nx = by * az - bz * ay, ny = bz * ax - bx * az, nz = bx * ay - by * ax;
+        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (len > 0.0F) {
+            nx /= len;
+            ny /= len;
+            nz /= len;
+        }
+        EnumFacing best = null;
+        float f = 0.0F;
+        for (EnumFacing facing : EnumFacing.values()) {
+            float dot = nx * facing.getFrontOffsetX() + ny * facing.getFrontOffsetY() + nz * facing.getFrontOffsetZ();
+            if (dot >= 0.0F && dot > f) {
+                f = dot;
+                best = facing;
+            }
+        }
+        return best == null ? EnumFacing.UP : best;
+    }
 }

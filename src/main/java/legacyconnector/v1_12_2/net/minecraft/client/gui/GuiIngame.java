@@ -185,4 +185,37 @@ public class GuiIngame extends Gui {
     public GuiBossOverlay getBossOverlay() {
         return GuiBossOverlay.mcc$INSTANCE;
     }
+
+    // ------------------------------------------------------------------ vignette and spectator hotbar (runtime list, client)
+
+    /** Phantom: the vignette's eased brightness (the modern HUD's). */
+    @Deprecated
+    public float prevVignetteBrightness;
+
+    public static float mcc$get$prevVignetteBrightness(GuiIngame g) {
+        return hud().vignetteBrightness;
+    }
+
+    public static void mcc$set$prevVignetteBrightness(GuiIngame g, float value) {
+        hud().vignetteBrightness = value;
+    }
+
+    private GuiSpectator mcc$spectatorGui;
+
+    /** Phantom: the spectator hotbar (a view of the modern HUD's). */
+    @Deprecated
+    protected GuiSpectator spectatorGui;
+
+    public static GuiSpectator mcc$get$spectatorGui(GuiIngame g) {
+        return g.getSpectatorGui();
+    }
+
+    public static void mcc$set$spectatorGui(GuiIngame g, GuiSpectator value) {
+        g.mcc$spectatorGui = value;
+    }
+
+    public GuiSpectator getSpectatorGui() {
+        if (mcc$spectatorGui == null) mcc$spectatorGui = new GuiSpectator(Minecraft.getMinecraft());
+        return mcc$spectatorGui;
+    }
 }

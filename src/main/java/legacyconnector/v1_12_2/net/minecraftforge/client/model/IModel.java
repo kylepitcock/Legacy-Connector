@@ -56,4 +56,14 @@ public interface IModel {
     default IModel retexture(ImmutableMap<String, String> textures) {
         return this;
     }
+
+    /** Forge animation: the named clip of this model (Forge's json/B3D animations); plain models have none. */
+    default java.util.Optional<?> getClip(String name) {
+        return java.util.Optional.empty();
+    }
+
+    /** Forge: whether the model is the same for every block state (a model loader may then bake it once). */
+    default boolean ignoreStates() {
+        return false;
+    }
 }

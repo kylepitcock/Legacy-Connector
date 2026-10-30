@@ -29,6 +29,8 @@ public class TextureAtlasSprite {
     private float maxV;
     protected int frameCounter;
     protected int tickCounter;
+    /** The sprite's .mcmeta animation, for sprites that load or animate their frames themselves (the modern atlas animates file sprites). */
+    protected legacyconnector.v1_12_2.net.minecraft.client.resources.data.AnimationMetadataSection animationMetadata;
     /** The modern sprite this one was last synchronized with (null: not stitched yet). */
     private net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern;
 

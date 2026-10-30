@@ -18,6 +18,10 @@ public class ModelBakery {
     /** The baked models by location; the game's own model manager holds the real ones (see ModelManager.getModel). */
     protected final legacyconnector.v1_12_2.net.minecraft.util.registry.RegistrySimple<ModelResourceLocation, IBakedModel> bakedRegistry =
             new legacyconnector.v1_12_2.net.minecraft.util.registry.RegistrySimple<>();
+    /** The client's resources and block model shapes (Forge's model loaders read models and blockstates through them). */
+    protected final legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager =
+            legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager();
+    protected final legacyconnector.v1_12_2.net.minecraft.client.renderer.BlockModelShapes blockModelShapes = ModelManager.mcc$instance().getBlockModelShapes();
 
     private static ModelBlock mcc$marker(String name) {
         ModelBlock model;

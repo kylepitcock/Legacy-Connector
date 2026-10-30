@@ -144,4 +144,49 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
     }
+
+    // ------------------------------------------------------------------ camera and hands (runtime list, client)
+
+    /**
+     * 1.12's cinematic camera state (smoothed mouse turn). The modern mouse handler smooths its own turn; these keep what mods write
+     * so they read it back, as camera mods that drive the cinematic camera expect.
+     */
+    public float smoothCamYaw;
+    public float smoothCamPitch;
+    public float smoothCamFilterX;
+    public float smoothCamFilterY;
+    public float smoothCamPartialTicks;
+
+    /**
+     * 1.12 loaded the world projection and camera matrices here before drawing world overlays. The modern game renderer owns both and
+     * has them set up while legacy world-render callbacks run, so only the camera facts legacy code reads afterwards are refreshed.
+     */
+    public void setupCameraTransform(float partialTicks, int pass) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player != null && mc.gameRenderer != null) ActiveRenderInfo.getCameraPosition();
+    }
+
+    private static boolean mcc$inHand;
+
+    /**
+     * Draws the first-person hands and held items at the current matrix: mods that cancel {@code RenderHandEvent} to change how the
+     * hands are drawn (another FOV, a shader) call it to draw them themselves. Only in first person with the HUD shown, as 1.12 did.
+     */
+    public void renderHand(float partialTicks, int pass) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mcc$inHand || mc.player == null || mc.gameRenderer == null || mc.options.hideGui || !mc.options.getCameraType().isFirstPerson()) return;
+        var pose = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.pose();
+        if (pose == null) pose = new com.mojang.blaze3d.vertex.PoseStack();
+        var buffers = mc.renderBuffers().bufferSource();
+        mcc$inHand = true;
+        try {
+            mc.gameRenderer.itemInHandRenderer.renderHandsWithItems(partialTicks, pose, buffers, mc.player,
+                    mc.getEntityRenderDispatcher().getPackedLightCoords(mc.player, partialTicks));
+            buffers.endBatch();
+        } catch (RuntimeException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing the hands", e);
+        } finally {
+            mcc$inHand = false;
+        }
+    }
 }

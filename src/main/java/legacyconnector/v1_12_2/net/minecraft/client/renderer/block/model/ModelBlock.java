@@ -234,4 +234,13 @@ public class ModelBlock {
         boolean shade = !o.has("shade") || o.get("shade").getAsBoolean();
         return new BlockPart(new Vector3f(from[0], from[1], from[2]), new Vector3f(to[0], to[1], to[2]), faces, rotation, shade);
     }
+
+    /** Gson adapter for model json (mods register it on their own Gson to read models). */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<ModelBlock> {
+        @Override
+        public ModelBlock deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            if (!json.isJsonObject()) throw new com.google.gson.JsonParseException("Model is not a json object");
+            return fromJson(json.getAsJsonObject());
+        }
+    }
 }
