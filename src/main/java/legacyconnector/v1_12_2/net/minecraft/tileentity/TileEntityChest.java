@@ -40,6 +40,28 @@ public class TileEntityChest extends TileEntityLockableLoot implements ITickable
         this.mcc$chest = null;
     }
 
+    /** The kind of chest (plain or trapped) this one belongs to; read from the block when not given. */
+    private legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type cachedChestType;
+
+    public TileEntityChest(legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type typeIn) {
+        this.mcc$chest = null;
+        this.cachedChestType = typeIn;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type getChestType() {
+        if (cachedChestType == null) {
+            if (world == null) return legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.BASIC;
+            if (mcc$chest != null) {
+                cachedChestType = mcc$chest.getBlockState().getBlock() == net.minecraft.world.level.block.Blocks.TRAPPED_CHEST
+                        ? legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.TRAP : legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.BASIC;
+            } else {
+                cachedChestType = getBlockType() instanceof legacyconnector.v1_12_2.net.minecraft.block.BlockChest chest ? chest.chestType
+                        : legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.BASIC;
+            }
+        }
+        return cachedChestType;
+    }
+
     /** A view of a game chest. */
     public TileEntityChest(net.minecraft.world.level.block.entity.ChestBlockEntity chest) {
         this.mcc$chest = chest;

@@ -91,6 +91,13 @@ TYPED_BLOCKS = {
     "CAKE": "new %sBlockCake() {}" % B,
     "END_ROD": "new %sBlockEndRod() {}" % B,
     "OBSERVER": "new %sBlockObserver()" % B,
+    "CHEST": "new %sBlockChest(%sBlockChest.Type.BASIC) {}" % (B, B),
+    "TRAPPED_CHEST": "new %sBlockChest(%sBlockChest.Type.TRAP) {}" % (B, B),
+    "FLOWER_POT": "new %sBlockFlowerPot()" % B,
+    "RAIL": "new %sBlockRail() {}" % B,
+    "GOLDEN_RAIL": "new %sBlockRailPowered() {}" % B,
+    "ACTIVATOR_RAIL": "new %sBlockRailPowered(true) {}" % B,
+    "DETECTOR_RAIL": "new %sBlockRailDetector()" % B,
     "REDSTONE_BLOCK": "new %sBlockCompressedPowered(%sIRON, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor.TNT)" % (B, M),
 }
 for color in ["WHITE", "ORANGE", "MAGENTA", "LIGHT_BLUE", "YELLOW", "LIME", "PINK", "GRAY", "SILVER", "CYAN", "PURPLE", "BLUE", "BROWN", "GREEN", "RED", "BLACK"]:
