@@ -12,6 +12,15 @@ public class MapGenStructureIO {
     private static final Map<String, Class<? extends StructureComponent>> COMPONENT_NAME_TO_CLASS = new ConcurrentHashMap<>();
     private static final Map<Class<? extends StructureComponent>, String> COMPONENT_CLASS_TO_NAME = new ConcurrentHashMap<>();
 
+    static {
+        // vanilla's pieces the shim builds (as 1.12's MapGenStructureIO registered them), so saved structures read back
+        registerStructure(StructureOceanMonument.StartMonument.class, "Monument");
+        ComponentScatteredFeaturePieces.registerScatteredFeaturePieces();
+        StructureOceanMonumentPieces.registerOceanMonumentPieces();
+        StructureVillagePieces.registerVillagePieces();
+        registerStructureComponent(org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernPiece1122.class, "MCCModern");
+    }
+
     public static void registerStructure(Class<? extends StructureStart> startClass, String structureName) {
         if (startClass == null || structureName == null) return;
         START_NAME_TO_CLASS.put(structureName, startClass);

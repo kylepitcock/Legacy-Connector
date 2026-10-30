@@ -9,7 +9,19 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * {@code Structures1122}).
  */
 public class MapGenNetherBridge extends MapGenStructure {
+    private final java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> spawnList = new java.util.ArrayList<>(java.util.List.of(
+            new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityBlaze.class, 10, 2, 3),
+            new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityPigZombie.class, 5, 4, 4),
+            new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityWitherSkeleton.class, 8, 5, 5),
+            new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntitySkeleton.class, 2, 5, 5),
+            new legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityMagmaCube.class, 3, 4, 4)));
+
     public MapGenNetherBridge() {
+    }
+
+    /** The mobs that spawn in fortresses (1.12's list; the modern fortress spawns its own). */
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> getSpawnList() {
+        return spawnList;
     }
 
     public MapGenNetherBridge(java.util.Map<String, String> options) {

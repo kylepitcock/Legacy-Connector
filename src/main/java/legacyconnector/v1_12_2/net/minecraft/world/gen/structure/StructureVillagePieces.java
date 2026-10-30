@@ -16,6 +16,44 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  */
 public class StructureVillagePieces {
     public static void registerVillagePieces() {
+        MapGenStructureIO.registerStructureComponent(House1.class, "ViBH");
+        MapGenStructureIO.registerStructureComponent(Church.class, "ViST");
+        MapGenStructureIO.registerStructureComponent(Path.class, "ViSR");
+        MapGenStructureIO.registerStructureComponent(Well.class, "ViW");
+        MapGenStructureIO.registerStructureComponent(Start.class, "ViStart");
+    }
+
+    /** A modern block state as a legacy one. */
+    static IBlockState mcc$state(net.minecraft.world.level.block.state.BlockState state) {
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toLegacy(state);
+    }
+
+    static IBlockState mcc$of(net.minecraft.world.level.block.Block block) {
+        return mcc$state(block.defaultBlockState());
+    }
+
+    static net.minecraft.world.level.block.state.BlockState mcc$modern(IBlockState state) {
+        return state == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(state);
+    }
+
+    static IBlockState mcc$stairs(net.minecraft.world.level.block.Block stairs, net.minecraft.core.Direction facing) {
+        return mcc$state(stairs.defaultBlockState().setValue(net.minecraft.world.level.block.StairBlock.FACING, facing));
+    }
+
+    /**
+     * Adds a road piece leading away from {@code x, y, z} (3 wide, 7 to 35 long, as long as it fits) to the village; null when the
+     * village is too far out or nothing fits. The houses along roads are the modern village's, so a road adds no houses of its own.
+     */
+    public static StructureComponent generateAndAddRoadPiece(Start start, List<StructureComponent> list, Random rand, int x, int y, int z, EnumFacing facing,
+            int type) {
+        if (start == null || type > 3 + start.terrainType) return null;
+        if (Math.abs(x - start.getBoundingBox().minX) > 112 || Math.abs(z - start.getBoundingBox().minZ) > 112) return null;
+        StructureBoundingBox box = Path.findPieceBox(start, list, rand, x, y, z, facing);
+        if (box == null || box.minY <= 10) return null;
+        Path path = new Path(start, type, rand, box, facing);
+        list.add(path);
+        start.pendingRoads.add(path);
+        return path;
     }
 
     /** How often and how many times a kind of village house may be placed. */
@@ -174,8 +212,301 @@ public class StructureVillagePieces {
             if (torch != null) this.setBlockState(worldIn, torch, x, y, z, structurebb);
         }
 
+        /** Places the village's door (in the village's wood) facing north in piece coordinates, unless the village is infested. */
+        protected void createVillageDoor(World worldIn, StructureBoundingBox sbb, Random rand, int x, int y, int z, EnumFacing facing) {
+            if (!this.isZombieInfested) this.generateDoor(worldIn, sbb, rand, x, y, z, EnumFacing.NORTH, this.biomeDoor());
+        }
+
+        /** The door of the village's style: acacia in savanna villages, spruce in taiga villages, oak elsewhere. */
+        protected legacyconnector.v1_12_2.net.minecraft.block.Block biomeDoor() {
+            var door = switch (this.structureType) {
+                case 2 -> net.minecraft.world.level.block.Blocks.ACACIA_DOOR;
+                case 3 -> net.minecraft.world.level.block.Blocks.SPRUCE_DOOR;
+                default -> net.minecraft.world.level.block.Blocks.OAK_DOOR;
+            };
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.legacyBlock(door.defaultBlockState());
+        }
+
+        /** Whether the block at a piece position is air. */
+        protected boolean mcc$isAir(World worldIn, int x, int y, int z, StructureBoundingBox sbb) {
+            return mcc$modern(this.getBlockStateFromPos(worldIn, x, y, z, sbb)).isAir();
+        }
+
+        /** 1.12's front step: stairs in front of the door where the ground drops, turning a path below back into grass. */
+        protected void mcc$frontStep(World worldIn, IBlockState stairs, int x, StructureBoundingBox sbb) {
+            if (mcc$isAir(worldIn, x, 0, -1, sbb) && !mcc$isAir(worldIn, x, -1, -1, sbb)) {
+                this.setBlockState(worldIn, stairs, x, 0, -1, sbb);
+                if (mcc$modern(this.getBlockStateFromPos(worldIn, x, -1, -1, sbb)).is(net.minecraft.world.level.block.Blocks.DIRT_PATH)) {
+                    this.setBlockState(worldIn, mcc$of(net.minecraft.world.level.block.Blocks.GRASS_BLOCK), x, -1, -1, sbb);
+                }
+            }
+        }
+
         protected void setStructureType(int type) {
             this.structureType = type;
+        }
+    }
+
+    /** A village road (a path piece): turns grass into path, water into planks and sand into gravel on cobblestone along its length. */
+    public abstract static class Road extends Village {
+        public Road() {
+        }
+
+        protected Road(Start start, int type) {
+            super(start, type);
+        }
+    }
+
+    public static class Path extends Road {
+        private int length;
+
+        public Path() {
+        }
+
+        public Path(Start start, int type, Random rand, StructureBoundingBox box, EnumFacing facing) {
+            super(start, type);
+            this.setCoordBaseMode(facing);
+            this.boundingBox = box;
+            this.length = Math.max(box.getXSize(), box.getZSize());
+        }
+
+        @Override
+        protected void writeStructureToNBT(NBTTagCompound tagCompound) {
+            super.writeStructureToNBT(tagCompound);
+            tagCompound.setInteger("Length", this.length);
+        }
+
+        @Override
+        protected void readStructureFromNBT(NBTTagCompound tagCompound, legacyconnector.v1_12_2.net.minecraft.world.gen.structure.template.TemplateManager manager) {
+            super.readStructureFromNBT(tagCompound, manager);
+            this.length = tagCompound.getInteger("Length");
+        }
+
+        /** The longest road (a multiple of 7, from 21-35 down to 7) that fits from the position without crossing a piece. */
+        public static StructureBoundingBox findPieceBox(Start start, List<StructureComponent> list, Random rand, int x, int y, int z, EnumFacing facing) {
+            for (int i = 7 * (3 + rand.nextInt(3)); i >= 7; i -= 7) {
+                StructureBoundingBox box = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, 3, 3, i, facing);
+                if (StructureComponent.findIntersecting(list, box) == null) return box;
+            }
+            return null;
+        }
+
+        @Override
+        public boolean addComponentParts(World worldIn, Random randomIn, StructureBoundingBox sbb) {
+            var access = worldIn.mcc$access();
+            if (access == null) return true;
+            var path = net.minecraft.world.level.block.Blocks.DIRT_PATH.defaultBlockState();
+            var planks = mcc$modern(this.getBiomeSpecificBlockState(mcc$state(net.minecraft.world.level.block.Blocks.OAK_PLANKS.defaultBlockState())));
+            var gravel = mcc$modern(this.getBiomeSpecificBlockState(mcc$state(net.minecraft.world.level.block.Blocks.GRAVEL.defaultBlockState())));
+            var cobble = mcc$modern(this.getBiomeSpecificBlockState(mcc$state(net.minecraft.world.level.block.Blocks.COBBLESTONE.defaultBlockState())));
+            int sea = worldIn.getSeaLevel();
+            for (int i = this.boundingBox.minX; i <= this.boundingBox.maxX; ++i) {
+                for (int j = this.boundingBox.minZ; j <= this.boundingBox.maxZ; ++j) {
+                    BlockPos column = new BlockPos(i, 64, j);
+                    if (!sbb.isVecInside(column)) continue;
+                    var pos = worldIn.getTopSolidOrLiquidBlock(column).down().mcc$modern();
+                    if (pos.getY() < sea) pos = new net.minecraft.core.BlockPos(pos.getX(), sea - 1, pos.getZ());
+                    while (pos.getY() >= sea - 1) {
+                        var state = access.getBlockState(pos);
+                        if (state.is(net.minecraft.world.level.block.Blocks.GRASS_BLOCK) && access.isEmptyBlock(pos.above())) {
+                            access.setBlock(pos, path, 2);
+                            break;
+                        }
+                        if (!state.getFluidState().isEmpty()) {
+                            access.setBlock(pos, planks, 2);
+                            break;
+                        }
+                        if (state.is(net.minecraft.world.level.block.Blocks.SAND) || state.is(net.minecraft.world.level.block.Blocks.SANDSTONE)
+                                || state.is(net.minecraft.world.level.block.Blocks.RED_SANDSTONE)) {
+                            access.setBlock(pos, gravel, 2);
+                            access.setBlock(pos.below(), cobble, 2);
+                            break;
+                        }
+                        pos = pos.below();
+                    }
+                }
+            }
+            return true;
+        }
+    }
+
+    /** The village church: a cobblestone tower with a ladder to its top, glass windows and torches; one cleric lives there. */
+    public static class Church extends Village {
+        public Church() {
+        }
+
+        public Church(Start start, int type, Random rand, StructureBoundingBox box, EnumFacing facing) {
+            super(start, type);
+            this.setCoordBaseMode(facing);
+            this.boundingBox = box;
+        }
+
+        public static Church createPiece(Start start, List<StructureComponent> list, Random rand, int x, int y, int z, EnumFacing facing, int type) {
+            StructureBoundingBox box = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, 5, 12, 9, facing);
+            return canVillageGoDeeper(box) && StructureComponent.findIntersecting(list, box) == null ? new Church(start, type, rand, box, facing) : null;
+        }
+
+        @Override
+        public boolean addComponentParts(World worldIn, Random randomIn, StructureBoundingBox sbb) {
+            if (this.averageGroundLvl < 0) {
+                this.averageGroundLvl = this.getAverageGroundLevel(worldIn, sbb);
+                if (this.averageGroundLvl < 0) return true;
+                this.boundingBox.offset(0, this.averageGroundLvl - this.boundingBox.maxY + 12 - 1, 0);
+            }
+            IBlockState air = mcc$of(net.minecraft.world.level.block.Blocks.AIR);
+            IBlockState cobble = this.getBiomeSpecificBlockState(mcc$of(net.minecraft.world.level.block.Blocks.COBBLESTONE));
+            IBlockState stairsN = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.COBBLESTONE_STAIRS, net.minecraft.core.Direction.NORTH));
+            IBlockState stairsW = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.COBBLESTONE_STAIRS, net.minecraft.core.Direction.WEST));
+            IBlockState stairsE = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.COBBLESTONE_STAIRS, net.minecraft.core.Direction.EAST));
+            IBlockState glass = mcc$of(net.minecraft.world.level.block.Blocks.GLASS_PANE);
+            this.fillWithBlocks(worldIn, sbb, 1, 1, 1, 3, 3, 7, air, air, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 5, 1, 3, 9, 3, air, air, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 0, 0, 3, 0, 8, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 1, 0, 3, 10, 0, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 1, 1, 0, 10, 3, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 4, 1, 1, 4, 10, 3, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 0, 4, 0, 4, 7, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 4, 0, 4, 4, 4, 7, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 1, 8, 3, 4, 8, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 5, 4, 3, 10, 4, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 5, 5, 3, 5, 7, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 9, 0, 4, 9, 4, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 4, 0, 4, 4, 4, cobble, cobble, false);
+            this.setBlockState(worldIn, cobble, 0, 11, 2, sbb);
+            this.setBlockState(worldIn, cobble, 4, 11, 2, sbb);
+            this.setBlockState(worldIn, cobble, 2, 11, 0, sbb);
+            this.setBlockState(worldIn, cobble, 2, 11, 4, sbb);
+            this.setBlockState(worldIn, cobble, 1, 1, 6, sbb);
+            this.setBlockState(worldIn, cobble, 1, 1, 7, sbb);
+            this.setBlockState(worldIn, cobble, 2, 1, 7, sbb);
+            this.setBlockState(worldIn, cobble, 3, 1, 6, sbb);
+            this.setBlockState(worldIn, cobble, 3, 1, 7, sbb);
+            this.setBlockState(worldIn, stairsN, 1, 1, 5, sbb);
+            this.setBlockState(worldIn, stairsN, 2, 1, 6, sbb);
+            this.setBlockState(worldIn, stairsN, 3, 1, 5, sbb);
+            this.setBlockState(worldIn, stairsW, 1, 2, 7, sbb);
+            this.setBlockState(worldIn, stairsE, 3, 2, 7, sbb);
+            int[][] panes = {{0, 2, 2}, {0, 3, 2}, {4, 2, 2}, {4, 3, 2}, {0, 6, 2}, {0, 7, 2}, {4, 6, 2}, {4, 7, 2}, {2, 6, 0}, {2, 7, 0}, {2, 6, 4},
+                    {2, 7, 4}, {0, 3, 6}, {4, 3, 6}, {2, 3, 8}};
+            for (int[] p : panes) this.setBlockState(worldIn, glass, p[0], p[1], p[2], sbb);
+            this.placeTorch(worldIn, EnumFacing.SOUTH, 2, 4, 7, sbb);
+            this.placeTorch(worldIn, EnumFacing.EAST, 1, 4, 6, sbb);
+            this.placeTorch(worldIn, EnumFacing.WEST, 3, 4, 6, sbb);
+            this.placeTorch(worldIn, EnumFacing.NORTH, 2, 4, 5, sbb);
+            IBlockState ladder = mcc$state(net.minecraft.world.level.block.Blocks.LADDER.defaultBlockState()
+                    .setValue(net.minecraft.world.level.block.LadderBlock.FACING, net.minecraft.core.Direction.WEST));
+            for (int i = 1; i <= 9; ++i) this.setBlockState(worldIn, ladder, 3, i, 3, sbb);
+            this.setBlockState(worldIn, air, 2, 1, 0, sbb);
+            this.setBlockState(worldIn, air, 2, 2, 0, sbb);
+            this.createVillageDoor(worldIn, sbb, randomIn, 2, 1, 0, EnumFacing.NORTH);
+            this.mcc$frontStep(worldIn, stairsN, 2, sbb);
+            for (int k = 0; k < 9; ++k) {
+                for (int j = 0; j < 5; ++j) {
+                    this.clearCurrentPositionBlocksUpwards(worldIn, j, 12, k, sbb);
+                    this.replaceAirAndLiquidDownwards(worldIn, cobble, j, -1, k, sbb);
+                }
+            }
+            this.spawnVillagers(worldIn, sbb, 2, 1, 2, 1);
+            return true;
+        }
+
+        @Override
+        protected int chooseProfession(int villagersSpawnedIn, int currentVillagerProfession) {
+            return 2;
+        }
+    }
+
+    /** The village library: bookshelves, a crafting table and two chairs with pressure plate tables; a librarian lives there. */
+    public static class House1 extends Village {
+        public House1() {
+        }
+
+        public House1(Start start, int type, Random rand, StructureBoundingBox box, EnumFacing facing) {
+            super(start, type);
+            this.setCoordBaseMode(facing);
+            this.boundingBox = box;
+        }
+
+        public static House1 createPiece(Start start, List<StructureComponent> list, Random rand, int x, int y, int z, EnumFacing facing, int type) {
+            StructureBoundingBox box = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, 9, 9, 6, facing);
+            return canVillageGoDeeper(box) && StructureComponent.findIntersecting(list, box) == null ? new House1(start, type, rand, box, facing) : null;
+        }
+
+        @Override
+        public boolean addComponentParts(World worldIn, Random randomIn, StructureBoundingBox sbb) {
+            if (this.averageGroundLvl < 0) {
+                this.averageGroundLvl = this.getAverageGroundLevel(worldIn, sbb);
+                if (this.averageGroundLvl < 0) return true;
+                this.boundingBox.offset(0, this.averageGroundLvl - this.boundingBox.maxY + 9 - 1, 0);
+            }
+            IBlockState air = mcc$of(net.minecraft.world.level.block.Blocks.AIR);
+            IBlockState cobble = this.getBiomeSpecificBlockState(mcc$of(net.minecraft.world.level.block.Blocks.COBBLESTONE));
+            IBlockState stairsN = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.OAK_STAIRS, net.minecraft.core.Direction.NORTH));
+            IBlockState stairsS = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.OAK_STAIRS, net.minecraft.core.Direction.SOUTH));
+            IBlockState stairsE = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.OAK_STAIRS, net.minecraft.core.Direction.EAST));
+            IBlockState planks = this.getBiomeSpecificBlockState(mcc$of(net.minecraft.world.level.block.Blocks.OAK_PLANKS));
+            IBlockState stoneStairsN = this.getBiomeSpecificBlockState(mcc$stairs(net.minecraft.world.level.block.Blocks.COBBLESTONE_STAIRS, net.minecraft.core.Direction.NORTH));
+            IBlockState fence = this.getBiomeSpecificBlockState(mcc$of(net.minecraft.world.level.block.Blocks.OAK_FENCE));
+            IBlockState glass = mcc$of(net.minecraft.world.level.block.Blocks.GLASS_PANE);
+            IBlockState shelf = mcc$of(net.minecraft.world.level.block.Blocks.BOOKSHELF);
+            IBlockState plate = mcc$of(net.minecraft.world.level.block.Blocks.OAK_PRESSURE_PLATE);
+            this.fillWithBlocks(worldIn, sbb, 1, 1, 1, 7, 5, 4, air, air, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 0, 0, 8, 0, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 5, 0, 8, 5, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 6, 1, 8, 6, 4, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 7, 2, 8, 7, 3, cobble, cobble, false);
+            for (int i = -1; i <= 2; ++i) {
+                for (int j = 0; j <= 8; ++j) {
+                    this.setBlockState(worldIn, stairsN, j, 6 + i, i, sbb);
+                    this.setBlockState(worldIn, stairsS, j, 6 + i, 5 - i, sbb);
+                }
+            }
+            this.fillWithBlocks(worldIn, sbb, 0, 1, 0, 0, 1, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 1, 5, 8, 1, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 8, 1, 0, 8, 1, 4, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 2, 1, 0, 7, 1, 0, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 2, 0, 0, 4, 0, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 2, 5, 0, 4, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 8, 2, 5, 8, 4, 5, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 8, 2, 0, 8, 4, 0, cobble, cobble, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 2, 1, 0, 4, 4, planks, planks, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 2, 5, 7, 4, 5, planks, planks, false);
+            this.fillWithBlocks(worldIn, sbb, 8, 2, 1, 8, 4, 4, planks, planks, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 2, 0, 7, 4, 0, planks, planks, false);
+            int[][] panes = {{4, 2, 0}, {5, 2, 0}, {6, 2, 0}, {4, 3, 0}, {5, 3, 0}, {6, 3, 0}, {0, 2, 2}, {0, 2, 3}, {0, 3, 2}, {0, 3, 3}, {8, 2, 2},
+                    {8, 2, 3}, {8, 3, 2}, {8, 3, 3}, {2, 2, 5}, {3, 2, 5}, {5, 2, 5}, {6, 2, 5}};
+            for (int[] p : panes) this.setBlockState(worldIn, glass, p[0], p[1], p[2], sbb);
+            this.fillWithBlocks(worldIn, sbb, 1, 4, 1, 7, 4, 1, planks, planks, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 4, 4, 7, 4, 4, planks, planks, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 3, 4, 7, 3, 4, shelf, shelf, false);
+            this.setBlockState(worldIn, planks, 7, 1, 4, sbb);
+            this.setBlockState(worldIn, stairsE, 7, 1, 3, sbb);
+            this.setBlockState(worldIn, stairsN, 6, 1, 4, sbb);
+            this.setBlockState(worldIn, stairsN, 5, 1, 4, sbb);
+            this.setBlockState(worldIn, stairsN, 4, 1, 4, sbb);
+            this.setBlockState(worldIn, stairsN, 3, 1, 4, sbb);
+            this.setBlockState(worldIn, fence, 6, 1, 3, sbb);
+            this.setBlockState(worldIn, plate, 6, 2, 3, sbb);
+            this.setBlockState(worldIn, fence, 4, 1, 3, sbb);
+            this.setBlockState(worldIn, plate, 4, 2, 3, sbb);
+            this.setBlockState(worldIn, mcc$of(net.minecraft.world.level.block.Blocks.CRAFTING_TABLE), 7, 1, 1, sbb);
+            this.setBlockState(worldIn, air, 1, 1, 0, sbb);
+            this.setBlockState(worldIn, air, 1, 2, 0, sbb);
+            this.createVillageDoor(worldIn, sbb, randomIn, 1, 1, 0, EnumFacing.NORTH);
+            this.mcc$frontStep(worldIn, stoneStairsN, 1, sbb);
+            for (int l = 0; l < 6; ++l) {
+                for (int k = 0; k < 9; ++k) {
+                    this.clearCurrentPositionBlocksUpwards(worldIn, k, 9, l, sbb);
+                    this.replaceAirAndLiquidDownwards(worldIn, cobble, k, -1, l, sbb);
+                }
+            }
+            this.spawnVillagers(worldIn, sbb, 2, 1, 2, 1);
+            return true;
+        }
+
+        @Override
+        protected int chooseProfession(int villagersSpawnedIn, int currentVillagerProfession) {
+            return villagersSpawnedIn == 0 ? 4 : super.chooseProfession(villagersSpawnedIn, currentVillagerProfession);
         }
     }
 
