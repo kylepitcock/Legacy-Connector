@@ -182,7 +182,10 @@ public class RenderManager {
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityWitch.class, new RenderWitch(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityVindicator.class, new RenderVindicator(this));
             m.put(legacyconnector.v1_12_2.net.minecraft.entity.monster.EntityEvoker.class, new RenderEvoker(this));
-            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class, new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityHorse.class, new RenderHorse(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityLlama.class, new RenderLlama(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.boss.EntityWither.class, new RenderWither(this));
+            m.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class,new RenderEntityItem(this, legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderItem.mcc$instance()));
             mcc$vanillaRenderers = m;
         }
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {

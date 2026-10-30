@@ -91,6 +91,57 @@ public class ModelLoaderRegistry {
         return MISSING;
     }
 
+    /**
+     * Forge's animation state machine of an {@code asms/*.json} file. The clips are not played (legacy animated blocks keep their static
+     * model, see AnimationTESR): the machine keeps its named state, starting at the file's {@code start} state and following
+     * {@link IAnimationStateMachine#transition}s, and answers the identity pose with no events.
+     */
+    public static legacyconnector.v1_12_2.net.minecraftforge.common.model.animation.IAnimationStateMachine loadASM(ResourceLocation location,
+            com.google.common.collect.ImmutableMap<String, legacyconnector.v1_12_2.net.minecraftforge.common.animation.ITimeValue> customParameters) {
+        String start = "default";
+        java.util.Set<String> states = new java.util.HashSet<>();
+        try (java.io.Reader reader = new java.io.InputStreamReader(
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureUtil.open(location), java.nio.charset.StandardCharsets.UTF_8)) {
+            var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+            if (json.has("start")) start = json.get("start").getAsString();
+            if (json.has("states")) for (var e : json.getAsJsonArray("states")) states.add(e.getAsString());
+        } catch (java.io.IOException | RuntimeException e) {
+            LOG.debug("Couldn't read animation state machine {}: {}", location, e.toString());
+        }
+        return new StaticStateMachine(start, states);
+    }
+
+    private static final class StaticStateMachine implements legacyconnector.v1_12_2.net.minecraftforge.common.model.animation.IAnimationStateMachine {
+        private final java.util.Set<String> states;
+        private String current;
+
+        StaticStateMachine(String start, java.util.Set<String> states) {
+            this.current = start;
+            this.states = states;
+        }
+
+        @Override
+        public org.apache.commons.lang3.tuple.Pair<IModelState, Iterable<legacyconnector.v1_12_2.net.minecraftforge.common.animation.Event>> apply(float time) {
+            return org.apache.commons.lang3.tuple.Pair.of(legacyconnector.v1_12_2.net.minecraftforge.common.model.TRSRTransformation.identity(),
+                    java.util.Collections.emptyList());
+        }
+
+        @Override
+        public void transition(String newState) {
+            if (!states.isEmpty() && !states.contains(newState)) throw new IllegalStateException("unknown state: " + newState);
+            current = newState;
+        }
+
+        @Override
+        public String currentState() {
+            return current;
+        }
+
+        @Override
+        public void shouldHandleSpecialEvents(boolean value) {
+        }
+    }
+
     /** Forgets loaded models (resources were reloaded). */
     public static void clearModelCache(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager manager) {
         CACHE.clear();

@@ -234,6 +234,40 @@ public class TextureAtlasSprite {
         return out;
     }
 
+    /**
+     * Reads a sprite's frames from its PNG (a vertical strip of square frames is split into its frames), level 0 only: the mipmap levels
+     * are filled by {@link #generateMipmaps}.
+     */
+    public void loadSpriteFrames(legacyconnector.v1_12_2.net.minecraft.client.resources.IResource resource, int mipmaplevels) throws java.io.IOException {
+        java.awt.image.BufferedImage image;
+        try (java.io.InputStream in = resource.getInputStream()) {
+            image = TextureUtil.readBufferedImage(in);
+        }
+        if (image == null) throw new java.io.IOException("Couldn't read sprite " + iconName);
+        int w = image.getWidth(), h = image.getHeight();
+        int[] pixels = new int[w * h];
+        image.getRGB(0, 0, w, h, pixels, 0, w);
+        int levels = Math.max(1, mipmaplevels);
+        if (h > w && h % w == 0) {
+            int frame = w * w;
+            for (int i = 0; i < h / w; i++) {
+                int[][] data = new int[levels][];
+                data[0] = new int[frame];
+                System.arraycopy(pixels, i * frame, data[0], 0, frame);
+                framesTextureData.add(data);
+            }
+        } else {
+            int[][] data = new int[levels][];
+            data[0] = pixels;
+            framesTextureData.add(data);
+        }
+    }
+
+    /** One channel blended between two values (animation interpolation). */
+    protected int interpolateColor(double factor, int to, int from) {
+        return (int) (factor * (double) to + (1.0D - factor) * (double) from);
+    }
+
     public void clearFramesTextureData() {
         framesTextureData.clear();
     }

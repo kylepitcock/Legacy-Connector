@@ -37,6 +37,14 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
     public void onResourceManagerReload(IResourceManager resourceManager) {
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer mcc$mapItemRenderer;
+
+    /** The map renderer (maps in item frames, held maps and map tooltips), drawing through the modern one. */
+    public legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer getMapItemRenderer() {
+        if (mcc$mapItemRenderer == null) mcc$mapItemRenderer = new legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer(mc == null ? null : mc.getTextureManager());
+        return mcc$mapItemRenderer;
+    }
+
     public boolean isShaderActive() {
         return net.minecraft.client.Minecraft.getInstance().gameRenderer.currentEffect() != null;
     }
@@ -135,10 +143,5 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
         GlStateManager.disableBlend();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
-    }
-
-    /** The map renderer (maps in item frames, map tooltips). */
-    public legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer getMapItemRenderer() {
-        return legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer.mcc$instance();
     }
 }
