@@ -16,7 +16,7 @@ public class FMLProxyPacket implements Packet<INetHandler> {
     private Side target;
     private final PacketBuffer payload;
     private INetHandler netHandler;
-    private Object dispatcher;
+    private legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.handshake.NetworkDispatcher dispatcher;
 
     public FMLProxyPacket(PacketBuffer payload, String channel) {
         this.channel = channel;
@@ -67,7 +67,15 @@ public class FMLProxyPacket implements Packet<INetHandler> {
         return target;
     }
 
-    /** The handshake dispatcher of the connection (not modelled; the layer has no FML handshake). */
+    /** The connection the packet arrived on (see {@code NetworkDispatcher}); null for packets made to be sent. */
+    public legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.handshake.NetworkDispatcher getDispatcher() {
+        return dispatcher;
+    }
+
+    public void setDispatcher(legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.handshake.NetworkDispatcher networkDispatcher) {
+        this.dispatcher = networkDispatcher;
+    }
+
     public Object mcc$dispatcher() {
         return dispatcher;
     }
@@ -83,6 +91,7 @@ public class FMLProxyPacket implements Packet<INetHandler> {
         FMLProxyPacket p = new FMLProxyPacket(Unpooled.wrappedBuffer(mcc$bytes()), channel);
         p.target = target;
         p.netHandler = netHandler;
+        p.dispatcher = dispatcher;
         return p;
     }
 

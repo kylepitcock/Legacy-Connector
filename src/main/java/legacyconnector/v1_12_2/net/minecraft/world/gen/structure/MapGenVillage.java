@@ -9,6 +9,10 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * {@code Structures1122}).
  */
 public class MapGenVillage extends MapGenStructure {
+    /** The biomes villages may start in (plains, desert, savanna, taiga, and those mods add through {@code BiomeManager.addVillageBiome}). */
+    public static java.util.List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome> VILLAGE_SPAWN_BIOMES =
+            legacyconnector.v1_12_2.net.minecraftforge.common.BiomeManager.mcc$villageBiomes();
+
     public MapGenVillage() {
     }
 

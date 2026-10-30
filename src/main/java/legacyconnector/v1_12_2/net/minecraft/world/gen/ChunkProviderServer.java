@@ -84,6 +84,21 @@ public class ChunkProviderServer implements IChunkProvider {
         return getLoadedChunk(x, z);
     }
 
+    /** Phantom field: {@link #mcc$get$loadedChunks}. */
+    @Deprecated
+    public it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> loadedChunks;
+
+    /** loadedChunks: the loaded chunks by packed position (a snapshot of the modern chunk map; changes to it are not loads or unloads). */
+    public static it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> mcc$get$loadedChunks(ChunkProviderServer p) {
+        it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> out = new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<>();
+        for (Chunk c : p.getLoadedChunks()) out.put(legacyconnector.v1_12_2.net.minecraft.util.math.ChunkPos.asLong(c.x, c.z), c);
+        return out;
+    }
+
+    public static void mcc$set$loadedChunks(ChunkProviderServer p, it.unimi.dsi.fastutil.longs.Long2ObjectMap<Chunk> v) {
+        // the modern chunk map owns the loaded chunks
+    }
+
     public Collection<Chunk> getLoadedChunks() {
         List<Chunk> out = new java.util.ArrayList<>();
         if (access() instanceof net.minecraft.server.level.ServerLevel sl) {
