@@ -37,13 +37,15 @@ public final class LegacySoundSources {
     private static Field accessField;
     private static Field loadedField;
     private static boolean reflectionFailed;
+    private static volatile SoundEngine lastEngine;
 
     private LegacySoundSources() {}
 
     private record Decoded(ByteBuffer pcm, AudioFormat format) {}
 
     /** The engine reloaded (resource reload, device change): its OpenAL context and every buffer in it are new. */
-    public static void engineReloaded() {
+    public static void engineReloaded(SoundEngine engine) {
+        lastEngine = engine;
         BUFFERS.clear();
     }
 
@@ -58,7 +60,10 @@ public final class LegacySoundSources {
                 loadedField = SoundEngine.class.getDeclaredField("loaded");
                 loadedField.setAccessible(true);
             }
-            return (SoundEngine) engineField.get(Minecraft.getInstance().getSoundManager());
+            if (lastEngine != null) return lastEngine;
+            // the engine's load event fires inside its constructor, before Minecraft has a sound manager
+            var manager = Minecraft.getInstance().getSoundManager();
+            return manager == null ? null : (SoundEngine) engineField.get(manager);
         } catch (ReflectiveOperationException | RuntimeException e) {
             reflectionFailed = true;
             LOG.error("Cannot reach the sound engine; legacy sound sources stay silent", e);

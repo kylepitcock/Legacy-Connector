@@ -22,7 +22,7 @@ On 2026-10-27 the area lists got a `# ---- 1.12.2` section each: 12,286 1.12.2 A
 `cpw.mods.fml...`): E 3,338, R1 2,113, R2a 1,061, R2b 889, W 1,423, I 2,225, F 1,237 entries. A 1.12.2 line ends with
 `# n mod(s): <jar names>; e.g. <user classes>`; implement it in `src/main/java/legacyconnector/v1_12_2/...`. The 1.12.2 client
 (R1, R2a, R2b) has no rendering bridge yet, so those sections need that foundation first.
-| `task-D.txt` | 1.12.2 APIs logged at runtime |
+| `task-D-client.txt`, `task-D-common.txt` | 1.12.2 APIs logged at runtime (pruned and split on 2026-10-30) |
 
 Each line is `legacy.class.member(descriptor)` (fields: `class.field:type`), followed by `# n user(s): <mod classes>`.
 A descriptor class under `legacyconnector_synth/...` is itself only synthesized so far. Lines with ` -> (desc)` are

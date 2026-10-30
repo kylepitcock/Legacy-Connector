@@ -29,7 +29,7 @@ public final class Client1710 {
         modBus.addListener(Client1710::onRegisterRenderers);
         modBus.addListener((net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent e) -> {
             // 1.7.10 fired SoundSetupEvent and SoundLoadEvent each time its sound system (re)started
-            LegacySoundSources.engineReloaded();
+            LegacySoundSources.engineReloaded(e.getEngine());
             boolean loaded = LegacySoundSources.engineLoaded();
             var manager = legacyconnector.v1_7_10.net.minecraft.client.audio.SoundManager.INSTANCE;
             manager.mcc$engineLoaded(loaded);

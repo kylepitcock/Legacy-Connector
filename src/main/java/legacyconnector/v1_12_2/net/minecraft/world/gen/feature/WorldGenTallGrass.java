@@ -5,15 +5,19 @@ import legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos;
 import legacyconnector.v1_12_2.net.minecraft.world.World;
 
 /**
- * 1.12.2 patch of tall grass: from the surface below the position (through air and leaves), 128 tries scatter the plant where it can
- * stay. Legacy code constructs it with a {@code BlockTallGrass.EnumType}, a synthesized enum the shim cannot name in a constructor;
- * that call links to the plain constructor, so the patch is grass (the type mods pass nearly always).
+ * 1.12.2 patch of tall grass: from the surface below the position (through air and leaves), 128 tries scatter the plant (grass, fern or
+ * dead bush, by the {@code BlockTallGrass.EnumType} it was made with) where it can stay.
  */
 public class WorldGenTallGrass extends WorldGenerator {
     private net.minecraft.world.level.block.Block mcc$plant = net.minecraft.world.level.block.Blocks.SHORT_GRASS;
 
     public WorldGenTallGrass() {
         super(false);
+    }
+
+    public WorldGenTallGrass(legacyconnector.v1_12_2.net.minecraft.block.BlockTallGrass.EnumType type) {
+        super(false);
+        mcc$setType(type == null ? null : type.name());
     }
 
     /** The plant by its legacy type name (DEAD_BUSH, GRASS, FERN). */

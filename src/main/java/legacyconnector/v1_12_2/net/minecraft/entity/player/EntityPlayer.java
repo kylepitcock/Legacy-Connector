@@ -76,6 +76,47 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     // ------------------------------------------------------------------ phantom fields
 
+    /** Phantom field: {@link #mcc$get$xpSeed}. */
+    @Deprecated
+    protected int xpSeed;
+    private int mcc$local_xpSeed;
+
+    /** xpSeed: the seed of the enchanting table's offers (the modern enchantment seed). */
+    public static int mcc$get$xpSeed(EntityPlayer p) {
+        var m = p.mcc$entity instanceof Player pl ? pl : null;
+        return m != null ? m.getEnchantmentSeed() : p.mcc$local_xpSeed;
+    }
+
+    public static void mcc$set$xpSeed(EntityPlayer p, int v) {
+        if (p.mcc$entity instanceof Player pl && MCC$ENCHANTMENT_SEED != null) {
+            try {
+                MCC$ENCHANTMENT_SEED.setInt(pl, v);
+                return;
+            } catch (IllegalAccessException e) {
+                // kept locally
+            }
+        }
+        p.mcc$local_xpSeed = v;
+    }
+
+    private static final java.lang.reflect.Field MCC$ENCHANTMENT_SEED = mcc$enchantmentSeedField();
+
+    private static java.lang.reflect.Field mcc$enchantmentSeedField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(Player.class, "enchantmentSeed");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Opens the book in the hand: a written book's screen (the server resolves its text components and tells the client). */
+    public void openBook(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, legacyconnector.v1_12_2.net.minecraft.util.EnumHand hand) {
+        var m = mcc$entity instanceof Player pl ? pl : null;
+        if (m == null || stack == null) return;
+        var h = hand == null ? net.minecraft.world.InteractionHand.MAIN_HAND : hand.mcc$modern();
+        m.openItemGui(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModernLive(stack), h);
+    }
+
     public static InventoryPlayer mcc$get$inventory(EntityPlayer p) {
         if (p.mcc$inventory == null) p.mcc$inventory = new InventoryPlayer(p);
         return p.mcc$inventory;

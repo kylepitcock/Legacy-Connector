@@ -28,6 +28,10 @@ public class EntityAITasks {
     public EntityAITasks(Object profiler) {
     }
 
+    /** {@code new EntityAITasks(world.profiler)}: the legacy profiler records nothing for the AI (the modern one profiles the goals). */
+    public EntityAITasks(legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler) {
+    }
+
     /** Binds the list to a vanilla mob's goal selector (target selector for target tasks). */
     public final void mcc$bindGoals(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving owner, boolean targets) {
         if (owner.mcc$entity instanceof net.minecraft.world.entity.Mob m) {

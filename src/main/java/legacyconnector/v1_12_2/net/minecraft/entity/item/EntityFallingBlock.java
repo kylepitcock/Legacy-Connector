@@ -108,6 +108,52 @@ public class EntityFallingBlock extends Entity {
         e.mcc$tileEntityData = v;
     }
 
+    /** Phantom fields: {@link #mcc$get$hurtEntities}, {@link #mcc$get$fallHurtMax}, {@link #mcc$get$fallHurtAmount}. */
+    @Deprecated
+    private boolean hurtEntities;
+    @Deprecated
+    private int fallHurtMax;
+    @Deprecated
+    private float fallHurtAmount;
+    private int mcc$fallHurtMax = 40;
+    private float mcc$fallHurtAmount = 2.0F;
+
+    /** hurtEntities: whether the block damages what it lands on (anvils). */
+    public static boolean mcc$get$hurtEntities(EntityFallingBlock e) {
+        var f = e.mcc$falling();
+        return f != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.fallingHurts(f) : e.mcc$hurtEntities;
+    }
+
+    public static void mcc$set$hurtEntities(EntityFallingBlock e, boolean v) {
+        var f = e.mcc$falling();
+        if (f != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setFallingHurts(f, v);
+        e.mcc$hurtEntities = v;
+    }
+
+    /** fallHurtMax: the most damage a landing deals. */
+    public static int mcc$get$fallHurtMax(EntityFallingBlock e) {
+        var f = e.mcc$falling();
+        return f != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.fallDamageMax(f) : e.mcc$fallHurtMax;
+    }
+
+    public static void mcc$set$fallHurtMax(EntityFallingBlock e, int v) {
+        var f = e.mcc$falling();
+        if (f != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setFallDamageMax(f, v);
+        e.mcc$fallHurtMax = v;
+    }
+
+    /** fallHurtAmount: the damage per block fallen. */
+    public static float mcc$get$fallHurtAmount(EntityFallingBlock e) {
+        var f = e.mcc$falling();
+        return f != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.fallDamagePerDistance(f) : e.mcc$fallHurtAmount;
+    }
+
+    public static void mcc$set$fallHurtAmount(EntityFallingBlock e, float v) {
+        var f = e.mcc$falling();
+        if (f != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setFallDamagePerDistance(f, v);
+        e.mcc$fallHurtAmount = v;
+    }
+
     public void setHurtEntities(boolean hurt) {
         mcc$hurtEntities = hurt;
         var f = mcc$falling();

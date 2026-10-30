@@ -57,6 +57,31 @@ public class EntitySheep extends EntityAnimal {
         getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED).setBaseValue(0.23000000417232513D);
     }
 
+    /**
+     * The fleece colour of a lamb: the dye the parents' two colours craft into (red and white give pink), else one parent's colour
+     * by chance.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor getDyeColorMixFromParents(EntityAnimal father, EntityAnimal mother) {
+        var a = father instanceof EntitySheep f ? f.getFleeceColor() : legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.WHITE;
+        var b = mother instanceof EntitySheep m ? m.getFleeceColor() : legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.WHITE;
+        var level = mcc$entity == null ? null : mcc$entity.level();
+        if (level != null) {
+            try {
+                var input = net.minecraft.world.item.crafting.CraftingInput.of(2, 1, java.util.List.of(
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.DyeItem.byColor(net.minecraft.world.item.DyeColor.byId(a.getMetadata()))),
+                        new net.minecraft.world.item.ItemStack(net.minecraft.world.item.DyeItem.byColor(net.minecraft.world.item.DyeColor.byId(b.getMetadata())))));
+                var result = level.getRecipeManager().getRecipeFor(net.minecraft.world.item.crafting.RecipeType.CRAFTING, input, level)
+                        .map(r -> r.value().assemble(input, level.registryAccess())).orElse(net.minecraft.world.item.ItemStack.EMPTY);
+                if (result.getItem() instanceof net.minecraft.world.item.DyeItem dye) {
+                    return legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.byMetadata(dye.getDyeColor().getId());
+                }
+            } catch (RuntimeException e) {
+                // a parent's colour below
+            }
+        }
+        return rand.nextBoolean() ? a : b;
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor getFleeceColor() {
         var m = mcc$self();
         if (m != null) return legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.byMetadata(m.getColor().getId());

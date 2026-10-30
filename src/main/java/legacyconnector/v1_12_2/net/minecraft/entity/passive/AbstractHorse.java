@@ -220,6 +220,29 @@ public abstract class AbstractHorse extends EntityAnimal implements legacyconnec
         super(modern);
     }
 
+    /** A foal (not eating) walks towards the nearest grown horse within 16 blocks once it is more than 2 blocks away. */
+    protected void followMother() {
+        var h = mcc$horse();
+        if (h != null) {
+            org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.followMommy(h);
+            return;
+        }
+        var world = mcc$get$world(this);
+        if (world == null || !isChild()) return;
+        AbstractHorse closest = null;
+        double best = Double.MAX_VALUE;
+        for (Object o : world.getEntitiesWithinAABBExcludingEntity(this, getEntityBoundingBox().grow(16.0D))) {
+            if (o instanceof AbstractHorse other && !other.isChild()) {
+                double d = getDistanceSq(other);
+                if (d < best) {
+                    best = d;
+                    closest = other;
+                }
+            }
+        }
+        if (closest != null && best > 4.0D) getNavigator().tryMoveToEntityLiving(closest, 1.0D);
+    }
+
     protected net.minecraft.world.entity.animal.horse.AbstractHorse mcc$horse() {
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.animal.horse.AbstractHorse h ? h : null;
     }

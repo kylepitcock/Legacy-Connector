@@ -37,18 +37,6 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         return p == null ? EntityPlayer.EnumChatVisibility.FULL : EntityPlayer.EnumChatVisibility.getEnumChatVisibility(p.getChatVisibility().getId());
     }
 
-    /** The player's statistics (a view of the modern stats). */
-    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer getStatFile() {
-        var p = mcc$serverPlayer();
-        return p == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(p.getStats());
-    }
-
-    /** The player's recipe book (a view of the modern one). */
-    public legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer getRecipeBook() {
-        var p = mcc$serverPlayer();
-        return p == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer.mcc$of(p.getRecipeBook());
-    }
-
     public net.minecraft.server.level.ServerPlayer mcc$serverPlayer() {
         return (net.minecraft.server.level.ServerPlayer) mcc$entity;
     }
@@ -246,5 +234,18 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
     public legacyconnector.v1_12_2.net.minecraft.entity.Entity changeDimension(int dimension,
             legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter teleporter) {
         return super.changeDimension(dimension, teleporter);
+    }
+
+    /** The player's recipe book (the modern server book: unlocking there also tells the client). */
+    public legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer getRecipeBook() {
+        var sp = mcc$serverPlayer();
+        return sp == null ? new legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer()
+                : legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer.mcc$of(sp.getRecipeBook());
+    }
+
+    /** The player's statistics. */
+    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer getStatFile() {
+        var sp = mcc$serverPlayer();
+        return sp == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(sp.getStats());
     }
 }

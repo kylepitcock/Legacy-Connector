@@ -4,6 +4,8 @@ package legacyconnector.v1_12_2.net.minecraft.world;
 public class DifficultyInstance {
     private final EnumDifficulty worldDifficulty;
     private final float additionalDifficulty;
+    /** The modern instance this one was made from, if any. */
+    private net.minecraft.world.DifficultyInstance mcc$modernInstance;
 
     public DifficultyInstance(EnumDifficulty worldDifficulty, long worldTime, long chunkInhabitedTime, float moonPhaseFactor) {
         this.worldDifficulty = worldDifficulty;
@@ -14,10 +16,16 @@ public class DifficultyInstance {
     private DifficultyInstance(net.minecraft.world.DifficultyInstance modern) {
         this.worldDifficulty = EnumDifficulty.mcc$of(modern.getDifficulty());
         this.additionalDifficulty = modern.getEffectiveDifficulty();
+        this.mcc$modernInstance = modern;
     }
 
     public static DifficultyInstance mcc$of(net.minecraft.world.DifficultyInstance modern) {
         return new DifficultyInstance(modern);
+    }
+
+    /** The modern equivalent, or null when a mod built this instance itself. */
+    public net.minecraft.world.DifficultyInstance mcc$modern() {
+        return mcc$modernInstance;
     }
 
     public EnumDifficulty getDifficulty() {

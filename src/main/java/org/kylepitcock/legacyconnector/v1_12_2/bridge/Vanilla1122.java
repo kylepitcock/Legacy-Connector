@@ -55,7 +55,7 @@ public final class Vanilla1122 {
     }
 
     /** 1.12 registry paths that are not the lower-case field name (and the reverse, for lookups by name). */
-    private static final Map<String, String> LEGACY_PATHS = Map.of("POTIONITEM", "potion", "EMPTY_MAP", "map", "MAP", "filled_map",
+    private static final Map<String, String> LEGACY_PATHS = Map.of("POTIONITEM", "potion", "EMPTY_MAP", "map",
             "OAK_DOOR", "wooden_door", "OAK_FENCE", "fence", "OAK_FENCE_GATE", "fence_gate");
     private static final Map<String, String> LEGACY_FIELDS = new HashMap<>();
 
@@ -71,7 +71,8 @@ public final class Vanilla1122 {
                 "PRISMARINE", "prismarine", "COBBLESTONE_WALL", "cobblestone_wall", "ANVIL", "anvil", "QUARTZ_ORE", "nether_quartz_ore"};
         for (int i = 0; i < more.length; i += 2) BLOCK_NAMES.putIfAbsent(more[i], more[i + 1]);
         LEGACY_PATHS.forEach((field, path) -> LEGACY_FIELDS.put(path, field));
-        ITEM_NAMES.put("MAP", "filled_map");
+        // 1.12 Items.MAP is the empty map (ItemEmptyMap, "map") and Items.FILLED_MAP the drawn one; ITEM_NAMES once swapped them
+        ITEM_NAMES.put("MAP", "map");
     }
 
     private static String legacyPath(String field) {
@@ -314,7 +315,7 @@ public final class Vanilla1122 {
             return null;
         }
         Object o = instantiate(type);
-        String legacy = field.toLowerCase(java.util.Locale.ROOT);
+        String legacy = legacyPath(field); // POTIONITEM is minecraft:potion
         if (o instanceof Block b) {
             b.setRegistryName("minecraft", legacy);
             ResourceLocation id = find(BuiltInRegistries.BLOCK, BLOCK_NAMES.getOrDefault(field, legacy));

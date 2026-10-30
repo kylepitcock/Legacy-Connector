@@ -99,6 +99,17 @@ public final class ModernAccess1122 {
         }
     }
 
+    private static final Field NO_JUMP_DELAY = find(LivingEntity.class, "noJumpDelay");
+
+    /** LivingEntity.noJumpDelay (1.12 EntityLivingBase.jumpTicks: ticks until the entity may jump again). */
+    public static int noJumpDelay(LivingEntity e) {
+        return getInt(NO_JUMP_DELAY, e);
+    }
+
+    public static void setNoJumpDelay(LivingEntity e, int v) {
+        setInt(NO_JUMP_DELAY, e, v);
+    }
+
     /** LivingEntity.dead: the death was handled (1.12 EntityLivingBase.dead). */
     public static boolean dead(LivingEntity e) {
         return getBoolean(DEAD, e);
@@ -195,6 +206,79 @@ public final class ModernAccess1122 {
             return CAN_HIT_ENTITY != null && target != null && (boolean) CAN_HIT_ENTITY.invoke(p, target);
         } catch (ReflectiveOperationException e) {
             return false;
+        }
+    }
+
+    private static final java.lang.reflect.Method WATER_SPLASH = method(net.minecraft.world.entity.Entity.class, "doWaterSplashEffect");
+
+    /** Entity.doWaterSplashEffect: the splash sound and particles of an entity falling into water. */
+    public static void waterSplash(net.minecraft.world.entity.Entity e) {
+        try {
+            if (WATER_SPLASH != null && e != null) WATER_SPLASH.invoke(e);
+        } catch (ReflectiveOperationException ex) {
+            // no splash
+        }
+    }
+
+    private static final Field FALLING_HURTS = find(net.minecraft.world.entity.item.FallingBlockEntity.class, "hurtEntities");
+    private static final Field FALLING_DAMAGE_MAX = find(net.minecraft.world.entity.item.FallingBlockEntity.class, "fallDamageMax");
+    private static final Field FALLING_DAMAGE_PER_DISTANCE = find(net.minecraft.world.entity.item.FallingBlockEntity.class, "fallDamagePerDistance");
+
+    /** FallingBlockEntity.hurtEntities (1.12 EntityFallingBlock.hurtEntities). */
+    public static boolean fallingHurts(net.minecraft.world.entity.item.FallingBlockEntity e) {
+        return getBoolean(FALLING_HURTS, e);
+    }
+
+    public static void setFallingHurts(net.minecraft.world.entity.item.FallingBlockEntity e, boolean v) {
+        setBoolean(FALLING_HURTS, e, v);
+    }
+
+    /** FallingBlockEntity.fallDamageMax (1.12 fallHurtMax). */
+    public static int fallDamageMax(net.minecraft.world.entity.item.FallingBlockEntity e) {
+        return getInt(FALLING_DAMAGE_MAX, e);
+    }
+
+    public static void setFallDamageMax(net.minecraft.world.entity.item.FallingBlockEntity e, int v) {
+        setInt(FALLING_DAMAGE_MAX, e, v);
+    }
+
+    /** FallingBlockEntity.fallDamagePerDistance (1.12 fallHurtAmount). */
+    public static float fallDamagePerDistance(net.minecraft.world.entity.item.FallingBlockEntity e) {
+        return getFloat(FALLING_DAMAGE_PER_DISTANCE, e);
+    }
+
+    public static void setFallDamagePerDistance(net.minecraft.world.entity.item.FallingBlockEntity e, float v) {
+        setFloat(FALLING_DAMAGE_PER_DISTANCE, e, v);
+    }
+
+    private static final java.lang.reflect.Method FOLLOW_MOMMY = method(net.minecraft.world.entity.animal.horse.AbstractHorse.class, "followMommy");
+
+    /** AbstractHorse.followMommy: a foal walks towards the nearest adult horse. */
+    public static void followMommy(net.minecraft.world.entity.animal.horse.AbstractHorse h) {
+        try {
+            if (FOLLOW_MOMMY != null && h != null) FOLLOW_MOMMY.invoke(h);
+        } catch (ReflectiveOperationException e) {
+            // stays put
+        }
+    }
+
+    private static final Class<?> ILLAGER_SPELL = spellClass();
+    private static final java.lang.reflect.Method SET_CASTING_SPELL = ILLAGER_SPELL == null ? null
+            : method(net.minecraft.world.entity.monster.SpellcasterIllager.class, "setIsCastingSpell", ILLAGER_SPELL);
+
+    private static Class<?> spellClass() {
+        for (Class<?> c : net.minecraft.world.entity.monster.SpellcasterIllager.class.getDeclaredClasses()) if (c.isEnum()) return c;
+        return null;
+    }
+
+    /** SpellcasterIllager.setIsCastingSpell with the spell of that ordinal (NONE, SUMMON_VEX, FANGS, WOLOLO, DISAPPEAR, BLINDNESS, as in 1.12). */
+    public static void setCastingSpell(net.minecraft.world.entity.monster.SpellcasterIllager illager, int ordinal) {
+        if (SET_CASTING_SPELL == null || illager == null) return;
+        Object[] spells = ILLAGER_SPELL.getEnumConstants();
+        try {
+            SET_CASTING_SPELL.invoke(illager, spells[Math.max(0, Math.min(ordinal, spells.length - 1))]);
+        } catch (ReflectiveOperationException e) {
+            // the spell stays
         }
     }
 }

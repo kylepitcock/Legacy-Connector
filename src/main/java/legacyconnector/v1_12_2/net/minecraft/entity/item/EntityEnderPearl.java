@@ -1,11 +1,12 @@
-package legacyconnector.v1_12_2.net.minecraft.entity.projectile;
+package legacyconnector.v1_12_2.net.minecraft.entity.item;
 
+import legacyconnector.v1_12_2.net.minecraft.entity.projectile.EntityThrowable;
 import legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase;
 import legacyconnector.v1_12_2.net.minecraft.util.DamageSource;
 import legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult;
 import legacyconnector.v1_12_2.net.minecraft.world.World;
 
-/** 1.12.2 ender pearl (teleports its thrower, sometimes leaving an endermite). */
+/** 1.12.2 ender pearl (teleports its thrower, sometimes leaving an endermite); 1.12 keeps it in {@code entity.item}. */
 public class EntityEnderPearl extends EntityThrowable {
     public EntityEnderPearl(World world) {
         super(world);

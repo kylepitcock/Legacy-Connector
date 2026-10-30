@@ -98,6 +98,35 @@ public abstract class EntityMinecart extends Entity {
         }
     }
 
+    private boolean mcc$hasDisplayTile;
+
+    /** Forge: the item this cart drops and is picked as (a plain minecart for spawner carts and mods' own kinds). */
+    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack getCartItem() {
+        var c = mcc$cart();
+        if (c != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(c.getPickResult());
+        String name = switch (getType()) {
+            case CHEST -> "chest_minecart";
+            case FURNACE -> "furnace_minecart";
+            case TNT -> "tnt_minecart";
+            case HOPPER -> "hopper_minecart";
+            case COMMAND_BLOCK -> "command_block_minecart";
+            default -> "minecart";
+        };
+        return new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(legacyconnector.v1_12_2.net.minecraft.item.Item.getByNameOrId("minecraft:" + name));
+    }
+
+    /** Whether the cart shows a custom block (set once a mod gives it one). */
+    public void setHasDisplayTile(boolean showBlock) {
+        var c = mcc$cart();
+        if (c != null) c.setCustomDisplay(showBlock);
+        mcc$hasDisplayTile = showBlock;
+    }
+
+    public boolean hasDisplayTile() {
+        var c = mcc$cart();
+        return c != null ? c.hasCustomDisplay() : mcc$hasDisplayTile;
+    }
+
     /** Forge: whether it is pushed by its own power (furnace carts). */
     public boolean isPoweredCart() {
         var c = mcc$cart();
