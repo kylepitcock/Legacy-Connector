@@ -19,7 +19,7 @@ import legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.InvWrapper;
  * players could set with {@code /blockdata} (no lock is ever set on this game's blocks) and Forge's item handler capability over the
  * inventory.
  */
-public abstract class TileEntityLockable extends TileEntity implements IInventory {
+public abstract class TileEntityLockable extends TileEntity implements IInventory, legacyconnector.v1_12_2.net.minecraft.world.ILockableContainer {
     private String mcc$lock = "";
     protected IItemHandler itemHandler;
 
@@ -41,6 +41,14 @@ public abstract class TileEntityLockable extends TileEntity implements IInventor
 
     public boolean isLocked() {
         return !mcc$lock.isEmpty();
+    }
+
+    public legacyconnector.v1_12_2.net.minecraft.world.LockCode getLockCode() {
+        return mcc$lock.isEmpty() ? legacyconnector.v1_12_2.net.minecraft.world.LockCode.EMPTY_CODE : new legacyconnector.v1_12_2.net.minecraft.world.LockCode(mcc$lock);
+    }
+
+    public void setLockCode(legacyconnector.v1_12_2.net.minecraft.world.LockCode code) {
+        mcc$lock = code == null || code.getLock() == null ? "" : code.getLock();
     }
 
     /** The container the GUI of this inventory shows (mods' subclasses build theirs). */

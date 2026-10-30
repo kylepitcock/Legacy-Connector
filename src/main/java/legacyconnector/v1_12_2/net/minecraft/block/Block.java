@@ -394,6 +394,16 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
             legacyconnector.v1_12_2.net.minecraft.world.Explosion explosionIn) {
     }
 
+    /** The older MCP name of {@link #isExceptBlockForAttachWithPiston}. */
+    protected static boolean isExcepBlockForAttachWithPiston(Block attachBlock) {
+        return isExceptBlockForAttachWithPiston(attachBlock);
+    }
+
+    protected static boolean isExceptionBlockForAttaching(Block attachBlock) {
+        return attachBlock instanceof BlockShulkerBox || attachBlock instanceof BlockLeaves || mcc$named(attachBlock, "beacon", "cauldron", "glass",
+                "glowstone", "ice", "sea_lantern", "stained_glass");
+    }
+
     /** How a block's model is shifted per position (flowers and grass sit off-centre). */
     public enum EnumOffsetType {
         NONE,
