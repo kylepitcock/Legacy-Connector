@@ -59,7 +59,12 @@ public class GuiChat extends GuiScreen implements GuiYesNoCallback {
     }
 
     /** Sends a line typed into the chat: a client command if one matches, else to the server. */
+    /** The SRG name of {@link #submitChatMessage} (1.7.10's mappings name it {@code submitChatMessage}); shim code still calls this one. */
     public void func_146403_a(String line) {
+        submitChatMessage(line);
+    }
+
+    public void submitChatMessage(String line) {
         mc.ingameGUI.getChatGUI().addToSentMessages(line);
         var player = Minecraft.mcc$get$thePlayer(mc);
         if (player == null) return;

@@ -115,7 +115,12 @@ public class ItemFishFood extends ItemFood {
         }
 
         /** The type of a fish stack (vanilla's fish items are modern items here, not this class); cod for other items. */
+        /** The SRG name of {@link #getFishTypeForItemStack} (1.7.10's mappings name it {@code getFishTypeForItemStack}); shim code still calls this one. */
         public static FishType func_150978_a(ItemStack stack) {
+            return getFishTypeForItemStack(stack);
+        }
+
+        public static FishType getFishTypeForItemStack(ItemStack stack) {
             Item item = stack == null ? null : stack.getItem();
             boolean fish = item instanceof ItemFishFood || item != null && (item == legacyconnector.v1_7_10.net.minecraft.init.Items.fish
                     || item == legacyconnector.v1_7_10.net.minecraft.init.Items.cooked_fished);

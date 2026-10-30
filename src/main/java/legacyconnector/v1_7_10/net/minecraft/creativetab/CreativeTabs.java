@@ -55,7 +55,12 @@ public abstract class CreativeTabs {
         return this;
     }
 
+    /** The SRG name of {@link #getRelevantEnchantmentTypes} (1.7.10's mappings name it {@code getRelevantEnchantmentTypes}); shim code still calls this one. */
     public legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[] func_111225_m() {
+        return getRelevantEnchantmentTypes();
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType[] getRelevantEnchantmentTypes() {
         return relevantEnchantmentTypes;
     }
 

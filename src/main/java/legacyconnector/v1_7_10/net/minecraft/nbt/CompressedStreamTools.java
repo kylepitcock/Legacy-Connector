@@ -68,6 +68,15 @@ public class CompressedStreamTools {
         return read(in);
     }
 
+    /** 1.7.10's MCP mappings never named this one, so mods call it by its SRG name (DragonAPI's NBT files). */
+    public static NBTTagCompound func_152456_a(DataInput in, NBTSizeTracker tracker) throws IOException {
+        return read(in);
+    }
+
+    public static NBTTagCompound readFromFile(File file, NBTSizeTracker tracker) throws IOException {
+        return read(file);
+    }
+
     public static NBTTagCompound read(java.io.DataInputStream in) throws IOException {
         return read((DataInput) in);
     }

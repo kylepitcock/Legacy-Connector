@@ -239,7 +239,12 @@ public class TileEntityFurnace extends TileEntity implements ISidedInventory {
         super.markDirty();
     }
 
+    /** The SRG name of {@link #setCustomInventoryName} (1.7.10's mappings name it {@code setCustomInventoryName}); shim code still calls this one. */
     public void func_145951_a(String name) {
+        setCustomInventoryName(name);
+    }
+
+    public void setCustomInventoryName(String name) {
         this.field_145958_o = name;
     }
 

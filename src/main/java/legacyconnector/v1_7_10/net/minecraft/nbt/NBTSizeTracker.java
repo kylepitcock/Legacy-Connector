@@ -11,7 +11,8 @@ public class NBTSizeTracker {
         this.max = max;
     }
 
-    public void func_152450_a(long bits) {
+    /** {@code addSpaceRead} in 1.7.10's mappings. */
+    public void addSpaceRead(long bits) {
         read += bits / 8L;
         if (max != 0L && read > max) throw new RuntimeException("Tried to read NBT tag that was too big; tried to allocate: " + read + "bytes where max allowed: " + max);
     }

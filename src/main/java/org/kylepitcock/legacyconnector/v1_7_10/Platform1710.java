@@ -264,14 +264,21 @@ public final class Platform1710 implements LegacyPlatform {
             dispatch(mod, new FMLPreInitializationEvent(mod));
         } finally {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(false);
-            org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.retryFailedDiscovery();
         }
     }
 
     @Override
     public void init(LegacyModRecord mod) throws Exception {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.INITIALIZATION);
-        dispatch(mod, new FMLInitializationEvent());
+        try {
+            dispatch(mod, new FMLInitializationEvent());
+        } finally {
+            // Subtypes of the items registered in preInit are listed after the mod's init, not its preInit: getSubItems
+            // initializes the mod's classes, and in 1.7.10 nothing called it before init had set them up in their own order
+            // (ChromatiCraft's ResearchLevel must initialize before ChromaResearchManager, which init guarantees). Stacks built
+            // meanwhile keep their legacy item and meta and resolve to the variant once it exists.
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.retryFailedDiscovery(mod.modernId);
+        }
     }
 
     @Override

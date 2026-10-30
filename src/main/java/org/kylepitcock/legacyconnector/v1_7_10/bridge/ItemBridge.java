@@ -376,7 +376,7 @@ public final class ItemBridge {
         }
         if (discoveryFailed) {
             discoveryFailed = false;
-            RETRY.add(() -> {
+            retryLater(() -> {
                 for (int meta : discoverMetas(item)) {
                     if (item.mcc$variants.containsKey(meta)) continue;
                     LegacyItemAdapter adapter = new LegacyItemAdapter(item, meta, properties(item));
@@ -388,19 +388,38 @@ public final class ItemBridge {
 
     /** Items whose getSubItems failed while mods were still registering (it may need content created later). */
     private static final List<Runnable> RETRY = new ArrayList<>();
+    /** The mod that registered each {@link #RETRY} entry (modern id), so its subtypes are listed after its own init. */
+    private static final List<String> RETRY_OWNER = new ArrayList<>();
+
+    private static void retryLater(Runnable r) {
+        var c = org.kylepitcock.legacyconnector.v1_7_10.LegacyModContainer1710.active();
+        RETRY.add(r);
+        RETRY_OWNER.add(c == null ? null : c.record().modernId);
+    }
     private static boolean discoveryFailed;
     private static boolean deferring;
     private static boolean retrying;
 
-    /** While set, subtype discovery waits for {@link #retryFailedDiscovery()} (the end of the registering mod's preInit). */
+    /** While set, subtype discovery waits for {@link #retryFailedDiscovery()} (the end of the registering mod's init). */
     public static synchronized void setDeferDiscovery(boolean on) {
         deferring = on;
     }
 
     /** Called once every legacy mod has loaded: subtypes that could not be listed during registration. */
     public static synchronized void retryFailedDiscovery() {
-        List<Runnable> todo = new ArrayList<>(RETRY);
-        RETRY.clear();
+        retryFailedDiscovery(null);
+    }
+
+    /** The entries registered by one mod (its modern id), or all of them for null. */
+    public static synchronized void retryFailedDiscovery(String owner) {
+        List<Runnable> todo = new ArrayList<>();
+        for (int i = 0; i < RETRY.size(); i++) {
+            if (owner == null || owner.equals(RETRY_OWNER.get(i))) {
+                todo.add(RETRY.remove(i));
+                RETRY_OWNER.remove(i);
+                i--;
+            }
+        }
         int before = BuiltInRegistries.ITEM.size();
         retrying = true;
         try {
@@ -431,7 +450,7 @@ public final class ItemBridge {
         }
         if (discoveryFailed) {
             discoveryFailed = false;
-            RETRY.add(() -> {
+            retryLater(() -> {
                 for (int meta : discoverMetas(item)) {
                     if (item.mcc$variants.containsKey(meta)) continue;
                     LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));

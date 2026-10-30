@@ -52,7 +52,12 @@ public class BlockCarpet extends Block {
         func_150089_b(world.getBlockMetadata(x, y, z));
     }
 
+    /** The SRG name of {@link #setBlockBoundsFromMeta} (1.7.10's mappings name it {@code setBlockBoundsFromMeta}); shim code still calls this one. */
     protected void func_150089_b(int meta) {
+        setBlockBoundsFromMeta(meta);
+    }
+
+    protected void setBlockBoundsFromMeta(int meta) {
         setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F / 16.0F, 1.0F);
     }
 

@@ -36,7 +36,12 @@ public class ModifiableAttributeInstance implements IAttributeInstance {
     }
 
     @Override
+    /** The SRG name of {@link #getModifiersByOperation} (1.7.10's mappings name it {@code getModifiersByOperation}); shim code still calls this one. */
     public Collection<AttributeModifier> func_111130_a(int operation) {
+        return getModifiersByOperation(operation);
+    }
+
+    public Collection<AttributeModifier> getModifiersByOperation(int operation) {
         List<AttributeModifier> out = new ArrayList<>();
         for (AttributeModifier m : modifiers.values()) if (m.getOperation() == operation) out.add(m);
         return out;

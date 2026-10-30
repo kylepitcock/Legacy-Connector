@@ -41,7 +41,12 @@ public class EmptyChunk extends Chunk {
     }
 
     @Override
+    /** The SRG name of {@link #setBlockIDWithMetadata} (1.7.10's mappings name it {@code setBlockIDWithMetadata}); shim code still calls this one. */
     public boolean func_150807_a(int x, int y, int z, Block block, int meta) {
+        return setBlockIDWithMetadata(x, y, z, block, meta);
+    }
+
+    public boolean setBlockIDWithMetadata(int x, int y, int z, Block block, int meta) {
         return true;
     }
 
@@ -83,7 +88,12 @@ public class EmptyChunk extends Chunk {
     }
 
     @Override
+    /** The SRG name of {@link #getBlockTileEntityInChunk} (1.7.10's mappings name it {@code getBlockTileEntityInChunk}); shim code still calls this one. */
     public TileEntity func_150806_e(int x, int y, int z) {
+        return getBlockTileEntityInChunk(x, y, z);
+    }
+
+    public TileEntity getBlockTileEntityInChunk(int x, int y, int z) {
         return null;
     }
 

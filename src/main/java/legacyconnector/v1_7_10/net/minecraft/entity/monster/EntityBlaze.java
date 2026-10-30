@@ -25,7 +25,12 @@ public class EntityBlaze extends EntityMob {
         return (dataWatcher.getWatchableObjectByte(16) & 1) != 0;
     }
 
+    /** The SRG name of {@link #func_70844_e} (1.7.10's mappings name it {@code func_70844_e}); shim code still calls this one. */
     public void func_70844_a(boolean onFire) {
+        func_70844_e(onFire);
+    }
+
+    public void func_70844_e(boolean onFire) {
         byte flags = dataWatcher.getWatchableObjectByte(16);
         dataWatcher.updateObject(16, (byte) (onFire ? flags | 1 : flags & -2));
     }

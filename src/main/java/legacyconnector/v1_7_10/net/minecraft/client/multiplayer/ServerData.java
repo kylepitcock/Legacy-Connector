@@ -17,7 +17,12 @@ public class ServerData {
         this.serverIP = ip;
     }
 
+    /** The SRG name of {@link #copyFrom} (1.7.10's mappings name it {@code copyFrom}); shim code still calls this one. */
     public void func_152583_a(ServerData other) {
+        copyFrom(other);
+    }
+
+    public void copyFrom(ServerData other) {
         this.serverIP = other.serverIP;
         this.serverName = other.serverName;
         this.field_147412_i = other.field_147412_i;

@@ -327,7 +327,12 @@ public class ChunkProviderHell implements IChunkProvider {
         return biome == null ? java.util.List.of() : biome.getSpawnableList(type);
     }
 
+    /** The SRG name of {@link #findClosestStructure} (1.7.10's mappings name it {@code findClosestStructure}); shim code still calls this one. */
     public legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition func_147416_a(World world, String name, int x, int y, int z) {
+        return findClosestStructure(world, name, x, y, z);
+    }
+
+    public legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition findClosestStructure(World world, String name, int x, int y, int z) {
         return null;
     }
 
