@@ -90,7 +90,7 @@ public final class NetworkBridge {
                 var ctor = type.getDeclaredConstructor();
                 ctor.setAccessible(true);
                 IMessage message = ctor.newInstance();
-                message.fromBytes(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(payload.data()));
+                message.fromBytes(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.message(payload.discriminator(), payload.data()));
                 MessageContext ctx = toServer
                         ? new MessageContext(Side.SERVER, new NetHandlerPlayServer((EntityPlayerMP) EntityBridge.wrap(context.player())))
                         : new MessageContext(Side.CLIENT, null);
