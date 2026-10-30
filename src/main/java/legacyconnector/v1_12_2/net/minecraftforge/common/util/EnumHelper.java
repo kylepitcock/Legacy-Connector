@@ -23,6 +23,18 @@ public class EnumHelper {
         return new legacyconnector.v1_12_2.net.minecraft.enchantment.EnumEnchantmentType(name, test);
     }
 
+    /**
+     * A new creature type (a spawn group with its own cap): {@code creatureClass} is what counts toward the cap. The modern game spawns
+     * by its own categories, so creatures of an added type are counted as the type's legacy class says.
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureType addCreatureType(String name, Class<?> typeClass, int maxNumber,
+            legacyconnector.v1_12_2.net.minecraft.block.material.Material material, boolean peaceful, boolean animal) {
+        var type = org.kylepitcock.legacyconnector.core.LegacyEnums.add(legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureType.class, name,
+                new Class<?>[] {int.class, boolean.class, boolean.class}, new Object[] {maxNumber, peaceful, animal});
+        legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureType.mcc$setCreatureClass(type, typeClass);
+        return type;
+    }
+
     /** Adds a constant to a real enum (a synthesized or the mod's own); parameter types inferred from the values. */
     public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Object... paramValues) {
         return org.kylepitcock.legacyconnector.core.LegacyEnums.add(enumType, enumName, paramValues);

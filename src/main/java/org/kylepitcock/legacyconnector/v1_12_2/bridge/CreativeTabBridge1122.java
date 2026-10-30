@@ -18,7 +18,8 @@ import org.kylepitcock.legacyconnector.core.registry.LegacyRegistrar;
 
 /** Creative tabs of 1.12.2 mods become modern tabs; items in vanilla tabs are added to the matching modern tab. */
 public final class CreativeTabBridge1122 {
-    private static final int VANILLA_TABS = 10;
+    /** The tabs CreativeTabs declares itself (building blocks ... search, hotbar, inventory). */
+    private static final int VANILLA_TABS = 12;
 
     private CreativeTabBridge1122() {}
 

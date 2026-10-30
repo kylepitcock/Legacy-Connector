@@ -69,6 +69,11 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return functionManager;
     }
 
+    /** The saves folder the running world is in (its worlds, level.dat and save handlers). */
+    public legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveFormat getActiveAnvilConverter() {
+        return legacyconnector.v1_12_2.net.minecraft.world.storage.SaveFormatOld.mcc$server();
+    }
+
     public ICommandManager getCommandManager() {
         return commandManager;
     }

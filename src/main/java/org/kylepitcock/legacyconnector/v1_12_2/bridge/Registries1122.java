@@ -271,6 +271,8 @@ public final class Registries1122 {
             byName.put(name, value);
             byValue.put(value, name);
             onRegister.accept(value);
+            mcc$added(value);
+            if (value instanceof legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry entry) entry.mcc$registered();
         }
 
         @SafeVarargs

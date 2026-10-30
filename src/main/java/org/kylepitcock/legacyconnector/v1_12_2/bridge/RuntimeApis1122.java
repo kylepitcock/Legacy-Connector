@@ -368,6 +368,13 @@ public final class RuntimeApis1122 {
             return a == null ? Synth.NONE : a.hash();
         });
         Synth.addInstanceMethod(horse + ".getOrdinal", (self, args) -> self instanceof Enum<?> e ? e.ordinal() : Synth.NONE);
+
+        // a creature attribute (undead, arthropod, ...): only its identity matters (smite/bane of arthropods compare against vanilla's)
+        Synth.addStaticMethod(helper + "addCreatureAttribute", args -> {
+            if (args.length < 1 || !(args[0] instanceof String name)) return Synth.NONE;
+            Object type = enumConstant("net.minecraft.entity.EnumCreatureAttribute", name);
+            return type == null ? Synth.NONE : type;
+        });
         Synth.addStaticMethod(horse + ".getByItemStack", args -> {
             String name = "NONE";
             if (args.length > 0 && args[0] instanceof ItemStack stack && !stack.isEmpty()) {

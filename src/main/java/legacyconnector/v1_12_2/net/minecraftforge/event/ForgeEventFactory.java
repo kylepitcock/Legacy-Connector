@@ -435,4 +435,17 @@ public class ForgeEventFactory {
         event.setPitch(result.getNewPitch());
         return event;
     }
+
+    /** The offers a merchant shows the player, after mods' {@code MerchantTradeOffersEvent} handlers (a copy; the merchant's own is kept). */
+    public static legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList listTradeOffers(legacyconnector.v1_12_2.net.minecraft.entity.IMerchant merchant,
+            EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList list) {
+        legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList copy = null;
+        if (list != null) {
+            copy = new legacyconnector.v1_12_2.net.minecraft.village.MerchantRecipeList();
+            copy.addAll(list);
+        }
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.village.MerchantTradeOffersEvent(merchant, player, copy);
+        mcc$bus().post(event);
+        return event.getList();
+    }
 }

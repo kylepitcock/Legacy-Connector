@@ -25,6 +25,12 @@ public class RegistryNamespacedDefaultedByKey<K, V> extends RegistryNamespaced<K
     }
 
     @Override
+    public synchronized void register(int id, K key, V value) {
+        if (defaultValueKey.equals(key)) defaultValue = value;
+        super.register(id, key, value);
+    }
+
+    @Override
     public synchronized V getObject(K name) {
         V v = super.getObject(name);
         return v == null ? defaultValue : v;

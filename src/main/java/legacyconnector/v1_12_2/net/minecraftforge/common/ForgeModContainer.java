@@ -21,6 +21,23 @@ public class ForgeModContainer extends legacyconnector.v1_12_2.net.minecraftforg
     public static boolean logCascadingWorldGeneration = true;
     public static boolean zoomInMissingModelTextInGui = false;
 
+    /** The grass/foliage colour blend radii the video settings offered. */
+    public static int[] blendRanges = {2, 4, 6, 8, 10, 12, 14};
+
+    /** Phantom field: reads go to {@link #mcc$get$universalBucket} (made on first use). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket universalBucket;
+    private static legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket mcc$universalBucket;
+
+    /**
+     * Forge's universal bucket: mods pass it to {@code UniversalBucket.getFilledBucket} (a vanilla bucket for water and lava) and compare
+     * stacks' items against it. It is not a registered item here.
+     */
+    public static synchronized legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket mcc$get$universalBucket(ForgeModContainer container) {
+        if (mcc$universalBucket == null) mcc$universalBucket = new legacyconnector.v1_12_2.net.minecraftforge.fluids.UniversalBucket();
+        return mcc$universalBucket;
+    }
+
     private static Configuration config;
     private static volatile ForgeModContainer instance;
 

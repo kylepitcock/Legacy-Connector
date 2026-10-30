@@ -23,6 +23,10 @@ public class EntityEntry extends IForgeRegistryEntry.Impl<EntityEntry> {
         this.name = name;
     }
 
+    /** Called once the entry is in the entity registry. */
+    public void mcc$registered() {
+    }
+
     public Class<? extends Entity> getEntityClass() {
         return cls;
     }

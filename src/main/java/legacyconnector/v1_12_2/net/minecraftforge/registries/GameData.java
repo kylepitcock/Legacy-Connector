@@ -64,4 +64,46 @@ public class GameData {
     public static legacyconnector.v1_12_2.net.minecraft.util.ObjectIntIdentityMap<legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState> getBlockStateIDMap() {
         return BLOCK_STATE_IDS;
     }
+
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation BLOCKS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:blocks");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ITEMS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:items");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation POTIONS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:potions");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation BIOMES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:biomes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation SOUNDEVENTS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:soundevents");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation POTIONTYPES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:potiontypes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ENCHANTMENTS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:enchantments");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation ENTITIES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:entities");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation RECIPES = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:recipes");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation PROFESSIONS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:villagerprofessions");
+    public static final legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation SERIALIZERS = new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation("minecraft:dataserializers");
+
+    /** The entity registry (the numeric ids of entity types are its registration order). */
+    @SuppressWarnings("unchecked")
+    public static ForgeRegistry<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry> getEntityRegistry() {
+        return (ForgeRegistry<legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.EntityEntry>) (ForgeRegistry<?>)
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation checkPrefix(String name) {
+        return checkPrefix(name, true);
+    }
+
+    /**
+     * A registry name for {@code name}: its own namespace when it has one, else the active mod's id ("minecraft" outside mod loading).
+     * A namespace other than the active mod's is kept (1.12 warned about it).
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation checkPrefix(String name, boolean warnOverrides) {
+        int index = name.lastIndexOf(':');
+        String oldPrefix = index == -1 ? "" : name.substring(0, index).toLowerCase(java.util.Locale.ROOT);
+        String path = index == -1 ? name : name.substring(index + 1);
+        var active = legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.instance().activeModContainer();
+        String prefix = active == null || active.getModId() == null ? "minecraft" : active.getModId().toLowerCase(java.util.Locale.ROOT);
+        if (!oldPrefix.isEmpty() && !oldPrefix.equals(prefix)) {
+            if (warnOverrides) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Registry").debug("Mod {} registers {} in the namespace {}", prefix, path, oldPrefix);
+            }
+            prefix = oldPrefix;
+        }
+        return new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(prefix, path);
+    }
 }
