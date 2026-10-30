@@ -59,6 +59,17 @@ public abstract class AbstractChestHorse extends AbstractHorse {
         return 5;
     }
 
+    /** Saddle and decor, plus three rows of {@link #getInventoryColumns} with a chest. */
+    @Override
+    protected int getInventorySize() {
+        return hasChest() ? 2 + 3 * getInventoryColumns() : super.getInventorySize();
+    }
+
+    protected void playChestEquipSound() {
+        playSound(org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(SoundEvents.DONKEY_CHEST), 1.0F,
+                (getRNG().nextFloat() - getRNG().nextFloat()) * 0.2F + 1.0F);
+    }
+
     @Override
     protected void writeEntityToNBT(NBTTagCompound tag) {
         super.writeEntityToNBT(tag);

@@ -552,9 +552,19 @@ public abstract class EntityPlayer extends EntityLivingBase {
     }
 
     /** Forge: refreshes the display name (after a NameFormat handler changed). */
-    public String refreshDisplayName() {
+    public void refreshDisplayName() {
         mcc$player().refreshDisplayName();
-        return getDisplayNameString();
+    }
+
+    /** The scoreboard of the player's world. */
+    public legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard getWorldScoreboard() {
+        return legacyconnector.v1_12_2.net.minecraft.scoreboard.Scoreboard.mcc$of(mcc$player().level().getScoreboard());
+    }
+
+    /** Opens the sign editor for a sign of the game (front text). */
+    public void openEditSign(legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntitySign sign) {
+        var modern = sign == null ? null : sign.mcc$modern();
+        if (modern != null) mcc$player().openTextEdit(modern, true);
     }
 
     // ------------------------------------------------------------------ containers, GUIs and statistics (area E, 1.12.2)
@@ -725,6 +735,35 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public float getArmorVisibility() {
         return mcc$player().getArmorCoverPercentage();
+    }
+
+    private static java.lang.reflect.Method mcc$shoulderSetter(String name) {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(Player.class, name, net.minecraft.nbt.CompoundTag.class);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    private static final java.lang.reflect.Method MCC$SET_LEFT = mcc$shoulderSetter("setShoulderEntityLeft");
+    private static final java.lang.reflect.Method MCC$SET_RIGHT = mcc$shoulderSetter("setShoulderEntityRight");
+
+    private void mcc$setShoulder(java.lang.reflect.Method setter, legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        if (setter == null) return;
+        try {
+            setter.invoke(mcc$player(), tag == null ? new net.minecraft.nbt.CompoundTag() : tag.mcc$modern().copy());
+        } catch (ReflectiveOperationException e) {
+            // keeps the current shoulder entity
+        }
+    }
+
+    /** Puts the saved form of an entity (a parrot) on the left shoulder (an empty tag clears it). */
+    protected void setLeftShoulderEntity(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        mcc$setShoulder(MCC$SET_LEFT, tag);
+    }
+
+    protected void setRightShoulderEntity(legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound tag) {
+        mcc$setShoulder(MCC$SET_RIGHT, tag);
     }
 
     public legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound getLeftShoulderEntity() {

@@ -155,4 +155,46 @@ public final class ModernAccess1122 {
     public static boolean glowing(net.minecraft.world.entity.Entity e) {
         return getBoolean(HAS_GLOWING_TAG, e);
     }
+
+    private static final Field HOOK_LIFE = find(net.minecraft.world.entity.projectile.FishingHook.class, "life");
+    private static final Field HOOK_NIBBLE = find(net.minecraft.world.entity.projectile.FishingHook.class, "nibble");
+    private static final java.lang.reflect.Method HOOK_PULL = method(net.minecraft.world.entity.projectile.FishingHook.class, "pullEntity",
+            net.minecraft.world.entity.Entity.class);
+    private static final java.lang.reflect.Method CAN_HIT_ENTITY = method(net.minecraft.world.entity.projectile.Projectile.class, "canHitEntity",
+            net.minecraft.world.entity.Entity.class);
+
+    private static java.lang.reflect.Method method(Class<?> owner, String name, Class<?>... params) {
+        try {
+            return ObfuscationReflectionHelper.findMethod(owner, name, params);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** FishingHook.life (ticks the hook lay on the ground, 1.12 ticksInGround) and nibble (ticks a fish is biting, 1.12 ticksCatchable). */
+    public static int hookTicks(net.minecraft.world.entity.projectile.FishingHook h, boolean nibble) {
+        return getInt(nibble ? HOOK_NIBBLE : HOOK_LIFE, h);
+    }
+
+    public static void setHookTicks(net.minecraft.world.entity.projectile.FishingHook h, boolean nibble, int v) {
+        setInt(nibble ? HOOK_NIBBLE : HOOK_LIFE, h, v);
+    }
+
+    /** FishingHook.pullEntity: pulls the entity towards the hook's owner. */
+    public static void pullEntity(net.minecraft.world.entity.projectile.FishingHook h, net.minecraft.world.entity.Entity target) {
+        try {
+            if (HOOK_PULL != null && target != null) HOOK_PULL.invoke(h, target);
+        } catch (ReflectiveOperationException e) {
+            // nothing pulled
+        }
+    }
+
+    /** Projectile.canHitEntity: whether the projectile may hit the entity (not its owner while leaving, not spectators). */
+    public static boolean canHitEntity(net.minecraft.world.entity.projectile.Projectile p, net.minecraft.world.entity.Entity target) {
+        try {
+            return CAN_HIT_ENTITY != null && target != null && (boolean) CAN_HIT_ENTITY.invoke(p, target);
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
 }

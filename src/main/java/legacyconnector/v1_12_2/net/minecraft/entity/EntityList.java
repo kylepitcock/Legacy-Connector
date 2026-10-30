@@ -14,11 +14,20 @@ public class EntityList {
         public final ResourceLocation spawnedID;
         public final int primaryColor;
         public final int secondaryColor;
+        /** The statistics of killing this kind of entity and of being killed by it. */
+        public final legacyconnector.v1_12_2.net.minecraft.stats.StatBase killEntityStat;
+        public final legacyconnector.v1_12_2.net.minecraft.stats.StatBase entityKilledByStat;
 
         public EntityEggInfo(ResourceLocation id, int primaryColor, int secondaryColor) {
             this.spawnedID = id;
             this.primaryColor = primaryColor;
             this.secondaryColor = secondaryColor;
+            String name = id == null ? "unknown" : id.getPath();
+            var entityName = new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("entity." + name + ".name");
+            this.killEntityStat = new legacyconnector.v1_12_2.net.minecraft.stats.StatBase("stat.killEntity." + name,
+                    new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("stat.entityKill", entityName));
+            this.entityKilledByStat = new legacyconnector.v1_12_2.net.minecraft.stats.StatBase("stat.entityKilledBy." + name,
+                    new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation("stat.entityKilledBy", entityName));
         }
     }
 

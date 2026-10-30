@@ -34,4 +34,23 @@ public final class ItemEntityAccess1122 {
             return item.hasPickUpDelay() ? 10 : 0;
         }
     }
+
+    private static final java.lang.reflect.Method MERGE_WITH_NEIGHBOURS = findMerge();
+
+    private static java.lang.reflect.Method findMerge() {
+        try {
+            return ObfuscationReflectionHelper.findMethod(ItemEntity.class, "mergeWithNeighbours");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** The modern merge of an item entity with the mergeable item entities around it. */
+    public static void mergeWithNeighbours(ItemEntity item) {
+        try {
+            if (MERGE_WITH_NEIGHBOURS != null) MERGE_WITH_NEIGHBOURS.invoke(item);
+        } catch (ReflectiveOperationException e) {
+            // no merge this time
+        }
+    }
 }

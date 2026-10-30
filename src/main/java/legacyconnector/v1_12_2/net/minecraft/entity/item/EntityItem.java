@@ -158,6 +158,19 @@ public class EntityItem extends Entity {
         setPickupDelay(0);
     }
 
+    /** Merges with the item entities around (the modern merge). */
+    public void searchForOtherItemsNearby() {
+        var i = mcc$item();
+        if (i != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.mergeWithNeighbours(i);
+    }
+
+    /** A display-only item: never picked up, and gone on its next tick. */
+    public void makeFakeItem() {
+        setInfinitePickupDelay();
+        var i = mcc$item();
+        if (i != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ItemEntityAccess1122.setAge(i, i.lifespan - 1);
+    }
+
     public void setInfinitePickupDelay() {
         setPickupDelay(32767);
     }

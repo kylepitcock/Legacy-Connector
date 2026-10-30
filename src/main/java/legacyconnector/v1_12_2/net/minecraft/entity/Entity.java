@@ -2186,4 +2186,52 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     private boolean mcc$outsideBorder;
     private float mcc$local_distanceWalkedOnStepModified;
+
+    // ------------------------------------------------------------------ 1.12 helpers subclasses call
+
+    /** The chat hover of the entity: its type, uuid and name (as 1.12's SHOW_ENTITY hover). */
+    protected legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent getHoverEvent() {
+        net.minecraft.nbt.CompoundTag tag = new net.minecraft.nbt.CompoundTag();
+        var m = mcc$entity;
+        tag.putString("id", m != null ? m.getStringUUID() : getUniqueID().toString());
+        if (m != null) tag.putString("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(m.getType()).toString());
+        tag.putString("name", getName());
+        return new legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent(legacyconnector.v1_12_2.net.minecraft.util.text.event.HoverEvent.Action.SHOW_ENTITY,
+                new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(tag.toString()));
+    }
+
+    /** Sprinting particles: block dust of the block under the entity. */
+    public void spawnRunningParticles() {
+        if (isSprinting() && !isInWater()) createRunningParticles();
+    }
+
+    protected void createRunningParticles() {
+        var m = mcc$entity;
+        if (m == null || !m.level().isClientSide()) return;
+        var below = net.minecraft.core.BlockPos.containing(m.getX(), m.getY() - 0.2D, m.getZ());
+        var state = m.level().getBlockState(below);
+        if (state.getRenderShape() == net.minecraft.world.level.block.RenderShape.INVISIBLE) return;
+        var random = m.getRandom();
+        float w = m.getBbWidth();
+        m.level().addParticle(new net.minecraft.core.particles.BlockParticleOption(net.minecraft.core.particles.ParticleTypes.BLOCK, state).setPos(below),
+                m.getX() + (random.nextDouble() - 0.5D) * w, m.getBoundingBox().minY + 0.1D, m.getZ() + (random.nextDouble() - 0.5D) * w,
+                -m.getDeltaMovement().x * 4.0D, 1.5D, -m.getDeltaMovement().z * 4.0D);
+    }
+
+    /** Fall bookkeeping after a move: landing hands the fall to the block below, falling adds to the fall distance. */
+    protected void updateFallState(double y, boolean onGroundIn, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        if (onGroundIn) {
+            float fall = mcc$get$fallDistance(this);
+            if (fall > 0.0F && state != null && mcc$world() != null) state.getBlock().onFallenUpon(mcc$world(), pos, this, fall);
+            mcc$set$fallDistance(this, 0.0F);
+        } else if (y < 0.0D) {
+            mcc$set$fallDistance(this, (float) (mcc$get$fallDistance(this) - y));
+        }
+    }
+
+    protected void decrementTimeUntilPortal() {
+        int t = mcc$get$timeUntilPortal(this);
+        if (t > 0) mcc$set$timeUntilPortal(this, t - 1);
+    }
 }

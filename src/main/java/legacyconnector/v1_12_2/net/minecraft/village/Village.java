@@ -133,14 +133,14 @@ public class Village {
     }
 
     /** A random spot in the village where an entity of that size fits (1.12: ten tries). */
-    public BlockPos findRandomSpawnPos(BlockPos pos, int x, int y, int z) {
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d findRandomSpawnPos(BlockPos pos, int x, int y, int z) {
         var level = mcc$level();
         java.util.Random rand = new java.util.Random();
         for (int i = 0; i < 10; ++i) {
             BlockPos p = pos.add(rand.nextInt(16) - 8, rand.nextInt(6) - 3, rand.nextInt(16) - 8);
             if (isBlockPosWithinSqVillageRadius(p) && level != null && level.noCollision(new net.minecraft.world.phys.AABB(p.getX(), p.getY(), p.getZ(),
                     p.getX() + x, p.getY() + y, p.getZ() + z)) && level.getBlockState(p.mcc$modern().below()).isSolid()) {
-                return p;
+                return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(p.getX(), p.getY(), p.getZ());
             }
         }
         return null;

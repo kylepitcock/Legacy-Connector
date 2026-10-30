@@ -187,6 +187,28 @@ public abstract class EntityLivingBase extends Entity {
         else e.mcc$local_prevOnGroundSpeedFactor = v;
     }
 
+    private static final java.lang.reflect.Method MCC$TOTEM = mcc$findTotem();
+
+    private static java.lang.reflect.Method mcc$findTotem() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(LivingEntity.class, "checkTotemDeathProtection",
+                    net.minecraft.world.damagesource.DamageSource.class);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** A totem of undying in either hand saves the entity from this death (and is used up). */
+    protected boolean checkTotemDeathProtection(DamageSource source) {
+        var l = mcc$living();
+        if (l == null || MCC$TOTEM == null || source == null) return false;
+        try {
+            return (boolean) MCC$TOTEM.invoke(l, source.mcc$modern(l.level()));
+        } catch (ReflectiveOperationException e) {
+            return false;
+        }
+    }
+
     public static float mcc$get$rotationYawHead(EntityLivingBase e) {
         var l = e.mcc$living();
         return l != null ? l.yHeadRot : e.mcc$local_rotationYawHead;

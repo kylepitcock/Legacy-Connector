@@ -14,6 +14,10 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * modern thrown projectiles (snowballs, pearls) are moved by the modern game.
  */
 public abstract class EntityThrowable extends Entity implements IProjectile {
+    /** Data fixers of saved throwables: the layer reads saves with the modern game's fixers, so there is nothing to register. */
+    public static void registerFixesThrowable(legacyconnector.v1_12_2.net.minecraft.util.datafix.DataFixer fixer, String name) {
+    }
+
     private int xTile = -1;
     private int yTile = -1;
     private int zTile = -1;
