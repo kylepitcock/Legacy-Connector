@@ -112,6 +112,12 @@ public final class ClientGui1122 {
                     ? new net.minecraft.client.gui.screens.DeathScreen(over.mcc$cause() == null ? null : over.mcc$cause().mcc$modern(),
                             mc.level != null && mc.level.getLevelData().isHardcore())
                     : null;
+            case "GuiEditSign" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.inventory.GuiEditSign edit && edit.mcc$sign() != null
+                    && edit.mcc$sign().mcc$modern() != null
+                    ? new net.minecraft.client.gui.screens.inventory.SignEditScreen(edit.mcc$sign().mcc$modern(), true, mc.isTextFilteringEnabled())
+                    : null;
+            case "GuiScreenAdvancements" -> mc.player == null ? null
+                    : new net.minecraft.client.gui.screens.advancements.AdvancementsScreen(mc.player.connection.getAdvancements());
             case "GuiWinGame" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiWinGame win ? win.mcc$modern() : null;
             case "GuiScreenBook" -> screen instanceof legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreenBook book ? book.mcc$modern() : null;
             case "GuiChat" -> new net.minecraft.client.gui.screens.ChatScreen(

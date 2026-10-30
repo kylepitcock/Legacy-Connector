@@ -247,10 +247,10 @@ public class TileEntityChest extends TileEntityLockableLoot implements ITickable
         return "minecraft:chest";
     }
 
-    /** 1.12's ContainerChest is not part of this layer yet: the chest's GUI is the game's (mods open their own containers). */
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-        return null;
+        fillWithLoot(playerIn);
+        return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerChest(playerInventory, this, playerIn);
     }
 
     @Override

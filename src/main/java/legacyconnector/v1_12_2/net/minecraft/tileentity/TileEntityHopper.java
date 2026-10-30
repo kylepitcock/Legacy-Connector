@@ -339,10 +339,10 @@ public class TileEntityHopper extends TileEntityLockableLoot implements IHopper,
         return "minecraft:hopper";
     }
 
-    /** 1.12's ContainerHopper is not part of this layer yet. */
     @Override
     public Container createContainer(InventoryPlayer playerInventory, EntityPlayer playerIn) {
-        return null;
+        fillWithLoot(playerIn);
+        return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerHopper(playerInventory, this, playerIn);
     }
 
     @Override
