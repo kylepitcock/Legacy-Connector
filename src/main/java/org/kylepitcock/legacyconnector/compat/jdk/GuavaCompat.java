@@ -20,4 +20,10 @@ public final class GuavaCompat {
     public static long elapsedTime(Stopwatch stopwatch, TimeUnit unit) {
         return stopwatch.elapsed(unit);
     }
+
+    /** Guava 26 dropped the executor-less addCallback; the old one ran the callback directly on the completing thread. */
+    public static <V> void addCallback(com.google.common.util.concurrent.ListenableFuture<V> future,
+            com.google.common.util.concurrent.FutureCallback<? super V> callback) {
+        com.google.common.util.concurrent.Futures.addCallback(future, callback, com.google.common.util.concurrent.MoreExecutors.directExecutor());
+    }
 }

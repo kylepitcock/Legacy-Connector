@@ -284,14 +284,64 @@ public final class ForgeEvents1122 {
             int id = org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.dimensionId(e.getDimension());
             if (post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.EntityTravelToDimensionEvent(view, id))) e.setCanceled(true);
         });
-        game.addListener((net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) -> {
-            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player modern)
-                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent.class)) {
+        game.addListener((net.neoforged.neoforge.event.entity.player.AdvancementEvent.AdvancementEarnEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.AdvancementEvent.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) {
+                post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.AdvancementEvent(p,
+                        legacyconnector.v1_12_2.net.minecraft.advancements.Advancement.mcc$of(e.getAdvancement())));
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.DifficultyChangeEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.DifficultyChangeEvent.class)) return;
+            post(new legacyconnector.v1_12_2.net.minecraftforge.event.DifficultyChangeEvent(
+                    legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty.mcc$of(e.getDifficulty()),
+                    legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty.mcc$of(e.getOldDifficulty())));
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.EntityMobGriefingEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.EntityMobGriefingEvent.class)) return;
+            var view = entity(e.getEntity());
+            if (view == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.EntityMobGriefingEvent(view);
+            post(event);
+            if (event.getResult() == Event.Result.ALLOW) e.setCanGrief(true);
+            else if (event.getResult() == Event.Result.DENY) e.setCanGrief(false);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.living.BabyEntitySpawnEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.BabyEntitySpawnEvent.class)) return;
+            if (!(entity(e.getParentA()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving a)
+                    || !(entity(e.getParentB()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving b)) {
                 return;
             }
+            var proposed = entity(e.getChild()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable c ? c : null;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.BabyEntitySpawnEvent(a, b, proposed);
+            if (post(event)) {
+                e.setCanceled(true);
+                return;
+            }
+            if (event.getChild() != proposed) {
+                var child = event.getChild() == null ? null : event.getChild().mcc$entity;
+                e.setChild(child instanceof net.minecraft.world.entity.AgeableMob m ? m : null);
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player modern)) return;
+            boolean time = wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent.class);
+            boolean location = wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingLocationCheckEvent.class);
+            if (!time && !location) return;
             EntityPlayer p = player(modern);
             if (p == null) return;
             var pos = modern.getSleepingPos().map(BlockPos::mcc$of).orElse(null);
+            if (location) {
+                var where = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingLocationCheckEvent(p, pos);
+                post(where);
+                if (where.getResult() == Event.Result.DENY) {
+                    e.setContinueSleeping(false);
+                    return;
+                }
+                if (where.getResult() == Event.Result.ALLOW) e.setContinueSleeping(true);
+            }
+            if (!time) return;
             var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent(p, pos);
             post(event);
             if (event.getResult() == Event.Result.ALLOW) e.setContinueSleeping(true);

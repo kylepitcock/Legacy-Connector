@@ -33,6 +33,10 @@ public class Advancement {
         return new java.util.LinkedHashMap<>(holder.value().criteria());
     }
 
+    public AdvancementRewards getRewards() {
+        return new AdvancementRewards(holder.value().rewards());
+    }
+
     public int getRequirementCount() {
         return holder.value().requirements().size();
     }

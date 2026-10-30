@@ -80,6 +80,30 @@ public class ASMDataTable {
         return v;
     }
 
+    /**
+     * The mod (of those in one jar) an annotated class belongs to: the only one, else the one whose packages hold the class, else the
+     * one whose main class shares the longest package prefix with it.
+     */
+    public static String getOwnerModID(Set<legacyconnector.v1_12_2.net.minecraftforge.fml.common.ModContainer> mods, ASMData targ) {
+        if (mods == null || mods.isEmpty()) return null;
+        if (mods.size() == 1 || targ == null) return mods.iterator().next().getModId();
+        String cls = targ.getClassName();
+        String pkg = cls.lastIndexOf('.') < 0 ? "" : cls.substring(0, cls.lastIndexOf('.'));
+        for (var m : mods) if (m.getOwnedPackages().contains(pkg)) return m.getModId();
+        String best = null;
+        int bestLength = -1;
+        for (var m : mods) {
+            Object mod = m.getMod();
+            if (mod == null) continue;
+            String modPkg = mod.getClass().getPackageName();
+            if ((pkg.equals(modPkg) || pkg.startsWith(modPkg + ".")) && modPkg.length() > bestLength) {
+                best = m.getModId();
+                bestLength = modPkg.length();
+            }
+        }
+        return best != null ? best : mods.iterator().next().getModId();
+    }
+
     public Set<ASMData> getAll(String annotation) {
         Set<ASMData> out = new LinkedHashSet<>(byAnnotation.getOrDefault(annotation, Set.of()));
         if (!annotation.startsWith("legacyconnector.")) out.addAll(byAnnotation.getOrDefault("legacyconnector.v1_12_2." + annotation, Set.of()));

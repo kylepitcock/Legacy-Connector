@@ -35,6 +35,17 @@ public class EnumHelper {
         return type;
     }
 
+    /** A new use animation (mods' own item actions; the modern game shows it as no animation unless the mod renders one itself). */
+    public static legacyconnector.v1_12_2.net.minecraft.item.EnumAction addAction(String name) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(legacyconnector.v1_12_2.net.minecraft.item.EnumAction.class, name, new Class<?>[0], new Object[0]);
+    }
+
+    /** A new pressure plate sensitivity (mods that add one count the entities on their plate themselves). */
+    public static legacyconnector.v1_12_2.net.minecraft.block.BlockPressurePlate.Sensitivity addSensitivity(String name) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(legacyconnector.v1_12_2.net.minecraft.block.BlockPressurePlate.Sensitivity.class, name,
+                new Class<?>[0], new Object[0]);
+    }
+
     /** Adds a constant to a real enum (a synthesized or the mod's own); parameter types inferred from the values. */
     public static <T extends Enum<?>> T addEnum(Class<T> enumType, String enumName, Object... paramValues) {
         return org.kylepitcock.legacyconnector.core.LegacyEnums.add(enumType, enumName, paramValues);

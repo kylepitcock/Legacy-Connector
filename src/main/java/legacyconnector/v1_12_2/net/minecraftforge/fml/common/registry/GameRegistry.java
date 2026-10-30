@@ -118,6 +118,37 @@ public class GameRegistry {
         return new java.util.ArrayList<>(WORLD_GENERATORS);
     }
 
+    /**
+     * Runs every registered world generator on one chunk, each with Forge's per-chunk random (seeded from the world seed and the chunk
+     * position); mods call it to populate chunks of their own dimensions. A generator that throws is skipped (world generation must not fail).
+     */
+    public static void generateWorld(int chunkX, int chunkZ, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator chunkGenerator,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.IChunkProvider chunkProvider) {
+        if (world == null) return;
+        long worldSeed = world.getSeed();
+        java.util.Random fmlRandom = new java.util.Random(worldSeed);
+        long xSeed = fmlRandom.nextLong() >> 2 + 1L;
+        long zSeed = fmlRandom.nextLong() >> 2 + 1L;
+        long chunkSeed = (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+        for (var generator : mcc$worldGenerators()) {
+            fmlRandom.setSeed(chunkSeed);
+            try {
+                generator.generate(fmlRandom, chunkX, chunkZ, world, chunkGenerator, chunkProvider);
+            } catch (RuntimeException | LinkageError e) {
+                mcc$logGeneratorFailure(generator, e);
+            }
+        }
+    }
+
+    private static final java.util.Set<Class<?>> MCC$FAILED_GENERATORS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private static void mcc$logGeneratorFailure(Object generator, Throwable e) {
+        if (MCC$FAILED_GENERATORS.add(generator.getClass())) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/1.12.2").warn("World generator {} failed (reported once): {}", generator.getClass().getName(), e.toString());
+        }
+    }
+
     /** A stack of a named item ("modid:name"), with metadata, size and an NBT tag in JSON form (null or empty for none). */
     public static legacyconnector.v1_12_2.net.minecraft.item.ItemStack makeItemStack(String itemName, int meta, int stackSize, String nbtString) {
         if (itemName == null) throw new IllegalArgumentException("The itemName cannot be null");

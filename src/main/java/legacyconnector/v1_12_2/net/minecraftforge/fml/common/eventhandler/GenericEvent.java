@@ -10,7 +10,8 @@ public class GenericEvent<T> extends Event implements GenericEventType {
         this.type = type;
     }
 
-    public Class<T> getGenericType() {
+    /** The type parameter (Forge declares it as a {@link java.lang.reflect.Type}, which is what mods' calls name). */
+    public java.lang.reflect.Type getGenericType() {
         return type;
     }
 

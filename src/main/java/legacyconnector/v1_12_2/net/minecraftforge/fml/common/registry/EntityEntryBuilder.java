@@ -77,6 +77,12 @@ public final class EntityEntryBuilder<E extends Entity> {
         return spawn(type, weight, min, max, biomes.toArray(new Biome[0]));
     }
 
+    public EntityEntryBuilder<E> spawn(EnumCreatureType type, int weight, int min, int max, Iterable<Biome> biomes) {
+        java.util.List<Biome> list = new java.util.ArrayList<>();
+        if (biomes != null) for (Biome b : biomes) list.add(b);
+        return spawn(type, weight, min, max, list.toArray(new Biome[0]));
+    }
+
     public EntityEntry build() {
         BuiltEntityEntry entry = new BuiltEntityEntry(cls, name, new java.util.ArrayList<>(spawns));
         if (id != null) entry.setRegistryName(id);

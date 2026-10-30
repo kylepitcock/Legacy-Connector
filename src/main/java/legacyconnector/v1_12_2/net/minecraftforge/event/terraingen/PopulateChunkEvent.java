@@ -19,6 +19,11 @@ public class PopulateChunkEvent extends ChunkGeneratorEvent {
     private final int chunkZ;
     private final boolean hasVillageGenerated;
 
+    /** The chunk generator populating (Forge's name for {@link #getGenerator}). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator getGen() {
+        return getGenerator();
+    }
+
     public PopulateChunkEvent(legacyconnector.v1_12_2.net.minecraft.world.gen.IChunkGenerator gen, World world, Random rand, int chunkX, int chunkZ,
             boolean hasVillageGenerated) {
         super(gen);
