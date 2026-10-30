@@ -28,7 +28,7 @@ public class GuiScreen extends Gui {
     protected int touchValue;
 
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        for (Object b : buttonList) ((GuiButton) b).drawButton(mc, mouseX, mouseY);
+        for (int i = 0; i < buttonList.size(); ++i) ((GuiButton) buttonList.get(i)).drawButton(mc, mouseX, mouseY);
         for (Object l : labelList) {
             if (l instanceof GuiLabel label) label.drawLabel(mc, mouseX, mouseY);
         }
@@ -71,8 +71,9 @@ public class GuiScreen extends Gui {
 
     protected void mouseClicked(int mouseX, int mouseY, int button) {
         if (button == 0) {
-            for (Object o : buttonList) {
-                GuiButton b = (GuiButton) o;
+            // by index: actionPerformed often clears and rebuilds buttonList (initGui), which 1.7.10 tolerated
+            for (int i = 0; i < buttonList.size(); ++i) {
+                GuiButton b = (GuiButton) buttonList.get(i);
                 if (b.mousePressed(mc, mouseX, mouseY)) {
                     selectedButton = b;
                     b.playPressSound(SoundHandler.INSTANCE);

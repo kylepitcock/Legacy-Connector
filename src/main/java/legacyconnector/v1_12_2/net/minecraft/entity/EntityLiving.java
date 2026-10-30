@@ -507,10 +507,22 @@ public abstract class EntityLiving extends EntityLivingBase {
      * Called once when the mob is spawned naturally, by a spawner or an egg (1.12: a random follow range bonus and, one time in twenty,
      * left-handedness; the modern spawn finalization does the same). Returns the data shared with the rest of its group.
      */
+    /**
+     * The modern local difficulty for a spawn: the one the caller passed, or one computed without loading the chunk when off the
+     * server thread (world generators spawn mobs on worker threads, where a chunk lookup on the level deadlocks generation).
+     */
+    private static net.minecraft.world.DifficultyInstance mcc$modernDifficulty(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty,
+            net.minecraft.world.entity.Entity m) {
+        if (difficulty != null && difficulty.mcc$modern() != null) return difficulty.mcc$modern();
+        var level = m.level();
+        if (level.getServer() != null && level.getServer().isSameThread()) return level.getCurrentDifficultyAt(m.blockPosition());
+        return new net.minecraft.world.DifficultyInstance(level.getDifficulty(), level.getDayTime(), 0L, level.getMoonBrightness());
+    }
+
     public IEntityLivingData onInitialSpawn(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty, IEntityLivingData livingdata) {
         var m = mcc$entity;
         if (m instanceof org.kylepitcock.legacyconnector.v1_12_2.entity.MobHost1122 host && mcc$hosted()) {
-            var modernDifficulty = m.level().getCurrentDifficultyAt(m.blockPosition());
+            var modernDifficulty = mcc$modernDifficulty(difficulty, m);
             var result = host.mcc$superFinalizeSpawn(modernDifficulty, org.kylepitcock.legacyconnector.v1_12_2.entity.SpawnData1122.Group.modern(livingdata));
             var legacy = org.kylepitcock.legacyconnector.v1_12_2.entity.SpawnData1122.Group.legacy(result);
             return legacy != null ? legacy : livingdata;
