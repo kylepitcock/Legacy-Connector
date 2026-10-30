@@ -47,10 +47,24 @@ public class LivingSpawnEvent extends LivingEvent {
     @Event.HasResult
     public static class CheckSpawn extends LivingSpawnEvent {
         private final boolean isSpawner;
+        private final legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner;
 
         public CheckSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z, boolean isSpawner) {
             super(entity, world, x, y, z);
             this.isSpawner = isSpawner;
+            this.spawner = null;
+        }
+
+        public CheckSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
+                legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
+            super(entity, world, x, y, z);
+            this.isSpawner = spawner != null;
+            this.spawner = spawner;
+        }
+
+        /** The legacy spawner logic that spawns the mob (a mod's spawner); null for natural spawns and the game's own spawners. */
+        public legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic getSpawner() {
+            return spawner;
         }
 
         public boolean isSpawner() {

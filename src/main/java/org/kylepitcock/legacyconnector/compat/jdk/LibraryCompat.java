@@ -53,4 +53,27 @@ public final class LibraryCompat {
             return new org.objectweb.asm.Type[0];
         }
     }
+
+    /** authlib 6 made Property a record: getName/getValue/getSignature became name()/value()/signature(). */
+    public static String getName(com.mojang.authlib.properties.Property property) {
+        return property.name();
+    }
+
+    public static String getValue(com.mojang.authlib.properties.Property property) {
+        return property.value();
+    }
+
+    public static String getSignature(com.mojang.authlib.properties.Property property) {
+        return property.signature();
+    }
+
+    /** text2speech: say(String) gained an interrupt flag; the old call queued the message. */
+    public static void say(com.mojang.text2speech.Narrator narrator, String message) {
+        narrator.say(message, false);
+    }
+
+    /** fastutil 8 dropped the boxed get(Integer) of its int-keyed maps (null for a null key, as a missing key gave). */
+    public static Object get(it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<?> map, Integer key) {
+        return key == null ? null : map.get(key.intValue());
+    }
 }

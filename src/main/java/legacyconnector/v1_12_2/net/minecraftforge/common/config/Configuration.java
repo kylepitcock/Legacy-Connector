@@ -296,6 +296,16 @@ public class Configuration {
         return getString(name, category, defaultValue, comment, validValues, name);
     }
 
+    /** A string limited to {@code validValues}, shown in the config screen with the matching {@code validValuesDisplay} names. */
+    public String getString(String name, String category, String defaultValue, String comment, String[] validValues, String[] validValuesDisplay) {
+        Property prop = get(category, name, defaultValue);
+        prop.setValidValues(validValues);
+        prop.setValidValuesDisplay(validValuesDisplay);
+        prop.setLanguageKey(name);
+        prop.comment = comment + " [default: " + defaultValue + "]";
+        return prop.getString();
+    }
+
     public String getString(String name, String category, String defaultValue, String comment, String[] validValues, String langKey) {
         Property prop = get(category, name, defaultValue);
         prop.setValidValues(validValues);

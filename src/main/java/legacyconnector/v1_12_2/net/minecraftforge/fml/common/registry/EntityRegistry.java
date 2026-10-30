@@ -161,8 +161,25 @@ public class EntityRegistry {
             return entry.sendsVelocityUpdates;
         }
 
+        private java.util.function.Function<legacyconnector.v1_12_2.net.minecraft.entity.Entity, Object> customSpawnCallback;
+        private boolean usesVanillaSpawning;
+
         public boolean usesVanillaSpawning() {
-            return false;
+            return usesVanillaSpawning;
+        }
+
+        /**
+         * Forge let a mod build the client-side entity from its spawn packet itself; the modern game spawns entities from their own
+         * spawn data, so the callback is kept (and reported by {@link #hasCustomSpawning}) but the modern spawn is used.
+         */
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        public void setCustomSpawning(java.util.function.Function callback, boolean usesVanillaSpawning) {
+            this.customSpawnCallback = callback;
+            this.usesVanillaSpawning = usesVanillaSpawning;
+        }
+
+        public boolean hasCustomSpawning() {
+            return customSpawnCallback != null;
         }
     }
 }

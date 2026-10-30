@@ -58,6 +58,8 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/security/CodeSource", "getLocation", "()Ljava/net/URL;", COMPAT + "ResourceCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.
         virtualToStatic("java/lang/Thread", "stop", "()V", COMPAT + "JdkCompat");
+        // Java 11: Thread.stop(Throwable) was removed.
+        virtualToStatic("java/lang/Thread", "stop", "(Ljava/lang/Throwable;)V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "suspend", "()V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "resume", "()V", COMPAT + "JdkCompat");
         // Java 18+: installing a SecurityManager throws by default.
@@ -96,6 +98,11 @@ public final class JavaCompatRedirects {
         staticToStatic("com/google/common/collect/Iterators", "emptyIterator", "()Lcom/google/common/collect/UnmodifiableIterator;", COMPAT + "GuavaCompat", "emptyIterator");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedMillis", "()J", COMPAT + "GuavaCompat");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
+        // Guava 26: Futures.addCallback needs an executor.
+        staticToStatic("com/google/common/util/concurrent/Futures", "addCallback",
+                "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");
+        // fastutil 8: no boxed get(Integer) on int-keyed maps.
+        virtualToStatic("it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap", "get", "(Ljava/lang/Integer;)Ljava/lang/Object;", COMPAT + "LibraryCompat");
         // LWJGL 2 -> 3: typed-buffer overloads got explicit suffixes (glUniform1(int, FloatBuffer) -> glUniform1fv).
         String gl20 = "org/lwjgl/opengl/GL20";
         staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
@@ -201,6 +208,12 @@ public final class JavaCompatRedirects {
         rename("com/google/common/reflect/TypeToken", "isAssignableFrom", "(Ljava/lang/reflect/Type;)Z", "isSupertypeOf");
         // authlib 1.5 -> 6: profile completeness and property filling moved.
         virtualToStatic("com/mojang/authlib/GameProfile", "isComplete", "()Z", COMPAT + "LibraryCompat");
+        // authlib 6: Property is a record.
+        virtualToStatic("com/mojang/authlib/properties/Property", "getName", "()Ljava/lang/String;", COMPAT + "LibraryCompat");
+        virtualToStatic("com/mojang/authlib/properties/Property", "getValue", "()Ljava/lang/String;", COMPAT + "LibraryCompat");
+        virtualToStatic("com/mojang/authlib/properties/Property", "getSignature", "()Ljava/lang/String;", COMPAT + "LibraryCompat");
+        // text2speech: say(String) became say(String, boolean).
+        virtualToStatic("com/mojang/text2speech/Narrator", "say", "(Ljava/lang/String;)V", COMPAT + "LibraryCompat");
         virtualToStatic("com/mojang/authlib/minecraft/MinecraftSessionService", "fillProfileProperties",
                 "(Lcom/mojang/authlib/GameProfile;Z)Lcom/mojang/authlib/GameProfile;", COMPAT + "LibraryCompat");
     }

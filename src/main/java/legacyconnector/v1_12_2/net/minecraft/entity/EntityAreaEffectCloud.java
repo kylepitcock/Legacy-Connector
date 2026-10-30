@@ -98,10 +98,42 @@ public class EntityAreaEffectCloud extends Entity {
         if (c != null && modern != null) c.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(modern));
     }
 
+    /** Phantom field: {@link #mcc$get$effects}. */
+    @Deprecated
+    private java.util.List<PotionEffect> effects;
+    private final java.util.List<PotionEffect> mcc$localEffects = new java.util.ArrayList<>();
+
+    /** effects: the cloud's own effects besides its potion's (the modern cloud's custom effects). */
+    public static java.util.List<PotionEffect> mcc$get$effects(EntityAreaEffectCloud e) {
+        var c = e.mcc$cloud();
+        if (c == null) return e.mcc$localEffects;
+        java.util.List<PotionEffect> out = new java.util.ArrayList<>();
+        var tag = new net.minecraft.nbt.CompoundTag();
+        c.saveWithoutId(tag);
+        var contents = net.minecraft.world.item.alchemy.PotionContents.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag.get("potion_contents")).result().orElse(null);
+        if (contents != null) for (var m : contents.customEffects()) out.add(PotionEffect.mcc$fromModern(m));
+        return out;
+    }
+
+    public static void mcc$set$effects(EntityAreaEffectCloud e, java.util.List<PotionEffect> v) {
+        e.mcc$localEffects.clear();
+        if (v != null) e.mcc$localEffects.addAll(v);
+        var c = e.mcc$cloud();
+        if (c == null) return;
+        var tag = new net.minecraft.nbt.CompoundTag();
+        c.saveWithoutId(tag);
+        var contents = net.minecraft.world.item.alchemy.PotionContents.CODEC.parse(net.minecraft.nbt.NbtOps.INSTANCE, tag.get("potion_contents")).result()
+                .orElse(net.minecraft.world.item.alchemy.PotionContents.EMPTY);
+        java.util.List<net.minecraft.world.effect.MobEffectInstance> modern = new java.util.ArrayList<>();
+        if (v != null) for (PotionEffect p : v) if (p != null && p.mcc$toModern() != null) modern.add(p.mcc$toModern());
+        c.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(contents.potion(), contents.customColor(), modern));
+    }
+
     public void addEffect(PotionEffect effect) {
         var c = mcc$cloud();
         var modern = effect == null ? null : effect.mcc$toModern();
         if (c != null && modern != null) c.addEffect(modern);
+        else if (c == null && effect != null) mcc$localEffects.add(effect);
     }
 
     /** A custom cloud colour (the modern cloud keeps the colour with its potion contents). */

@@ -37,6 +37,10 @@ public class FMLInterModComms {
         enqueue(modId, new IMCMessage(key, value));
     }
 
+    public static void sendRuntimeMessage(Object sourceMod, String modId, String key, legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation value) {
+        enqueue(modId, new IMCMessage(key, value));
+    }
+
     public static boolean sendFunctionMessage(String modId, String key, String functionClassName) {
         return enqueue(modId, new IMCMessage(key, functionClassName));
     }

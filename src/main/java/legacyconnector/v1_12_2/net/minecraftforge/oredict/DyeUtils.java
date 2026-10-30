@@ -25,9 +25,16 @@ public class DyeUtils {
         return -1;
     }
 
-    public static Optional<EnumDyeColor> metaFromStack(ItemStack stack) {
+    /** The colour's wool metadata (0 white ... 15 black) of a dye stack. */
+    public static java.util.OptionalInt metaFromStack(ItemStack stack) {
         int damage = rawDyeDamageFromStack(stack);
-        return damage < 0 ? Optional.empty() : Optional.of(EnumDyeColor.byMetadata(15 - damage));
+        return damage < 0 ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(15 - damage);
+    }
+
+    /** The dye damage value (0 black ... 15 white) of a dye stack. */
+    public static java.util.OptionalInt dyeDamageFromStack(ItemStack stack) {
+        int damage = rawDyeDamageFromStack(stack);
+        return damage < 0 ? java.util.OptionalInt.empty() : java.util.OptionalInt.of(damage);
     }
 
     public static Optional<EnumDyeColor> colorFromStack(ItemStack stack) {

@@ -108,4 +108,46 @@ public class BiomeDictionary {
     public static synchronized boolean hasType(Biome biome) {
         return TYPES.containsKey(biome);
     }
+
+    private static String mcc$blockPath(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+        if (state == null || state.getBlock() == null || state.getBlock().getRegistryName() == null) return "";
+        var name = state.getBlock().getRegistryName();
+        return "minecraft".equals(name.getNamespace()) ? name.getPath() : "";
+    }
+
+    /**
+     * Forge's guess of a biome's types from its properties (for biomes nobody typed): trees, height, rainfall, temperature, snow and
+     * surface blocks.
+     */
+    public static synchronized void makeBestGuess(Biome biome) {
+        if (biome == null) return;
+        int trees = biome.decorator == null ? 0 : biome.decorator.treesPerChunk;
+        float temp = biome.getDefaultTemperature();
+        float rain = biome.getRainfall();
+        float base = biome.getBaseHeight();
+        float variation = biome.getHeightVariation();
+        if (trees >= 3) {
+            if (biome.isHighHumidity() && temp >= 0.9F) addTypes(biome, Type.JUNGLE);
+            else if (!biome.isHighHumidity()) addTypes(biome, Type.FOREST);
+            if (temp <= 0.2F) addTypes(biome, Type.CONIFEROUS);
+        } else if (variation <= 0.3F && variation >= 0.0F) {
+            if (!biome.isHighHumidity() || base >= 0.0F) addTypes(biome, Type.PLAINS);
+        }
+        if (rain > 0.85F) addTypes(biome, Type.WET);
+        if (rain < 0.15F) addTypes(biome, Type.DRY);
+        if (temp > 0.85F) addTypes(biome, Type.HOT);
+        if (temp < 0.15F) addTypes(biome, Type.COLD);
+        if (trees > 0 && trees < 3) addTypes(biome, Type.SPARSE);
+        else if (trees >= 10) addTypes(biome, Type.DENSE);
+        if (biome.isHighHumidity() && base < 0.0F && variation <= 0.3F && variation >= 0.0F) addTypes(biome, Type.SWAMP);
+        if (base <= -0.5F) addTypes(biome, variation == 0.0F ? Type.RIVER : Type.OCEAN);
+        if (variation >= 0.4F && variation < 1.5F) addTypes(biome, Type.HILLS);
+        if (variation >= 1.5F) addTypes(biome, Type.MOUNTAIN);
+        if (biome.getEnableSnow()) addTypes(biome, Type.SNOWY);
+        String top = mcc$blockPath(biome.topBlock);
+        if (!top.equals("sand") && temp >= 1.0F && rain < 0.2F) addTypes(biome, Type.SAVANNA);
+        if (top.equals("sand")) addTypes(biome, Type.SANDY);
+        else if (top.equals("mycelium")) addTypes(biome, Type.MUSHROOM);
+        if (mcc$blockPath(biome.fillerBlock).equals("hardened_clay")) addTypes(biome, Type.MESA);
+    }
 }

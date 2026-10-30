@@ -89,6 +89,12 @@ public class CraftingHelper {
         }
         if (!json.isJsonObject()) throw new com.google.gson.JsonSyntaxException("Expected ingredient to be a object or array of objects");
         com.google.gson.JsonObject obj = json.getAsJsonObject();
+        if (context != null && obj.has("item") && obj.get("item").isJsonPrimitive() && obj.get("item").getAsString().startsWith("#")) {
+            // a constant of the mod's _constants.json
+            Ingredient constant = context.getConstant(obj.get("item").getAsString().substring(1));
+            if (constant == null) throw new com.google.gson.JsonSyntaxException("Ingredient referenced invalid constant: " + obj.get("item").getAsString());
+            return constant;
+        }
         String type = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(obj, "type", "minecraft:item");
         if (type.equals("forge:ore_dict") && obj.has("ore")) return new OreIngredient(obj.get("ore").getAsString());
         if (obj.has("item")) {

@@ -14,6 +14,19 @@ public class ShapelessOreRecipe extends ShapelessRecipes {
     /** Whether every ingredient is a simple item match (vanilla's faster matcher could be used). */
     protected boolean isSimple = true;
     protected ResourceLocation group;
+    /** Phantom field: {@link #mcc$get$input} (the ingredients, kept by the vanilla recipe as {@code recipeItems}). */
+    @Deprecated
+    protected NonNullList<Ingredient> input;
+
+    public static NonNullList<Ingredient> mcc$get$input(ShapelessOreRecipe r) {
+        return r.recipeItems;
+    }
+
+    public static void mcc$set$input(ShapelessOreRecipe r, NonNullList<Ingredient> v) {
+        if (v == r.recipeItems) return;
+        r.recipeItems.clear();
+        if (v != null) r.recipeItems.addAll(v);
+    }
 
     public ShapelessOreRecipe(ResourceLocation group, Block result, Object... recipe) {
         this(group, new ItemStack(result), recipe);

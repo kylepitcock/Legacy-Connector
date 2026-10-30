@@ -25,6 +25,8 @@ public class CriteriaTriggers {
     public static final ConsumeItemTrigger CONSUME_ITEM = register(new ConsumeItemTrigger());
     public static final UsedTotemTrigger USED_TOTEM = register(new UsedTotemTrigger());
     public static final PlacedBlockTrigger PLACED_BLOCK = register(new PlacedBlockTrigger());
+    public static final legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger CONSTRUCT_BEACON =
+            register(new legacyconnector.v1_12_2.net.minecraft.advancements.critereon.ConstructBeaconTrigger());
 
     /** Registers a trigger under its id (1.12.2 threw on a duplicate id; here the first one is kept and the duplicate logged). */
     public static <T extends ICriterionTrigger<?>> T register(T criterion) {

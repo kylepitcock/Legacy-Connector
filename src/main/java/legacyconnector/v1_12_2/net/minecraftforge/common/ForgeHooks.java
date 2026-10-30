@@ -462,4 +462,17 @@ public class ForgeHooks {
         ctx[0]++;
         return ctx[0] == 1 ? "main" : "pool" + (ctx[0] - 1);
     }
+
+    /**
+     * A player throws out a stack (the drop key, or a mod emptying a slot): the item entity is made, mods' toss listeners may cancel it,
+     * and it is spawned; null when nothing was thrown. The modern toss hook does this and posts the toss event the legacy one mirrors.
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem onPlayerTossEvent(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.item.ItemStack item, boolean includeName) {
+        var p = player == null ? null : player.mcc$player();
+        if (p == null || item == null || item.isEmpty()) return null;
+        var ret = net.neoforged.neoforge.common.CommonHooks.onPlayerTossEvent(p, org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(item), includeName);
+        return ret != null && org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(ret)
+                instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem e ? e : null;
+    }
 }

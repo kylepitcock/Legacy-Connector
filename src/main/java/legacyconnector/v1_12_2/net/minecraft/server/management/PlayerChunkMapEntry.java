@@ -45,6 +45,20 @@ public class PlayerChunkMapEntry {
         return false;
     }
 
+    /** Whether a watcher matching the predicate stands within {@code range} blocks (horizontally) of the chunk's centre. */
+    public boolean hasPlayerMatchingInRange(double range, com.google.common.base.Predicate<EntityPlayerMP> predicate) {
+        double cx = (pos.x << 4) + 8.0D;
+        double cz = (pos.z << 4) + 8.0D;
+        for (EntityPlayerMP p : getWatchingPlayers()) {
+            var m = p.mcc$player();
+            if (m == null || !predicate.apply(p)) continue;
+            double dx = cx - m.getX();
+            double dz = cz - m.getZ();
+            if (dx * dx + dz * dz < range * range) return true;
+        }
+        return false;
+    }
+
     /** The chunk was sent to its watchers (here: it is loaded and someone watches it). */
     public boolean isSentToPlayers() {
         return playerChunkMap.contains(pos.x, pos.z) && !getWatchingPlayers().isEmpty();

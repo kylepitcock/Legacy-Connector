@@ -256,6 +256,25 @@ public class ForgeEventFactory {
         return mcc$positionCheck(entity, world, isSpawner);
     }
 
+    /** The older form without the spawner flag: a natural spawn. */
+    @Deprecated
+    public static legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result canEntitySpawn(
+            legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
+        return mcc$positionCheck(entity, world, false);
+    }
+
+    /**
+     * The mobs that may spawn naturally here: mods' {@code WorldEvent.PotentialSpawns} listeners edit the list; null when one cancels
+     * (nothing spawns).
+     */
+    public static List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> getPotentialSpawns(
+            legacyconnector.v1_12_2.net.minecraft.world.WorldServer world, legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureType type, BlockPos pos,
+            List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> oldList) {
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.WorldEvent.PotentialSpawns(world, type, pos, oldList);
+        if (legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event)) return null;
+        return event.getList();
+    }
+
     public static boolean canEntitySpawnSpawner(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
         var result = mcc$positionCheck(entity, world, true);
         if (result == legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event.Result.DEFAULT) {

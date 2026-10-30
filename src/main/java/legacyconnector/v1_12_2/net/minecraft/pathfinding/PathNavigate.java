@@ -161,6 +161,10 @@ public abstract class PathNavigate {
         return nav == null || nav.isDone();
     }
 
+    /** Vanilla's hook for path debugging (empty in the shipped game; mods override it to show their paths). */
+    protected void debugPathFinding() {
+    }
+
     public void clearPath() {
         var nav = mcc$nav();
         if (nav != null) nav.stop();

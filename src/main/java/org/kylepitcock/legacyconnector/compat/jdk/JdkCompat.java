@@ -33,6 +33,12 @@ public final class JdkCompat {
         thread.interrupt();
     }
 
+    /** Thread.stop(Throwable) is gone since Java 11; interrupting is the closest safe behaviour. */
+    public static void stop(Thread thread, Throwable cause) {
+        LOG.warn("Legacy code called Thread.stop({}) on {}; interrupting instead", cause, thread.getName());
+        thread.interrupt();
+    }
+
     public static void suspend(Thread thread) {
         LOG.warn("Legacy code called Thread.suspend() on {}; ignored", thread.getName());
     }

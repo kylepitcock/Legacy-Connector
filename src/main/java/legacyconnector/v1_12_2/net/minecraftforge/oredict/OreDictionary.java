@@ -15,6 +15,8 @@ import legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event;
 /** The 1.12.2 ore dictionary: names to stacks (metadata {@link #WILDCARD_VALUE} matches any). */
 public class OreDictionary {
     public static final int WILDCARD_VALUE = Short.MAX_VALUE;
+    /** The list returned for names nobody registered (shared; mods compare against it). */
+    public static final NonNullList<ItemStack> EMPTY_LIST = NonNullList.create();
 
     private static final List<String> ID_TO_NAME = new ArrayList<>();
     private static final Map<String, Integer> NAME_TO_ID = new HashMap<>();
@@ -33,6 +35,10 @@ public class OreDictionary {
             ORES.put(id, new ArrayList<>());
         }
         return id;
+    }
+
+    /** Forge rebuilt its stack-to-ids cache after registry changes; ids here are looked up from the live lists, so there is nothing to rebuild. */
+    public static void rebakeMap() {
     }
 
     public static synchronized String getOreName(int id) {

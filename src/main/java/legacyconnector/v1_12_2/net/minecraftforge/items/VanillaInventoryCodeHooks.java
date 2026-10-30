@@ -34,4 +34,13 @@ public class VanillaInventoryCodeHooks {
         dropper.setInventorySlotContents(slot, remainder);
         return false;
     }
+
+    /** The item handler (and its tile entity) of the block at a position on the given side, or null when it has none. */
+    public static org.apache.commons.lang3.tuple.Pair<IItemHandler, Object> getItemHandler(World worldIn, double x, double y, double z, EnumFacing side) {
+        if (worldIn == null) return null;
+        TileEntity te = worldIn.getTileEntity(new BlockPos(x, y, z));
+        if (te == null || !te.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side)) return null;
+        IItemHandler handler = te.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, side);
+        return handler == null ? null : org.apache.commons.lang3.tuple.ImmutablePair.of(handler, te);
+    }
 }

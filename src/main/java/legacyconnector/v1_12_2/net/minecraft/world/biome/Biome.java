@@ -485,6 +485,8 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     // ------------------------------------------------------------------ area W: vanilla feature generators
 
     protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenTrees(false);
+    /** The swamp oak (vines hanging, roots in water) swamp biomes grow. */
+    protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenSwamp SWAMP_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenSwamp();
     protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree BIG_TREE_FEATURE = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenBigTree(false);
     protected static final legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant DOUBLE_PLANT_GENERATOR = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenDoublePlant();
 
