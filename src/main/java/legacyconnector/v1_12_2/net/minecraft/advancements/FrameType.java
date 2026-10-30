@@ -2,7 +2,7 @@ package legacyconnector.v1_12_2.net.minecraft.advancements;
 
 import legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting;
 
-/** The frame of an advancement's icon (task, challenge, goal), as 1.12.2's. */
+/** The frame of an advancement's icon: task, challenge or goal (its name, texture offset and title colour). */
 public enum FrameType {
     TASK("task", 0, TextFormatting.GREEN),
     CHALLENGE("challenge", 26, TextFormatting.DARK_PURPLE),
@@ -12,10 +12,10 @@ public enum FrameType {
     private final int icon;
     private final TextFormatting format;
 
-    FrameType(String nameIn, int iconIn, TextFormatting formatIn) {
-        this.name = nameIn;
-        this.icon = iconIn;
-        this.format = formatIn;
+    FrameType(String name, int icon, TextFormatting format) {
+        this.name = name;
+        this.icon = icon;
+        this.format = format;
     }
 
     public String getName() {
@@ -26,16 +26,20 @@ public enum FrameType {
         return icon;
     }
 
-    public static FrameType byName(String nameIn) {
-        for (FrameType t : values()) if (t.name.equals(nameIn)) return t;
-        throw new IllegalArgumentException("Unknown frame type '" + nameIn + "'");
-    }
-
     public TextFormatting getFormat() {
         return format;
     }
 
+    public static FrameType byName(String name) {
+        for (FrameType t : values()) if (t.name.equals(name)) return t;
+        throw new IllegalArgumentException("Unknown frame type '" + name + "'");
+    }
+
     public static FrameType mcc$of(net.minecraft.advancements.AdvancementType type) {
-        return type == null ? TASK : byName(type.getSerializedName());
+        return switch (type) {
+            case CHALLENGE -> CHALLENGE;
+            case GOAL -> GOAL;
+            default -> TASK;
+        };
     }
 }

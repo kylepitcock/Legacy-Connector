@@ -41,6 +41,11 @@ public class Advancement {
         return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentString(holder.value().name().map(c -> c.getString()).orElse(getId().toString()));
     }
 
+    /** How it shows in the advancements screen (null for a hidden-root or recipe advancement without display). */
+    public DisplayInfo getDisplay() {
+        return DisplayInfo.mcc$of(holder.value().display().orElse(null));
+    }
+
     @Override
     public boolean equals(Object o) {
         return o instanceof Advancement a && a.holder.id().equals(holder.id());
