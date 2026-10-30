@@ -64,4 +64,59 @@ public class SimpleBakedModel implements IBakedModel {
     public ItemOverrideList getOverrides() {
         return itemOverrideList;
     }
+
+    /** Builds a simple model from a json model (its flags and transforms) or from another model retextured (the block breaking overlay). */
+    public static class Builder {
+        private final List<BakedQuad> builderGeneralQuads = new java.util.ArrayList<>();
+        private final Map<EnumFacing, List<BakedQuad>> builderFaceQuads = new java.util.EnumMap<>(EnumFacing.class);
+        private final ItemOverrideList builderItemOverrideList;
+        private final boolean builderAmbientOcclusion;
+        private TextureAtlasSprite builderTexture;
+        private final boolean builderGui3d;
+        private final ItemCameraTransforms builderCameraTransforms;
+
+        public Builder(ModelBlock model, ItemOverrideList overrides) {
+            this(model.isAmbientOcclusion(), model.isGui3d(), model.getAllTransforms(), overrides);
+        }
+
+        /** Every quad of {@code model} (at the position's random) with its texture swapped for {@code texture}. */
+        public Builder(IBlockState state, IBakedModel model, TextureAtlasSprite texture, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+            this(model.isAmbientOcclusion(), model.isGui3d(), model.getItemCameraTransforms(), model.getOverrides());
+            builderTexture = model.getParticleTexture();
+            long rand = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.getPositionRandom(pos);
+            for (EnumFacing facing : EnumFacing.values()) {
+                for (BakedQuad quad : model.getQuads(state, facing, rand)) addFaceQuad(facing, new BakedQuadRetextured(quad, texture));
+            }
+            for (BakedQuad quad : model.getQuads(state, null, rand)) addGeneralQuad(new BakedQuadRetextured(quad, texture));
+        }
+
+        private Builder(boolean ambientOcclusion, boolean gui3d, ItemCameraTransforms transforms, ItemOverrideList overrides) {
+            for (EnumFacing facing : EnumFacing.values()) builderFaceQuads.put(facing, new java.util.ArrayList<>());
+            this.builderItemOverrideList = overrides;
+            this.builderAmbientOcclusion = ambientOcclusion;
+            this.builderGui3d = gui3d;
+            this.builderCameraTransforms = transforms;
+        }
+
+        public Builder addFaceQuad(EnumFacing facing, BakedQuad quad) {
+            builderFaceQuads.get(facing).add(quad);
+            return this;
+        }
+
+        public Builder addGeneralQuad(BakedQuad quad) {
+            builderGeneralQuads.add(quad);
+            return this;
+        }
+
+        public Builder setTexture(TextureAtlasSprite texture) {
+            builderTexture = texture;
+            return this;
+        }
+
+        public IBakedModel makeBakedModel() {
+            if (builderTexture == null) throw new RuntimeException("Missing particle!");
+            return new SimpleBakedModel(builderGeneralQuads, builderFaceQuads, builderAmbientOcclusion, builderGui3d, builderTexture, builderCameraTransforms,
+                    builderItemOverrideList);
+        }
+    }
 }
