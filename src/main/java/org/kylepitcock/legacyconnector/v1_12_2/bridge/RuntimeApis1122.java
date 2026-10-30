@@ -403,13 +403,7 @@ public final class RuntimeApis1122 {
             }
             return type;
         });
-        Synth.addInstanceMethod(placement + ".canSpawnAt", (self, args) -> {
-            BiPredicate<Object, Object> p;
-            synchronized (PLACEMENT_PREDICATES) {
-                p = PLACEMENT_PREDICATES.get(self);
-            }
-            return p == null || args.length < 2 ? Synth.NONE : p.test(args[0], args[1]);
-        });
+        Synth.addInstanceMethod(placement + ".canSpawnAt", (self, args) -> args.length < 2 ? Synth.NONE : placementAllows(self, args[0], args[1]));
 
         String horse = "net.minecraft.entity.passive.HorseArmorType";
         Synth.addStaticMethod(helper + "addHorseArmor", args -> {
@@ -437,6 +431,46 @@ public final class RuntimeApis1122 {
         Synth.addInstanceMethod(horse + ".getOrdinal", (self, args) -> self instanceof Enum<?> e ? e.ordinal() : Synth.NONE);
     }
 
+    /**
+     * EntitySpawnPlacementRegistry.getPlacementForEntity: the type registered for the class, else ON_GROUND (as in 1.12); null only
+     * when the placement enum is unavailable.
+     */
+    public static Object placementOf(Class<?> cls) {
+        synchronized (PLACEMENTS) {
+            Object type = PLACEMENTS.get(cls);
+            if (type != null) return type;
+        }
+        return enumConstant("net.minecraft.entity.EntityLiving$SpawnPlacementType", "ON_GROUND");
+    }
+
+    /**
+     * SpawnPlacementType.canSpawnAt (WorldEntitySpawner.canCreatureTypeSpawnBody): the predicate EnumHelper gave an added type, else
+     * the 1.12 water rule for IN_WATER (water here and below, no full block above) and the ground rule for the others, both through
+     * the modern placement checks.
+     */
+    public static boolean placementAllows(Object type, Object world, Object pos) {
+        BiPredicate<Object, Object> p;
+        synchronized (PLACEMENT_PREDICATES) {
+            p = PLACEMENT_PREDICATES.get(type);
+        }
+        if (p != null) return p.test(world, pos);
+        if (!(world instanceof legacyconnector.v1_12_2.net.minecraft.world.World w) || !(pos instanceof legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos bp)) {
+            return false;
+        }
+        var access = w.mcc$access();
+        if (access == null) return false;
+        var modern = bp.mcc$modern();
+        try {
+            if ("IN_WATER".equals(enumName(type))) {
+                return net.minecraft.world.entity.SpawnPlacementTypes.IN_WATER.isSpawnPositionOk(access, modern, net.minecraft.world.entity.EntityType.SQUID)
+                        && access.getFluidState(modern.below()).is(net.minecraft.tags.FluidTags.WATER);
+            }
+            return net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND.isSpawnPositionOk(access, modern, net.minecraft.world.entity.EntityType.ZOMBIE);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     private static HorseArmor horseArmor(Object type) {
         synchronized (HORSE_ARMOR) {
             HorseArmor a = HORSE_ARMOR.get(type);
@@ -459,10 +493,8 @@ public final class RuntimeApis1122 {
         });
         Synth.addStaticMethod(spawn + "getPlacementForEntity", args -> {
             if (args.length < 1 || !(args[0] instanceof Class<?> c)) return Synth.NONE;
-            synchronized (PLACEMENTS) {
-                Object type = PLACEMENTS.get(c);
-                return type != null ? type : Synth.NONE;
-            }
+            Object type = placementOf(c);
+            return type != null ? type : Synth.NONE;
         });
 
         Synth.addStaticMethod("net.minecraft.entity.passive.EntityParrot.registerMimicSound", args -> {

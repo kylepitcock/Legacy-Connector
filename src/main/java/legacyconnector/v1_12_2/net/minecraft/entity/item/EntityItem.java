@@ -13,6 +13,13 @@ import org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122;
  * {@code entityItem.getItem().shrink(1)} changes the item on the ground.
  */
 public class EntityItem extends Entity {
+    /** Vanilla's item key: the modern item entity's stack. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<ItemStack> ITEM = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(6, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.ITEM_STACK, EntityItem.class, ItemStack.EMPTY,
+            e -> e.mcc$item() == null ? ItemStack.EMPTY : Stacks1122.view(e.mcc$item().getItem()),
+            (e, v) -> {
+                if (e.mcc$item() != null) e.mcc$item().setItem(Stacks1122.toModern(v));
+            });
+
     @Deprecated
     public float hoverStart;
     @Deprecated

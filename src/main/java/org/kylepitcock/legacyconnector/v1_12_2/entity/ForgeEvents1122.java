@@ -178,5 +178,155 @@ public final class ForgeEvents1122 {
             else if (event.getResult() == Event.Result.DENY) e.setCriticalHit(false);
             if (event.getDamageModifier() != event.getOldDamageModifier()) e.setDamageMultiplier(event.getDamageModifier());
         });
+        registerEntityEvents(game);
+    }
+
+    private static boolean wants(Class<? extends Event> type) {
+        return MinecraftForge.EVENT_BUS.mcc$hasListeners(type);
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.entity.Entity entity(net.minecraft.world.entity.Entity e) {
+        return e == null ? null : EntityBridge1122.wrap(e);
+    }
+
+    /** Entity, spawn, sound, container, dimension, taming, sleeping, minecart and save-file events (only built when a mod listens). */
+    private static void registerEntityEvents(net.neoforged.bus.api.IEventBus game) {
+        game.addListener((net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn.class)) return;
+            if (!(entity(e.getEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving mob)) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.CheckSpawn(mob, WorldBridge1122.wrap(e.getLevel()),
+                    (float) e.getX(), (float) e.getY(), (float) e.getZ(), e.getSpawner() != null);
+            post(event);
+            if (event.getResult() == Event.Result.ALLOW) e.setResult(net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck.Result.SUCCEED);
+            else if (event.getResult() == Event.Result.DENY) e.setResult(net.neoforged.neoforge.event.entity.living.MobSpawnEvent.PositionCheck.Result.FAIL);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.living.FinalizeSpawnEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.SpecialSpawn.class)) return;
+            if (!(entity(e.getEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving mob)) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.SpecialSpawn(mob, WorldBridge1122.wrap(e.getLevel()),
+                    (float) e.getX(), (float) e.getY(), (float) e.getZ(), null);
+            if (post(event)) e.setCanceled(true);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.living.MobDespawnEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn.class)) return;
+            if (!(entity(e.getEntity()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving mob)) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingSpawnEvent.AllowDespawn(mob);
+            post(event);
+            if (event.getResult() == Event.Result.ALLOW) e.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.ALLOW);
+            else if (event.getResult() == Event.Result.DENY) e.setResult(net.neoforged.neoforge.event.entity.living.MobDespawnEvent.Result.DENY);
+        });
+        game.addListener((net.neoforged.neoforge.event.PlayLevelSoundEvent.AtEntity e) -> {
+            if (e.getSound() == null || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.PlaySoundAtEntityEvent.class)) return;
+            var view = entity(e.getEntity());
+            var sound = Sounds1122.legacy(e.getSound().value());
+            if (view == null || sound == null) return;
+            var category = legacyconnector.v1_12_2.net.minecraft.util.SoundCategory.mcc$of(e.getSource());
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.PlaySoundAtEntityEvent(view, sound, category, e.getNewVolume(), e.getNewPitch());
+            if (post(event)) {
+                e.setCanceled(true);
+                return;
+            }
+            if (event.getSound() == null) {
+                e.setCanceled(true);
+            } else if (event.getSound() != sound) {
+                var modern = event.getSound().mcc$event();
+                if (modern != null) e.setSound(net.minecraft.core.Holder.direct(modern));
+            }
+            if (event.getCategory() != null && event.getCategory() != category) e.setSource(event.getCategory().mcc$modern());
+            e.setNewVolume(event.getVolume());
+            e.setNewPitch(event.getPitch());
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingVisibilityEvent e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)
+                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.Visibility.class)) {
+                return;
+            }
+            EntityPlayer p = player((net.minecraft.world.entity.player.Player) e.getEntity());
+            if (p == null) return;
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.Visibility(p);
+            post(event);
+            if (event.getVisibilityModifier() != 1.0D) e.modifyVisibility(event.getVisibilityModifier());
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerContainerEvent.Open.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerContainerEvent.Open(p, MenuView1122.of(e.getContainer())));
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Close e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerContainerEvent.Close.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerContainerEvent.Close(p, MenuView1122.of(e.getContainer())));
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.LoadFromFile e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) {
+                post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.LoadFromFile(p, e.getPlayerDirectory(), e.getPlayerUUID()));
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerEvent.SaveToFile e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.SaveToFile.class)) return;
+            EntityPlayer p = player(e.getEntity());
+            if (p != null) {
+                post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerEvent.SaveToFile(p, e.getPlayerDirectory(), e.getPlayerUUID()));
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.living.AnimalTameEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.AnimalTameEvent.class)) return;
+            EntityPlayer p = player(e.getTamer());
+            if (p == null || !(entity(e.getAnimal()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityAnimal animal)) return;
+            if (post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.AnimalTameEvent(animal, p))) e.setCanceled(true);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.EntityTravelToDimensionEvent e) -> {
+            if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.EntityTravelToDimensionEvent.class)) return;
+            var view = entity(e.getEntity());
+            if (view == null) return;
+            int id = org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.dimensionId(e.getDimension());
+            if (post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.EntityTravelToDimensionEvent(view, id))) e.setCanceled(true);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.CanContinueSleepingEvent e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player modern)
+                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent.class)) {
+                return;
+            }
+            EntityPlayer p = player(modern);
+            if (p == null) return;
+            var pos = modern.getSleepingPos().map(BlockPos::mcc$of).orElse(null);
+            var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.SleepingTimeCheckEvent(p, pos);
+            post(event);
+            if (event.getResult() == Event.Result.ALLOW) e.setContinueSleeping(true);
+            else if (event.getResult() == Event.Result.DENY) e.setContinueSleeping(false);
+        });
+        game.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
+            if (!(e.getTarget() instanceof net.minecraft.world.entity.vehicle.AbstractMinecart)
+                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartInteractEvent.class)) {
+                return;
+            }
+            EntityPlayer p = player(e.getEntity());
+            if (p == null || !(entity(e.getTarget()) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityMinecart cart)) return;
+            if (post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartInteractEvent(cart, p, hand(e.getHand())))) {
+                e.setCanceled(true);
+                e.setCancellationResult(net.minecraft.world.InteractionResult.SUCCESS);
+            }
+        });
+        game.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Post e) -> {
+            if (!(e.getEntity() instanceof net.minecraft.world.entity.vehicle.AbstractMinecart modern) || modern.level().isClientSide()
+                    || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartUpdateEvent.class)) {
+                return;
+            }
+            if (entity(modern) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityMinecart cart) {
+                post(new legacyconnector.v1_12_2.net.minecraftforge.event.entity.minecart.MinecartUpdateEvent(cart, BlockPos.mcc$of(modern.blockPosition())));
+            }
+        });
+    }
+
+    /** ForgeHooks.getLootingLevel: the looting level of a kill after the 1.12 handlers changed it. */
+    public static int lootingLevel(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase target, legacyconnector.v1_12_2.net.minecraft.util.DamageSource cause,
+            int level) {
+        if (target == null || !wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LootingLevelEvent.class)) return level;
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LootingLevelEvent(target, cause, level);
+        post(event);
+        return event.getLootingLevel();
     }
 }
+

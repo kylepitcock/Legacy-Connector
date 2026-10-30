@@ -17,6 +17,10 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
 
 /** 1.12.2 player: a view over a modern player (inventory, abilities, food, experience, cooldowns). */
 public abstract class EntityPlayer extends EntityLivingBase {
+    /** Vanilla's absorption key: the modern player's absorption amount. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Float> ABSORPTION = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(11, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.FLOAT, EntityPlayer.class, 0.0F, e -> e.mcc$living().getAbsorptionAmount(),
+            (e, v) -> e.mcc$living().setAbsorptionAmount(v));
+
     /** Forge's block reach attribute (the modern block interaction range). */
     public static final IAttribute REACH_DISTANCE = new RangedAttribute(null, "generic.reachDistance", 5.0D, 0.0D, 1024.0D).setShouldWatch(true);
 

@@ -18,6 +18,22 @@ import org.kylepitcock.legacyconnector.v1_12_2.entity.LivingHost1122;
  * the stack in a hand changes the hand.
  */
 public abstract class EntityLivingBase extends Entity {
+    /** Vanilla's data keys of living entities: their values are the modern entity's (see {@link org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122}). */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Byte> HAND_STATES = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(6, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BYTE, EntityLivingBase.class, (byte) 0, e -> {
+        var l = e.mcc$living();
+        if (l == null || !l.isUsingItem()) return (byte) 0;
+        return (byte) (l.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND ? 3 : 1);
+    }, null);
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Float> HEALTH = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(7, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.FLOAT, EntityLivingBase.class, 0.0F, e -> e.mcc$living().getHealth(),
+            (e, v) -> e.mcc$living().setHealth(v));
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Integer> POTION_EFFECTS = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(8, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.VARINT, EntityLivingBase.class, 0,
+            e -> net.minecraft.world.item.alchemy.PotionContents.getColorOptional(e.mcc$living().getActiveEffects()).orElse(0), null);
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Boolean> HIDE_PARTICLES = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(9, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.BOOLEAN, EntityLivingBase.class, false,
+            e -> !e.mcc$living().getActiveEffects().isEmpty() && net.minecraft.world.entity.LivingEntity.areAllEffectsAmbient(e.mcc$living().getActiveEffects()),
+            null);
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Integer> ARROW_COUNT_IN_ENTITY = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(10, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.VARINT, EntityLivingBase.class, 0, e -> e.mcc$living().getArrowCount(),
+            (e, v) -> e.mcc$living().setArrowCount(v));
+
     @Deprecated
     public float rotationYawHead;
     private float mcc$local_rotationYawHead;
@@ -90,6 +106,15 @@ public abstract class EntityLivingBase extends Entity {
     public float prevCameraPitch;
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer attackingPlayer;
+    @Deprecated
+    public boolean dead;
+    private boolean mcc$local_dead;
+    @Deprecated
+    public float onGroundSpeedFactor;
+    private float mcc$local_onGroundSpeedFactor;
+    @Deprecated
+    public float prevOnGroundSpeedFactor;
+    private float mcc$local_prevOnGroundSpeedFactor;
 
     /** Ticks since the entity last took damage or acted (EntityLiving's despawn timer). */
     protected int idleTime;
@@ -126,6 +151,41 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     // ------------------------------------------------------------------ phantom fields
+
+    /** dead: the death was handled (the modern flag). */
+    public static boolean mcc$get$dead(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.dead(l) : e.mcc$local_dead;
+    }
+
+    public static void mcc$set$dead(EntityLivingBase e, boolean v) {
+        var l = e.mcc$living();
+        if (l != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setDead(l, v);
+        else e.mcc$local_dead = v;
+    }
+
+    /** onGroundSpeedFactor / prevOnGroundSpeedFactor: the modern animation step. */
+    public static float mcc$get$onGroundSpeedFactor(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.animStep(l, false) : e.mcc$local_onGroundSpeedFactor;
+    }
+
+    public static void mcc$set$onGroundSpeedFactor(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setAnimStep(l, false, v);
+        else e.mcc$local_onGroundSpeedFactor = v;
+    }
+
+    public static float mcc$get$prevOnGroundSpeedFactor(EntityLivingBase e) {
+        var l = e.mcc$living();
+        return l != null ? org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.animStep(l, true) : e.mcc$local_prevOnGroundSpeedFactor;
+    }
+
+    public static void mcc$set$prevOnGroundSpeedFactor(EntityLivingBase e, float v) {
+        var l = e.mcc$living();
+        if (l != null) org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.setAnimStep(l, true, v);
+        else e.mcc$local_prevOnGroundSpeedFactor = v;
+    }
 
     public static float mcc$get$rotationYawHead(EntityLivingBase e) {
         var l = e.mcc$living();

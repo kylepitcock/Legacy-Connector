@@ -209,7 +209,9 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
                 looting = net.minecraft.world.item.enchantment.EnchantmentHelper.getEnchantmentLevel(
                         enchantments.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.LOOTING), killer);
             }
-            l.mcc$dropLoot(recentlyHit, looting, legacySource(source));
+            var legacySource = legacySource(source);
+            looting = ForgeEvents1122.lootingLevel(l, legacySource, looting);
+            l.mcc$dropLoot(recentlyHit, looting, legacySource);
         } catch (RuntimeException | LinkageError e) {
             Hosts1122.failed(legacy.getClass(), "dropping its loot", e);
         } finally {
@@ -615,6 +617,15 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
         boolean region = !(level instanceof ServerLevel);
         if (region) l.mcc$worldOverride = level;
         try {
+            // 1.12's natural spawner checked the class's spawn placement (EntitySpawnPlacementRegistry) before getCanSpawnHere
+            if ((reason == net.minecraft.world.entity.MobSpawnType.NATURAL || reason == net.minecraft.world.entity.MobSpawnType.CHUNK_GENERATION)
+                    && level != null) {
+                Object placement = org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.placementOf(l.getClass());
+                if (placement != null && !org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.placementAllows(placement, org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level),
+                        new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(l))) {
+                    return false;
+                }
+            }
             return l.getCanSpawnHere();
         } catch (RuntimeException | LinkageError e) {
             return false;

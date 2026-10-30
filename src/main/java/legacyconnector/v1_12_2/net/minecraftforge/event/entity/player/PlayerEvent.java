@@ -157,4 +157,71 @@ public class PlayerEvent extends legacyconnector.v1_12_2.net.minecraftforge.even
             return target;
         }
     }
+
+    /** How visible the player is to a mob looking for targets (multiply the modifier to hide the player better). */
+    public static class Visibility extends PlayerEvent {
+        private double visibilityModifier = 1.0D;
+
+        public Visibility(EntityPlayer player) {
+            super(player);
+        }
+
+        public void modifyVisibility(double mod) {
+            visibilityModifier *= mod;
+        }
+
+        public double getVisibilityModifier() {
+            return visibilityModifier;
+        }
+    }
+
+    /** The player's data was loaded from its save file (mods load their own files next to it). */
+    public static class LoadFromFile extends PlayerEvent {
+        private final java.io.File playerDirectory;
+        private final String playerUUID;
+
+        public LoadFromFile(EntityPlayer player, java.io.File originDirectory, String playerUUID) {
+            super(player);
+            this.playerDirectory = originDirectory;
+            this.playerUUID = playerUUID;
+        }
+
+        public java.io.File getPlayerFile(String suffix) {
+            if ("dat".equals(suffix)) throw new IllegalArgumentException("The suffix 'dat' is reserved");
+            return new java.io.File(playerDirectory, playerUUID + "." + suffix);
+        }
+
+        public java.io.File getPlayerDirectory() {
+            return playerDirectory;
+        }
+
+        public String getPlayerUUID() {
+            return playerUUID;
+        }
+    }
+
+    /** The player's data is being saved to its save file (mods save their own files next to it). */
+    public static class SaveToFile extends PlayerEvent {
+        private final java.io.File playerDirectory;
+        private final String playerUUID;
+
+        public SaveToFile(EntityPlayer player, java.io.File originDirectory, String playerUUID) {
+            super(player);
+            this.playerDirectory = originDirectory;
+            this.playerUUID = playerUUID;
+        }
+
+        public java.io.File getPlayerFile(String suffix) {
+            if ("dat".equals(suffix)) throw new IllegalArgumentException("The suffix 'dat' is reserved");
+            return new java.io.File(playerDirectory, playerUUID + "." + suffix);
+        }
+
+        public java.io.File getPlayerDirectory() {
+            return playerDirectory;
+        }
+
+        public String getPlayerUUID() {
+            return playerUUID;
+        }
+    }
 }

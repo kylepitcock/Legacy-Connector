@@ -9,6 +9,12 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
  * bobber of that player; luck and lure speed are its own.
  */
 public class EntityFishHook extends Entity {
+    /** Vanilla's hooked-entity key (entity id + 1, 0 for none): the modern hook's hooked entity. */
+    public static final legacyconnector.v1_12_2.net.minecraft.network.datasync.DataParameter<Integer> DATA_HOOKED_ENTITY = org.kylepitcock.legacyconnector.v1_12_2.entity.VanillaDataKey1122.of(6, legacyconnector.v1_12_2.net.minecraft.network.datasync.DataSerializers.VARINT, EntityFishHook.class, 0, e -> {
+        var h = e.mcc$hook();
+        return h == null || h.getHookedIn() == null ? 0 : h.getHookedIn().getId() + 1;
+    }, null);
+
     @Deprecated
     public EntityPlayer angler;
     @Deprecated

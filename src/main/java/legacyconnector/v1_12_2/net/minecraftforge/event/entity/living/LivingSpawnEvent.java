@@ -65,8 +65,21 @@ public class LivingSpawnEvent extends LivingEvent {
     /** A mob is about to be set up after spawning (cancel to skip its own set-up). */
     @Cancelable
     public static class SpecialSpawn extends LivingSpawnEvent {
+        private final legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner;
+
         public SpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
+            this(entity, world, x, y, z, null);
+        }
+
+        public SpecialSpawn(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z,
+                legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic spawner) {
             super(entity, world, x, y, z);
+            this.spawner = spawner;
+        }
+
+        /** The spawner that spawned the mob, or null for natural and other spawns. */
+        public legacyconnector.v1_12_2.net.minecraft.tileentity.MobSpawnerBaseLogic getSpawner() {
+            return spawner;
         }
     }
 
