@@ -82,17 +82,28 @@ public class EntitySelector {
         var self = sender.getCommandSenderEntity();
         if (self != null && self.mcc$modern() != null) source = source.withEntity(self.mcc$modern());
         List<? extends net.minecraft.world.entity.Entity> found;
+        Map<String, String> args = arguments(m.group(2));
         try {
             var selector = new net.minecraft.commands.arguments.selector.EntitySelectorParser(
-                    new com.mojang.brigadier.StringReader(modernSelector(m.group(1), arguments(m.group(2)))), true).parse();
+                    new com.mojang.brigadier.StringReader(modernSelector(m.group(1), args)), true).parse();
             found = selector.findEntities(source);
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             throw new CommandException("commands.generic.syntax");
         }
+        // mods' own arguments (GameRegistry.registerEntitySelector) filter what the modern selector found
+        List<com.google.common.base.Predicate<Entity>> filters = new ArrayList<>();
+        java.util.Set<Object> asked = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (String key : args.keySet()) {
+            var factory = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$entitySelectors().get(key);
+            if (factory != null && asked.add(factory)) filters.addAll(factory.createPredicates(args, m.group(1), sender, pos));
+        }
         List<T> out = new ArrayList<>();
+        outer:
         for (var e : found) {
             Entity view = EntityBridge1122.wrap(e);
-            if (view != null && (targetClass == null || targetClass.isInstance(view))) out.add((T) view);
+            if (view == null || targetClass != null && !targetClass.isInstance(view)) continue;
+            for (var filter : filters) if (!filter.apply(view)) continue outer;
+            out.add((T) view);
         }
         return out;
     }

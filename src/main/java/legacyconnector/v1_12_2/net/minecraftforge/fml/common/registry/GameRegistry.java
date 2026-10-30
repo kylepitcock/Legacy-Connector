@@ -117,4 +117,33 @@ public class GameRegistry {
     public static synchronized java.util.List<legacyconnector.v1_12_2.net.minecraftforge.fml.common.IWorldGenerator> mcc$worldGenerators() {
         return new java.util.ArrayList<>(WORLD_GENERATORS);
     }
+
+    /** A stack of a named item ("modid:name"), with metadata, size and an NBT tag in JSON form (null or empty for none). */
+    public static legacyconnector.v1_12_2.net.minecraft.item.ItemStack makeItemStack(String itemName, int meta, int stackSize, String nbtString) {
+        if (itemName == null) throw new IllegalArgumentException("The itemName cannot be null");
+        Item item = Item.getByNameOrId(itemName);
+        if (item == null) throw new IllegalArgumentException("Unable to find item with name " + itemName);
+        var stack = new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(item, stackSize, meta);
+        if (nbtString != null && !nbtString.isEmpty()) {
+            try {
+                stack.setTagCompound(legacyconnector.v1_12_2.net.minecraft.nbt.JsonToNBT.getTagFromJson(nbtString));
+            } catch (legacyconnector.v1_12_2.net.minecraft.nbt.NBTException e) {
+                throw new RuntimeException("Encountered an exception parsing ItemStack NBT string " + nbtString, e);
+            }
+        }
+        return stack;
+    }
+
+    private static final java.util.Map<String, legacyconnector.v1_12_2.net.minecraftforge.fml.common.IEntitySelectorFactory> ENTITY_SELECTORS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Registers a mod's own target selector arguments (a selector with them is filtered by the factory's predicates). */
+    public static void registerEntitySelector(legacyconnector.v1_12_2.net.minecraftforge.fml.common.IEntitySelectorFactory factory, String... args) {
+        for (String arg : args) ENTITY_SELECTORS.put(arg, factory);
+    }
+
+    /** The factories of the mods' selector arguments, by argument. */
+    public static java.util.Map<String, legacyconnector.v1_12_2.net.minecraftforge.fml.common.IEntitySelectorFactory> mcc$entitySelectors() {
+        return ENTITY_SELECTORS;
+    }
 }
