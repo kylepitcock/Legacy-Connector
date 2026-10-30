@@ -22,6 +22,10 @@ public class SPacketBlockChange implements Packet<INetHandlerPlayClient> {
         return blockPosition;
     }
 
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getBlockState() {
+        return state == null ? null : org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toLegacy(state);
+    }
+
     @Override
     public void readPacketData(PacketBuffer buf) throws IOException {
         // read by the modern client from the modern packet

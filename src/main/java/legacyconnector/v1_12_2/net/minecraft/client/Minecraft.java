@@ -395,6 +395,11 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
     /** The single player server while one runs (a view answering from it), else null. */
     public synchronized legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer getIntegratedServer() {
         if (!isIntegratedServerRunning()) return null;
+        if (integratedServer == null && legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance()
+                instanceof legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer view) {
+            // the same object FMLCommonHandler and the server's own callbacks give
+            integratedServer = view;
+        }
         if (integratedServer == null) {
             integratedServer = org.kylepitcock.legacyconnector.v1_12_2.client.ClientObjects1122.make(
                     legacyconnector.v1_12_2.net.minecraft.server.integrated.IntegratedServer.class);
