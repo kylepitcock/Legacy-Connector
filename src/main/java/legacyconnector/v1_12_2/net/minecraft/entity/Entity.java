@@ -164,6 +164,14 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     public java.util.UUID entityUniqueID;
     private java.util.UUID mcc$local_entityUniqueID = java.util.UUID.randomUUID();
 
+    /** Phantom field: {@link #mcc$get$invulnerable}. */
+    @Deprecated
+    public boolean invulnerable;
+    private boolean mcc$local_invulnerable;
+    /** Phantom field: {@link #mcc$get$cachedUniqueIdString}. */
+    @Deprecated
+    protected String cachedUniqueIdString;
+
     /** Every entity's own random, as in 1.12 (mods roll it for particles and drops). */
     protected java.util.Random rand = new java.util.Random();
     /** Whether the renderer skips the view-frustum check (big entities). */
@@ -512,6 +520,27 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         var m = e.mcc$entity;
         if (m != null) m.tickCount = v;
         else e.mcc$local_ticksExisted = v;
+    }
+
+    /** invulnerable: the modern entity's invulnerable flag (the {@code Invulnerable} tag). */
+    public static boolean mcc$get$invulnerable(Entity e) {
+        var m = e.mcc$entity;
+        return m != null ? m.isInvulnerable() : e.mcc$local_invulnerable;
+    }
+
+    public static void mcc$set$invulnerable(Entity e, boolean v) {
+        var m = e.mcc$entity;
+        if (m != null) m.setInvulnerable(v);
+        else e.mcc$local_invulnerable = v;
+    }
+
+    /** cachedUniqueIdString: the entity's id as text (kept by the modern entity; writes are ignored, as the id is the entity's own). */
+    public static String mcc$get$cachedUniqueIdString(Entity e) {
+        return e.getCachedUniqueIdString();
+    }
+
+    public static void mcc$set$cachedUniqueIdString(Entity e, String v) {
+        // derived from the id
     }
 
     public static float mcc$get$fallDistance(Entity e) {
@@ -1585,6 +1614,31 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public boolean isOverWater() {
         return isInWater();
+    }
+
+    /** The splash of an entity falling into water: sound by speed, bubble and splash particles (client) where it lands. */
+    protected void doWaterSplashEffect() {
+        org.kylepitcock.legacyconnector.v1_12_2.entity.ModernAccess1122.waterSplash(mcc$entity);
+    }
+
+    /**
+     * Forge: whether this entity tramples farmland it falls on: by chance growing with the fall, only living entities, mobs only with
+     * mob griefing allowed, and not tiny ones (the modern Forge hook, which keeps the same rule).
+     */
+    public boolean canTrample(World world, legacyconnector.v1_12_2.net.minecraft.block.Block block, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, float fallDistance) {
+        var m = mcc$entity;
+        if (m == null || pos == null) return false;
+        try {
+            var p = pos.mcc$modern();
+            return m.canTrample(m.level().getBlockState(p), p, fallDistance);
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** Forge: whether the entity renders in this pass (0 opaque, 1 translucent); entities render in the first. */
+    public boolean shouldRenderInPass(int pass) {
+        return pass == 0;
     }
 
     /** Pushes the entity along flowing water and returns whether it is in water (it stops burning; its fall resets). */

@@ -269,4 +269,30 @@ public class PlayerList {
         if (sp == null) return null;
         return new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(sp.saveWithoutId(new net.minecraft.nbt.CompoundTag()));
     }
+
+    /** The player's statistics (the modern counter, loaded from the world's stats folder). */
+    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer getPlayerStatsFile(EntityPlayer playerIn) {
+        var m = modern();
+        if (m == null || playerIn == null || playerIn.mcc$player() == null) return null;
+        return legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(m.getPlayerStats(playerIn.mcc$player()));
+    }
+
+    /**
+     * Respawns the player as a new entity (1.12: after death or when leaving the End, {@code conqueredEnd} keeps everything): the modern
+     * respawn at the player's respawn point, then a move to {@code dimension} if that is another world.
+     */
+    public EntityPlayerMP recreatePlayerEntity(EntityPlayerMP playerIn, int dimension, boolean conqueredEnd) {
+        var m = modern();
+        var sp = playerIn == null ? null : playerIn.mcc$serverPlayer();
+        if (m == null || sp == null) return playerIn;
+        var fresh = m.respawn(sp, conqueredEnd, conqueredEnd ? net.minecraft.world.entity.Entity.RemovalReason.CHANGED_DIMENSION
+                : net.minecraft.world.entity.Entity.RemovalReason.KILLED);
+        var target = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.levelOf(fresh.server, dimension);
+        if (target != null && target != fresh.serverLevel()) {
+            var spawn = target.getSharedSpawnPos();
+            fresh.teleportTo(target, spawn.getX() + 0.5D, spawn.getY(), spawn.getZ() + 0.5D, fresh.getYRot(), fresh.getXRot());
+        }
+        EntityPlayerMP v = view(fresh);
+        return v != null ? v : playerIn;
+    }
 }

@@ -235,4 +235,17 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
             legacyconnector.v1_12_2.net.minecraftforge.common.util.ITeleporter teleporter) {
         return super.changeDimension(dimension, teleporter);
     }
+
+    /** The player's recipe book (the modern server book: unlocking there also tells the client). */
+    public legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer getRecipeBook() {
+        var sp = mcc$serverPlayer();
+        return sp == null ? new legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer()
+                : legacyconnector.v1_12_2.net.minecraft.stats.RecipeBookServer.mcc$of(sp.getRecipeBook());
+    }
+
+    /** The player's statistics. */
+    public legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer getStatFile() {
+        var sp = mcc$serverPlayer();
+        return sp == null ? null : legacyconnector.v1_12_2.net.minecraft.stats.StatisticsManagerServer.mcc$of(sp.getStats());
+    }
 }

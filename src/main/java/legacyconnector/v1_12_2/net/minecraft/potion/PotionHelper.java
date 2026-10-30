@@ -18,20 +18,69 @@ public class PotionHelper {
             Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.SPLASH_POTION)),
             Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.LINGERING_POTION))));
 
+    /** The vanilla container changes (a potion with gunpowder becomes a splash potion, a splash one with dragon's breath lingering). */
+    public static final List<MixPredicate<Item>> POTION_ITEM_CONVERSIONS = new ArrayList<>(List.of(
+            new MixPredicate<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.POTION),
+                    Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.GUNPOWDER)),
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.SPLASH_POTION)),
+            new MixPredicate<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.SPLASH_POTION),
+                    Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.DRAGON_BREATH)),
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.LINGERING_POTION))));
+    /** Whether a stack is one of the brewing stand's potion containers ({@link #POTION_ITEMS}). */
+    public static final com.google.common.base.Predicate<ItemStack> IS_POTION_ITEM = stack -> {
+        for (Ingredient i : POTION_ITEMS) if (i.apply(stack)) return true;
+        return false;
+    };
+
     static {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Brewing1122.ensureListener();
     }
 
-    /** One mix: {@code input} brewed with {@code reagent} gives {@code output}. */
+    /**
+     * One mix: {@code input} brewed with {@code reagent} gives {@code output}. Forge keeps the potion types (or items) as registry
+     * delegates, which mods read through {@code input.get()}.
+     */
     public static class MixPredicate<T> {
-        public final T input;
+        public final legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<T> input;
         public final Ingredient reagent;
-        public final T output;
+        public final legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<T> output;
 
         public MixPredicate(T input, Ingredient reagent, T output) {
-            this.input = input;
+            this.input = mcc$delegate(input);
             this.reagent = reagent;
-            this.output = output;
+            this.output = mcc$delegate(output);
+        }
+
+        public T mcc$input() {
+            return input == null ? null : input.get();
+        }
+
+        public T mcc$output() {
+            return output == null ? null : output.get();
+        }
+
+        @SuppressWarnings("unchecked")
+        private static <T> legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<T> mcc$delegate(T value) {
+            if (value instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.Impl<?> impl && impl.delegate != null) {
+                return (legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<T>) impl.delegate;
+            }
+            return new legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<>() {
+                @Override
+                public T get() {
+                    return value;
+                }
+
+                @Override
+                public legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name() {
+                    return value instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry<?> e ? e.getRegistryName() : null;
+                }
+
+                @Override
+                @SuppressWarnings("unchecked")
+                public Class<T> type() {
+                    return value == null ? null : (Class<T>) value.getClass();
+                }
+            };
         }
     }
 
@@ -57,7 +106,7 @@ public class PotionHelper {
 
     protected static synchronized boolean hasTypeConversions(ItemStack input, ItemStack reagent) {
         PotionType type = PotionUtils.getPotionFromItem(input);
-        for (MixPredicate<PotionType> mix : POTION_TYPE_CONVERSIONS) if (mix.input == type && mix.reagent.apply(reagent)) return true;
+        for (MixPredicate<PotionType> mix : POTION_TYPE_CONVERSIONS) if (mix.mcc$input() == type && mix.reagent.apply(reagent)) return true;
         return false;
     }
 
@@ -67,7 +116,7 @@ public class PotionHelper {
         PotionType type = PotionUtils.getPotionFromItem(potionIn);
         synchronized (PotionHelper.class) {
             for (MixPredicate<PotionType> mix : POTION_TYPE_CONVERSIONS) {
-                if (mix.input == type && mix.reagent.apply(reagent)) return PotionUtils.addPotionToItemStack(potionIn.copy(), mix.output);
+                if (mix.mcc$input() == type && mix.reagent.apply(reagent)) return PotionUtils.addPotionToItemStack(potionIn.copy(), mix.mcc$output());
             }
         }
         ItemStack vanilla = new legacyconnector.v1_12_2.net.minecraftforge.common.brewing.VanillaBrewingRecipe().getOutput(potionIn, reagent);

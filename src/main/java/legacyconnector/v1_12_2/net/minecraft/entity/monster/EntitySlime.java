@@ -79,6 +79,61 @@ public class EntitySlime extends legacyconnector.v1_12_2.net.minecraft.entity.En
         else e.mcc$prevSquishFactor = v;
     }
 
+    /** Phantom field: {@link #mcc$get$wasOnGround}. */
+    @Deprecated
+    protected boolean wasOnGround;
+    private boolean mcc$wasOnGround;
+    private static final java.lang.reflect.Field MCC$WAS_ON_GROUND = mcc$wasOnGroundField();
+
+    private static java.lang.reflect.Field mcc$wasOnGroundField() {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findField(net.minecraft.world.entity.monster.Slime.class, "wasOnGround");
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** wasOnGround: whether the slime stood on the ground last tick (it squishes and splashes when it lands). */
+    public static boolean mcc$get$wasOnGround(EntitySlime e) {
+        var m = e.mcc$self();
+        if (m != null && MCC$WAS_ON_GROUND != null) {
+            try {
+                return MCC$WAS_ON_GROUND.getBoolean(m);
+            } catch (IllegalAccessException ex) {
+                // the local copy
+            }
+        }
+        return e.mcc$wasOnGround;
+    }
+
+    public static void mcc$set$wasOnGround(EntitySlime e, boolean v) {
+        var m = e.mcc$self();
+        if (m != null && MCC$WAS_ON_GROUND != null) {
+            try {
+                MCC$WAS_ON_GROUND.setBoolean(m, v);
+                return;
+            } catch (IllegalAccessException ex) {
+                // the local copy
+            }
+        }
+        e.mcc$wasOnGround = v;
+    }
+
+    /** Eases the squish back towards rest (each tick: 60% of it remains). */
+    protected void alterSquishAmount() {
+        mcc$set$squishAmount(this, mcc$get$squishAmount(this) * 0.6F);
+    }
+
+    /** Ticks between two jumps: 10 to 29. */
+    protected int getJumpDelay() {
+        return rand.nextInt(20) + 10;
+    }
+
+    /** Whether jumping plays the squish sound. */
+    protected boolean makesSoundOnJump() {
+        return getSlimeSize() > 0;
+    }
+
     @Override
     protected void entityInit() {
         super.entityInit();
