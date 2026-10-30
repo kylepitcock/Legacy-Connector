@@ -108,6 +108,11 @@ TYPED_BLOCKS = {
     "PISTON_HEAD": "new %sBlockPistonExtension()" % B,
     "PISTON_EXTENSION": "new %sBlockPistonMoving()" % B,
     "PORTAL": "new %sBlockPortal()" % B,
+    "REDSTONE_WIRE": "new %sBlockRedstoneWire()" % B,
+    "UNPOWERED_REPEATER": "new %sBlockRedstoneRepeater(false) {}" % B,
+    "POWERED_REPEATER": "new %sBlockRedstoneRepeater(true) {}" % B,
+    "UNPOWERED_COMPARATOR": "new %sBlockRedstoneComparator(false)" % B,
+    "POWERED_COMPARATOR": "new %sBlockRedstoneComparator(true)" % B,
     "REDSTONE_BLOCK": "new %sBlockCompressedPowered(%sIRON, legacyconnector.v1_12_2.net.minecraft.block.material.MapColor.TNT)" % (B, M),
 }
 for color in ["WHITE", "ORANGE", "MAGENTA", "LIGHT_BLUE", "YELLOW", "LIME", "PINK", "GRAY", "SILVER", "CYAN", "PURPLE", "BLUE", "BROWN", "GREEN", "RED", "BLACK"]:

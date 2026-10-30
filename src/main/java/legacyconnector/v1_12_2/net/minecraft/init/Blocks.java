@@ -166,6 +166,8 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PLANKS = VanillaBlocks1122.block("PLANKS", new legacyconnector.v1_12_2.net.minecraft.block.BlockPlanks());
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPortal PORTAL = VanillaBlocks1122.block("PORTAL", new legacyconnector.v1_12_2.net.minecraft.block.BlockPortal());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block POTATOES = Vanilla1122.block("POTATOES");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator POWERED_COMPARATOR = VanillaBlocks1122.block("POWERED_COMPARATOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator(true));
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater POWERED_REPEATER = VanillaBlocks1122.block("POWERED_REPEATER", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater(true) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PRISMARINE = VanillaBlocks1122.block("PRISMARINE", new legacyconnector.v1_12_2.net.minecraft.block.BlockPrismarine());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PUMPKIN = VanillaBlocks1122.block("PUMPKIN", new legacyconnector.v1_12_2.net.minecraft.block.BlockPumpkin() {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block PUMPKIN_STEM = VanillaBlocks1122.block("PUMPKIN_STEM", new legacyconnector.v1_12_2.net.minecraft.block.BlockStem(Blocks.PUMPKIN) {});
@@ -184,6 +186,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block REDSTONE_LAMP = Vanilla1122.block("REDSTONE_LAMP");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block REDSTONE_ORE = Vanilla1122.block("REDSTONE_ORE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block REDSTONE_TORCH = Vanilla1122.block("REDSTONE_TORCH");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire REDSTONE_WIRE = VanillaBlocks1122.block("REDSTONE_WIRE", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneWire());
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockFlower RED_FLOWER = VanillaBlocks1122.block("RED_FLOWER", legacyconnector.v1_12_2.net.minecraft.block.BlockFlower.EnumFlowerColor.RED.getBlock());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block RED_GLAZED_TERRACOTTA = Vanilla1122.block("RED_GLAZED_TERRACOTTA");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockBush RED_MUSHROOM = VanillaBlocks1122.block("RED_MUSHROOM", new legacyconnector.v1_12_2.net.minecraft.block.BlockMushroom() {});
@@ -233,6 +236,8 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRAPPED_CHEST = VanillaBlocks1122.block("TRAPPED_CHEST", new legacyconnector.v1_12_2.net.minecraft.block.BlockChest(legacyconnector.v1_12_2.net.minecraft.block.BlockChest.Type.TRAP) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block TRIPWIRE = Vanilla1122.block("TRIPWIRE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block UNLIT_REDSTONE_TORCH = Vanilla1122.block("UNLIT_REDSTONE_TORCH");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator UNPOWERED_COMPARATOR = VanillaBlocks1122.block("UNPOWERED_COMPARATOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator(false));
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater UNPOWERED_REPEATER = VanillaBlocks1122.block("UNPOWERED_REPEATER", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater(false) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block VINE = Vanilla1122.block("VINE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block WALL_BANNER = Vanilla1122.block("WALL_BANNER");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block WALL_SIGN = Vanilla1122.block("WALL_SIGN");
