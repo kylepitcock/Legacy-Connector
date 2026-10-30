@@ -32,6 +32,31 @@ public class PlayerChunkMap {
         return level == null ? List.of() : level.getChunkSource().chunkMap.getPlayers(new net.minecraft.world.level.ChunkPos(x, z), false);
     }
 
+    /**
+     * The loaded chunks players watch (each once): what 1.12's iterator gave mods that tick chunks themselves (seasons, random updates).
+     * Built from the players' view areas when called.
+     */
+    public java.util.Iterator<legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk> getChunkIterator() {
+        if (level == null) return java.util.Collections.emptyIterator();
+        var world = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level);
+        int radius = level.getServer().getPlayerList().getViewDistance();
+        var seen = new it.unimi.dsi.fastutil.longs.LongOpenHashSet();
+        List<legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk> out = new ArrayList<>();
+        for (var player : level.players()) {
+            var center = player.chunkPosition();
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    int x = center.x + dx;
+                    int z = center.z + dz;
+                    if (!seen.add(net.minecraft.world.level.ChunkPos.asLong(x, z))) continue;
+                    var chunk = level.getChunkSource().getChunkNow(x, z);
+                    if (chunk != null) out.add(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world, chunk));
+                }
+            }
+        }
+        return out.iterator();
+    }
+
     public boolean contains(int chunkX, int chunkZ) {
         return level != null && level.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(chunkX, chunkZ)) != null;
     }

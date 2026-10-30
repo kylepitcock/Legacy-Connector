@@ -35,6 +35,17 @@ public class ConfigElement<T> implements IConfigElement<T> {
         return this;
     }
 
+    /** The config GUI element of a {@link Config} class: its category in the mod's config file. */
+    @SuppressWarnings("rawtypes")
+    public static legacyconnector.v1_12_2.net.minecraftforge.fml.client.config.IConfigElement from(Class<?> configClass) {
+        Config annotation = configClass.getAnnotation(Config.class);
+        if (annotation == null) throw new RuntimeException(configClass + " is not a @Config class");
+        String name = annotation.name().isEmpty() ? annotation.modid() : annotation.name();
+        Configuration config = ConfigManager.getConfiguration(annotation.modid(), name);
+        ConfigCategory category = config.getCategory(annotation.category());
+        return new ConfigElement(category);
+    }
+
     /** The element of a property, typed by its value type (Boolean, Double, Integer, else String: one class after erasure). */
     public static ConfigElement<?> getTypedElement(Property prop) {
         return new ConfigElement<>(prop);

@@ -47,6 +47,16 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
         return namespace;
     }
 
+    /** {@link #getPath} under its older MCP name (mods built with earlier 1.12 mappings). */
+    public String getResourcePath() {
+        return path;
+    }
+
+    /** {@link #getNamespace} under its older MCP name. */
+    public String getResourceDomain() {
+        return namespace;
+    }
+
     @Override
     public String toString() {
         return namespace + ":" + path;

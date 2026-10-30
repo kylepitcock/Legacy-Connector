@@ -47,6 +47,22 @@ public final class ConfigManager {
         }
     }
 
+    /** Reads the mod's {@link Config} classes of that type from their files (as {@link #sync}; missing values are written back). */
+    public static void load(String modid, Config.Type type) {
+        sync(modid, type);
+    }
+
+    /** The configuration file a mod's {@link Config} class of that name is kept in (created and synced on first use). */
+    public static Configuration getConfiguration(String modid, String name) {
+        String file = name == null || name.isEmpty() ? modid : name;
+        Configuration cfg = FILES.get(modid + "/" + file);
+        if (cfg == null) {
+            sync(modid, Config.Type.INSTANCE);
+            cfg = FILES.computeIfAbsent(modid + "/" + file, k -> new Configuration(new File(configDir, file + ".cfg")));
+        }
+        return cfg;
+    }
+
     /** The categories of a mod's {@link Config} classes in their config files (what Forge's config GUI lists for the mod). */
     public static List<ConfigCategory> mcc$categories(String modid) {
         List<ConfigCategory> out = new ArrayList<>();

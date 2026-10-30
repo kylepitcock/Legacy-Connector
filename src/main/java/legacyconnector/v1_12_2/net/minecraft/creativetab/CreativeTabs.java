@@ -22,6 +22,9 @@ public class CreativeTabs {
     public static final CreativeTabs BREWING = new CreativeTabs("brewing");
     public static final CreativeTabs MATERIALS = MISC;
     public static final CreativeTabs SEARCH = new CreativeTabs("search");
+    /** The saved hotbars tab and the survival inventory tab (the modern game's own; nothing is listed in them). */
+    public static final CreativeTabs HOTBAR = new CreativeTabs("hotbar");
+    public static final CreativeTabs INVENTORY = new CreativeTabs("inventory");
 
     private final int index;
     private final String tabLabel;
