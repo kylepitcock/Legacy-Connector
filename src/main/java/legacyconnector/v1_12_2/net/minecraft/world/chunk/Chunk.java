@@ -398,6 +398,28 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
         return out;
     }
 
+    /**
+     * The chunk's entities by 16-block section (legacy y 0..255; entities below go to the first, above to the last): a snapshot
+     * of the live entities, as the modern game keeps them in its own entity sections.
+     */
+    @SuppressWarnings("unchecked")
+    public legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] getEntityLists() {
+        var out = new legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap[16];
+        for (int i = 0; i < 16; i++) out[i] = new legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<>(Entity.class);
+        if (world != null && world.mcc$level() != null) {
+            int bx = x << 4, bz = z << 4;
+            var box = new AxisAlignedBB(bx, -4096, bz, bx + 16, 4096, bz + 16);
+            for (Object o : world.getEntitiesWithinAABB(Entity.class, box)) {
+                if (!(o instanceof Entity e)) continue;
+                int sx = net.minecraft.util.Mth.floor(Entity.mcc$get$posX(e)) >> 4, sz = net.minecraft.util.Mth.floor(Entity.mcc$get$posZ(e)) >> 4;
+                if (sx != x || sz != z) continue;
+                int section = Math.max(0, Math.min(15, net.minecraft.util.Mth.floor(Entity.mcc$get$posY(e)) >> 4));
+                out[section].add(e);
+            }
+        }
+        return out;
+    }
+
     public legacyconnector.v1_12_2.net.minecraft.world.biome.Biome getBiome(BlockPos pos, legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider provider) {
         if (world != null && (access != null || world.mcc$level() != null)) return world.getBiome(pos);
         return provider == null ? legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS : provider.getBiome(pos, legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS);

@@ -35,6 +35,8 @@ public class ChunkGeneratorEnd implements IChunkGenerator {
     private final BlockPos spawnPoint;
     public legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenEndCity endCityGen = new legacyconnector.v1_12_2.net.minecraft.world.gen.structure.MapGenEndCity();
     private NoiseGeneratorSimplex islandNoise;
+    /** The small floating islands of the outer End (1.12's generator for them). */
+    public legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenEndIsland endIslands = new legacyconnector.v1_12_2.net.minecraft.world.gen.feature.WorldGenEndIsland();
     private double[] buffer;
     private Biome[] biomesForGeneration;
     double[] pnr;
@@ -206,8 +208,7 @@ public class ChunkGeneratorEnd implements IChunkGenerator {
             if (i > 4096L) {
                 float f = this.getIslandHeightValue(x, z, 1, 1);
                 if (f < -20.0F && this.rand.nextInt(14) == 0) {
-                    org.kylepitcock.legacyconnector.v1_12_2.bridge.ModernFeatures1122.place(this.world, net.minecraft.data.worldgen.features.EndFeatures.END_ISLAND,
-                            this.rand, pos.add(this.rand.nextInt(16) + 8, 55 + this.rand.nextInt(16), this.rand.nextInt(16) + 8));
+                    this.endIslands.generate(this.world, this.rand, pos.add(this.rand.nextInt(16) + 8, 55 + this.rand.nextInt(16), this.rand.nextInt(16) + 8));
                 }
                 if (this.getIslandHeightValue(x, z, 1, 1) > 40.0F) {
                     int count = this.rand.nextInt(5);

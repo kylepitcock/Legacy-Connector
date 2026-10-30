@@ -167,6 +167,30 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         }
     }
 
+    /** The server's advancements (one manager for all worlds). */
+    public legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager getAdvancementManager() {
+        return legacyconnector.v1_12_2.net.minecraft.advancements.AdvancementManager.INSTANCE;
+    }
+
+    // ------------------------------------------------------------------ area W: legacy fields
+
+    /** Phantom: redirected to {@link #mcc$get$disableLevelSaving} (the level's "save-off" switch). */
+    @Deprecated
+    public boolean disableLevelSaving;
+
+    public static boolean mcc$get$disableLevelSaving(WorldServer w) {
+        ServerLevel s = w.server();
+        return s != null && s.noSave;
+    }
+
+    public static void mcc$set$disableLevelSaving(WorldServer w, boolean v) {
+        ServerLevel s = w.server();
+        if (s != null) s.noSave = v;
+    }
+
+    /** The zombie sieges of this world's villages (the modern overworld's siege spawner, see {@code VillageSiege}). */
+    protected legacyconnector.v1_12_2.net.minecraft.village.VillageSiege villageSiege = new legacyconnector.v1_12_2.net.minecraft.village.VillageSiege(this);
+
     private legacyconnector.v1_12_2.net.minecraft.entity.EntityTracker mcc$tracker;
 
     /** The world's entity tracker (area E: who sees which entity, sending packets to them). */

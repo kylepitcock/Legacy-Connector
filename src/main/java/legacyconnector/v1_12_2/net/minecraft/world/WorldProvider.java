@@ -311,6 +311,42 @@ public abstract class WorldProvider {
         return true;
     }
 
+    // ------------------------------------------------------------------ Forge: client renderers and music of the dimension
+
+    private legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler skyRenderer;
+    private legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler cloudRenderer;
+    private legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler weatherRenderer;
+
+    /** The dimension's own sky renderer (null: the game's sky). Stored for the client's legacy rendering, which draws it. */
+    public legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler getSkyRenderer() {
+        return skyRenderer;
+    }
+
+    public void setSkyRenderer(legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler renderer) {
+        this.skyRenderer = renderer;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler getCloudRenderer() {
+        return cloudRenderer;
+    }
+
+    public void setCloudRenderer(legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler renderer) {
+        this.cloudRenderer = renderer;
+    }
+
+    public legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler getWeatherRenderer() {
+        return weatherRenderer;
+    }
+
+    public void setWeatherRenderer(legacyconnector.v1_12_2.net.minecraftforge.client.IRenderHandler renderer) {
+        this.weatherRenderer = renderer;
+    }
+
+    /** The music played in this dimension; null lets the game choose (Forge's default, also for the vanilla End and Nether). */
+    public legacyconnector.v1_12_2.net.minecraft.client.audio.MusicTicker.MusicType getMusicType() {
+        return null;
+    }
+
     // ------------------------------------------------------------------ modern levels
 
     /** A provider for a modern level: the vanilla one of the dimension type, with the dimension's id. */
