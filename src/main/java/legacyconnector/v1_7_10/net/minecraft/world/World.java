@@ -352,7 +352,17 @@ public class World implements IBlockAccess {
         BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
+        if (mcc$bedrockFloor(y, state)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
         return BlockBridge.legacyBlock(state);
+    }
+
+    /**
+     * 1.7.10's overworld always had bedrock at y=0, and mods rely on it: Traincraft's track pieces check their origin, which
+     * is (0,0,0) until placement finishes, and break when it is air. Where a modern world extends below 0 and has air at
+     * y=0 (superflat worlds, caves), the legacy view answers bedrock. Nether and End views (bottom 0) are unchanged.
+     */
+    private boolean mcc$bedrockFloor(int y, BlockState state) {
+        return y == 0 && state.isAir() && lvl().getMinBuildHeight() < 0;
     }
 
     @Override
@@ -469,7 +479,8 @@ public class World implements IBlockAccess {
 
     @Override
     public boolean isAirBlock(int x, int y, int z) {
-        return lvl().getBlockState(pos(x, y, z)).isAir();
+        BlockState state = lvl().getBlockState(pos(x, y, z));
+        return state.isAir() && !mcc$bedrockFloor(y, state);
     }
 
     public boolean blockExists(int x, int y, int z) {
