@@ -11,6 +11,33 @@
    "notes": "Fails during preInit: java.lang.NoClassDefFoundError: p455w0rdslib.LibGlobals$Mods"
   },
   {
+   "name": "Additional Banners",
+   "version": "1.1.77",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Additional Lanterns",
+   "version": "1.1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Advanced Backups",
+   "version": "3.7.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Advanced Solar Panels",
    "version": "1.7.10-3.5.1",
    "mc": "1.7.10",
@@ -137,6 +164,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Age of Weapons",
+   "version": "0.13.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 341 items, 38 blocks, 21 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
+  },
+  {
    "name": "AgriCraft",
    "version": "1.5.0",
    "mc": "1.7.10",
@@ -169,6 +205,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Akashic Tome",
+   "version": "1.2-12",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Alchemical Grate",
@@ -403,6 +448,15 @@
    "notes": "Fails during preInit: java.lang.IllegalArgumentException: Mod/API 'OpenComputersAPI|Internal' does not exist!"
   },
   {
+   "name": "Atlas Lib",
+   "version": "1.1.11",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Atum",
    "version": "2 2.0.20",
    "mc": "1.12.2",
@@ -437,6 +491,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "AutoRegLib",
+   "version": "1.3-32",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Avaritia",
@@ -610,6 +673,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Baubley Heart Canisters",
+   "version": "2.0.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 12 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "BC Builders",
    "version": "7.1.23",
    "mc": "1.7.10",
@@ -773,6 +845,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Better Than Mending",
+   "version": "1.1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "BetterBuildersWands",
    "version": "0.13.3-GTNH",
    "mc": "1.7.10",
@@ -789,6 +870,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BetterFurnaces Reforged",
+   "version": "1.5.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 21 items, 9 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BetterP2P",
@@ -825,6 +915,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 5 items, 2 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Beyond Dimensions",
+   "version": "0.1.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 12 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BiblioCraft",
@@ -968,6 +1067,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 300 items, 83 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 11 blocks did not stay placed."
   },
   {
+   "name": "Biomes O' Plenty",
+   "version": "7.0.1.2445",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 170 items, 128 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 10 blocks did not stay placed."
+  },
+  {
    "name": "BlockLimiter. Restrict your Blocks",
    "version": "0.7.0",
    "mc": "1.7.10",
@@ -1049,6 +1157,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 163 items, 39 blocks, 42 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 7 blocks did not stay placed."
   },
   {
+   "name": "Blood Magic: Alchemical Wizardry",
+   "version": "1.12.2-2.4.3-105",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 175 items, 41 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 15 blocks did not stay placed."
+  },
+  {
    "name": "Blood Magic: Alchemical Wizardry v1.3.3",
    "version": "",
    "mc": "1.7.10",
@@ -1076,6 +1193,15 @@
    "notes": "Fails during loadComplete: java.lang.NullPointerException: Cannot read field \"languageList\" because the return value of \"legacyconnector_synth.v1_12_2.net.minecraft.util.text.translation."
   },
   {
+   "name": "Bookshelf",
+   "version": "2.3.590",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Botania",
    "version": "r1.8-249",
    "mc": "1.7.10",
@@ -1099,6 +1225,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Botania r1.10-364",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 505 items, 235 blocks, 19 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "Botania r1.8-249",
@@ -1334,6 +1469,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Capsule",
+   "version": "1.12.2-3.4.76",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Carpenter's Blocks",
    "version": "3.3.8.1",
    "mc": "1.7.10",
@@ -1350,6 +1494,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 23 items, 18 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors. 7 blocks did not stay placed."
+  },
+  {
+   "name": "Carry On",
+   "version": "1.12.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Catwalks Mod",
@@ -1377,6 +1530,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Chameleon",
+   "version": "1.12-4.1.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Charm",
@@ -1423,6 +1585,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Chisel MC1.12.2-1.0.2.45",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 254 items, 250 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Chisel Tones",
    "version": "1.2.0-GTNH",
    "mc": "1.7.10",
@@ -1441,6 +1612,24 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Chococraft",
+   "version": "3 0.9.1.52",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 26 items, 3 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Chunk Loaders",
+   "version": "1.2.9a",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "CodeChicken Lib",
    "version": "3.2.3.358",
    "mc": "1.12.2",
@@ -1448,6 +1637,15 @@
    "date": "2026-10-27",
    "status": "fails",
    "notes": "Fails during postInit: EntityItem does not have a Render bound... This is likely a bug.."
+  },
+  {
+   "name": "CodeChicken Lib",
+   "version": "3.2.3.358",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "CoFH Core",
@@ -1475,6 +1673,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Comforts",
+   "version": "1.4.1.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 33 items, 33 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Command Blocks for Better Questing",
@@ -1549,6 +1756,15 @@
    "notes": "In the GT New Horizons server test 27 items, 16 blocks, 1 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.NoSuchMethodError: 'void li.cil.oc.api.prefab.ResourceContentProvider.<init>(java.lang.String, java.la"
   },
   {
+   "name": "Connected Glass",
+   "version": "1.1.14",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Cooking For Blockheads",
    "version": "1.4.4-GTNH",
    "mc": "1.7.10",
@@ -1574,6 +1790,24 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 30 items, 26 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Corail Tombstone",
+   "version": "4.8.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 52 items, 13 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Cosmetic Beds",
+   "version": "1.12.2-1.0.2.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "CraftPresence",
@@ -1684,6 +1918,24 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Cucumber Library",
+   "version": "1.1.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Culinary Construct",
+   "version": "1.3.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Custom Main Menu",
    "version": "1.9.2",
    "mc": "1.7.10",
@@ -1710,6 +1962,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Dark Utilities",
+   "version": "1.8.230",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 54 items, 27 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
    "name": "Darkerer",
    "version": "1.0.6",
    "mc": "1.7.10",
@@ -1726,6 +1987,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Dawn Of Time : Builder Edition",
+   "version": "1.0.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 160 items, 139 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Decocraft",
@@ -1817,6 +2087,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 99 items, 39 blocks, 11 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
   },
   {
+   "name": "Draconic Evolution",
+   "version": "2.3.28",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: com/brandon3055/brandonscore/items/ItemEnergyBase (the Legacy Connector layer does not implement this legacy"
+  },
+  {
    "name": "DummyCore",
    "version": "1.20.0",
    "mc": "1.7.10",
@@ -1853,6 +2132,15 @@
    "notes": "Fails during init: java.lang.NullPointerException: Cannot read field \"mRenderItemChargeBar\" because \"gregtech.GTMod.gregtechproxy\" is null"
   },
   {
+   "name": "Dynmap",
+   "version": "3.7-beta-4-851",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Electro-Magic Tools",
    "version": "1.6.18",
    "mc": "1.7.10",
@@ -1869,6 +2157,15 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "Self-tested in the GT New Horizons server test: 45 items, 10 blocks, 4 entity types; every block placed and used, every item used, every entity spawned; 14 threw errors (24%)."
+  },
+  {
+   "name": "Elevator Mod",
+   "version": "1.4.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 16 items, 16 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Ender IO",
@@ -1898,6 +2195,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 153 items, 68 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 13 blocks did not stay placed."
   },
   {
+   "name": "Ender IO",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 399 items, 212 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 45 blocks did not stay placed."
+  },
+  {
    "name": "Ender IO Applied Energistics Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1905,6 +2211,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Applied Energistics Conduits",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Base",
@@ -1916,6 +2231,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Base",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1923,6 +2247,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Conduits",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Integration with Forestry",
@@ -1934,6 +2267,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Integration with Forestry",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Integration with Tinkers' Construct",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1941,6 +2283,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Integration with Tinkers' Construct",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender IO Inventory Panel",
@@ -1952,6 +2303,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Inventory Panel",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Machines",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1959,6 +2319,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Machines",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Ender IO Open Computers Conduits",
@@ -1970,6 +2339,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Open Computers Conduits",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Powertools",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1979,6 +2357,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Ender IO Powertools",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Ender IO Refined Storage Conduits",
    "version": "5.3.70",
    "mc": "1.12.2",
@@ -1986,6 +2373,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Ender IO Refined Storage Conduits",
+   "version": "5.3.72",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Ender Zoo",
@@ -2043,6 +2439,15 @@
    "notes": "Library: every mod tested that requires it works (1: Ender IO)."
   },
   {
+   "name": "EnderCore",
+   "version": "1.12.2-0.5.76",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "EnderStorage",
    "version": "1.7.7",
    "mc": "1.7.10",
@@ -2068,6 +2473,15 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "Self-tested in the GT New Horizons server test: 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (25%)."
+  },
+  {
+   "name": "EnderStorage",
+   "version": "2.4.6.137",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "EnderTech",
@@ -2104,6 +2518,33 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext"
+  },
+  {
+   "name": "Entangled",
+   "version": "1.3.21",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Epic Fight Mod",
+   "version": "1.12.2-2.2.8",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 11 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Epic Knights: Armor and Weapons",
+   "version": "4.13",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Et Futurum Requiem",
@@ -2249,6 +2690,15 @@
    "notes": "Self-tested in a 130-jar server self test: 1178 items, 25 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 23 blocks did not stay placed."
   },
   {
+   "name": "Extreme Reactors",
+   "version": "1.12.2-0.4.5.68",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 50 items, 35 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
    "name": "FindIt",
    "version": "1.4.0",
    "mc": "1.7.10",
@@ -2265,6 +2715,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "First Aid",
+   "version": "1.6.22",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "partial",
+   "notes": "In the 1.12.2 server self test (116 mods) 3 items, 0 blocks, 0 entity types register, but loading failed during init: java.lang.NullPointerException: Cannot invoke \"legacyconnector_synth.v1_12_2.net.minecraftforge.common.config.IFieldWrapper.getTypeAdapter()"
   },
   {
    "name": "Fisk's Superheroes",
@@ -2516,6 +2975,15 @@
    "notes": "Self-tested in a 130-jar server self test: 10 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Future MC",
+   "version": "0.2.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 101 items, 79 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 5 blocks did not stay placed."
+  },
+  {
    "name": "Gadomancy",
    "version": "1.4.8",
    "mc": "1.7.10",
@@ -2674,6 +3142,15 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "In the GT New Horizons server test 57 items, 25 blocks, 0 entity types register, but loading failed during preInit: java.lang.IllegalStateException: Invalid sideIconContainer count"
+  },
+  {
+   "name": "Grappling hook mod",
+   "version": "1.12.2-v13",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 23 items, 1 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Graviation Suite",
@@ -3169,6 +3646,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Ice and Fire",
+   "version": "1.9.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "partial",
+   "notes": "In the 1.12.2 server self test (116 mods) 408 items, 85 blocks, 51 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: net.ilexiconn.llibrary.server.entity.EntityPropertiesHandler"
+  },
+  {
    "name": "iChunUtil",
    "version": "4.2.3",
    "mc": "1.7.10",
@@ -3232,6 +3718,15 @@
    "notes": "Self-tested in a 130-jar server self test: 132 items, 22 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
+   "name": "Immersive Engineering",
+   "version": "0.12-98",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 180 items, 46 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 17 blocks did not stay placed."
+  },
+  {
    "name": "Immersive Integration",
    "version": "0.6.8",
    "mc": "1.7.10",
@@ -3248,6 +3743,42 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 25 items, 13 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 5 blocks did not stay placed."
+  },
+  {
+   "name": "Immersive Vehicles (formerly MTS)",
+   "version": "24.0.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 497 items, 24 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Immersive Vehicles Sound Overrides",
+   "version": "1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "InControl",
+   "version": "3.9.18",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Industrial Foregoing",
+   "version": "1.12.2-1.12.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: net/ndrei/teslacorelib/blocks/OrientedBlock (the Legacy Connector layer does not implement this legacy API y"
   },
   {
    "name": "IndustrialCraft",
@@ -3291,6 +3822,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Infinity with Mending",
+   "version": "1.0.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "InGame Info XML",
@@ -3345,6 +3885,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Inventory Pets",
+   "version": "2.0.15",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 109 items, 8 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Inventory Tweaks",
@@ -3418,6 +3967,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 14 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Iron Jetpacks",
+   "version": "1.1.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 61 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Iron Tank Minecarts",
    "version": "1.0.12",
    "mc": "1.7.10",
@@ -3452,6 +4010,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 23 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Item Collectors",
+   "version": "1.1.12",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "JABBA",
@@ -3496,6 +4063,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Joy of Painting",
+   "version": "1.12.2-1.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 5 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "KekzTech",
@@ -3588,6 +4164,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 17 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Lost Aether Content",
+   "version": "1.0.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 24 items, 10 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "LunatriusCore",
    "version": "1.2.1-GTNH",
    "mc": "1.7.10",
@@ -3606,6 +4191,24 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Macaw's Lights and Lamps",
+   "version": "1.0.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 112 items, 112 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 48 blocks did not stay placed."
+  },
+  {
+   "name": "Macaw's Paintings",
+   "version": "1.0.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Magic Bees",
    "version": "2.9.4-GTNH",
    "mc": "1.7.10",
@@ -3622,6 +4225,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 38 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Mahou Tsukai",
+   "version": "1.12.2-v1.19.54",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 68 items, 54 blocks, 11 entity types; every block placed and used, every item used, every entity spawned without errors. 64 blocks did not stay placed."
   },
   {
    "name": "Malisis Core",
@@ -3687,6 +4299,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Mantle",
+   "version": "1.12-1.3.3.55",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Matter Manipulator",
    "version": "0.0.51-GTNH",
    "mc": "1.7.10",
@@ -3723,6 +4344,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 2 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "McJtyLib",
+   "version": "3.5.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Mekanism",
    "version": "1.12.2-9.8.3.390",
    "mc": "1.12.2",
@@ -3730,6 +4360,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Mekanism",
+   "version": "1.12.2-9.8.3.390",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 143 items, 20 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Mekanism: Generators",
@@ -3741,6 +4380,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Mekanism: Generators",
+   "version": "1.12.2-9.8.3.390",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 6 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Mekanism: Tools",
    "version": "1.12.2-9.8.3.390",
    "mc": "1.12.2",
@@ -3748,6 +4396,15 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Mekanism: Tools",
+   "version": "1.12.2-9.8.3.390",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 65 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "MFR Compat: Vanilla",
@@ -3766,6 +4423,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Midnight",
+   "version": "0.3.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 240 items, 189 blocks, 15 entity types; every block placed and used, every item used, every entity spawned without errors. 14 blocks did not stay placed."
   },
   {
    "name": "Mine & Blade Battlegear",
@@ -3820,6 +4486,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 272 items, 38 blocks, 7 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 22 blocks did not stay placed."
+  },
+  {
+   "name": "MineTraps",
+   "version": "1.0.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 18 items, 27 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "MineTweaker",
@@ -3912,6 +4587,24 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
+   "name": "ModularUI",
+   "version": "3.1.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "More Bows Restrung",
+   "version": "1.0.10",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "More Planets",
    "version": "1.4.4",
    "mc": "1.7.10",
@@ -3928,6 +4621,24 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during preInit: java.lang.IllegalArgumentException: UUID string too large"
+  },
+  {
+   "name": "more_avaritia",
+   "version": "1.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: morph.avaritia.Avaritia (the Legacy Connector layer does not implement this legacy API yet - see logs/legacy"
+  },
+  {
+   "name": "Moving Elevators",
+   "version": "1.4.12",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "MrTJPCore",
@@ -3958,6 +4669,15 @@
    "notes": "Library: every mod tested that requires it works (3: ForgeRelocation, MCFrames, ProjectRed Core)."
   },
   {
+   "name": "Murasame",
+   "version": "1.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "partial",
+   "notes": "In the 1.12.2 server self test (116 mods) 1 items, 1 blocks, 0 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: mods.flammpfeil.slashblade.SlashBlade"
+  },
+  {
    "name": "Mystcraft",
    "version": "0.12.3.04",
    "mc": "1.7.10",
@@ -3973,6 +4693,24 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 22 items, 12 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+  },
+  {
+   "name": "Mystical Agradditions",
+   "version": "1.3.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 31 items, 14 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 7 blocks did not stay placed."
+  },
+  {
+   "name": "Mystical Agriculture",
+   "version": "1.7.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 508 items, 140 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Natura",
@@ -4009,6 +4747,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Nature's Compass",
+   "version": "1.8.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Navigator",
@@ -4189,6 +4936,24 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Net Music Mod",
+   "version": "1.0.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 3 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Nether API",
+   "version": "1.5.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Nether Ores",
@@ -4299,6 +5064,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Nyf's Spiders",
+   "version": "3.0.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "OC Glasses",
    "version": "1.6.1-GTNH",
    "mc": "1.7.10",
@@ -4367,6 +5141,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "OpenComputers",
+   "version": "1.8.10",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: com/typesafe/config/ConfigValue"
   },
   {
    "name": "OpenMods",
@@ -4495,6 +5278,15 @@
    "notes": "Self-tested in a 130-jar server self test: 684 items, 211 blocks, 134 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 2 blocks did not stay placed."
   },
   {
+   "name": "Packed Up",
+   "version": "1.1.1a",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Pam's Harvest the Nether",
    "version": "1.7.10",
    "mc": "1.7.10",
@@ -4567,6 +5359,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Prefab",
+   "version": "1.3.1.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 59 items, 24 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Project Blue",
    "version": "1.2.1-GTNH",
    "mc": "1.7.10",
@@ -4583,6 +5384,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 55 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Project: Vibrant Journeys",
+   "version": "1.6.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 385 items, 357 blocks, 19 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "ProjectRed Compatibility",
@@ -4774,6 +5584,33 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Quark r1.6-179",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 435 items, 440 blocks, 23 entity types; every block placed and used, every item used, every entity spawned without errors. 12 blocks did not stay placed."
+  },
+  {
+   "name": "QuarryPlus",
+   "version": "12.5.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 38 items, 22 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
+   "name": "QuarryPlus_CT",
+   "version": "12.5.7",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Railcraft",
    "version": "9.12.2.0",
    "mc": "1.7.10",
@@ -4810,6 +5647,24 @@
    "notes": "Self-tested in the GT New Horizons server test: 43 items, 19 blocks, 5 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (1%)."
   },
   {
+   "name": "Rats",
+   "version": "3.2.13",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 215 items, 55 blocks, 24 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
+   "name": "Realistic Torches",
+   "version": "2.1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 7 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
    "name": "Realistic World Gen Alpha alpha-1.5.0",
    "version": "",
    "mc": "1.7.10",
@@ -4826,6 +5681,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Rechiseled",
+   "version": "1.2.6a",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: com/supermartijn642/fusion/api/provider/FusionModelProvider (the Legacy Connector layer does not implement t"
   },
   {
    "name": "Redstone Arsenal",
@@ -4853,6 +5717,33 @@
    "date": "2026-10-25",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "Refined Storage",
+   "version": "1.6.16",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 82 items, 29 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Refined Storage Addons",
+   "version": "0.4.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "RefinedStorageRequestify",
+   "version": "1.12.2-1.0.2-3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "RelocationFMP",
@@ -4891,6 +5782,24 @@
    "notes": "Self-tested in the GT New Horizons server test: 23 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Responsive Shields",
+   "version": "2.3",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Rex's Additional Structures",
+   "version": "2.5.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "RFTools",
    "version": "4.23",
    "mc": "1.7.10",
@@ -4905,6 +5814,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 172 items, 75 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (1%)."
+  },
+  {
+   "name": "RFTools",
+   "version": "7.73",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 153 items, 78 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Roguelike Dungeons",
@@ -4961,6 +5879,24 @@
    "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: Could not initialize class dev.rndmorris.salisarcana.config.SalisConfig"
   },
   {
+   "name": "Scaling Health",
+   "version": "1.3.37",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: net.silentchaos512.lib.util.LogHelper (the Legacy Connector layer does not implement this legacy API yet - s"
+  },
+  {
+   "name": "Scape and Run Parasites",
+   "version": "1.10.9",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 524 items, 293 blocks, 158 entity types; every block placed and used, every item used, every entity spawned without errors. 18 blocks did not stay placed."
+  },
+  {
    "name": "Schematica",
    "version": "1.12.6-GTNH",
    "mc": "1.7.10",
@@ -4977,6 +5913,24 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "SecurityCraft v1.10.1",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 219 items, 197 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. 5 blocks did not stay placed."
+  },
+  {
+   "name": "Serene Seasons",
+   "version": "1.2.18",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 7 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "ServerUtilities",
@@ -5024,6 +5978,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Shadowfacts' Forgelin",
+   "version": "1.8.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "Share Where I am",
    "version": "2.1.4",
    "mc": "1.7.10",
@@ -5042,6 +6005,42 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Silent Gear",
+   "version": "0.6.5",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: net.silentchaos512.lib.util.LogHelper (the Legacy Connector layer does not implement this legacy API yet - s"
+  },
+  {
+   "name": "Simple Magnets",
+   "version": "1.1.12",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Simple Storage Network",
+   "version": "2.0.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 22 items, 10 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "SimpleHats",
+   "version": "0.4.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 311 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Simply Jetpacks",
    "version": "1.5.3",
    "mc": "1.7.10",
@@ -5058,6 +6057,24 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 11 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Sit v1.3",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "SlashBlade Japanese Addon Pack",
+   "version": "1.7.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "fails",
+   "notes": "Fails during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: mods.flammpfeil.slashblade.specialeffect.SpecialEffects"
   },
   {
    "name": "Sleeping Bag",
@@ -5094,6 +6111,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in a 130-jar server self test: 22 items, 6 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Spartan Weaponry",
+   "version": "1.6.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 382 items, 0 blocks, 13 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Special Mobs",
@@ -5148,6 +6174,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "StarSource",
+   "version": "1.0.0",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "partial",
+   "notes": "In the 1.12.2 server self test (116 mods) 2 items, 0 blocks, 0 entity types register, but loading failed during preInit: java.lang.RuntimeException: java.lang.NoClassDefFoundError: mods/flammpfeil/slashblade/ItemSlashBladeNamed"
   },
   {
    "name": "Steve's Addons",
@@ -5256,6 +6291,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 58 items, 16 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Storage Drawers",
+   "version": "5.5.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 30 items, 9 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Storage Drawers: Biomes O' Plenty Pack",
@@ -5402,6 +6446,24 @@
    "notes": "Self-tested in the GT New Horizons server test: 9 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "SuperMartijn642's Config Library",
+   "version": "1.1.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "SuperMartijn642's Core Lib",
+   "version": "1.1.25",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "SuperTic",
    "version": "1.5.0",
    "mc": "1.7.10",
@@ -5492,6 +6554,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "TeamLapen Library",
+   "version": "1.6.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "TecTech - Tec Technology!",
    "version": "5.09.51.482",
    "mc": "1.7.10",
@@ -5508,6 +6579,15 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "In the GT New Horizons server test 88 items, 11 blocks, 0 entity types register, but loading failed during init: java.lang.RuntimeException: java.lang.ExceptionInInitializerError"
+  },
+  {
+   "name": "TerraFirmaCraft",
+   "version": "1.7.23.181",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2878 items, 2149 blocks, 44 entity types; every block placed and used, every item used, every entity spawned without errors. 407 blocks did not stay placed."
   },
   {
    "name": "Thaumcraft",
@@ -5760,6 +6840,33 @@
    "notes": "Self-tested in the GT New Horizons server test: 85 items, 40 blocks, 31 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
   },
   {
+   "name": "The Aether",
+   "version": "1.5.4.1",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 200 items, 76 blocks, 34 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "The Hordes",
+   "version": "1.6.3e",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 0 items, 0 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "The Lost Cities",
+   "version": "2.0.22",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
    "name": "The Spice of Life - Carrot Edition",
    "version": "2.2.3-carrot",
    "mc": "1.7.10",
@@ -5954,6 +7061,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 930 items, 85 blocks, 14 entity types; every block placed and used, every item used, every entity spawned; 6 threw errors (1%). 39 blocks did not stay placed."
   },
   {
+   "name": "Tinkers' Construct",
+   "version": "1.12.2-2.13.0.183",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 160 items, 108 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 34 blocks did not stay placed."
+  },
+  {
    "name": "Tinkers' Gregworks",
    "version": "1.7.10-GTNH-1.0.28",
    "mc": "1.7.10",
@@ -5990,6 +7106,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Tough As Nails",
+   "version": "3.1.0.141",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 29 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
+  },
+  {
    "name": "Translocator",
    "version": "1.3.1",
    "mc": "1.7.10",
@@ -6008,11 +7133,38 @@
    "notes": "Self-tested in the GT New Horizons server test: 4 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (17%)."
   },
   {
+   "name": "Trash Cans",
+   "version": "1.1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Traveler's Backpack",
+   "version": "1.0.35",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 81 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Twilight Forest",
    "version": "2.3.7",
    "mc": "1.7.10",
    "status": "works",
    "notes": "Portal, dimension generation, entities and loot verified."
+  },
+  {
+   "name": "Underlay",
+   "version": "1.0.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "UniLib",
@@ -6049,6 +7201,42 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 168 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Useful Slime",
+   "version": "1.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 3 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Vampires Need Umbrellas",
+   "version": "1.4",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 52 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Vampirism",
+   "version": "1.6.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 102 items, 35 blocks, 24 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "VampirismIntegrations vampirism_integrations",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "loads",
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "VisualProspecting",
@@ -6187,6 +7375,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Wireless Redstone",
+   "version": "1.12.2-1.1.6",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 6 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "Witchery",
    "version": "0.24.1",
    "mc": "1.7.10",
@@ -6276,6 +7473,24 @@
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "XNet",
+   "version": "1.8.2",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 14 items, 12 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "XP Tome v2.0.1",
+   "version": "",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
    "name": "YAMCore",
    "version": "0.7.1",
    "mc": "1.7.10",
@@ -6292,6 +7507,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Zero CORE",
+   "version": "1.12.2-0.1.2.9",
+   "mc": "1.12.2",
+   "source": "client",
+   "date": "2026-10-30",
+   "status": "works",
+   "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Ztones",
