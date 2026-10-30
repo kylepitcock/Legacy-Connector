@@ -404,6 +404,12 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
                 "glowstone", "ice", "sea_lantern", "stained_glass");
     }
 
+    /** Whether a player may spawn inside the block (not solid, not liquid: signs, flowers). */
+    public boolean canSpawnInBlock() {
+        Material m = getMaterialLegacy();
+        return !m.isSolid() && !m.isLiquid();
+    }
+
     /** Whether the block draws its own breaking cracks (beds, chests in a TESR). */
     public boolean hasCustomBreakingProgress(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
         return false;

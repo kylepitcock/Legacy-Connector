@@ -56,7 +56,7 @@ public class BlockSapling extends BlockBush implements IGrowable {
 
     /** Grows the tree of the sapling's wood with the modern tree grower (the sapling stays when there is no room). */
     public void generateTree(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-        if (!(worldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        if (!(worldIn.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level)) return;
         String wood = state.getPropertyKeys().contains(TYPE) ? state.getValue(TYPE).getName() : "oak";
         var sapling = net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(net.minecraft.resources.ResourceLocation.withDefaultNamespace(wood + "_sapling"));
         if (!(sapling instanceof net.minecraft.world.level.block.SaplingBlock modern)) return;
