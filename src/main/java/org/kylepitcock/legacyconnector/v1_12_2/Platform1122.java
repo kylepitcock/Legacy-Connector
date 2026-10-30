@@ -399,6 +399,16 @@ public final class Platform1122 implements LegacyPlatform {
         Object value = null;
         if (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.BLOCKS.getValue(key);
         else if (legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType())) value = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS.getValue(key);
+        else if (legacyconnector.v1_12_2.net.minecraftforge.registries.IForgeRegistryEntry.class.isAssignableFrom(f.getType())) {
+            // any other registry, mods' own included (TerraFirmaCraft's Metal holders, read by its item registration)
+            try {
+                @SuppressWarnings({"unchecked", "rawtypes"})
+                var reg = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.findRegistry((Class) f.getType());
+                if (reg != null && reg.containsKey(key)) value = reg.getValue(key);
+            } catch (RuntimeException | LinkageError e) {
+                // no registry of that type yet
+            }
+        }
         if (value == null || !f.getType().isInstance(value)) {
             if (value == null && (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())
                     || legacyconnector.v1_12_2.net.minecraft.item.Item.class.isAssignableFrom(f.getType()))) MISSING_HOLDERS.add(name);

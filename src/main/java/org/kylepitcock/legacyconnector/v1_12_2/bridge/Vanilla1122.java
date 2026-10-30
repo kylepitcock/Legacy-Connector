@@ -146,6 +146,32 @@ public final class Vanilla1122 {
             Block block = blockForModern(blockItem.getBlock());
             if (block != null) return new VanillaItemBlock(block);
         }
+        if (modern instanceof net.minecraft.world.item.TieredItem tiered) {
+            // mods test vanilla tools with instanceof ItemTool/ItemSword and read their material (EpicFight's weapon capabilities)
+            var m = toolMaterial(tiered.getTier());
+            if (modern instanceof net.minecraft.world.item.SwordItem) return new VanillaSword(m);
+            if (modern instanceof net.minecraft.world.item.AxeItem) return new VanillaAxe(m);
+            if (modern instanceof net.minecraft.world.item.PickaxeItem) return new VanillaPickaxe(m);
+            if (modern instanceof net.minecraft.world.item.ShovelItem) return new VanillaSpade(m);
+            if (modern instanceof net.minecraft.world.item.HoeItem) return new VanillaHoe(m);
+        }
+        if (modern instanceof net.minecraft.world.item.ArmorItem armor && armor.getType() != net.minecraft.world.item.ArmorItem.Type.BODY) {
+            // vanilla armor as ItemArmor with its 1.12 material (EpicFight reads the damage reduction of each piece)
+            var mat = armor.getMaterial();
+            legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial m =
+                    mat.is(net.minecraft.world.item.ArmorMaterials.LEATHER) ? legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER
+                    : mat.is(net.minecraft.world.item.ArmorMaterials.CHAIN) ? legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.CHAIN
+                    : mat.is(net.minecraft.world.item.ArmorMaterials.IRON) ? legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.IRON
+                    : mat.is(net.minecraft.world.item.ArmorMaterials.GOLD) ? legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.GOLD
+                    : legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.DIAMOND; // diamond, netherite, turtle
+            var slot = switch (armor.getType()) {
+                case HELMET -> legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.HEAD;
+                case CHESTPLATE -> legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.CHEST;
+                case LEGGINGS -> legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.LEGS;
+                default -> legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.FEET;
+            };
+            return new VanillaArmor(m, slot);
+        }
         var food = modern == null ? null : modern.components().get(net.minecraft.core.component.DataComponents.FOOD);
         if (food != null) {
             // mods cast vanilla food to ItemFood (Project Vibrant Journeys); 1.12 kept the modifier, 1.21 the absolute saturation
@@ -678,6 +704,51 @@ public final class Vanilla1122 {
 
     /** A vanilla item as a legacy object. */
     public static final class VanillaItem extends Item {
+    }
+
+    private static legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial toolMaterial(net.minecraft.world.item.Tier tier) {
+        if (tier == net.minecraft.world.item.Tiers.WOOD) return legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial.WOOD;
+        if (tier == net.minecraft.world.item.Tiers.STONE) return legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial.STONE;
+        if (tier == net.minecraft.world.item.Tiers.IRON) return legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial.IRON;
+        if (tier == net.minecraft.world.item.Tiers.GOLD) return legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial.GOLD;
+        return legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial.DIAMOND; // diamond and netherite
+    }
+
+    /** Vanilla tools as the legacy tool classes, with their 1.12 material. */
+    public static final class VanillaSword extends legacyconnector.v1_12_2.net.minecraft.item.ItemSword {
+        VanillaSword(legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial m) {
+            super(m);
+        }
+    }
+
+    public static final class VanillaAxe extends legacyconnector.v1_12_2.net.minecraft.item.ItemAxe {
+        VanillaAxe(legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial m) {
+            super(m);
+        }
+    }
+
+    public static final class VanillaPickaxe extends legacyconnector.v1_12_2.net.minecraft.item.ItemPickaxe {
+        VanillaPickaxe(legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial m) {
+            super(m);
+        }
+    }
+
+    public static final class VanillaSpade extends legacyconnector.v1_12_2.net.minecraft.item.ItemSpade {
+        VanillaSpade(legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial m) {
+            super(m);
+        }
+    }
+
+    public static final class VanillaHoe extends legacyconnector.v1_12_2.net.minecraft.item.ItemHoe {
+        VanillaHoe(legacyconnector.v1_12_2.net.minecraft.item.Item.ToolMaterial m) {
+            super(m);
+        }
+    }
+
+    public static final class VanillaArmor extends legacyconnector.v1_12_2.net.minecraft.item.ItemArmor {
+        VanillaArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial m, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot) {
+            super(m, m == legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER ? 0 : 1, slot);
+        }
     }
 
     /** A vanilla food item as a legacy {@code ItemFood}. */
