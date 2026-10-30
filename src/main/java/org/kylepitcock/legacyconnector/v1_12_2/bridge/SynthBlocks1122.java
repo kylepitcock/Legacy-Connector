@@ -72,6 +72,21 @@ public final class SynthBlocks1122 {
             }
             return stack;
         });
+        // Forge's canCreatureSpawn(state, world, pos, placementType): a mob may spawn on a block whose top side is solid
+        Synth.InstanceMethod creatureSpawn = (self, args) -> {
+            if (args.length != 4 || !(args[0] instanceof legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state)
+                    || !(args[1] instanceof legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world) || !(args[2] instanceof BlockPos pos)) {
+                return Synth.NONE;
+            }
+            return state.isSideSolid(world, pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP);
+        };
+        for (String owner : new String[] {"net.minecraft.block.Block", "net.minecraft.block.BlockContainer", "net.minecraftforge.fluids.BlockFluidClassic",
+                "net.minecraftforge.fluids.BlockFluidBase", "net.minecraftforge.fluids.BlockFluidFinite"}) {
+            Synth.addInstanceMethod(owner + ".canCreatureSpawn", creatureSpawn);
+        }
+        // Forge's Item.getHorseArmorType(stack): vanilla's horse armors by item (mod armor overrides it)
+        Synth.addInstanceMethod("net.minecraft.item.Item.getHorseArmorType", (self, args) -> args.length != 1 ? Synth.NONE
+                : Synth.callStatic("net.minecraft.entity.passive.HorseArmorType.getByItemStack", args));
         // BlockStone.EnumType.isNatural: granite, diorite and andesite are, their polished forms are not
         Synth.addInstanceMethod("net.minecraft.block.BlockStone$EnumType.isNatural", (self, args) -> {
             if (!(self instanceof Enum<?> e)) return Synth.NONE;

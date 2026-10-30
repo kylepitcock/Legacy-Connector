@@ -9,6 +9,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item ACACIA_DOOR = Vanilla1122.item("ACACIA_DOOR");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item AIR = Vanilla1122.item("AIR");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item APPLE = Vanilla1122.item("APPLE");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmorStand ARMOR_STAND = VanillaBlocks1122.item("ARMOR_STAND", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmorStand());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item ARROW = Vanilla1122.item("ARROW");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item BAKED_POTATO = Vanilla1122.item("BAKED_POTATO");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item BANNER = Vanilla1122.item("BANNER");
@@ -80,10 +81,12 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item EXPERIENCE_BOTTLE = Vanilla1122.item("EXPERIENCE_BOTTLE");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FEATHER = Vanilla1122.item("FEATHER");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FERMENTED_SPIDER_EYE = Vanilla1122.item("FERMENTED_SPIDER_EYE");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemMap FILLED_MAP = VanillaBlocks1122.item("FILLED_MAP", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemMap() {});
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FIREWORKS = Vanilla1122.item("FIREWORKS");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FIREWORK_CHARGE = Vanilla1122.item("FIREWORK_CHARGE");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FIRE_CHARGE = Vanilla1122.item("FIRE_CHARGE");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FISH = Vanilla1122.item("FISH");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemFishingRod FISHING_ROD = VanillaBlocks1122.item("FISHING_ROD", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemFishingRod());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FLINT = Vanilla1122.item("FLINT");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FLINT_AND_STEEL = Vanilla1122.item("FLINT_AND_STEEL");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item FLOWER_POT = Vanilla1122.item("FLOWER_POT");
@@ -133,6 +136,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmor LEATHER_LEGGINGS = VanillaBlocks1122.item("LEATHER_LEGGINGS", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER, 0, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.LEGS));
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemPotion LINGERING_POTION = VanillaBlocks1122.item("LINGERING_POTION", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemLingeringPotion());
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MAGMA_CREAM = Vanilla1122.item("MAGMA_CREAM");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.ItemEmptyMap MAP = VanillaBlocks1122.item("MAP", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemEmptyMap() {});
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MELON = Vanilla1122.item("MELON");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MELON_SEEDS = Vanilla1122.item("MELON_SEEDS");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item MILK_BUCKET = Vanilla1122.item("MILK_BUCKET");

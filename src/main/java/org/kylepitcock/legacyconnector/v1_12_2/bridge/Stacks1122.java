@@ -21,6 +21,8 @@ public final class Stacks1122 {
         if ((item.isDamageable() || item.mcc$vanillaModern != null && modern.components().has(DataComponents.MAX_DAMAGE)) && stack.getMetadata() > 0) {
             out.setDamageValue(stack.getMetadata());
         }
+        // 1.12 kept a filled map's id in its metadata
+        if (modern == net.minecraft.world.item.Items.FILLED_MAP) out.set(DataComponents.MAP_ID, new net.minecraft.world.level.saveddata.maps.MapId(stack.getMetadata()));
         NBTTagCompound tag = stack.getTagCompound();
         if (tag != null) {
             var data = tag.mcc$modern().copy();
@@ -162,6 +164,8 @@ public final class Stacks1122 {
             meta = variant != null ? (Integer) variant[1] : 0;
         }
         if (legacy.isDamageable() || stack.isDamageableItem()) meta = stack.getDamageValue();
+        var mapId = stack.get(DataComponents.MAP_ID);
+        if (mapId != null) meta = mapId.id();
         ItemStack out = new ItemStack(legacy, stack.getCount(), meta);
         CustomData data = stack.get(DataComponents.CUSTOM_DATA);
         if (data != null) out.setTagCompound(new NBTTagCompound(data.copyTag()));

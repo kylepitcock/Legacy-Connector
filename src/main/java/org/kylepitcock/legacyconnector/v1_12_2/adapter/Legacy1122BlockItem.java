@@ -174,4 +174,15 @@ public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
         super.appendHoverText(stack, context, lines, flag);
         if (cb().tooltip) cb().appendHoverText(stack, context, lines, flag);
     }
+
+    @Override
+    public boolean onEntityItemUpdate(ItemStack stack, net.minecraft.world.entity.item.ItemEntity entity) {
+        return cb().entityItemUpdate ? cb().entityItemUpdate(entity) : super.onEntityItemUpdate(stack, entity);
+    }
+
+    @Override
+    public boolean doesSneakBypassUse(ItemStack stack, net.minecraft.world.level.LevelReader level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.entity.player.Player player) {
+        return cb().sneakBypass ? cb().sneakBypass(stack, level, pos, player) : super.doesSneakBypassUse(stack, level, pos, player);
+    }
 }

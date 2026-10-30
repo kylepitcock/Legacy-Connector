@@ -119,6 +119,10 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
                 // not a shield
             }
         }
+        // fishing rods: the modern hook keeps fishing while its owner holds an item that can cast
+        if (itemAbility == net.neoforged.neoforge.common.ItemAbilities.FISHING_ROD_CAST && legacy instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemFishingRod) {
+            return true;
+        }
         return super.canPerformAction(stack, itemAbility);
     }
 
@@ -246,5 +250,16 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
             net.minecraft.world.item.TooltipFlag flag) {
         super.appendHoverText(stack, context, lines, flag);
         if (cb().tooltip) cb().appendHoverText(stack, context, lines, flag);
+    }
+
+    @Override
+    public boolean onEntityItemUpdate(ItemStack stack, net.minecraft.world.entity.item.ItemEntity entity) {
+        return cb().entityItemUpdate ? cb().entityItemUpdate(entity) : super.onEntityItemUpdate(stack, entity);
+    }
+
+    @Override
+    public boolean doesSneakBypassUse(ItemStack stack, net.minecraft.world.level.LevelReader level, net.minecraft.core.BlockPos pos,
+            net.minecraft.world.entity.player.Player player) {
+        return cb().sneakBypass ? cb().sneakBypass(stack, level, pos, player) : super.doesSneakBypassUse(stack, level, pos, player);
     }
 }
