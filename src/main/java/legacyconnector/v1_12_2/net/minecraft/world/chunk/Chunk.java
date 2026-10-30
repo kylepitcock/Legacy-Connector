@@ -399,6 +399,34 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     }
 
     /**
+     * Replaces the chunk's sections (mods' generators fill sections of their own and hand them over): each given section's blocks are
+     * written into this chunk; a null section empties that slice. Sections that are views of this chunk at their own height are kept.
+     */
+    public void setStorageArrays(legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] newArray) {
+        if (newArray == null || newArray.length != 16) return;
+        var air = org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.airState();
+        for (int i = 0; i < 16; i++) {
+            var section = newArray[i];
+            int base = i << 4;
+            if (section != null && section.mcc$chunk() == this && section.getYLocation() == base) continue;
+            if (section == null && isEmptyBetween(base, base + 15)) continue;
+            try {
+                for (int y = 0; y < 16; y++) {
+                    for (int z = 0; z < 16; z++) {
+                        for (int x = 0; x < 16; x++) {
+                            var state = section == null ? air : section.get(x, y, z);
+                            setBlockState(new BlockPos((this.x << 4) + x, base + y, (this.z << 4) + z), state == null ? air : state);
+                        }
+                    }
+                }
+            } catch (RuntimeException e) {
+                // a section outside the generation region: left as it is
+            }
+        }
+        mcc$sections = null;
+    }
+
+    /**
      * The chunk's entities by 16-block section (legacy y 0..255; entities below go to the first, above to the last): a snapshot
      * of the live entities, as the modern game keeps them in its own entity sections.
      */

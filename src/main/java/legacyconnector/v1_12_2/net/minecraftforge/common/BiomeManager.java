@@ -45,6 +45,16 @@ public class BiomeManager {
         return biomes;
     }
 
+    /** The live list of village biomes ({@code MapGenVillage.VILLAGE_SPAWN_BIOMES} is this list; it starts with the vanilla four). */
+    public static List<Biome> mcc$villageBiomes() {
+        synchronized (VILLAGE) {
+            if (VILLAGE.isEmpty()) {
+                for (Biome b : new Biome[] {Biomes.PLAINS, Biomes.DESERT, Biomes.SAVANNA, Biomes.TAIGA}) if (b != null && !VILLAGE.contains(b)) VILLAGE.add(b);
+            }
+        }
+        return VILLAGE;
+    }
+
     public static void addVillageBiome(Biome biome, boolean canSpawn) {
         synchronized (VILLAGE) {
             if (canSpawn && biome != null && !VILLAGE.contains(biome)) VILLAGE.add(biome);

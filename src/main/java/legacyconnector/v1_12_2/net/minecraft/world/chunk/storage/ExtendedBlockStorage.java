@@ -65,6 +65,11 @@ public class ExtendedBlockStorage {
         return !isEmpty();
     }
 
+    /** The chunk this section is a view of (null for a section a mod made on its own). */
+    public Chunk mcc$chunk() {
+        return mcc$chunk;
+    }
+
     public int getYLocation() {
         return yBase;
     }

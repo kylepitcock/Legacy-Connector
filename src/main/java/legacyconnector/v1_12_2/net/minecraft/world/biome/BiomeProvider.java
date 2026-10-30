@@ -18,6 +18,8 @@ public class BiomeProvider {
     protected legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer genBiomes;
     protected legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer biomeIndexLayer;
     protected final BiomeCache biomeCache = new BiomeCache(this);
+    /** The customized world settings the layers were built with (null for other world types). */
+    private legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings settings;
 
     protected BiomeProvider() {
         this.world = null;
@@ -35,6 +37,7 @@ public class BiomeProvider {
         try {
             var settings = worldType == legacyconnector.v1_12_2.net.minecraft.world.WorldType.CUSTOMIZED && options != null && !options.isEmpty()
                     ? legacyconnector.v1_12_2.net.minecraft.world.gen.ChunkGeneratorSettings.Factory.jsonToFactory(options).build() : null;
+            this.settings = settings;
             var type = worldType == null ? legacyconnector.v1_12_2.net.minecraft.world.WorldType.DEFAULT : worldType;
             var layers = legacyconnector.v1_12_2.net.minecraft.world.gen.layer.GenLayer.initializeAllBiomeGenerators(seed, type, settings);
             layers = getModdedBiomeGenerators(type, seed, layers);

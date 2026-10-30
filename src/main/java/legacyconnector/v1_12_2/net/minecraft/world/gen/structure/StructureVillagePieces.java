@@ -17,6 +17,7 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
 public class StructureVillagePieces {
     public static void registerVillagePieces() {
         MapGenStructureIO.registerStructureComponent(House1.class, "ViBH");
+        MapGenStructureIO.registerStructureComponent(Field1.class, "ViDF");
         MapGenStructureIO.registerStructureComponent(Church.class, "ViST");
         MapGenStructureIO.registerStructureComponent(Path.class, "ViSR");
         MapGenStructureIO.registerStructureComponent(Well.class, "ViW");
@@ -507,6 +508,119 @@ public class StructureVillagePieces {
         @Override
         protected int chooseProfession(int villagersSpawnedIn, int currentVillagerProfession) {
             return villagersSpawnedIn == 0 ? 4 : super.chooseProfession(villagersSpawnedIn, currentVillagerProfession);
+        }
+    }
+
+    /** The large village farm: four double rows of crops (wheat mostly, carrots, potatoes, beetroot) with two water channels, framed by logs. */
+    public static class Field1 extends Village {
+        private net.minecraft.world.level.block.Block cropTypeA = net.minecraft.world.level.block.Blocks.WHEAT;
+        private net.minecraft.world.level.block.Block cropTypeB = net.minecraft.world.level.block.Blocks.WHEAT;
+        private net.minecraft.world.level.block.Block cropTypeC = net.minecraft.world.level.block.Blocks.WHEAT;
+        private net.minecraft.world.level.block.Block cropTypeD = net.minecraft.world.level.block.Blocks.WHEAT;
+
+        public Field1() {
+        }
+
+        public Field1(Start start, int type, Random rand, StructureBoundingBox box, EnumFacing facing) {
+            super(start, type);
+            this.setCoordBaseMode(facing);
+            this.boundingBox = box;
+            this.cropTypeA = mcc$randomCrop(rand);
+            this.cropTypeB = mcc$randomCrop(rand);
+            this.cropTypeC = mcc$randomCrop(rand);
+            this.cropTypeD = mcc$randomCrop(rand);
+        }
+
+        private static net.minecraft.world.level.block.Block mcc$randomCrop(Random rand) {
+            return switch (rand.nextInt(10)) {
+                case 0, 1 -> net.minecraft.world.level.block.Blocks.CARROTS;
+                case 2, 3 -> net.minecraft.world.level.block.Blocks.POTATOES;
+                case 4 -> net.minecraft.world.level.block.Blocks.BEETROOTS;
+                default -> net.minecraft.world.level.block.Blocks.WHEAT;
+            };
+        }
+
+        private static net.minecraft.world.level.block.Block mcc$crop(String id) {
+            var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+            var b = rl == null ? null : net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(rl);
+            return b instanceof net.minecraft.world.level.block.CropBlock ? b : net.minecraft.world.level.block.Blocks.WHEAT;
+        }
+
+        private static String mcc$name(net.minecraft.world.level.block.Block b) {
+            return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(b).toString();
+        }
+
+        @Override
+        protected void writeStructureToNBT(NBTTagCompound tagCompound) {
+            super.writeStructureToNBT(tagCompound);
+            tagCompound.setString("CA", mcc$name(cropTypeA));
+            tagCompound.setString("CB", mcc$name(cropTypeB));
+            tagCompound.setString("CC", mcc$name(cropTypeC));
+            tagCompound.setString("CD", mcc$name(cropTypeD));
+        }
+
+        @Override
+        protected void readStructureFromNBT(NBTTagCompound tagCompound, legacyconnector.v1_12_2.net.minecraft.world.gen.structure.template.TemplateManager manager) {
+            super.readStructureFromNBT(tagCompound, manager);
+            this.cropTypeA = mcc$crop(tagCompound.getString("CA"));
+            this.cropTypeB = mcc$crop(tagCompound.getString("CB"));
+            this.cropTypeC = mcc$crop(tagCompound.getString("CC"));
+            this.cropTypeD = mcc$crop(tagCompound.getString("CD"));
+        }
+
+        public static Field1 createPiece(Start start, List<StructureComponent> list, Random rand, int x, int y, int z, EnumFacing facing, int type) {
+            StructureBoundingBox box = StructureBoundingBox.getComponentToAddBoundingBox(x, y, z, 0, 0, 0, 13, 4, 9, facing);
+            return canVillageGoDeeper(box) && StructureComponent.findIntersecting(list, box) == null ? new Field1(start, type, rand, box, facing) : null;
+        }
+
+        private static IBlockState mcc$cropState(net.minecraft.world.level.block.Block crop, Random rand) {
+            if (!(crop instanceof net.minecraft.world.level.block.CropBlock c)) return mcc$of(crop);
+            int max = c.getMaxAge();
+            int min = max / 3;
+            return mcc$state(c.getStateForAge(min + rand.nextInt(max - min + 1)));
+        }
+
+        @Override
+        public boolean addComponentParts(World worldIn, Random randomIn, StructureBoundingBox sbb) {
+            if (this.averageGroundLvl < 0) {
+                this.averageGroundLvl = this.getAverageGroundLevel(worldIn, sbb);
+                if (this.averageGroundLvl < 0) return true;
+                this.boundingBox.offset(0, this.averageGroundLvl - this.boundingBox.maxY + 4 - 1, 0);
+            }
+            IBlockState air = mcc$of(net.minecraft.world.level.block.Blocks.AIR);
+            IBlockState log = this.getBiomeSpecificBlockState(mcc$of(net.minecraft.world.level.block.Blocks.OAK_LOG));
+            IBlockState farmland = mcc$of(net.minecraft.world.level.block.Blocks.FARMLAND);
+            IBlockState water = mcc$of(net.minecraft.world.level.block.Blocks.WATER);
+            this.fillWithBlocks(worldIn, sbb, 0, 1, 0, 12, 4, 8, air, air, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 0, 1, 2, 0, 7, farmland, farmland, false);
+            this.fillWithBlocks(worldIn, sbb, 4, 0, 1, 5, 0, 7, farmland, farmland, false);
+            this.fillWithBlocks(worldIn, sbb, 7, 0, 1, 8, 0, 7, farmland, farmland, false);
+            this.fillWithBlocks(worldIn, sbb, 10, 0, 1, 11, 0, 7, farmland, farmland, false);
+            this.fillWithBlocks(worldIn, sbb, 0, 0, 0, 0, 0, 8, log, log, false);
+            this.fillWithBlocks(worldIn, sbb, 6, 0, 0, 6, 0, 8, log, log, false);
+            this.fillWithBlocks(worldIn, sbb, 12, 0, 0, 12, 0, 8, log, log, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 0, 0, 11, 0, 0, log, log, false);
+            this.fillWithBlocks(worldIn, sbb, 1, 0, 8, 11, 0, 8, log, log, false);
+            this.fillWithBlocks(worldIn, sbb, 3, 0, 1, 3, 0, 7, water, water, false);
+            this.fillWithBlocks(worldIn, sbb, 9, 0, 1, 9, 0, 7, water, water, false);
+            for (int i = 1; i <= 7; ++i) {
+                this.setBlockState(worldIn, mcc$cropState(cropTypeA, randomIn), 1, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeA, randomIn), 2, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeB, randomIn), 4, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeB, randomIn), 5, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeC, randomIn), 7, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeC, randomIn), 8, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeD, randomIn), 10, 1, i, sbb);
+                this.setBlockState(worldIn, mcc$cropState(cropTypeD, randomIn), 11, 1, i, sbb);
+            }
+            IBlockState dirt = mcc$of(net.minecraft.world.level.block.Blocks.DIRT);
+            for (int z = 0; z < 9; ++z) {
+                for (int x = 0; x < 13; ++x) {
+                    this.clearCurrentPositionBlocksUpwards(worldIn, x, 4, z, sbb);
+                    this.replaceAirAndLiquidDownwards(worldIn, dirt, x, -1, z, sbb);
+                }
+            }
+            return true;
         }
     }
 

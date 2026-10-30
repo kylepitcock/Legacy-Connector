@@ -97,6 +97,9 @@ public final class FmlChannelBridge1122 {
                     PacketDistributor.sendToServer(p);
                 }
             }
+            case DISPATCHER -> {
+                if (args instanceof legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.handshake.NetworkDispatcher d) d.sendProxy(packet);
+            }
             default -> LOG.debug("Unsupported legacy outbound target {} on channel {}", target, packet.channel());
         }
     }
@@ -114,7 +117,10 @@ public final class FmlChannelBridge1122 {
 
     private static void deliver(String channelName, byte[] data, Side side, Object netHandler, legacyconnector.v1_12_2.net.minecraft.network.NetworkManager manager) {
         FMLProxyPacket packet = new FMLProxyPacket(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(data), channelName);
-        if (netHandler instanceof INetHandler h) packet.mcc$setHandler(h);
+        if (netHandler instanceof INetHandler h) {
+            packet.mcc$setHandler(h);
+            packet.setDispatcher(new legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.handshake.NetworkDispatcher(h, side));
+        }
         packet.setTarget(side);
         FMLEventChannel eventChannel = EVENT_CHANNELS.get(channelName);
         if (eventChannel != null) {
