@@ -21,6 +21,8 @@ public final class Registries1122R {
         }
         Vanilla1122.registerPotionTypes(Registries1122.POTION_TYPES.getRegistrySuperType());
         Registries1122.VILLAGER_PROFESSIONS.mcc$type("net.minecraftforge.fml.common.registry.VillagerRegistry$VillagerProfession");
+        // the vanilla professions and careers, so handlers of the event and later code find them by name
+        legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.mcc$registerVanilla();
         for (Registries1122.Reg reg : new Registries1122.Reg[] {Registries1122.POTION_TYPES, Registries1122.VILLAGER_PROFESSIONS}) {
             if (reg.getRegistrySuperType() == null) continue;
             post.accept(new RegistryEvent.Register(reg));

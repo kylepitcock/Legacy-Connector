@@ -106,6 +106,36 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
         return p == null ? 0 : Math.max(p % 6, 0);
     }
 
+    private legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession mcc$forgeProfession;
+
+    /** Forge: the profession as a registry entry (a vanilla one for vanilla ids). */
+    public legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession getProfessionForge() {
+        if (mcc$forgeProfession != null && mcc$villager() == null) return mcc$forgeProfession;
+        var p = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.getById(getProfession());
+        return p != null ? p : mcc$forgeProfession;
+    }
+
+    public void setProfession(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession profession) {
+        if (profession == null) return;
+        mcc$forgeProfession = profession;
+        int id = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.getId(profession);
+        if (id >= 0) setProfession(id);
+    }
+
+    /** Adds the trades of the next career level (1.12's populateBuyingList; a modern villager levels up by itself). */
+    protected void populateBuyingList() {
+        if (mcc$villager() != null) return;
+        var profession = getProfessionForge();
+        if (profession == null) return;
+        if (careerId == 0) careerId = profession.getRandomCareer(rand) + 1;
+        var career = profession.getCareer(careerId - 1);
+        if (career == null) return;
+        if (buyingList == null) buyingList = new MerchantRecipeList();
+        var trades = career.getTrades(careerLevel);
+        ++careerLevel;
+        if (trades != null) for (ITradeList t : trades) t.addMerchantRecipe(this, buyingList, rand);
+    }
+
     // ------------------------------------------------------------------ AI, attributes, state
 
     @Override
@@ -196,6 +226,7 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
             for (var offer : v.getOffers()) list.add(MerchantRecipe.mcc$of(offer));
             return list;
         }
+        if (buyingList == null) populateBuyingList();
         if (buyingList == null) buyingList = new MerchantRecipeList();
         return buyingList;
     }

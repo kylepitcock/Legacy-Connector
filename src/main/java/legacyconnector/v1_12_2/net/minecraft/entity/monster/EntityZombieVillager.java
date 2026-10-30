@@ -114,4 +114,13 @@ public class EntityZombieVillager extends EntityZombie {
     protected ResourceLocation getLootTable() {
         return new ResourceLocation("minecraft", "entities/zombie_villager");
     }
+
+    public legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession getForgeProfession() {
+        return legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.getById(getProfession());
+    }
+
+    public void setForgeProfession(legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession profession) {
+        int id = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.VillagerRegistry.getId(profession);
+        if (id >= 0) setProfession(id);
+    }
 }
