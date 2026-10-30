@@ -66,6 +66,16 @@ public interface IBlockState {
         getBlock().neighborChanged(this, world, pos, block, fromPos);
     }
 
+    default boolean hasCustomBreakingProgress() {
+        return getBlock().hasCustomBreakingProgress(this);
+    }
+
+    /** A block event (piston moves, note plays, chest lid) delivered to the block. */
+    default boolean onBlockEventReceived(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            int id, int param) {
+        return getBlock().eventReceived(this, world, pos, id, param);
+    }
+
     default boolean canProvidePower() {
         return getBlock().canProvidePower(this);
     }

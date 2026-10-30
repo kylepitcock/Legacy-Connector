@@ -17,6 +17,18 @@ public abstract class BlockContainer extends Block implements ITileEntityProvide
         this.hasTileEntity = true;
     }
 
+    /** Whether the block on that side keeps this one from being placed (a cactus). */
+    protected boolean isInvalidNeighbor(World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        return worldIn.getBlockState(pos.offset(facing)).getMaterial() == Material.CACTUS;
+    }
+
+    /** Whether a cactus touches any horizontal side. */
+    protected boolean hasInvalidNeighbor(World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        for (var f : legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.Plane.HORIZONTAL) if (isInvalidNeighbor(worldIn, pos, f)) return true;
+        return false;
+    }
+
     @Override
     public boolean hasTileEntity(IBlockState state) {
         return true;

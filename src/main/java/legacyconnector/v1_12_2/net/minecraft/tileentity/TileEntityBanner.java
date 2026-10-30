@@ -85,6 +85,14 @@ public class TileEntityBanner extends TileEntity implements org.kylepitcock.lega
         return nbt != null && nbt.hasKey("Patterns", 9) ? nbt.getTagList("Patterns", 10).copy() : null;
     }
 
+    /** The banner item of this banner: its base colour (the metadata), patterns and name. */
+    public ItemStack getItem() {
+        ItemStack stack = new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.BANNER, 1, baseColor.getDyeDamage());
+        if (patterns != null && !patterns.isEmpty()) stack.getOrCreateSubCompound("BlockEntityTag").setTag("Patterns", patterns.copy());
+        if (hasCustomName()) stack.setStackDisplayName(name);
+        return stack;
+    }
+
     public String getName() {
         return hasCustomName() ? name : "banner";
     }

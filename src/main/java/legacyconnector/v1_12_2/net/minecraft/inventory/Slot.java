@@ -106,6 +106,12 @@ public class Slot {
         this.backgroundLocation = texture;
     }
 
+    /** Forge (client): the sprite drawn in the empty slot ({@link #getSlotTexture} on the blocks atlas), or null. */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureAtlasSprite getBackgroundSprite() {
+        String name = getSlotTexture();
+        return name == null ? null : legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$blocks().getAtlasSprite(name);
+    }
+
     public void setBackgroundName(String name) {
         this.backgroundName = name;
     }

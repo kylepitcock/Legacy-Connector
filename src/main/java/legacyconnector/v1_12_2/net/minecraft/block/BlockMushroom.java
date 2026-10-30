@@ -61,7 +61,7 @@ public class BlockMushroom extends BlockBush implements IGrowable {
 
     /** Bone meal: the huge mushroom of this mushroom's kind (the small one stays when it does not fit). */
     public boolean generateBigMushroom(World worldIn, BlockPos pos, IBlockState state, Random rand) {
-        if (!(worldIn.mcc$level() instanceof net.minecraft.server.level.ServerLevel level)) return false;
+        if (!(worldIn.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level)) return false;
         boolean red = Block.mcc$named(this, "red_mushroom");
         var modern = red ? net.minecraft.world.level.block.Blocks.RED_MUSHROOM : net.minecraft.world.level.block.Blocks.BROWN_MUSHROOM;
         var mp = org.kylepitcock.legacyconnector.v1_12_2.bridge.Inventories1122.pos(pos);
