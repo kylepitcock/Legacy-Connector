@@ -42,6 +42,12 @@ public class WorldClient extends World {
         if (options != null) mcc$level().addParticle(options, ignoreRange, x, y, z, xSpeed, ySpeed, zSpeed);
     }
 
+    /** Sends a packet to the server over the game's connection (added by area W: {@code World.sendPacketToServer}). */
+    @Override
+    public void sendPacketToServer(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packet) {
+        legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient.mcc$INSTANCE.sendPacket(packet);
+    }
+
     /** Adds an entity to this client world under the network id (fake entities of client-side effects). */
     public void addEntityToWorld(int entityId, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldClient1122.addEntity(this, entityId, entity);

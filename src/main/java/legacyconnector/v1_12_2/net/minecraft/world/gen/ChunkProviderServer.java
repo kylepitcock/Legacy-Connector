@@ -14,12 +14,30 @@ import legacyconnector.v1_12_2.net.minecraft.world.chunk.IChunkProvider;
  * the server thread. {@link #chunkGenerator} is the dimension's legacy generator when it has one (null for modern dimensions).
  */
 public class ChunkProviderServer implements IChunkProvider {
-    private final World world;
+    private final World mcc$world;
     public IChunkGenerator chunkGenerator;
 
     public ChunkProviderServer(World world) {
-        this.world = world;
+        this.mcc$world = world;
         this.chunkLoader = mcc$chunkLoader(world);
+    }
+
+    /** Phantom: redirected to {@link #mcc$get$world} (the server world of these chunks). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.WorldServer world;
+    /**
+     * Phantom: redirected to {@link #mcc$get$droppedChunks}: the chunk keys ({@code ChunkPos.asLong}) queued for unloading. The modern
+     * game unloads chunks itself, so the set is a fresh empty one; what a mod adds to it unloads nothing.
+     */
+    @Deprecated
+    public java.util.Set<Long> droppedChunks;
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.WorldServer mcc$get$world(ChunkProviderServer p) {
+        return p.mcc$world instanceof legacyconnector.v1_12_2.net.minecraft.world.WorldServer ws ? ws : null;
+    }
+
+    public static java.util.Set<Long> mcc$get$droppedChunks(ChunkProviderServer p) {
+        return new java.util.HashSet<>();
     }
 
     /** The dimension's chunk storage (its region folder), read through the modern region files. */
@@ -36,7 +54,7 @@ public class ChunkProviderServer implements IChunkProvider {
     }
 
     private net.minecraft.world.level.LevelAccessor access() {
-        return world.mcc$access();
+        return mcc$world.mcc$access();
     }
 
     @Override
@@ -45,10 +63,10 @@ public class ChunkProviderServer implements IChunkProvider {
         if (access == null) return null;
         if (access instanceof net.minecraft.server.level.ServerLevel sl) {
             var chunk = sl.getChunkSource().getChunkNow(x, z);
-            return chunk == null ? null : Chunk.mcc$of(world, chunk);
+            return chunk == null ? null : Chunk.mcc$of(mcc$world, chunk);
         }
         var chunk = access.getChunk(x, z, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
-        return chunk == null ? null : Chunk.mcc$of(world, chunk);
+        return chunk == null ? null : Chunk.mcc$of(mcc$world, chunk);
     }
 
     /**
@@ -59,7 +77,7 @@ public class ChunkProviderServer implements IChunkProvider {
     @Override
     public Chunk provideChunk(int x, int z) {
         Chunk loaded = getLoadedChunk(x, z);
-        return loaded != null ? loaded : new Chunk(world, x, z);
+        return loaded != null ? loaded : new Chunk(mcc$world, x, z);
     }
 
     public Chunk loadChunk(int x, int z) {
@@ -71,7 +89,7 @@ public class ChunkProviderServer implements IChunkProvider {
         if (access() instanceof net.minecraft.server.level.ServerLevel sl) {
             for (var holder : sl.getChunkSource().chunkMap.getChunks()) {
                 var chunk = holder.getTickingChunk();
-                if (chunk != null) out.add(Chunk.mcc$of(world, chunk));
+                if (chunk != null) out.add(Chunk.mcc$of(mcc$world, chunk));
             }
         }
         return out;
@@ -106,7 +124,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     public List<legacyconnector.v1_12_2.net.minecraft.world.biome.Biome.SpawnListEntry> getPossibleCreatures(EnumCreatureType type, BlockPos pos) {
         if (chunkGenerator != null) return chunkGenerator.getPossibleCreatures(type, pos);
-        var biome = world.getBiome(pos);
+        var biome = mcc$world.getBiome(pos);
         return biome == null ? new java.util.ArrayList<>() : biome.getSpawnableList(type);
     }
 

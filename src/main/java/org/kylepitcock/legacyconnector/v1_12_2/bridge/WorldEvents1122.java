@@ -89,11 +89,19 @@ public final class WorldEvents1122 {
                     new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(e.getData())));
         });
         b.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent e) -> {
-            if (!listens(BlockEvent.PlaceEvent.class) || !(e.getLevel() instanceof Level l)) return;
-            var hand = e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living && living.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND
-                    ? legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND : legacyconnector.v1_12_2.net.minecraft.util.EnumHand.MAIN_HAND;
-            var legacy = new BlockEvent.PlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot.mcc$of(e.getBlockSnapshot()), state(e.getPlacedAgainst()),
-                    player(e.getEntity()), hand);
+            if (!listens(BlockEvent.PlaceEvent.class) && !listens(BlockEvent.EntityPlaceEvent.class) || !(e.getLevel() instanceof Level l)) return;
+            var snapshot = legacyconnector.v1_12_2.net.minecraftforge.common.util.BlockSnapshot.mcc$of(e.getBlockSnapshot());
+            var player = player(e.getEntity());
+            BlockEvent.EntityPlaceEvent legacy;
+            if (player != null) {
+                // a player's placement is a PlaceEvent (which EntityPlaceEvent handlers also receive)
+                var hand = e.getEntity() instanceof net.minecraft.world.entity.LivingEntity living && living.getUsedItemHand() == net.minecraft.world.InteractionHand.OFF_HAND
+                        ? legacyconnector.v1_12_2.net.minecraft.util.EnumHand.OFF_HAND : legacyconnector.v1_12_2.net.minecraft.util.EnumHand.MAIN_HAND;
+                legacy = new BlockEvent.PlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), snapshot, state(e.getPlacedAgainst()), player, hand);
+            } else {
+                legacy = new BlockEvent.EntityPlaceEvent(world(l), pos(e.getPos()), state(e.getPlacedBlock()), snapshot, state(e.getPlacedAgainst()),
+                        e.getEntity() == null ? null : EntityBridge1122.wrap(e.getEntity()));
+            }
             if (post(legacy)) e.setCanceled(true);
         });
         b.addListener((net.neoforged.neoforge.event.level.BlockEvent.NeighborNotifyEvent e) -> {

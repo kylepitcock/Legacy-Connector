@@ -362,6 +362,12 @@ public abstract class StructureComponent {
         access.setBlock(p.above(), state.setValue(net.minecraft.world.level.block.DoorBlock.HALF, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER), 2);
     }
 
+    /** {@code generateDoor(.., BlockDoor)} of legacy code (BlockDoor is synthesized; see {@code WorldSynth1122}). */
+    public void mcc$generateDoor(World worldIn, StructureBoundingBox sbb, Random rand, int x, int y, int z, EnumFacing facing,
+            legacyconnector.v1_12_2.net.minecraft.block.Block door) {
+        generateDoor(worldIn, sbb, rand, x, y, z, facing, door);
+    }
+
     public void offset(int x, int y, int z) {
         boundingBox.offset(x, y, z);
     }
