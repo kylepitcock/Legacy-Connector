@@ -28,6 +28,20 @@ public class EntityItemFrame extends EntityHanging {
         super(modern);
     }
 
+    private static final java.lang.reflect.Method MCC$REMOVE_MAP = mcc$method(net.minecraft.world.entity.decoration.ItemFrame.class, "removeFramedMap",
+            net.minecraft.world.item.ItemStack.class);
+
+    /** Takes the frame's marker off the map the stack shows (when a framed map is removed). */
+    protected void removeFrameFromMap(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        var f = mcc$frame();
+        if (f == null || stack == null || stack.isEmpty() || MCC$REMOVE_MAP == null) return;
+        try {
+            MCC$REMOVE_MAP.invoke(f, org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack));
+        } catch (ReflectiveOperationException e) {
+            // the marker stays
+        }
+    }
+
     private net.minecraft.world.entity.decoration.ItemFrame mcc$frame() {
         return !mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.decoration.ItemFrame f ? f : null;
     }

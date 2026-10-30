@@ -2234,4 +2234,27 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
         int t = mcc$get$timeUntilPortal(this);
         if (t > 0) mcc$set$timeUntilPortal(this, t - 1);
     }
+
+    private static final java.lang.reflect.Method MCC$ADD_PASSENGER = mcc$method(net.minecraft.world.entity.Entity.class, "addPassenger",
+            net.minecraft.world.entity.Entity.class);
+
+    /** A modern method by its (official) name, or null. */
+    public static java.lang.reflect.Method mcc$method(Class<?> owner, String name, Class<?>... params) {
+        try {
+            return net.neoforged.fml.util.ObfuscationReflectionHelper.findMethod(owner, name, params);
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Adds a rider to this entity's passengers (what startRiding calls on the vehicle). */
+    protected void addPassenger(Entity passenger) {
+        var m = mcc$entity;
+        if (m == null || passenger == null || passenger.mcc$entity == null || MCC$ADD_PASSENGER == null) return;
+        try {
+            MCC$ADD_PASSENGER.invoke(m, passenger.mcc$entity);
+        } catch (ReflectiveOperationException e) {
+            // not added
+        }
+    }
 }

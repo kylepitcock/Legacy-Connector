@@ -12,6 +12,11 @@ import legacyconnector.v1_12_2.net.minecraft.item.crafting.Ingredient;
  */
 public class PotionHelper {
     public static final List<MixPredicate<PotionType>> POTION_TYPE_CONVERSIONS = new ArrayList<>();
+    /** The items the brewing stand takes as potions (potion, splash and lingering bottles; mods add their own containers). */
+    public static final List<Ingredient> POTION_ITEMS = new ArrayList<>(List.of(
+            Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.POTION)),
+            Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.SPLASH_POTION)),
+            Ingredient.fromItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.itemForModern(net.minecraft.world.item.Items.LINGERING_POTION))));
 
     static {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Brewing1122.ensureListener();

@@ -25,6 +25,12 @@ public class EntitySlime extends legacyconnector.v1_12_2.net.minecraft.entity.En
         super(modern);
     }
 
+    /** The squish of a landing slime (smaller for small slimes). */
+    protected legacyconnector.v1_12_2.net.minecraft.util.SoundEvent getJumpSound() {
+        return org.kylepitcock.legacyconnector.v1_12_2.entity.Sounds1122.legacy(isSmallSlime() ? net.minecraft.sounds.SoundEvents.SLIME_JUMP_SMALL
+                : net.minecraft.sounds.SoundEvents.SLIME_JUMP);
+    }
+
     protected net.minecraft.world.entity.monster.Slime mcc$self() {
         return mcc$entity instanceof net.minecraft.world.entity.monster.Slime m ? m : null;
     }

@@ -174,6 +174,24 @@ public class EntityVillager extends EntityAgeable implements INpc, IMerchant {
         isPlaying = playing;
     }
 
+    /**
+     * Forge: the villager's spawn set-up. With {@code forgeCheck} a new villager takes a random profession first; then the living
+     * set-up and its trades.
+     */
+    public legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData finalizeMobSpawn(legacyconnector.v1_12_2.net.minecraft.world.DifficultyInstance difficulty,
+            legacyconnector.v1_12_2.net.minecraft.entity.IEntityLivingData data, boolean forgeCheck) {
+        data = super.onInitialSpawn(difficulty, data);
+        if (forgeCheck && mcc$gameVillager() == null) setProfession(getRNG().nextInt(6));
+        if (mcc$gameVillager() == null) {
+            try {
+                populateBuyingList();
+            } catch (RuntimeException | LinkageError e) {
+                // trades are made again when a player opens them
+            }
+        }
+        return data;
+    }
+
     public InventoryBasic getVillagerInventory() {
         return villagerInventory;
     }
