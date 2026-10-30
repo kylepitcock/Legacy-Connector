@@ -380,4 +380,86 @@ public final class TRSRTransformation implements IModelState, ITransformation {
     public String toString() {
         return matrix.toString();
     }
+
+    /** The linear part and the translation of an affine matrix (divided by its w first). */
+    public static org.apache.commons.lang3.tuple.Pair<Matrix3f, Vector3f> toAffine(Matrix4f m) {
+        m.mul(1.0F / m.m33);
+        Vector3f trans = new Vector3f(m.m03, m.m13, m.m23);
+        Matrix3f linear = new Matrix3f(m.m00, m.m01, m.m02, m.m10, m.m11, m.m12, m.m20, m.m21, m.m22);
+        return org.apache.commons.lang3.tuple.Pair.of(linear, trans);
+    }
+
+    /**
+     * Singular value decomposition {@code m = U * S * V^T}: U and V^T as rotations (quaternions) and S as the scale. Computed from the
+     * eigenvectors of {@code m^T m} (Jacobi rotations); reflections go into the scale's sign.
+     */
+    public static org.apache.commons.lang3.tuple.Triple<Quat4f, Vector3f, Quat4f> svdDecompose(Matrix3f m) {
+        double[][] a = {{m.m00, m.m01, m.m02}, {m.m10, m.m11, m.m12}, {m.m20, m.m21, m.m22}};
+        double[][] ata = new double[3][3];
+        for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++) for (int k = 0; k < 3; k++) ata[i][j] += a[k][i] * a[k][j];
+        double[][] v = {{1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
+        for (int sweep = 0; sweep < 50; sweep++) {
+            double off = ata[0][1] * ata[0][1] + ata[0][2] * ata[0][2] + ata[1][2] * ata[1][2];
+            if (off < 1e-20) break;
+            for (int p = 0; p < 2; p++) {
+                for (int q = p + 1; q < 3; q++) {
+                    if (Math.abs(ata[p][q]) < 1e-30) continue;
+                    double theta = (ata[q][q] - ata[p][p]) / (2 * ata[p][q]);
+                    double t = Math.signum(theta) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
+                    if (theta == 0) t = 1;
+                    double c = 1 / Math.sqrt(t * t + 1);
+                    double s = t * c;
+                    for (int k = 0; k < 3; k++) {
+                        double akp = ata[k][p];
+                        double akq = ata[k][q];
+                        ata[k][p] = c * akp - s * akq;
+                        ata[k][q] = s * akp + c * akq;
+                    }
+                    for (int k = 0; k < 3; k++) {
+                        double apk = ata[p][k];
+                        double aqk = ata[q][k];
+                        ata[p][k] = c * apk - s * aqk;
+                        ata[q][k] = s * apk + c * aqk;
+                    }
+                    for (int k = 0; k < 3; k++) {
+                        double vkp = v[k][p];
+                        double vkq = v[k][q];
+                        v[k][p] = c * vkp - s * vkq;
+                        v[k][q] = s * vkp + c * vkq;
+                    }
+                }
+            }
+        }
+        double[] sigma = new double[3];
+        double[][] u = new double[3][3];
+        for (int j = 0; j < 3; j++) {
+            sigma[j] = Math.sqrt(Math.max(0, ata[j][j]));
+            for (int i = 0; i < 3; i++) {
+                double sum = 0;
+                for (int k = 0; k < 3; k++) sum += a[i][k] * v[k][j];
+                u[i][j] = sigma[j] > 1e-12 ? sum / sigma[j] : (i == j ? 1 : 0);
+            }
+        }
+        // both factors proper rotations: a reflection of V or U is moved into the scale
+        if (det(v) < 0) {
+            for (int k = 0; k < 3; k++) v[k][2] = -v[k][2];
+            for (int k = 0; k < 3; k++) u[k][2] = -u[k][2];
+        }
+        if (det(u) < 0) {
+            for (int k = 0; k < 3; k++) u[k][2] = -u[k][2];
+            sigma[2] = -sigma[2];
+        }
+        Quat4f left = new Quat4f();
+        left.set(new Matrix3f((float) u[0][0], (float) u[0][1], (float) u[0][2], (float) u[1][0], (float) u[1][1], (float) u[1][2],
+                (float) u[2][0], (float) u[2][1], (float) u[2][2]));
+        Quat4f right = new Quat4f();
+        right.set(new Matrix3f((float) v[0][0], (float) v[1][0], (float) v[2][0], (float) v[0][1], (float) v[1][1], (float) v[2][1],
+                (float) v[0][2], (float) v[1][2], (float) v[2][2]));
+        return org.apache.commons.lang3.tuple.Triple.of(left, new Vector3f((float) sigma[0], (float) sigma[1], (float) sigma[2]), right);
+    }
+
+    private static double det(double[][] x) {
+        return x[0][0] * (x[1][1] * x[2][2] - x[1][2] * x[2][1]) - x[0][1] * (x[1][0] * x[2][2] - x[1][2] * x[2][0])
+                + x[0][2] * (x[1][0] * x[2][1] - x[1][1] * x[2][0]);
+    }
 }

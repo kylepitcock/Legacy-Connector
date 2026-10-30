@@ -15,8 +15,17 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122;
 public class PlayerList {
     private final MinecraftServer server;
 
+    /** Phantom field: reads go to {@link #mcc$get$playerDataManager}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData playerDataManager;
+
     public PlayerList(MinecraftServer server) {
         this.server = server;
+    }
+
+    /** The players' saved data ({@code playerdata/} of the world). */
+    public static legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData mcc$get$playerDataManager(PlayerList list) {
+        return legacyconnector.v1_12_2.net.minecraft.world.storage.IPlayerFileData.mcc$server();
     }
 
     private static net.minecraft.server.players.PlayerList modern() {

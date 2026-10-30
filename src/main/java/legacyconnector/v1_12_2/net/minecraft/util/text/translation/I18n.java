@@ -1,25 +1,30 @@
 package legacyconnector.v1_12_2.net.minecraft.util.text.translation;
 
-/** The server-side translation helper of 1.12 (deprecated there too): vanilla and loaded language entries. */
+/**
+ * The server-side translation helper of 1.12 (deprecated there too): the language table ({@link #localizedName}: entries mods add to it,
+ * then the modern game's language) and the fallback table.
+ */
 public class I18n {
+    public static final LanguageMap localizedName = LanguageMap.getInstance();
+    public static final LanguageMap fallbackTranslator = new LanguageMap();
+
     public static String translateToLocal(String key) {
-        return net.minecraft.locale.Language.getInstance().getOrDefault(key);
+        return localizedName.translateKey(key);
     }
 
     public static String translateToLocalFormatted(String key, Object... format) {
-        String pattern = translateToLocal(key);
-        try {
-            return String.format(pattern, format);
-        } catch (java.util.IllegalFormatException e) {
-            return pattern;
-        }
+        return localizedName.translateKeyFormat(key, format);
     }
 
     public static boolean canTranslate(String key) {
-        return net.minecraft.locale.Language.getInstance().has(key);
+        return localizedName.isKeyTranslated(key);
     }
 
     public static String translateToFallback(String key) {
-        return translateToLocal(key);
+        return fallbackTranslator.translateKey(key);
+    }
+
+    public static long getLastTranslationUpdateTimeInMilliseconds() {
+        return localizedName.getLastUpdateTimeInMilliseconds();
     }
 }
