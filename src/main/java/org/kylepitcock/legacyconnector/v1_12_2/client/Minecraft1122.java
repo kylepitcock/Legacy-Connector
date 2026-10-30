@@ -105,6 +105,22 @@ public final class Minecraft1122 {
         return mc().isDemo();
     }
 
+    /** One client tick, on the client thread (Minecraft.runTick). */
+    public static void runTick() {
+        var mc = mc();
+        if (mc.isSameThread()) mc.tick();
+        else mc.execute(mc::tick);
+    }
+
+    private static long lastFrameNanos;
+
+    /** Records the frame's time into the legacy frame timer (called after every frame). */
+    public static void recordFrame() {
+        long now = System.nanoTime();
+        if (lastFrameNanos != 0L) legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().frameTimer.addFrame(now - lastFrameNanos);
+        lastFrameNanos = now;
+    }
+
     /** Leaving the world ({@code loadWorld(null)}): back to the title screen. A client world cannot be swapped in. */
     public static void leaveWorld() {
         var mc = mc();

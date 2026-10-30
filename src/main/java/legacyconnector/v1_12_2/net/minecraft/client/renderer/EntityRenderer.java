@@ -136,4 +136,9 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.popMatrix();
     }
+
+    /** The map renderer (maps in item frames, map tooltips). */
+    public legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer getMapItemRenderer() {
+        return legacyconnector.v1_12_2.net.minecraft.client.gui.MapItemRenderer.mcc$instance();
+    }
 }

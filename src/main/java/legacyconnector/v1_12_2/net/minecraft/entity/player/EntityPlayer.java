@@ -760,6 +760,42 @@ public abstract class EntityPlayer extends EntityLivingBase {
         if (m != null) m.fishing = v != null && v.mcc$entity instanceof net.minecraft.world.entity.projectile.FishingHook h ? h : null;
     }
 
+    /** Which chat messages a player sees (the client's chat option). */
+    public enum EnumChatVisibility {
+        FULL(0, "options.chat.visibility.full"),
+        SYSTEM(1, "options.chat.visibility.system"),
+        HIDDEN(2, "options.chat.visibility.hidden");
+
+        private final int chatVisibility;
+        private final String resourceKey;
+
+        EnumChatVisibility(int id, String resourceKey) {
+            this.chatVisibility = id;
+            this.resourceKey = resourceKey;
+        }
+
+        public int getChatVisibility() {
+            return chatVisibility;
+        }
+
+        public static EnumChatVisibility getEnumChatVisibility(int id) {
+            for (EnumChatVisibility v : values()) if (v.chatVisibility == id) return v;
+            return FULL;
+        }
+
+        public String getResourceKey() {
+            return resourceKey;
+        }
+
+        public net.minecraft.world.entity.player.ChatVisiblity mcc$modern() {
+            return net.minecraft.world.entity.player.ChatVisiblity.byId(chatVisibility);
+        }
+
+        public static EnumChatVisibility mcc$of(net.minecraft.world.entity.player.ChatVisiblity modern) {
+            return modern == null ? FULL : getEnumChatVisibility(modern.getId());
+        }
+    }
+
     /** Sleep results of trySleep. */
     public enum SleepResult {
         OK, NOT_POSSIBLE_HERE, NOT_POSSIBLE_NOW, TOO_FAR_AWAY, OTHER_PROBLEM, NOT_SAFE

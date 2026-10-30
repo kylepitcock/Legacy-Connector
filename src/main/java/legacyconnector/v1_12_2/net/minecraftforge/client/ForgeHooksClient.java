@@ -142,4 +142,45 @@ public class ForgeHooksClient {
             int width, int height, String splashText) {
         return splashText;
     }
+
+    /** Item class -> its {@code getArmorModel(EntityLivingBase, ItemStack, EntityEquipmentSlot, ModelBiped)}, if it declares one. */
+    private static final Map<Class<?>, java.util.Optional<java.lang.reflect.Method>> ARMOR_MODEL_HOOKS = new ConcurrentHashMap<>();
+
+    /**
+     * The item's own armour model (Forge's client-only {@code Item.getArmorModel}, found on the mod's item class), or the default.
+     */
+    public static legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped getArmorModel(legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entityLiving,
+            legacyconnector.v1_12_2.net.minecraft.item.ItemStack itemStack, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot,
+            legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped _default) {
+        if (itemStack == null || itemStack.isEmpty()) return _default;
+        Object item = itemStack.getItem();
+        if (item == null) return _default;
+        var hook = ARMOR_MODEL_HOOKS.computeIfAbsent(item.getClass(), c -> {
+            try {
+                return java.util.Optional.of(c.getMethod("getArmorModel", legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase.class,
+                        legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.class,
+                        legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped.class));
+            } catch (NoSuchMethodException | LinkageError e) {
+                return java.util.Optional.empty();
+            }
+        });
+        if (hook.isEmpty()) return _default;
+        try {
+            return hook.get().invoke(item, entityLiving, itemStack, slot, _default) instanceof legacyconnector.v1_12_2.net.minecraft.client.model.ModelBiped m ? m : _default;
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("asking " + item.getClass().getName() + " for its armour model",
+                    e.getCause() == null ? e : e.getCause());
+            return _default;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return _default;
+        }
+    }
+
+    /** The item's armour texture ({@code Item.getArmorTexture}), or the default. */
+    public static String getArmorTexture(legacyconnector.v1_12_2.net.minecraft.entity.Entity entity, legacyconnector.v1_12_2.net.minecraft.item.ItemStack armor,
+            String _default, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot, String type) {
+        if (armor == null || armor.isEmpty() || armor.getItem() == null) return _default;
+        String result = armor.getItem().getArmorTexture(armor, entity, slot, type);
+        return result != null ? result : _default;
+    }
 }

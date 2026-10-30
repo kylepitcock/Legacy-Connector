@@ -10,6 +10,18 @@ public class WorldClient extends World {
         super(level);
     }
 
+    /**
+     * A client world a mod builds itself (a schematic preview, a replay): no level behind it (queries see empty space unless the mod's
+     * subclass answers them), with the settings' world info and the dimension's provider.
+     */
+    public WorldClient(legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient netHandler, legacyconnector.v1_12_2.net.minecraft.world.WorldSettings settings,
+            int dimension, legacyconnector.v1_12_2.net.minecraft.world.EnumDifficulty difficulty, legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profilerIn) {
+        super(null, new legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo(settings, "MpServer"),
+                legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.createProviderFor(dimension), profilerIn, true);
+        var provider = getProvider();
+        if (provider != null) provider.setWorld(this);
+    }
+
     // ------------------------------------------------------------------ area R2b: the client world's own methods
 
     @Override
