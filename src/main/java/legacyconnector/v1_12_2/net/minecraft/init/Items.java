@@ -30,7 +30,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item BREAD = Vanilla1122.item("BREAD");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item BREWING_STAND = Vanilla1122.item("BREWING_STAND");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item BRICK = Vanilla1122.item("BRICK");
-    public static final legacyconnector.v1_12_2.net.minecraft.item.Item BUCKET = Vanilla1122.item("BUCKET");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.Item BUCKET = VanillaBlocks1122.item("BUCKET", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemBucket(Blocks.AIR).setMaxStackSize(16));
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item CAKE = Vanilla1122.item("CAKE");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item CARROT = Vanilla1122.item("CARROT");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item CARROT_ON_A_STICK = Vanilla1122.item("CARROT_ON_A_STICK");
@@ -127,7 +127,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item JUNGLE_BOAT = Vanilla1122.item("JUNGLE_BOAT");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item JUNGLE_DOOR = Vanilla1122.item("JUNGLE_DOOR");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item KNOWLEDGE_BOOK = Vanilla1122.item("KNOWLEDGE_BOOK");
-    public static final legacyconnector.v1_12_2.net.minecraft.item.Item LAVA_BUCKET = Vanilla1122.item("LAVA_BUCKET");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.Item LAVA_BUCKET = VanillaBlocks1122.item("LAVA_BUCKET", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemBucket(Blocks.FLOWING_LAVA));
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item LEAD = Vanilla1122.item("LEAD");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item LEATHER = Vanilla1122.item("LEATHER");
     public static final legacyconnector.v1_12_2.net.minecraft.item.ItemArmor LEATHER_BOOTS = VanillaBlocks1122.item("LEATHER_BOOTS", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemArmor(legacyconnector.v1_12_2.net.minecraft.item.ItemArmor.ArmorMaterial.LEATHER, 0, legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot.FEET));
@@ -205,7 +205,7 @@ public class Items {
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item TIPPED_ARROW = Vanilla1122.item("TIPPED_ARROW");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item TNT_MINECART = Vanilla1122.item("TNT_MINECART");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item TOTEM_OF_UNDYING = Vanilla1122.item("TOTEM_OF_UNDYING");
-    public static final legacyconnector.v1_12_2.net.minecraft.item.Item WATER_BUCKET = Vanilla1122.item("WATER_BUCKET");
+    public static final legacyconnector.v1_12_2.net.minecraft.item.Item WATER_BUCKET = VanillaBlocks1122.item("WATER_BUCKET", null, new legacyconnector.v1_12_2.net.minecraft.item.ItemBucket(Blocks.FLOWING_WATER));
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item WHEAT = Vanilla1122.item("WHEAT");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item WHEAT_SEEDS = Vanilla1122.item("WHEAT_SEEDS");
     public static final legacyconnector.v1_12_2.net.minecraft.item.Item WOODEN_AXE = Vanilla1122.item("WOODEN_AXE");

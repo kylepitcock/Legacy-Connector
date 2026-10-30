@@ -220,7 +220,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockStainedGlass STAINED_GLASS = VanillaBlocks1122.block("STAINED_GLASS", new legacyconnector.v1_12_2.net.minecraft.block.BlockStainedGlass(legacyconnector.v1_12_2.net.minecraft.block.material.Material.GLASS));
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockStainedGlassPane STAINED_GLASS_PANE = VanillaBlocks1122.block("STAINED_GLASS_PANE", new legacyconnector.v1_12_2.net.minecraft.block.BlockStainedGlassPane());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STAINED_HARDENED_CLAY = VanillaBlocks1122.block("STAINED_HARDENED_CLAY", new legacyconnector.v1_12_2.net.minecraft.block.BlockStainedHardenedClay());
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block STANDING_BANNER = Vanilla1122.block("STANDING_BANNER");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block STANDING_BANNER = VanillaBlocks1122.block("STANDING_BANNER", new legacyconnector.v1_12_2.net.minecraft.block.BlockBanner.BlockBannerStanding());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STANDING_SIGN = Vanilla1122.block("STANDING_SIGN");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase STICKY_PISTON = VanillaBlocks1122.block("STICKY_PISTON", new legacyconnector.v1_12_2.net.minecraft.block.BlockPistonBase(true));
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block STONE = VanillaBlocks1122.block("STONE", new legacyconnector.v1_12_2.net.minecraft.block.BlockStone());
@@ -244,7 +244,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator UNPOWERED_COMPARATOR = VanillaBlocks1122.block("UNPOWERED_COMPARATOR", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneComparator(false));
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater UNPOWERED_REPEATER = VanillaBlocks1122.block("UNPOWERED_REPEATER", new legacyconnector.v1_12_2.net.minecraft.block.BlockRedstoneRepeater(false) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block VINE = Vanilla1122.block("VINE");
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block WALL_BANNER = Vanilla1122.block("WALL_BANNER");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.Block WALL_BANNER = VanillaBlocks1122.block("WALL_BANNER", new legacyconnector.v1_12_2.net.minecraft.block.BlockBanner.BlockBannerHanging());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block WALL_SIGN = Vanilla1122.block("WALL_SIGN");
     public static final legacyconnector.v1_12_2.net.minecraft.block.BlockStaticLiquid WATER = VanillaBlocks1122.block("WATER", new legacyconnector.v1_12_2.net.minecraft.block.BlockStaticLiquid(legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER) {});
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block WATERLILY = VanillaBlocks1122.block("WATERLILY", new legacyconnector.v1_12_2.net.minecraft.block.BlockLilyPad() {});

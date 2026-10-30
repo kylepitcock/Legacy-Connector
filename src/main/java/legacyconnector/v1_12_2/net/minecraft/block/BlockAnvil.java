@@ -143,4 +143,42 @@ public class BlockAnvil extends BlockFalling {
     protected BlockStateContainer createBlockState() {
         return new BlockStateContainer(this, FACING, DAMAGE);
     }
+
+    /** The anvil as an interaction object (EntityPlayer.displayGui opens it): an anvil container at a position. */
+    public static class Anvil implements legacyconnector.v1_12_2.net.minecraft.world.IInteractionObject {
+        private final World world;
+        private final BlockPos position;
+
+        public Anvil(World worldIn, BlockPos pos) {
+            this.world = worldIn;
+            this.position = pos;
+        }
+
+        @Override
+        public String getName() {
+            return "anvil";
+        }
+
+        @Override
+        public boolean hasCustomName() {
+            return false;
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.util.text.ITextComponent getDisplayName() {
+            return new legacyconnector.v1_12_2.net.minecraft.util.text.TextComponentTranslation(
+                    legacyconnector.v1_12_2.net.minecraft.init.Blocks.ANVIL.getTranslationKey() + ".name");
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.inventory.Container createContainer(legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer playerInventory,
+                EntityPlayer playerIn) {
+            return new legacyconnector.v1_12_2.net.minecraft.inventory.ContainerRepair(playerInventory, world, position, playerIn);
+        }
+
+        @Override
+        public String getGuiID() {
+            return "minecraft:anvil";
+        }
+    }
 }
