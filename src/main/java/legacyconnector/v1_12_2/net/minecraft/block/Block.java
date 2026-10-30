@@ -409,6 +409,35 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return false;
     }
 
+    /** Forge: drops spawned while capturing are collected instead (leaves gather their drops for shears this way). */
+    protected static final ThreadLocal<Boolean> captureDrops = ThreadLocal.withInitial(() -> false);
+    protected static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack>> capturedDrops = ThreadLocal.withInitial(legacyconnector.v1_12_2.net.minecraft.util.NonNullList::create);
+
+    /** Starts capturing drops (returns an empty list) or stops and returns what was captured. */
+    protected legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> captureDrops(boolean start) {
+        if (start) {
+            captureDrops.set(true);
+            capturedDrops.get().clear();
+            return legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+        }
+        captureDrops.set(false);
+        legacyconnector.v1_12_2.net.minecraft.util.NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = legacyconnector.v1_12_2.net.minecraft.util.NonNullList.create();
+        out.addAll(capturedDrops.get());
+        capturedDrops.get().clear();
+        return out;
+    }
+
+    /** Forge: the colour a beacon beam takes through this block (null: unchanged). */
+    public float[] getBeaconColorMultiplier(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos beaconPos) {
+        return null;
+    }
+
+    /** Forge: whether the bed block at a position is the foot half. */
+    public boolean isBedFoot(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state = world.getBlockState(pos);
+        return state.getBlock() instanceof BlockBed && state.getValue(BlockBed.PART) == BlockBed.EnumPartType.FOOT;
+    }
+
     /** How a block's model is shifted per position (flowers and grass sit off-centre). */
     public enum EnumOffsetType {
         NONE,
@@ -564,6 +593,10 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** Drops a stack as an item entity with 1.12's random offset in the block. */
     public static void spawnAsEntity(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
         if (world == null || world.isRemote || stack == null || stack.isEmpty()) return;
+        if (captureDrops.get()) {
+            capturedDrops.get().add(stack);
+            return;
+        }
         var level = world.mcc$level();
         if (!(level instanceof net.minecraft.server.level.ServerLevel)) return;
         double dx = level.random.nextFloat() * 0.5F + 0.25D;
