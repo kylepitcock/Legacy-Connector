@@ -117,7 +117,7 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public static float mcc$get$prevHealth(EntityLivingBase e) {
-        return e.getHealth();
+        return e.mcc$base$getHealth();
     }
 
     public static void mcc$set$prevHealth(EntityLivingBase e, float v) {
@@ -129,8 +129,14 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public float getHealth() {
+        return mcc$base$getHealth();
+    }
+
+    /** The value of {@link #getHealth()}, for the phantom field accessor (mods override the getter to read the field). */
+    private float mcc$base$getHealth() {
         return mcc$entity == null ? 0 : mcc$living().getHealth();
     }
+
 
     public void setHealth(float health) {
         if (mcc$entity != null) mcc$living().setHealth(health);

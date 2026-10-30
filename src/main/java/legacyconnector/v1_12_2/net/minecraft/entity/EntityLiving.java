@@ -131,9 +131,15 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     public EntityLivingBase getAttackTarget() {
+        return mcc$base$getAttackTarget();
+    }
+
+    /** The value of {@link #getAttackTarget()}, for the phantom field accessor (mods override the getter to read the field). */
+    private EntityLivingBase mcc$base$getAttackTarget() {
         Mob m = mcc$mob();
         return m == null ? null : EntityBridge1122.wrap(m.getTarget()) instanceof EntityLivingBase t ? t : null;
     }
+
 
     public void setAttackTarget(EntityLivingBase target) {
         Mob m = mcc$mob();
@@ -357,9 +363,15 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     public boolean isNoDespawnRequired() {
+        return mcc$base$isNoDespawnRequired();
+    }
+
+    /** The value of {@link #isNoDespawnRequired()}, for the phantom field accessor (mods override the getter to read the field). */
+    private boolean mcc$base$isNoDespawnRequired() {
         Mob m = mcc$mob();
         return m != null && m.isPersistenceRequired();
     }
+
 
     public static EntityEquipmentSlot getSlotForItemStack(ItemStack stack) {
         var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack);
@@ -488,7 +500,7 @@ public abstract class EntityLiving extends EntityLivingBase {
     public EntityLivingBase attackTarget;
 
     public static boolean mcc$get$persistenceRequired(EntityLiving e) {
-        return e.isNoDespawnRequired();
+        return e.mcc$base$isNoDespawnRequired();
     }
 
     public static void mcc$set$persistenceRequired(EntityLiving e, boolean v) {
@@ -496,7 +508,7 @@ public abstract class EntityLiving extends EntityLivingBase {
     }
 
     public static EntityLivingBase mcc$get$attackTarget(EntityLiving e) {
-        return e.getAttackTarget();
+        return e.mcc$base$getAttackTarget();
     }
 
     public static void mcc$set$attackTarget(EntityLiving e, EntityLivingBase v) {

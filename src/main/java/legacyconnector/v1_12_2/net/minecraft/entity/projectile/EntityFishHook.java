@@ -56,7 +56,7 @@ public class EntityFishHook extends Entity {
     }
 
     public static EntityPlayer mcc$get$angler(EntityFishHook e) {
-        return e.getAngler();
+        return e.mcc$base$getAngler();
     }
 
     public static void mcc$set$angler(EntityFishHook e, EntityPlayer v) {
@@ -149,10 +149,16 @@ public class EntityFishHook extends Entity {
     }
 
     public EntityPlayer getAngler() {
+        return mcc$base$getAngler();
+    }
+
+    /** The value of {@link #getAngler()}, for the phantom field accessor (mods override the getter to read the field). */
+    private EntityPlayer mcc$base$getAngler() {
         var h = mcc$hook();
         if (h != null) return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(h.getPlayerOwner()) instanceof EntityPlayer p ? p : mcc$angler;
         return mcc$angler;
     }
+
 
     public void setLureSpeed(int speed) {
         mcc$lureSpeed = speed;

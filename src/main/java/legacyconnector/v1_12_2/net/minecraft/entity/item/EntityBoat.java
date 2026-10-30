@@ -83,14 +83,14 @@ public class EntityBoat extends Entity {
     }
 
     public static Status mcc$get$status(EntityBoat e) {
-        return e.getBoatStatus();
+        return e.mcc$base$getBoatStatus();
     }
 
     public static void mcc$set$status(EntityBoat e, Status v) {
     }
 
     public static Status mcc$get$previousStatus(EntityBoat e) {
-        return e.getBoatStatus();
+        return e.mcc$base$getBoatStatus();
     }
 
     public static void mcc$set$previousStatus(EntityBoat e, Status v) {
@@ -183,12 +183,18 @@ public class EntityBoat extends Entity {
     }
 
     public Status getBoatStatus() {
+        return mcc$base$getBoatStatus();
+    }
+
+    /** The value of {@link #getBoatStatus()}, for the phantom field accessor (mods override the getter to read the field). */
+    private Status mcc$base$getBoatStatus() {
         var m = mcc$entity;
         if (m == null) return Status.ON_LAND;
         if (m.isUnderWater()) return m.level().getFluidState(m.blockPosition().above()).isSource() ? Status.UNDER_WATER : Status.UNDER_FLOWING_WATER;
         if (m.isInWater()) return Status.IN_WATER;
         return m.onGround() ? Status.ON_LAND : Status.IN_AIR;
     }
+
 
     /** The boat item of its wood. */
     public legacyconnector.v1_12_2.net.minecraft.item.Item getItemBoat() {

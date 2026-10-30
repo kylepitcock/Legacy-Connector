@@ -536,7 +536,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     /** cachedUniqueIdString: the entity's id as text (kept by the modern entity; writes are ignored, as the id is the entity's own). */
     public static String mcc$get$cachedUniqueIdString(Entity e) {
-        return e.getCachedUniqueIdString();
+        return e.mcc$base$getCachedUniqueIdString();
     }
 
     public static void mcc$set$cachedUniqueIdString(Entity e, String v) {
@@ -988,8 +988,14 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     }
 
     public String getCachedUniqueIdString() {
+        return mcc$base$getCachedUniqueIdString();
+    }
+
+    /** The value of {@link #getCachedUniqueIdString()}, for the phantom field accessor (mods override the getter to read the field). */
+    private String mcc$base$getCachedUniqueIdString() {
         return getUniqueID().toString();
     }
+
 
     public String getName() {
         if (mcc$entity == null) {
