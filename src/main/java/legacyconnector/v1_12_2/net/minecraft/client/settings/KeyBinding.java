@@ -20,6 +20,8 @@ public class KeyBinding implements Comparable<KeyBinding> {
     private static final Set<String> KEYBIND_SET = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final Set<String> USED_NAMES = new HashSet<>();
     private static boolean modernRegistered;
+    /** Forge: bindings by key code (answered from the live bindings). */
+    public static final legacyconnector.v1_12_2.net.minecraftforge.client.settings.KeyBindingMap HASH = new legacyconnector.v1_12_2.net.minecraftforge.client.settings.KeyBindingMap();
 
     private final String keyDescription;
     private final int keyCodeDefault;
