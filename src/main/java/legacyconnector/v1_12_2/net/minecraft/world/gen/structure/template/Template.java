@@ -440,4 +440,17 @@ public class Template {
     static String resourcePath(ResourceLocation id) {
         return "/assets/" + id.getNamespace() + "/structures/" + id.getPath() + ".nbt";
     }
+
+    /** An entity saved in a template: exact position, block position and its NBT. */
+    public static class EntityInfo {
+        public final legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d pos;
+        public final BlockPos blockPos;
+        public final NBTTagCompound entityData;
+
+        public EntityInfo(legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d vecIn, BlockPos posIn, NBTTagCompound compoundIn) {
+            this.pos = vecIn;
+            this.blockPos = posIn;
+            this.entityData = compoundIn;
+        }
+    }
 }

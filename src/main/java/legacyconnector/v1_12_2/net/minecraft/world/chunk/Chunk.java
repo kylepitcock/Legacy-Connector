@@ -402,4 +402,38 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
         if (world != null && (access != null || world.mcc$level() != null)) return world.getBiome(pos);
         return provider == null ? legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS : provider.getBiome(pos, legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS);
     }
+
+    // ------------------------------------------------------------------ area W: legacy fields
+
+    /** Phantom: redirected to {@link #mcc$get$dirty} (whether the chunk has unsaved changes; setting it marks the chunk). */
+    @Deprecated
+    public boolean dirty;
+    /** Phantom: redirected to {@link #mcc$get$storageArrays} (the 16 sections, see {@link #getBlockStorageArray}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] storageArrays;
+    /** Phantom: redirected to {@link #mcc$get$precipitationHeightMap} (per column: the y where rain and snow land). */
+    @Deprecated
+    public int[] precipitationHeightMap;
+
+    public static boolean mcc$get$dirty(Chunk c) {
+        return c.needsSaving(false);
+    }
+
+    public static void mcc$set$dirty(Chunk c, boolean v) {
+        if (v) c.markDirty();
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.ExtendedBlockStorage[] mcc$get$storageArrays(Chunk c) {
+        return c.getBlockStorageArray();
+    }
+
+    public static int[] mcc$get$precipitationHeightMap(Chunk c) {
+        int[] out = new int[256];
+        for (int i = 0; i < 16; i++) {
+            for (int j = 0; j < 16; j++) {
+                out[j << 4 | i] = c.getPrecipitationHeight(new BlockPos((c.x << 4) + i, 0, (c.z << 4) + j)).getY();
+            }
+        }
+        return out;
+    }
 }
