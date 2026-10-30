@@ -319,7 +319,12 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     @Override
     public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
         World w = world(level);
-        legacy.randomDisplayTick(w, pos.getX(), pos.getY(), pos.getZ(), new Random(random.nextLong()));
+        try {
+            legacy.randomDisplayTick(w, pos.getX(), pos.getY(), pos.getZ(), new Random(random.nextLong()));
+        } catch (RuntimeException | LinkageError e) {
+            // particles only: a block with a metadata its effect code does not expect must not crash the client
+            legacyFailure("randomDisplayTick", e);
+        }
     }
 
     @Override
