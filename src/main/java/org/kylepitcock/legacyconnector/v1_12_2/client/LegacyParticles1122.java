@@ -113,6 +113,11 @@ public final class LegacyParticles1122 {
         level.addParticle(options, x, y, z, vx, vy, vz);
     }
 
+    /** The modern particle of a 1.12 {@code EnumParticleTypes} id (no speed or parameters), or null. */
+    public static ParticleOptions mcc$options(int id) {
+        return options(id, 0.0D, 0.0D, 0.0D, new int[0]);
+    }
+
     private static ParticleOptions options(int id, double vx, double vy, double vz, int[] params) {
         return switch (id) {
             case 0 -> ParticleTypes.POOF;

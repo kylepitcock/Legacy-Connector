@@ -27,6 +27,9 @@ import org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122;
 public abstract class RenderLivingBase<T extends EntityLivingBase> extends Render<T> {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final DynamicTexture TEXTURE_BRIGHTNESS = null;
+    /** Forge: how far away name tags show (blocks), and while the entity sneaks. */
+    public static float NAME_TAG_RANGE = 64.0F;
+    public static float NAME_TAG_RANGE_SNEAK = 32.0F;
     protected ModelBase mainModel;
     protected FloatBuffer brightnessBuffer = GLAllocation.createDirectFloatBuffer(4);
     protected List<LayerRenderer<T>> layerRenderers = Lists.newArrayList();
@@ -256,7 +259,7 @@ public abstract class RenderLivingBase<T extends EntityLivingBase> extends Rende
     public void renderName(T entity, double x, double y, double z) {
         if (!canRenderName(entity)) return;
         double distance = renderManager.renderViewEntity == null ? 0.0D : entity.getDistanceSq(renderManager.renderViewEntity);
-        float range = entity.isSneaking() ? 32.0F : 64.0F;
+        float range = entity.isSneaking() ? NAME_TAG_RANGE_SNEAK : NAME_TAG_RANGE;
         if (distance >= (double) (range * range)) return;
         String name = entity.getDisplayName().getFormattedText();
         GlStateManager.alphaFunc(516, 0.1F);

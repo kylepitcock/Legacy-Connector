@@ -81,6 +81,17 @@ public final class ClientArrays {
         return true;
     }
 
+    /** The contents of the emulated buffer bound to {@code target}, or null when a real (or no) buffer is bound. */
+    public static ByteBuffer boundData(int target) {
+        int buffer = bound(target);
+        return isEmulated(buffer) ? BUFFERS.get(buffer) : null;
+    }
+
+    /** Whether {@code id} names a live emulated buffer. */
+    public static boolean exists(int id) {
+        return BUFFERS.containsKey(id);
+    }
+
     private static ByteBuffer copy(Buffer data) {
         ByteBuffer out;
         if (data instanceof FloatBuffer f) {
