@@ -28,7 +28,7 @@ public class ChunkCache implements IBlockAccess {
         this.isEmpty = true;
         for (int cx = chunkX; cx <= lastX; cx++) {
             for (int cz = chunkZ; cz <= lastZ; cz++) {
-                Chunk chunk = world == null ? null : world.getChunkFromChunkCoords(cx, cz);
+                Chunk chunk = world == null ? null : world.mcc$chunkOrNull(cx, cz);
                 if (chunk == null) continue;
                 chunkArray[cx - chunkX][cz - chunkZ] = chunk;
                 if (!chunk.getAreLevelsEmpty(y1, y2)) isEmpty = false;

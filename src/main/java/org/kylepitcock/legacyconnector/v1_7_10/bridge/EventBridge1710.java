@@ -463,6 +463,9 @@ public final class EventBridge1710 {
                 else e.setAmount(legacy.ammount);
             }
         });
+        // Forge's ISpecialArmor: worn pieces that absorb damage by their own rules (ProjectE's matter armour: 80% less damage, none from
+        // lava, drowning or mobs) take their share before the modern armour maths runs on what is left.
+        gameBus.addListener((LivingIncomingDamageEvent e) -> specialArmor(e));
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
             if (!wants(forge(), LivingDeathEvent.class)) return;
             if (forge().post(new LivingDeathEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), legacySource(e.getSource())))) e.setCanceled(true);
@@ -954,6 +957,31 @@ public final class EventBridge1710 {
     private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
             net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
     private static int armorTickFailures;
+    private static int specialArmorFailures;
+
+    /** Applies the {@code ISpecialArmor} pieces a living entity wears to incoming damage (1.7.10 slots: 0 boots .. 3 helmet). */
+    private static void specialArmor(LivingIncomingDamageEvent e) {
+        if (e.isCanceled() || e.getAmount() <= 0.0F || specialArmorFailures > 20) return;
+        var living = e.getEntity();
+        ItemStack[] worn = null;
+        for (int i = 0; i < 4; i++) {
+            var stack = living.getItemBySlot(ARMOR_SLOTS[3 - i]);
+            if (stack.isEmpty() || !(stack.getItem() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemAdapter adapter)
+                    || !(adapter.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraftforge.common.ISpecialArmor)) continue;
+            if (worn == null) worn = new ItemStack[4];
+            worn[i] = ItemStack.mcc$wrap(stack);
+        }
+        if (worn == null) return;
+        try {
+            EntityLivingBase victim = (EntityLivingBase) EntityBridge.wrap(living);
+            float left = legacyconnector.v1_7_10.net.minecraftforge.common.ISpecialArmor.ArmorProperties.ApplyArmor(victim, worn,
+                    legacySource(e.getSource()), e.getAmount());
+            if (left <= 0.0F) e.setCanceled(true);
+            else e.setAmount(left);
+        } catch (RuntimeException | LinkageError ex) {
+            if (specialArmorFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").error("ISpecialArmor of {} failed", living, ex);
+        }
+    }
 
     /** 1.7.10 called {@code Item.onArmorTick} for every worn armor stack on every player tick (boots of the traveller, hover armor, ...). */
     private static void armorTick(net.minecraft.world.entity.player.Player player) {
