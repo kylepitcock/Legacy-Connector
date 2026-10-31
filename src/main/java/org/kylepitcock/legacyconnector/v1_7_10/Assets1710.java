@@ -443,6 +443,10 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             model.addProperty("parent", "minecraft:block/crop");
             tex.addProperty("crop", faces[0]);
             model.addProperty("render_type", "minecraft:cutout");
+        } else if (rt == 27) {
+            // Dragon egg shape (RenderBlocks.renderBlockDragonEgg): Witchery's infinity egg is a recoloured one.
+            model.addProperty("parent", "minecraft:block/dragon_egg");
+            tex.addProperty("all", faces[1]);
         } else if (rt == 1 || rt == 40 || plantLike(b, rt)) {
             model.addProperty("parent", tinted(b) ? "minecraft:block/tinted_cross" : "minecraft:block/cross");
             tex.addProperty("cross", faces[0]);
