@@ -201,6 +201,15 @@ public final class LegacySprites {
         private static byte[] modernResource(String ns, String path) {
             byte[] direct = readModern(ns, path);
             if (direct != null) return direct;
+            if (ns.equals("minecraft")) {
+                // Vanilla files that moved (textures/entity/steve.png): the fallback skin of downloaded player skins, which
+                // Witchery's corpses, reflections and player copies show until the download is done.
+                var moved = TextureLocations.modern(ns, path);
+                if (!moved.getPath().equals(path)) {
+                    byte[] renamed = readModern(moved.getNamespace(), moved.getPath());
+                    if (renamed != null) return renamed;
+                }
+            }
             // Vanilla textures under their 1.7.10 names (textures/blocks/planks_oak.png) live under other names now.
             if (ns.equals("minecraft") && path.endsWith(".png")) {
                 boolean block = path.startsWith("textures/blocks/");

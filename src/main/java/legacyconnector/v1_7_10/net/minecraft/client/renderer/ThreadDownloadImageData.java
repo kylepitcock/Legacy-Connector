@@ -50,7 +50,15 @@ public class ThreadDownloadImageData extends SimpleTexture {
 
     @Override
     public void loadTexture(IResourceManager manager) throws IOException {
-        if (bufferedImage == null && textureLocation != null) super.loadTexture(manager);
+        if (bufferedImage == null && textureLocation != null) {
+            try {
+                super.loadTexture(manager);
+            } catch (IOException e) {
+                // 1.7.10 threw here, before starting the download; its fallback images always existed. A missing fallback
+                // must not keep the real image from being downloaded.
+                logger.debug("No fallback image {} for a downloaded texture: {}", textureLocation, e.toString());
+            }
+        }
         if (imageThread != null) return;
         if (field_152434_e != null && field_152434_e.isFile()) {
             try {
