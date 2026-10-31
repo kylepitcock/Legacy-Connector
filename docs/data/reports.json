@@ -95,6 +95,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/witchery/files/2234410",
    "date": "2026-10-30",
    "open": true
+  },
+  {
+   "issue": 110,
+   "mod": "SRParasites-1.10.9",
+   "mc": "1.8 - 1.12.2",
+   "status": "partial",
+   "details": "First look at scape & run parasites and already noticing some issues. - Rupters seem to not attack any mobs except the player, and even then seem to take a few moments to do so. - Rendering issues with the medium incomplete form - call of the hive effect particles are blue & icon is missing textures - sounds of the mobs so far seem to be controlled by the friendly creatures volume slider instead …",
+   "lc": "0.3.6",
+   "neoforge": "21.1.257",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites/files/all?page=1&pageSize=20&showAlphaFiles=show",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
