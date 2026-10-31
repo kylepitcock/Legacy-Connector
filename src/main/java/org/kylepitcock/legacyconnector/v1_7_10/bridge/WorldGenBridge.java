@@ -60,7 +60,9 @@ public final class WorldGenBridge {
         World world = World.mcc$wrap(level);
         long chunkSeed = chunkSeed(level.getSeed(), chunkX, chunkZ);
         Random fmlRandom = new Random(chunkSeed);
-        org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
+        // ---- InPlaceStructureGuard: a call that builds into a modern structure is undone (see the class)
+        org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator,
+                () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY)));
     }
 
     /** FML's per-chunk seed ({@code GameRegistry.generateWorld}): every generator starts from it. */
@@ -115,14 +117,17 @@ public final class WorldGenBridge {
         Random fmlRandom = new Random(worldSeed);
         long chunkSeed = chunkSeed(worldSeed, chunkX, chunkZ);
         // the chunk provider's populate came first in 1.7.10, with its terrain events
-        if (!modDimension) TerrainEvents1710.populate(level, world, chunkX, chunkZ, DUMMY);
+        if (!modDimension) org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, "populate events",
+                () -> TerrainEvents1710.populate(level, world, chunkX, chunkZ, DUMMY));
         // 1.7.10 decorated one chunk at a time on the server thread, and generators keep their state in plain fields and
         // HashMaps (CustomOreGen's per-world caches and geometry buffers): a mod's generators run on one thread at a time.
         for (Entry e : gens) {
             fmlRandom.setSeed(chunkSeed);
             IChunkProvider provider = modDimension ? chunkGenerator : DUMMY;
             try {
-                org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, DUMMY));
+                Runnable call = () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, DUMMY));
+                if (modDimension) call.run();
+                else org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator, call); // InPlaceStructureGuard
             } catch (RuntimeException | LinkageError ex) {
                 int n = DIMENSION_FAILURES.incrementAndGet();
                 if (n <= 3 || n % 200 == 0) {

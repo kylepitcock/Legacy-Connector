@@ -36,7 +36,19 @@ public abstract class MapGenStructure extends MapGenBase {
         }
     }
 
+    /**
+     * In a dimension where this generator is a modern structure ({@code MapGenStructures1710}) the game lays out the starts: the
+     * legacy pass over the neighbouring chunks is skipped (it would also reseed {@link #rand} under the game's lay-out).
+     */
+    @Override
+    public void generate(legacyconnector.v1_7_10.net.minecraft.world.chunk.IChunkProvider provider, World world, int chunkX, int chunkZ, Block[] blocks) {
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.MapGenStructures1710.modern(this, world, false)) return;
+        super.generate(provider, world, chunkX, chunkZ, blocks);
+    }
+
     public boolean generateStructuresInChunk(World world, Random rand, int cx, int cz) {
+        // a modern structure: the game places its pieces in this chunk, now that the mod asked for them
+        if (org.kylepitcock.legacyconnector.v1_7_10.bridge.MapGenStructures1710.modern(this, world, true)) return false;
         int k = (cx << 4) + 8;
         int l = (cz << 4) + 8;
         boolean flag = false;
@@ -146,6 +158,26 @@ public abstract class MapGenStructure extends MapGenBase {
             field_143029_e.markDirty();
         } catch (RuntimeException e) {
             // a start that cannot write itself is just not recorded
+        }
+    }
+
+    /**
+     * The start this generator lays out at a chunk, or null: what 1.7.10's {@code generate} pass did for that chunk (same seeding,
+     * the generator's own {@link #canSpawnStructureAtCoords} and {@link #getStructureStart}), for the modern structure. The caller
+     * holds the mod's generation lock.
+     */
+    public StructureStart mcc$startAt(World world, int cx, int cz) {
+        synchronized (this) {
+            this.worldObj = world;
+            func_143027_a(world);
+            long seed = world.getSeed();
+            this.rand.setSeed(seed);
+            long l = this.rand.nextLong();
+            long i1 = this.rand.nextLong();
+            this.rand.setSeed((long) cx * l ^ (long) cz * i1 ^ seed);
+            this.rand.nextInt();
+            if (!this.canSpawnStructureAtCoords(cx, cz)) return null;
+            return this.getStructureStart(cx, cz);
         }
     }
 

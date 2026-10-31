@@ -98,6 +98,56 @@ biome features) keep running their deep pass from the legacy decorator.
 
 ## Structures, fluids and input
 
+### Legacy structures as modern structures
+
+A 1.7.10 `MapGenStructure` that a mod drives from its own world generator (an `IWorldGenerator` or a `PopulateChunkEvent`
+handler calling `generate` and `generateStructuresInChunk`, like Anti-Gravity's stars) is a real modern structure
+(`core/worldgen/LegacyStructure*`, 1.7.10 side `v1_7_10/bridge/MapGenStructures1710`). The generated data pack holds, per
+generator, under the legacy mod's namespace and stable across sessions (`<mod>:legacy/<structure name>`):
+
+- `data/<mod>/worldgen/structure/legacy/<name>.json`: type `legacyconnector:legacy_structure`, step `top_layer_modification` (FML ran mod
+  generators after decoration), no terrain adaptation. Each legacy `StructureComponent` is one piece
+  (`legacyconnector:legacy_piece`) with the component's box; placing it runs `addComponentParts` for the chunk. A start class that
+  overrides `generateStructure` is one piece covering the start. Pieces save the component's legacy NBT when the mod registered it
+  with `MapGenStructureIO`, otherwise the start is laid out again from the seed.
+- `.../worldgen/structure_set/legacy/<name>.json`: `random_spread` with spacing 1, separation 0: every chunk is a candidate and the legacy
+  `canSpawnStructureAtCoords` decides, with the 1.7.10 seeding (`MapGenStructure.mcc$startAt`), so starts are exactly as frequent
+  and where they were in 1.7.10 for the same seed. No exclusion zone by default (it would also drop starts near village chunks
+  without a village); `-Dlegacyconnector.structureVillageDistance=N` adds one around `minecraft:villages`.
+- `.../tags/worldgen/biome/has_structure/legacy/<name>.json`: `#minecraft:is_overworld` plus the legacy spawn biome list found in a
+  field of the generator, mapped to modern biomes. The legacy check stays authoritative; a pack can narrow the tag.
+
+The pieces are placed in a chunk only when the mod's own call asks for that generator's structures there
+(`generateStructuresInChunk` no longer places anything itself, `generate` no longer lays out starts), so the mod's dimension checks
+and config switches still decide. The game and the mod's call meet in the same chunk's decoration, in either order (a piece handed
+over first waits for the call). `/locate structure <mod>:legacy/<name>` works natively. What stays on the 1.7.10 path: generators
+constructed after loading (mod dimensions' chunk providers), generators that override `generate`/`generateStructuresInChunk`
+(CustomOreGen, HBM), the layer's vanilla stand-ins, mod dimensions, the deep pass (skipped for modern ones) and levels without the
+set (superflat). `-Dlegacyconnector.modernStructures=false` turns it off. Not ported: Forge `InitMapGenEvent` replacements of
+vanilla's village/temple generators (the modern overworld has its own), `hasStructureAt` for modern ones (always false).
+
+### Legacy generators that build in place
+
+Most legacy structures (ChromatiCraft's shrines, Thaumcraft's obelisks, Witchery's huts) are written block by block by an
+`IWorldGenerator`; nothing says which generator is a structure generator. `InPlaceStructureGuard` keeps them out of modern
+structures without that knowledge, and without changing their chance per chunk:
+
+- Only in a chunk where a modern structure piece (not a legacy one) reaches into the decorated 3x3 area does it do anything.
+- There, each legacy generator call (and the populate events) is journaled: every write keeps the block it replaced. A write into
+  a modern piece's box is refused, unless it only turns natural ground into another non-air block (ores under a house).
+- When the call built something (24 or more "build" writes: a block into air, water or a plant, a block removed, a block entity)
+  and at least 4 of them were refused, it was a structure crossing a modern one: the whole call is undone (blocks, block
+  entities, entities it added, writes it deferred to neighbouring chunks), as if the generator had skipped this chunk. A call
+  with fewer refused writes stays minus those blocks (a flower or some leaves inside a house's box).
+- Pieces of legacy structures made modern go through the same check against the other structures (undone per chunk).
+
+Limits: a mixed generator (ores, trees and structures in one call) loses its ores in an undone chunk too; a structure spanning
+several chunks is undone only in the chunks where it hits the modern structure; the mod's own records of what it built
+(saved data, registries) are not undone. Thresholds: `-Dlegacyconnector.inPlaceGuard.buildMin`, `...refusedMin`; off:
+`-Dlegacyconnector.inPlaceGuard=false`. 1.12.2 generators are not journaled yet.
+
+### Legacy structure code
+
 `MapGenBase`, `MapGenStructure`, `StructureStart`, `StructureComponent` and `StructureBoundingBox` are ported, so mods'
 dungeons, villages and ruins generate through their own legacy code (structure starts are recomputed from the seed rather
 than persisted). Buildings that mods add to vanilla villages (Forge `IVillageCreationHandler`: Witchery's shops and walls,

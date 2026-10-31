@@ -301,6 +301,11 @@ public class World implements IBlockAccess {
         return DEEP_PASSES.get() != 0 && DEEP_SHIFT.get() != null;
     }
 
+    /** Whether this thread runs a deep pass (legacy structures made modern are placed once, by the game: MapGenStructures1710). */
+    public static boolean mcc$inDeepPass() {
+        return inDeepPass();
+    }
+
     /** A modern height (surface scans) as the legacy code of this thread sees it. */
     private static int legacyY(int modernY) {
         return DEEP_PASSES.get() == 0 ? modernY : modernY - deepShift();
@@ -449,8 +454,10 @@ public class World implements IBlockAccess {
      */
     private void deferOutsideRegion(BlockPos p, BlockState state, int meta) {
         if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= 0 && inDeepPass()) return;
-        if (state != null) org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state);
-        else org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
+        Runnable write = state != null ? () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state)
+                : () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
+        // a guarded generator call (InPlaceStructureGuard) keeps its deferred writes until it is known to stay
+        if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.holdDeferred(r, write)) write.run();
     }
 
     /** An ore placed into deepslate (or over a deepslate ore) becomes the ore's deepslate variant. */
@@ -483,6 +490,7 @@ public class World implements IBlockAccess {
             return false;
         }
         state = deepslateOre(state, p);
+        if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), p, state)) return false; // into a modern structure
         TileEntityBridge.beforeBlockChange(this, p);
         TileEntityBridge.beforeSetBlock(this, p, state);
         if (connectsToNeighbours(state)) {
@@ -536,11 +544,13 @@ public class World implements IBlockAccess {
         BlockState current = lvl().getBlockState(p);
         BlockState next = BlockBridge.withMeta(current, meta);
         if (next == current) return false;
+        if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), p, next)) return false;
         return lvl().setBlock(p, next, flags);
     }
 
     public boolean setBlockToAir(int x, int y, int z) {
         if (outsideRegion(pos(x, y, z))) return false;
+        if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), pos(x, y, z), Blocks.AIR.defaultBlockState())) return false;
         TileEntityBridge.beforeBlockChange(this, pos(x, y, z));
         return lvl().setBlock(pos(x, y, z), Blocks.AIR.defaultBlockState(), 3);
     }
