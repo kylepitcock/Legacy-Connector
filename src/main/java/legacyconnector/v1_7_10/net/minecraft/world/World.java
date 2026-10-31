@@ -1162,7 +1162,7 @@ public class World implements IBlockAccess {
         Block existing = getBlock(x, y, z);
         AxisAlignedBB box = skipCollision ? null : block.getCollisionBoundingBoxFromPool(this, x, y, z);
         if (box != null && !checkNoEntityCollision(box, placer)) return false;
-        return existing.isReplaceable(this, x, y, z) && block.canPlaceBlockOnSide(this, x, y, z, side);
+        return existing.isReplaceable(this, x, y, z) && block.canReplace(this, x, y, z, side, stack);
     }
 
     // ------------------------------------------------------------------ sound, particles, explosions

@@ -916,7 +916,7 @@ public class Block {
     }
 
     public boolean canReplace(World world, int x, int y, int z, int side, ItemStack stack) {
-        return blockMaterial.isReplaceable();
+        return canPlaceBlockOnSide(world, x, y, z, side); // 1.7.10: Block.canReplace delegates to canPlaceBlockOnSide
     }
 
     /** Forge: called after a plant on this block grows. */
