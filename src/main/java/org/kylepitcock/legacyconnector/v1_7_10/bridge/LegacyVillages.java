@@ -166,8 +166,24 @@ public final class LegacyVillages {
                 LOG.warn("Legacy village component {} failed to extend the layout: {}", next.getClass().getName(), e.toString());
             }
         }
+        // Not every component checks the pieces it is given (Witchery's village walls ran along 1.7.10's village edge and cut
+        // straight through the modern village's houses): a legacy component that overlaps a modern building is not built.
+        List<StructureBoundingBox> buildings = new ArrayList<>();
+        for (int i = 0; i < existing; i++) if (pieces.get(i) instanceof Occupied o && o.getBoundingBox() != null) buildings.add(o.getBoundingBox());
         List<StructureComponent> out = new ArrayList<>();
-        for (int i = existing; i < pieces.size(); i++) out.add((StructureComponent) pieces.get(i));
+        int dropped = 0;
+        for (int i = existing; i < pieces.size(); i++) {
+            StructureComponent c = (StructureComponent) pieces.get(i);
+            StructureBoundingBox cb = c.getBoundingBox();
+            if (cb != null && buildings.stream().anyMatch(cb::intersectsWith)) {
+                dropped++;
+                continue;
+            }
+            out.add(c);
+        }
+        if (dropped > 0 && PLANNED.contains(start.getChunkPos().toLong()) == false) {
+            LOG.info("Village at chunk {}: {} legacy component(s) left out because they overlap the village's buildings", start.getChunkPos(), dropped);
+        }
         if (PLANNED.add(start.getChunkPos().toLong())) {
             LOG.info("Village at chunk {}: {} legacy component(s) planned: {}", start.getChunkPos(), out.size(), out.stream().map(c -> c.getClass().getSimpleName()).toList());
         }
