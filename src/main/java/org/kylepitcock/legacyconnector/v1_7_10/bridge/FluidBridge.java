@@ -281,6 +281,58 @@ public final class FluidBridge {
 
     // ------------------------------------------------------------------ the modern fluid objects
 
+    private static final java.util.Set<String> REPORTED_TEXTURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * The block atlas sprite for a legacy fluid's still or flowing icon. Mods set the icons in TextureStitchEvent.Post (Traincraft's diesel
+     * and refined fuel read them off their fluid block), which may not have run (or may have named a sprite the atlas lacks): candidates are
+     * tried in order, the fluid's own icon first, then the icons of its fluid block, and a sprite the atlas does not have is skipped
+     * (JEI and Jade showed the missing texture).
+     */
+    private static ResourceLocation resolveTexture(legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacy, boolean still) {
+        java.util.List<legacyconnector.v1_7_10.net.minecraft.util.IIcon> icons = new java.util.ArrayList<>();
+        try {
+            icons.add(still ? legacy.getStillIcon() : legacy.getFlowingIcon());
+            icons.add(legacy.getStillIcon());
+            icons.add(legacy.getFlowingIcon());
+            var block = legacy.getBlock();
+            if (block != null) {
+                icons.add(block.getIcon(still ? 1 : 2, 0));
+                icons.add(block.getIcon(1, 0));
+                icons.add(block.getIcon(2, 0));
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a throwing icon lookup: the candidates found so far are used
+        }
+        ResourceLocation first = null;
+        for (var icon : icons) {
+            if (icon == null) continue;
+            String modern = icon.mcc$modernName();
+            if (modern == null || modern.equals("minecraft:missingno")) continue;
+            ResourceLocation loc = ResourceLocation.parse(org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(modern, true));
+            if (first == null) first = loc;
+            if (inBlockAtlas(loc)) return loc;
+        }
+        if (REPORTED_TEXTURES.add(legacy.getName())) {
+            LOG.warn("Legacy fluid {} has no usable {} sprite (icon {}); it shows the missing texture", legacy.getName(), still ? "still" : "flowing",
+                    first == null ? "not set" : first);
+        }
+        return first != null ? first : ResourceLocation.parse("minecraft:missingno");
+    }
+
+    /** Whether the client's block atlas holds the sprite (true when the atlas cannot be asked yet). */
+    private static boolean inBlockAtlas(ResourceLocation sprite) {
+        try {
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc == null || mc.getModelManager() == null) return true;
+            var atlas = mc.getModelManager().getAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS);
+            if (atlas == null) return true;
+            return atlas.getSprite(sprite) != atlas.getSprite(net.minecraft.client.renderer.texture.MissingTextureAtlasSprite.getLocation());
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
     private static final class LegacyFluidType extends FluidType {
         private final String name;
 
@@ -308,10 +360,7 @@ public final class FluidBridge {
             consumer.accept(new IClientFluidTypeExtensions() {
                 private ResourceLocation texture(boolean still) {
                     var legacy = FluidRegistry.getFluid(name);
-                    var icon = legacy == null ? null : still ? legacy.getStillIcon() : legacy.getFlowingIcon();
-                    if (icon == null && legacy != null) icon = legacy.getStillIcon();
-                    String n = icon == null ? "minecraft:missingno" : icon.mcc$modernName();
-                    return ResourceLocation.parse(org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(n, true));
+                    return legacy == null ? ResourceLocation.parse("minecraft:missingno") : resolveTexture(legacy, still);
                 }
 
                 @Override
