@@ -61,10 +61,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         synchronized (this) {
             mapTextureObjects.put(textureLocation, textureObj);
         }
-        if (textureObj instanceof TextureMap map) {
-            if (map.mcc$isBlocks()) return true; // the block atlas is the modern one
-            map.mcc$setLocation(textureLocation); // an atlas the mod stitches (or we stitch for it) once the block atlas is built
-        }
+        if (textureObj instanceof TextureMap) return true; // the block atlas is the modern one
         var manager = modernManager();
         if (manager == null || !com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
             synchronized (pending) {
@@ -113,29 +110,6 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
                 if (mapTextureObjects.get(e.getKey()) != e.getValue()) continue; // replaced or deleted meanwhile
             }
             register(manager, e.getKey(), e.getValue());
-        }
-    }
-
-    /**
-     * (Re)loads the atlases mods created, after the block atlas is built: by then the mods registered their sprites (in
-     * TextureStitchEvent.Pre) and the resources are loaded, which is the order 1.12's texture manager reloads them in.
-     */
-    public void mcc$reloadAtlases() {
-        TextureMap.mcc$setAtlasesReady();
-        java.util.List<TextureMap> maps = new java.util.ArrayList<>();
-        synchronized (this) {
-            for (ITextureObject o : mapTextureObjects.values()) {
-                if (o instanceof TextureMap m && !m.mcc$isBlocks()) maps.add(m);
-            }
-        }
-        flush();
-        for (TextureMap map : maps) {
-            try {
-                map.loadTexture(resourceManager);
-                map.mcc$logBuilt(0, 0);
-            } catch (Throwable e) {
-                LOGGER.warn("Loading the atlas {} failed", map.getClass().getName(), e);
-            }
         }
     }
 

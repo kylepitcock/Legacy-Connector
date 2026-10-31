@@ -22,9 +22,6 @@ public final class LegacyGlTexture1122 extends AbstractTexture {
 
     @Override
     public void load(ResourceManager resourceManager) throws IOException {
-        // a mod's own atlas is stitched once the block atlas is built ({@code TextureManager.mcc$reloadAtlases}), when its sprites are registered
-        if (legacy instanceof legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap map && !map.mcc$isBlocks()
-                && !legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureMap.mcc$atlasesReady()) return;
         legacy.loadTexture(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager());
     }
 

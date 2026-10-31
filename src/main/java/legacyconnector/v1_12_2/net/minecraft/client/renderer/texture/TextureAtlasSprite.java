@@ -33,8 +33,6 @@ public class TextureAtlasSprite {
     protected legacyconnector.v1_12_2.net.minecraft.client.resources.data.AnimationMetadataSection animationMetadata;
     /** The modern sprite this one was last synchronized with (null: not stitched yet). */
     private net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern;
-    /** A sprite of a mod's own atlas (not the block atlas): position, uvs and pixels come from its map's stitcher, never from the modern atlas. */
-    private boolean mcc$own;
 
     public TextureAtlasSprite(String spriteName) {
         iconName = spriteName;
@@ -109,7 +107,7 @@ public class TextureAtlasSprite {
 
     /** The modern sprite this one shows (stitched lazily if legacy code asks before the atlas reload told it). */
     public net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern() {
-        if (mcc$modern == null && !mcc$own) mcc$sync(Sprites1122.sprite(iconName));
+        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(iconName));
         return mcc$modern;
     }
 
@@ -118,13 +116,8 @@ public class TextureAtlasSprite {
         return mcc$modern;
     }
 
-    /** Marks this sprite as belonging to a mod-created atlas. */
-    public void mcc$own() {
-        mcc$own = true;
-    }
-
     private void ensure() {
-        if (mcc$modern == null && !mcc$own && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(iconName));
+        if (mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(iconName));
     }
 
     public int getOriginX() {
@@ -205,7 +198,6 @@ public class TextureAtlasSprite {
      * Legacy sprite loading from a PNG: the modern atlas loads the texture file of this sprite's name itself, so only the size is kept.
      */
     public void loadSprite(PngSizeInfo sizeInfo, boolean animated) {
-        mcc$own = true;
         resetSprite();
         width = sizeInfo.pngWidth;
         height = animated ? width : sizeInfo.pngHeight;
@@ -249,7 +241,6 @@ public class TextureAtlasSprite {
      * are filled by {@link #generateMipmaps}.
      */
     public void loadSpriteFrames(legacyconnector.v1_12_2.net.minecraft.client.resources.IResource resource, int mipmaplevels) throws java.io.IOException {
-        mcc$own = true;
         java.awt.image.BufferedImage image;
         try (java.io.InputStream in = resource.getInputStream()) {
             image = TextureUtil.readBufferedImage(in);
