@@ -39,7 +39,9 @@ public class TileEntitySign extends TileEntity {
 
     /** Writes the lines of {@link #signText} a mod changed back into the modern sign. */
     public void mcc$flush() {
-        if (mcc$sign == null) return;
+        // a sign of a chunk that is still being generated has no level yet: setText would notify clients through it (a village
+        // building replacing a sign during generation failed with a NullPointerException)
+        if (mcc$sign == null || mcc$sign.getLevel() == null) return;
         var text = mcc$sign.getFrontText();
         boolean changed = false;
         for (int i = 0; i < 4; i++) {
