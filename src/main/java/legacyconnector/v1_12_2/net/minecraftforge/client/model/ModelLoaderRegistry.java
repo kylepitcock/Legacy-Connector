@@ -167,6 +167,13 @@ public class ModelLoaderRegistry {
 
         @Override
         public IBakedModel bake(IModelState state, VertexFormat format, Function<ResourceLocation, TextureAtlasSprite> bakedTextureGetter) {
+            // a mod asking for a model in init (Dawn of Time bakes its custom models there): the game's model manager does not exist yet
+            var mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc == null || mc.getModelManager() == null) return new LazyBaked(this::bakeNow);
+            return bakeNow();
+        }
+
+        private IBakedModel bakeNow() {
             if (location == null) return mcc$missingBaked();
             if (location instanceof ModelResourceLocation mrl) {
                 var baking = org.kylepitcock.legacyconnector.v1_12_2.client.CustomModels1122.baking();
@@ -183,6 +190,57 @@ public class ModelLoaderRegistry {
             var modern = baking != null ? baking.get(key) : null;
             if (modern == null) modern = net.minecraft.client.Minecraft.getInstance().getModelManager().getModel(key);
             return org.kylepitcock.legacyconnector.v1_12_2.client.Models1122.legacy(modern);
+        }
+    }
+
+    /** A baked model that is looked up when first used (the game bakes its models after the mods' init). */
+    private static final class LazyBaked implements IBakedModel {
+        private final java.util.function.Supplier<IBakedModel> source;
+        private IBakedModel target;
+
+        LazyBaked(java.util.function.Supplier<IBakedModel> source) {
+            this.source = source;
+        }
+
+        private IBakedModel get() {
+            if (target == null) target = source.get();
+            return target;
+        }
+
+        @Override
+        public java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.BakedQuad> getQuads(
+                legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing side, long rand) {
+            return get().getQuads(state, side, rand);
+        }
+
+        @Override
+        public boolean isAmbientOcclusion() {
+            return get().isAmbientOcclusion();
+        }
+
+        @Override
+        public boolean isGui3d() {
+            return get().isGui3d();
+        }
+
+        @Override
+        public boolean isBuiltInRenderer() {
+            return get().isBuiltInRenderer();
+        }
+
+        @Override
+        public TextureAtlasSprite getParticleTexture() {
+            return get().getParticleTexture();
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ItemOverrideList getOverrides() {
+            return get().getOverrides();
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ItemCameraTransforms getItemCameraTransforms() {
+            return get().getItemCameraTransforms();
         }
     }
 
