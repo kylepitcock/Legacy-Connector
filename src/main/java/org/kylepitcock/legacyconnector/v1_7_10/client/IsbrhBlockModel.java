@@ -73,7 +73,8 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (translucent == null) return base;
         if (solid.isEmpty() && translucent.isEmpty()) {
             if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
-                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {})", handler.getClass().getName(), block.getClass().getName(), renderId);
+                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {}, tile entity at {}: {})", handler.getClass().getName(), block.getClass().getName(),
+                        renderId, pos, describeTile(level, pos));
             }
         } else if (FAILED.add("count:" + block.getClass().getName())) {
             LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}; {}", handler.getClass().getSimpleName(),
@@ -92,6 +93,9 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (started) tessellator.startDrawingQuads();
         try {
             legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = pass;
+            // The Tessellator is shared: a renderer that added a translation and then threw (or never took it back) must not
+            // shift every later block (Reika's pipes add the block position first and subtract it last).
+            tessellator.setTranslation(0, 0, 0);
             // Called right before drawing, as the chunk renderer did: some blocks note the pass here (BuildCraft pipes).
             block.canRenderInPass(pass);
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess access = BlockAccessView.of(level);
@@ -104,11 +108,13 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             handler.renderWorldBlock(access, pos.getX() - ox, pos.getY(), pos.getZ() - oz, block, renderId, new RenderBlocks(access));
         } catch (RuntimeException | LinkageError e) {
             if (FAILED.add(block.getClass().getName())) {
-                LOG.error("Legacy block renderer for {} failed; the block keeps its generated model", block.getClass().getName(), e);
+                LOG.error("Legacy block renderer for {} failed; the block keeps its generated model (render id {}, tile entity at {}: {})", block.getClass().getName(),
+                        renderId, pos, describeTile(level, pos), e);
             }
             return null;
         } finally {
             legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = -1;
+            tessellator.setTranslation(0, 0, 0);
             try {
                 if (started && tessellator.isDrawing) tessellator.draw();
             } finally {
@@ -116,6 +122,16 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             }
         }
         return IsbrhQuads.bake(capture, pos.getX() - ox, pos.getY(), pos.getZ() - oz, getParticleIcon(ModelData.EMPTY));
+    }
+
+    /** For the log: the legacy tile entity the handler sees at the position ("null" makes most pipe renderers draw nothing or throw). */
+    private static String describeTile(BlockAndTintGetter level, BlockPos pos) {
+        try {
+            var te = BlockAccessView.of(level).getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+            return te == null ? "null" : te.getClass().getName();
+        } catch (RuntimeException | LinkageError e) {
+            return "lookup failed: " + e;
+        }
     }
 
     /**
