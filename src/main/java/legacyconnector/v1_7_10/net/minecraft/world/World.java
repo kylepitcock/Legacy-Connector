@@ -1067,7 +1067,7 @@ public class World implements IBlockAccess {
         var hit = lvl().clip(new net.minecraft.world.level.ClipContext(start.mcc$modern(), end.mcc$modern(),
                 ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE,
                 liquids ? net.minecraft.world.level.ClipContext.Fluid.ANY : net.minecraft.world.level.ClipContext.Fluid.NONE,
-                net.minecraft.world.phys.shapes.CollisionContext.empty()));
+                org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyRayContext.INSTANCE));
         if (liquids) {
             var source = mcc$legacyLiquidSource(start, end, hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? null : hit.getLocation());
             if (source != null) return source;
