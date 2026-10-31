@@ -30,7 +30,8 @@ import org.slf4j.LoggerFactory;
  *
  * <ul>
  *     <li>Mod blocks: one modern {@link LegacyBlockAdapter} per legacy block; legacy metadata is the adapter's
- *     {@code meta} property, so {@code (block, meta)} maps 1:1 to a block state.</li>
+ *     {@code meta} property, so {@code (block, meta)} maps 1:1 to a block state. A metadata value that has a subtype item of its
+ *     own lives in a flattened subtype block ({@code mod:name_N}, see {@link BlockFlattening1710}) whose default state it is.</li>
  *     <li>Vanilla blocks: wrappers whose metadata is translated through {@link VanillaFlattening}.</li>
  *     <li>Modern-only blocks (new vanilla blocks, other modern mods): wrappers with a single metadata value.</li>
  * </ul>
@@ -500,7 +501,8 @@ public final class BlockBridge {
     }
 
     public static int legacyMeta(BlockState state) {
-        if (state.getBlock() instanceof LegacyBlockAdapter) return state.getValue(LegacyBlockAdapter.META);
+        if (state.getBlock() instanceof LegacyBlockAdapter) return LegacyBlockAdapter.metaOf(state);
+
         Block wrapper = legacyBlock(state);
         if (wrapper.mcc$vanilla == null || wrapper.mcc$vanilla.legacyId() < 0) return 0;
         int key = VanillaFlattening.legacyKey(state);

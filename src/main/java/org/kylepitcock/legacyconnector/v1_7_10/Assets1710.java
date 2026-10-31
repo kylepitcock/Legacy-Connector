@@ -241,6 +241,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         JsonObject state = new JsonObject();
         state.add("variants", variants);
         put(out, "assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", state);
+        if (!deepslate && b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter base) {
+            // flattened subtype blocks (BlockFlattening1710) show the base block's models of the metadata values they hold
+            for (var member : base.members()) {
+                ResourceLocation mid = BuiltInRegistries.BLOCK.getKey(member);
+                int[] metas = member.ownMetas();
+                JsonObject memberVariants = new JsonObject();
+                for (int meta : metas) memberVariants.add(metas.length == 1 ? "" : "meta=" + meta, variants.get("meta=" + meta).deepCopy());
+                JsonObject memberState = new JsonObject();
+                memberState.add("variants", memberVariants);
+                put(out, "assets/" + mid.getNamespace() + "/blockstates/" + mid.getPath() + ".json", memberState);
+            }
+        }
     }
 
     /**

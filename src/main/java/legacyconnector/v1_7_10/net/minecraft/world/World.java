@@ -467,11 +467,12 @@ public class World implements IBlockAccess {
             return state;
         }
         if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a) || a.isDeepVariant()) return state;
-        var twin = a.deepVariant();
+        var twin = a.familyBase().deepVariant(); // a flattened subtype block shares its base's twin
         if (twin == null) return state;
         BlockState current = lvl().getBlockState(p);
         boolean deep = current.is(Blocks.DEEPSLATE) || current.getBlock() == twin;
-        return deep ? twin.stateForMeta(state.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META)) : state;
+        return deep ? twin.stateForMeta(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.metaOf(state)) : state;
+
     }
 
     public boolean setBlock(int x, int y, int z, Block block, int meta, int flags) {

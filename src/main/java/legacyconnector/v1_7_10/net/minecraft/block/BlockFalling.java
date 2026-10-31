@@ -52,7 +52,7 @@ public class BlockFalling extends Block {
         if (!fallInstantly && level != null) {
             var pos = VanillaOps.pos(x, y, z);
             var state = level.getBlockState(pos);
-            if (state.getBlock() == org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modernBlock(this)) {
+            if (org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.sameFamily(state.getBlock(), org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.modernBlock(this))) {
                 net.minecraft.world.entity.item.FallingBlockEntity.fall(level, pos, state);
             }
             return;

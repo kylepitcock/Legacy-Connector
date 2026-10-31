@@ -47,8 +47,8 @@ public class LegacyBlockEntity extends BlockEntity {
                 }
                 if (legacy == null && (level != null || fallback != null)) {
                     Block block = (Block) ((LegacyBlockAdapter) getBlockState().getBlock()).legacy();
-                    if (!block.hasTileEntity(getBlockState().getValue(LegacyBlockAdapter.META))) return null;
-                    legacy = block.createTileEntity(level != null ? World.mcc$wrap(level) : fallback, getBlockState().getValue(LegacyBlockAdapter.META));
+                    if (!block.hasTileEntity(LegacyBlockAdapter.metaOf(getBlockState()))) return null;
+                    legacy = block.createTileEntity(level != null ? World.mcc$wrap(level) : fallback, LegacyBlockAdapter.metaOf(getBlockState()));
                 }
             } catch (RuntimeException | LinkageError e) {
                 // A tile entity that cannot be created must not take the server down (this runs while chunks are sent
@@ -99,21 +99,23 @@ public class LegacyBlockEntity extends BlockEntity {
     public void setBlockState(BlockState state) {
         BlockState old = getBlockState();
         super.setBlockState(state);
-        if (level != null && level.isClientSide && old.getBlock() == state.getBlock() && old.hasProperty(LegacyBlockAdapter.META)
-                && state.hasProperty(LegacyBlockAdapter.META)) {
-            refreshForMeta(old.getValue(LegacyBlockAdapter.META), state.getValue(LegacyBlockAdapter.META));
+        // the same legacy block: one modern block, or two flattened subtype blocks of it (a metadata change across subtypes)
+        boolean sameLegacyBlock = old.getBlock() instanceof LegacyBlockAdapter && LegacyBlockAdapter.sameFamily(old.getBlock(), state.getBlock());
+        int oldMeta = LegacyBlockAdapter.metaOf(old), newMeta = LegacyBlockAdapter.metaOf(state);
+        if (level != null && level.isClientSide && sameLegacyBlock) {
+            refreshForMeta(oldMeta, newMeta);
         }
         // 1.7.10's Chunk.setBlockMetadata told a kept tile entity its new metadata (updateContainingBlockInfo, blockMetadata = meta);
         // a cached getBlockMetadata() otherwise stays at the value read first. Witchery's fume funnel caches 0 before its facing
         // is set on placement and never draws the pipes to the oven beside it.
-        if (legacy != null && old.getBlock() == state.getBlock() && old.hasProperty(LegacyBlockAdapter.META) && state.hasProperty(LegacyBlockAdapter.META)
-                && !old.getValue(LegacyBlockAdapter.META).equals(state.getValue(LegacyBlockAdapter.META))) {
+        if (legacy != null && sameLegacyBlock && oldMeta != newMeta) {
             try {
                 legacy.updateContainingBlockInfo();
             } catch (RuntimeException | LinkageError ignored) {
                 // a mod's override that needs more world than it has here
             }
-            legacy.blockMetadata = state.getValue(LegacyBlockAdapter.META);
+            legacy.blockMetadata = newMeta;
+
         }
     }
 

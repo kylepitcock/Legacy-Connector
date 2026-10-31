@@ -13,7 +13,9 @@ import org.kylepitcock.legacyconnector.api.internal.Convert;
  *
  * <p>Legacy blocks keep their state as a metadata number 0-15; Legacy Connector represents it as one modern block with a
  * {@code meta} property (1.7.10: {@code LegacyBlockAdapter.META}; 1.12.2: mapped through the block's own
- * {@code getStateFromMeta}/{@code getMetaFromState}).
+ * {@code getStateFromMeta}/{@code getMetaFromState}). On 1.7.10, metadata values that have a subtype item of their own live in
+ * flattened subtype blocks ({@code mod:name_N}, the block of the item {@code mod:name_N}); use {@link #legacyMeta} and
+ * {@link #fromLegacy} rather than reading the property, which those blocks name {@code meta} but hold fewer values of.
  */
 public final class LegacyBlocks {
     private LegacyBlocks() {}

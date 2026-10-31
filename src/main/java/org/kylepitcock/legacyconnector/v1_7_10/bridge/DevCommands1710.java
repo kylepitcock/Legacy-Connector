@@ -94,7 +94,7 @@ public final class DevCommands1710 {
 
     private static List<ResourceLocation> legacyBlockIds() {
         List<ResourceLocation> out = new ArrayList<>();
-        for (var e : BuiltInRegistries.BLOCK.entrySet()) if (e.getValue() instanceof LegacyBlockAdapter) out.add(e.getKey().location());
+        for (var e : BuiltInRegistries.BLOCK.entrySet()) if (e.getValue() instanceof LegacyBlockAdapter a && !a.isFlattenedMember()) out.add(e.getKey().location());
         return out;
     }
 
@@ -202,14 +202,14 @@ public final class DevCommands1710 {
     private static int place(CommandSourceStack source, ResourceLocation id, int meta) throws CommandSyntaxException {
         ServerPlayer player = source.getPlayerOrException();
         var block = BuiltInRegistries.BLOCK.get(id);
-        if (!(block instanceof LegacyBlockAdapter)) {
+        if (!(block instanceof LegacyBlockAdapter adapter)) {
             source.sendFailure(Component.literal(id + " is not a legacy block"));
             return 0;
         }
         BlockPos target;
         HitResult hit = player.pick(8.0, 0.0F, false);
         target = hit instanceof BlockHitResult b && hit.getType() == HitResult.Type.BLOCK ? b.getBlockPos().relative(b.getDirection()) : player.blockPosition().relative(player.getDirection(), 2);
-        player.serverLevel().setBlockAndUpdate(target, block.defaultBlockState().setValue(LegacyBlockAdapter.META, meta));
+        player.serverLevel().setBlockAndUpdate(target, adapter.stateForMeta(meta));
         source.sendSuccess(() -> Component.literal("Placed " + id + "[meta=" + meta + "] at " + target.toShortString()), false);
         return 1;
     }
@@ -300,7 +300,8 @@ public final class DevCommands1710 {
             StringBuilder sb = new StringBuilder("Block ").append(BuiltInRegistries.BLOCK.getKey(block));
             if (block instanceof LegacyBlockAdapter adapter) {
                 var legacy = (legacyconnector.v1_7_10.net.minecraft.block.Block) adapter.legacy();
-                sb.append("  legacy class ").append(legacy.getClass().getName()).append("  meta ").append(state.getValue(LegacyBlockAdapter.META))
+                sb.append("  legacy class ").append(legacy.getClass().getName()).append("  meta ").append(LegacyBlockAdapter.metaOf(state))
+
                         .append("  render type ").append(legacy.getRenderType());
                 if (player.level().getBlockEntity(b.getBlockPos()) instanceof LegacyBlockEntity be) {
                     var te = be.legacy();

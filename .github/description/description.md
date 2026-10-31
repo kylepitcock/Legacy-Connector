@@ -154,6 +154,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `modernizeTextures` | `true` | Replaces old vanilla art inside legacy mod textures (copies of old blocks, items and GUIs, old stone/plank/brick backgrounds behind a mod's art) with the modern vanilla textures |
 | `deepLayer.enabled` | `true` | Runs legacy ore generators again below y=0 |
 | `deepLayer.excludeGenerators` | empty | Generators that shouldn't run below y=0 |
+| `blocks.flattenSubtypes` | `true` | Gives each legacy block subtype with its own item a block of its own, as in the 1.13 flattening, so modern mods see the right subtype |
 
 ## Current status
 
