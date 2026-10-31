@@ -236,8 +236,20 @@ public class TextureAtlasSprite implements IIcon {
         return getMinV() + (getMaxV() - getMinV()) * (float) v / 16.0F;
     }
 
+    /**
+     * The name 1.7.10 reported for the icon when it differs from the modern sprite id: vanilla icons are named bare
+     * ("cobblestone", not "minecraft:block/cobblestone"). Mods build file names and further icon names from it (Extra
+     * Utilities' compressed blocks read "textures/blocks/" + name + ".png" and register name + "_compressed_1").
+     */
+    public String mcc$legacyName;
+
     @Override
     public String getIconName() {
+        return mcc$legacyName != null ? mcc$legacyName : iconName;
+    }
+
+    @Override
+    public String mcc$modernName() {
         return iconName;
     }
 

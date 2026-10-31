@@ -314,7 +314,7 @@ public final class LegacySprites {
                     }
                     Built source = done.get(aliasOf(sprite));
                     if (source != null) {
-                        String aliasId = sprite.getIconName();
+                        String aliasId = sprite.mcc$modernName();
                         int c = aliasId.indexOf(':');
                         String aliasFile = "assets/" + aliasId.substring(0, c) + "/textures/" + aliasId.substring(c + 1) + ".png";
                         out.putIfAbsent(aliasFile, () -> source.png());
@@ -338,7 +338,7 @@ public final class LegacySprites {
                 ByteArrayOutputStream png = new ByteArrayOutputStream();
                 javax.imageio.ImageIO.write(image, "png", png);
                 byte[] bytes = png.toByteArray();
-                String id = sprite.getIconName(); // modern id "ns:blocks/name"
+                String id = sprite.mcc$modernName(); // modern id "ns:blocks/name"
                 int idColon = id.indexOf(':');
                 String file = "assets/" + id.substring(0, idColon) + "/textures/" + id.substring(idColon + 1) + ".png";
                 built[0]++;

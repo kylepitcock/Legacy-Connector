@@ -310,7 +310,7 @@ public final class FluidBridge {
                     var legacy = FluidRegistry.getFluid(name);
                     var icon = legacy == null ? null : still ? legacy.getStillIcon() : legacy.getFlowingIcon();
                     if (icon == null && legacy != null) icon = legacy.getStillIcon();
-                    String n = icon == null ? "minecraft:missingno" : icon.getIconName();
+                    String n = icon == null ? "minecraft:missingno" : icon.mcc$modernName();
                     return ResourceLocation.parse(org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(n, true));
                 }
 

@@ -75,7 +75,7 @@ public class Gui {
         }
         RenderContext.mcc$flushGui(gui);
         var sprite =net.minecraft.client.Minecraft.getInstance().getTextureAtlas(net.minecraft.world.inventory.InventoryMenu.BLOCK_ATLAS)
-                .apply(net.minecraft.resources.ResourceLocation.parse(icon.getIconName()));
+                .apply(net.minecraft.resources.ResourceLocation.parse(icon.mcc$modernName()));
         gui.blit(x, y, 0, width, height, sprite);
     }
 
