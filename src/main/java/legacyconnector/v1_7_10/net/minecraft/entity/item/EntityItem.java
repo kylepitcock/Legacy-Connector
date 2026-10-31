@@ -63,12 +63,21 @@ public class EntityItem extends Entity {
         e.mcc$item().setPickUpDelay(v);
     }
 
+    /** Whether legacy code set {@code hoverStart} (the modern item's own bob phase is final, so the value is kept here). */
+    private boolean mcc$hoverSet;
+
     public static float mcc$get$hoverStart(EntityItem e) {
+        if (e.mcc$hoverSet) return e.mcc$hover;
         return e.mcc$entity instanceof ItemEntity ie ? ie.bobOffs : e.mcc$hover;
     }
 
+    /**
+     * Witchery's placed items (pentacle, athame on an altar) are drawn from a new EntityItem each frame with {@code hoverStart = 0}
+     * for a fixed angle; the write was dropped, so each frame drew them at the new item's random angle and they span wildly.
+     */
     public static void mcc$set$hoverStart(EntityItem e, float v) {
         e.mcc$hover = v;
+        e.mcc$hoverSet = true;
     }
 
     public static int mcc$get$age(EntityItem e) {
