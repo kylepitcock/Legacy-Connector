@@ -28,3 +28,18 @@ What has been exercised in a real client (not just loaded), so contributors know
 - Legacy code that compares `instanceof` against a vanilla class (`ItemFood`, `ItemShears`) needs the vanilla item objects to be instances of those shim classes.
 - Test network mods across separate server ticks: placing a controller, cables and a machine inside one tick (a single probe call) leaves AE2 tiles without their grid nodes, which looks like a bug but is not what a player does.
 - Hard-coded height limits in legacy code (a lamp's minimum y of 5) misbehave in the deeper modern world.
+
+## Thaumcraft 4.2.3.5 headless server audit
+
+Driven with `./gradlew runServerSubTest -PselfTests=false -PserverScript=<dir>` (the server evaluates `<dir>/*.js` on its thread, see `core/ServerDevScript`; a mock `ServerPlayer` with a swallowing packet listener stands in for a client). Not a client check: rendering, GUIs and HUDs are not covered.
+
+| Area | Result |
+|---|---|
+| Aura nodes and wand | A node generates (aspects, base aspects, regeneration over ticks, NBT and description packet). The wand attached to nothing before: a legacy ray trace now hits a block through its bounds when its selection box is empty (nodes), so a wand held on a node draws vis and drains it |
+| Scanning, research notes | `ScanManager.completeScan` records the block and fills the aspect pool; all 162 research entries create parseable research notes (hex grid NBT) |
+| Essentia | Alchemy furnace fills an alembic; tubes move essentia between two jars when the target has the higher suction (a label); every Thaumcraft tile survives 60 updates, an NBT round trip and a description packet |
+| Taint | A biome set with `Utils.setBiomeAt` reads back as set (it read the fuzzy zoomed neighbour before, so taint fibres died at once); fibres then spread |
+| Golems and trunk | A gather-core golem picks up dropped items into its home chest; the Travelling Trunk teleports to its owner beyond 20 blocks (needs solid ground there) |
+| Tools | Thaumium, elemental and void tools have the right tool classes, harvest levels and speeds; the elemental axe fells the furthest log, the elemental shovel digs 3x3; mod hoes (Thaumium, elemental) now till grass and dirt |
+| Worldgen | Infused ore, greatwood and silverwood trees, magical forest and tainted land biomes, the Outer Lands (eldritch traps, crystals, crab spawners generate) |
+| Not verified | Arcane Lamp below y=5 (the lamp's own floor), goggles HUD and Thaumometer display, golem black spots, vis relay networks, thaumatorium recipes, hand mirror transport, eldritch guardian and warden fights, the sanity checker overlay (client only) |
