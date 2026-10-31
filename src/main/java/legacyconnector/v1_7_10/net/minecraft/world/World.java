@@ -710,6 +710,9 @@ public class World implements IBlockAccess {
     public void markBlockForUpdate(int x, int y, int z) {
         Level level = mcc$liveLevel();
         if (level == null) return;
+        // Client: the same block state is no change to the renderer, so a tile entity whose client copy changed (a conduit's
+        // connections arriving over the mod's own channel) must dirty the sections itself.
+        if (level.isClientSide()) legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(x - 1, y - 1, z - 1, x + 1, y + 1, z + 1);
         // Generation workers (lighting passes of mod chunk providers) must not read the live level: that waits for the
         // main thread, which may be waiting for the chunk being generated. Nothing is sent to clients for them yet anyway.
         if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) return;
@@ -726,6 +729,7 @@ public class World implements IBlockAccess {
     }
 
     public void markBlockRangeForRenderUpdate(int x1, int y1, int z1, int x2, int y2, int z2) {
+        if (isRemote) legacyconnector.v1_7_10.net.minecraft.client.renderer.RenderGlobal.mcc$dirty(x1 - 1, y1 - 1, z1 - 1, x2 + 1, y2 + 1, z2 + 1);
     }
 
     public void markTileEntityChunkModified(int x, int y, int z, TileEntity te) {
