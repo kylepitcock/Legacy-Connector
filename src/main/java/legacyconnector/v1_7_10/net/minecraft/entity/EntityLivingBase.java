@@ -204,9 +204,21 @@ public abstract class EntityLivingBase extends Entity {
     public ItemStack[] previousEquipment = new ItemStack[5];
 
     /** Called after the living-update event handlers ran, where vanilla's own update refreshed the copy. */
+    /** The modern stacks previousEquipment was last copied from (an unchanged slot is not wrapped again). */
+    private final net.minecraft.world.item.ItemStack[] mcc$previousModern = new net.minecraft.world.item.ItemStack[5];
+
+    /**
+     * Called after every LivingUpdateEvent (for every living entity, every tick): only slots whose modern stack changed are wrapped
+     * and copied again (wrapping all five slots each tick was 0.75% of the server tick in ATM10).
+     */
     public void mcc$syncPreviousEquipment() {
+        if (mcc$entity == null) return;
         for (int i = 0; i < 5; i++) {
-            ItemStack current = getEquipmentInSlot(i);
+            net.minecraft.world.item.ItemStack modern = mcc$living().getItemBySlot(mcc$slot(i));
+            net.minecraft.world.item.ItemStack last = mcc$previousModern[i];
+            if (last != null && net.minecraft.world.item.ItemStack.matches(last, modern)) continue;
+            mcc$previousModern[i] = modern.copy();
+            ItemStack current = ItemStack.mcc$wrap(modern);
             previousEquipment[i] = current == null ? null : current.copy();
         }
     }

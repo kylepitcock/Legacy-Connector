@@ -44,9 +44,13 @@ public final class LegacyVillages {
     /** The vanilla village house pools, by village type. */
     private static final List<String> VILLAGE_TYPES = List.of("plains", "desert", "savanna", "snowy", "taiga");
 
+    /** Total weight of 1.7.10's own village buildings (House4Garden 4, Church 20, House1 20, WoodHut 3, Hall 15, Field1 3, Field2 3, House2 15, House3 8). */
+    private static final float VANILLA_1710_WEIGHT = 91.0F;
+
     /**
-     * Adds every legacy village building to the house pool of each village type. 1.7.10 weights (vanilla's houses 3-20) are
-     * scaled to the modern pools' (2-ish per house); the jigsaw generator then picks them like the pool's other houses.
+     * Adds every legacy village building to the house pool of each village type, with the share of the village it had on 1.7.10:
+     * there a building of weight w was picked w times in (91 + the mods' weights) against vanilla's buildings, so here it gets
+     * w / 91 of the pool's own (non-empty) weight. The jigsaw generator then picks it like the pool's other houses.
      */
     private static void addToPools(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
         var handlers = VillagerBridge.creationHandlers();
@@ -56,12 +60,13 @@ public final class LegacyVillages {
         for (String type : VILLAGE_TYPES) {
             var pool = pools.get(net.minecraft.resources.ResourceLocation.withDefaultNamespace("village/" + type + "/houses"));
             if (pool == null) continue;
+            float poolWeight = houseWeight(pool);
             for (var handler : handlers) {
                 int weight;
                 try {
                     var w = handler.getVillagePieceWeight(new Random(handler.getClass().getName().hashCode()), 0);
-                    if (w == null) continue;
-                    weight = Math.max(1, Math.min(6, Math.round(w.villagePieceWeight / 4.0F)));
+                    if (w == null || w.villagePieceWeight <= 0) continue;
+                    weight = Math.max(1, Math.round(poolWeight * w.villagePieceWeight / VANILLA_1710_WEIGHT));
                 } catch (RuntimeException | LinkageError e) {
                     LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
                     continue;
@@ -72,6 +77,19 @@ public final class LegacyVillages {
             }
         }
         if (added > 0) LOG.info("Added {} legacy village building(s) to the village house pools", added);
+    }
+
+    /** The pool's weight of real buildings (empty elements, the pool's "no house here", left out). */
+    private static float houseWeight(net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool pool) {
+        java.util.Map<Object, Integer> counts = new java.util.IdentityHashMap<>();
+        var rnd = net.minecraft.util.RandomSource.create(0);
+        for (var e : pool.getShuffledTemplates(rnd)) {
+            if (e instanceof net.minecraft.world.level.levelgen.structure.pools.EmptyPoolElement) continue;
+            counts.merge(e, 1, Integer::sum);
+        }
+        int total = 0;
+        for (int c : counts.values()) total += c;
+        return Math.max(1, total);
     }
 
     @SuppressWarnings("unchecked")
