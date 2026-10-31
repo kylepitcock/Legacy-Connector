@@ -548,6 +548,15 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             if (b != null) return b;
         }
         if (!collisionList || !(getter instanceof Level level) || IN_LEGACY_SHAPE.get()[0]) return super.getCollisionShape(state, getter, pos, context);
+        if (!level.getBlockState(pos).is(this)) {
+            // a candidate state asked about before it is in the world (BlockItem.canPlace): 1.12 asked getCollisionBoundingBox then, never
+            // addCollisionBoxToList, and the mod's tile entity does not exist yet (RFTools' shield blocks read it there)
+            if (collisionBox) {
+                var b = legacyBox(state, getter, pos, true);
+                if (b != null) return b;
+            }
+            return super.getCollisionShape(state, getter, pos, context);
+        }
         List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new ArrayList<>();
         var mask = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 2,
                 pos.getY() + 2, pos.getZ() + 2);
