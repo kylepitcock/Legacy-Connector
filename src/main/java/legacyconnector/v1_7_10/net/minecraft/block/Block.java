@@ -471,9 +471,13 @@ public class Block {
 
     public legacyconnector.v1_7_10.net.minecraft.item.ItemStack getPickBlock(legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
             legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
-        Item item = Item.getItemFromBlock(this);
+        // Forge 1.7.10: the block's getItem (sugar cane gives the reeds item, crops their seeds, a cauldron its item) with the
+        // damage the item's own block reports. Thaumcraft's Thaumometer scans blocks through this and keys aspects by the result.
+        Item item = getItem(world, x, y, z);
         if (item == null) return null;
-        return new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, getDamageValue(world, x, y, z));
+        Block block = item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock && !isFlowerPot() ? Block.getBlockFromItem(item) : this;
+        if (block == null) block = this;
+        return new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, block.getDamageValue(world, x, y, z));
     }
 
     public legacyconnector.v1_7_10.net.minecraft.item.ItemStack getPickBlock(legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition target,
@@ -1030,11 +1034,40 @@ public class Block {
     }
 
     public Item getItem(World world, int x, int y, int z) {
+        if (mcc$vanilla != null) {
+            ItemStack pick = mcc$vanillaPick(world, x, y, z);
+            return pick == null ? null : pick.getItem();
+        }
         return Item.getItemFromBlock(this);
     }
 
     public int getDamageValue(World world, int x, int y, int z) {
+        if (mcc$vanilla != null) {
+            ItemStack pick = mcc$vanillaPick(world, x, y, z);
+            if (pick != null) return pick.getItemDamage();
+        }
         return damageDropped(world.getBlockMetadata(x, y, z));
+    }
+
+    /**
+     * Pick stack of a vanilla (or modern-only) block at a position: the modern block's own pick item seen as a legacy stack. A
+     * plain vanilla wrapper does not know 1.7.10's per-block item and damage (birch leaves are leaves:2, sugar cane is the reeds
+     * item, a flattened wool colour its damage); the modern pick item maps back to exactly that legacy item and damage.
+     */
+    private ItemStack mcc$vanillaPick(World world, int x, int y, int z) {
+        net.minecraft.world.level.Level level = world == null ? null : world.mcc$fullLevel();
+        var pos = new net.minecraft.core.BlockPos(x, y, z);
+        net.minecraft.world.level.block.state.BlockState state = null;
+        try {
+            if (level != null) state = level.getBlockState(pos);
+        } catch (RuntimeException e) {
+            state = null;
+        }
+        if (state == null || BlockBridge.legacyBlock(state) != this) {
+            state = BlockBridge.toModern(this, world == null ? 0 : world.getBlockMetadata(x, y, z));
+            level = null;
+        }
+        return BlockBridge.legacyPick(state, level, pos);
     }
 
     public float mcc$hardness() {

@@ -49,6 +49,14 @@ import org.slf4j.LoggerFactory;
 public final class ItemBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Items");
     private static final int FIRST_MOD_ID = 4096;
+    /**
+     * Numeric ids of items with no 1.7.10 equivalent (modern vanilla content such as the beehive, other modern mods' items) are
+     * this base plus the item's modern registry id, which the server syncs to clients: the same on both sides, and resolved
+     * back by {@link #byId}. 1.7.10 code passes items around by number (Thaumcraft's Thaumometer sends Item.getIdFromItem of a
+     * scanned block to the server and reads Item.getItemById back); -1 gave a null item, which Thaumcraft then registered
+     * aspects for and dereferenced on every later scan.
+     */
+    private static final int MODERN_ID_BASE = 20000;
 
     private static final CaseIndexedMap<Item> BY_NAME = new CaseIndexedMap<>();
     private static final Map<Item, String> NAMES = new IdentityHashMap<>();
@@ -570,9 +578,14 @@ public final class ItemBridge {
                 if (meta >= 0 && meta != Short.MAX_VALUE) stack.set(net.minecraft.core.component.DataComponents.MAP_ID, new net.minecraft.world.level.saveddata.maps.MapId(meta));
                 return stack;
             }
-            if (stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
+            if (meta == Short.MAX_VALUE) {
+                // The wildcard (OreDictionary.WILDCARD_VALUE) reads back as itself: the ore dictionary's own vanilla entries
+                // (treeLeaves = leaves:*) and mods' registrations (Thaumcraft's aspects for wool:*, red_flower:*) are keyed by it.
+                // It read back as 0, so only the first subtype (oak leaves, white wool) matched.
+                if (!stack.isEmpty()) stack.set(CompatComponents.legacyMeta(), meta);
+            } else if (stack.isDamageableItem() && meta > 0) {
                 stack.setDamageValue(meta);
-            } else if (!stack.isDamageableItem() && meta > 0 && meta != Short.MAX_VALUE) {
+            } else if (!stack.isDamageableItem() && meta > 0) {
                 // A metadata value the flattening has no item for (log2 with 2, 3) still reads back as it was given.
                 Object[] reverse = vanillaReverse(modern);
                 if (reverse == null || !Integer.valueOf(meta).equals(reverse[1])) stack.set(CompatComponents.legacyMeta(), meta);
@@ -591,7 +604,8 @@ public final class ItemBridge {
         }
         if (item.isDamageable()) {
             var stack = new net.minecraft.world.item.ItemStack(item.mcc$variants.get(0), count);
-            if (meta > 0 && meta != Short.MAX_VALUE) stack.setDamageValue(meta);
+            if (meta == Short.MAX_VALUE) stack.set(CompatComponents.legacyMeta(), meta);
+            else if (meta > 0) stack.setDamageValue(meta);
             return stack;
         }
         net.minecraft.world.item.Item variant = item.mcc$variants.get(meta);
@@ -618,6 +632,11 @@ public final class ItemBridge {
         if (modern instanceof net.minecraft.world.item.BlockItem bi) {
             Block block = BlockBridge.legacyBlock(bi.getBlock().defaultBlockState());
             wrapper = new ItemBlock(new VanillaInfo(name, -1, modern), block);
+            // the same item and block pair fromBlock makes, whichever is asked first
+            if (block != null && block.mcc$vanilla != null && block.mcc$vanilla.legacyId() < 0 && !BLOCK_ITEMS.containsKey(block)) {
+                BLOCK_ITEMS.put(block, wrapper);
+                ITEM_BLOCKS.put(wrapper, block);
+            }
         } else {
             wrapper = new Item(new VanillaInfo(name, -1, modern));
         }
@@ -672,6 +691,11 @@ public final class ItemBridge {
             return stack;
         }
         if (stack.isDamageableItem()) {
+            if (damage == Short.MAX_VALUE) {
+                stack.set(CompatComponents.legacyMeta(), damage);
+                return stack;
+            }
+            stack.remove(CompatComponents.legacyMeta()); // no longer the wildcard
             stack.setDamageValue(Math.max(0, damage));
             return stack;
         }
@@ -761,8 +785,33 @@ public final class ItemBridge {
     public static synchronized int idOf(Item item) {
         Integer id = IDS.get(item);
         if (id != null) return id;
-        if (item instanceof ItemBlock ib) return BlockBridge.idOf(ib.mcc$block());
-        return -1;
+        if (item instanceof ItemBlock ib) {
+            int block = BlockBridge.registeredIdOf(ib.mcc$block());
+            if (block >= 0) return block;
+        }
+        return modernOnlyId(item);
+    }
+
+    /** {@link #MODERN_ID_BASE} plus the modern registry id for a wrapper of a modern-only item, else -1. */
+    private static int modernOnlyId(Item item) {
+        if (item == null || item.mcc$vanilla == null || item.mcc$vanilla.legacyId() >= 0) return -1;
+        if (!(item.mcc$vanilla.modern() instanceof net.minecraft.world.item.Item modern) || modern == Items.AIR) return -1;
+        int raw = BuiltInRegistries.ITEM.getId(modern);
+        return raw < 0 ? -1 : MODERN_ID_BASE + raw;
+    }
+
+    /**
+     * The id of a modern-only block. Like a 1.7.10 ItemBlock and its block, it is its item's id when that item resolves back to
+     * the block (beehive, bee nest); blocks that share another block's item or have none (wall signs and banners, coloured
+     * beds whose item is the legacy bed, bubble columns) get {@link BlockBridge#MODERN_BLOCK_ID_BASE} plus the modern block
+     * registry id, so Block.getBlockById returns the same block.
+     */
+    static synchronized int modernOnlyBlockId(Block block) {
+        int id = modernOnlyId(fromBlock(block));
+        if (id >= 0 && blockOf(byId(id)) == block) return id;
+        if (!(block.mcc$vanilla.modern() instanceof net.minecraft.world.level.block.Block modern)) return -1;
+        int raw = BuiltInRegistries.BLOCK.getId(modern);
+        return raw < 0 ? -1 : BlockBridge.MODERN_BLOCK_ID_BASE + raw;
     }
 
     public static synchronized Item byId(int id) {
@@ -770,7 +819,15 @@ public final class ItemBridge {
         Item i = BY_ID.get(id);
         if (i != null) return i;
         Block b = BlockBridge.registeredById(id);
-        return b == null ? null : fromBlock(b);
+        if (b != null) return fromBlock(b);
+        if (id >= MODERN_ID_BASE && id < BlockBridge.MODERN_BLOCK_ID_BASE) {
+            net.minecraft.world.item.Item modern = BuiltInRegistries.ITEM.byId(id - MODERN_ID_BASE);
+            if (modern != null && modern != Items.AIR && !(modern instanceof LegacyItemHolder)) {
+                Item wrapper = legacyOfModern(modern);
+                if (modernOnlyId(wrapper) == id) return wrapper;
+            }
+        }
+        return null;
     }
 
     public static synchronized Item fromBlock(Block block) {

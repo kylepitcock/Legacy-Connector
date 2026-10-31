@@ -39,6 +39,8 @@ public final class BlockBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Blocks");
     /** First numeric id handed to mod blocks (vanilla 1.7.10 used 0-197). */
     private static final int FIRST_MOD_ID = 256;
+    /** Ids of modern-only blocks that cannot share their item's id: this plus the modern block registry id (see ItemBridge.modernOnlyBlockId). */
+    static final int MODERN_BLOCK_ID_BASE = 40000;
 
     private static final CaseIndexedMap<Block> BY_NAME = new CaseIndexedMap<>();
     private static final Map<Block, String> NAMES = new IdentityHashMap<>();
@@ -396,20 +398,45 @@ public final class BlockBridge {
         return null;
     }
 
-    public static synchronized int idOf(Block block) {
+    public static int idOf(Block block) {
+        Integer id;
+        synchronized (BlockBridge.class) {
+            id = IDS.get(block);
+        }
+        if (id != null) return id;
+        // A modern-only block (beehive, bee nest, other modern mods' blocks) gets an id that byId resolves back (its item's
+        // where possible, as 1.7.10 ItemBlocks shared their block's id); -1 made Thaumcraft's scans look up a null item.
+        // Looked up outside this class's lock (it takes ItemBridge's).
+        return block != null && block.mcc$vanilla != null && block.mcc$vanilla.legacyId() < 0 ? ItemBridge.modernOnlyBlockId(block) : -1;
+    }
+
+    /** The legacy id registered for a block, or -1 (no modern-only id: ItemBridge.idOf uses it and must not recurse). */
+    static synchronized int registeredIdOf(Block block) {
         Integer id = IDS.get(block);
         return id == null ? -1 : id;
     }
 
     /** The block registered under a numeric id, without resolving item ids (ItemBridge.byId uses it: the two must not call each other). */
-    public static synchronized Block registeredById(int id) {
-        ensureVanilla();
-        return BY_ID.get(id);
+    public static Block registeredById(int id) {
+        Block b;
+        synchronized (BlockBridge.class) {
+            ensureVanilla();
+            b = BY_ID.get(id);
+        }
+        return b != null ? b : modernById(id);
     }
 
-    public static synchronized Block byId(int id) {
-        ensureVanilla();
-        Block b = BY_ID.get(id);
+    /** A modern-only block by an id in the {@link #MODERN_BLOCK_ID_BASE} range, or null. */
+    private static Block modernById(int id) {
+        if (id < MODERN_BLOCK_ID_BASE) return null;
+        net.minecraft.world.level.block.Block modern = BuiltInRegistries.BLOCK.byId(id - MODERN_BLOCK_ID_BASE);
+        if (modern == null || modern instanceof LegacyBlockAdapter) return null;
+        Block b = legacyBlock(modern.defaultBlockState());
+        return idOf(b) == id ? b : null;
+    }
+
+    public static Block byId(int id) {
+        Block b = registeredById(id);
         if (b != null) return b;
         // 1.7.10 ItemBlocks share their block's id, so mods probe Block.blockRegistry with item ids
         // (ForgeMultipart's IMC check); item ids here are separate, so resolve them through the item.
@@ -476,6 +503,23 @@ public final class BlockBridge {
         if (block.mcc$vanilla != null) return stateOfVanilla(block.mcc$vanilla, meta);
         LOG.warn("Legacy block {} used in the world before it was registered; placing air", block);
         return Blocks.AIR.defaultBlockState();
+    }
+
+    /**
+     * The legacy stack a pick-block of a vanilla (or modern-only) block state gives: the modern block's clone stack (birch leaves,
+     * sugar cane, crop seeds, the wool of its colour) as a legacy stack, which maps back to the 1.7.10 item and damage that
+     * mods key data by (Thaumcraft's aspects for leaves:2 or the reeds item). Null when the block has no item (fire, portals).
+     */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack legacyPick(BlockState state, net.minecraft.world.level.LevelReader level,
+            net.minecraft.core.BlockPos pos) {
+        net.minecraft.world.item.ItemStack modern;
+        try {
+            modern = level != null ? state.getBlock().getCloneItemStack(level, pos, state) : new net.minecraft.world.item.ItemStack(state.getBlock());
+        } catch (RuntimeException e) {
+            modern = new net.minecraft.world.item.ItemStack(state.getBlock());
+        }
+        if (modern.isEmpty()) return null;
+        return legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(modern.copyWithCount(1));
     }
 
     public static BlockState withMeta(BlockState current, int meta) {
