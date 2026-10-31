@@ -28,6 +28,10 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     }
 
     public String getUnlocalizedName() {
+        if (unlocalizedName == null) {
+            var rn = getRegistryName();
+            if (rn != null && "minecraft".equals(rn.getNamespace())) unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(false, rn.getPath());
+        }
         return "item." + unlocalizedName;
     }
 

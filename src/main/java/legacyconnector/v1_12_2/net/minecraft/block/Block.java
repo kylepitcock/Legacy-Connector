@@ -91,6 +91,11 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public String getUnlocalizedName() {
+        // vanilla blocks are never named by a constructor chain: use their 1.12 names (tile.oreIron), not "tile.null"
+        if (unlocalizedName == null) {
+            var rn = getRegistryName();
+            if (rn != null && "minecraft".equals(rn.getNamespace())) unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(true, rn.getPath());
+        }
         return "tile." + unlocalizedName;
     }
 
