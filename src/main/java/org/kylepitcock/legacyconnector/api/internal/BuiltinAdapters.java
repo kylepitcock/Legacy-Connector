@@ -46,6 +46,15 @@ public final class BuiltinAdapters {
         return handler == null ? null : new ItemHandler1122(handler);
     }
 
+    public static IFluidHandler fluids1122(Object tile, Direction side, BlockEntity host) {
+        return org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.forTile(tile, side);
+    }
+
+    /** A Forge 1.12 item handler as NeoForge's (used by the item capabilities of 1.12.2 items). */
+    public static IItemHandler wrapItems1122(legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler handler) {
+        return new ItemHandler1122(handler);
+    }
+
     public static IEnergyStorage energy1122(Object tile, Direction side, BlockEntity host) {
         if (!(tile instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity t)) return null;
         EnumFacing facing = side == null ? null : EnumFacing.mcc$of(side);

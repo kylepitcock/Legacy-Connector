@@ -181,6 +181,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.api.internal.CapabilityRules.apply(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.registerCapabilities(event);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemCapabilities1122.register(event);
         var type = org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge.type();
         if (type == null) return;
         event.registerBlockEntity(net.neoforged.neoforge.capabilities.Capabilities.ItemHandler.BLOCK, type, (be, side) ->
