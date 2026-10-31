@@ -168,6 +168,16 @@ public final class SoundBridge {
         if (legacyName == null || legacyName.isEmpty()) return null;
         SoundEvent known = SOUNDS.get(legacyName);
         if (known != null) return known;
+        if (legacyName.indexOf(':') < 0) {
+            // A name without a domain that a loaded mod's own sounds.json declares is that mod's sound (a mob's "mob.beaver.say"),
+            // not a vanilla one: it must not fall through to the vanilla renames below (a beaver playing a frog sound).
+            String owner = modSoundOwner(legacyName);
+            if (owner != null) {
+                known = SoundEvent.createVariableRangeEvent(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(owner, Ids.normalizePath(legacyName)));
+                SOUNDS.put(legacyName, known);
+                return known;
+            }
+        }
         String renamed = RENAMES.get(legacyName.startsWith("minecraft:") ? legacyName.substring("minecraft:".length()) : legacyName);
         if (renamed != null) {
             var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace(renamed);
@@ -184,6 +194,42 @@ public final class SoundBridge {
         }
         // modid:path stays a mod sound; vanilla names that changed fall back to their 1.9+ dotted path guess.
         return SoundEvent.createVariableRangeEvent(Ids.location(legacyName, "minecraft"));
+    }
+
+    /** Normalized sound event key -> namespace of the first mod whose sounds.json declares it; built on first use. */
+    private static volatile Map<String, String> modSoundKeys;
+
+    private static String modSoundOwner(String name) {
+        Map<String, String> keys = modSoundKeys;
+        if (keys == null) {
+            synchronized (SoundBridge.class) {
+                keys = modSoundKeys;
+                if (keys == null) {
+                    keys = new HashMap<>();
+                    try {
+                        var list = net.neoforged.fml.ModList.get();
+                        if (list == null) return null; // too early: do not cache
+                        for (var mod : list.getMods()) {
+                            String id = mod.getModId();
+                            if (id.equals("minecraft") || id.equals("neoforge")) continue;
+                            var path = mod.getOwningFile().getFile().findResource("assets", id, "sounds.json");
+                            if (!java.nio.file.Files.isRegularFile(path)) continue;
+                            try (var in = java.nio.file.Files.newBufferedReader(path)) {
+                                for (String key : com.google.gson.JsonParser.parseReader(in).getAsJsonObject().keySet()) {
+                                    keys.putIfAbsent(Ids.normalizePath(key), id);
+                                }
+                            } catch (Exception ignored) {
+                                // unreadable or malformed sounds.json: that mod declares nothing
+                            }
+                        }
+                    } catch (Throwable t) {
+                        // no mod list (tests): nothing declared
+                    }
+                    modSoundKeys = keys;
+                }
+            }
+        }
+        return keys.get(Ids.normalizePath(name));
     }
 
     /** 1.7.10 vanilla sound events renamed in 1.9: {@code mob.cow.say} is {@code entity.cow.ambient}, {@code mob.zombie.hurt} is {@code entity.zombie.hurt}. */

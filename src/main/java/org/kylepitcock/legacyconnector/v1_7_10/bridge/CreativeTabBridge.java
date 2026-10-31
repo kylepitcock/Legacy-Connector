@@ -38,7 +38,7 @@ public final class CreativeTabBridge {
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_" + Ids.normalizePath(tab.getTabLabel()).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
-                    .title(Component.translatableWithFallback("itemGroup." + tab.getTabLabel(), tab.getTabLabel()))
+                    .title(tabTitle(tab))
                     .icon(() -> icon(tab).copy())
                     .displayItems((params, output) -> {
                         for (net.minecraft.world.item.ItemStack s : contents(tab)) output.accept(s);
@@ -47,6 +47,14 @@ public final class CreativeTabBridge {
                     .build();
             LegacyRegistrar.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, modern);
         }
+    }
+
+    /** The title key is the label's; a tab with no label (Nuclear Control 2) would read "itemGroup.", so it is titled by its mod. */
+    private static Component tabTitle(CreativeTabs tab) {
+        String label = tab.getTabLabel();
+        if (label != null && !label.isEmpty()) return Component.translatableWithFallback("itemGroup." + label, label);
+        String owner = OWNER.get(tab);
+        return Component.literal(owner != null ? owner : "Legacy mod");
     }
 
     /** One line per mod-created tab: how many stacks it lists (the creative screen shows exactly these). */
