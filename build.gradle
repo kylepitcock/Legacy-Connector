@@ -146,6 +146,30 @@ dependencies {
     // copy in the game layer stops the game from starting ("Module scala.reflect reads more than one module named
     // org.openjdk.nashorn").
     implementation 'org.openjdk.nashorn:nashorn-core:15.4'
+
+    // Unit tests of the pure logic of the addon API (api.internal.AddonOrder).
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.withType(Test).configureEach { useJUnitPlatform() }
+
+// The addon API alone (classes + sources), the compile-time dependency of addons: build/dist/legacyconnector-api-<version>.jar.
+// Not a mod: at runtime the API is part of the Legacy Connector jar.
+tasks.register('apiJar', Jar) {
+    group = 'build'
+    description = 'Builds the jar addons compile against (only org.kylepitcock.legacyconnector.api, without api.internal).'
+    dependsOn tasks.named('classes')
+    archiveBaseName = 'legacyconnector-api'
+    archiveVersion = project.version
+    destinationDirectory = layout.buildDirectory.dir('dist')
+    from(sourceSets.main.output.classesDirs) {
+        include 'org/kylepitcock/legacyconnector/api/**'
+    }
+    from(sourceSets.main.java.srcDirs) {
+        include 'org/kylepitcock/legacyconnector/api/**'
+        exclude 'org/kylepitcock/legacyconnector/api/internal/**'
+    }
 }
 
 // The run configurations reference the loader's jar by path; without this they would launch a stale loader.
