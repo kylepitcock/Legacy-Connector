@@ -41,6 +41,12 @@ public final class LegacyConfig {
             # Comma separated class name prefixes of legacy world generators that must not run below y=0.
             deepLayer.excludeGenerators =
 
+            # Legacy block subtypes (metadata variants with an item of their own) become blocks of their own, as in the 1.13
+            # flattening: the item mod:name_3 places and names the block mod:name_3, so modern mods that use an item's block
+            # (display stands, framed and copycat blocks) get the right subtype. false: one block per legacy block, as before
+            # (the subtype blocks stay registered, and their blocks in saved worlds turn back into the base block on chunk load).
+            blocks.flattenSubtypes = true
+
             # Library bridges replace an outdated legacy library by its modern equivalent when that mod is installed.
             # Set one to false to load the legacy library itself instead (read by the loader at startup).
             bridges.baubles.enabled = true
@@ -140,6 +146,11 @@ public final class LegacyConfig {
         java.util.Set<String> out = new java.util.HashSet<>();
         for (String s : string("events.skip", "").split(",")) if (!s.isBlank()) out.add(s.trim());
         return out;
+    }
+
+    /** Whether legacy block subtypes are flattened into blocks of their own (see BlockFlattening1710). */
+    public static boolean flattenBlockSubtypes() {
+        return bool("blocks.flattenSubtypes", true);
     }
 
     public static boolean deepLayerEnabled() {

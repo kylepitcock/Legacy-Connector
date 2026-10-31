@@ -30,11 +30,30 @@ public class LegacyBlockItemAdapter extends BlockItem implements LegacyItemHolde
     private final int meta;
     private final boolean customName;
 
+    /** The flattened subtype block this subtype places (see BlockFlattening1710), or null: the legacy block's base block. */
+    private volatile LegacyBlockAdapter flattened;
+
     public LegacyBlockItemAdapter(LegacyBlockAdapter block, Item legacy, int meta, Properties properties) {
         super(block, properties);
         this.legacy = legacy;
         this.meta = meta;
         this.customName = LegacyBlockAdapter.overrides(legacy, "getItemStackDisplayName", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+    }
+
+    /**
+     * As after the 1.13 flattening, the block of a subtype item is the block whose default state is that subtype: modern code that
+     * places {@code getBlock().defaultBlockState()} (display stands, framed and copycat blocks) gets the subtype, not metadata 0.
+     * Placement by the player still runs the legacy ItemBlock code (see {@link #useOn}).
+     */
+    @Override
+    public net.minecraft.world.level.block.Block getBlock() {
+        LegacyBlockAdapter f = flattened;
+        return f != null ? f : super.getBlock();
+    }
+
+    /** Points this subtype at its flattened block (null: back to the base block); the caller updates {@code Item.BY_BLOCK}. */
+    public void setFlattenedBlock(LegacyBlockAdapter block) {
+        this.flattened = block;
     }
 
     @Override

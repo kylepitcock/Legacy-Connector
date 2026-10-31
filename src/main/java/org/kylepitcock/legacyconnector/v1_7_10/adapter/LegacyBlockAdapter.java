@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
@@ -47,7 +48,9 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge;
 
 /**
  * A real 1.21.1 block standing in for a 1.7.10 mod block. Metadata becomes the {@link #META} block state property;
- * every gameplay hook is forwarded to the legacy block using legacy coordinates, sides and world views.
+ * every gameplay hook is forwarded to the legacy block using legacy coordinates, sides and world views. Metadata values with a
+ * subtype item of their own live in flattened <em>member</em> blocks of the same legacy block ({@link #familyBase()}, see
+ * {@code BlockFlattening1710}); read a state's metadata with {@link #metaOf}, never {@code getValue(META)}.
  *
  * <p>Gameplay semantics that changed and are translated here:</p>
  * <ul>
@@ -84,9 +87,33 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean dynamicLight;
     private static final java.util.Set<Class<?>> DROP_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
+    // ------------------------------------------------------------------ flattened subtypes (see BlockFlattening1710)
+
+    /** The member being constructed: createBlockStateDefinition runs inside the Block constructor, before any field is set. */
+    private static final ThreadLocal<MemberSpec> PENDING = new ThreadLocal<>();
+
+    private record MemberSpec(LegacyBlockAdapter base, int[] metas, int key, Property<Integer> property) {}
+
+    /** The block whose {@code meta} property holds all 16 values and whose id is the legacy block's (itself unless this is a member). */
+    private final LegacyBlockAdapter familyBase;
+    /** {@link #META} for the base and deepslate twins, a {@link LegacyMetaProperty} for a member owning several metas, null for one meta. */
+    private final Property<Integer> metaProperty;
+    /** The metadata of a member's default state (the meta its subtype item places); 0 for the base. */
+    private final int keyMeta;
+    /** Base only: the member that owns each metadata value (null: the base itself), set when subtypes are flattened. */
+    private volatile LegacyBlockAdapter[] byMeta;
+    /** Base only: its flattened members (registered whether or not flattening is switched on, so saved worlds keep them). */
+    private List<LegacyBlockAdapter> members = List.of();
+    /** Member only: the description id of its subtype item, so the block is named like the subtype. */
+    private String memberDescription;
+
     protected LegacyBlockAdapter(Block legacy, BlockBehaviour.Properties properties) {
         super(properties);
         this.legacy = legacy;
+        MemberSpec spec = PENDING.get();
+        this.familyBase = spec == null ? this : spec.base();
+        this.metaProperty = spec == null ? META : spec.property();
+        this.keyMeta = spec == null ? 0 : spec.key();
         this.dynamicBounds = overrides(legacy, "setBlockBoundsBasedOnState", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
         this.customHardness = overrides(legacy, "getPlayerRelativeBlockHardness", EntityPlayer.class, World.class, int.class, int.class, int.class)
                 || overrides(legacy, "getBlockHardness", World.class, int.class, int.class, int.class);
@@ -111,7 +138,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.selectedBox = overrides(legacy, "getSelectedBoundingBoxFromPool", World.class, int.class, int.class, int.class);
         this.enchantBonus = overrides(legacy, "getEnchantPowerBonus", World.class, int.class, int.class, int.class);
         this.dynamicLight = overrides(legacy, "getLightValue", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
-        registerDefaultState(stateDefinition.any().setValue(META, 0));
+        registerDefaultState(metaProperty == null ? stateDefinition.any() : stateDefinition.any().setValue(metaProperty, keyMeta));
     }
 
     public static LegacyBlockAdapter create(Block legacy) {
@@ -192,13 +219,106 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     /** As BlockBreakable.shouldSideBeRendered: two neighbouring glass-like blocks of the same kind draw no faces between them. */
     @Override
     protected boolean skipRendering(BlockState state, BlockState adjacent, Direction direction) {
-        return adjacent.is(this) && legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBreakable bb && bb.mcc$hidesSimilarNeighbours()
-                && adjacent.getValue(META).equals(state.getValue(META));
+        return sameFamily(adjacent) && legacy instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBreakable bb && bb.mcc$hidesSimilarNeighbours()
+                && metaOf(adjacent) == metaIn(state);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-        builder.add(META);
+        MemberSpec spec = PENDING.get();
+        if (spec == null) builder.add(META);
+        else if (spec.property() != null) builder.add(spec.property());
+    }
+
+    /**
+     * A flattened subtype block of this (base) block: the same legacy block, owning the metadata values {@code metas}, with
+     * {@code key} (the meta its subtype item places) as its default state. Same class (entity block or not) and properties.
+     */
+    public LegacyBlockAdapter createMember(int[] metas, int key) {
+        if (familyBase != this) throw new IllegalStateException(this + " is itself a flattened member");
+        PENDING.set(new MemberSpec(this, metas.clone(), key, metas.length > 1 ? new LegacyMetaProperty(metas) : null));
+        try {
+            BlockBehaviour.Properties p = BlockBehaviour.Properties.ofFullCopy(this);
+            return this instanceof LegacyEntityBlockAdapter ? new LegacyEntityBlockAdapter(legacy, p) : new LegacyBlockAdapter(legacy, p);
+        } finally {
+            PENDING.remove();
+        }
+    }
+
+    /** Base: records its members; {@code owners[meta]} is the member owning that meta (null: the base). Null owners: flattening off. */
+    public void linkMembers(List<LegacyBlockAdapter> all, LegacyBlockAdapter[] owners) {
+        this.members = List.copyOf(all);
+        this.byMeta = owners == null ? null : owners.clone();
+    }
+
+    /** The legacy block's base block (its own id, all 16 metas); this unless this is a flattened member. */
+    public LegacyBlockAdapter familyBase() {
+        return familyBase;
+    }
+
+    /** Whether this is a flattened subtype block of another block. */
+    public boolean isFlattenedMember() {
+        return familyBase != this;
+    }
+
+    /** Base: its flattened members (empty for members, twins and blocks without block subtypes). */
+    public List<LegacyBlockAdapter> members() {
+        return members;
+    }
+
+    /** The base and its members: every modern block this legacy block's states live in (deepslate twin aside). */
+    public List<LegacyBlockAdapter> familyBlocks() {
+        LegacyBlockAdapter base = familyBase;
+        if (base.members.isEmpty()) return List.of(base);
+        List<LegacyBlockAdapter> out = new ArrayList<>(base.members.size() + 1);
+        out.add(base);
+        out.addAll(base.members);
+        return out;
+    }
+
+    /** The metadata values this block's states hold. */
+    public int[] ownMetas() {
+        if (metaProperty == null) return new int[] {keyMeta};
+        return metaProperty.getPossibleValues().stream().mapToInt(Integer::intValue).sorted().toArray();
+    }
+
+    /** The metadata of a member's default state; 0 for the base. */
+    public int keyMeta() {
+        return keyMeta;
+    }
+
+    public void setMemberDescription(String descriptionId) {
+        this.memberDescription = descriptionId;
+    }
+
+    /** Whether two modern blocks hold states of the same legacy block (a base and its flattened members). */
+    public static boolean sameFamily(net.minecraft.world.level.block.Block a, net.minecraft.world.level.block.Block b) {
+        return a == b || a instanceof LegacyBlockAdapter x && b instanceof LegacyBlockAdapter y && x.familyBase == y.familyBase;
+    }
+
+    private boolean sameFamily(BlockState other) {
+        return sameFamily(this, other.getBlock());
+    }
+
+    /** The legacy metadata of a state of any legacy block adapter (base, member or deepslate twin); 0 for other blocks. */
+    public static int metaOf(BlockState state) {
+        return state.getBlock() instanceof LegacyBlockAdapter a ? a.metaIn(state) : 0;
+    }
+
+    private int metaIn(BlockState state) {
+        return metaProperty == null ? keyMeta : state.getValue(metaProperty);
+    }
+
+    /** The state of this very block for a meta it holds (the base holds all; otherwise the base's), ignoring the flattening. */
+    private BlockState ownState(int meta) {
+        if (metaProperty == META) return defaultBlockState().setValue(META, meta);
+        if (metaProperty == null) return meta == keyMeta ? defaultBlockState() : familyBase.ownState(meta);
+        return metaProperty.getPossibleValues().contains(meta) ? defaultBlockState().setValue(metaProperty, meta) : familyBase.ownState(meta);
+    }
+
+    /** The state legacy code means by this state's legacy block and metadata now (the flattened member's when flattening is on). */
+    public BlockState canonical(BlockState state) {
+        return familyBase.stateForMeta(metaIn(state));
     }
 
     public Object legacy() {
@@ -225,8 +345,16 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         return deepBase != null ? deepBase : this;
     }
 
+    /**
+     * The modern state of this legacy block with {@code meta}: the state of the flattened member owning that meta, or of the base.
+     * A deepslate twin keeps its own states.
+     */
     public BlockState stateForMeta(int meta) {
-        return defaultBlockState().setValue(META, meta & 15);
+        if (familyBase != this) return familyBase.stateForMeta(meta);
+        int m = meta & 15;
+        LegacyBlockAdapter[] owners = byMeta;
+        LegacyBlockAdapter owner = owners == null ? null : owners[m];
+        return owner != null ? owner.ownState(m) : defaultBlockState().setValue(META, m);
     }
 
     // ------------------------------------------------------------------ helpers
@@ -236,7 +364,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     }
 
     protected static int meta(BlockState state) {
-        return state.getValue(META);
+        return metaOf(state);
     }
 
     private static EntityPlayer player(Player p) {
@@ -245,6 +373,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     public String getDescriptionId() {
+        if (memberDescription != null) return memberDescription;
         return legacy.getUnlocalizedName() + ".name";
     }
 
@@ -278,7 +407,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
-        if (!oldState.is(this)) {
+        // a metadata change moving the state to another flattened block of the same legacy block is no new block (1.7.10's setBlockMetadata)
+        if (!sameFamily(oldState)) {
             legacy.onBlockAdded(world(level), pos.getX(), pos.getY(), pos.getZ());
             if (movesTileEntity(state)) notifyTileNeighbours(level, pos);
         }
@@ -313,6 +443,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        // another flattened block of the same legacy block: a metadata change; the tile entity stays (the host type accepts the whole family)
+        if (newState.getBlock() != this && sameFamily(newState)) return;
         try {
             if (!newState.is(this) && !(moving && movesTileEntity(state))) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
             if (!newState.is(this) && movesTileEntity(state)) notifyTileNeighbours(level, pos);

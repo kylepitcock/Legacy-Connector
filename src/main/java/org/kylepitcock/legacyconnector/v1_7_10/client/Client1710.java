@@ -114,7 +114,7 @@ public final class Client1710 {
             var builtIn = legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null
                     ? VanillaBlockRenderers.forBlock(block, renderId) : null;
             if (builtIn == null && legacyconnector.v1_7_10.cpw.mods.fml.client.registry.RenderingRegistry.mcc$blockHandler(renderId) == null) continue;
-            for (var state : block.mcc$modern.getStateDefinition().getPossibleStates()) {
+            for (var state : familyStates(block.mcc$modern)) {
                 var location = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);
                 var original = models.get(location);
                 if (original == null || original instanceof IsbrhBlockModel) continue;
@@ -138,8 +138,21 @@ public final class Client1710 {
                 } catch (RuntimeException | LinkageError e) {
                     return 0xFFFFFFFF;
                 }
-            }, block.mcc$modern);
+            }, familyBlocks(block.mcc$modern));
         }
+    }
+
+    /** A legacy block's modern block and its flattened subtype blocks (see BlockFlattening1710). */
+    private static net.minecraft.world.level.block.Block[] familyBlocks(net.minecraft.world.level.block.Block modern) {
+        if (!(modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a)) return new net.minecraft.world.level.block.Block[] {modern};
+        return a.familyBlocks().toArray(net.minecraft.world.level.block.Block[]::new);
+    }
+
+    /** Every state of a legacy block, flattened subtype blocks included. */
+    private static java.util.List<net.minecraft.world.level.block.state.BlockState> familyStates(net.minecraft.world.level.block.Block modern) {
+        java.util.List<net.minecraft.world.level.block.state.BlockState> out = new java.util.ArrayList<>();
+        for (var b : familyBlocks(modern)) out.addAll(b.getStateDefinition().getPossibleStates());
+        return out;
     }
 
     /** Legacy items tinted per render pass (spawn eggs, dyed items): layer N of the item model is pass N. */

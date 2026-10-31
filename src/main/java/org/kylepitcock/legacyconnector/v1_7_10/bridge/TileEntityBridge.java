@@ -226,12 +226,14 @@ public final class TileEntityBridge {
     public static void beforeSetBlock(World world, BlockPos pos, net.minecraft.world.level.block.state.BlockState next) {
         if (!(next.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter)) return;
         var current = world.mcc$level().getBlockState(pos);
-        if (current.getBlock() != next.getBlock()) return;
+        // the same legacy block: the same modern block or another flattened subtype block of it
+        if (!org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.sameFamily(current.getBlock(), next.getBlock())) return;
         var be = blockEntityAt(world.mcc$level(), pos);
         if (be instanceof LegacyBlockEntity l) {
-            l.refreshForMeta(current.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META),
-                    next.getValue(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.META));
+            l.refreshForMeta(org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.metaOf(current),
+                    org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.metaOf(next));
         }
+
     }
 
     public static void setAt(World world, BlockPos pos, TileEntity te) {

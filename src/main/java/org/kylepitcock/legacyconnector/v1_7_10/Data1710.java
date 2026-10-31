@@ -33,14 +33,39 @@ public final class Data1710 implements GeneratedPack.Contributor {
         Map<String, Set<String>> tags = new LinkedHashMap<>();
         for (Block b : BlockBridge.modBlocks()) {
             if (b.mcc$modern == null) continue;
-            String id = BuiltInRegistries.BLOCK.getKey(b.mcc$modern).toString();
-            String deepId = deepId(b);
-            String tool = b.getHarvestTool(0);
-            int level = b.getHarvestLevel(0);
+            tagBlock(b, BuiltInRegistries.BLOCK.getKey(b.mcc$modern).toString(), deepId(b), 0, tags);
+            // flattened subtype blocks (BlockFlattening1710): the harvest tool of their own metadata
+            if (b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a) {
+                for (var member : a.members()) {
+                    try {
+                        tagBlock(b, BuiltInRegistries.BLOCK.getKey(member).toString(), null, member.keyMeta(), tags);
+                    } catch (RuntimeException | LinkageError e) {
+                        // a harvest rule that needs a world: the subtype block has no tool tags
+                    }
+                }
+            }
+        }
+        for (var e : tags.entrySet()) {
+            String[] rl = e.getKey().split(":");
+            JsonObject json = new JsonObject();
+            json.addProperty("replace", false);
+            JsonArray values = new JsonArray();
+            e.getValue().forEach(values::add);
+            json.add("values", values);
+            byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
+            out.put("data/" + rl[0] + "/tags/block/" + rl[1] + ".json", () -> bytes);
+        }
+    }
+
+    /** The mineable and tool tier tags of one modern block of a legacy block, from the legacy harvest rule of {@code meta}. */
+    private static void tagBlock(Block b, String id, String deepId, int meta, Map<String, Set<String>> tags) {
+        {
+            String tool = b.getHarvestTool(meta);
+            int level = b.getHarvestLevel(meta);
             if (tool == null) {
                 // Legacy blocks without a declared tool fell back to material rules: rock/iron need a pickaxe.
                 if (!b.getMaterial().isToolNotRequired()) tool = "pickaxe";
-                else continue;
+                else return;
             }
             String mineable = switch (tool) {
                 case "pickaxe" -> "minecraft:mineable/pickaxe";
@@ -59,16 +84,6 @@ public final class Data1710 implements GeneratedPack.Contributor {
                 set.add(id);
                 if (deepId != null) set.add(deepId);
             }
-        }
-        for (var e : tags.entrySet()) {
-            String[] rl = e.getKey().split(":");
-            JsonObject json = new JsonObject();
-            json.addProperty("replace", false);
-            JsonArray values = new JsonArray();
-            e.getValue().forEach(values::add);
-            json.add("values", values);
-            byte[] bytes = json.toString().getBytes(StandardCharsets.UTF_8);
-            out.put("data/" + rl[0] + "/tags/block/" + rl[1] + ".json", () -> bytes);
         }
     }
 

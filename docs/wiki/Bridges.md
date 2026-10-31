@@ -37,7 +37,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | NEI → JEI | `codechicken.nei` | JEI categories and hidden items |
 | Waila → Jade | `mcp.mobius.waila.api` | Jade tooltips |
 | CoFH RF → NeoForge Energy | `cofh.api.energy` | `IEnergyStorage` (1 RF = 1 FE) |
-| Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block |
+| Blocks and tile entities | `Block`, `TileEntity`, metadata | registered blocks and block entities, one per legacy block plus one per block subtype that has an item ([flattening](#block-subtypes-flattening)) |
 | Items and ItemStacks | `Item`, `ItemStack` damage/NBT | one item per metadata subtype, `CUSTOM_DATA` NBT |
 | Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary`, custom `IRecipe` classes (IC2, AE2, Blood Magic, Witchery ...) | data-pack recipes, tags; a custom recipe is a `legacyconnector:legacy_recipe` that matches and crafts through the legacy object |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
@@ -71,3 +71,39 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
 | 1.12.2 | alpha: most of the API mods use is implemented on both sides; see the status table and issue #64 |
 | 1.20.1 (+ Sinytra), 1.16.5, 1.2.5 bridges | planned, in that order |
+
+## Block subtypes (flattening)
+
+A 1.7.10 block has 16 metadata values, and its item usually lists some of them as subtypes (wool colours, Chisel variants,
+machine types). Legacy Connector registers one modern block per legacy block with the metadata as a `meta` property, and one
+modern item per subtype (`mod:name`, `mod:name_1`, ...). Modern code takes a block item's block and places or compares its
+default state (EvilCraft's display stand per planks item, Rechiseled, Cyclops Core's `BlockHelpers`, framed and copycat
+blocks), so with one block every subtype came out as metadata 0 (EvilCraft even made duplicate creative tab stacks, see
+`CreativeTabDuplicateMixin`). As in the 1.13 flattening, each subtype now has a block of its own
+(`v1_7_10/bridge/BlockFlattening1710`, config `blocks.flattenSubtypes`, default on):
+
+- For every metadata value `N > 0` that a subtype item places (`ItemBlock.getMetadata(damage)`), a *member* block
+  `mod:name_N` is registered once all legacy mods have loaded. It is the same legacy block (a `LegacyBlockAdapter` with the
+  base block's properties and behaviour) whose default state is metadata `N`. The subtype item's `BlockItem.getBlock()`,
+  `Item.byBlock` and the member's `asItem()` point at each other, the member is named after its subtype, and it gets the
+  mineable/tool tier tags of its own metadata.
+- A member also holds the metadata values the block drops as that subtype (`damageDropped`): a birch log rotated to
+  metadata 5, 9 or 13 stays in `name_1`. Its `meta` property only has those values (a single value: no property). Metadata
+  without an item of its own stays in the base block `mod:name`, which keeps its id and all 16 values. Each legacy block
+  gains at most 16 block states however many subtypes it has.
+- Legacy code sees no difference: `World.getBlock`/`getBlockMetadata` read any member, `setBlock`/`setBlockMetadata`
+  write the member that owns the metadata. A metadata change that moves the state to another member of the same legacy
+  block is not a new block: no `breakBlock`/`onBlockAdded`, the tile entity stays (the host block entity type accepts
+  every member), scheduled ticks and block events queued for the legacy block still run (`ServerLevelBlockFamilyMixin`) and the
+  client keeps its block entity (`LevelChunkBlockFamilyMixin`). `LegacyBlockAdapter.metaOf(state)` reads the metadata of
+  any member; `LegacyBlockAdapter.META` is only the base block's property.
+- Models: a member's blockstate file points at the base block's per-metadata models (`block/name_mN`).
+- Saved worlds hold `mod:name[meta=N]` base states. When a chunk loads, states whose metadata a member owns now are moved
+  into it, in place (same legacy block and metadata, tile entity kept). With `blocks.flattenSubtypes = false` the members are
+  still registered, nothing points at them, and the same conversion moves their states back into the base block: switching
+  either way loses no block.
+- Not flattened: blocks whose items all place metadata 0 (the subtype lives in the tile entity), deepslate ore twins (one
+  twin per legacy block, all metadata), and a member id another block already has (that subtype stays in the base block).
+
+1.12.2 is not flattened yet: there an `ItemBlock` is one modern item (no per-subtype items), so the flattening would first
+need per-subtype block items.

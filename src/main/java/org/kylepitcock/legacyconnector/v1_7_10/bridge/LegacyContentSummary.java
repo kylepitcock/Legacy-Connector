@@ -25,7 +25,7 @@ public final class LegacyContentSummary {
                     || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockItem) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[0]++;
         });
         BuiltInRegistries.BLOCK.entrySet().forEach(e -> {
-            if (e.getValue() instanceof LegacyBlockAdapter || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[1]++;
+            if (e.getValue() instanceof LegacyBlockAdapter a && !a.isFlattenedMember() || e.getValue() instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block) byMod.computeIfAbsent(e.getKey().location().getNamespace(), k -> new int[4])[1]++;
         });
         for (LegacyHosts.Info i : LegacyHosts.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;
         for (var i : org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.all()) byMod.computeIfAbsent(i.id().getNamespace(), k -> new int[4])[2]++;

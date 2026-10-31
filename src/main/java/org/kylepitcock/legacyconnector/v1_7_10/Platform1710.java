@@ -305,6 +305,8 @@ public final class Platform1710 implements LegacyPlatform {
         List<LegacyBlockAdapter> adapters = new ArrayList<>();
         for (var b : BlockBridge.modBlocks()) if (b.mcc$modern instanceof LegacyBlockAdapter a) adapters.add(a);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.retryFailedDiscovery();
+        // every subtype item exists now: the subtypes' blocks, which the host block entity type below must accept
+        adapters.addAll(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockFlattening1710.register());
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.register();
         TileEntityBridge.registerType(adapters);
         CreativeTabBridge.registerTabs();

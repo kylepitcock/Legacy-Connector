@@ -23,7 +23,7 @@ public class LegacyEntityBlockAdapter extends LegacyBlockAdapter implements Enti
         // get a host. An empty host for every other placement (a mod's ore or plant block sharing its class with a machine)
         // was created for every such block world generation placed: hundreds of thousands per few minutes of play.
         try {
-            if (!((Block) legacy()).hasTileEntity(state.getValue(META))) return null;
+            if (!((Block) legacy()).hasTileEntity(meta(state))) return null;
         } catch (RuntimeException | LinkageError e) {
             // unknown: keep the host
         }
@@ -34,7 +34,7 @@ public class LegacyEntityBlockAdapter extends LegacyBlockAdapter implements Enti
     @Override
     @SuppressWarnings("unchecked")
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        if (type != TileEntityBridge.type() || !((Block) legacy()).hasTileEntity(state.getValue(META))) return null;
+        if (type != TileEntityBridge.type() || !((Block) legacy()).hasTileEntity(meta(state))) return null;
         return (lvl, pos, st, be) -> ((LegacyBlockEntity) be).tick();
     }
 }

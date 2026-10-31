@@ -10,7 +10,9 @@
     "LivingEntityTravelMixin",
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
-    "CreativeTabDuplicateMixin"
+    "CreativeTabDuplicateMixin",
+    "ServerLevelBlockFamilyMixin",
+    "LevelChunkBlockFamilyMixin"
   ],
   "client": [
     "ClientLevelSkyColorMixin",

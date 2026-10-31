@@ -335,7 +335,7 @@ public final class WorldScreenshotTest {
         List<String> mods = new ArrayList<>();
         Map<String, List<ResourceLocation>> blocks = new LinkedHashMap<>();
         for (var e : BuiltInRegistries.BLOCK.entrySet()) {
-            if (!(e.getValue() instanceof LegacyBlockAdapter)) continue;
+            if (!(e.getValue() instanceof LegacyBlockAdapter a0) || a0.isFlattenedMember()) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
             if (!onlyBlocks.isEmpty() && !onlyBlocks.contains(id.toString())) continue;
@@ -444,7 +444,7 @@ public final class WorldScreenshotTest {
                 List<ResourceLocation> all = new ArrayList<>();
                 for (var e : registry.entrySet()) {
                     if (!e.getKey().location().getNamespace().equals(ns)) continue;
-                    if (legacyBlocksOnly && !(e.getValue() instanceof LegacyBlockAdapter)) continue;
+                    if (legacyBlocksOnly && !(e.getValue() instanceof LegacyBlockAdapter a0 && !a0.isFlattenedMember())) continue;
                     all.add(e.getKey().location());
                 }
                 int step = Math.max(1, all.size() / perMod);
@@ -644,7 +644,7 @@ public final class WorldScreenshotTest {
         // (block, metadata) pairs: metadata from the property, or "variants" = the block item's registered subtypes
         List<Object[]> targets = new ArrayList<>();
         for (var e : BuiltInRegistries.BLOCK.entrySet()) {
-            if (!(e.getValue() instanceof LegacyBlockAdapter adapter)) continue;
+            if (!(e.getValue() instanceof LegacyBlockAdapter adapter) || adapter.isFlattenedMember()) continue;
             ResourceLocation id = e.getKey().location();
             if (!modsProp.isEmpty() && !java.util.Arrays.asList(modsProp.split(",")).contains(id.getNamespace())) continue;
             var only = idList("legacyconnector.shotBlocks");
