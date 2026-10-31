@@ -45,6 +45,8 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Villages");
     /** Components are planned at this height: some refuse a box below y=10 (1.7.10's canVillageGoDeeper checks). */
     private static final int PLAN_Y = 64;
+    /** The first placements are logged (diagnosing buildings that come out empty). */
+    private static final java.util.concurrent.atomic.AtomicInteger REPORTED = new java.util.concurrent.atomic.AtomicInteger();
 
     public static final MapCodec<LegacyVillagePoolElement> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("handler").forGetter(e -> e.handler),
@@ -177,13 +179,21 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
             BlockPos offset, BlockPos pivot, Rotation rotation, BoundingBox box, RandomSource random, LiquidSettings liquidSettings, boolean keepJigsaws) {
         int mode = mode(rotation);
         StructureComponent component = build(offset.getX(), offset.getY() + PLAN_Y, offset.getZ(), mode, handler.hashCode());
-        if (component == null) return false;
+        if (component == null) {
+            if (REPORTED.incrementAndGet() <= 12) LOG.info("Legacy village building of {} at {}: the handler built no component", handler, offset);
+            return false;
+        }
         // planned at PLAN_Y: down to the street the jigsaw put it on, ground level already found (no 1.7.10 averaging)
         component.getBoundingBox().offset(0, -PLAN_Y, 0);
         if (component instanceof StructureVillagePieces.Village v) v.mcc$setGroundLevel(component.getBoundingBox().minY);
         try {
             StructureBoundingBox chunk = new StructureBoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
-            component.addComponentParts(World.mcc$wrap(level), new Random(random.nextLong()), chunk);
+            boolean done = component.addComponentParts(World.mcc$wrap(level), new Random(random.nextLong()), chunk);
+            if (REPORTED.incrementAndGet() <= 12) {
+                StructureBoundingBox b = component.getBoundingBox();
+                LOG.info("Legacy village building {} at {} (box {},{},{} to {},{},{}, chunk box {}): addComponentParts returned {}",
+                        component.getClass().getName(), offset, b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ, box, done);
+            }
             return true;
         } catch (RuntimeException | LinkageError e) {
             LOG.warn("Legacy village building {} failed at {}", component.getClass().getName(), offset, e);
