@@ -73,9 +73,15 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   delete the cache or the old translation is reused.
 - On a Windows desktop (no Docker) `tools/dev/quick-shots.sh` runs the graphical test directly in about a minute (superflat world, short render
   distance, a dozen blocks and items per mod); mods go in `run-screenshots/mods`.
+- Headless server probing (no window): `./gradlew runServerSubTest -PautostopTicks=0 -PserverScript=probe -PserverScriptMod=<legacy mod id>` runs a long-lived server that executes
+  the `*.js` files dropped into `run-subtest/probe` on the server thread (Nashorn, `core/ServerScript.java`); `tools/dev/server-script.sh -f file.js` submits one and prints the answer
+  (globals persist; a function `onTick(n)` runs every tick). `tools/dev/fisk/lib.js` is a library for it: it joins fake clients (a captured connection that answers keep-alives and
+  summarises every packet the server sends, so data syncing and custom packets can be checked), puts a hero suit on, drives data vars and interactions and runs multi-tick scenarios
+  (`scenario([step, ...])`, a step may return the ticks to wait; `tools/dev/fisk/wait.sh` waits and prints). The `probe-*.js` and `*-sweep.js` files there are the Fisk's Heroes
+  ability checks (damage, beams, web, shield throw, sizes, gravity, healing, recipes, machines, items). A fake client never moves its chunk view by itself: `tp()` tells the chunk map.
 - Live probing: start a session with `SCENARIO=control tools/dev/quick-shots.sh`, then `tools/dev/js.sh '<JavaScript>'` evaluates in the running
   game (bindings `mc`, `server`, `log`; any class via `Java.type(...)`).
-- Headless server probing: `./gradlew runServerSubTest -PserverScript=<file.js> [-PserverScriptFrom=200]` evaluates the file on every server tick
+- Headless server probing: `./gradlew runServerSubTest -PserverTickScript=<file.js> [-PserverTickScriptFrom=200]` evaluates the file on every server tick
   (bindings `server`, `tick` counted from the first run, `log`; globals persist, so place on one tick and read on the next); output is logged as
   `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).

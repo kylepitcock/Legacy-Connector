@@ -4,13 +4,20 @@
   "package": "org.kylepitcock.legacyconnector.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EntityGravityMixin",
+    "PlayerStepSoundMixin",
+    "FoodDataHealRateMixin",
+    "LivingEntityDimensionsMixin",
     "LivingEntityTravelMixin",
     "MultiNoiseBiomeSourceMixin",
     "MultiNoiseBiomeSourcePossibleMixin",
-    "PlacedFeatureOreGateMixin"
+    "PlacedFeatureOreGateMixin",
+    "TargetingConditionsMixin"
   ],
   "client": [
-    "ClientLevelSkyColorMixin"
+    "ClientLevelSkyColorMixin",
+    "MinecraftAttackMixin",
+    "MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1

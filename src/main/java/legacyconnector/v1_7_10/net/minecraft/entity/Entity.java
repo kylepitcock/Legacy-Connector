@@ -1289,6 +1289,10 @@ public abstract class Entity implements ICommandSender {
     public void setSize(float width, float height) {
         var host = mcc$host();
         if (host != null) host.mcc$setSize(width, height);
+        else if (mcc$entity instanceof net.minecraft.world.entity.LivingEntity) {
+            // players and vanilla mobs: the modern entity takes its size from its type and pose, so the size is kept on the side
+            org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySizes1710.setSize(mcc$entity, width, height);
+        }
         // 1.7.10 picked the tracker's position rounding from the width (HBM's TrackerUtil reads it)
         float f = width % 2.0F;
         myEntitySize = f < 0.375D ? EnumEntitySize.SIZE_1 : f < 0.75D ? EnumEntitySize.SIZE_2 : f < 1.0D ? EnumEntitySize.SIZE_3
