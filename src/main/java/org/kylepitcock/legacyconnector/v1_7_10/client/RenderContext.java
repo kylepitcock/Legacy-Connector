@@ -207,6 +207,38 @@ public final class RenderContext {
         texture2d = on;
     }
 
+    // Texture units. 1.7.10 drew with two: GL_TEXTURE0 (the bound texture) and GL_TEXTURE1 (the lightmap), and legacy code
+    // selects one with OpenGlHelper.setActiveTexture / GL13.glActiveTexture before switching GL_TEXTURE_2D or binding. The
+    // vanilla idiom (EntityRenderer.disableLightmap, DragonAPI's ReikaRenderHelper.disableEntityLighting) is "lightmap unit,
+    // glDisable(GL_TEXTURE_2D), default unit": full-bright drawing. Without units it switched texturing off on the main
+    // texture, and ChromatiCraft's Crystal Pylon halo (atlas sprite, additive) drew as an untextured opaque white square.
+
+    /** The emulated active texture unit, relative to GL_TEXTURE0. */
+    private static int activeUnit;
+    /** GL_TEXTURE_2D on the lightmap unit: off, the lightmap was not applied and legacy geometry drew full bright. */
+    private static boolean lightmap = true;
+
+    /** glActiveTexture(GL_TEXTURE0 + n): later GL_TEXTURE_2D switches and binds apply to that unit. */
+    public static void setActiveTexture(int unit) {
+        activeUnit = Math.max(0, Math.min(31, unit - 33984)); // GL_TEXTURE0
+    }
+
+    /** Whether the active unit is the main texture's (binds and GL_TEXTURE_2D act on the drawn texture). */
+    public static boolean onDefaultTextureUnit() {
+        return activeUnit == 0;
+    }
+
+    /** GL_TEXTURE_2D switched on the active unit: the main texture on unit 0, the lightmap on unit 1, ignored elsewhere. */
+    public static void setUnitTexture2d(boolean on) {
+        if (activeUnit == 0) texture2d = on;
+        else if (activeUnit == 1) lightmap = on;
+    }
+
+    /** glIsEnabled(GL_TEXTURE_2D) for the active unit. */
+    public static boolean unitTexture2d() {
+        return activeUnit == 0 ? texture2d : activeUnit == 1 && lightmap;
+    }
+
     public static void setBlend(boolean on) {
         if (on == blend) return;
         if (gui() != null && (blendSrc != 770 || blendDst != 771)) flushBatch();
@@ -276,6 +308,7 @@ public final class RenderContext {
     }
 
     public static int vertexLight() {
+        if (!lightmap) return LightTexture.FULL_BRIGHT;
         return forcedLight >= 0 ? forcedLight : light();
     }
 
@@ -436,7 +469,7 @@ public final class RenderContext {
             if (texture2d) vc.setUv((float) x[3], (float) x[4]);
             if (entity) {
                 vc.setOverlay(overlay());
-                vc.setLight((int) x[6]);
+                vc.setLight(lightmap ? (int) x[6] : LightTexture.FULL_BRIGHT); // lightmap unit off: its brightness was not applied
                 vc.setNormal(last, nx, ny, nz);
             }
         }
@@ -456,6 +489,8 @@ public final class RenderContext {
         additiveAlpha = false;
         lighting = true;
         forcedLight = -1;
+        activeUnit = 0;
+        lightmap = true;
         attribs.clear();
     }
 
@@ -464,7 +499,8 @@ public final class RenderContext {
     // BlendMode.ADDITIVEDARK with depth writes off and pop, and the block drawn after them took the leftover blending.
 
     private record Attribs(int mask, boolean texture2d, boolean blend, int blendSrc, int blendDst, boolean legacyDepthTest,
-            boolean depthTest, int depthFunc, boolean depthWrite, int colorWrite, boolean lighting, float r, float g, float b, float a) {}
+            boolean depthTest, int depthFunc, boolean depthWrite, int colorWrite, boolean lighting, float r, float g, float b, float a,
+            int activeUnit, boolean lightmap) {}
 
     private static final java.util.ArrayDeque<Attribs> attribs = new java.util.ArrayDeque<>();
 
@@ -474,7 +510,7 @@ public final class RenderContext {
     public static void pushAttrib(int mask) {
         if (attribs.size() >= 16) return; // GL's own limit (GL_STACK_OVERFLOW): a renderer that never pops must not grow it
         attribs.push(new Attribs(mask, texture2d, blend, blendSrc, blendDst, legacyDepthTest, depthTest, depthFunc, depthWrite,
-                colorWrite, lighting, r, g, b, a));
+                colorWrite, lighting, r, g, b, a, activeUnit, lightmap));
     }
 
     /** Puts the saved values back through the legacy GL calls, so the real GL state follows the emulated one. */
@@ -482,7 +518,12 @@ public final class RenderContext {
         Attribs s = attribs.poll();
         if (s == null) return;
         int m = s.mask();
-        if ((m & (GL_ENABLE_BIT | GL_TEXTURE_BIT)) != 0) enable(3553, s.texture2d()); // GL_TEXTURE_2D
+        int current = activeUnit;
+        activeUnit = 0; // GL_TEXTURE_2D below is the main texture's
+        if ((m & (GL_ENABLE_BIT | GL_TEXTURE_BIT)) != 0) {
+            enable(3553, s.texture2d()); // GL_TEXTURE_2D
+            lightmap = s.lightmap(); // DragonAPI's disableEntityLighting between push and pop must not leave everything full bright
+        }
         if ((m & (GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT)) != 0) enable(3042, s.blend()); // GL_BLEND
         if ((m & (GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT)) != 0) {
             enable(2929, s.legacyDepthTest()); // GL_DEPTH_TEST
@@ -499,6 +540,7 @@ public final class RenderContext {
             legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDepthMask(s.depthWrite());
         }
         if ((m & GL_CURRENT_BIT) != 0) color(s.r(), s.g(), s.b(), s.a());
+        activeUnit = (m & GL_TEXTURE_BIT) != 0 ? s.activeUnit() : current;
     }
 
     private static void enable(int cap, boolean on) {

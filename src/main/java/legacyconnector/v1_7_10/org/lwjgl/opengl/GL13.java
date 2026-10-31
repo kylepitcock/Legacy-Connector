@@ -68,8 +68,12 @@ public class GL13 extends org.lwjgl.opengl.GL13 {
         if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glSampleCoverage(p0, p1);
     }
 
+    /**
+     * Emulated like OpenGlHelper.setActiveTexture: the unit selects which emulated GL_TEXTURE_2D switch and binding later calls
+     * change. Switching the real unit desynced the modern renderer's cached texture bindings.
+     */
     public static void glActiveTexture(int p0) {
-        if (RenderSystem.isOnRenderThread()) org.lwjgl.opengl.GL13.glActiveTexture(p0);
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.OpenGlHelper.setActiveTexture(p0);
     }
 
     public static void glClientActiveTexture(int p0) {
