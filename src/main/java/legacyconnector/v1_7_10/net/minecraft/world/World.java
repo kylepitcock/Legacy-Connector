@@ -630,9 +630,34 @@ public class World implements IBlockAccess {
         return sky << 20 | block << 4;
     }
 
+    /**
+     * The world's height for legacy code: the modern level's top (320 in the overworld, 256 in the nether, end and mod dimensions)
+     * where players act, so checks like RotaryCraft's {@code y < world.provider.getHeight() - 1} allow the whole build range.
+     * Generation views keep 1.7.10's 256: generators pick heights with {@code nextInt(world.getHeight())}.
+     */
     @Override
     public int getHeight() {
-        return 256;
+        return mcc$buildTop();
+    }
+
+    /**
+     * The lowest y blocks can be at: the modern level's bottom (-64 in the overworld), 0 in generation views (legacy generators
+     * see 0..255; the deep pass shifts the world so that 0 is the modern bottom) and in levels that start at 0. The loader turns
+     * 1.7.10's hard-coded {@code y < 0} checks on a method's y parameter into a call here (BuildHeightRewriter, BuildHeight).
+     */
+    public int mcc$buildBottom() {
+        LevelAccessor level = lvl();
+        return level == null || mcc$legacyRange(level) ? 0 : level.getMinBuildHeight();
+    }
+
+    /** One above the highest y blocks can be at (see {@link #mcc$buildBottom}); 256 in generation views. */
+    public int mcc$buildTop() {
+        LevelAccessor level = lvl();
+        return level == null || mcc$legacyRange(level) ? 256 : level.getMaxBuildHeight();
+    }
+
+    private static boolean mcc$legacyRange(LevelAccessor level) {
+        return inDeepPass() || !(level instanceof Level);
     }
 
     public int getActualHeight() {
@@ -1477,7 +1502,7 @@ public class World implements IBlockAccess {
 
     /** The light level of the block (sky light less the time of day, or block light), as {@link #getBlockLightValue}. */
     public int getBlockLightValue_do(int x, int y, int z, boolean useNeighbours) {
-        if (y < 0) return 0;
+        if (y < mcc$buildBottom()) return 0;
         return getBlockLightValue(x, y, z);
     }
 

@@ -190,8 +190,9 @@ public class WorldProvider {
         return worldObj == null ? 0L : worldObj.getWorldTime();
     }
 
+    /** The world's height (see the shim World's getHeight: the modern top where players act, 256 during generation). */
     public int getHeight() {
-        return 256;
+        return worldObj == null ? 256 : worldObj.getHeight();
     }
 
     public float[] calcSunriseSunsetColors(float celestialAngle, float partialTicks) {
