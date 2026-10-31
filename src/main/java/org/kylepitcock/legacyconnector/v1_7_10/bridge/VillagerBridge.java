@@ -64,6 +64,8 @@ public final class VillagerBridge {
             ResourceLocation key = ResourceLocation.fromNamespaceAndPath("legacyconnector", "villager_" + i);
             VillagerProfession profession = new VillagerProfession("legacyconnector.villager_" + i, holder -> false, holder -> false,
                     ImmutableSet.of(), ImmutableSet.of(), null);
+            // 1.7.10 professions had no names: the trade screen showed "entity.minecraft.villager.legacyconnector.villager_243"
+            org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", translationKey(i), SKINS.containsKey(i) ? nameFromSkin(SKINS.get(i)) : "Villager");
             try {
                 return LegacyRegistrar.register(BuiltInRegistries.VILLAGER_PROFESSION, key, profession);
             } catch (RuntimeException e) {
@@ -76,6 +78,27 @@ public final class VillagerBridge {
 
     public static void registerSkin(int id, ResourceLocation skin) {
         SKINS.put(id, skin);
+        if (id > 4) org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", translationKey(id), nameFromSkin(skin));
+    }
+
+    /** Vanilla's key for a villager of a profession outside the minecraft namespace (Villager.getTypeName). */
+    private static String translationKey(int id) {
+        return "entity.minecraft.villager.legacyconnector.villager_" + id;
+    }
+
+    /** A display name from the skin's file name ({@code villager_wizard.png} is "Wizard"); "Villager" when nothing is left. */
+    static String nameFromSkin(ResourceLocation skin) {
+        String file = skin.getPath();
+        file = file.substring(file.lastIndexOf('/') + 1).replaceFirst("[.]png$", "");
+        String[] words = file.replaceAll("([a-z])([A-Z])", "$1 $2").split("[_ .-]+");
+        StringBuilder sb = new StringBuilder();
+        for (String w : words) {
+            String lw = w.toLowerCase(java.util.Locale.ROOT);
+            if (lw.isEmpty() || lw.equals("villager") || lw.equals("skin") || lw.equals("texture") || lw.equals(skin.getNamespace())) continue;
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(lw.charAt(0))).append(lw.substring(1));
+        }
+        return sb.length() == 0 ? "Villager" : sb.toString();
     }
 
     public static ResourceLocation skin(int id) {
