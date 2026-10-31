@@ -129,6 +129,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             if (legacy.isEmpty()) return;
 
             List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
+            // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
+            Set<Path> libraryKeep = new HashSet<>();
+            LIBRARY_SKIPS.clear();
+            BundledLibraries.Result libraries = BundledLibraries.provide(pipeline, cacheDir,
+                    legacy.stream().filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList(),
+                    List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")), LOADER_DIGEST, libraryKeep);
+            LIBRARY_SKIPS.putAll(libraries.unsupported());
+            libraryNotes = libraries.notes();
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
             List<String> present = new ArrayList<>(legacy.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
             for (LibraryBridges.Bridge b : bridges) if (b.legacyModId() != null) present.add(b.legacyModId());
@@ -171,7 +179,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     .flatMap(j -> j.mods.stream()).map(LegacyModDecl::modernId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
-            Set<Path> keep = new HashSet<>();
+            Set<Path> keep = new HashSet<>(libraryKeep);
             if (runtimeJar != null) keep.add(runtimeJar);
             keep.add(cacheDir.resolve("coremod-api.jar"));
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
@@ -417,7 +425,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
     }
 
+    /** Legacy jars that need a bundled library the pack makes impossible (see {@link BundledLibraries}). */
+    private static final Map<LegacyJar, String> LIBRARY_SKIPS = java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>());
+    private static volatile List<String> libraryNotes = List.of();
+
     private static String skipReason(LegacyJar jar) {
+        String lib = LIBRARY_SKIPS.get(jar);
+        if (lib != null) return lib;
         if (!jar.hasMods() && jar.tweakClass != null) {
             return "LaunchWrapper tweaker (" + jar.tweakClass + ") with no @Mod; tweakers cannot run on modlauncher";
         }
@@ -514,6 +528,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     for (String n : jar.notes) w.write("  note: " + n + "\n");
                     String outcome = e.getValue();
                     w.write(outcome.startsWith("  ") ? outcome : "  " + outcome + "\n");
+                    w.write("\n");
+                }
+                if (!libraryNotes.isEmpty()) {
+                    w.write("Bundled libraries (Scala, trove, ...):\n");
+                    for (String n : libraryNotes) w.write("  " + n + "\n");
                     w.write("\n");
                 }
                 if (!split.sharedPackages().isEmpty()) {

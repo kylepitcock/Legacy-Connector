@@ -50,6 +50,12 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   `NoClassDefFoundError`, so the rest of the class still loads (the JVM verifies whole classes at once).
 - Access transformers: the shim is public and non-final throughout, as mods compiled against AT-widened Minecraft.
 - FML's Scala language adapter (`object` mods) and the libraries 1.7.10 shipped: Scala 2.11, Trove, vecmath.
+- Bundled libraries (Scala 2.11 + akka, typesafe config, Trove, vecmath, javax.activation) are resources of the loader jar, not jar-in-jar entries
+  (those always enter the game module layer and clash with modern mods bundling the same packages, e.g. ScalableCatsForce's Scala 2.13:
+  `ResolutionException: Modules X and Y export package scala.annotation`). `BundledLibraries` hands a library group to FML only when a legacy
+  jar references it and no other jar of the mods folder (or jar nested in one) has a package of it; another Trove/config/activation then serves
+  the legacy mods, while a foreign Scala (not 2.11) makes the Scala-using legacy mods skipped with a message in the report. `-PembeddedLibs`
+  (dev) tests this path with the libraries read from `build/legacy-libs`.
 - Coremods: their plugins are constructed and set up as FML did (construct all, then `getASMTransformerClass` /
   `injectData` / setup hook by sorting index; mod containers count as loaded mods). Their class transformers run over
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so

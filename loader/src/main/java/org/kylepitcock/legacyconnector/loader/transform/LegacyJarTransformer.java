@@ -189,7 +189,8 @@ public final class LegacyJarTransformer {
         // Forge 1.12.2 shipped typesafe config and akka; the runtime bundles them. A mod that overrides a class or two of them (OpenComputers
         // patches one in com.typesafe.config.impl) would split the package with that module: its few classes go, a full shaded copy stays.
         List<String> partial = new java.util.ArrayList<>();
-        if (jar.version == LegacyVersion.V1_12_2) {
+        // (Any legacy version: OpenComputers 1.7.10 patches it the same way.)
+        {
             for (String lib : List.of("com/typesafe/config/", "akka/")) {
                 if (classes.keySet().stream().filter(n -> n.startsWith(lib)).count() < 20) partial.add(lib);
             }
