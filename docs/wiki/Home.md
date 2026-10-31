@@ -10,6 +10,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 |---|---|
 | [Architecture](Architecture.md) | Loader, shim, synthesized API, runtime; the legacy loader behaviour that is reproduced |
 | [Bridges](Bridges.md) | Outdated dependencies replaced by modern mods, and every engine bridge with its state |
+| [Library candidates](Library-Candidates.md) | Modern libraries that could replace hand-rolled code (Pehkui adopted for entity size) |
 | [World generation](World-Generation.md) | Biomes, world types, structures, fluids and input |
 | [Mod dimensions](Mod-Dimensions.md) | Dimensions registered by legacy mods, runtime dimensions, mixed 1.7.10/1.12.2 packs |
 | [Entities](Entities.md) | Entity hosts, AI, attributes, renderers and models |
