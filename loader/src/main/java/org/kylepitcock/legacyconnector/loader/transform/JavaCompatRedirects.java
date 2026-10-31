@@ -101,6 +101,8 @@ public final class JavaCompatRedirects {
         staticToStatic("com/google/common/collect/Iterators", "emptyIterator", "()Lcom/google/common/collect/UnmodifiableIterator;", COMPAT + "GuavaCompat", "emptyIterator");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedMillis", "()J", COMPAT + "GuavaCompat");
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
+        // Guava scans only URLClassLoaders; mods run in module class loaders (Logistics Pipes finds its packets this way).
+        staticToStatic("com/google/common/reflect/ClassPath", "from", "(Ljava/lang/ClassLoader;)Lcom/google/common/reflect/ClassPath;", COMPAT + "GuavaCompat", "classPathFrom");
         // Guava 26: Futures.addCallback needs an executor.
         staticToStatic("com/google/common/util/concurrent/Futures", "addCallback",
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");

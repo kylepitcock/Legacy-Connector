@@ -53,7 +53,7 @@ public class Item {
     /** Wrapper constructor for vanilla items. */
     public Item(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         this.mcc$vanilla = info;
-        this.unlocalizedName = info.legacyName();
+        this.unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(false, info.legacyName());
         this.iconString = info.legacyName();
         ItemBridge.initVanilla(this, info);
     }
