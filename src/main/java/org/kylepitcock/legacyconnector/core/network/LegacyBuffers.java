@@ -23,10 +23,11 @@ public final class LegacyBuffers {
      * ended in EOFException).
      */
     public static ByteBuf message(int discriminator, byte[] data) {
-        byte[] whole = new byte[data.length + 1];
-        whole[0] = (byte) discriminator;
-        System.arraycopy(data, 0, whole, 1, data.length);
-        return io.netty.buffer.Unpooled.wrappedBuffer(whole).readerIndex(1).slice();
+        // allocated by HEAP so that readBytes(n)/copy() derive heap buffers too (Unpooled.wrappedBuffer allocates direct ones)
+        ByteBuf whole = HEAP.heapBuffer(data.length + 1);
+        whole.writeByte(discriminator);
+        whole.writeBytes(data);
+        return whole.readerIndex(1).slice();
     }
 
     public static ByteBuf wrap(byte[] data) {
