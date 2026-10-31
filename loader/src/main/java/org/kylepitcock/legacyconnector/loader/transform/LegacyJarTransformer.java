@@ -342,9 +342,73 @@ public final class LegacyJarTransformer {
         for (String c : List.copyOf(result.demand.classes)) closeSupertypes(c, hierarchy, result.demand);
         result.links.synthesizedClasses.addAll(result.demand.classes);
 
+        outClasses = sanitizePackages(outClasses);
         Manifest outManifest = cleanManifest(manifest, jar);
         write(output, outManifest, outClasses, outResources);
         return result;
+    }
+
+    /**
+     * A class in a directory that is no Java identifier (a mod that shaded a library under its project name, e.g. NTM-CE)
+     * makes the module system reject the jar ("Invalid package name") and the whole game fails to start. The invalid
+     * segments are renamed (every other character becomes '_') across all classes; string references stay unchanged.
+     */
+    static Map<String, byte[]> sanitizePackages(Map<String, byte[]> classes) {
+        Map<String, String> prefixes = new java.util.HashMap<>();
+        for (String name : classes.keySet()) {
+            int slash = name.lastIndexOf('/');
+            if (slash < 0 || name.startsWith("META-INF/")) continue;
+            String[] segs = name.substring(0, slash).split("/");
+            StringBuilder from = new StringBuilder(), to = new StringBuilder();
+            for (String seg : segs) {
+                String fixed = fixSegment(seg);
+                from.append(seg).append('/');
+                to.append(fixed).append('/');
+                if (!fixed.equals(seg)) prefixes.put(from.toString(), to.toString());
+            }
+        }
+        if (prefixes.isEmpty()) return classes;
+        org.objectweb.asm.commons.Remapper remapper = new org.objectweb.asm.commons.Remapper() {
+            @Override
+            public String map(String internalName) {
+                int i = internalName.lastIndexOf('/');
+                if (i < 0) return internalName;
+                String dir = internalName.substring(0, i + 1);
+                // longest invalid prefix wins: rebuild segment by segment
+                StringBuilder from = new StringBuilder(), to = new StringBuilder();
+                String[] segs = dir.split("/");
+                boolean changed = false;
+                for (String seg : segs) {
+                    String fixed = fixSegment(seg);
+                    changed |= !fixed.equals(seg);
+                    to.append(fixed).append('/');
+                }
+                return changed ? to + internalName.substring(i + 1) : internalName;
+            }
+        };
+        Map<String, byte[]> out = new LinkedHashMap<>();
+        for (var e : classes.entrySet()) {
+            String name = e.getKey();
+            if (!name.endsWith(".class") || name.startsWith("META-INF/")) {
+                out.put(name, e.getValue());
+                continue;
+            }
+            ClassWriter cw = new ClassWriter(0);
+            new ClassReader(e.getValue()).accept(new ClassRemapper(cw, remapper), 0);
+            out.put(remapper.map(name.substring(0, name.length() - 6)) + ".class", cw.toByteArray());
+        }
+        return out;
+    }
+
+    private static String fixSegment(String seg) {
+        if (seg.isEmpty()) return seg;
+        StringBuilder sb = new StringBuilder(seg.length());
+        for (int i = 0; i < seg.length(); i++) {
+            char c = seg.charAt(i);
+            boolean ok = i == 0 ? Character.isJavaIdentifierStart(c) : Character.isJavaIdentifierPart(c);
+            sb.append(ok ? c : '_');
+        }
+        return sb.toString();
     }
 
     /** Libraries the platform ships as modules: a bundled copy would split their packages and JPMS refuses to boot. */
