@@ -44,6 +44,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
 
     public void bindTexture(ResourceLocation resource) {
         if (resource == null) return; // legacy renderers with an unset texture keep the previous one
+        if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return; // see RenderContext#bindTexture
         flush();
         var modern = mcc$modern(resource);
         // 1.12's HUD sheet (hearts, armor, food) is gone since 1.20.2: composed from the modern sprites the first time it is bound
@@ -63,7 +64,7 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         }
         if (textureObj instanceof TextureMap) return true; // the block atlas is the modern one
         var manager = modernManager();
-        if (manager == null || !com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+        if (manager == null || !com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread() || org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) {
             synchronized (pending) {
                 pending.put(textureLocation, textureObj);
             }
