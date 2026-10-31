@@ -473,6 +473,14 @@ public class Block {
             legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z) {
         // Forge 1.7.10: the block's getItem (sugar cane gives the reeds item, crops their seeds, a cauldron its item) with the
         // damage the item's own block reports. Thaumcraft's Thaumometer scans blocks through this and keys aspects by the result.
+        // Water and lava: a modern fluid is one block with no item, but the world reads every source as the flowing block (1.7.10 had
+        // the still block there, and mods register aspects, fluids and names against that one): answer the still block's item.
+        Block still = this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.flowing_water ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.water
+                : this == legacyconnector.v1_7_10.net.minecraft.init.Blocks.flowing_lava ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.lava : null;
+        if (still != null) {
+            Item stillItem = Item.getItemFromBlock(still);
+            return stillItem == null ? null : new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(stillItem, 1, 0);
+        }
         Item item = getItem(world, x, y, z);
         if (item == null) return null;
         Block block = item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock && !isFlowerPot() ? Block.getBlockFromItem(item) : this;
@@ -1066,11 +1074,27 @@ public class Block {
         } catch (RuntimeException e) {
             state = null;
         }
+        int meta = world == null ? 0 : world.getBlockMetadata(x, y, z);
         if (state == null || BlockBridge.legacyBlock(state) != this) {
-            state = BlockBridge.toModern(this, world == null ? 0 : world.getBlockMetadata(x, y, z));
+            state = BlockBridge.toModern(this, meta);
             level = null;
         }
-        return BlockBridge.legacyPick(state, level, pos);
+        return mcc$legacyKeyed(BlockBridge.legacyPick(state, level, pos), meta);
+    }
+
+    /**
+     * A pick that is an item 1.7.10 never had (the all-bark logs, meta 12-15: modern "oak wood") is not what 1.7.10 picked or dropped: the
+     * block's plain variant, which is the same item as the metadata without its orientation bits (log:meta&3).
+     */
+    private ItemStack mcc$legacyKeyed(ItemStack pick, int meta) {
+        if (mcc$vanilla == null || mcc$vanilla.legacyId() < 0) return pick;
+        if (pick != null && (pick.getItem() == null || pick.getItem().mcc$vanilla == null || pick.getItem().mcc$vanilla.legacyId() >= 0)) return pick;
+        for (int mask : new int[] {3, 7}) {
+            if ((meta & mask) == meta) continue;
+            ItemStack plain = BlockBridge.legacyPick(BlockBridge.toModern(this, meta & mask), null, new net.minecraft.core.BlockPos(0, 0, 0));
+            if (plain != null && plain.getItem() != null && (plain.getItem().mcc$vanilla == null || plain.getItem().mcc$vanilla.legacyId() >= 0)) return plain;
+        }
+        return pick;
     }
 
     public float mcc$hardness() {
