@@ -19,18 +19,11 @@ uses, computed once more when a jar is translated (a few milliseconds).
 
 ## Per-installation signature
 
-On first use Legacy Connector creates a random 256-bit key:
-
-| OS | Location |
-| --- | --- |
-| Windows | `%LOCALAPPDATA%\LegacyConnector\installation.key` |
-| macOS | `~/Library/Application Support/LegacyConnector/installation.key` |
-| Linux | `$XDG_DATA_HOME/legacyconnector/installation.key` (default `~/.local/share/legacyconnector`) |
-
-The key is owner-only (`rw-------`, or an owner-only ACL on Windows). It lives outside the game folder on purpose, so that copying an
-instance to another machine does not copy it. If that folder cannot be written (read-only home of a server account), the key goes to
-`.legacyconnector/installation.key` of the instance; if that fails too, a key for the current run is used and the jars are translated
-again next start. `-Dlegacyconnector.keyDir=<dir>` overrides the folder.
+On first use Legacy Connector creates a random 256-bit key in the game folder, `.legacyconnector/installation.key`. Nothing is written
+outside the instance (0.3.11 kept the key in the user's data folder, which store malware scanners flag; CurseForge held that release for
+manual review). A translated jar taken out of the cache on its own does not verify on another installation; copying a whole instance
+copies its key, so its cache stays valid. If the key cannot be written, a key for the current run is used and the jars are translated
+again next start.
 
 When a jar is translated it gets a sidecar `<jar>.sig`: an HMAC-SHA256 over the jar's size, a content digest computed once when the
 jar was written, the digest of its last 64 KiB (the zip directory), the original's SHA-256 and the translator version. On every start the

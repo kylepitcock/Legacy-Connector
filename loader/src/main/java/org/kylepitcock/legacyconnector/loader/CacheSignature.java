@@ -7,16 +7,9 @@ import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.AclEntry;
-import java.nio.file.attribute.AclEntryPermission;
-import java.nio.file.attribute.AclEntryType;
-import java.nio.file.attribute.AclFileAttributeView;
-import java.nio.file.attribute.PosixFilePermissions;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
-import java.util.EnumSet;
 import java.util.HexFormat;
-import java.util.List;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import org.slf4j.Logger;
@@ -25,8 +18,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Machine-bound signatures of the translated jars in the cache (docs/wiki/Cache-and-Redistribution.md).
  *
- * <p>A random per-installation key is created on first use (outside the game folder, so copying the folder to another machine does not
- * copy it); every translated jar gets a sidecar {@code <jar>.sig} with an HMAC-SHA256 over its size, a content digest computed once when
+ * <p>A random per-installation key is created on first use in the game folder ({@code .legacyconnector/installation.key}; nothing is
+ * written outside the instance, which store malware scanners flag: CurseForge held 0.3.11, which kept the key in the user's data
+ * folder, for manual review). A translated jar taken out of the cache on its own does not verify elsewhere; every translated jar gets a sidecar {@code <jar>.sig} with an HMAC-SHA256 over its size, a content digest computed once when
  * the jar is written, the digest of its last 64 KiB (the zip central directory), the original's hash and the translator version.
  * Verifying on load reads the sidecar and the last 64 KiB of the jar: it never hashes the whole jar. A cache entry whose signature does not
  * verify is discarded and translated again, which is also what happens when the key is lost or the instance is copied to another machine.
@@ -115,36 +109,25 @@ final class CacheSignature {
 
     private static synchronized byte[] key(Path gameDir) {
         if (key != null) return key;
-        Path fallback = gameDir.resolve(".legacyconnector").resolve("installation.key");
-        List<Path> candidates = new java.util.ArrayList<>();
-        Path home = userDir();
-        if (home != null) candidates.add(home.resolve("installation.key"));
-        candidates.add(fallback);
-        for (Path p : candidates) {
-            byte[] k = read(p);
-            if (k != null) return key = k;
-        }
+        Path p = gameDir.resolve(".legacyconnector").resolve("installation.key");
+        byte[] existing = read(p);
+        if (existing != null) return key = existing;
         byte[] fresh = new byte[32];
         new SecureRandom().nextBytes(fresh);
-        for (Path p : candidates) {
+        try {
+            Files.createDirectories(p.getParent());
+            byte[] hex = HexFormat.of().formatHex(fresh).getBytes(StandardCharsets.US_ASCII);
             try {
-                Files.createDirectories(p.getParent());
-                byte[] hex = HexFormat.of().formatHex(fresh).getBytes(StandardCharsets.US_ASCII);
-                try {
-                    Files.write(p, hex, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-                } catch (FileAlreadyExistsException raced) {
-                    byte[] k = read(p);
-                    if (k != null) return key = k;
-                    continue;
-                }
-                restrict(p);
-                LOG.debug("Legacy Connector: created the installation key {}", p);
-                return key = fresh;
-            } catch (IOException | RuntimeException e) {
-                LOG.debug("Legacy Connector: cannot store the installation key at {}", p, e);
+                Files.write(p, hex, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+            } catch (FileAlreadyExistsException raced) {
+                byte[] k = read(p);
+                if (k != null) return key = k;
             }
+            LOG.debug("Legacy Connector: created the installation key {}", p);
+        } catch (IOException | RuntimeException e) {
+            // nowhere to keep it: signatures are valid for this run only, jars are translated again next start
+            LOG.debug("Legacy Connector: cannot store the installation key at {}", p, e);
         }
-        // nowhere to keep it: signatures are valid for this run only, jars are translated again next start
         return key = fresh;
     }
 
@@ -163,38 +146,5 @@ final class CacheSignature {
             }
         }
         return null;
-    }
-
-    /** The per-user folder, outside any game folder: copying an instance to another machine leaves the key behind. */
-    private static Path userDir() {
-        String override = System.getProperty("legacyconnector.keyDir");
-        if (override != null && !override.isBlank()) return Path.of(override);
-        String os = System.getProperty("os.name", "").toLowerCase();
-        String home = System.getProperty("user.home");
-        if (home == null) return null;
-        if (os.contains("win")) {
-            String base = System.getenv("LOCALAPPDATA");
-            return Path.of(base != null ? base : home, "LegacyConnector");
-        }
-        if (os.contains("mac")) return Path.of(home, "Library", "Application Support", "LegacyConnector");
-        String xdg = System.getenv("XDG_DATA_HOME");
-        return xdg != null && !xdg.isBlank() ? Path.of(xdg, "legacyconnector") : Path.of(home, ".local", "share", "legacyconnector");
-    }
-
-    /** Owner-only access as far as the OS allows. */
-    private static void restrict(Path p) {
-        try {
-            if (p.getFileSystem().supportedFileAttributeViews().contains("posix")) {
-                Files.setPosixFilePermissions(p, PosixFilePermissions.fromString("rw-------"));
-                return;
-            }
-            AclFileAttributeView acl = Files.getFileAttributeView(p, AclFileAttributeView.class);
-            if (acl != null) {
-                acl.setAcl(List.of(AclEntry.newBuilder().setType(AclEntryType.ALLOW).setPrincipal(acl.getOwner())
-                        .setPermissions(EnumSet.allOf(AclEntryPermission.class)).build()));
-            }
-        } catch (IOException | RuntimeException e) {
-            LOG.debug("Legacy Connector: could not restrict access to {}", p, e);
-        }
     }
 }
