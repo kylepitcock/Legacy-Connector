@@ -161,6 +161,9 @@ final class ItemCallbacks1122 {
             return InteractionResult.PASS;
         } finally {
             Stacks1122.flushViews();
+            // the held stack the legacy code shrank or replaced goes back to its slot now: left until the end of the tick, it was applied to
+            // whatever stack the slot held by then (two placements in one tick lost the second one's held item)
+            org.kylepitcock.legacyconnector.v1_12_2.entity.LiveStacks1122.flushAll();
         }
     }
 
