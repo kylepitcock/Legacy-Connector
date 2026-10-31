@@ -93,8 +93,11 @@ public final class Hosts1122 {
         if (kindOf(cls) != Kind.ENTITY && isFireImmune(cls)) builder.fireImmune();
         EntityType<?> type = builder.build(id.toString());
         String name = entry.getName() == null ? path : entry.getName();
-        // FML prefixed the translation key with the mod id: "entity.<modid>.<name>.name"
-        Info info = new Info(cls, id, type, kind, "entity." + ns + "." + name + ".name", name, entry.mcc$factory);
+        // FML prefixed the translation key with the mod id: "entity.<modid>.<name>.name". Mods building their entries with
+        // EntityEntryBuilder name them "<modid>.<name>" themselves (Scape and Run: Parasites' "srparasites.ada_longarms"), and 1.12
+        // used that name as it is: prefixing it again gave "entity.srparasites.srparasites.ada_longarms.name", which no lang file has
+        String key = name.startsWith(ns + ".") ? "entity." + name + ".name" : "entity." + ns + "." + name + ".name";
+        Info info = new Info(cls, id, type, kind, key, name, entry.mcc$factory);
         // indexed before the registry callbacks so the type's factory can already resolve its class
         BY_CLASS.put(cls, info);
         BY_TYPE.put(type, info);
