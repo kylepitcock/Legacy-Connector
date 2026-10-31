@@ -134,10 +134,33 @@ public class LegacyBlockEntity extends BlockEntity {
         if (legacy != null) legacy.setWorldObj(World.mcc$wrap(level));
     }
 
+    private static final java.util.Map<Class<?>, Boolean> UPDATES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * IndustrialCraft 2's tile entities return false from {@code canUpdate()} (final) and still do all their work in an
+     * {@code updateEntity()} that 1.7.10's world called for them: not a single IC2 machine or generator ran. A tile that
+     * overrides {@code updateEntity} outside the shim ticks whatever {@code canUpdate()} says; the default one is empty.
+     */
+    private static boolean overridesUpdate(Class<?> type) {
+        return UPDATES.computeIfAbsent(type, c -> {
+            for (Class<?> k = c; k != null && !k.getName().startsWith("legacyconnector."); k = k.getSuperclass()) {
+                try {
+                    k.getDeclaredMethod("updateEntity");
+                    return true;
+                } catch (NoSuchMethodException ignored) {
+                    // keep looking up the hierarchy
+                } catch (LinkageError e) {
+                    return false;
+                }
+            }
+            return false;
+        });
+    }
+
     void tick() {
         if (tickFailed || org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
         TileEntity te = legacy();
-        if (te == null || te.isInvalid() || !te.canUpdate()) return;
+        if (te == null || te.isInvalid() || !(te.canUpdate() || overridesUpdate(te.getClass()))) return;
         try {
             te.updateEntity();
         } catch (RuntimeException | LinkageError e) {
