@@ -413,6 +413,16 @@ public class World implements IBlockAccess {
         return false;
     }
 
+    /**
+     * A write of a populator past its generation region (not the deep pass, which writes below 0 only) is placed when that chunk
+     * is loaded: 1.7.10 generated the chunk on the spot (Witchery's Torment mazes span four chunks from chunk 0, 0).
+     */
+    private void deferOutsideRegion(BlockPos p, BlockState state, int meta) {
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= 0 && inDeepPass()) return;
+        if (state != null) org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state);
+        else org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
+    }
+
     /** An ore placed into deepslate (or over a deepslate ore) becomes the ore's deepslate variant. */
     private BlockState deepslateOre(BlockState state, BlockPos p) {
         if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter) && inDeepPass()) {
@@ -437,7 +447,10 @@ public class World implements IBlockAccess {
     public boolean setBlock(int x, int y, int z, Block block, int meta, int flags) {
         BlockState state = BlockBridge.toModern(block, meta);
         BlockPos p = pos(x, y, z);
-        if (outsideRegion(p)) return false;
+        if (outsideRegion(p)) {
+            deferOutsideRegion(p, state, -1);
+            return false;
+        }
         state = deepslateOre(state, p);
         TileEntityBridge.beforeBlockChange(this, p);
         TileEntityBridge.beforeSetBlock(this, p, state);
@@ -485,7 +498,10 @@ public class World implements IBlockAccess {
 
     public boolean setBlockMetadataWithNotify(int x, int y, int z, int meta, int flags) {
         BlockPos p = pos(x, y, z);
-        if (outsideRegion(p)) return false;
+        if (outsideRegion(p)) {
+            deferOutsideRegion(p, null, meta);
+            return false;
+        }
         BlockState current = lvl().getBlockState(p);
         BlockState next = BlockBridge.withMeta(current, meta);
         if (next == current) return false;
