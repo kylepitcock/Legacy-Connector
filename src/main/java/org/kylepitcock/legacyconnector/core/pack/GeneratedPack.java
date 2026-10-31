@@ -154,7 +154,51 @@ public final class GeneratedPack implements PackResources {
         if (serializer.getMetadataSectionName().equals("pack")) {
             return (T) new PackMetadataSection(Component.literal("Legacy Connector legacy content"), SharedConstants.getCurrentVersion().getPackVersion(type));
         }
+        if (serializer.getMetadataSectionName().equals(net.minecraft.server.packs.resources.ResourceFilterSection.TYPE.getMetadataSectionName())) {
+            return (T) blockstateFilter();
+        }
         return null;
+    }
+
+    /**
+     * A pack filter hiding the legacy mods' own blockstate files that this pack replaces. Modern Minecraft loads the blockstate file of
+     * every pack and merges them, bottom pack first, and one file that fails to parse aborts the whole stack: a 1.12 Forge blockstate
+     * ("forge_marker": 1 with an "inventory": [{}] variant that takes its model from "defaults") made the block's translated
+     * {@code meta=N} file in this pack unread, so the block drew as the missing model (Scape and Run: Parasites' gore piles "goresim",
+     * stairs, double slabs, bushes; #110). The translation is complete, so the legacy file below is dropped. Vanilla's own namespace is
+     * never filtered.
+     */
+    private net.minecraft.server.packs.resources.ResourceFilterSection blockstateFilter() {
+        if (type != PackType.CLIENT_RESOURCES) return null;
+        Map<String, StringBuilder> names = new TreeMap<>();
+        String dir = type.getDirectory() + "/";
+        for (String k : files.keySet()) {
+            if (!k.startsWith(dir) || !k.endsWith(".json")) continue;
+            int slash = k.indexOf('/', dir.length());
+            if (slash < 0 || !k.startsWith("/blockstates/", slash) || k.indexOf('/', slash + "/blockstates/".length()) >= 0) continue;
+            String namespace = k.substring(dir.length(), slash);
+            if (namespace.equals("minecraft")) continue;
+            String name = k.substring(slash + "/blockstates/".length(), k.length() - ".json".length());
+            StringBuilder sb = names.computeIfAbsent(namespace, n -> new StringBuilder());
+            if (sb.length() > 0) sb.append('|');
+            sb.append(java.util.regex.Pattern.quote(name));
+        }
+        if (names.isEmpty()) return null;
+        com.google.gson.JsonArray block = new com.google.gson.JsonArray();
+        for (var e : names.entrySet()) {
+            com.google.gson.JsonObject pattern = new com.google.gson.JsonObject();
+            pattern.addProperty("namespace", "^" + java.util.regex.Pattern.quote(e.getKey()) + "$");
+            pattern.addProperty("path", "^blockstates/(?:" + e.getValue() + ")\\.json$");
+            block.add(pattern);
+        }
+        com.google.gson.JsonObject section = new com.google.gson.JsonObject();
+        section.add("block", block);
+        try {
+            return net.minecraft.server.packs.resources.ResourceFilterSection.TYPE.fromJson(section);
+        } catch (RuntimeException e) {
+            LoggerFactory.getLogger("LegacyConnector/Pack").warn("Could not build the blockstate filter of the generated pack", e);
+            return null;
+        }
     }
 
     @Override
