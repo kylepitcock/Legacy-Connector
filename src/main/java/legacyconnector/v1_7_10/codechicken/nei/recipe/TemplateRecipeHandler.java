@@ -244,6 +244,14 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
             this.results = results;
         }
 
+        public String mcc$outputId() {
+            return outputId;
+        }
+
+        public Object[] mcc$results() {
+            return results;
+        }
+
         @Override
         public boolean equals(Object o) {
             return o instanceof RecipeTransferRect r && rect.equals(r.rect);

@@ -49,6 +49,7 @@ public final class NeiBridge {
     public static synchronized void loadConfigs() {
         if (configsLoaded) return;
         configsLoaded = true;
+        fillItemList();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         int n = 0;
         for (var file : ModList.get().getModFiles()) {
@@ -71,6 +72,27 @@ public final class NeiBridge {
         LOG.info("Ran {} NEI plugin(s): {} recipe handler(s), {} hidden item(s)", n, CRAFTING.size(), HIDDEN.size());
     }
 
+    /** NEI's {@code ItemList.items}: a stack per registered item and subtype (handlers look for fuels and ingredients in it). */
+    private static void fillItemList() {
+        List<ItemStack> all = new ArrayList<>();
+        try {
+            for (Object o : org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.legacyRegistry()) {
+                if (!(o instanceof legacyconnector.v1_7_10.net.minecraft.item.Item item)) continue;
+                try {
+                    List<ItemStack> subs = new ArrayList<>();
+                    if (item.getHasSubtypes()) item.getSubItems(item, null, subs);
+                    if (subs.isEmpty()) subs.add(new ItemStack(item, 1, 0));
+                    all.addAll(subs);
+                } catch (RuntimeException | LinkageError e) {
+                    // an item that cannot list its subtypes
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("Could not list the items for NEI's ItemList: {}", e.toString());
+        }
+        legacyconnector.v1_7_10.codechicken.nei.ItemList.items = all;
+    }
+
     public static synchronized List<TemplateRecipeHandler> templateHandlers() {
         List<TemplateRecipeHandler> out = new ArrayList<>();
         for (ICraftingHandler h : CRAFTING.values()) if (h instanceof TemplateRecipeHandler t) out.add(t);
@@ -90,24 +112,39 @@ public final class NeiBridge {
         return out;
     }
 
-    /** All recipes a handler lists for its own overlay id (NEI's "show all recipes of this type"). */
+    /**
+     * All recipes a handler lists for its own recipe ids (NEI's "show all recipes of this type"): its overlay id, plus the ids of
+     * the transfer rectangles of its machine GUI, which is where handlers that extend the shaped handler (Traincraft's workbench,
+     * assembly table, open hearth furnace) keep theirs. "fuel" lists burn times, not recipes.
+     */
     public static List<Recipe> recipes(TemplateRecipeHandler handler) {
         List<Recipe> out = new ArrayList<>();
-        String id = handler.getOverlayIdentifier();
-        if (id == null) return out;
+        java.util.LinkedHashMap<String, Object[]> ids = new java.util.LinkedHashMap<>();
+        String overlay = handler.getOverlayIdentifier();
+        if (overlay != null) ids.put(overlay, new Object[0]);
         try {
-            TemplateRecipeHandler h = handler.newInstance();
-            h.loadCraftingRecipes(id);
-            for (int i = 0; i < h.numRecipes(); i++) {
-                try {
-                    PositionedStack result = h.getResultStack(i);
-                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i))));
-                } catch (RuntimeException | LinkageError e) {
-                    // skip a broken recipe
-                }
+            for (var rect : handler.transferRects) {
+                String id = rect.mcc$outputId();
+                if (id != null && !"fuel".equals(id)) ids.putIfAbsent(id, rect.mcc$results() == null ? new Object[0] : rect.mcc$results());
             }
         } catch (RuntimeException | LinkageError e) {
-            LOG.warn("NEI handler {} could not list its recipes: {}", handler.getClass().getName(), e.toString());
+            // a handler whose transfer rectangles cannot be read lists only its overlay id
+        }
+        for (var id : ids.entrySet()) {
+            try {
+                TemplateRecipeHandler h = handler.newInstance();
+                h.loadCraftingRecipes(id.getKey(), id.getValue());
+                for (int i = 0; i < h.numRecipes(); i++) {
+                    try {
+                        PositionedStack result = h.getResultStack(i);
+                        out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i))));
+                    } catch (RuntimeException | LinkageError e) {
+                        // skip a broken recipe
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("NEI handler {} could not list its recipes for \"{}\": {}", handler.getClass().getName(), id.getKey(), e.toString());
+            }
         }
         return out;
     }
