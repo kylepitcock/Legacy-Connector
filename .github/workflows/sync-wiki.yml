@@ -1,0 +1,55 @@
+name: Sync wiki
+
+# docs/wiki/ is the source of the GitHub wiki. The wiki is a separate git repository that GitHub creates when the first page is
+# saved in the web UI (Wiki tab > "Create the first page"); until then this workflow has nothing to push to and only warns.
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'docs/wiki/**'
+      - '.github/workflows/sync-wiki.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-wiki
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Check out the wiki
+        id: wiki
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Explain a missing wiki
+        if: steps.wiki.outcome != 'success'
+        run: echo "::warning::The wiki repository does not exist yet. Open the Wiki tab and save any first page, then re-run this workflow."
+
+      - name: Copy the pages and push
+        if: steps.wiki.outcome == 'success'
+        run: |
+          # replace the wiki's pages with docs/wiki (the wiki has no other source of truth)
+          find wiki -maxdepth 1 -type f -name '*.md' -delete
+          cp docs/wiki/*.md wiki/
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Wiki already up to date."
+          else
+            git commit -m "Sync from docs/wiki (${GITHUB_SHA::7})"
+            git push
+          fi
