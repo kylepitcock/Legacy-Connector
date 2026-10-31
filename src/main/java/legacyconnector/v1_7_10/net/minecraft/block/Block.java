@@ -390,7 +390,24 @@ public class Block {
 
     public boolean hasTileEntity() {
         // Forge: isTileProvider, set from "this instanceof ITileEntityProvider"; BlockContainer also sets isBlockContainer.
-        return this.isBlockContainer || this instanceof ITileEntityProvider;
+        // a plain wrapper of a modern block that has a block entity (another mod's machine, the enchanting table) is a tile provider too:
+        // legacy code that pushes energy or items into its neighbours asks the block before it asks the world for the tile entity
+        return this.isBlockContainer || this instanceof ITileEntityProvider || mcc$modernEntityBlock();
+    }
+
+    private Boolean mcc$entityBlock;
+
+    /** A wrapper of a vanilla or modern-only block whose modern block has a block entity. */
+    private boolean mcc$modernEntityBlock() {
+        if (mcc$vanilla == null) return false;
+        if (mcc$entityBlock == null) {
+            Object modern = mcc$vanilla.modern() != null ? mcc$vanilla.modern() : BlockBridge.modernBlock(this);
+            if (modern instanceof net.minecraft.world.level.block.Block b) modern = b;
+            else if (modern instanceof net.minecraft.world.level.block.state.BlockState st) modern = st.getBlock();
+            // the bed has a block entity only since 1.12 (its colour): in 1.7.10 it had none
+            mcc$entityBlock = modern instanceof net.minecraft.world.level.block.EntityBlock && !(modern instanceof net.minecraft.world.level.block.BedBlock);
+        }
+        return mcc$entityBlock;
     }
 
     public boolean hasTileEntity(int metadata) {
