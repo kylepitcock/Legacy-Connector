@@ -148,6 +148,12 @@ dependencies {
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
 
+    // Pehkui (MIT, Modrinth): entity size scaling (hitbox, eye height, model). Legacy Entity.setSize / eyeHeight and Fisk's Heroes' size
+    // manipulation go through its ScaleTypes API instead of our own dimension mixin. Embedded (jar-in-jar); a separately installed newer Pehkui wins.
+    jarJar(implementation("maven.modrinth:pehkui:${pehkui_version}")) {
+        version { strictly '[3.8.3,)'; prefer pehkui_version }
+    }
+
     // Libraries Minecraft 1.7.10 shipped and legacy mods use directly, absent from 1.21.1. Embedded in the
     // distributable jar (jar-in-jar) and put on the dev classpath.
     for (lib in ['net.sf.trove4j:trove4j:3.0.3', 'javax.vecmath:vecmath:1.5.2',

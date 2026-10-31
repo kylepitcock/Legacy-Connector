@@ -4,8 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayDeque;
-import java.util.Deque;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -27,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * MOD-SPECIFIC COMPAT (mod id "fiskheroes"), client half of {@link FiskHeroesHooks}: the client hooks Fisk's coremod put into
  * Minecraft's renderer and input code ({@code ASMHooksClient}), called from the closest modern event or mixin:
  * <ul>
- * <li>{@code applyPlayerRenderTranslation}: a shrunk or grown hero's model is scaled by their size ({@code RenderLivingEvent}); the
+ * <li>{@code applyPlayerRenderTranslation}: a shrunk or grown hero's model is scaled by their size (Pehkui model scale, set by {@code Entity.setSize}); the
  * hitbox follows through {@code Entity.setSize} ({@code EntitySizes1710}).</li>
  * <li>{@code orientCameraPre}: flight roll, recoil and camera shake, wall crawling and web rappel flips rotate the view
  * ({@code ViewportEvent.ComputeCameraAngles}); the hook draws into a proxy that accumulates the rotations.</li>
@@ -44,8 +42,6 @@ public final class FiskHeroesClient {
     private static volatile boolean resolved;
     private static volatile boolean absent;
     private static int failures;
-    private static Method interpolateScale;
-    private static Object scaleVar;
     private static Method renderArm;
     private static Method renderArmPost;
     private static Method orient;
@@ -54,14 +50,10 @@ public final class FiskHeroesClient {
     private static Object renderProxy;
     private static final Matrix4f CAMERA = new Matrix4f();
     private static final Vector3f EULER = new Vector3f();
-    /** Entities whose pose stack was pushed by the scale hook and awaits the matching pop. */
-    private static final Deque<Object> SCALED = new ArrayDeque<>();
 
     private FiskHeroesClient() {}
 
     public static void register(IEventBus bus) {
-        bus.addListener(EventPriority.LOWEST, (RenderLivingEvent.Pre<?, ?> e) -> onRenderPre(e));
-        bus.addListener(EventPriority.HIGHEST, (RenderLivingEvent.Post<?, ?> e) -> onRenderPost(e));
         bus.addListener(EventPriority.LOW, FiskHeroesClient::onCameraAngles);
         bus.addListener(EventPriority.LOW, FiskHeroesClient::onRenderArm);
     }
@@ -79,9 +71,6 @@ public final class FiskHeroesClient {
             if (resolved) return !absent;
             try {
                 ClassLoader loader = rec.mainClass.getClassLoader();
-                Class<?> vars = Class.forName("com.fiskmods.heroes.common.data.var.Vars", true, loader);
-                scaleVar = vars.getField("SCALE").get(null);
-                interpolateScale = scaleVar.getClass().getMethod("interpolate", legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
                 Class<?> client = Class.forName("com.fiskmods.heroes.asm.ASMHooksClient", true, loader);
                 Class<?> renderPlayer = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer.class;
                 Class<?> player = legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class;
@@ -108,36 +97,6 @@ public final class FiskHeroesClient {
     private static void failed(String what, Throwable t) {
         Throwable cause = t instanceof java.lang.reflect.InvocationTargetException && t.getCause() != null ? t.getCause() : t;
         if (failures++ < 3) LOG.warn("Fisk's Heroes' {} hook failed{}", what, failures >= 3 ? " (switching the client hooks off after more failures)" : "", cause);
-    }
-
-    // ------------------------------------------------------------------ player scale
-
-    private static float scaleOf(AbstractClientPlayer player) throws ReflectiveOperationException {
-        Object legacy = EntityBridge.wrap(player);
-        Object value = interpolateScale.invoke(scaleVar, legacy);
-        return value instanceof Number n ? n.floatValue() : 1.0F;
-    }
-
-    private static void onRenderPre(RenderLivingEvent.Pre<?, ?> e) {
-        if (!(e.getEntity() instanceof AbstractClientPlayer player) || e.isCanceled() || !enabled()) return;
-        try {
-            float scale = scaleOf(player);
-            if (scale > 0.0F && Math.abs(scale - 1.0F) > 1.0E-3F) {
-                PoseStack pose = e.getPoseStack();
-                pose.pushPose();
-                pose.scale(scale, scale, scale);
-                SCALED.push(player);
-            }
-        } catch (ReflectiveOperationException | RuntimeException ex) {
-            failed("player scale", ex);
-        }
-    }
-
-    private static void onRenderPost(RenderLivingEvent.Post<?, ?> e) {
-        if (SCALED.peek() == e.getEntity()) {
-            SCALED.pop();
-            e.getPoseStack().popPose();
-        }
     }
 
     // ------------------------------------------------------------------ camera
