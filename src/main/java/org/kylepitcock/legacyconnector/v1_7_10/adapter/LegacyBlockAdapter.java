@@ -274,12 +274,43 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
-        if (!oldState.is(this)) legacy.onBlockAdded(world(level), pos.getX(), pos.getY(), pos.getZ());
+        if (!oldState.is(this)) {
+            legacy.onBlockAdded(world(level), pos.getX(), pos.getY(), pos.getZ());
+            if (movesTileEntity(state)) notifyTileNeighbours(level, pos);
+        }
+    }
+
+    /**
+     * Forge 1.7.10's {@code Block.onNeighborChange(world, x, y, z, tileX, tileY, tileZ)}: "called when a tile entity on a side of this
+     * block is created or destroyed". Thermal Expansion's dynamos and machines, BuildCraft's pipes and engines and most conduit mods
+     * find the machine next to them through it (the plain neighbour-block hook runs before the new tile exists): without it a dynamo
+     * never fed the machine placed beside it and pipes did not connect to a newly placed chest. Deferred by a server step because
+     * the host block entity is created after {@code onPlace}.
+     */
+    private void notifyTileNeighbours(Level level, BlockPos pos) {
+        if (!(level instanceof net.minecraft.server.level.ServerLevel server)) return;
+        net.minecraft.server.MinecraftServer minecraft = server.getServer();
+        minecraft.tell(new net.minecraft.server.TickTask(minecraft.getTickCount(), () -> {
+            if (!server.isLoaded(pos)) return;
+            if (server.getBlockEntity(pos) instanceof LegacyBlockEntity host) host.legacy(); // exists before the neighbours look for it
+            for (Direction d : Direction.values()) {
+                BlockPos at = pos.relative(d);
+                if (!server.isLoaded(at)) continue;
+                if (server.getBlockState(at).getBlock() instanceof LegacyBlockAdapter neighbour) {
+                    try {
+                        neighbour.legacy.onNeighborChange(world(server), at.getX(), at.getY(), at.getZ(), pos.getX(), pos.getY(), pos.getZ());
+                    } catch (RuntimeException | LinkageError e) {
+                        legacyFailure("onNeighborChange", e);
+                    }
+                }
+            }
+        }));
     }
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
         if (!newState.is(this) && !(moving && movesTileEntity(state))) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
+        if (!newState.is(this) && movesTileEntity(state)) notifyTileNeighbours(level, pos);
         super.onRemove(state, level, pos, newState, moving);
     }
 
