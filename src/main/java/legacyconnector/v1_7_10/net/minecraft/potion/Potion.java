@@ -140,10 +140,39 @@ public class Potion {
      * effect, which applies them for as long as the effect lasts (amount times amplifier + 1).
      */
     public Potion registerPotionAttributeModifier(IAttribute attribute, String uuid, double amount, int operation) {
-        AttributeModifier modifier = new AttributeModifier(java.util.UUID.fromString(uuid), getName(), amount, operation);
+        AttributeModifier modifier = new AttributeModifier(parseLegacyUuid(uuid), getName(), amount, operation);
         attributeModifierMap.put(attribute, modifier);
         if (!PotionBridge.isVanilla(id)) PotionBridge.addModifier(this, attribute, modifier);
         return this;
+    }
+
+    /**
+     * UUID.fromString as Java 8 ran it: each dash-separated group is parsed on its own and the overflow shifts out, so a
+     * typo'd modifier id such as More Planets' "9623E0072-7CE8-..." (a 9 digit first group) is accepted instead of
+     * failing with "UUID string too large" on Java 21.
+     */
+    static java.util.UUID parseLegacyUuid(String name) {
+        try {
+            return java.util.UUID.fromString(name);
+        } catch (IllegalArgumentException e) {
+            String[] c = name.split("-");
+            if (c.length != 5) throw e;
+            try {
+                long[] v = new long[5];
+                for (int i = 0; i < 5; i++) v[i] = Long.parseUnsignedLong(c[i], 16);
+                long most = v[0];
+                most <<= 16;
+                most |= v[1];
+                most <<= 16;
+                most |= v[2];
+                long least = v[3];
+                least <<= 48;
+                least |= v[4];
+                return new java.util.UUID(most, least);
+            } catch (NumberFormatException nfe) {
+                throw e;
+            }
+        }
     }
 
     public java.util.Map<IAttribute, AttributeModifier> func_111186_k() {
