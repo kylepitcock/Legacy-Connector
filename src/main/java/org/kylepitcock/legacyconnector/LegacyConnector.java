@@ -40,6 +40,8 @@ public final class LegacyConnector {
             FEATURES.register("legacy_worldgen", () -> new LegacyWorldGenFeature(NoneFeatureConfiguration.CODEC));
     static {
         FEATURES.register("legacy_biome", () -> new org.kylepitcock.legacyconnector.core.worldgen.LegacyBiomeFeature(NoneFeatureConfiguration.CODEC));
+        // 1.7.10 deep layer: one placed feature per legacy IWorldGenerator (DeepLayer1710)
+        FEATURES.register("legacy_worldgen_deep", org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyDeepWorldGenFeature::new);
     }
 
     private static final DeferredRegister<com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.chunk.ChunkGenerator>> CHUNK_GENERATORS =

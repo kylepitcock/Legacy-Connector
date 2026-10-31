@@ -16,6 +16,23 @@ A world type a mod registers (BoP's "BIOMESOP") appears on the Create World scre
 dedicated server use `level-type=<modid>:<type>` (e.g. `biomesoplenty:biomesop`). With the default type, mod biomes
 that mods added to Forge's `BiomeManager` still generate.
 
+### The deep layer
+
+1.7.10 worlds ended at y=0 (bedrock); modern ones reach down to -64. Each legacy `IWorldGenerator` therefore runs a
+second time per chunk with the world shifted so that legacy y=0 is the dimension's bottom: ores, bedrock ores and
+underground structures land in the deep layer too (the generator sees deepslate as stone, everything from modern y=0 up as
+solid rock, air above legacy y=256; only writes below y=0 are kept). This deep pass is a native placed feature per
+generator, `<modid>:legacy_worldgen_deep/<generator class, lowercased>` (feature type `legacyconnector:legacy_worldgen_deep`,
+config `{"generator": "<that id>"}`), added to every biome by a biome modifier with the same id (step `underground_ores`).
+Its placement is a `minecraft:height_range` whose y is where legacy y=0 lands (default `{"above_bottom": 0}`); the
+generator fills the window from there up to modern y=0, and a y at or above 0 (the Nether, the End) runs nothing. A data
+pack removes one generator's deep pass by replacing its biome modifier with `{"type": "neoforge:none"}`, or makes the deep
+layer thinner by moving the height (e.g. `{"absolute": -32}`: legacy y=0 at -32). `deepLayer.enabled` and
+`deepLayer.excludeGenerators` ([Configuration](Configuration.md)) decide which deep features are generated. The random
+seed is FML's chunk seed xor a constant, so the deep layer is as reproducible as the normal pass. Generators without a
+deep feature in the loaded data (registered after it was built) and mod dimensions (whose chunk generators do not run
+biome features) keep running their deep pass from the legacy decorator.
+
 ## Structures, fluids and input
 
 `MapGenBase`, `MapGenStructure`, `StructureStart`, `StructureComponent` and `StructureBoundingBox` are ported, so mods'
