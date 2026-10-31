@@ -150,8 +150,18 @@ public final class ItemStack {
 
     public void mcc$setCount(int count) {
         if (count <= 0 && mcc$stack.isEmpty()) return;
+        if (count <= 0) {
+            // A modern stack of 0 reads as empty: no components, no item. 1.7.10 kept the tag and damage of a stack used up
+            // to 0, and mods read them afterwards (Witchery's thrown brew keeps the bottle it was thrown from, decremented to
+            // 0 in survival, and applies its effects from the bottle's tag on impact). Keep them on this view.
+            mcc$looseTag = getTagCompound();
+            mcc$emptiedMeta = getItemDamage();
+        }
         mcc$stack.setCount(count);
     }
+
+    /** The damage this view had when legacy code took its count to 0 (see {@link #mcc$setCount}); -1 otherwise. */
+    private int mcc$emptiedMeta = -1;
 
     // ------------------------------------------------------------------ identity
 
@@ -165,6 +175,7 @@ public final class ItemStack {
     }
 
     public int getItemDamage() {
+        if (mcc$emptiedMeta >= 0 && mcc$stack.isEmpty()) return mcc$emptiedMeta;
         return ItemBridge.legacyDamage(mcc$item, mcc$stack);
     }
 
