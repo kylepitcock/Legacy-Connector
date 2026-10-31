@@ -191,6 +191,23 @@ tasks.register('checkLegacyMod', JavaExec) {
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 
+// Offline checks that run shim code against vanilla registries only (no game, no mods loaded): src/devcheck.
+sourceSets {
+    devcheck {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
+// Thaumcraft 4's vanilla aspect keys vs the modern -> legacy item/block round trip, plus legacy numeric ids of all vanilla
+// content: ./gradlew checkVanillaAspects -PlegacyJar=/path/to/Thaumcraft-1.7.10-4.2.3.5.jar
+tasks.register('checkVanillaAspects', JavaExec) {
+    dependsOn tasks.named('devcheckClasses'), ':loader:extractMappings'
+    classpath = sourceSets.devcheck.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.devcheck.CheckVanillaAspects'
+    def fields = project(':loader').layout.buildDirectory.file('generated/mappings/legacyconnector/mappings/1.7.10/fields.csv')
+    argumentProviders.add({ [fields.get().asFile.absolutePath, (project.findProperty('legacyJar') ?: '').toString()] } as CommandLineArgumentProvider)
+}
+
 // Copies the fixture legacy mods into run/mods so `runServer` / `runClient` exercise the full pipeline.
 tasks.register('installTestMods', Copy) {
     dependsOn ':testmods:assemble'
