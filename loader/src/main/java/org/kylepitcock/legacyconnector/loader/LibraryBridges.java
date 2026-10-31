@@ -124,7 +124,8 @@ public final class LibraryBridges {
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
-        boolean realCcl = hasJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib");
+        // only a 1.7.10 CodeChickenLib counts: packs like ATM10 ship the modern one (CodeChickenLib-1.21.1-...), which legacy code cannot use
+        boolean realCcl = hasLegacyJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib");
         for (Bridge b : KNOWN) {
             if (!enabled(config, b)) continue;
             if ("codechicken/lib/".equals(b.apiRoot) && realCcl) continue;
@@ -138,6 +139,17 @@ public final class LibraryBridges {
                     || b.legacyModId != null && forced.contains(b.legacyModId.toLowerCase(Locale.ROOT))) out.add(b);
         }
         return out;
+    }
+
+    /** True if a jar in the mods folder starts with {@code prefix} and names 1.7.10 (case-insensitive). */
+    private static boolean hasLegacyJarNamed(Path modsDir, String prefix) {
+        if (!Files.isDirectory(modsDir)) return false;
+        try (Stream<Path> files = Files.list(modsDir)) {
+            return files.map(f -> f.getFileName().toString().toLowerCase(Locale.ROOT))
+                    .anyMatch(n -> n.startsWith(prefix) && n.contains("1.7.10") && n.endsWith(".jar"));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     /** True if a jar in the mods folder has a file name starting with {@code prefix} (case-insensitive). */
