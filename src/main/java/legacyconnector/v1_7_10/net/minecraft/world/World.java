@@ -315,6 +315,15 @@ public class World implements IBlockAccess {
         return inDeepPass() && legacyY + deepShift() >= 0;
     }
 
+    /**
+     * The rock above the deep layer ends where the 1.7.10 world did (y=256): above it is air, as there. Generators that walk
+     * up until they reach air never stopped otherwise (Thaumcraft's WorldGenEldritchRing.LocationIsValidSpawn hung world
+     * creation, every other generator thread waiting on the legacy generation lock).
+     */
+    private static boolean mcc$aboveLegacyTop(int legacyY) {
+        return inDeepPass() && legacyY >= 256;
+    }
+
     // ------------------------------------------------------------------ virtual fields
 
     public static EnumDifficulty mcc$get$difficultySetting(World w) {
@@ -395,7 +404,7 @@ public class World implements IBlockAccess {
 
     @Override
     public Block getBlock(int x, int y, int z) {
-        if (unloaded(x, z)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        if (unloaded(x, z) || mcc$aboveLegacyTop(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
         if (mcc$aboveDeepLayer(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         BlockState offThread = mcc$offThreadState(x, y, z);
         BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
@@ -544,6 +553,7 @@ public class World implements IBlockAccess {
 
     @Override
     public boolean isAirBlock(int x, int y, int z) {
+        if (mcc$aboveLegacyTop(y)) return true;
         if (mcc$aboveDeepLayer(y)) return false;
         BlockState offThread = mcc$offThreadState(x, y, z);
         BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
