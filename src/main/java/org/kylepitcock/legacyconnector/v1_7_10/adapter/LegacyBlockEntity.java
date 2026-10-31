@@ -135,7 +135,7 @@ public class LegacyBlockEntity extends BlockEntity {
     }
 
     void tick() {
-        if (tickFailed) return;
+        if (tickFailed || org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
         TileEntity te = legacy();
         if (te == null || te.isInvalid() || !te.canUpdate()) return;
         try {
@@ -163,17 +163,36 @@ public class LegacyBlockEntity extends BlockEntity {
     protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.loadAdditional(tag, registries);
         if (tag.contains("legacy")) {
-            CompoundTag data = tag.getCompound("legacy");
+            CompoundTag data = atThisPosition(tag.getCompound("legacy"));
             if (legacy != null) {
                 try {
                     legacy.readFromNBT(new NBTTagCompound(data));
                 } catch (RuntimeException | LinkageError e) {
                     logNbtFailure("reading", e);
                 }
+                // readFromNBT set the coordinates from the tag; the tile entity stays where its host is
+                legacy.xCoord = worldPosition.getX();
+                legacy.yCoord = worldPosition.getY();
+                legacy.zCoord = worldPosition.getZ();
             } else {
                 pending = data;
             }
         }
+    }
+
+    /**
+     * The legacy NBT with TileEntity.writeToNBT's "x"/"y"/"z" set to this host's position. They differ when the data was saved at
+     * another place: Create contraptions and Sable/Create Aeronautics sub-levels move a block by saving its block entity and loading
+     * the tag into a new one at the destination (they fix the modern tag's x/y/z, not the legacy one inside it).
+     */
+    private CompoundTag atThisPosition(CompoundTag data) {
+        if (data.contains("x") && (data.getInt("x") != worldPosition.getX() || data.getInt("y") != worldPosition.getY() || data.getInt("z") != worldPosition.getZ())) {
+            data = data.copy();
+            data.putInt("x", worldPosition.getX());
+            data.putInt("y", worldPosition.getY());
+            data.putInt("z", worldPosition.getZ());
+        }
+        return data;
     }
 
     private boolean nbtFailureLogged;
@@ -249,6 +268,9 @@ public class LegacyBlockEntity extends BlockEntity {
 
     private void deliver(CompoundTag tag) {
         if (tag.contains("mcc$fml")) {
+            // The mod's handler finds its tile entity in the client's world by coordinates: for a copy of this block in a moving
+            // contraption's render world they are contraption-local and would hit an unrelated block of the real world.
+            if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) return;
             org.kylepitcock.legacyconnector.v1_7_10.bridge.FmlChannelBridge.deliver(tag.getString("mcc$channel"), tag.getByteArray("mcc$fml"),
                     legacyconnector.v1_7_10.cpw.mods.fml.relauncher.Side.CLIENT, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient.INSTANCE);
             return;

@@ -259,7 +259,10 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
-        if (broken && !newState.is(this)) {
+        // A tile entity block removed as "moving" is carried away whole (Create contraptions, Sable sub-levels copy its NBT); 1.12.2's
+        // pistons never moved tile entities, so breakBlock meant destruction and would drop the inventory that also travels (a duplicate).
+        boolean carried = moving && state.hasBlockEntity() && level.getBlockEntity(pos) instanceof Legacy1122BlockEntity;
+        if (broken && !newState.is(this) && !carried) {
             try {
                 legacy.breakBlock(world(level), pos(pos), state(state));
             } catch (RuntimeException | LinkageError e) {

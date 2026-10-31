@@ -123,6 +123,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
     }
 
     public void tick() {
+        if (org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
         TileEntity te = legacy();
         if (te instanceof ITickable t && !te.isInvalid()) {
             try {
@@ -215,6 +216,15 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         super.loadAdditional(tag, registries);
         if (tag.contains("legacy")) {
             pending = tag.getCompound("legacy");
+            // Saved at another position (Create contraptions and Sable/Create Aeronautics sub-levels load a moved block's tag into a new
+            // block entity, fixing only the modern x/y/z): readFromNBT must see where the tile entity is now.
+            if (pending.contains("x") && (pending.getInt("x") != worldPosition.getX() || pending.getInt("y") != worldPosition.getY()
+                    || pending.getInt("z") != worldPosition.getZ())) {
+                pending = pending.copy();
+                pending.putInt("x", worldPosition.getX());
+                pending.putInt("y", worldPosition.getY());
+                pending.putInt("z", worldPosition.getZ());
+            }
             legacy = null;
             failed = false;
         }

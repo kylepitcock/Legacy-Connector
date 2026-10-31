@@ -26,6 +26,8 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
     /** A block entity whose render just failed is skipped for a few seconds (it would fail again every frame). */
     private static final java.util.Map<LegacyBlockEntity, Long> RETRY_AT = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
     private static final long RETRY_NANOS = 5_000_000_000L;
+    /** Farther than this from the camera a block entity cannot be rendered where it is stored (render distance is at most 32 chunks). */
+    private static final double FAR = 4096;
 
     @Override
     public void render(LegacyBlockEntity be, float partialTick, PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
@@ -44,6 +46,16 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         if (be.getLevel() != null) dispatcher.worldObj = World.mcc$wrap(be.getLevel());
         refreshEnvironment(dispatcher, Minecraft.getInstance());
         double x = be.getBlockPos().getX() - cam.x, y = be.getBlockPos().getY() - cam.y, z = be.getBlockPos().getZ() - cam.z;
+        if (Math.abs(x) > FAR || Math.abs(y) > FAR || Math.abs(z) > FAR || org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(be.getLevel())) {
+            // The block is not where the camera sees it: a moving Create contraption (contraption-local position in its render world)
+            // or a Sable/Create Aeronautics sub-level (stored in plot chunks ~20 million blocks out, drawn through the ship's pose).
+            // The pose already places the block; its translation is the block's offset from the camera, which the legacy renderer
+            // gets instead (the -x/+x round trip in float would be off by blocks at plot coordinates, and distances would be absurd).
+            var m = pose.last().pose();
+            x = m.m30();
+            y = m.m31();
+            z = m.m32();
+        }
         RenderContext.beginWorld(pose, buffers, light, overlay);
         try {
             pose.pushPose();

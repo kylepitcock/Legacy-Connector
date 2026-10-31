@@ -10,12 +10,26 @@ import net.minecraft.world.level.LevelAccessor;
 /** Legacy views of modern levels (server levels are {@code WorldServer}s) and 1.12's numeric dimension ids. */
 public final class WorldBridge1122 {
     private static final Map<Level, World> WORLDS = new WeakHashMap<>();
+    /**
+     * Views of levels other mods build as copies (Create's contraption render worlds, Ponder scenes; see VirtualLevels), held weakly:
+     * in {@link #WORLDS} the view keeps its level, so every contraption ever assembled stayed in memory.
+     */
+    private static final Map<Level, java.lang.ref.WeakReference<World>> VIRTUAL_WORLDS = new WeakHashMap<>();
     private static final Map<net.minecraft.resources.ResourceKey<Level>, Integer> IDS = new java.util.concurrent.ConcurrentHashMap<>();
 
     private WorldBridge1122() {}
 
     public static synchronized World wrap(Level level) {
         if (level == null) return null;
+        if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) {
+            var ref = VIRTUAL_WORLDS.get(level);
+            World view = ref == null ? null : ref.get();
+            if (view == null) {
+                view = level.isClientSide() ? new legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient(level) : new WorldView(level);
+                VIRTUAL_WORLDS.put(level, new java.lang.ref.WeakReference<>(view));
+            }
+            return view;
+        }
         return WORLDS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
                 // the client's level is a WorldClient (Minecraft.world)
                 : l.isClientSide() ? new legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient(l) : new WorldView(l));
