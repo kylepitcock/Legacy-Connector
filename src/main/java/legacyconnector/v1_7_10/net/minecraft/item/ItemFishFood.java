@@ -9,6 +9,11 @@ import legacyconnector.v1_7_10.net.minecraft.util.IIcon;
 public class ItemFishFood extends ItemFood {
     private final boolean cooked;
 
+    public ItemFishFood(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+        this.cooked = info.legacyName().contains("cooked");
+    }
+
     public ItemFishFood(boolean cooked) {
         super(0, 0.0F, false);
         this.cooked = cooked;

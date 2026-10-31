@@ -10,6 +10,12 @@ public class ItemSeedFood extends ItemFood implements IPlantable {
     private final Block crop;
     private final Block soil;
 
+    public ItemSeedFood(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+        this.crop = null;
+        this.soil = null;
+    }
+
     public ItemSeedFood(int heal, float saturation, Block crop, Block soil) {
         super(heal, saturation, false);
         this.crop = crop;

@@ -5,6 +5,10 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** A bowl food: stacks to one and leaves the bowl when eaten. */
 public class ItemSoup extends ItemFood {
+    public ItemSoup(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+    }
+
     public ItemSoup(int heal) {
         super(heal, false);
         setMaxStackSize(1);

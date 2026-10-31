@@ -10,6 +10,20 @@ public class ItemFood extends Item {
     private final boolean isWolfsFavoriteMeat;
     private boolean alwaysEdible;
 
+    /**
+     * A vanilla food as 1.7.10 mods see it (so that {@code instanceof ItemFood} holds: Witchery's oven only cooks food, hunger and
+     * cooking mods test it); values come from the modern item's food component.
+     */
+    public ItemFood(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
+        super(info);
+        net.minecraft.world.item.Item modern = net.minecraft.core.registries.BuiltInRegistries.ITEM.get(net.minecraft.resources.ResourceLocation.parse(info.legacyName()));
+        net.minecraft.world.food.FoodProperties food = modern == null ? null : modern.components().get(net.minecraft.core.component.DataComponents.FOOD);
+        this.itemUseDuration = 32;
+        this.healAmount = food == null ? 0 : food.nutrition();
+        this.saturationModifier = food == null || food.nutrition() <= 0 ? 0.6F : food.saturation() / (2.0F * food.nutrition());
+        this.isWolfsFavoriteMeat = info.legacyName().endsWith("beef") || info.legacyName().endsWith("porkchop") || info.legacyName().endsWith("chicken") || info.legacyName().endsWith("rotten_flesh");
+    }
+
     public ItemFood(int heal, float saturation, boolean wolfMeat) {
         this.itemUseDuration = 32;
         this.healAmount = heal;
