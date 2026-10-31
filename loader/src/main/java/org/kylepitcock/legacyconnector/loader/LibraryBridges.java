@@ -41,6 +41,9 @@ public final class LibraryBridges {
             new Bridge("Waila", "mcp/mobius/waila/api/", "jade", "waila"),
             // NEI recipe handlers and hidden items are shown through JEI.
             new Bridge("NotEnoughItems", "codechicken/nei/", "jei", "nei"),
+            // NEI always came with CodeChickenLib, so NEI integrations use it too (DragonAPI's tooltip handlers: GuiDraw, Rectangle4i).
+            // Without a legacy CodeChickenLib jar its API is synthesized with the bridged NEI; a real CodeChickenLib is loaded instead.
+            new Bridge(null, "codechicken/lib/", "jei", "nei"),
             // CoFH's RF energy API (shaded by most 1.7.10 tech mods) is backed by NeoForge's Energy capability.
             new Bridge(null, "cofh/api/energy/", null, "cofhEnergy"));
 
@@ -121,8 +124,10 @@ public final class LibraryBridges {
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
+        boolean realCcl = hasJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib");
         for (Bridge b : KNOWN) {
             if (!enabled(config, b)) continue;
+            if ("codechicken/lib/".equals(b.apiRoot) && realCcl) continue;
             // Baubles API shaded into other mods (Extra Utilities) with neither Baubles nor Curios: the shim's own API still
             // gives mods an inventory instead of the shaded one's null.
             if ("baubles".equals(b.configKey) && !realBaubles && !modern.contains("curios")) {

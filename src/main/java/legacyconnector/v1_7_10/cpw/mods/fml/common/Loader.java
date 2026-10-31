@@ -103,8 +103,9 @@ public class Loader {
         for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
             if (!bridged.isEmpty() && bridged.equalsIgnoreCase(modname)) return true;
         }
-        ModList list = ModList.get();
-        return list != null && list.isLoaded(org.kylepitcock.legacyconnector.core.Ids.modernModId(modname));
+        // A modern mod of the same id is not the legacy one: legacy integrations call the legacy API (ChromatiCraft registered its
+        // Forestry bee frame for ATM10's modern Forestry and failed on the missing forestry.api classes). Bridged APIs are above.
+        return false;
     }
 
     /** Minecraft's entry in the mod list. */
