@@ -42,6 +42,30 @@ public class LegacyEntityRenderer1122 extends EntityRenderer<Entity> {
         return NONE;
     }
 
+    /**
+     * Sodium (and Embeddium) and Entity Culling cull entities by their bounding box against the sections they consider visible, and
+     * Entity Culling also by occlusion queries. A legacy entity's box is the 1.12 collision size, often much smaller than what its
+     * model draws (parasites, bosses), so with those mods installed legacy mobs were culled or half-drawn (#110). Their own
+     * opt-out is the vanilla {@code noCulling} flag, which both read (Sodium's hook sits inside the frustum test that
+     * {@code noCulling} skips; Entity Culling's {@code ignoresCulling} returns the flag). Without those mods nothing changes.
+     */
+    private static final boolean CULLING_MODS = isAnyLoaded("sodium", "embeddium", "entityculling");
+
+    private static boolean isAnyLoaded(String... ids) {
+        try {
+            for (String id : ids) if (net.neoforged.fml.ModList.get().isLoaded(id)) return true;
+        } catch (RuntimeException | LinkageError e) {
+            // no mod list yet: treat as absent
+        }
+        return false;
+    }
+
+    @Override
+    public boolean shouldRender(Entity entity, net.minecraft.client.renderer.culling.Frustum frustum, double camX, double camY, double camZ) {
+        if (CULLING_MODS && entity instanceof Host1122) entity.noCulling = true;
+        return super.shouldRender(entity, frustum, camX, camY, camZ);
+    }
+
     /** Name tags are drawn by the legacy renderer (Render.renderName). */
     @Override
     protected boolean shouldShowName(Entity entity) {
