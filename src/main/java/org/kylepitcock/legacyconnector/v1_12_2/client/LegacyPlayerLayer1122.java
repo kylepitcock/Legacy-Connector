@@ -34,7 +34,9 @@ public class LegacyPlayerLayer1122 extends RenderLayer<AbstractClientPlayer, Pla
             float ageInTicks, float netHeadYaw, float headPitch) {
         RenderPlayer renderer = RenderManager.mcc$instance().getSkinMap().get(slim ? "slim" : "default");
         if (renderer == null) return;
-        var layers = renderer.mcc$modLayers();
+        var layers = new java.util.ArrayList<>(renderer.mcc$modLayers());
+        var armor = renderer.mcc$armorLayer();
+        if (armor != null && hasLegacyArmor(player)) layers.add(0, armor);
         if (layers.isEmpty()) return;
         if (!(EntityBridge1122.wrap(player) instanceof legacyconnector.v1_12_2.net.minecraft.client.entity.AbstractClientPlayer legacy)) return;
         LegacyEntityRenderer1122.updateView(RenderManager.mcc$instance(), partialTicks);
@@ -54,6 +56,16 @@ public class LegacyPlayerLayer1122 extends RenderLayer<AbstractClientPlayer, Pla
             RenderContext.resetState();
             RenderContext.end();
         }
+    }
+
+    /** Whether the player wears an armour piece of a legacy mod (vanilla pieces are drawn by the modern renderer). */
+    private static boolean hasLegacyArmor(AbstractClientPlayer player) {
+        for (net.minecraft.world.entity.EquipmentSlot slot : net.minecraft.world.entity.EquipmentSlot.values()) {
+            if (slot.getType() != net.minecraft.world.entity.EquipmentSlot.Type.HUMANOID_ARMOR) continue;
+            var stack = player.getItemBySlot(slot);
+            if (!stack.isEmpty() && !(stack.getItem() instanceof net.minecraft.world.item.ArmorItem)) return true;
+        }
+        return false;
     }
 
     /** Copies the modern model's part placement and flags to the legacy one. */

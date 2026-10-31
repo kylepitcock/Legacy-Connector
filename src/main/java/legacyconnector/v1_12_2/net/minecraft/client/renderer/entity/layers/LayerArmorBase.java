@@ -55,6 +55,8 @@ public abstract class LayerArmorBase<T extends ModelBase> implements LayerRender
             float scale, EntityEquipmentSlot slotIn) {
         ItemStack stack = entity.getItemStackFromSlot(slotIn);
         if (!(stack.getItem() instanceof ItemArmor armor) || armor.getEquipmentSlot() != slotIn) return;
+        // vanilla armour is drawn by the modern renderer's own armour layer
+        if (armor instanceof org.kylepitcock.legacyconnector.v1_12_2.bridge.Vanilla1122.VanillaArmor) return;
         T model = getModelFromSlot(slotIn);
         model = getArmorModelHook(entity, stack, slotIn, model);
         if (model == null) return;
