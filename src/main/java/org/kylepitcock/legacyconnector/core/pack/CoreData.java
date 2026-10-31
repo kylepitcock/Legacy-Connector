@@ -17,8 +17,8 @@ public final class CoreData implements GeneratedPack.Contributor {
         // what 1.7.10 mods added to fishing (FishingHooks)
         put(out, "data/legacyconnector/loot_modifiers/legacy_fishing.json", org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.MODIFIER_JSON);
         put(out, "data/neoforge/loot_modifiers/global_loot_modifiers.json", org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyFishingLoot.LIST_JSON);
-        put(out, "data/legacyconnector/neoforge/biome_modifier/legacy_worldgen.json",
-                "{\"type\":\"neoforge:add_features\",\"biomes\":{\"type\":\"neoforge:any\"},\"features\":\"legacyconnector:legacy_worldgen\",\"step\":\"underground_ores\"}");
+        // one placed feature per legacy world generator and the biome modifier that adds them (and legacy_worldgen) in legacy order
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.contribute(out);
     }
 
     private static void put(Map<String, Supplier<byte[]>> out, String path, String json) {

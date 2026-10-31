@@ -10,9 +10,11 @@ import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConf
 import org.slf4j.LoggerFactory;
 
 /**
- * One feature placed once per chunk in every biome (via a generated NeoForge biome modifier), which runs every
- * registered legacy chunk decorator. Legacy decorators wrote into the 2x2 chunk area offset by +8; a modern
- * WorldGenRegion allows writes into all neighbours of the decorated chunk, so those writes are legal.
+ * One feature placed once per chunk in every biome (first in the generated biome modifier {@code legacyconnector:legacy_worldgen}),
+ * which runs every registered legacy chunk decorator: the populate terrain events, and the legacy world generators that have no
+ * placed feature of their own ({@link LegacyGenerators}: registered after the generated pack was built). Legacy decorators wrote into
+ * the 2x2 chunk area offset by +8; a modern WorldGenRegion allows writes into all neighbours of the decorated chunk, so those writes
+ * are legal.
  */
 public class LegacyWorldGenFeature extends Feature<NoneFeatureConfiguration> {
     private static final java.util.concurrent.atomic.AtomicInteger FAILURES = new java.util.concurrent.atomic.AtomicInteger();
