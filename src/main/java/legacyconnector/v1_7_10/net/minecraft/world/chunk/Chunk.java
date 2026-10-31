@@ -40,7 +40,9 @@ public class Chunk {
     public static Map<Object, TileEntity> mcc$get$chunkTileEntityMap(Chunk c) {
         if (c.mcc$blocks != null || c.modern == null || c.worldObj == null) return c.mcc$tiles;
         Map<Object, TileEntity> out = new HashMap<>();
-        for (var pos : c.modern.getBlockEntitiesPos()) {
+        // a chunk fetched through the chunk source is an ImposterProtoChunk around the loaded chunk, which lists no block entities itself
+        net.minecraft.world.level.chunk.ChunkAccess source = c.modern instanceof net.minecraft.world.level.chunk.ImposterProtoChunk imposter ? imposter.getWrapped() : c.modern;
+        for (var pos : source.getBlockEntitiesPos()) {
             TileEntity te = c.worldObj.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
             if (te != null) out.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(pos.getX() & 15, pos.getY(), pos.getZ() & 15), te);
         }
