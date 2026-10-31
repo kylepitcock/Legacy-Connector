@@ -299,6 +299,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block neighbor, BlockPos from, boolean moving) {
+        // what a legacy tile offers per side (canConnectEnergy, accessible slots, ...) can depend on its neighbours: let cached capabilities (Create, pipes) re-ask
+        if (!level.isClientSide && state.hasBlockEntity()) level.invalidateCapabilities(pos);
         try {
             legacy.onNeighborBlockChange(world(level), pos.getX(), pos.getY(), pos.getZ(), BlockBridge.legacyBlock(neighbor.defaultBlockState()));
         } catch (RuntimeException | LinkageError e) {
