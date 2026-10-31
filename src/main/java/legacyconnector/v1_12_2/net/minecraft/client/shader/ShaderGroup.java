@@ -31,6 +31,7 @@ public class ShaderGroup {
         var mc = net.minecraft.client.Minecraft.getInstance();
         var target = mainFramebufferIn != null && mainFramebufferIn.mcc$target() != null ? mainFramebufferIn.mcc$target() : mc.getMainRenderTarget();
         if (resourceLocationIn == null) return;
+        if (!org.kylepitcock.legacyconnector.v1_12_2.client.PostShaders1122.usable(resourceLocationIn.mcc$modern())) return;
         if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
             LOG.warn("The post shader {} was made off the render thread and is not loaded", resourceLocationIn);
             return;
