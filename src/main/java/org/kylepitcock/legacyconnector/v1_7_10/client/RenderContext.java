@@ -108,10 +108,10 @@ public final class RenderContext {
      */
     private static final boolean RENDER_LOCK = Boolean.getBoolean("legacyconnector.renderLock");
 
-    /** Geometry drawn while capturing: quads of {x, y, z, u, v, argb, light, own colour} corners (flat) and their face normals. */
+    /** Geometry drawn while capturing: quads of {x, y, z, u, v, argb, light, own colour, own light} corners (flat) and their face normals. */
     public static final class Capture {
         /** Doubles per corner, corners per quad. */
-        public static final int STRIDE = 8, CORNERS = 4;
+        public static final int STRIDE = LegacyVertices.STRIDE, CORNERS = 4;
         private double[] corners = new double[STRIDE * CORNERS * 16];
         private float[] normals = new float[3 * 16];
         private int quads;

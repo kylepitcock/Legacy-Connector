@@ -14,8 +14,8 @@ import java.util.List;
 public final class LegacyVertices {
     public static final int GL_POINTS = 0, GL_LINES = 1, GL_LINE_LOOP = 2, GL_LINE_STRIP = 3, GL_TRIANGLES = 4,
             GL_TRIANGLE_STRIP = 5, GL_TRIANGLE_FAN = 6, GL_QUADS = 7, GL_QUAD_STRIP = 8, GL_POLYGON = 9;
-    /** Doubles per vertex: x, y, z, u, v, argb, light, own colour. */
-    public static final int STRIDE = 8;
+    /** Doubles per vertex: x, y, z, u, v, argb, light, own colour, own light (set by setBrightness, not the context's). */
+    public static final int STRIDE = 9;
     /** Vertex arrays kept for reuse at most (a huge draw must not keep its memory for good). */
     private static final int MAX_SPARE = 16384;
 
@@ -51,7 +51,10 @@ public final class LegacyVertices {
     /** Clears the current vertices, keeping their arrays for the next draws. */
     private void recycle() {
         int n = vertices.size();
-        for (int i = 0; i < n && spare.size() < MAX_SPARE; i++) spare.add(vertices.get(i));
+        for (int i = 0; i < n && spare.size() < MAX_SPARE; i++) {
+            double[] a = vertices.get(i);
+            if (a.length == STRIDE) spare.add(a); // (a vertex state can bring shorter arrays)
+        }
         vertices.clear();
     }
 
@@ -132,6 +135,7 @@ public final class LegacyVertices {
         a[6] = light >= 0 ? light : RenderContext.vertexLight(s);
         // [7]: the vertex carries its own colour; otherwise it takes the colour current when the geometry is emitted (display lists replay later)
         a[7] = hasColor ? 1.0D : 0.0D;
+        a[8] = light >= 0 ? 1.0D : 0.0D;
         vertices.add(a);
     }
 

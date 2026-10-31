@@ -53,13 +53,26 @@ final class IsbrhQuads {
                 data[o + 3] = coloured ? abgr(unshade == 1.0F ? argb : scale((int) argb, unshade)) : 0xFFFFFFFF;
                 data[o + 4] = Float.floatToRawIntBits((float) capture.get(q, i, 3));
                 data[o + 5] = Float.floatToRawIntBits((float) capture.get(q, i, 4));
-                data[o + 6] = 0;
+                data[o + 6] = emissive(capture, q, i);
                 data[o + 7] = packedNormal;
             }
             if (!coloured) out.add(new BakedQuad(data, -1, dir, sprite, true));
             else out.add(new BakedQuad(data, -1, dir, sprite, unshade != 1.0F, uniform));
         }
         return out;
+    }
+
+    /**
+     * The baked light of a corner: the brightness the renderer set itself ({@code Tessellator.setBrightness}) when it is full block
+     * light, as glowing overlays are drawn in 1.7.10 ({@code setBrightness(240)}: ChromatiCraft's pylon structure runes, glowing ore
+     * layers), else 0. The modern pipeline lights a corner with the larger of the baked and the world light, so those parts glow
+     * in the dark as they did instead of taking the world's light; the world brightness legacy RenderBlocks sets for ordinary faces is
+     * left to the modern lighting (and its ambient occlusion).
+     */
+    private static int emissive(RenderContext.Capture capture, int q, int i) {
+        if (capture.get(q, i, 8) == 0.0D) return 0;
+        int light = (int) capture.get(q, i, 6);
+        return (light & 0xFFFF) >= 0xF0 ? light : 0;
     }
 
     /** 1.7.10's (and the modern) directional shade of a face. */
