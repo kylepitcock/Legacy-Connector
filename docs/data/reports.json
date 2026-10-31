@@ -119,6 +119,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/better-dungeons/files/2227053",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 112,
+   "mod": "ProjectE-1.7.10-PE1.10.1",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "Some items have their EMC value, but absolutely nothing else is added. <img width=\"199\" height=\"94\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/981f5f83-6a92-4f63-92c7-d497c57e5ecf\" /> <img width=\"362\" height=\"131\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/c2bb0b20-ac50-4c77-b28e-b244db900f39\" />",
+   "lc": "0.3.6",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/projecte/files/all?page=1&pageSize=20&version=1.7.10&showAlphaFiles=hide",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
