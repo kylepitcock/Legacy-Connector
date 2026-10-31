@@ -224,7 +224,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 }
             }
             boolean stairs = b.getRenderType() == 10;
-            JsonObject model = stairs ? stairsModel(faces) : model(b, faces);
+            JsonObject model = stairs ? stairsModel(faces) : b.getRenderType() == 20 ? vineModel(b, faces[0], meta) : model(b, faces);
             String path = "block/" + id.getPath() + "_m" + meta;
             put(out, "assets/" + id.getNamespace() + "/models/" + path + ".json", model);
             JsonObject v = new JsonObject();
@@ -241,6 +241,59 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         JsonObject state = new JsonObject();
         state.add("variants", variants);
         put(out, "assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", state);
+    }
+
+    /**
+     * Render type 20, vines (RenderBlocks.renderBlockVine): a plane 0.05 in front of each side the metadata names (1 south, 2 west,
+     * 4 north, 8 east), and under the block above for metadata 0; drawn from both sides, tinted like foliage when the block colours
+     * itself. Witchery's Spanish moss is one.
+     */
+    private static JsonObject vineModel(Block b, String texture, int meta) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", "minecraft:block/block");
+        model.addProperty("ambientocclusion", false);
+        model.addProperty("render_type", "minecraft:cutout");
+        JsonObject tex = new JsonObject();
+        tex.addProperty("vine", texture);
+        tex.addProperty("particle", texture);
+        model.add("textures", tex);
+        boolean tint = tinted(b);
+        JsonArray els = new JsonArray();
+        double f = 0.8; // 0.05 of a block, in model units
+        if ((meta & 1) != 0) els.add(plane(new double[] {0, 0, 16 - f}, new double[] {16, 16, 16 - f}, "north", "south", tint));
+        if ((meta & 2) != 0) els.add(plane(new double[] {f, 0, 0}, new double[] {f, 16, 16}, "west", "east", tint));
+        if ((meta & 4) != 0) els.add(plane(new double[] {0, 0, f}, new double[] {16, 16, f}, "north", "south", tint));
+        if ((meta & 8) != 0) els.add(plane(new double[] {16 - f, 0, 0}, new double[] {16 - f, 16, 16}, "west", "east", tint));
+        if (meta == 0) els.add(plane(new double[] {0, 16 - f, 0}, new double[] {16, 16 - f, 16}, "down", "up", tint));
+        model.add("elements", els);
+        return model;
+    }
+
+    /** A zero-thickness element showing the vine texture on its two opposite faces. */
+    private static JsonObject plane(double[] from, double[] to, String face1, String face2, boolean tint) {
+        JsonObject el = new JsonObject();
+        JsonArray a = new JsonArray();
+        for (double d : from) a.add(d);
+        JsonArray c = new JsonArray();
+        for (double d : to) c.add(d);
+        el.add("from", a);
+        el.add("to", c);
+        el.addProperty("shade", false);
+        JsonObject faces = new JsonObject();
+        for (String n : new String[] {face1, face2}) {
+            JsonObject face = new JsonObject();
+            face.addProperty("texture", "#vine");
+            JsonArray uv = new JsonArray();
+            uv.add(0);
+            uv.add(0);
+            uv.add(16);
+            uv.add(16);
+            face.add("uv", uv);
+            if (tint) face.addProperty("tintindex", 0);
+            faces.add(n, face);
+        }
+        el.add("faces", faces);
+        return el;
     }
 
     private static JsonObject stairsModel(String[] faces) {
@@ -341,7 +394,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     /** Whether a legacy block colours itself (its model then marks its faces as tinted). */
     public static boolean tinted(Block b) {
         if (b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockLeaves || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockGrass
-                || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockTallGrass) {
+                || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockTallGrass || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockVine) {
             return true;
         }
         try {
