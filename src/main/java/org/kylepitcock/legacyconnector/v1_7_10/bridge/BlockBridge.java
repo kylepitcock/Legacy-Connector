@@ -44,7 +44,11 @@ public final class BlockBridge {
      */
     private static final int FIRST_MOD_ID = 423;
     /** Ids of modern-only blocks that cannot share their item's id: this plus the modern block registry id (see ItemBridge.modernOnlyBlockId). */
-    static final int MODERN_BLOCK_ID_BASE = 40000;
+    /**
+     * Above every modern-only item id (ItemBridge's 20000 + item registry id): ATM10 has more than 20,000 items, and with a base of
+     * 40000 the two ranges overlapped, so Thaumcraft's scans (block ids turned back into items) named unrelated blocks and items.
+     */
+    static final int MODERN_BLOCK_ID_BASE = 1_000_000;
 
     private static final CaseIndexedMap<Block> BY_NAME = new CaseIndexedMap<>();
     private static final Map<Block, String> NAMES = new IdentityHashMap<>();
