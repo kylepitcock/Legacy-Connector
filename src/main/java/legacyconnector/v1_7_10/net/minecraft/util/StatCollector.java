@@ -29,6 +29,12 @@ public class StatCollector {
 
     public static String mcc$modernKey(String key) {
         if (key.equals("item.monsterPlacer.name")) return "legacyconnector.spawn_egg_prefix";
+        // vanilla attribute names were camel case in 1.7.10 ("attribute.name.generic.attackDamage"; Tinkers' Construct tool tooltips
+        // showed that key) and are snake case now ("attribute.name.generic.attack_damage")
+        if (key.startsWith("attribute.name.")) {
+            String modern = key.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT);
+            return modern.equals(key) ? null : modern;
+        }
         if (key.startsWith("entity.") && key.endsWith(".name") && key.indexOf('.', 7) == key.length() - 5) {
             String name = key.substring(7, key.length() - 5);
             String id = MCC$ENTITY_RENAMES.getOrDefault(name, name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT));
@@ -51,7 +57,8 @@ public class StatCollector {
     }
 
     public static boolean canTranslate(String key) {
-        return Language.getInstance().has(key) || org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_US", key) != null;
+        String modern = key == null ? null : mcc$modernKey(key);
+        return Language.getInstance().has(key) || modern != null && Language.getInstance().has(modern) || org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_US", key) != null;
     }
 
     public static long getLastTranslationUpdateTimeInMilliseconds() {

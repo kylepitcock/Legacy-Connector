@@ -59,6 +59,10 @@ public final class Client1122 {
             if (present()) Colors1122.onItemColors(e);
         });
         modBus.addListener(Client1122::onModifyBaking);
+        // status icons of mod potions (the modern effect sprites do not exist for them)
+        modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) -> {
+            if (present()) EffectIcons1122.register(e);
+        });
         // plain model locations mods asked ModelLoaderRegistry for are baked as standalone models
         modBus.addListener((net.neoforged.neoforge.client.event.ModelEvent.RegisterAdditional e) -> {
             if (!present()) return;

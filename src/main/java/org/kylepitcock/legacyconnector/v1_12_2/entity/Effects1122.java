@@ -56,6 +56,13 @@ public final class Effects1122 {
         return potion == null ? null : EFFECTS.get(potion);
     }
 
+    /** The modern effects made for mod potions (their client icons are drawn by EffectIcons1122). */
+    public static java.util.List<MobEffect> all() {
+        java.util.List<MobEffect> out = new java.util.ArrayList<>();
+        for (Holder<MobEffect> h : EFFECTS.values()) out.add(h.value());
+        return out;
+    }
+
     /** The legacy potion of a modern effect made here, or null. */
     public static Potion legacy(MobEffect effect) {
         return effect instanceof LegacyEffect l ? l.potion : null;
