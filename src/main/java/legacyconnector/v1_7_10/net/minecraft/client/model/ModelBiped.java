@@ -95,6 +95,14 @@ public class ModelBiped extends ModelBase {
 
     @Override
     public void setRotationAngles(float limbSwing, float limbSwingAmount, float age, float headYaw, float headPitch, float scale, Entity entity) {
+        // Fisk's Heroes patched this method (its coremod cannot run here): hero poses are applied before and after the vanilla ones
+        final boolean heroPoses = org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.poseHooks();
+        if (heroPoses) org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.setRotationAnglesPre(this, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
+        mcc$vanillaAngles(limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
+        if (heroPoses) org.kylepitcock.legacyconnector.v1_7_10.compat.fiskheroes.FiskHeroesHooks.setRotationAngles(this, limbSwing, limbSwingAmount, age, headYaw, headPitch, scale, entity);
+    }
+
+    private void mcc$vanillaAngles(float limbSwing, float limbSwingAmount, float age, float headYaw, float headPitch, float scale, Entity entity) {
         final float deg = (float) (180.0 / Math.PI);
         final float pi = (float) Math.PI;
         bipedHead.rotateAngleY = headYaw / deg;

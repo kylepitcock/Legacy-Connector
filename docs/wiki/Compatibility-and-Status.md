@@ -27,7 +27,7 @@ full run; "loads" does not mean every feature was played through.
 | Witchery + RotaryCraft | Both default to potion id 35; DragonAPI refuses to start. | Change `Freeze Potion ID` in `config/Reika/RotaryCraft.cfg` (or Witchery's id). |
 | ProjectRed Expansion + Runic Dungeons | Both use enchantment id 80. 1.7.10 crashed; here one enchantment is moved to a free id and a warning is logged. | Change an id in the mods' configs to keep ids stable. |
 | Mystcraft + NetherOres | NetherOres swaps the vanilla quartz ore block through CoFH registry reflection. Works, because replaced vanilla blocks keep the vanilla identity. | None. |
-| Mods that patch Minecraft's own classes with coremods | The patches cannot run on the shim classes. Only DragonAPI's crafting-list and smelting hooks are provided (`CoremodHooks`); other such patches do nothing. | Report the mod. |
+| Mods that patch Minecraft's own classes with coremods | The patches cannot run on the shim classes. Only DragonAPI's crafting-list and smelting hooks (`CoremodHooks`) and Fisk's Heroes' movement and model-pose hooks (`compat.fiskheroes`, flight/gliding/wall crawling) are provided; other such patches do nothing. | Report the mod. |
 | Railcraft and EnderIO anvils | `ContainerRepair` is implemented with the vanilla field names and rules; not yet checked in game. | Test in game. |
 | HBM's pylons/substations, RFTools screens, Thermal Expansion tanks and caches, Runic Dungeons portal | Fail in the automated block self test, which uses a fake player and no tile state; not confirmed in real play. | Test in game. |
 | Decocraft | Loads through a stand-in for the JDK-internal PNG reader; models not checked in game. | Test in game. |

@@ -62,8 +62,38 @@ public final class HudEvents1710 {
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post e) -> {
             ElementType type = LAYERS.get(e.getName());
+            if (type != null && drawnForMode(type)) advanceStack(type);
             if (type != null && wants() && drawnForMode(type)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, true);
         });
+    }
+
+    /**
+     * GuiIngameForge raised {@code left_height}/{@code right_height} by the room each status row took before it posted that
+     * row's Post event, and overlays stacked their own rows above the vanilla ones from them (Fisk's Heroes' armour protection
+     * bar, Tinkers' Construct's hearts). The modern layers do not track it, so the rows are counted here.
+     */
+    private static void advanceStack(ElementType type) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
+        switch (type) {
+            case HEALTH -> {
+                float max = player.getMaxHealth();
+                float absorb = player.getAbsorptionAmount();
+                int rows = (int) Math.ceil((max + absorb) / 2.0F / 10.0F);
+                int rowHeight = Math.max(10 - (rows - 2), 3);
+                legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.left_height += rows * rowHeight;
+                if (rowHeight != 10) legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.left_height += 10 - rowHeight;
+            }
+            case ARMOR -> legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.left_height += 10;
+            case FOOD -> legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.right_height += 10;
+            case AIR -> {
+                if (player.isEyeInFluid(net.minecraft.tags.FluidTags.WATER) || player.getAirSupply() < player.getMaxAirSupply()) {
+                    legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.right_height += 10;
+                }
+            }
+            default -> {
+            }
+        }
     }
 
     /**
