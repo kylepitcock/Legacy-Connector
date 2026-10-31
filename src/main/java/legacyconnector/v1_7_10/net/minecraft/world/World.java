@@ -526,7 +526,8 @@ public class World implements IBlockAccess {
     @Override
     public boolean isAirBlock(int x, int y, int z) {
         if (mcc$aboveDeepLayer(y)) return false;
-        BlockState state = lvl().getBlockState(pos(x, y, z));
+        BlockState offThread = mcc$offThreadState(x, y, z);
+        BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
         return state.isAir() && !mcc$bedrockFloor(y, state);
     }
 
@@ -964,6 +965,14 @@ public class World implements IBlockAccess {
      * failed on a null one); elsewhere (a generation region, another thread) null when it is not available.
      */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromChunkCoords(int cx, int cz) {
+        if (lvl() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) {
+            // another thread (the render thread reading the integrated server's world, as BuildCraft's RenderTank does): the level would
+            // block until the busy server thread answers; 1.7.10 read the loaded chunk directly and had nothing for an unloaded one
+            var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(cx, cz));
+            var loaded = holder == null ? null : holder.getChunkIfPresent(net.minecraft.world.level.chunk.status.ChunkStatus.FULL);
+            return loaded == null ? new legacyconnector.v1_7_10.net.minecraft.world.chunk.EmptyChunk(this, cx, cz)
+                    : new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(this, loaded);
+        }
         var access = lvl().getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false);
         if (access == null && lvl() == mcc$liveLevel() && mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level && level.getServer().isSameThread()) {
             access = level.getChunk(cx, cz);
