@@ -61,6 +61,7 @@ public final class CapabilityRules implements LegacyCapabilities {
     public static void apply(RegisterCapabilitiesEvent event) {
         CapabilityRules registrar = new CapabilityRules();
         registrar.forAnyTile(Capabilities.ItemHandler.BLOCK, LegacyCapabilities.FORGE_ITEMS_1122);
+        registrar.forAnyTile(Capabilities.FluidHandler.BLOCK, LegacyCapabilities.FORGE_FLUIDS_1122);
         registrar.forAnyTile(Capabilities.EnergyStorage.BLOCK, LegacyCapabilities.FORGE_ENERGY_1122);
         // addons first: their rules are asked before the built-ins of the same capability
         CapabilityRules addons = new CapabilityRules();

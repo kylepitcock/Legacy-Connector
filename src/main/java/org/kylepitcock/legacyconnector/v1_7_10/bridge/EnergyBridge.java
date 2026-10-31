@@ -32,7 +32,8 @@ public final class EnergyBridge {
     }
 
     public static IEnergyStorage forTile(TileEntity legacy, Direction side) {
-        if (!(legacy instanceof IEnergyReceiver) && !(legacy instanceof IEnergyProvider)) return null;
+        // not an RF tile: IC2 EU sinks/sources and BuildCraft MJ receptors (found by name, see ForeignEnergy1710)
+        if (!(legacy instanceof IEnergyReceiver) && !(legacy instanceof IEnergyProvider)) return ForeignEnergy1710.forTile(legacy, side);
         ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
         if (legacy instanceof IEnergyConnection c && side != null && !c.canConnectEnergy(from)) return null;
         return new TileStorage(legacy, from);

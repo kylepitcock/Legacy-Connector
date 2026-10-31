@@ -47,6 +47,12 @@ public final class LegacyConfig {
             bridges.waila.enabled = true
             bridges.nei.enabled = true
             bridges.cofhEnergy.enabled = true
+
+            # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
+            # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
+            energy.fePerEu = 4
+            # FE per BuildCraft MJ (BuildCraft's own rule: 1 MJ = 10 RF).
+            energy.fePerMj = 10
             """;
     private static Properties values;
 
@@ -82,6 +88,29 @@ public final class LegacyConfig {
         if (v.equalsIgnoreCase("false")) return false;
         LOG.warn("{}: '{}' is not true or false; using {}", key, v, fallback);
         return fallback;
+    }
+
+    private static int positiveInt(String key, int fallback) {
+        String v = string(key, null);
+        if (v == null) return fallback;
+        try {
+            int n = Integer.parseInt(v);
+            if (n > 0) return n;
+        } catch (NumberFormatException e) {
+            // reported below
+        }
+        LOG.warn("{}: '{}' is not a positive whole number; using {}", key, v, fallback);
+        return fallback;
+    }
+
+    /** FE per IC2 EU for the energy capability of IC2 tiles and items. */
+    public static int fePerEu() {
+        return positiveInt("energy.fePerEu", 4);
+    }
+
+    /** FE per BuildCraft MJ for the energy capability of BuildCraft power receptors. */
+    public static int fePerMj() {
+        return positiveInt("energy.fePerMj", 10);
     }
 
     public static boolean modernizeTexturesEnabled() {

@@ -155,10 +155,31 @@ handle that reads the legacy tile on each call instead of copying its state.
 | 1.7.10 CoFH `IEnergyReceiver`/`IEnergyProvider` (1 RF = 1 FE) | `EnergyStorage.BLOCK` | `LegacyCapabilities.RF_ENERGY` |
 | 1.12.2 tile answering Forge `ITEM_HANDLER_CAPABILITY` | `ItemHandler.BLOCK` | `LegacyCapabilities.FORGE_ITEMS_1122` |
 | 1.12.2 tile answering Forge `CapabilityEnergy.ENERGY` | `EnergyStorage.BLOCK` | `LegacyCapabilities.FORGE_ENERGY_1122` |
+| 1.12.2 tile answering Forge `FLUID_HANDLER_CAPABILITY` | `FluidHandler.BLOCK` | `LegacyCapabilities.FORGE_FLUIDS_1122` |
+| 1.7.10 Forge `IFluidTank` tile (not an `IFluidHandler`) | `FluidHandler.BLOCK` (one tank) | built in |
+| IC2 `IEnergySink` / `IEnergySource` tiles (`energy.fePerEu`, default 4 FE = 1 EU) | `EnergyStorage.BLOCK` | built in (reflection) |
+| BuildCraft `IPowerReceptor` tiles (`energy.fePerMj`, default 10 FE = 1 MJ; receive only) | `EnergyStorage.BLOCK` | built in (reflection) |
 
-Item capabilities (`registerItem`) of legacy fluid/energy container items also exist for 1.7.10. Not bridged yet: 1.12.2 fluid handlers,
-IC2 EU (`IEnergySink`/`IEnergySource`) as a capability, legacy mod capabilities beyond item/fluid/energy. An addon can supply these
-with `forTile` + `LegacyAccess`.
+Legacy tile entities are exposed as capabilities **by default**, so modern hoppers, Create belts/funnels/arms/vaults, modern pipes and energy
+cables work with them without an addon; addons only add what is missing. Side handling: NeoForge's `Direction` maps to `ForgeDirection`
+by index (DOWN, UP, NORTH, SOUTH, WEST, EAST), a null side is `UNKNOWN`/all slots; `canInsertItem`/`canExtractItem`/`getAccessibleSlotsFromSide`
+are honoured; simulation never mutates (NeoForge's wrappers copy stacks); `markDirty` is called after changes. IC2 sinks get at most one
+packet of their tier's voltage per call (8 * 4^tier EU) so a machine is never overloaded; an IC2 tile is not double handled because IC2's own
+cables and BuildCraft pipes are legacy blocks that never ask for the capability. Cached lookups (Create) are invalidated on every neighbour
+change of a legacy tile block (`Level.invalidateCapabilities(pos)`), and NeoForge itself does it on placement and removal.
+
+**Items** (by default): 1.7.10 `IEnergyContainerItem` (1 RF = 1 FE), IC2 `IElectricItem`/`ISpecialElectricItem` through `ElectricItem.manager`
+(charge/discharge with the item's tier; `energy.fePerEu`) and `IFluidContainerItem` become `EnergyStorage.ITEM` / `FluidHandler.ITEM`;
+1.12.2 items that attach capabilities in `Item.initCapabilities` become `ItemHandler.ITEM`/`FluidHandler.ITEM`/`EnergyStorage.ITEM`, looked
+up again on every call on a view of the live stack (stacks are copied constantly, nothing is cached). Tools: legacy pickaxes, axes, spades,
+hoes, swords and shears, or any item whose Forge `getToolClasses` names `pickaxe/axe/shovel/hoe/sword/shears`, answer the matching
+`ItemAbilities` (`*_DIG`, `AXE_STRIP/SCRAPE/WAX_OFF`, `SHOVEL_FLATTEN`, `HOE_TILL`, `SHEARS_HARVEST`) in both versions. Already existing:
+ore dictionary names as `c:` tags (`OreDictBridge`), burn time, crafting remainders, destroy speed, enchantment value.
+
+Not done: a view of modern block entities as legacy `IInventory`/`IFluidHandler` (legacy pipes pushing into a Create vault or a modern
+chest: legacy code asks `getTileEntity(...) instanceof IInventory`, which needs a TileEntity view per modern block entity), BuildCraft 7 MJ
+batteries (only the 6.x `PowerHandler` API), extracting from BuildCraft engines, 1.12.2 fluid textures for the modern fluid types,
+`FIRESTARTER_LIGHT` and attribute modifiers for legacy items. An addon can supply these with `forTile` + `LegacyAccess`.
 
 ## Example addon
 

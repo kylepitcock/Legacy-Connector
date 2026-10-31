@@ -276,6 +276,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     protected void neighborChanged(BlockState state, Level level, BlockPos pos, net.minecraft.world.level.block.Block neighborBlock, BlockPos from,
             boolean moving) {
         super.neighborChanged(state, level, pos, neighborBlock, from, moving);
+        // what a legacy tile offers per side can depend on its neighbours: let cached capabilities (Create, pipes) re-ask
+        if (!level.isClientSide && state.hasBlockEntity()) level.invalidateCapabilities(pos);
         if (!neighbor) return;
         try {
             legacy.neighborChanged(state(state), world(level), pos(pos), StatesBridge1122.legacyBlock(neighborBlock.defaultBlockState()), pos(from));

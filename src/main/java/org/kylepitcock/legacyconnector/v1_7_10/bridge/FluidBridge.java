@@ -113,12 +113,7 @@ public final class FluidBridge {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         var type = TileEntityBridge.type();
         if (type != null) {
-            event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (be, side) -> {
-                TileEntity legacy = be.legacy();
-                if (!(legacy instanceof IFluidHandler handler)) return null;
-                ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
-                return new TileHandler(handler, from);
-            });
+            event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, type, (be, side) -> forTile(be.legacy(), side));
         }
         for (legacyconnector.v1_7_10.net.minecraft.item.Item item : ItemBridge.modItems()) {
             if (!(item instanceof IFluidContainerItem container)) continue;
@@ -129,9 +124,52 @@ public final class FluidBridge {
 
     /** The NeoForge fluid handler of a legacy Forge {@code IFluidHandler} tile entity seen from {@code side} (public API adapter), or null. */
     public static net.neoforged.neoforge.fluids.capability.IFluidHandler forTile(Object legacy, Direction side) {
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.IFluidTank tank && !(legacy instanceof IFluidHandler)) return new TankHandler(tank);
         if (!(legacy instanceof IFluidHandler handler)) return null;
         ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
         return new TileHandler(handler, from);
+    }
+
+    /** A tile that is itself a Forge {@code IFluidTank} (and no IFluidHandler): one tank, every side. */
+    private record TankHandler(legacyconnector.v1_7_10.net.minecraftforge.fluids.IFluidTank tank) implements net.neoforged.neoforge.fluids.capability.IFluidHandler {
+        @Override
+        public int getTanks() {
+            return 1;
+        }
+
+        @Override
+        public FluidStack getFluidInTank(int i) {
+            return toModern(tank.getFluid());
+        }
+
+        @Override
+        public int getTankCapacity(int i) {
+            return tank.getCapacity();
+        }
+
+        @Override
+        public boolean isFluidValid(int i, FluidStack stack) {
+            var current = tank.getFluid();
+            return legacyOf(stack.getFluid()) != null && (current == null || current.amount <= 0 || current.getFluid() == legacyOf(stack.getFluid()));
+        }
+
+        @Override
+        public int fill(FluidStack resource, FluidAction action) {
+            var legacy = fromModern(resource);
+            return legacy == null ? 0 : tank.fill(legacy, action.execute());
+        }
+
+        @Override
+        public FluidStack drain(FluidStack resource, FluidAction action) {
+            var current = tank.getFluid();
+            if (current == null || current.amount <= 0 || toModern(current).getFluid() != resource.getFluid()) return FluidStack.EMPTY;
+            return toModern(tank.drain(resource.getAmount(), action.execute()));
+        }
+
+        @Override
+        public FluidStack drain(int maxDrain, FluidAction action) {
+            return toModern(tank.drain(maxDrain, action.execute()));
+        }
     }
 
     private record TileHandler(IFluidHandler tile, ForgeDirection from) implements net.neoforged.neoforge.fluids.capability.IFluidHandler {
