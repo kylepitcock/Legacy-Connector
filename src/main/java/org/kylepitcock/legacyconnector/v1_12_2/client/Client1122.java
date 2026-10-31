@@ -119,6 +119,21 @@ public final class Client1122 {
 
     private static Boolean present;
 
+    /**
+     * Forge 1.12 stitched the block atlas (TextureStitchEvent.Pre) between preInit and init, so mods took their sprites from the event
+     * and used them in init and postInit (Advent of Ascension's particle atlas). The game stitches after the mods load: the same
+     * event goes out once here, the sprites are placed by the real stitch later (the handlers run again then).
+     */
+    public static void earlyStitchPre() {
+        GeneratedPack.whileBuilding(() -> {
+            try {
+                MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("posting the early TextureStitchEvent.Pre", e);
+            }
+        });
+    }
+
     /** Whether any 1.12.2 mod is loaded (otherwise none of this runs). */
     static boolean present() {
         if (present == null) present = LegacyMods.all().stream().anyMatch(m -> "1.12.2".equals(m.version));

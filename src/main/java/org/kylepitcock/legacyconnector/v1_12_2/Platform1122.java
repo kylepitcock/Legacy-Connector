@@ -364,7 +364,10 @@ public final class Platform1122 implements LegacyPlatform {
             injectObjectHolders();
             post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
         }
-        if (FMLEnvironment.dist.isClient()) post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
+        if (FMLEnvironment.dist.isClient()) {
+            post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
+            org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.earlyStitchPre();
+        }
         MISSING_HOLDERS.clear();
         injectObjectHolders();
         if (!MISSING_HOLDERS.isEmpty()) LOG.warn("Object holders with nothing registered under their name: {}", MISSING_HOLDERS);

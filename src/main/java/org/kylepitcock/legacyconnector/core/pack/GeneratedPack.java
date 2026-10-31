@@ -77,6 +77,16 @@ public final class GeneratedPack implements PackResources {
         return BUILDING.get() > 0;
     }
 
+    /** Runs code that must see {@link #building()} as true (legacy handlers that run before any resources are visible). */
+    public static void whileBuilding(Runnable action) {
+        BUILDING.incrementAndGet();
+        try {
+            action.run();
+        } finally {
+            BUILDING.decrementAndGet();
+        }
+    }
+
     public static void addContributor(Contributor c) {
         CONTRIBUTORS.add(c);
     }
