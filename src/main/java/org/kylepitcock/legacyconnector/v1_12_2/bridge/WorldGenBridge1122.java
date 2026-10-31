@@ -16,7 +16,9 @@ import org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature;
  * Runs the 1.12.2 {@link IWorldGenerator}s (ores, plants, small structures of mods) once per chunk, from the legacy world-gen
  * feature every biome carries, with Forge's per-chunk seeding so generation is reproducible. The world they get is a view of the
  * generation region (its own chunk and the neighbours 1.12 population spilled into). A failing generator is logged (throttled) and
- * the others still run. Legacy y=0..255 maps to the same modern heights; the deep layer below y=0 gets nothing.
+ * the others still run. Legacy y=0..255 maps to the same modern heights; the deep layer below y=0 gets nothing. In ordinary dimensions
+ * each generator is a placed feature of its own ({@link org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators}, run by
+ * {@link #generateOne}); the catch-all feature posts the populate terrain events and runs the generators without one.
  */
 public final class WorldGenBridge1122 {
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/WorldGen");
@@ -64,16 +66,82 @@ public final class WorldGenBridge1122 {
         if (hooked) return;
         hooked = true;
         if (TIMING) Runtime.getRuntime().addShutdownHook(new Thread(WorldGenBridge1122::logTimes));
-        LegacyWorldGenFeature.addDecorator(WorldGenBridge1122::decorate);
+        LegacyWorldGenFeature.addDecorator((level, chunkX, chunkZ, seed) -> decorate(level, chunkX, chunkZ, seed, false));
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.addSource(WorldGenBridge1122::features);
+    }
+
+    /** The generators in GameRegistry order (weight, then registration), each run as a feature of its own. */
+    private static List<org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.Generator> features() {
+        List<org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.Generator> out = new java.util.ArrayList<>();
+        for (IWorldGenerator g : legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators()) {
+            out.add(new org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.Generator(g, modIdOf(g),
+                    (level, chunkX, chunkZ) -> generateOne(level, chunkX, chunkZ, g)));
+        }
+        return out;
+    }
+
+    /** The legacy mod whose jar (module) a generator's class is in, or null. */
+    private static String modIdOf(IWorldGenerator generator) {
+        try {
+            Class<?> type = generator.getClass();
+            for (var c : legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.instance().getActiveModList()) {
+                Object mod = c.getMod();
+                if (mod == null) continue;
+                Class<?> modType = mod.getClass();
+                if (type.getModule().isNamed() ? modType.getModule() == type.getModule() : modType.getClassLoader() == type.getClassLoader()) return c.getModId();
+            }
+        } catch (RuntimeException | LinkageError ignored) {
+            // no id: the feature gets the layer's namespace
+        }
+        return null;
+    }
+
+    /**
+     * Runs one generator for one chunk of an ordinary dimension, as {@link #decorate} would: Forge's chunk seed, the mod's lock, a view
+     * of the generation region. A failure is logged (throttled) and swallowed.
+     */
+    private static void generateOne(WorldGenLevel level, int chunkX, int chunkZ, IWorldGenerator g) {
+        World world = WorldBridge1122.wrap(level);
+        try {
+            runOne(world, chunkX, chunkZ, g, new Random(chunkSeed(level.getSeed(), chunkX, chunkZ)), world.getChunkProvider());
+        } finally {
+            WorldBridge1122.mcc$releaseRegion();
+        }
+    }
+
+    /** Forge's per-chunk seed ({@code GameRegistry.generateWorld}): every generator starts from it. */
+    private static long chunkSeed(long worldSeed, int chunkX, int chunkZ) {
+        Random fmlRandom = new Random(worldSeed);
+        long xSeed = fmlRandom.nextLong() >> 2 + 1L;
+        long zSeed = fmlRandom.nextLong() >> 2 + 1L;
+        return (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+    }
+
+    private static void runOne(World world, int chunkX, int chunkZ, IWorldGenerator g, Random fmlRandom,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.IChunkProvider provider) {
+        var lock = LOCKS.computeIfAbsent(g, org.kylepitcock.legacyconnector.core.LegacyModLocks::of);
+        try {
+            // 1.12 decorated one chunk at a time on the server thread; a mod's generators keep state in plain fields
+            long g0 = TIMING ? System.nanoTime() : 0;
+            org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(lock, () -> g.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, provider));
+            if (TIMING) time(g.getClass().getName(), System.nanoTime() - g0);
+        } catch (RuntimeException | LinkageError e) {
+            int n = FAILURES.incrementAndGet();
+            if (n <= 3 || n % 500 == 0) {
+                LOG.error("1.12.2 world generator {} failed in chunk {},{} ({} failures so far)", g.getClass().getName(), chunkX, chunkZ, n, e);
+            }
+        }
     }
 
     /** The mods' IWorldGenerators for a chunk of a mod dimension (1.12 ran them in every dimension after the provider's populate). */
     public static void decorateModDimension(WorldGenLevel level, int chunkX, int chunkZ) {
-        decorate(level, chunkX, chunkZ, level.getSeed());
+        decorate(level, chunkX, chunkZ, level.getSeed(), true);
     }
 
-    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed) {
+    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed, boolean modDimension) {
         List<IWorldGenerator> gens = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators();
+        // in ordinary dimensions the generators with a placed feature of their own run from it (after this one, in legacy order)
+        if (!modDimension) gens.removeIf(g -> org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.covered(level, g));
         boolean events = TerrainEvents1122.wanted();
         if (gens.isEmpty() && !events) return;
         World world = WorldBridge1122.wrap(level);
@@ -83,24 +151,11 @@ public final class WorldGenBridge1122 {
             if (events) TerrainEvents1122.populate(world, worldSeed, chunkX, chunkZ, DUMMY);
             if (TIMING) time("terrain events (populate)", System.nanoTime() - t0);
             Random fmlRandom = new Random(worldSeed);
-            long xSeed = fmlRandom.nextLong() >> 2 + 1L;
-            long zSeed = fmlRandom.nextLong() >> 2 + 1L;
-            long chunkSeed = (xSeed * chunkX + zSeed * chunkZ) ^ worldSeed;
+            long chunkSeed = chunkSeed(worldSeed, chunkX, chunkZ);
             var provider = world.getChunkProvider();
             for (IWorldGenerator g : gens) {
                 fmlRandom.setSeed(chunkSeed);
-                var lock = LOCKS.computeIfAbsent(g, org.kylepitcock.legacyconnector.core.LegacyModLocks::of);
-                try {
-                    // 1.12 decorated one chunk at a time on the server thread; a mod's generators keep state in plain fields
-                    long g0 = TIMING ? System.nanoTime() : 0;
-                    org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(lock, () -> g.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, provider));
-                    if (TIMING) time(g.getClass().getName(), System.nanoTime() - g0);
-                } catch (RuntimeException | LinkageError e) {
-                    int n = FAILURES.incrementAndGet();
-                    if (n <= 3 || n % 500 == 0) {
-                        LOG.error("1.12.2 world generator {} failed in chunk {},{} ({} failures so far)", g.getClass().getName(), chunkX, chunkZ, n, e);
-                    }
-                }
+                runOne(world, chunkX, chunkZ, g, fmlRandom, provider);
             }
         } finally {
             WorldBridge1122.mcc$releaseRegion();
