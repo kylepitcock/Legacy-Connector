@@ -107,6 +107,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-run-parasites/files/all?page=1&pageSize=20&showAlphaFiles=show",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 111,
+   "mod": "Chocolate Quest 1.0",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "Nothings seems to work",
+   "lc": "0.3.6",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/better-dungeons/files/2227053",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
