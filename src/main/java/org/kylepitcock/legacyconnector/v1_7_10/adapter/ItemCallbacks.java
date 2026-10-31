@@ -24,6 +24,7 @@ import net.minecraft.world.phys.Vec3;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.FuelBridge;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyText;
 
 /**
  * Item behaviour shared by {@link LegacyItemAdapter} and {@link LegacyBlockItemAdapter}: each modern callback is
@@ -123,7 +124,7 @@ public final class ItemCallbacks {
                 org.slf4j.LoggerFactory.getLogger("LegacyConnector/Items").warn("Tooltip of {} failed: {}", legacy, e.toString());
             }
         }
-        for (Object o : lines) out.add(Component.literal(String.valueOf(o)));
+        for (Object o : lines) out.add(LegacyText.literal(String.valueOf(o)));
     }
 
     /** The legacy {@code display.Name} in a stack's NBT, or null. */
@@ -147,8 +148,9 @@ public final class ItemCallbacks {
             // 1.7.10's ItemStack.getDisplayName read the stack's own display.Name first; legacy code writes it into the NBT
             // (TConstruct names its tools there), which lives in custom_data rather than the modern custom name
             String named = legacyDisplayName(stack);
-            if (named != null) return Component.literal(named);
-            if (customName) return Component.literal(legacy.getItemStackDisplayName(view));
+            if (named != null) return LegacyText.literal(named);
+            // DragonAPI font keys in the name (ChromatiCraft's undiscovered crystal colours) are dropped: see LegacyText
+            if (customName) return LegacyText.literal(legacy.getItemStackDisplayName(view));
             return Component.translatable(legacy.getUnlocalizedName(view) + ".name");
         } catch (RuntimeException | LinkageError e) {
             // Names are built for every item at once (the creative search), and a mod's name can depend on another mod that
