@@ -47,6 +47,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static final class Stats {
         int translated;
         int fellBack;
+        int cutout;
+        int translucent;
+        int solid;
         final List<String> fallbacks = new ArrayList<>();
     }
 
@@ -108,6 +111,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 }
             }
         }
+        LOG.info("1.12.2 render types: {} cutout, {} translucent, {} solid", stats.cutout, stats.translucent, stats.solid);
         LOG.info("1.12.2 blockstates: {} translated, {} fell back to a plain model{}", stats.translated, stats.fellBack,
                 stats.fallbacks.isEmpty() ? "" : " (" + String.join("; ", stats.fallbacks.subList(0, Math.min(60, stats.fallbacks.size())))
                         + (stats.fallbacks.size() > 60 ? "; ... " + (stats.fallbacks.size() - 60) + " more" : "") + ")");
@@ -200,6 +204,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
         }
         Map<Integer, Res> results = new TreeMap<>();
+        boolean translucentMeta = false;
+        boolean cutoutMeta = false;
         List<String> reasons = new ArrayList<>();
         for (var entry : byMeta.entrySet()) {
             int meta = entry.getKey();
@@ -209,6 +215,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 candidates.sort((x, y) -> Integer.compare(agreement(y, d), agreement(x, d)));
             }
             Res best = null;
+            IBlockState bestState = null;
             for (IBlockState state : candidates) {
                 Res r;
                 try {
@@ -219,9 +226,13 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     r.fallback = e.toString();
                     r.model = fallbackModel(id, null, "meta_" + meta, out);
                 }
-                if (best == null) best = r;
+                if (best == null) {
+                    best = r;
+                    bestState = state;
+                }
                 if (!r.empty) {
                     best = r;
+                    bestState = state;
                     break;
                 }
             }
@@ -229,6 +240,13 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 best = new Res();
                 best.fallback = "no states";
                 best.model = fallbackModel(id, null, "meta_" + meta, out);
+            }
+            String renderType = renderTypeOf(block, bestState != null ? bestState : def, best, out);
+            if (renderType != null) {
+                best.model = withRenderType(best.model, renderType, id, out);
+                for (int i = 0; i < best.parts.size(); i++) best.parts.set(i, withRenderType(best.parts.get(i), renderType, id, out));
+                if (renderType.endsWith("translucent")) translucentMeta = true;
+                else cutoutMeta = true;
             }
             results.put(meta, best);
             if (best.fallback != null) reasons.add("meta " + meta + ": " + best.fallback);
@@ -269,6 +287,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             result.add("variants", variants);
         }
+        if (translucentMeta) stats.translucent++;
+        else if (cutoutMeta) stats.cutout++;
+        else stats.solid++;
         byte[] bytes = GSON.toJson(result).getBytes(StandardCharsets.UTF_8);
         out.put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", () -> bytes);
         blockItemModels(block, id, itemModels, out);
@@ -666,6 +687,169 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (have == null || !Arrays.asList(e.getValue().getAsString().split("\\|")).contains(have)) return false;
         }
         return true;
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------------------
+    // render types: 1.12 alpha-tested every terrain layer (mods picked a layer with canRenderInLayer); a modern model needs a render_type to
+    // discard transparent texels, else they draw black on the solid layer
+
+    private static final Map<String, Boolean> TRANSPARENT_TEXTURES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** What a model's parent chain tells: its textures, and whether it must be left alone (custom loader, builtin parent, a render type of its own). */
+    private static final class Chain {
+        final java.util.Set<String> textures = new java.util.LinkedHashSet<>();
+        boolean blocked;
+    }
+
+    /** The render type the legacy block asks for in this state ({@code minecraft:cutout}, ...), or null for the solid layer without transparent texels. */
+    private static String renderTypeOf(Block block, IBlockState state, Res res, Map<String, Supplier<byte[]>> out) {
+        if (state == null) return null;
+        boolean solid = false;
+        boolean cutout = false;
+        boolean mipped = false;
+        boolean translucent = false;
+        try {
+            var layers = legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer.values();
+            for (var layer : layers) {
+                if (!block.canRenderInLayer(state, layer)) continue;
+                switch (layer) {
+                    case SOLID -> solid = true;
+                    case CUTOUT -> cutout = true;
+                    case CUTOUT_MIPPED -> mipped = true;
+                    case TRANSLUCENT -> translucent = true;
+                }
+            }
+        } catch (RuntimeException | LinkageError e) {
+            solid = true; // a layer check that needs a world: the solid default
+        }
+        if (translucent && !solid && !cutout && !mipped) return "minecraft:translucent";
+        if (cutout) return "minecraft:cutout";
+        if (mipped) return "minecraft:cutout_mipped";
+        if (translucent) return "minecraft:cutout";
+        // the solid layer: a texel that is not opaque would draw black, so the model is cut out
+        List<JsonElement> all = new ArrayList<>();
+        if (res.model != null) all.add(res.model);
+        all.addAll(res.parts);
+        for (JsonElement e : all) {
+            for (String model : modelsOf(e)) {
+                Chain chain = new Chain();
+                chainOf(model, out, chain, 0);
+                if (chain.blocked) continue;
+                for (String texture : chain.textures) if (hasTransparentTexels(texture)) return "minecraft:cutout";
+            }
+        }
+        return null;
+    }
+
+    private static List<String> modelsOf(JsonElement variant) {
+        List<String> models = new ArrayList<>();
+        if (variant == null) return models;
+        if (variant.isJsonArray()) {
+            for (JsonElement e : variant.getAsJsonArray()) models.addAll(modelsOf(e));
+        } else if (variant.isJsonObject() && variant.getAsJsonObject().has("model") && variant.getAsJsonObject().get("model").isJsonPrimitive()) {
+            models.add(variant.getAsJsonObject().get("model").getAsString());
+        }
+        return models;
+    }
+
+    /** A model id as "namespace:path" (path under models/) to its JSON, from this pack or the mods; null when it does not exist. */
+    private static JsonObject modelJson(String model, Map<String, Supplier<byte[]>> out) {
+        int colon = model.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : model.substring(0, colon);
+        String file = "assets/" + ns + "/models/" + (colon < 0 ? model : model.substring(colon + 1)) + ".json";
+        Supplier<byte[]> generated = out.get(file);
+        if (generated != null) {
+            try {
+                JsonElement root = JsonParser.parseString(new String(generated.get(), StandardCharsets.UTF_8));
+                return root.isJsonObject() ? root.getAsJsonObject() : null;
+            } catch (RuntimeException e) {
+                return null;
+            }
+        }
+        return readJson(file);
+    }
+
+    private static void chainOf(String model, Map<String, Supplier<byte[]>> out, Chain chain, int depth) {
+        if (depth > 12) return;
+        int colon = model.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : model.substring(0, colon);
+        if (ns.equals("minecraft")) return; // vanilla's parents (cube_all, block, ...) draw what their textures say
+        JsonObject json = modelJson(model, out);
+        if (json == null) return;
+        if (json.has("loader") || json.has("render_type")) chain.blocked = true;
+        if (json.has("textures") && json.get("textures").isJsonObject()) {
+            for (var t : json.getAsJsonObject("textures").entrySet()) {
+                if (t.getValue().isJsonPrimitive() && !t.getValue().getAsString().startsWith("#")) chain.textures.add(t.getValue().getAsString());
+            }
+        }
+        if (json.has("parent") && json.get("parent").isJsonPrimitive()) {
+            String parent = json.get("parent").getAsString().toLowerCase(java.util.Locale.ROOT);
+            if (parent.startsWith("builtin/") || parent.startsWith("minecraft:builtin/")) {
+                chain.blocked = true;
+                return;
+            }
+            int pc = parent.indexOf(':');
+            String pns = pc < 0 ? (modelExists(ns, Ids.normalizePath(parent)) ? ns : "minecraft") : Ids.namespace(parent.substring(0, pc));
+            chainOf(pns + ":" + Ids.normalizePath(pc < 0 ? parent : parent.substring(pc + 1)), out, chain, depth + 1);
+        }
+    }
+
+    /** True when the texture has any texel that is not fully opaque (cached per texture). */
+    private static boolean hasTransparentTexels(String ref) {
+        int colon = ref.indexOf(':');
+        String ns = colon < 0 ? "minecraft" : Ids.namespace(ref.substring(0, colon));
+        String path = Ids.normalizePath(colon < 0 ? ref : ref.substring(colon + 1));
+        if (ns.equals("minecraft")) return false;
+        return TRANSPARENT_TEXTURES.computeIfAbsent(ns + ":" + path, k -> {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            String[] candidates = path.startsWith("blocks/") ? new String[] {"assets/" + ns + "/textures/" + path + ".png", "assets/" + ns + "/textures/block/" + path.substring(7) + ".png"}
+                    : new String[] {"assets/" + ns + "/textures/" + path + ".png"};
+            for (String file : candidates) {
+                try (var in = loader.getResourceAsStream(file)) {
+                    if (in == null) continue;
+                    java.awt.image.BufferedImage image = javax.imageio.ImageIO.read(in);
+                    if (image == null) return false;
+                    if (!image.getColorModel().hasAlpha()) return false;
+                    int[] row = new int[image.getWidth()];
+                    for (int y = 0; y < image.getHeight(); y++) {
+                        image.getRGB(0, y, image.getWidth(), 1, row, 0, image.getWidth());
+                        for (int argb : row) if ((argb >>> 24) != 255) return true;
+                    }
+                    return false;
+                } catch (IOException | RuntimeException e) {
+                    return false;
+                }
+            }
+            return false;
+        });
+    }
+
+    /** A copy of the variant (object or weighted array) whose models are wrappers with the render type; models that must stay as they are are kept. */
+    private static JsonElement withRenderType(JsonElement variant, String renderType, ResourceLocation blockId, Map<String, Supplier<byte[]>> out) {
+        if (variant == null) return null;
+        if (variant.isJsonArray()) {
+            JsonArray array = new JsonArray();
+            for (JsonElement e : variant.getAsJsonArray()) array.add(withRenderType(e, renderType, blockId, out));
+            return array;
+        }
+        if (!variant.isJsonObject() || !variant.getAsJsonObject().has("model") || !variant.getAsJsonObject().get("model").isJsonPrimitive()) return variant;
+        JsonObject copy = variant.getAsJsonObject().deepCopy();
+        String model = copy.get("model").getAsString();
+        Chain chain = new Chain();
+        chainOf(model, out, chain, 0);
+        int colon = model.indexOf(':');
+        if (chain.blocked || colon < 0 || model.startsWith("minecraft:")) return copy;
+        String path = "block/lc1122/rt/" + model.substring(0, colon) + "_" + Ids.normalizePath(model.substring(colon + 1)).replace('/', '_') + "_" + renderType.substring(10);
+        String file = "assets/" + blockId.getNamespace() + "/models/" + path + ".json";
+        if (!out.containsKey(file)) {
+            JsonObject wrapper = new JsonObject();
+            wrapper.addProperty("parent", model);
+            wrapper.addProperty("render_type", renderType);
+            byte[] bytes = GSON.toJson(wrapper).getBytes(StandardCharsets.UTF_8);
+            out.put(file, () -> bytes);
+        }
+        copy.addProperty("model", blockId.getNamespace() + ":" + path);
+        return copy;
     }
 
     // ------------------------------------------------------------------------------------------------------------------------------
