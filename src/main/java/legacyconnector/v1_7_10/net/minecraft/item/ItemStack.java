@@ -81,30 +81,35 @@ public final class ItemStack {
         this.mcc$item = legacy;
     }
 
-    /** The last stacks wrapped on this thread, as modern/view pairs (a ring of {@link #RECENT_SIZE}). */
-    private static final int RECENT_SIZE = 8;
-    private static final ThreadLocal<Object[]> RECENT = ThreadLocal.withInitial(() -> new Object[RECENT_SIZE * 2 + 1]);
+    /**
+     * The views wrapped on this thread, as modern/view pairs in a direct-mapped table of {@link #RECENT_SIZE} slots (by identity
+     * hash): the stacks a HUD overlay, tooltip or renderer wraps every frame get the view they got last frame instead of a new one.
+     */
+    private static final int RECENT_SIZE = 64;
+    private static final ThreadLocal<Object[]> RECENT = ThreadLocal.withInitial(() -> new Object[RECENT_SIZE * 2]);
 
     /**
      * Wraps a modern stack without copying. Returns null for empty stacks (legacy code expects null), except for a stack legacy code
      * just decremented to 0 through a view of it: 1.7.10 kept that object in the slot until the caller removed it, and mods fetch it
      * again to check ({@code player.getCurrentEquippedItem().stackSize--; if (player.getCurrentEquippedItem().stackSize == 0)},
-     * Thaumcraft's pedestal), so the same view comes back with stackSize 0.
+     * Thaumcraft's pedestal), so the same view comes back with stackSize 0. A stack wrapped again while its last view still views it
+     * gets that view back (one legacy object per stack, as in 1.7.10).
      */
     public static ItemStack mcc$wrap(net.minecraft.world.item.ItemStack modern) {
         if (modern == null) return null;
         Object[] recent = RECENT.get();
+        int at = (System.identityHashCode(modern) & (RECENT_SIZE - 1)) * 2;
+        ItemStack known = recent[at] == modern ? (ItemStack) recent[at + 1] : null;
         if (modern.isEmpty()) {
             if (modern == net.minecraft.world.item.ItemStack.EMPTY || modern.getCount() != 0) return null;
-            for (int i = 0; i < RECENT_SIZE * 2; i += 2) if (recent[i] == modern) return (ItemStack) recent[i + 1];
-            return null;
+            return known;
         }
+        // still a view of this stack (setItem, setItemDamage or readFromNBT can make a view take another modern stack)
+        if (known != null && known.mcc$stack == modern) return known;
         ItemStack view = new ItemStack(modern, ItemBridge.legacyItemOf(modern));
         view.mcc$wrapped = true;
-        int at = recent[RECENT_SIZE * 2] instanceof Integer n ? n : 0;
         recent[at] = modern;
         recent[at + 1] = view;
-        recent[RECENT_SIZE * 2] = (at + 2) % (RECENT_SIZE * 2);
         return view;
     }
 

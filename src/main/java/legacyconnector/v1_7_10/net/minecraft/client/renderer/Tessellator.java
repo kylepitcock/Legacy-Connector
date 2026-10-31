@@ -42,7 +42,7 @@ public class Tessellator {
         if (DisplayLists.recording()) {
             // compiling a display list: the draw is kept and replayed by glCallList (also run now when compiling and executing)
             var draw = vertices.take();
-            if (!DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
+            if (!DisplayLists.recording() || !DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
             return draw.vertices().size();
         }
         return vertices.end();
@@ -210,7 +210,10 @@ public class Tessellator {
             color |= v.length > 7 && v[7] != 0.0D;
         }
         var state = new legacyconnector.v1_7_10.net.minecraft.client.shader.TesselatorVertexState(raw, raw.length, list.size(), true, true, false, color);
-        state.mcc$vertices = new java.util.ArrayList<>(list);
+        // copies: the draw's own vertex arrays are reused by the next draws
+        java.util.List<double[]> kept = new java.util.ArrayList<>(list.size());
+        for (double[] v : list) kept.add(v.clone());
+        state.mcc$vertices = kept;
         return state;
     }
 
@@ -219,7 +222,8 @@ public class Tessellator {
         java.util.List<double[]> list = vertices.mcc$vertices();
         list.clear();
         if (state.mcc$vertices != null) {
-            list.addAll(state.mcc$vertices);
+            // copies: the state can be set again, and the draw's arrays are reused once it ends
+            for (double[] v : state.mcc$vertices) list.add(v.clone());
             return;
         }
         int[] raw = state.getRawBuffer();

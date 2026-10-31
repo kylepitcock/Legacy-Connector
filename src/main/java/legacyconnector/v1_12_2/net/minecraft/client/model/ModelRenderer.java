@@ -95,7 +95,7 @@ public class ModelRenderer {
 
     public void render(float scale) {
         if (isHidden || !showModel) return;
-        if (DisplayLists.record(() -> render(scale))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> render(scale))) return;
         PoseStack pose = RenderContext.pose();
         if (pose == null) return;
         pose.pushPose();
@@ -116,7 +116,7 @@ public class ModelRenderer {
     /** Applies this part's transform to the matrix stack without drawing (attaching other renders to a part). */
     public void postRender(float scale) {
         if (isHidden || !showModel) return;
-        if (DisplayLists.record(() -> postRender(scale))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> postRender(scale))) return;
         PoseStack pose = RenderContext.pose();
         if (pose != null) transform(pose, scale);
     }

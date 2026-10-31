@@ -35,7 +35,14 @@ public final class DisplayLists {
         for (int i = 0; i < Math.max(1, range); i++) LISTS.remove(list + i);
     }
 
+    /**
+     * Lists being compiled on any thread: while none is, {@link #recording} answers without a thread-local lookup, and the emulated
+     * GL calls check it before building the action they would record (a lambda per call otherwise).
+     */
+    private static final AtomicInteger COMPILING = new AtomicInteger();
+
     public static void begin(int list, int mode) {
+        if (RECORDING.get() == null) COMPILING.incrementAndGet();
         RECORDING.set(new Recording(list, new ArrayList<>(), mode == GL_COMPILE_AND_EXECUTE));
     }
 
@@ -43,6 +50,7 @@ public final class DisplayLists {
         Recording r = RECORDING.get();
         if (r == null) return;
         RECORDING.remove();
+        COMPILING.decrementAndGet();
         LISTS.put(r.id, r.actions);
     }
 
@@ -53,7 +61,7 @@ public final class DisplayLists {
     }
 
     public static boolean recording() {
-        return RECORDING.get() != null;
+        return COMPILING.get() != 0 && RECORDING.get() != null;
     }
 
     /**

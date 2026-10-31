@@ -229,7 +229,7 @@ public final class RenderContext {
         return f == null ? null : f.gui;
     }
 
-    private static GuiGraphics gui(State s) {
+    static GuiGraphics gui(State s) {
         Frame f = s.frames.peek();
         return f == null ? null : f.gui;
     }

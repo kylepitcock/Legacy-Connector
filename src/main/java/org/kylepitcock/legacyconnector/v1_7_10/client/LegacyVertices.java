@@ -6,12 +6,21 @@ import java.util.List;
 /**
  * Assembles legacy immediate-mode geometry (Tessellator, glBegin/glEnd) into quads for {@link RenderContext}:
  * quads as they are, triangles/fans/strips as degenerate quads. Lines and points are dropped.
+ *
+ * <p>An instance belongs to one thread (the Tessellator and the glBegin vertices are per thread). The vertex arrays of a draw
+ * that is emitted right away are reused by the next draws, so a renderer drawing thousands of vertices a frame allocates none;
+ * a draw kept for later ({@link #take}, display lists and vertex states) keeps its arrays.</p>
  */
 public final class LegacyVertices {
     public static final int GL_POINTS = 0, GL_LINES = 1, GL_LINE_LOOP = 2, GL_LINE_STRIP = 3, GL_TRIANGLES = 4,
             GL_TRIANGLE_STRIP = 5, GL_TRIANGLE_FAN = 6, GL_QUADS = 7, GL_QUAD_STRIP = 8, GL_POLYGON = 9;
+    /** Doubles per vertex: x, y, z, u, v, argb, light, own colour. */
+    public static final int STRIDE = 8;
+    /** Vertex arrays kept for reuse at most (a huge draw must not keep its memory for good). */
+    private static final int MAX_SPARE = 16384;
 
     private final List<double[]> vertices = new ArrayList<>();
+    private final ArrayList<double[]> spare = new ArrayList<>();
     private int mode = GL_QUADS;
     private boolean drawing;
     private double u, v;
@@ -26,7 +35,7 @@ public final class LegacyVertices {
     public void begin(int mode) {
         this.mode = mode;
         this.drawing = true;
-        vertices.clear();
+        recycle();
         hasColor = false;
         hasNormal = false;
         colorDisabled = false;
@@ -36,6 +45,13 @@ public final class LegacyVertices {
     /** Drops geometry begun but never ended (a legacy renderer that threw midway). */
     public void cancel() {
         drawing = false;
+        recycle();
+    }
+
+    /** Clears the current vertices, keeping their arrays for the next draws. */
+    private void recycle() {
+        int n = vertices.size();
+        for (int i = 0; i < n && spare.size() < MAX_SPARE; i++) spare.add(vertices.get(i));
         vertices.clear();
     }
 
@@ -103,12 +119,26 @@ public final class LegacyVertices {
 
     public void vertex(double x, double y, double z) {
         if (!drawing) return;
-        int color = hasColor ? argb : RenderContext.argb();
+        RenderContext.State s = hasColor && light >= 0 ? null : RenderContext.state();
+        int color = hasColor ? argb : RenderContext.argb(s);
+        int n = spare.size();
+        double[] a = n > 0 ? spare.remove(n - 1) : new double[STRIDE];
+        a[0] = x + tx;
+        a[1] = y + ty;
+        a[2] = z + tz;
+        a[3] = u;
+        a[4] = v;
+        a[5] = color & 0xFFFFFFFFL;
+        a[6] = light >= 0 ? light : RenderContext.vertexLight(s);
         // [7]: the vertex carries its own colour; otherwise it takes the colour current when the geometry is emitted (display lists replay later)
-        vertices.add(new double[] {x + tx, y + ty, z + tz, u, v, color & 0xFFFFFFFFL, light >= 0 ? light : RenderContext.vertexLight(), hasColor ? 1.0D : 0.0D});
+        a[7] = hasColor ? 1.0D : 0.0D;
+        vertices.add(a);
     }
 
-    /** The vertices added since {@link #begin} ({x, y, z, u, v, argb, light, own colour}); live list. */
+    /**
+     * The vertices added since {@link #begin} ({x, y, z, u, v, argb, light, own colour}); live list. Its arrays are reused once the
+     * draw ends: a caller keeping them copies them, and arrays put in it must belong to this list alone.
+     */
     public List<double[]> mcc$vertices() {
         return vertices;
     }
@@ -128,7 +158,7 @@ public final class LegacyVertices {
     /** A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). */
     public record Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {}
 
-    /** Ends the draw without emitting it. */
+    /** Ends the draw without emitting it; the snapshot owns its vertex arrays. */
     public Snapshot take() {
         drawing = false;
         Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal);
@@ -138,50 +168,53 @@ public final class LegacyVertices {
 
     /** Emits the assembled primitives; returns the vertex count like the legacy Tessellator. */
     public int end() {
-        Snapshot s = take();
-        emit(s);
-        return s.vertices().size();
+        drawing = false;
+        int n = vertices.size();
+        try {
+            emit(new Snapshot(mode, vertices, nx, ny, nz, hasNormal));
+        } finally {
+            recycle();
+        }
+        return n;
     }
 
     public static void emit(Snapshot s) {
         List<double[]> vertices = s.vertices();
         int n = vertices.size();
-        long current = RenderContext.argb() & 0xFFFFFFFFL;
+        RenderContext.State st = RenderContext.state();
+        long current = RenderContext.argb(st) & 0xFFFFFFFFL;
+        // vertices without a colour of their own take the current one (in place: the arrays belong to this draw)
         for (int i = 0; i < n; i++) {
             double[] v = vertices.get(i);
-            if (v.length > 7 && v[7] == 0.0D && (long) v[5] != current) {
-                v = v.clone();
-                v[5] = current;
-                vertices.set(i, v);
-            }
+            if (v.length > 7 && v[7] == 0.0D && (long) v[5] != current) v[5] = current;
         }
         switch (s.mode()) {
             case GL_QUADS -> {
-                for (int i = 0; i + 3 < n; i += 4) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
+                for (int i = 0; i + 3 < n; i += 4) emit(st, s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
             }
             case GL_TRIANGLES -> {
-                for (int i = 0; i + 2 < n; i += 3) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
+                for (int i = 0; i + 2 < n; i += 3) emit(st, s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
             }
             case GL_TRIANGLE_FAN, GL_POLYGON -> {
-                for (int i = 1; i + 1 < n; i++) emit(s, vertices.get(0), vertices.get(i), vertices.get(i + 1), vertices.get(i + 1));
+                for (int i = 1; i + 1 < n; i++) emit(st, s, vertices.get(0), vertices.get(i), vertices.get(i + 1), vertices.get(i + 1));
             }
             case GL_TRIANGLE_STRIP -> {
                 for (int i = 0; i + 2 < n; i++) {
-                    if ((i & 1) == 0) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
-                    else emit(s, vertices.get(i + 1), vertices.get(i), vertices.get(i + 2), vertices.get(i + 2));
+                    if ((i & 1) == 0) emit(st, s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 2));
+                    else emit(st, s, vertices.get(i + 1), vertices.get(i), vertices.get(i + 2), vertices.get(i + 2));
                 }
             }
             case GL_QUAD_STRIP -> {
-                for (int i = 0; i + 3 < n; i += 2) emit(s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 3), vertices.get(i + 2));
+                for (int i = 0; i + 3 < n; i += 2) emit(st, s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 3), vertices.get(i + 2));
             }
             case GL_LINES -> {
-                for (int i = 0; i + 1 < n; i += 2) line(s, vertices.get(i), vertices.get(i + 1));
+                for (int i = 0; i + 1 < n; i += 2) line(st, s, vertices.get(i), vertices.get(i + 1));
             }
             case GL_LINE_STRIP -> {
-                for (int i = 0; i + 1 < n; i++) line(s, vertices.get(i), vertices.get(i + 1));
+                for (int i = 0; i + 1 < n; i++) line(st, s, vertices.get(i), vertices.get(i + 1));
             }
             case GL_LINE_LOOP -> {
-                for (int i = 0; i < n && n > 1; i++) line(s, vertices.get(i), vertices.get((i + 1) % n));
+                for (int i = 0; i < n && n > 1; i++) line(st, s, vertices.get(i), vertices.get((i + 1) % n));
             }
             default -> {
                 // points have no counterpart in the entity pipelines
@@ -189,16 +222,17 @@ public final class LegacyVertices {
         }
         // 1.7.10 drew immediately: in a screen, what comes later (blitted textures, items) must cover this draw, so it is
         // not left batched until the end of the frame (Thaumonomicon lines showed over the research icons)
-        var gui = RenderContext.gui();
+        var gui = RenderContext.gui(st);
         if (gui != null) {
             // the vertices already carry glColor (or their own colour, which in 1.7.10 replaced it): the shader colour the
             // screen applies would multiply it in a second time (Thaumcraft's aspects came out dark)
-            float[] shader = com.mojang.blaze3d.systems.RenderSystem.getShaderColor().clone();
+            float[] shader = com.mojang.blaze3d.systems.RenderSystem.getShaderColor();
+            float r = shader[0], g = shader[1], b = shader[2], a = shader[3];
             com.mojang.blaze3d.systems.RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
             try {
                 gui.flush();
             } finally {
-                com.mojang.blaze3d.systems.RenderSystem.setShaderColor(shader[0], shader[1], shader[2], shader[3]);
+                com.mojang.blaze3d.systems.RenderSystem.setShaderColor(r, g, b, a);
             }
         }
     }
@@ -207,13 +241,14 @@ public final class LegacyVertices {
      * A line is a thin quad (the pipelines draw no lines): one GUI unit wide in screens, a hair wide in the world; it lies in the xy plane
      * when the segment does, and otherwise is widened sideways.
      */
-    private static void line(Snapshot s, double[] a, double[] b) {
+    private static void line(RenderContext.State st, Snapshot s, double[] a, double[] b) {
         double dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
         double len = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (len < 1.0E-9) return;
+        boolean gui = RenderContext.gui(st) != null;
         // in the world a real line, a pixel wide at any distance (a hair-wide quad vanished into dots: CustomOreGen's wireframes)
-        if (RenderContext.gui() == null && RenderContext.line(a, b)) return;
-        double half = RenderContext.gui() != null ? 0.5D : 0.01D;
+        if (!gui && RenderContext.line(a, b)) return;
+        double half = gui ? 0.5D : 0.01D;
         double px, py, pz;
         if (Math.abs(dz) < 1.0E-6) {
             double l2 = Math.sqrt(dx * dx + dy * dy);
@@ -242,28 +277,29 @@ public final class LegacyVertices {
         v3[0] -= px; v3[1] -= py; v3[2] -= pz;
         // filled whatever the polygon mode: in GL_LINE mode the quad's own edges were lines again, recursing until the stack
         // overflowed (CustomOreGen's wireframes crashed the game)
-        emitFilled(s, v0, v1, v2, v3);
+        emitFilled(st, s, v0, v1, v2, v3);
     }
 
-    private static void emit(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
+    private static void emit(RenderContext.State st, Snapshot s, double[] a, double[] b, double[] c, double[] d) {
         // glPolygonMode(..., GL_LINE), per thread: filled primitives are drawn as their edges (CustomOreGen's wireframes)
-        if (RenderContext.lineMode()) {
-            line(s, a, b);
-            line(s, b, c);
+        if (st.lineMode) {
+            line(st, s, a, b);
+            line(st, s, b, c);
             if (c != d) {
-                line(s, c, d);
-                line(s, d, a);
+                line(st, s, c, d);
+                line(st, s, d, a);
             } else {
-                line(s, c, a);
+                line(st, s, c, a);
             }
             return;
         }
-        emitFilled(s, a, b, c, d);
+        emitFilled(st, s, a, b, c, d);
     }
 
-    private static void emitFilled(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
+    private static void emitFilled(RenderContext.State st, Snapshot s, double[] a, double[] b, double[] c, double[] d) {
         float fx = s.nx(), fy = s.ny(), fz = s.nz();
-        if (!s.hasNormal() && RenderContext.gui() != null) {
+        boolean gui = RenderContext.gui(st) != null;
+        if (!s.hasNormal() && gui) {
             // GL's default current normal, facing the viewer: a face normal of a quad wound for y-down screen space points
             // away, and a screen drawn with GUI item lighting on came out black (the Thaumonomicon's frame)
             fx = 0.0F;
@@ -281,11 +317,11 @@ public final class LegacyVertices {
                 fz = (float) (cz / len);
             }
         }
-        RenderContext.setFlatGuiQuad(!s.hasNormal() && RenderContext.gui() != null);
+        st.flatGuiQuad = !s.hasNormal() && gui;
         try {
-            RenderContext.quad(new double[][] {a, b, c, d}, fx, fy, fz);
+            RenderContext.quad(st, a, b, c, d, fx, fy, fz);
         } finally {
-            RenderContext.setFlatGuiQuad(false);
+            st.flatGuiQuad = false;
         }
     }
 }

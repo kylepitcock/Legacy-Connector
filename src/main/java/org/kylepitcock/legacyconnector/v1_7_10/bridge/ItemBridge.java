@@ -59,6 +59,8 @@ public final class ItemBridge {
     private static final int MODERN_ID_BASE = 20000;
 
     private static final CaseIndexedMap<Item> BY_NAME = new CaseIndexedMap<>();
+    /** Modern item -> legacy wrapper answers of legacyOfModern; cleared whenever a name is indexed. */
+    private static final Map<net.minecraft.world.item.Item, Item> LEGACY_OF_MODERN = new java.util.concurrent.ConcurrentHashMap<>();
     private static final Map<Item, String> NAMES = new IdentityHashMap<>();
     private static final Map<Integer, Item> BY_ID = new HashMap<>();
     private static final Map<Item, Integer> IDS = new IdentityHashMap<>();
@@ -318,6 +320,7 @@ public final class ItemBridge {
     }
 
     private static void index(String name, int id, Item item) {
+        LEGACY_OF_MODERN.clear(); // a name now taken by another wrapper must not answer from the cache
         BY_NAME.put(name, item);
         NAMES.put(item, name);
         if (id >= 0) {
@@ -704,7 +707,24 @@ public final class ItemBridge {
         return legacyOfModern(modern);
     }
 
-    private static synchronized Item legacyOfModern(net.minecraft.world.item.Item modern) {
+    /**
+     * The answers of {@link #legacyOfModern} (modern item -> its legacy wrapper), read without the lock: every legacy view of a
+     * vanilla or modern-mod stack asks (HUD overlays, tooltips and item renderers wrap stacks every frame).
+     * (The cache is declared next to BY_NAME.)
+     */
+    private static Item legacyOfModern(net.minecraft.world.item.Item modern) {
+        Item known = LEGACY_OF_MODERN.get(modern);
+        if (known != null) return known;
+        return legacyOfModernLocked(modern);
+    }
+
+    private static synchronized Item legacyOfModernLocked(net.minecraft.world.item.Item modern) {
+        Item found = legacyOfModernUncached(modern);
+        if (found != null) LEGACY_OF_MODERN.put(modern, found);
+        return found;
+    }
+
+    private static Item legacyOfModernUncached(net.minecraft.world.item.Item modern) {
         Object[] reverse = vanillaReverse(modern);
         if (reverse != null) return (Item) reverse[0];
         ResourceLocation rl = BuiltInRegistries.ITEM.getKey(modern);

@@ -177,14 +177,14 @@ public class GL11 extends GL11Guard {
     public static void glLoadMatrix(FloatBuffer m) {
         if (m == null || m.remaining() < 16) return;
         org.joml.Matrix4f matrix = new org.joml.Matrix4f().set(m.position(), m);
-        if (DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
         RenderContext.loadMatrix(matrix);
     }
 
     public static void glLoadMatrix(java.nio.DoubleBuffer m) {
         if (m == null || m.remaining() < 16) return;
         org.joml.Matrix4f matrix = new org.joml.Matrix4f(new org.joml.Matrix4d().set(m.position(), m));
-        if (DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> RenderContext.loadMatrix(matrix))) return;
         RenderContext.loadMatrix(matrix);
     }
 
@@ -201,7 +201,7 @@ public class GL11 extends GL11Guard {
 
     /** Binds a GL texture the mod created itself, and makes the emulated renderer draw with it. */
     public static void glBindTexture(int target, int texture) {
-        if (DisplayLists.record(() -> glBindTexture(target, texture))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glBindTexture(target, texture))) return;
         if (!RenderSystem.isOnRenderThread()) return;
         if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) {
             // a bind on another unit (the lightmap's) is not the texture legacy geometry draws with; the modern renderer binds
@@ -217,52 +217,52 @@ public class GL11 extends GL11Guard {
     // ------------------------------------------------------------------ matrix stack
 
     public static void glPushMatrix() {
-        if (DisplayLists.record(() -> glPushMatrix())) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glPushMatrix())) return;
         RenderContext.push();
     }
 
     public static void glPopMatrix() {
-        if (DisplayLists.record(() -> glPopMatrix())) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glPopMatrix())) return;
         RenderContext.pop();
     }
 
     public static void glTranslatef(float x, float y, float z) {
-        if (DisplayLists.record(() -> glTranslatef(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTranslatef(x, y, z))) return;
         RenderContext.translate(x, y, z);
     }
 
     public static void glTranslated(double x, double y, double z) {
-        if (DisplayLists.record(() -> glTranslated(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTranslated(x, y, z))) return;
         RenderContext.translate(x, y, z);
     }
 
     public static void glRotatef(float angle, float x, float y, float z) {
-        if (DisplayLists.record(() -> glRotatef(angle, x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glRotatef(angle, x, y, z))) return;
         RenderContext.rotate(angle, x, y, z);
     }
 
     public static void glRotated(double angle, double x, double y, double z) {
-        if (DisplayLists.record(() -> glRotated(angle, x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glRotated(angle, x, y, z))) return;
         RenderContext.rotate((float) angle, (float) x, (float) y, (float) z);
     }
 
     public static void glScalef(float x, float y, float z) {
-        if (DisplayLists.record(() -> glScalef(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glScalef(x, y, z))) return;
         RenderContext.scale(x, y, z);
     }
 
     public static void glScaled(double x, double y, double z) {
-        if (DisplayLists.record(() -> glScaled(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glScaled(x, y, z))) return;
         RenderContext.scale((float) x, (float) y, (float) z);
     }
 
     public static void glLoadIdentity() {
-        if (DisplayLists.record(() -> glLoadIdentity())) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glLoadIdentity())) return;
         RenderContext.loadIdentity();
     }
 
     public static void glMatrixMode(int mode) {
-        if (DisplayLists.record(() -> glMatrixMode(mode))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glMatrixMode(mode))) return;
         RenderContext.matrixMode(mode);
     }
 
@@ -280,7 +280,7 @@ public class GL11 extends GL11Guard {
     }
 
     private static void mcc$multMatrix(org.joml.Matrix4f matrix) {
-        if (DisplayLists.record(() -> mcc$multMatrix(matrix))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> mcc$multMatrix(matrix))) return;
         if (RenderContext.multMatrix(matrix)) return; // the texture or projection matrix
         var pose = RenderContext.pose();
         if (pose == null) return;
@@ -302,32 +302,32 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glColor4f(float r, float g, float b, float a) {
-        if (DisplayLists.record(() -> glColor4f(r, g, b, a))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor4f(r, g, b, a))) return;
         mcc$color(r, g, b, a);
     }
 
     public static void glColor3f(float r, float g, float b) {
-        if (DisplayLists.record(() -> glColor3f(r, g, b))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor3f(r, g, b))) return;
         mcc$color(r, g, b, 1.0F);
     }
 
     public static void glColor4d(double r, double g, double b, double a) {
-        if (DisplayLists.record(() -> glColor4d(r, g, b, a))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor4d(r, g, b, a))) return;
         mcc$color((float) r, (float) g, (float) b, (float) a);
     }
 
     public static void glColor3d(double r, double g, double b) {
-        if (DisplayLists.record(() -> glColor3d(r, g, b))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor3d(r, g, b))) return;
         mcc$color((float) r, (float) g, (float) b, 1.0F);
     }
 
     public static void glColor4ub(byte r, byte g, byte b, byte a) {
-        if (DisplayLists.record(() -> glColor4ub(r, g, b, a))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor4ub(r, g, b, a))) return;
         mcc$color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, (a & 255) / 255F);
     }
 
     public static void glColor3ub(byte r, byte g, byte b) {
-        if (DisplayLists.record(() -> glColor3ub(r, g, b))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColor3ub(r, g, b))) return;
         mcc$color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, 1.0F);
     }
 
@@ -335,7 +335,7 @@ public class GL11 extends GL11Guard {
 
     public static void glEnable(int cap) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
-        if (DisplayLists.record(() -> glEnable(cap))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glEnable(cap))) return;
         mcc$track(cap, true);
         switch (cap) {
             case GL_BLEND -> RenderSystem.enableBlend();
@@ -364,7 +364,7 @@ public class GL11 extends GL11Guard {
 
     public static void glDisable(int cap) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
-        if (DisplayLists.record(() -> glDisable(cap))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glDisable(cap))) return;
         mcc$track(cap, false);
         switch (cap) {
             case GL_BLEND -> RenderSystem.disableBlend();
@@ -380,7 +380,7 @@ public class GL11 extends GL11Guard {
 
     public static void glBlendFunc(int src, int dst) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
-        if (DisplayLists.record(() -> glBlendFunc(src, dst))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glBlendFunc(src, dst))) return;
         // emulated state first: a screen flushes what it batched under the previous function, which puts that one back
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlendFunc(src, dst);
         RenderSystem.blendFunc(src, dst);
@@ -388,28 +388,28 @@ public class GL11 extends GL11Guard {
 
     public static void glDepthMask(boolean flag) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
-        if (DisplayLists.record(() -> glDepthMask(flag))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glDepthMask(flag))) return;
         RenderContext.setDepthWrite(flag);
         RenderSystem.depthMask(flag);
     }
 
     public static void glDepthFunc(int func) {
         if (!RenderSystem.isOnRenderThread()) return;
-        if (DisplayLists.record(() -> glDepthFunc(func))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glDepthFunc(func))) return;
         RenderContext.setDepthFunc(func);
         RenderSystem.depthFunc(func);
     }
 
     public static void glColorMask(boolean r, boolean g, boolean b, boolean a) {
         if (!RenderSystem.isOnRenderThread()) return;
-        if (DisplayLists.record(() -> glColorMask(r, g, b, a))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glColorMask(r, g, b, a))) return;
         RenderContext.setColorWrite(r, g, b, a);
         RenderSystem.colorMask(r, g, b, a);
     }
 
     public static void glClear(int mask) {
         if (!RenderSystem.isOnRenderThread()) return;
-        if (DisplayLists.record(() -> glClear(mask))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glClear(mask))) return;
         RenderContext.beforeClear();
         org.lwjgl.opengl.GL11.glClear(mask);
     }
@@ -421,7 +421,7 @@ public class GL11 extends GL11Guard {
     }
 
     public static void glNormal3f(float x, float y, float z) {
-        if (DisplayLists.record(() -> glNormal3f(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glNormal3f(x, y, z))) return;
         RenderContext.immediate().normal(x, y, z);
     }
 
@@ -431,18 +431,18 @@ public class GL11 extends GL11Guard {
     /** Saves the emulated state (blending, depth, enables, colour) that the legacy code changes until glPopAttrib. */
     public static void glPushAttrib(int mask) {
         if (!RenderSystem.isOnRenderThread()) return;
-        if (DisplayLists.record(() -> glPushAttrib(mask))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glPushAttrib(mask))) return;
         RenderContext.pushAttrib(mask);
     }
 
     public static void glPopAttrib() {
         if (!RenderSystem.isOnRenderThread()) return;
-        if (DisplayLists.record(GL11::glPopAttrib)) return;
+        if (DisplayLists.recording() && DisplayLists.record(GL11::glPopAttrib)) return;
         RenderContext.popAttrib();
     }
 
     public static void glCallList(int list) {
-        if (DisplayLists.record(() -> glCallList(list))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glCallList(list))) return;
         DisplayLists.call(list);
     }
 
@@ -450,13 +450,13 @@ public class GL11 extends GL11Guard {
 
     /** Legacy geometry is drawn in batches later, so the real polygon mode would not apply to it: line mode is emulated. */
     public static void glPolygonMode(int face, int mode) {
-        if (DisplayLists.record(() -> glPolygonMode(face, mode))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glPolygonMode(face, mode))) return;
         RenderContext.setLineMode(mode == 0x1B01); // GL_LINE
     }
 
     /** Offset added to every id {@code glCallLists} calls. */
     public static void glListBase(int base) {
-        if (DisplayLists.record(() -> glListBase(base))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glListBase(base))) return;
         mcc$listBase = base;
     }
 
@@ -502,42 +502,42 @@ public class GL11 extends GL11Guard {
     // glBegin/glEnd vertices are per thread: RenderContext.immediate()
 
     public static void glBegin(int mode) {
-        if (DisplayLists.record(() -> glBegin(mode))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glBegin(mode))) return;
         RenderContext.immediate().begin(mode);
     }
 
     public static void glEnd() {
-        if (DisplayLists.record(() -> glEnd())) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glEnd())) return;
         if (RenderContext.immediate().isDrawing()) RenderContext.immediate().end();
     }
 
     public static void glVertex3f(float x, float y, float z) {
-        if (DisplayLists.record(() -> glVertex3f(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glVertex3f(x, y, z))) return;
         RenderContext.immediate().vertex(x, y, z);
     }
 
     public static void glVertex3d(double x, double y, double z) {
-        if (DisplayLists.record(() -> glVertex3d(x, y, z))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glVertex3d(x, y, z))) return;
         RenderContext.immediate().vertex(x, y, z);
     }
 
     public static void glVertex2f(float x, float y) {
-        if (DisplayLists.record(() -> glVertex2f(x, y))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glVertex2f(x, y))) return;
         RenderContext.immediate().vertex(x, y, 0);
     }
 
     public static void glVertex2i(int x, int y) {
-        if (DisplayLists.record(() -> glVertex2i(x, y))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glVertex2i(x, y))) return;
         RenderContext.immediate().vertex(x, y, 0);
     }
 
     public static void glTexCoord2f(float u, float v) {
-        if (DisplayLists.record(() -> glTexCoord2f(u, v))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTexCoord2f(u, v))) return;
         RenderContext.immediate().uv(u, v);
     }
 
     public static void glTexCoord2d(double u, double v) {
-        if (DisplayLists.record(() -> glTexCoord2d(u, v))) return;
+        if (DisplayLists.recording() && DisplayLists.record(() -> glTexCoord2d(u, v))) return;
         RenderContext.immediate().uv(u, v);
     }
 

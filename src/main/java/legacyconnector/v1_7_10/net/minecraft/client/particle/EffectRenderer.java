@@ -71,6 +71,9 @@ public class EffectRenderer {
         }
     }
 
+    /** Reused copy of a layer while it draws (a particle may spawn or kill particles while drawing; a new list per layer and frame otherwise). */
+    private final List<EntityFX> mcc$snapshot = new ArrayList<>();
+
     /** Draws all particles; the camera basis arguments follow the legacy ActiveRenderInfo convention. */
     public void mcc$render(float partialTicks, float rx, float rxz, float rz, float ryz, float rxy) {
         Tessellator t = Tessellator.mcc$get$instance();
@@ -79,7 +82,11 @@ public class EffectRenderer {
             if (list.isEmpty()) continue;
             if (layer == 0) RenderContext.bindTexture(TextureLocations.modern(particleTextures.getResourceDomain(), particleTextures.getResourcePath()));
             if (layer == 1 || layer == 2) RenderContext.bindTexture(TextureLocations.modern(BLOCKS.getResourceDomain(), BLOCKS.getResourcePath()));
-            for (EntityFX fx : new ArrayList<>(list)) {
+            List<EntityFX> snapshot = mcc$snapshot;
+            snapshot.clear();
+            for (int i = 0, n = list.size(); i < n; i++) snapshot.add(list.get(i)); // (addAll copies through a new array)
+            for (int i = 0, n = snapshot.size(); i < n; i++) {
+                EntityFX fx = snapshot.get(i);
                 if (fx == null) continue;
                 try {
                     if (layer == 3) {
