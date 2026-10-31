@@ -129,7 +129,15 @@ public class LegacyBlockEntity extends BlockEntity {
         te.xCoord = worldPosition.getX();
         te.yCoord = worldPosition.getY();
         te.zCoord = worldPosition.getZ();
-        if (level != null) te.setWorldObj(World.mcc$wrap(level));
+        try {
+            if (level != null) te.setWorldObj(World.mcc$wrap(level));
+        } catch (RuntimeException | LinkageError e) {
+            // setWorldObj runs mod code (MineFactory Reloaded's grinder builds a fake WorldServer there; a missing constructor was a
+            // NoSuchMethodError raised while saving a chunk and took the whole server down): the tile entity keeps running without it
+            if (CREATE_FAILURES.add("setWorldObj:" + te.getClass().getName())) {
+                LoggerFactory.getLogger("LegacyConnector/TileEntity").error("Legacy tile entity {} failed in setWorldObj()", te.getClass().getName(), e);
+            }
+        }
         try {
             te.validate();
         } catch (RuntimeException | LinkageError e) {
