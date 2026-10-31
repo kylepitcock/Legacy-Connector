@@ -135,7 +135,7 @@ public final class LegacyCoreModTransformers {
                             Object instance = Class.forName(name.trim(), true, lcl).getDeclaredConstructor().newInstance();
                             if (transformerType.isInstance(instance)) created.add(new Transformer(name.trim(), instance));
                         } catch (Throwable e) {
-                            LOG.warn("Legacy Connector: class transformer {} of {} could not be created: {}", name, jar.fileName(), cause(e).toString());
+                            LOG.warn("Legacy Connector: class transformer {} of {} could not be created and is skipped: {}", name, jar.fileName(), rootChain(e));
                         }
                     }
                     Map<String, Object> data = new HashMap<>();
@@ -197,6 +197,18 @@ public final class LegacyCoreModTransformers {
         if (t.isAlive()) LOG.warn("Legacy Connector: coremod plugin {} of {} did not finish in 30 s; its transformers are not applied", plugin, jar.fileName());
         else if (error.get() != null) LOG.warn("Legacy Connector: coremod plugin {} of {} failed; its transformers are not applied: {}", plugin, jar.fileName(), error.get().toString());
         return t.isAlive() ? null : result.get();
+    }
+
+    /** The exception with its cause chain, one line (a class that failed in a static initialiser hides the reason in a cause). */
+    private static String rootChain(Throwable e) {
+        StringBuilder sb = new StringBuilder();
+        for (Throwable t = cause(e); t != null && sb.length() < 600; t = t.getCause() == t ? null : t.getCause()) {
+            if (sb.length() > 0) sb.append(" <- ");
+            sb.append(t);
+            StackTraceElement[] st = t.getStackTrace();
+            if (st.length > 0) sb.append(" at ").append(st[0]);
+        }
+        return sb.toString();
     }
 
     private static Throwable cause(Throwable e) {

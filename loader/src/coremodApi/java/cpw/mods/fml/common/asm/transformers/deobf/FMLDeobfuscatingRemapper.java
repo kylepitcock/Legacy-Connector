@@ -7,6 +7,10 @@ import org.objectweb.asm.commons.Remapper;
  * coremod transformers run, so every mapping is the identity.
  */
 public class FMLDeobfuscatingRemapper extends Remapper {
+    // Read reflectively by CodeChickenLib's ObfMapping; empty because every name here is already SRG.
+    private java.util.Map<String, java.util.Map<String, String>> rawFieldMaps = new java.util.HashMap<>();
+    private java.util.Map<String, java.util.Map<String, String>> rawMethodMaps = new java.util.HashMap<>();
+
     public static final FMLDeobfuscatingRemapper INSTANCE = new FMLDeobfuscatingRemapper();
 
     @Override
