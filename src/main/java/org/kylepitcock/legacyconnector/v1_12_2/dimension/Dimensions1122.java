@@ -148,6 +148,11 @@ public final class Dimensions1122 {
                         }
                     }
                 }
+                var provider = legacyconnector.v1_12_2.net.minecraft.world.World.mcc$get$provider(
+                        org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level));
+                LOG.info("1.12.2 dimension {} provider {}: skyLight={} surface={} cloudHeight={} id={} reachable={}", id, provider.getClass().getName(),
+                        provider.hasSkyLight(), provider.isSurfaceWorld(), provider.getCloudHeight(), provider.getDimension(),
+                        org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.level(server, id) == level);
                 LOG.info("1.12.2 dimension {} generated {} non-air blocks {} in {} ms", id, solid, byNamespace, (System.nanoTime() - start) / 1_000_000);
             } catch (RuntimeException | LinkageError ex) {
                 LOG.error("1.12.2 dimension {} failed to generate", id, ex);

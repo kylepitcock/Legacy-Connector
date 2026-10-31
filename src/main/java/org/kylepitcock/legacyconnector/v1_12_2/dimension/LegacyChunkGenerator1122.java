@@ -42,6 +42,7 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
             Codec.INT.fieldOf("dimension").forGetter(g -> g.dimension),
             BiomeSource.CODEC.fieldOf("biome_source").forGetter(g -> g.biomeSource)).apply(i, LegacyChunkGenerator1122::new));
 
+    private static final java.util.concurrent.atomic.AtomicInteger FAILURES = new java.util.concurrent.atomic.AtomicInteger();
     private final int dimension;
     private volatile IChunkGenerator legacy;
     private boolean failed;
@@ -127,7 +128,8 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
                         generator.populate(cx, cz);
                     }
                 } catch (RuntimeException | LinkageError e) {
-                    LOG.error("1.12.2 dimension {} failed to populate chunk {}", dimension, chunk.getPos(), e);
+                    int n = FAILURES.incrementAndGet();
+                    if (n <= 3 || n % 200 == 0) LOG.error("1.12.2 dimension {} failed to populate chunk {} ({} failures so far)", dimension, chunk.getPos(), n, e);
                 }
             }
             // GameRegistry.generateWorld ran the mods' IWorldGenerators right after the provider's populate, in every dimension

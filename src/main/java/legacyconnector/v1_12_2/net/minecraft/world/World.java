@@ -365,7 +365,11 @@ public class World implements IBlockAccess {
 
     public boolean setBlockState(BlockPos pos, IBlockState state, int flags) {
         var p = modern(pos);
-        if (outsideRegion(p) || isOutsideBuildHeight(pos)) return false;
+        if (isOutsideBuildHeight(pos)) return false;
+        if (outsideRegion(p)) {
+            deferOutsideRegion(p, state);
+            return false;
+        }
         BlockState modernState = StatesBridge1122.toModern(state);
         if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
@@ -376,6 +380,18 @@ public class World implements IBlockAccess {
             return placed;
         }
         return acc().setBlock(p, modernState, flags);
+    }
+
+    /**
+     * A write of a populator of a mod dimension past its generation region is placed once that chunk is loaded: 1.12 generated the
+     * chunk on the spot (Aether's bronze dungeon spans several chunks). Never applied with neighbour updates, so it cannot wait on
+     * another chunk.
+     */
+    private void deferOutsideRegion(net.minecraft.core.BlockPos p, IBlockState state) {
+        if (!(acc() instanceof net.minecraft.server.level.WorldGenRegion r) || state == null) return;
+        if (org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(r.getLevel().dimension().location()) == null) return;
+        BlockState modernState = StatesBridge1122.toModern(state);
+        if (modernState != null && !modernState.isAir()) org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, modernState);
     }
 
     /** Places a modern state (vanilla template blocks keep their properties this way), with the same rules as {@link #setBlockState}. */
