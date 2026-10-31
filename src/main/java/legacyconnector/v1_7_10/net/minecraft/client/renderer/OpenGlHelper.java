@@ -18,7 +18,10 @@ public class OpenGlHelper {
     public static boolean framebufferSupported = true;
     public static boolean anisotropicFilteringSupported = true;
 
+    /** The unit later GL_TEXTURE_2D switches and binds apply to (emulated, see RenderContext.setActiveTexture). */
     public static void setActiveTexture(int unit) {
+        if (org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists.record(() -> setActiveTexture(unit))) return;
+        RenderContext.setActiveTexture(unit);
     }
 
     public static void setClientActiveTexture(int unit) {

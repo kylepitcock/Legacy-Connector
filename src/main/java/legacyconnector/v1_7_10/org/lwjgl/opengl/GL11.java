@@ -130,7 +130,7 @@ public class GL11 extends GL11Guard {
     /** Fixed-function capabilities (lighting, alpha test, fog, texturing, normalization...) are not GL capabilities any more: the tracked emulated state answers. */
     public static boolean glIsEnabled(int cap) {
         switch (cap) {
-            case 3553: return org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.geometryHasEntityFormat();
+            case 3553: return org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.unitTexture2d();
             case 2896: case 3008: case 2912: case 2977: case 32826: case 2903: case 3552: case 3168: case 3169: case 3170: case 3171:
                 return false;
             default:
@@ -204,6 +204,9 @@ public class GL11 extends GL11Guard {
         if (DisplayLists.record(() -> glBindTexture(target, texture))) return;
         if (!RenderSystem.isOnRenderThread()) return;
         if (target == org.lwjgl.opengl.GL11.GL_TEXTURE_2D) {
+            // a bind on another unit (the lightmap's) is not the texture legacy geometry draws with; the modern renderer binds
+            // its own lightmap
+            if (!RenderContext.onDefaultTextureUnit()) return;
             GlStateManager._bindTexture(texture);
             if (texture != 0) RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.RawGlTextures.location(texture));
         } else {
@@ -350,7 +353,7 @@ public class GL11 extends GL11Guard {
 
     private static void mcc$track(int cap, boolean on) {
         switch (cap) {
-            case 3553 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setTexture2d(on); // GL_TEXTURE_2D
+            case 3553 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setUnitTexture2d(on); // GL_TEXTURE_2D of the active unit
             case 3042 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlend(on); // GL_BLEND
             case 2929 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setDepthTest(on); // GL_DEPTH_TEST
             case 2896 -> org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setLighting(on); // GL_LIGHTING
