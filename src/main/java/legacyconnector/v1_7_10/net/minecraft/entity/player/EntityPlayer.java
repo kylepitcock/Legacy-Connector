@@ -28,6 +28,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public static void mcc$set$eyeHeight(EntityPlayer p, float v) {
         p.mcc$eyeHeightOverride = v;
+        // The modern player takes the camera height from its dimensions. 1.7.10's field counts from the player's default (0.12 standing, set by
+        // mods as default + change, Fisk's Heroes: (scale - 1) * 1.62 + getDefaultEyeHeight()); the modern height above the feet is 1.62 + that change.
+        if (p.mcc$entity != null && !Float.isNaN(v)) {
+            org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySizes1710.setEyeHeight(p.mcc$entity, 1.62F + (v - p.getDefaultEyeHeight()));
+        }
     }
 
     @Override

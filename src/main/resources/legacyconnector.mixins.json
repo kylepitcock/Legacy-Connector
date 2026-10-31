@@ -4,6 +4,7 @@
   "package": "org.kylepitcock.legacyconnector.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "LivingEntityDimensionsMixin",
     "LivingEntityTravelMixin",
     "MultiNoiseBiomeSourceMixin",
     "MultiNoiseBiomeSourcePossibleMixin",
