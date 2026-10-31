@@ -1169,9 +1169,23 @@ public class World implements IBlockAccess {
         return lvl().isUnobstructed(exceptModern, net.minecraft.world.phys.shapes.Shapes.create(box.mcc$modern()));
     }
 
+    private static final java.util.Set<String> MCC_BOX_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     public boolean canPlaceEntityOnSide(Block block, int x, int y, int z, boolean skipCollision, int side, Entity placer, ItemStack stack) {
         Block existing = getBlock(x, y, z);
-        AxisAlignedBB box = skipCollision ? null : block.getCollisionBoundingBoxFromPool(this, x, y, z);
+        AxisAlignedBB box = null;
+        if (!skipCollision) {
+            try {
+                box = block.getCollisionBoundingBoxFromPool(this, x, y, z);
+            } catch (NullPointerException e) {
+                // The block is asked for its box at a position it does not occupy yet, so a block reading its tile entity there
+                // (Blood Magic's mimic block, which 1.7.10 only ever placed from its ritual) finds none. Placement goes on without
+                // a collision check; once placed the tile exists and the block answers properly.
+                if (MCC_BOX_FAILURES.add(block.getClass().getName())) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/World").warn("{} threw asking for its collision box before it was placed; placing it without a collision check", block.getClass().getName(), e);
+                }
+            }
+        }
         if (box != null && !checkNoEntityCollision(box, placer)) return false;
         return existing.isReplaceable(this, x, y, z) && block.canReplace(this, x, y, z, side, stack);
     }
