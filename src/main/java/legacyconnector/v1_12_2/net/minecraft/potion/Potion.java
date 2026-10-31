@@ -204,10 +204,13 @@ public class Potion extends IForgeRegistryEntry.Impl<Potion> {
     public void renderInventoryEffect(int x, int y, PotionEffect effect, legacyconnector.v1_12_2.net.minecraft.client.Minecraft mc) {
     }
 
+    /** Forge's newer hook: by default the older one, which most mods override (as in Forge 1.12.2). */
     public void renderInventoryEffect(PotionEffect effect, legacyconnector.v1_12_2.net.minecraft.client.gui.Gui gui, int x, int y, float z) {
+        renderInventoryEffect(x, y, effect, legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft());
     }
 
     public void renderHUDEffect(PotionEffect effect, legacyconnector.v1_12_2.net.minecraft.client.gui.Gui gui, int x, int y, float z, float alpha) {
+        renderHUDEffect(x, y, effect, legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft(), alpha);
     }
 
     /** The older form of the HUD hook (Forge kept both; the HUD calls the one above, whose default does nothing either). */
