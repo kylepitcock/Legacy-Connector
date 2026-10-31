@@ -121,6 +121,15 @@ public final class TileEntityBridge {
 
     public static TileEntity legacyAt(World world, BlockPos pos) {
         var be = blockEntityAt(world.mcc$level(), pos);
+        if (be == null && world.mcc$level() instanceof net.minecraft.world.level.Level live) {
+            // 1.7.10's Chunk.func_150806_e creates the tile entity of a block that has one on the first request: a block's onBlockAdded asks for it
+            // (ReactorCraft's steam line, many pipes) before the modern chunk has made the block entity
+            var state = live.getBlockState(pos);
+            if (state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyEntityBlockAdapter a && state.hasBlockEntity()) {
+                be = a.newBlockEntity(pos, state);
+                if (be != null) live.setBlockEntity(be);
+            }
+        }
         if (be == null) return stateView(world, pos);
         if (be instanceof LegacyBlockEntity l) {
             TileEntity te = l.legacy(world);

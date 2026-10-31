@@ -313,8 +313,14 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
-        if (!newState.is(this) && !(moving && movesTileEntity(state))) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
-        if (!newState.is(this) && movesTileEntity(state)) notifyTileNeighbours(level, pos);
+        try {
+            if (!newState.is(this) && !(moving && movesTileEntity(state))) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
+            if (!newState.is(this) && movesTileEntity(state)) notifyTileNeighbours(level, pos);
+        } catch (RuntimeException | LinkageError e) {
+            // a throwing breakBlock (ChromatiCraft's power tree aux, GeoStrata's RF crystal aux: their tile is gone or of another block) must still
+            // remove the block entity, or the next block placed there would reuse the stale one (class cast exceptions in its tile code)
+            legacyFailure("breakBlock", e);
+        }
         super.onRemove(state, level, pos, newState, moving);
     }
 
