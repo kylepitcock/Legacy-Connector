@@ -61,6 +61,10 @@ final class VanillaMobViews {
         if (modern instanceof Sheep) return new EntitySheep(modern);
         if (modern instanceof Chicken) return new EntityChicken(modern);
         if (modern instanceof Wolf) return new EntityWolf(modern);
+        // 1.7.10's cat was a tamed ocelot
+        if (modern instanceof net.minecraft.world.entity.animal.Cat || modern instanceof net.minecraft.world.entity.animal.Ocelot) {
+            return new legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot(modern);
+        }
         if (modern instanceof AbstractHorse) return new EntityHorse(modern);
         if (modern instanceof Bat) return new EntityBat(modern);
         if (modern instanceof ZombifiedPiglin) return new EntityPigZombie(modern);
