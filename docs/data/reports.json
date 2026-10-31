@@ -143,6 +143,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/kindred-legacy",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 114,
+   "mod": "CTM-MC1.12.2-1.0.2.31",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "N/A",
+   "lc": "0.3.7",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/hbm-nuclear-tech-mod-community-edition/download/8873889",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
