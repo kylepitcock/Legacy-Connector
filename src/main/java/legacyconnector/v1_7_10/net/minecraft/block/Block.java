@@ -612,7 +612,10 @@ public class Block {
 
     /** The icon of a vanilla texture under its 1.7.10 name (mods ask vanilla blocks for their icons). */
     protected static IIcon mcc$vanillaIcon(String name) {
-        return name == null ? null : VANILLA_ICONS.registerIcon("minecraft:" + name);
+        if (name == null) return null;
+        IIcon icon = VANILLA_ICONS.registerIcon("minecraft:" + name);
+        if (icon instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureAtlasSprite sprite) sprite.mcc$legacyName = name;
+        return icon;
     }
 
     public IIcon getIcon(IBlockAccess world, int x, int y, int z, int side) {

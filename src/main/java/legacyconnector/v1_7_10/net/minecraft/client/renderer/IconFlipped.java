@@ -60,4 +60,9 @@ public class IconFlipped implements IIcon {
     public String getIconName() {
         return icon.getIconName();
     }
+
+    @Override
+    public String mcc$modernName() {
+        return icon.mcc$modernName();
+    }
 }

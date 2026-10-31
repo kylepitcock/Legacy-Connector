@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 public final class Assets1710 implements GeneratedPack.Contributor {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Models");
     private static final Map<String, String> VANILLA_TEXTURE_RENAMES = Map.ofEntries(
-            Map.entry("planks_oak", "oak_planks"), Map.entry("planks_spruce", "spruce_planks"), Map.entry("planks_birch", "birch_planks"),
+            Map.entry("planks", "oak_planks"), Map.entry("planks_oak", "oak_planks"), Map.entry("planks_spruce", "spruce_planks"), Map.entry("planks_birch", "birch_planks"),
             Map.entry("planks_jungle", "jungle_planks"), Map.entry("log_oak", "oak_log"), Map.entry("log_oak_top", "oak_log_top"),
             Map.entry("stonebrick", "stone_bricks"), Map.entry("brick", "bricks"), Map.entry("wool_colored_white", "white_wool"),
             Map.entry("iron_block", "iron_block"), Map.entry("gold_block", "gold_block"), Map.entry("glass", "glass"),
@@ -333,7 +333,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     /** An icon's sprite name; mods' own icon classes can be half-initialised (wrapping a sprite that never registered). */
     private static String nameOf(IIcon icon) {
         try {
-            String name = icon == null ? null : icon.getIconName();
+            String name = icon == null ? null : icon.mcc$modernName();
             // A sub-icon of a texture sheet (connected textures: "chisel:blocks/x-ctmv|0.0") is named after its sheet; the
             // suffix is no valid resource location, so models point at the whole sheet.
             if (name != null && name.indexOf('|') > 0) name = name.substring(0, name.indexOf('|'));

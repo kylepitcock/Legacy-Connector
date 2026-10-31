@@ -18,4 +18,9 @@ public interface IIcon {
     float getInterpolatedV(double v);
 
     String getIconName();
+
+    /** The modern sprite id the shim draws this icon with (what {@link #getIconName} returns unless an icon reports a legacy name). */
+    default String mcc$modernName() {
+        return getIconName();
+    }
 }

@@ -73,8 +73,17 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (translucent == null) return base;
         if (solid.isEmpty() && translucent.isEmpty()) {
             if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
-                LOG.warn("Legacy block renderer {} drew nothing for {} (render id {}, tile entity at {}: {})", handler.getClass().getName(), block.getClass().getName(),
-                        renderId, pos, describeTile(level, pos));
+                // A handler that draws nothing is no defect when the block is drawn by its tile entity's special renderer (Twilight
+                // Forest's cicadas, fireflies and moonworms: their handler is empty), when the position is not a face of the block (a
+                // Twilight Forest giant block shows only the faces on the border of its 4x4x4 cell), or when the block needs its other
+                // half (Carpenter's beds draw nothing until both halves exist).
+                if (hasTileRenderer(level, pos)) {
+                    LOG.info("Legacy block renderer {} draws nothing for {} at {} (render id {}): its tile entity {} has a special renderer",
+                            handler.getClass().getName(), block.getClass().getName(), pos, renderId, describeTile(level, pos));
+                } else {
+                    LOG.warn("Legacy block renderer {} drew nothing for {} (render id {}, tile entity at {}: {})", handler.getClass().getName(),
+                            block.getClass().getName(), renderId, pos, describeTile(level, pos));
+                }
             }
         } else if (FAILED.add("count:" + block.getClass().getName())) {
             LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}; {}", handler.getClass().getSimpleName(),
@@ -122,6 +131,17 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             }
         }
         return IsbrhQuads.bake(capture, pos.getX() - ox, pos.getY(), pos.getZ() - oz, getParticleIcon(ModelData.EMPTY));
+    }
+
+    /** Whether the legacy tile entity at the position is drawn by a tile entity special renderer. */
+    private static boolean hasTileRenderer(BlockAndTintGetter level, BlockPos pos) {
+        try {
+            var te = BlockAccessView.of(level).getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+            return te != null && legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.instance
+                    .getSpecialRendererByClass(te.getClass()) != null;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     /** For the log: the legacy tile entity the handler sees at the position ("null" makes most pipe renderers draw nothing or throw). */
