@@ -87,6 +87,12 @@ public final class RenderContext {
         final org.joml.Vector3f normal = new org.joml.Vector3f();
         /** Scratch for {@link #rotate} (PoseStack.mulPose does not keep it). */
         final Quaternionf rotation = new Quaternionf();
+        /** Set while LegacyVertices emits a draw: the state is fixed for its quads, so their buffer is looked up once ({@link #drawBuffer}). */
+        boolean inDraw;
+        VertexConsumer drawBuffer;
+        /** While a draw is emitted: the colour its corners without a colour of their own take ({@link #color(State, double[])}). */
+        boolean drawColorSet;
+        long drawColor;
     }
 
     private static final ThreadLocal<State> STATE = ThreadLocal.withInitial(State::new);
@@ -610,10 +616,10 @@ public final class RenderContext {
             // float they were snapped to a float's step, 2 blocks at a Sable / Create Aeronautics plot (~20 million blocks
             // out): ChromatiCraft's crystals came out as skewed triangles and Thaumcraft's jar glass vanished on ships.
             int o = q * Capture.STRIDE * Capture.CORNERS;
-            o = captureCorner(capture.corners, o, m, v0);
-            o = captureCorner(capture.corners, o, m, v1);
-            o = captureCorner(capture.corners, o, m, v2);
-            captureCorner(capture.corners, o, m, v3);
+            o = captureCorner(s, capture.corners, o, m, v0);
+            o = captureCorner(s, capture.corners, o, m, v1);
+            o = captureCorner(s, capture.corners, o, m, v2);
+            captureCorner(s, capture.corners, o, m, v3);
             org.joml.Vector3f tmp = s.normal.set(nx, ny, nz);
             p.last().normal().transform(tmp);
             capture.normals[q * 3] = tmp.x;
@@ -621,7 +627,12 @@ public final class RenderContext {
             capture.normals[q * 3 + 2] = tmp.z;
             return;
         }
-        VertexConsumer buffer = geometryBuffer(s);
+        // one buffer lookup per draw: the emulated state cannot change while a draw's quads are emitted
+        VertexConsumer buffer = s.drawBuffer;
+        if (buffer == null) {
+            buffer = geometryBuffer(s);
+            if (s.inDraw) s.drawBuffer = buffer;
+        }
         PoseStack.Pose last = p.last();
         boolean entity = s.texture2d;
         int overlay = s.frames.peek().overlay;
@@ -638,7 +649,7 @@ public final class RenderContext {
         }
     }
 
-    private static int captureCorner(double[] out, int o, org.joml.Matrix4f m, double[] c) {
+    private static int captureCorner(State s, double[] out, int o, org.joml.Matrix4f m, double[] c) {
         double x = c[0], y = c[1], z = c[2];
         out[o] = m.m00() * x + m.m10() * y + m.m20() * z + m.m30();
         out[o + 1] = m.m01() * x + m.m11() * y + m.m21() * z + m.m31();
@@ -646,11 +657,21 @@ public final class RenderContext {
         int n = Math.min(c.length, Capture.STRIDE);
         for (int k = 3; k < n; k++) out[o + k] = c[k];
         for (int k = n; k < Capture.STRIDE; k++) out[o + k] = 0.0D;
+        if (n > 5) out[o + 5] = color(s, c);
         return o + Capture.STRIDE;
     }
 
+    /**
+     * A corner's colour (ARGB): its own, or while a draw is emitted for a corner without one ({@code [7] == 0}) the colour current at
+     * the draw (a display list replays its draws under the caller's glColor). The corner arrays are not changed, so a compiled list can
+     * be called by several threads.
+     */
+    static long color(State s, double[] x) {
+        return s.drawColorSet && x.length > 7 && x[7] == 0.0D ? s.drawColor : (long) x[5];
+    }
+
     private static void emitCorner(State s, VertexConsumer buffer, PoseStack.Pose last, boolean entity, int overlay, double[] x, float nx, float ny, float nz) {
-        int argb = (int) (long) x[5];
+        int argb = (int) color(s, x);
         var vc = buffer.addVertex(last, (float) x[0], (float) x[1], (float) x[2]).setColor(argb);
         if (s.texture2d) vc.setUv((float) x[3], (float) x[4]);
         if (entity) {
@@ -743,6 +764,7 @@ public final class RenderContext {
         PoseStack p = pose(s);
         if (p == null || s.capture != null) return false;
         s.quadCount++;
+        s.drawBuffer = null; // another render type: the quads' buffer may be ended by this lookup
         VertexConsumer buffer = buffers(s).getBuffer(LegacyRenderTypes.lines(s.depthTest));
         PoseStack.Pose last = p.last();
         float nx = (float) (b[0] - a[0]), ny = (float) (b[1] - a[1]), nz = (float) (b[2] - a[2]);
@@ -750,8 +772,8 @@ public final class RenderContext {
         nx /= len;
         ny /= len;
         nz /= len;
-        buffer.addVertex(last, (float) a[0], (float) a[1], (float) a[2]).setColor((int) (long) a[5]).setNormal(last, nx, ny, nz);
-        buffer.addVertex(last, (float) b[0], (float) b[1], (float) b[2]).setColor((int) (long) b[5]).setNormal(last, nx, ny, nz);
+        buffer.addVertex(last, (float) a[0], (float) a[1], (float) a[2]).setColor((int) color(s, a)).setNormal(last, nx, ny, nz);
+        buffer.addVertex(last, (float) b[0], (float) b[1], (float) b[2]).setColor((int) color(s, b)).setNormal(last, nx, ny, nz);
         return true;
     }
 

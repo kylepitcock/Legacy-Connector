@@ -155,13 +155,68 @@ public final class LegacyVertices {
         return tz;
     }
 
-    /** A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). */
-    public record Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {}
+    /**
+     * A finished draw: what {@link #emit} needs to produce its quads later (display lists keep these). A kept snapshot is compiled
+     * on its first emit: its filled primitives as quads of corners with their face normals, so a display list called every frame
+     * does not assemble triangles, strips and fans or work out normals again. Its vertex arrays are never changed (the colour a
+     * corner without its own takes is applied as it is written), so a list may be called by several threads.
+     */
+    public static final class Snapshot {
+        private final int mode;
+        private final List<double[]> vertices;
+        private final float nx, ny, nz;
+        private final boolean hasNormal;
+        private final boolean kept;
+        private volatile Compiled compiled;
+        /** Emits so far (racy on purpose: only decides when to compile). */
+        private int emits;
+
+        public Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal) {
+            this(mode, vertices, nx, ny, nz, hasNormal, true);
+        }
+
+        private Snapshot(int mode, List<double[]> vertices, float nx, float ny, float nz, boolean hasNormal, boolean kept) {
+            this.mode = mode;
+            this.vertices = vertices;
+            this.nx = nx;
+            this.ny = ny;
+            this.nz = nz;
+            this.hasNormal = hasNormal;
+            this.kept = kept;
+        }
+
+        public int mode() {
+            return mode;
+        }
+
+        public List<double[]> vertices() {
+            return vertices;
+        }
+
+        public float nx() {
+            return nx;
+        }
+
+        public float ny() {
+            return ny;
+        }
+
+        public float nz() {
+            return nz;
+        }
+
+        public boolean hasNormal() {
+            return hasNormal;
+        }
+    }
+
+    /** A kept draw's filled primitives: 4 corners per quad, and per quad the face normal used outside screens. */
+    private record Compiled(double[][] corners, float[] normals) {}
 
     /** Ends the draw without emitting it; the snapshot owns its vertex arrays. */
     public Snapshot take() {
         drawing = false;
-        Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal);
+        Snapshot s = new Snapshot(mode, new ArrayList<>(vertices), nx, ny, nz, hasNormal, true);
         vertices.clear();
         return s;
     }
@@ -171,7 +226,7 @@ public final class LegacyVertices {
         drawing = false;
         int n = vertices.size();
         try {
-            emit(new Snapshot(mode, vertices, nx, ny, nz, hasNormal));
+            emit(new Snapshot(mode, vertices, nx, ny, nz, hasNormal, false));
         } finally {
             recycle();
         }
@@ -179,15 +234,120 @@ public final class LegacyVertices {
     }
 
     public static void emit(Snapshot s) {
+        RenderContext.State st = RenderContext.state();
+        // corners without a colour of their own take the current one (applied as they are written, see RenderContext.color)
+        st.drawColor = RenderContext.argb(st) & 0xFFFFFFFFL;
+        st.drawColorSet = true;
+        st.inDraw = true;
+        try {
+            // compiled from the second emit on: a snapshot drawn once (1.12.2's buffer uploads) is not worth it
+            if (s.kept && !st.lineMode && filled(s.mode) && (s.compiled != null || s.emits++ > 0)) emitCompiled(st, s);
+            else emitPrimitives(st, s);
+        } finally {
+            st.inDraw = false;
+            st.drawBuffer = null;
+            st.drawColorSet = false;
+        }
+        flushGui(st);
+    }
+
+    private static boolean filled(int mode) {
+        return mode == GL_QUADS || mode == GL_TRIANGLES || mode == GL_TRIANGLE_FAN || mode == GL_POLYGON || mode == GL_TRIANGLE_STRIP
+                || mode == GL_QUAD_STRIP;
+    }
+
+    /** A kept draw from its compiled quads (compiled now if this is its first emit): the same quads emitPrimitives produces. */
+    private static void emitCompiled(RenderContext.State st, Snapshot s) {
+        Compiled c = s.compiled;
+        if (c == null) s.compiled = c = compile(s);
+        double[][] corners = c.corners();
+        float[] normals = c.normals();
+        boolean gui = RenderContext.gui(st) != null;
+        st.flatGuiQuad = !s.hasNormal && gui;
+        try {
+            for (int q = 0, n = corners.length / 4; q < n; q++) {
+                float fx, fy, fz;
+                if (!s.hasNormal && gui) {
+                    // see emitFilled: GL's default current normal, facing the viewer
+                    fx = 0.0F;
+                    fy = 0.0F;
+                    fz = 1.0F;
+                } else {
+                    fx = normals[q * 3];
+                    fy = normals[q * 3 + 1];
+                    fz = normals[q * 3 + 2];
+                }
+                RenderContext.quad(st, corners[q * 4], corners[q * 4 + 1], corners[q * 4 + 2], corners[q * 4 + 3], fx, fy, fz);
+            }
+        } finally {
+            st.flatGuiQuad = false;
+        }
+    }
+
+    private static Compiled compile(Snapshot s) {
+        List<double[]> quads = new ArrayList<>();
+        List<double[]> v = s.vertices;
+        int n = v.size();
+        switch (s.mode) {
+            case GL_QUADS -> {
+                for (int i = 0; i + 3 < n; i += 4) add(quads, v.get(i), v.get(i + 1), v.get(i + 2), v.get(i + 3));
+            }
+            case GL_TRIANGLES -> {
+                for (int i = 0; i + 2 < n; i += 3) add(quads, v.get(i), v.get(i + 1), v.get(i + 2), v.get(i + 2));
+            }
+            case GL_TRIANGLE_FAN, GL_POLYGON -> {
+                for (int i = 1; i + 1 < n; i++) add(quads, v.get(0), v.get(i), v.get(i + 1), v.get(i + 1));
+            }
+            case GL_TRIANGLE_STRIP -> {
+                for (int i = 0; i + 2 < n; i++) {
+                    if ((i & 1) == 0) add(quads, v.get(i), v.get(i + 1), v.get(i + 2), v.get(i + 2));
+                    else add(quads, v.get(i + 1), v.get(i), v.get(i + 2), v.get(i + 2));
+                }
+            }
+            case GL_QUAD_STRIP -> {
+                for (int i = 0; i + 3 < n; i += 2) add(quads, v.get(i), v.get(i + 1), v.get(i + 3), v.get(i + 2));
+            }
+            default -> {
+            }
+        }
+        double[][] corners = quads.toArray(new double[0][]);
+        float[] normals = new float[corners.length / 4 * 3];
+        for (int q = 0; q < corners.length / 4; q++) {
+            float[] f = faceNormal(s, corners[q * 4], corners[q * 4 + 1], corners[q * 4 + 2]);
+            normals[q * 3] = f[0];
+            normals[q * 3 + 1] = f[1];
+            normals[q * 3 + 2] = f[2];
+        }
+        return new Compiled(corners, normals);
+    }
+
+    private static void add(List<double[]> quads, double[] a, double[] b, double[] c, double[] d) {
+        quads.add(a);
+        quads.add(b);
+        quads.add(c);
+        quads.add(d);
+    }
+
+    /** The normal emitFilled gives a quad outside screens: the draw's own, or the face normal of its first three corners. */
+    private static float[] faceNormal(Snapshot s, double[] a, double[] b, double[] c) {
+        float fx = s.nx, fy = s.ny, fz = s.nz;
+        if (!s.hasNormal) {
+            double ux = b[0] - a[0], uy = b[1] - a[1], uz = b[2] - a[2];
+            double vx = c[0] - a[0], vy = c[1] - a[1], vz = c[2] - a[2];
+            double cx = uy * vz - uz * vy, cy = uz * vx - ux * vz, cz = ux * vy - uy * vx;
+            double len = Math.sqrt(cx * cx + cy * cy + cz * cz);
+            if (len > 1.0E-9) {
+                fx = (float) (cx / len);
+                fy = (float) (cy / len);
+                fz = (float) (cz / len);
+            }
+        }
+        return new float[] {fx, fy, fz};
+    }
+
+    private static void emitPrimitives(RenderContext.State st, Snapshot s) {
         List<double[]> vertices = s.vertices();
         int n = vertices.size();
-        RenderContext.State st = RenderContext.state();
-        long current = RenderContext.argb(st) & 0xFFFFFFFFL;
-        // vertices without a colour of their own take the current one (in place: the arrays belong to this draw)
-        for (int i = 0; i < n; i++) {
-            double[] v = vertices.get(i);
-            if (v.length > 7 && v[7] == 0.0D && (long) v[5] != current) v[5] = current;
-        }
         switch (s.mode()) {
             case GL_QUADS -> {
                 for (int i = 0; i + 3 < n; i += 4) emit(st, s, vertices.get(i), vertices.get(i + 1), vertices.get(i + 2), vertices.get(i + 3));
@@ -220,6 +380,9 @@ public final class LegacyVertices {
                 // points have no counterpart in the entity pipelines
             }
         }
+    }
+
+    private static void flushGui(RenderContext.State st) {
         // 1.7.10 drew immediately: in a screen, what comes later (blitted textures, items) must cover this draw, so it is
         // not left batched until the end of the frame (Thaumonomicon lines showed over the research icons)
         var gui = RenderContext.gui(st);
