@@ -37,8 +37,12 @@ import org.slf4j.LoggerFactory;
  */
 public final class BlockBridge {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Blocks");
-    /** First numeric id handed to mod blocks (vanilla 1.7.10 used 0-197). */
-    private static final int FIRST_MOD_ID = 256;
+    /**
+     * First numeric id handed to mod blocks (vanilla 1.7.10 used 0-197 for blocks). Blocks and items shared one id space in 1.7.10 (an ItemBlock had
+     * its block's id), so mods look an item up by Block.getIdFromBlock (Thaumcraft's Thaumometer shows a scanned node that way): a block id inside
+     * the vanilla item ids 256-422 and the records 2256-2267 resolved to that vanilla item (an aura node scanned as a golden sword).
+     */
+    private static final int FIRST_MOD_ID = 423;
     /** Ids of modern-only blocks that cannot share their item's id: this plus the modern block registry id (see ItemBridge.modernOnlyBlockId). */
     static final int MODERN_BLOCK_ID_BASE = 40000;
 
@@ -268,6 +272,10 @@ public final class BlockBridge {
         BY_NAME.put(legacyName, block);
         NAMES.put(block, legacyName);
         int numeric = nextId++;
+        if (numeric >= 2256 && numeric <= 2267) {
+            nextId = 2268;
+            numeric = nextId++;
+        }
         BY_ID.put(numeric, block);
         IDS.put(block, numeric);
         MOD_BLOCKS.add(block);

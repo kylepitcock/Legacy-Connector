@@ -215,7 +215,15 @@ public class Item {
 
     public String getItemStackDisplayName(ItemStack stack) {
         // vanilla wrappers have no legacy lang entries: their name is the modern item's (Thaumonomicon recipe tooltips)
-        if (mcc$vanilla != null && stack != null) return stack.mcc$modern().getHoverName().getString();
+        if (mcc$vanilla != null && stack != null) {
+            net.minecraft.world.item.ItemStack modern = stack.mcc$modern();
+            // 1.7.10 has an ItemBlock for water, lava and fire; the modern ones have no item and the empty stack's name is "Air"
+            if (modern.isEmpty() && this instanceof ItemBlock ib && ib.mcc$block() != null) {
+                net.minecraft.world.level.block.Block block = org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.toModern(ib.mcc$block(), 0).getBlock();
+                if (block != net.minecraft.world.level.block.Blocks.AIR) return block.getName().getString();
+            }
+            return modern.getHoverName().getString();
+        }
         return StatCollector.translateToLocal(getUnlocalizedNameInefficiently(stack) + ".name").trim();
     }
 
