@@ -721,6 +721,8 @@ public class World implements IBlockAccess {
         // chunk is the one unloading (Thaumcraft's vis relays mark their neighbours from invalidate(): the shutdown save hung)
         if (level instanceof net.minecraft.server.level.ServerLevel sl && !sl.getChunkSource().hasChunk(x >> 4, z >> 4)) return;
         BlockPos p = pos(x, y, z);
+        // 1.7.10 ignored positions outside the world; modern chunk holders throw (a tritium lamp marked one below the floor)
+        if (level.isOutsideBuildHeight(p)) return;
         BlockState s = level.getBlockState(p);
         level.sendBlockUpdated(p, s, s, 3);
     }
