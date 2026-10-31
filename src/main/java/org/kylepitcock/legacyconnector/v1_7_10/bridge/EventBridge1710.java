@@ -478,7 +478,9 @@ public final class EventBridge1710 {
             var legacy = playerUse(e, 3);
             if (legacy != null) forge().post(legacy);
         });
-        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.Watch e) -> {
+        // 1.7.10 posted Watch after the chunk packet was sent and mods send their tile entities' data from it (IC2's initial data):
+        // NeoForge's Watch fires while the chunk is only queued (the client does not know it yet), its Sent fires right after the packet.
+        gameBus.addListener((net.neoforged.neoforge.event.level.ChunkWatchEvent.Sent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.Watch.class)) return;
             if (!(EntityBridge.wrap(e.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player)) return;
             forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkWatchEvent.Watch(
