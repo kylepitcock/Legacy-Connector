@@ -15,4 +15,6 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
 - **Vanilla behaviour constants** (render types, opacity of the vanilla block classes) come from a table generated
   from the 1.7.10 jar (`tools/extract_block_constants.sh`), since the vanilla classes are shells.
 - Handler quads of one colour get modern face shading and ambient occlusion (1.7.10's baked-in face shade is divided out).
+- The Tessellator keeps 1.7.10's `color` (ABGR) and `brightness` fields current, and `RenderBlocks` records each untinted face's shade in `color`: mods read
+  them by reflection to cache lighting (AE2's cable bus parts restore the cached colour per face; an unreadable field drew them black).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.

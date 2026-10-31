@@ -289,7 +289,10 @@ public class RenderBlocks {
 
     private static void faceColor(Tessellator t, boolean tinted, float r, float g, float b, float shade) {
         if (tinted) t.setColorOpaque_F(r * shade, g * shade, b * shade);
-        else t.mcc$setColorState(-1L);
+        else {
+            t.mcc$setColorState(-1L);
+            t.mcc$noteFaceColor(shade);
+        }
     }
 
     public boolean renderStandardBlockWithAmbientOcclusion(Block block, int x, int y, int z, float r, float g, float b) {

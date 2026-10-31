@@ -8,6 +8,14 @@ public class Tessellator {
     public static final Tessellator instance = new Tessellator();
 
     public boolean isDrawing;
+    /**
+     * 1.7.10's fields of the same names: the current vertex colour (ABGR, as the real Tessellator packed it) and brightness. Mods read them
+     * by reflection to save and restore the state (Applied Energistics 2's RenderBlocksWorkaround keeps the colour of each face it lights
+     * and sets it again with setColorRGBA_I for every part drawn from the cached lighting: a failed read gave 0, which drew every cable
+     * bus part black).
+     */
+    public int color = 0xFFFFFFFF;
+    public int brightness;
     private final LegacyVertices vertices = new LegacyVertices();
 
     public int draw() {
@@ -44,23 +52,43 @@ public class Tessellator {
     }
 
     public void setBrightness(int brightness) {
+        this.brightness = brightness;
         vertices.light(brightness);
     }
 
     public void setColorOpaque_F(float r, float g, float b) {
-        vertices.color(r, g, b, 1.0F);
+        setColorRGBA_F(r, g, b, 1.0F);
     }
 
     public void setColorRGBA_F(float r, float g, float b, float a) {
         vertices.color(r, g, b, a);
+        note(to255(r), to255(g), to255(b), to255(a));
     }
 
     public void setColorOpaque(int r, int g, int b) {
-        vertices.color(r, g, b, 255);
+        setColorRGBA(r, g, b, 255);
     }
 
     public void setColorRGBA(int r, int g, int b, int a) {
         vertices.color(r, g, b, a);
+        note(r, g, b, a);
+    }
+
+    private static int to255(float f) {
+        return Math.max(0, Math.min(255, (int) (f * 255.0F)));
+    }
+
+    private void note(int r, int g, int b, int a) {
+        color = (a & 255) << 24 | (b & 255) << 16 | (g & 255) << 8 | (r & 255);
+    }
+
+    /**
+     * Records the colour 1.7.10's renderer would have set for an untinted face (its shade) in {@link #color} without making it the vertex colour:
+     * the emulation draws such faces uncoloured so the modern pipeline shades them, while a mod that reads the field back sees what it saw in 1.7.10.
+     */
+    public void mcc$noteFaceColor(float shade) {
+        int c = to255(shade);
+        note(c, c, c, 255);
     }
 
     public void setColorOpaque_I(int rgb) {
@@ -78,6 +106,7 @@ public class Tessellator {
 
     public void mcc$setColorState(long state) {
         vertices.setColorState(state);
+        if (state >= 0) note((int) (state >> 16) & 255, (int) (state >> 8) & 255, (int) state & 255, (int) (state >> 24) & 255);
     }
 
     public void disableColor() {
