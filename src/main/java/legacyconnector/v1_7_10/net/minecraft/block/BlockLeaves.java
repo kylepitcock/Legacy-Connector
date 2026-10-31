@@ -4,6 +4,24 @@ package legacyconnector.v1_7_10.net.minecraft.block;
 public class BlockLeaves extends legacyconnector.v1_7_10.net.minecraft.block.BlockLeavesBase implements legacyconnector.v1_7_10.net.minecraftforge.common.IShearable {
     public BlockLeaves(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
+        // The vanilla oak/spruce/birch/jungle leaves (BlockOldLeaf in 1.7.10) had their icons here after registerBlockIcons.
+        mcc$vanillaIcons(new String[][] {LEAVES, {"leaves_oak_opaque", "leaves_spruce_opaque", "leaves_birch_opaque", "leaves_jungle_opaque"}});
+    }
+
+    /**
+     * 1.7.10 {@code BlockLeaves.field_150129_M}: the leaf icons by graphics level (0 fancy, 1 fast), then leaf type, filled by
+     * BlockOldLeaf/BlockNewLeaf's registerBlockIcons. Mods read vanilla's: ChromatiCraft's glowing leaves return
+     * {@code Blocks.leaves.field_150129_M[opacity][0]} as their icon (an empty array threw, and the leaves were the
+     * missing texture). Custom leaves fill their own in registerBlockIcons, as in 1.7.10.
+     */
+    protected legacyconnector.v1_7_10.net.minecraft.util.IIcon[][] field_150129_M = new legacyconnector.v1_7_10.net.minecraft.util.IIcon[2][];
+
+    /** Fills {@link #field_150129_M} of a vanilla leaves wrapper with the vanilla textures (vanilla never calls registerBlockIcons here). */
+    protected final void mcc$vanillaIcons(String[][] names) {
+        for (int i = 0; i < names.length && i < field_150129_M.length; i++) {
+            field_150129_M[i] = new legacyconnector.v1_7_10.net.minecraft.util.IIcon[names[i].length];
+            for (int j = 0; j < names[i].length; j++) field_150129_M[i][j] = mcc$vanillaIcon(names[i][j]);
+        }
     }
 
     protected BlockLeaves(legacyconnector.v1_7_10.net.minecraft.block.material.Material material) {

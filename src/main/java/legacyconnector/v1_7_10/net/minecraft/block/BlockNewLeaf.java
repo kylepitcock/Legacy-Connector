@@ -8,10 +8,10 @@ import legacyconnector.v1_7_10.net.minecraft.util.IIcon;
 public class BlockNewLeaf extends BlockLeaves {
     public static final String[][] field_150132_N = {{"leaves_acacia", "leaves_big_oak"}, {"leaves_acacia_opaque", "leaves_big_oak_opaque"}};
     public static final String[] field_150133_O = {"acacia", "big_oak"};
-    protected IIcon[][] field_150129_M = new IIcon[2][];
 
     public BlockNewLeaf(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
+        mcc$vanillaIcons(field_150132_N);
     }
 
     public BlockNewLeaf() {

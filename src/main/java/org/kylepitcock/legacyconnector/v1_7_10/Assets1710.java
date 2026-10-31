@@ -320,6 +320,10 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 // next metadata
             }
         }
+        // getIcon overridden to read a table registerBlockIcons left empty for this block (ChromatiCraft's TESR-drawn machines,
+        // BlockModelledChromaTile): the icon it did register in blockIcon (their particle texture) beats the missing texture.
+        IIcon own = b.mcc$blockIcon();
+        if (own != null && !nameOf(own).equals("minecraft:missingno")) return nameOf(own);
         if (ICON_FAILURES.add(b.getClass().getName() + "#none")) {
             LOG.warn("{} has no icon for side {} in any metadata; its model uses the missing texture", b.getClass().getName(), side);
         }
