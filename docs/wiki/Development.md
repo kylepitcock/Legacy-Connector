@@ -78,4 +78,7 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 - Headless server probing: `./gradlew runServerSubTest -PserverScript=<file.js> [-PserverScriptFrom=200]` evaluates the file on every server tick
   (bindings `server`, `tick` counted from the first run, `log`; globals persist, so place on one tick and read on the next); output is logged as
   `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks.
+  `tools/dev/server-scripts/lib.js` (prepend it: `cat lib.js script.js > run.js`) adds `realPlayer(name)` (a real, non-fake `ServerPlayer` on an embedded
+  channel, so mods that skip fake players keep progression data), `placeTile` (right-click placement with the item), `P(label, fn)` (catch + short stack) and
+  `legacy(...)`/`lworld(...)` wrappers; `chromaticraft-*.js` there are worked examples (research walk and a finished casting-table cast, dimension 60 stay, machines).
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
