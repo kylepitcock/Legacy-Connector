@@ -728,7 +728,21 @@ public abstract class Entity implements ICommandSender {
     public static void mcc$set$stepHeight(Entity e, float v) {
         var m = e.mcc$entity;
         if (m != null) {
-            // read-only in modern Minecraft;
+            // Modern step height is an attribute; a transient modifier makes the entity's value the assigned one (Gem boots, ...).
+            if (m instanceof net.minecraft.world.entity.LivingEntity living) {
+                var attr = living.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.STEP_HEIGHT);
+                if (attr != null) {
+                    var id = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_step_height");
+                    double wanted = v - attr.getBaseValue();
+                    var old = attr.getModifier(id);
+                    if (old != null && old.amount() == wanted) return;
+                    attr.removeModifier(id);
+                    if (wanted != 0.0D) {
+                        attr.addTransientModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(id, wanted,
+                                net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE));
+                    }
+                }
+            }
         } else {
             e.mcc$local_stepHeight = v;
         }
