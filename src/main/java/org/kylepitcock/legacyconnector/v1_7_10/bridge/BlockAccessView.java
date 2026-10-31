@@ -95,6 +95,15 @@ public final class BlockAccessView implements IBlockAccess {
         return 256;
     }
 
+    /** The getter's build range (render regions span the level's, -64..320 in the overworld), for {@link BuildHeight}. */
+    int buildBottom() {
+        return getter.getMinBuildHeight();
+    }
+
+    int buildTop() {
+        return getter.getMaxBuildHeight();
+    }
+
     @Override
     public boolean extendedLevelsInChunkCache() {
         return false;
