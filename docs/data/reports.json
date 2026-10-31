@@ -167,6 +167,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/fiskheroes",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 121,
+   "mod": "Scape and Spartan: Parasites",
+   "mc": "1.8 - 1.12.2",
+   "status": "partial",
+   "details": "- Items lack their textures and recipes seem to not work. <img width=\"430\" height=\"293\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/f6bfdf05-4917-4cae-ab5a-a36a914a8933\" /> <img width=\"422\" height=\"300\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/9614d8f8-e035-4cab-93bb-434f24fa55cd\" />",
+   "lc": "0.3.11",
+   "neoforge": "21.1.257",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-spartan-parasites",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
