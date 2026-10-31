@@ -80,6 +80,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean customExplosion;
     private final boolean enchantBonus;
     private final boolean dynamicLight;
+    private static final java.util.Set<Class<?>> DROP_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     protected LegacyBlockAdapter(Block legacy, BlockBehaviour.Properties properties) {
         super(properties);
@@ -717,7 +718,17 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             ItemStack s = legacy.mcc$createStackedBlock(meta);
             if (s != null) legacyDrops.add(s);
         } else {
-            legacyDrops = legacy.getDrops(w, pos.getX(), pos.getY(), pos.getZ(), meta, fortune);
+            try {
+                legacyDrops = legacy.getDrops(w, pos.getX(), pos.getY(), pos.getZ(), meta, fortune);
+            } catch (RuntimeException | LinkageError e) {
+                // drops asked for a block whose position holds something else (a Create contraption putting a RotaryCraft engine
+                // back where another block now stands drops it there: its getDrops read the other block's tile entity and the
+                // server crashed): the block itself
+                if (DROP_FAILURES.add(legacy.getClass())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("getDrops of {} failed at {}; dropping the block itself", legacy.getClass().getName(), pos, e);
+                legacyDrops = new ArrayList<>();
+                ItemStack s = legacy.mcc$createStackedBlock(meta);
+                if (s != null) legacyDrops.add(s);
+            }
         }
         List<net.minecraft.world.item.ItemStack> out = new ArrayList<>();
         if (legacyDrops != null) {
