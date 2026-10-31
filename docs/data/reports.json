@@ -155,6 +155,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/hbm-nuclear-tech-mod-community-edition/download/8873889",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 118,
+   "mod": "Fisk's Superheroes 2.4.0",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "- Armors are grayed out in inventory/creative tab, they work they're just more gray than usual for some reason? I really only tried the iron man suit (only one that really matters to me) and : What works : - You can equip it - The suit can be enabled/disabled What doesn't : - The fly don't work - The suit show up, but only some parts - The UI is not at the right position - Extra Stuff like the bl…",
+   "lc": "0.3.10 (curseforge)",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/fiskheroes",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
