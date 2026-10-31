@@ -9,6 +9,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | Page | What |
 |---|---|
 | [Architecture](Architecture.md) | Loader, shim, synthesized API, runtime; the legacy loader behaviour that is reproduced |
+| [Cache and Redistribution](Cache-and-Redistribution.md) | What the translation cache contains, the provenance watermark, per-installation signatures, why a copied cache or instance is translated again |
 | [Bridges](Bridges.md) | Outdated dependencies replaced by modern mods, and every engine bridge with its state |
 | [Library candidates](Library-Candidates.md) | Modern libraries that could replace hand-rolled code (Pehkui adopted for entity size) |
 | [World generation](World-Generation.md) | Biomes, world types, structures, fluids and input |

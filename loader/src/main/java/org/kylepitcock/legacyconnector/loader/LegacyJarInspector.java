@@ -38,6 +38,13 @@ public final class LegacyJarInspector {
 
     private LegacyJarInspector() {}
 
+    private static final java.util.Set<Path> DERIVATIVES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** True once if the last {@link #inspect} of this path found a translated jar (it carries a provenance watermark). */
+    static boolean takeDerivative(Path path) {
+        return DERIVATIVES.remove(path);
+    }
+
     /**
      * Returns null if the jar is not a legacy Forge mod (e.g. it is a modern NeoForge/Forge/Fabric mod).
      */
@@ -46,6 +53,11 @@ public final class LegacyJarInspector {
             // Legacy Connector itself, whatever the file is called (a second copy of the jar in mods/ is not a legacy mod:
             // translating it puts the loader's packages in two modules and the game does not start).
             if (zip.getEntry("org/kylepitcock/legacyconnector/loader/LegacyModLocator.class") != null) return null;
+            // A translated jar out of someone's cache (see Provenance): reported to the locator, which refuses it.
+            if (zip.getEntry(Provenance.RESOURCE) != null) {
+                DERIVATIVES.add(path);
+                return null;
+            }
             // Anything that already speaks a modern metadata format is not ours to touch.
             if (zip.getEntry("META-INF/neoforge.mods.toml") != null
                     || zip.getEntry("META-INF/mods.toml") != null
