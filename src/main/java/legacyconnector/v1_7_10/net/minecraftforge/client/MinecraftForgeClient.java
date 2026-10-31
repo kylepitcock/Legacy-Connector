@@ -32,7 +32,9 @@ public class MinecraftForgeClient {
     }
 
     public static int getRenderPass() {
-        return ForgeHooksClient.renderPass < 0 ? 0 : ForgeHooksClient.renderPass;
+        // while a chunk is meshed, block renderers (Reika's pipes) ask for the pass of the chunk render, as 1.7.10's shared variable gave
+        int pass = ForgeHooksClient.worldRenderPass >= 0 ? ForgeHooksClient.worldRenderPass : ForgeHooksClient.renderPass;
+        return pass < 0 ? 0 : pass;
     }
 
     // Forge's private pool of free stencil bits (CoFH Core replaces it reflectively).
