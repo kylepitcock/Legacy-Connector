@@ -262,6 +262,7 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(true);
         try {
             dispatch(mod, new FMLPreInitializationEvent(mod));
+            org.kylepitcock.legacyconnector.v1_7_10.compat.ForestryCompat.afterPreInit(mod);
         } finally {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(false);
         }

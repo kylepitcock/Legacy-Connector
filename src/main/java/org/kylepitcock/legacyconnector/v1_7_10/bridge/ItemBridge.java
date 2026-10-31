@@ -720,6 +720,9 @@ public final class ItemBridge {
                 BLOCK_ITEMS.put(block, wrapper);
                 ITEM_BLOCKS.put(wrapper, block);
             }
+        } else if (modern instanceof net.minecraft.world.item.ArmorItem) {
+            // modern armor (netherite, other mods' suits) is an ItemArmor to legacy code: `instanceof ItemArmor` checks (HBM's armor table) pass
+            wrapper = new legacyconnector.v1_7_10.net.minecraft.item.ItemArmor(new VanillaInfo(name, -1, modern));
         } else {
             wrapper = new Item(new VanillaInfo(name, -1, modern));
         }
