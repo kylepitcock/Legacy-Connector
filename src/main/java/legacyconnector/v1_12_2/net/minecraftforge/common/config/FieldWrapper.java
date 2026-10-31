@@ -12,4 +12,11 @@ public abstract class FieldWrapper {
         Class<?> t = field.getType();
         return SIMPLE.contains(t) || Enum.class.isAssignableFrom(t) || java.util.Map.class.isAssignableFrom(t);
     }
+
+    /** The wrapper of a field (Forge: per instance and category; here only the type adapter is kept); null if the field is a sub-category. */
+    public static IFieldWrapper get(Object instance, java.lang.reflect.Field field, String category) {
+        if (!hasWrapperFor(field)) return null;
+        ITypeAdapter adapter = java.util.Map.class.isAssignableFrom(field.getType()) ? null : TypeAdapters.of(field.getType());
+        return () -> adapter;
+    }
 }
