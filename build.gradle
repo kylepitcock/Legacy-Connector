@@ -87,6 +87,9 @@ neoForge {
                 systemProperty 'legacyconnector.serverScript', project.property('serverScript')
                 systemProperty 'legacyconnector.serverScriptFrom', project.findProperty('serverScriptFrom') ?: '200'
             }
+
+            // -PgenTiming: per-generator timing of the legacy world generators (a log line every 20 s and at shutdown)
+            if (project.hasProperty('genTiming')) systemProperty 'legacyconnector.genTiming', 'true'
         }
 
         // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and

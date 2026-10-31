@@ -87,8 +87,12 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
             int cx = chunk.getPos().x, cz = chunk.getPos().z;
             Chunk generated;
             try {
+                long t0 = System.nanoTime();
                 synchronized (generator) {
                     generated = generator.generateChunk(cx, cz);
+                }
+                if (org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.timing()) {
+                    org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.time("dimension " + dimension + " generateChunk", System.nanoTime() - t0);
                 }
             } catch (RuntimeException | LinkageError e) {
                 LOG.error("1.12.2 dimension {} failed to generate chunk {},{}", dimension, cx, cz, e);
@@ -96,14 +100,22 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
             }
             ChunkPrimer primer = generated == null ? null : generated.mcc$primer();
             if (primer == null) return chunk;
+            long copyStart = System.nanoTime();
             BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+            // a legacy state converts to the same modern state every time (getMetaFromState is mod code): once per distinct state, not per block
+            java.util.Map<Object, BlockState> converted = new java.util.IdentityHashMap<>();
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     for (int y = 0; y < 256; y++) {
                         if (!primer.mcc$isSet(x, y, z)) continue;
                         BlockState state;
                         try {
-                            state = StatesBridge1122.toModern(primer.getBlockState(x, y, z));
+                            var legacyState = primer.getBlockState(x, y, z);
+                            state = converted.get(legacyState);
+                            if (state == null) {
+                                state = StatesBridge1122.toModern(legacyState);
+                                if (legacyState != null && state != null) converted.put(legacyState, state);
+                            }
                         } catch (RuntimeException | LinkageError e) {
                             continue;
                         }
@@ -111,6 +123,9 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
                         chunk.setBlockState(pos.set((cx << 4) + x, y, (cz << 4) + z), state, false);
                     }
                 }
+            }
+            if (org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.timing()) {
+                org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.time("dimension " + dimension + " copy of the primer", System.nanoTime() - copyStart);
             }
             return chunk;
         }, Util.backgroundExecutor());
@@ -124,8 +139,12 @@ public class LegacyChunkGenerator1122 extends ChunkGenerator {
         try {
             if (generator != null) {
                 try {
+                    long t0 = System.nanoTime();
                     synchronized (generator) {
                         generator.populate(cx, cz);
+                    }
+                    if (org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.timing()) {
+                        org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldGenBridge1122.time("dimension " + dimension + " populate", System.nanoTime() - t0);
                     }
                 } catch (RuntimeException | LinkageError e) {
                     int n = FAILURES.incrementAndGet();

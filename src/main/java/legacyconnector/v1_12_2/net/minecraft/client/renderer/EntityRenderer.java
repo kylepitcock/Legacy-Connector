@@ -61,6 +61,7 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
     /** A post-processing shader by its 1.12 location ({@code shaders/post/*.json}); vanilla's moved shaders load from the same path. */
     public void loadShader(ResourceLocation resourceLocationIn) {
         if (resourceLocationIn == null) return;
+        if (!org.kylepitcock.legacyconnector.v1_12_2.client.PostShaders1122.usable(resourceLocationIn.mcc$modern())) return;
         try {
             net.minecraft.client.Minecraft.getInstance().gameRenderer.loadEffect(resourceLocationIn.mcc$modern());
         } catch (RuntimeException e) {

@@ -173,6 +173,8 @@ Engine and launcher patches (FastCraft, Hodgepodge, NEID and other ID extenders)
 
 After launching, check **`logs/legacyconnector-report.txt`**. For each legacy jar, it lists the detected version, the mod IDs, any unresolved references, and which APIs are stubbed. Known issues and workarounds (ID conflicts, mismatched Forestry/Binnie versions, etc.) are on the GitHub page. Please report results on the [compatibility site](https://kylepitcock.github.io/Legacy-Connector/).
 
+**The game stops on launch with "Module ... contains package org.spongepowered...":** a 1.12.2 jar in `mods/` bundles its own Mixin (Spartan Weaponry, MixinBooter mods, SuperMartijn642's Core Lib). NeoForge loads such jars as launcher plugins before any mod code (including Legacy Connector) can run, so this cannot be fixed from inside the mod. Move the jar into `mods/1.12.2/` (or `mods/1.7.10/`); Legacy Connector reads those folders and removes the bundled Mixin when it translates the jar.
+
 ### Commands (operator)
 
 | Command | What it does |
