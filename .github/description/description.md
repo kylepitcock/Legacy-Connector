@@ -147,6 +147,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | --- | --- | --- |
 | `oreBackgrounds.enabled` | `true` | Replaces the old stone/netherrack/end stone behind legacy ore textures with modern textures |
 | `oreBackgrounds.stone` (also `.netherrack`, `.endStone`) | `stone` | Texture to use behind ores, e.g. `deepslate` or `tuff`, or `legacy` to keep the old one |
+| `modernizeTextures` | `true` | Replaces old vanilla art inside legacy mod textures (copies of old blocks, items and GUIs, old stone/plank/brick backgrounds behind a mod's art) with the modern vanilla textures |
 | `deepLayer.enabled` | `true` | Runs legacy ore generators again below y=0 |
 | `deepLayer.excludeGenerators` | empty | Generators that shouldn't run below y=0 |
 

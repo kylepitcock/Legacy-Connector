@@ -274,6 +274,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | --- | --- | --- |
 | `oreBackgrounds.enabled` | `true` | Replace the old stone/netherrack/end stone behind legacy ore textures |
 | `oreBackgrounds.stone`, `.netherrack`, `.endStone` | `stone`, `netherrack`, `end_stone` | Vanilla block texture used instead (e.g. `deepslate`, `tuff`), or `legacy` to keep the old rock |
+| `modernizeTextures` | `true` | Replace old vanilla art inside legacy mod textures with the modern vanilla textures: exact copies of old block, item and GUI textures, and old backgrounds (smooth stone, cobblestone, planks, bricks, ...) mods painted their art on (recognised from fingerprints, the mod's own art stays) |
 | `deepLayer.enabled` | `true` | Run legacy world generators a second time so ores also spawn below y=0 |
 | `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
 
