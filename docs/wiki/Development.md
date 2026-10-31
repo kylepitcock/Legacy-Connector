@@ -93,4 +93,9 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   chains and ReactorCraft fission reactor, steam turbine -> shaft and radiation rigs). Gotchas: `forceload add` takes block coordinates, not chunk coordinates
   (otherwise the rig unloads after one tick); legacy mods that kill entities outside y 0..256 (DragonAPI particle entities such as ReactorCraft neutrons) need
   rigs at y >= 0; calling methods on a tile whose class mentions an absent optional API (BuildCraft) from Nashorn throws `NoClassDefFoundError`, so read fields via `f()`.
+- Gameplay scenarios without a window: `tools/dev/run-server-script.sh <scenario> [autostopTicks] [firstScriptTick] [--fresh]` runs a file of
+  `tools/dev/server-scripts/scenarios` with the helpers of `lib.js` (platform, placement through the real item use with a fake player, field access,
+  a task scheduler) and `rig.js` (engine, shafts, machine in a line, also machines fed from below through a bevel gear). The RotaryCraft set builds
+  real engines, gearboxes, clutches and machines, powers them and asserts power, fluids, items, GUIs (containers and shift-click), capabilities
+  (items, fluids, RF), persistence across a restart (`persist`, run twice) and the handbook data. Jars go in `run-subtest/mods/1.7.10`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
