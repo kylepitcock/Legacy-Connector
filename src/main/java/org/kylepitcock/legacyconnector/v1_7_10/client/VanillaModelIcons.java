@@ -48,7 +48,12 @@ public final class VanillaModelIcons {
         if (cached != null) return cached.isEmpty() ? null : cached;
         var models = Minecraft.getInstance().getModelManager();
         var model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(item);
-        if (model == null || model == models.getMissingModel()) return null;
+        if (model == null || model == models.getMissingModel()) {
+            // Not baked yet: the legacy item models are generated before the first bake, and mods name vanilla icons in them
+            // (Witchery's brews draw Items.potionitem's render pass 1, the glass bottle, over their liquid). Read the layer
+            // from the vanilla item model file instead; not cached, the baked model answers once it exists.
+            return fromModelFile(item, pass);
+        }
         java.util.List<net.minecraft.client.renderer.texture.TextureAtlasSprite> layers = new java.util.ArrayList<>();
         for (BakedQuad q : model.getQuads(null, null, RandomSource.create(42L), ModelData.EMPTY, null)) {
             if (!layers.contains(q.getSprite())) layers.add(q.getSprite());
@@ -57,6 +62,37 @@ public final class VanillaModelIcons {
         String name = sprite == null ? null : org.kylepitcock.legacyconnector.v1_7_10.Assets1710.legacyVanillaTexture(sprite.contents().name(), false);
         ITEM_CACHE.put(key, name == null ? NONE : name);
         return name;
+    }
+
+    /**
+     * The 1.7.10 icon name of a render pass of a vanilla item from its model file in the vanilla resources ({@code layerN},
+     * else {@code layer0}); null for models without layers (block items, builtin models).
+     */
+    private static String fromModelFile(net.minecraft.world.item.Item item, int pass) {
+        try {
+            var mc = Minecraft.getInstance();
+            if (mc == null || mc.getVanillaPackResources() == null) return null;
+            var key = net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(item);
+            if (!key.getNamespace().equals("minecraft")) return null;
+            var file = net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", "models/item/" + key.getPath() + ".json");
+            var supplier = mc.getVanillaPackResources().getResource(net.minecraft.server.packs.PackType.CLIENT_RESOURCES, file);
+            if (supplier == null) return null;
+            com.google.gson.JsonObject json;
+            try (var in = new java.io.InputStreamReader(supplier.get(), java.nio.charset.StandardCharsets.UTF_8)) {
+                json = com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
+            }
+            if (!json.has("textures")) return null;
+            var textures = json.getAsJsonObject("textures");
+            String layer = null;
+            for (int p = Math.min(pass, 7); p >= 0 && layer == null; p--) {
+                if (textures.has("layer" + p)) layer = textures.get("layer" + p).getAsString();
+            }
+            if (layer == null) return null;
+            var sprite = net.minecraft.resources.ResourceLocation.tryParse(layer.indexOf(':') < 0 ? "minecraft:" + layer : layer);
+            return sprite == null ? null : org.kylepitcock.legacyconnector.v1_7_10.Assets1710.legacyVanillaTexture(sprite, false);
+        } catch (Exception | LinkageError e) {
+            return null;
+        }
     }
 
     /** The sprite of the quad facing the side, else of the first quad. */

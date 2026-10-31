@@ -39,7 +39,17 @@ public abstract class EntityTameable extends EntityAnimal implements IEntityOwna
         return (flags() & 4) != 0;
     }
 
+    /** A view of a modern tamable mob (a cat, a wolf): writes go to the mob itself, which keeps its own tame state. */
+    private net.minecraft.world.entity.TamableAnimal mcc$tamable() {
+        return mcc$entity instanceof net.minecraft.world.entity.TamableAnimal t && !mcc$hosted() ? t : null;
+    }
+
     public void setTamed(boolean tamed) {
+        var t = mcc$tamable();
+        if (t != null) {
+            t.setTame(tamed, true);
+            return;
+        }
         byte f = dataWatcher.getWatchableObjectByte(16);
         dataWatcher.updateObject(16, Byte.valueOf((byte) (tamed ? f | 4 : f & ~4)));
     }
@@ -49,6 +59,12 @@ public abstract class EntityTameable extends EntityAnimal implements IEntityOwna
     }
 
     public void setSitting(boolean sitting) {
+        var t = mcc$tamable();
+        if (t != null) {
+            t.setOrderedToSit(sitting);
+            t.setInSittingPose(sitting);
+            return;
+        }
         byte f = dataWatcher.getWatchableObjectByte(16);
         dataWatcher.updateObject(16, Byte.valueOf((byte) (sitting ? f | 1 : f & ~1)));
     }
@@ -62,6 +78,15 @@ public abstract class EntityTameable extends EntityAnimal implements IEntityOwna
     }
 
     public void func_152115_b(String owner) {
+        var t = mcc$tamable();
+        if (t != null) {
+            try {
+                t.setOwnerUUID(owner == null || owner.isEmpty() ? null : UUID.fromString(owner));
+            } catch (IllegalArgumentException e) {
+                // 1.7.10 worlds stored owner names; a name is no UUID and leaves the mob as it was
+            }
+            return;
+        }
         dataWatcher.updateObject(17, owner == null ? "" : owner);
     }
 

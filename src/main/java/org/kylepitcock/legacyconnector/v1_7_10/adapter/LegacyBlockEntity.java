@@ -103,6 +103,18 @@ public class LegacyBlockEntity extends BlockEntity {
                 && state.hasProperty(LegacyBlockAdapter.META)) {
             refreshForMeta(old.getValue(LegacyBlockAdapter.META), state.getValue(LegacyBlockAdapter.META));
         }
+        // 1.7.10's Chunk.setBlockMetadata told a kept tile entity its new metadata (updateContainingBlockInfo, blockMetadata = meta);
+        // a cached getBlockMetadata() otherwise stays at the value read first. Witchery's fume funnel caches 0 before its facing
+        // is set on placement and never draws the pipes to the oven beside it.
+        if (legacy != null && old.getBlock() == state.getBlock() && old.hasProperty(LegacyBlockAdapter.META) && state.hasProperty(LegacyBlockAdapter.META)
+                && !old.getValue(LegacyBlockAdapter.META).equals(state.getValue(LegacyBlockAdapter.META))) {
+            try {
+                legacy.updateContainingBlockInfo();
+            } catch (RuntimeException | LinkageError ignored) {
+                // a mod's override that needs more world than it has here
+            }
+            legacy.blockMetadata = state.getValue(LegacyBlockAdapter.META);
+        }
     }
 
     public void replaceLegacy(TileEntity te) {

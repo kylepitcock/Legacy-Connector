@@ -13,6 +13,8 @@ public final class TextureLocations {
             Map.entry("textures/atlas/items.png", "textures/atlas/blocks.png"),
             // the dirt tile behind 1.7.10's menus and lists (Gui.optionsBackground) is the dirt block texture
             Map.entry("textures/gui/options_background.png", "textures/block/dirt.png"),
+            // the book sheet with its page arrows, rebuilt by LegacyGuiTextures
+            Map.entry("textures/gui/book.png", LegacyGuiTextures.BOOK),
             Map.entry("textures/gui/container/generic_54.png", "textures/gui/container/generic_54.png"),
             Map.entry("textures/entity/chest/normal.png", "textures/entity/chest/normal.png"),
             Map.entry("textures/entity/steve.png", "textures/entity/player/wide/steve.png"),

@@ -4,8 +4,8 @@ import legacyconnector.v1_7_10.net.minecraft.entity.EntityAgeable;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
- * Legacy ocelot. Modern ocelots/cats use the goal system, which legacy AI lists cannot drive yet, so no modern
- * entity is presented as this class; mod code that looks for ocelots simply finds none.
+ * Legacy ocelot; in 1.7.10 a tamed ocelot was the cat. Modern cats and ocelots are presented as this class (views keep their
+ * modern AI): Witchery's Rite of Binding finds the player's tamed cat as an {@code EntityOcelot} and turns it into its familiar.
  */
 public class EntityOcelot extends EntityTameable {
 
@@ -35,8 +35,15 @@ public class EntityOcelot extends EntityTameable {
         dataWatcher.addObject(18, Byte.valueOf((byte) 0));
     }
 
+    /** View of a modern cat or ocelot. */
+    public EntityOcelot(net.minecraft.world.entity.LivingEntity modern) {
+        super(modern);
+    }
+
     /** The cat skin (0 wild ocelot, 1 black, 2 red, 3 siamese), kept in watcher slot 18 as in 1.7.10. */
     public int getTameSkin() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Cat && !mcc$hosted()) return 1;
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Ocelot && !mcc$hosted()) return 0;
         return dataWatcher.getWatchableObjectByte(18);
     }
 
@@ -59,10 +66,6 @@ public class EntityOcelot extends EntityTameable {
     @Override
     public boolean isAIEnabled() {
         return true;
-    }
-
-    protected EntityOcelot(LivingEntity modern) {
-        super(modern);
     }
 
     @Override
