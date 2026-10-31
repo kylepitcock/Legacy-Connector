@@ -2,7 +2,10 @@ package legacyconnector.v1_7_10.cpw.mods.fml.common;
 
 import legacyconnector.v1_7_10.cpw.mods.fml.relauncher.ReflectionHelper;
 
-/** Reflection on legacy (shim) classes. SRG names in the arguments were already renamed by the loader. */
+/**
+ * Reflection on legacy (shim) classes. SRG names written as literals were already renamed by the loader; others are mapped
+ * by {@link ReflectionHelper}.
+ */
 public class ObfuscationReflectionHelper {
     public static <T, E> T getPrivateValue(Class<? super E> cls, E instance, int fieldIndex) {
         return ReflectionHelper.getPrivateValue(cls, instance, fieldIndex);

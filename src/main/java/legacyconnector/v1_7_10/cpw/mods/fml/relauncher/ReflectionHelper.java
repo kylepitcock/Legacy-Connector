@@ -31,7 +31,8 @@ public class ReflectionHelper {
         Exception last = null;
         for (String n : names) {
             try {
-                Field f = cls.getDeclaredField(n);
+                // production mods pass SRG names (field_70170_p) not renamed by the loader: they resolve to the shim's MCP names
+                Field f = ReflectionCompat.getDeclaredField(cls, n);
                 ReflectionCompat.setAccessible(f, true);
                 return f;
             } catch (Exception e) {
@@ -131,7 +132,7 @@ public class ReflectionHelper {
         Exception last = null;
         for (String n : names) {
             try {
-                Method m = cls.getDeclaredMethod(n, params);
+                Method m = ReflectionCompat.getDeclaredMethod(cls, n, params);
                 m.setAccessible(true);
                 return m;
             } catch (Exception e) {

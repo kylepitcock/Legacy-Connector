@@ -86,13 +86,71 @@ public final class ReflectionCompat {
             return owner.getDeclaredMethod(name, types);
         } catch (NoSuchMethodException e) {
             if (RUN_TRANSFORMERS != null && name.equals("runTransformers") && ClassLoader.class.isAssignableFrom(owner)) return RUN_TRANSFORMERS;
+            String mcp = SrgNames.method(owner, name);
+            if (mcp != null) {
+                try {
+                    return owner.getDeclaredMethod(mcp, types);
+                } catch (NoSuchMethodException ignored) {
+                    // report the name the mod asked for
+                }
+            }
             throw e;
         }
     }
 
+    /*
+     * Production mods reflect on game classes with SRG names (FMLForgePlugin.RUNTIME_DEOBF is true, as in a real 1.7.10
+     * client: DragonAPI's ReikaObfuscationHelper picks "func_..." names by it). Literal SRG ids were renamed by the loader;
+     * names built at run time are mapped here when the plain lookup fails, then looked up again the same way.
+     */
+
     public static Field getDeclaredField(Class<?> owner, String name) throws NoSuchFieldException {
         if (owner == Field.class && name.equals("modifiers")) return MODIFIERS_PLACEHOLDER;
-        return owner.getDeclaredField(name);
+        try {
+            return owner.getDeclaredField(name);
+        } catch (NoSuchFieldException e) {
+            String mcp = SrgNames.field(owner, name);
+            if (mcp != null) {
+                try {
+                    return owner.getDeclaredField(mcp);
+                } catch (NoSuchFieldException ignored) {
+                    // report the name the mod asked for
+                }
+            }
+            throw e;
+        }
+    }
+
+    public static Field getField(Class<?> owner, String name) throws NoSuchFieldException {
+        try {
+            return owner.getField(name);
+        } catch (NoSuchFieldException e) {
+            String mcp = SrgNames.field(owner, name);
+            if (mcp != null) {
+                try {
+                    return owner.getField(mcp);
+                } catch (NoSuchFieldException ignored) {
+                    // report the name the mod asked for
+                }
+            }
+            throw e;
+        }
+    }
+
+    public static java.lang.reflect.Method getMethod(Class<?> owner, String name, Class<?>... types) throws NoSuchMethodException {
+        try {
+            return owner.getMethod(name, types);
+        } catch (NoSuchMethodException e) {
+            String mcp = SrgNames.method(owner, name);
+            if (mcp != null) {
+                try {
+                    return owner.getMethod(mcp, types);
+                } catch (NoSuchMethodException ignored) {
+                    // report the name the mod asked for
+                }
+            }
+            throw e;
+        }
     }
 
     public static void setInt(Field field, Object target, int value) throws IllegalAccessException {
