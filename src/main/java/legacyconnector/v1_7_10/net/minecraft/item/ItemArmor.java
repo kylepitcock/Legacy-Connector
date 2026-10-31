@@ -61,6 +61,18 @@ public class ItemArmor extends legacyconnector.v1_7_10.net.minecraft.item.Item {
         this.maxStackSize = 1;
     }
 
+    /** Right-clicking armor puts it on when its slot is empty (1.7.10's ItemArmor did; Fisk's suit pieces call super.onItemRightClick). */
+    @Override
+    public ItemStack onItemRightClick(ItemStack stack, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (stack == null || player == null || armorType < 0 || armorType > 3) return stack;
+        if (player.getCurrentArmor(3 - armorType) == null) {
+            player.setCurrentItemOrArmor(4 - armorType, stack.copy());
+            stack.mcc$setCount(0);
+        }
+        return stack;
+    }
+
     public ArmorMaterial getArmorMaterial() {
         return material;
     }
