@@ -282,7 +282,7 @@ final class BundledLibraries {
     }
 
     /** package (slash form) to the name of a jar that contains classes of it; nested jar-in-jar libraries are looked into too. */
-    private static Map<String, String> scanProviders(List<Path> dirs, Set<Path> excluded) {
+    static Map<String, String> scanProviders(List<Path> dirs, Set<Path> excluded) {
         Map<String, String> out = new HashMap<>();
         for (Path dir : dirs) {
             if (!Files.isDirectory(dir)) continue;

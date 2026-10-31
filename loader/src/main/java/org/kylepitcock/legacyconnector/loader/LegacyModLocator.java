@@ -191,7 +191,12 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             keep.add(cacheDir.resolve("coremod-api.jar"));
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
             // every legacy jar of its version: that set is part of the cache key, and peers are scanned on a miss.
-            var crossVersion = crossVersionPackages(loading);
+            var crossVersion = crossVersionPackages(loading, legacy, List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
+            if (!crossVersion.modernClashes().isEmpty()) {
+                Set<String> pkgs = crossVersion.modernClashes();
+                LOG.info("Legacy Connector: {} packages that legacy jars share with modern mods are relocated in the legacy jars: {}",
+                        pkgs.size(), pkgs.size() > 12 ? new ArrayList<>(pkgs).subList(0, 12) + " ..." : pkgs);
+            }
             if (!crossVersion.isEmpty()) {
                 transformer.crossVersion(crossVersion);
                 for (LegacyVersion v : LegacyVersion.values()) {
@@ -326,8 +331,19 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     }
 
     /** The class packages that jars of more than one legacy version define (see {@link CrossVersionPackages}). */
-    private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars) {
+    private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars, List<LegacyJar> allLegacy, List<Path> modernDirs) {
         var out = new org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages();
+        Set<Path> legacyPaths = new HashSet<>();
+        Set<String> modPackages = new HashSet<>();
+        for (LegacyJar j : allLegacy) {
+            legacyPaths.add(j.path.toAbsolutePath().normalize());
+            legacyPaths.add(j.existing().toAbsolutePath().normalize());
+        }
+        for (LegacyJar j : jars) {
+            for (LegacyModDecl m : j.mods) {
+                if (m.mainClass != null && m.mainClass.lastIndexOf('/') > 0) modPackages.add(m.mainClass.substring(0, m.mainClass.lastIndexOf('/')));
+            }
+        }
         for (LegacyJar jar : jars) {
             try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.existing().toFile())) {
                 var en = zip.entries();
@@ -342,6 +358,10 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 LOG.debug("Legacy Connector: could not list {}", jar.fileName(), e);
             }
         }
+        // modern mods' packages, as internal names (the scan reports a.b.c)
+        Set<String> modern = new HashSet<>();
+        for (String pkg : BundledLibraries.scanProviders(modernDirs, legacyPaths).keySet()) modern.add(pkg.replace('.', '/'));
+        out.modern(modern, modPackages);
         return out.done();
     }
 
