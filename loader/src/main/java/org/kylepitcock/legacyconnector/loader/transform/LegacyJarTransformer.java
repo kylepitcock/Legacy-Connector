@@ -345,6 +345,11 @@ public final class LegacyJarTransformer {
 
         outClasses = sanitizePackages(outClasses);
         Manifest outManifest = cleanManifest(manifest, jar);
+        // Provenance watermark (docs/wiki/Cache-and-Redistribution.md): hashing the original costs a few ms per translated jar only.
+        String originalSha = org.kylepitcock.legacyconnector.loader.Provenance.sha256Hex(jar.existing());
+        org.kylepitcock.legacyconnector.loader.Provenance.addManifest(outManifest.getMainAttributes(), jar, originalSha);
+        outResources.put(org.kylepitcock.legacyconnector.loader.Provenance.RESOURCE,
+                org.kylepitcock.legacyconnector.loader.Provenance.json(jar, originalSha, TRANSFORMER_VERSION));
         write(output, outManifest, outClasses, outResources);
         return result;
     }
