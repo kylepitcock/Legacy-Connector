@@ -69,6 +69,21 @@ public final class EventBridge1710 {
     /** Players whose data file NeoForge reported loading since they last logged in. */
     private static final java.util.Set<String> LOADED_FROM_FILE = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
+    /** Vanilla shears, or a legacy item that is (extends) the shim's ItemShears or declares the "shears" tool class. */
+    private static boolean isShears(net.minecraft.world.item.ItemStack stack) {
+        var item = stack.getItem();
+        if (item instanceof net.minecraft.world.item.ShearsItem) return true;
+        if (!(item instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemHolder h)
+                || !(h.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.Item legacy)) return false;
+        if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemShears) return true;
+        try {
+            var classes = legacy.getToolClasses(ItemStack.mcc$wrap(stack));
+            return classes != null && classes.contains("shears");
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     private static EventBus forge() {
         return MinecraftForge.EVENT_BUS;
     }
@@ -232,7 +247,7 @@ public final class EventBridge1710 {
         gameBus.addListener((net.neoforged.neoforge.event.level.BlockDropsEvent e) -> {
             var p = e.getPos();
             // Shears on a block that is shearable the legacy way (leaves, tall grass, vines) drop what the block says.
-            if (e.getTool().getItem() instanceof net.minecraft.world.item.ShearsItem
+            if (isShears(e.getTool())
                     && BlockBridge.legacyBlock(e.getState()) instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IShearable shearable) {
                 try {
                     var view = BlockAccessView.of(e.getLevel());
@@ -521,7 +536,9 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract e) -> {
             var held = e.getItemStack();
+            // Legacy shears shear entities through their own itemInteractionForEntity; this is for the vanilla shears.
             if (!(held.getItem() instanceof net.minecraft.world.item.ShearsItem) || e.getLevel().isClientSide()) return;
+            if (e.getTarget() instanceof net.minecraft.world.entity.Shearable) return; // the modern entities shear themselves
             if (!(EntityBridge.wrap(e.getTarget()) instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IShearable shearable)) return;
             try {
                 var target = e.getTarget();
