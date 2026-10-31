@@ -77,6 +77,8 @@ neoForge {
             programArgument '--nogui'
             systemProperty 'legacytest.autostop', 'true'
             systemProperty 'legacyconnector.autostopTicks', project.findProperty('autostopTicks') ?: '700'
+            // runs the client blockstate translation on the server too (logs "1.12.2 blockstates: N translated, M fell back"); -PassetsDump=<dir> writes it
+            systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
             systemProperty 'legacyconnector.entitySelfTest', 'true'
         }
 
