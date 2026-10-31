@@ -52,6 +52,51 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         }
     }
 
+    private static final java.util.Map<String, Boolean> OVERRIDES = new ConcurrentHashMap<>();
+    /** The provider's own sky colour / star brightness may call the default, which asks the game again: answer that one vanilla. */
+    private static final ThreadLocal<Boolean> IN_HOOK = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    private static boolean overridesCached(WorldProvider p, String name, Class<?>... params) {
+        return OVERRIDES.computeIfAbsent(p.getClass().getName() + "#" + name, k -> overrides(p, name, params));
+    }
+
+    /**
+     * The sky colour a mod dimension's provider overrides {@code getSkyColor} with (Galacticraft's planets colour their own
+     * sky), called from {@code ClientLevelSkyColorMixin}; the game's colour otherwise.
+     */
+    public static Vec3 skyColor(ClientLevel level, Vec3 current, float partialTick) {
+        if (IN_HOOK.get() || level != Minecraft.getInstance().level) return current;
+        WorldProvider p = provider();
+        if (p == null || FAILED.contains(p.getClass().getName() + ":skyColor") || !overridesCached(p, "getSkyColor",
+                legacyconnector.v1_7_10.net.minecraft.entity.Entity.class, float.class)) return current;
+        IN_HOOK.set(Boolean.TRUE);
+        try {
+            var legacy = p.getSkyColor(org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge.wrap(Minecraft.getInstance().getCameraEntity()), partialTick);
+            return legacy == null ? current : new Vec3(legacy.xCoord, legacy.yCoord, legacy.zCoord);
+        } catch (RuntimeException | LinkageError e) {
+            fail(p, "skyColor", e);
+            return current;
+        } finally {
+            IN_HOOK.set(Boolean.FALSE);
+        }
+    }
+
+    /** The star brightness a provider overrides {@code getStarBrightness} with (a planet with always-visible stars), from the mixin. */
+    public static float starBrightness(ClientLevel level, float current, float partialTick) {
+        if (IN_HOOK.get() || level != Minecraft.getInstance().level) return current;
+        WorldProvider p = provider();
+        if (p == null || FAILED.contains(p.getClass().getName() + ":starBrightness") || !overridesCached(p, "getStarBrightness", float.class)) return current;
+        IN_HOOK.set(Boolean.TRUE);
+        try {
+            return p.getStarBrightness(partialTick);
+        } catch (RuntimeException | LinkageError e) {
+            fail(p, "starBrightness", e);
+            return current;
+        } finally {
+            IN_HOOK.set(Boolean.FALSE);
+        }
+    }
+
     @Override
     public SkyType skyType() {
         WorldProvider p = provider();
