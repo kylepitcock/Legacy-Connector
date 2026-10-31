@@ -26,6 +26,7 @@ public final class WorldGenBridge {
 
     public static synchronized void register(IWorldGenerator generator, int weight) {
         GENERATORS.add(new Entry(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator), modIdOf(generator)));
+        DeepLayer1710.register(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator)); // deep layer feature
         GENERATORS.sort(Comparator.comparingInt(Entry::weight));
         hook();
     }
@@ -52,15 +53,14 @@ public final class WorldGenBridge {
     }
 
     /**
-     * Runs one generator for one chunk of an ordinary dimension, as {@link #decorate} would: FML's chunk seed, the mod's lock, then its
-     * deep-layer pass. Throws what the generator throws (the per-generator feature logs it).
+     * Runs one generator for one chunk of an ordinary dimension, as {@link #decorate} would: FML's chunk seed and the mod's lock. Its
+     * deep-layer pass is a placed feature of its own ({@link DeepLayer1710}). Throws what the generator throws (the feature logs it).
      */
     private static void generateOne(WorldGenLevel level, int chunkX, int chunkZ, Entry e) {
         World world = World.mcc$wrap(level);
         long chunkSeed = chunkSeed(level.getSeed(), chunkX, chunkZ);
         Random fmlRandom = new Random(chunkSeed);
         org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
-        deepPass(level, world, chunkX, chunkZ, chunkSeed, List.of(e));
     }
 
     /** FML's per-chunk seed ({@code GameRegistry.generateWorld}): every generator starts from it. */
@@ -131,41 +131,11 @@ public final class WorldGenBridge {
                 }
             }
         }
-        deepPass(level, world, chunkX, chunkZ, chunkSeed, gens);
+        // ---- deep layer (DeepLayer1710): each generator's deep pass is a placed feature of its own; this runs the rest
+        DeepLayer1710.runUncovered(level, world, chunkX, chunkZ, chunkSeed, modDimension);
     }
 
-    /**
-     * 1.7.10 worlds ended at y=0; below that is the deep layer (deepslate, bedrock at -64). Generators run once more with the world
-     * shifted so that legacy y=0 is the modern bottom: what spawned deep or in bedrock spawns there too. A failing generator is logged
-     * once and skipped.
-     */
-    private static void deepPass(WorldGenLevel level, World world, int chunkX, int chunkZ, long chunkSeed, List<Entry> gens) {
-        if (gens.isEmpty()) return;
-        int bottom = level.getMinBuildHeight();
-        if (bottom >= 0 || !org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerEnabled()) return;
-        Random fmlRandom = new Random();
-        World.mcc$enterDeepPass(bottom);
-        try {
-            for (Entry e : gens) {
-                if (!org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerAllows(e.generator.getClass().getName())) continue;
-                fmlRandom.setSeed(chunkSeed ^ DEEP_SEED);
-                try {
-                    org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY));
-                } catch (RuntimeException | LinkageError ex) {
-                    if (DEEP_FAILED.add(e.generator.getClass().getName())) {
-                        LOG.warn("Legacy world generator {} failed in the deep layer (it keeps running above y=0): {}",
-                                e.generator.getClass().getName(), ex.toString());
-                    }
-                }
-            }
-        } finally {
-            World.mcc$leaveDeepPass();
-        }
-    }
-
-    private static final long DEEP_SEED = 0x5DEECE66DL;
     private static final java.util.concurrent.atomic.AtomicInteger DIMENSION_FAILURES = new java.util.concurrent.atomic.AtomicInteger();
-    private static final java.util.Set<String> DEEP_FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/WorldGen");
 
     private static final IChunkProvider DUMMY = new IChunkProvider() {
@@ -184,6 +154,11 @@ public final class WorldGenBridge {
             return 0;
         }
     };
+
+    /** The placeholder chunk provider legacy generators get (deep layer, DeepLayer1710). */
+    static IChunkProvider dummyProvider() {
+        return DUMMY;
+    }
 
     static List<IWorldGenerator> generators() {
         List<IWorldGenerator> out = new ArrayList<>();
