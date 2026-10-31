@@ -746,6 +746,15 @@ public final class ItemBridge {
         if (item == null || legacyDamage(item, stack) == damage) return stack;
         // A different subtype is a different modern item: transmute, keeping count and components.
         net.minecraft.world.item.ItemStack replacement = toModern(item, stack.getCount(), damage);
+        if (replacement.getItem() == stack.getItem()) {
+            // Same modern item (an item without subtypes keeps its damage as the meta component): change the stack in place, so
+            // a view of a slot's stack changes the slot. Witchery's taglock kit becomes "full" with setItemDamage(1) on the held
+            // stack; a copy left the slot's kit empty and the Rite of Transposition never found a bound taglock.
+            Integer meta = replacement.get(CompatComponents.legacyMeta());
+            if (meta != null) stack.set(CompatComponents.legacyMeta(), meta);
+            else stack.remove(CompatComponents.legacyMeta());
+            return stack;
+        }
         net.minecraft.world.item.ItemStack moved = stack.transmuteCopy(replacement.getItem(), stack.getCount());
         Integer meta = replacement.get(CompatComponents.legacyMeta());
         if (meta != null) moved.set(CompatComponents.legacyMeta(), meta);
