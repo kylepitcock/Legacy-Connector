@@ -473,6 +473,28 @@ public final class ItemBridge {
         return meta == 0 ? base : ResourceLocation.fromNamespaceAndPath(base.getNamespace(), base.getPath() + "_" + meta);
     }
 
+    /**
+     * The attack damage the legacy item declares through {@code getAttributeModifiers}/{@code getItemAttributeModifiers} (mods override
+     * them to give their tools and weapons damage); falls back to the item's own damage field.
+     */
+    @SuppressWarnings("rawtypes")
+    private static float attackDamageFromModifiers(Item item, float fallback) {
+        try {
+            com.google.common.collect.Multimap map = item.getAttributeModifiers(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
+            if (map == null) return fallback;
+            String key = legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName();
+            java.util.Collection values = map.get(key);
+            if (values == null || values.isEmpty()) return fallback;
+            double sum = 0;
+            for (Object o : values) {
+                if (o instanceof legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier m && m.getOperation() == 0) sum += m.getAmount();
+            }
+            return sum > 0 ? (float) sum : fallback;
+        } catch (RuntimeException | LinkageError e) {
+            return fallback;
+        }
+    }
+
     private static net.minecraft.world.item.Item.Properties properties(Item item) {
         var p = new net.minecraft.world.item.Item.Properties();
         if (item.isDamageable()) p.durability(item.getMaxDamage());
@@ -483,6 +505,7 @@ public final class ItemBridge {
         } catch (RuntimeException e) {
             damage = 0;
         }
+        damage = attackDamageFromModifiers(item, damage);
         var modifiers = net.minecraft.world.item.component.ItemAttributeModifiers.builder();
         boolean anyModifier = false;
         if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemArmor armor && armor.armorType >= 0 && armor.armorType < 4

@@ -165,6 +165,15 @@ public class ItemTool extends Item {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public com.google.common.collect.Multimap getItemAttributeModifiers() {
+        com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
+        map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Tool modifier", damageVsEntity, 0));
+        return map;
+    }
+
+    @Override
     public float mcc$attackDamage() {
         return damageVsEntity;
     }
