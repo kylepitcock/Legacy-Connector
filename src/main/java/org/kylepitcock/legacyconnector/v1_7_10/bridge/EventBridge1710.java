@@ -882,9 +882,28 @@ public final class EventBridge1710 {
 
     /** Load, Unload and Save: the interest check must use the concrete event class (listeners subscribe to {@code WorldEvent.Load}, not to the base class). */
     private static void worldEvent(LevelAccessor level, java.util.function.Function<World, WorldEvent> factory) {
+        if (level instanceof net.minecraft.server.level.ServerLevel sl && isTemplateDimension(sl)) return;
         WorldEvent event = factory.apply(World.mcc$wrap(level));
         if (!wants(forge(), event.getClass())) return;
         forge().post(event);
+    }
+
+    /**
+     * The level this layer makes for a provider type nobody registered a dimension for (Mystcraft registers its provider type and
+     * creates the dimensions of its ages later): 1.7.10 had no such world, and a provider that needs its dimension's data cannot be
+     * built there. Mods must not see load/unload/save events of it (Mystcraft's handler dereferenced the missing age data).
+     */
+    private static boolean isTemplateDimension(net.minecraft.server.level.ServerLevel level) {
+        Integer id = org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.idOf(level.dimension().location());
+        if (id == null || legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.isDimensionRegistered(id)) return false;
+        if (org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.providerBroken(id)) return true;
+        try {
+            var w = World.mcc$wrap(level);
+            World.mcc$get$provider(w);
+            return w.mcc$providerFailed;
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
     }
 
     private static EntityPlayer player(net.minecraft.world.entity.player.Player p) {

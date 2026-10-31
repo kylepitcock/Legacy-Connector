@@ -64,6 +64,11 @@ public final class LegacyDimensions {
         }
     }
 
+    /** True once the dimension's provider failed to be built (a provider type used as a dimension, see {@code EventBridge1710}). */
+    public static boolean providerBroken(int dimension) {
+        return BROKEN.contains(dimension);
+    }
+
     private static final java.util.Set<Integer> BROKEN = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** The provider object of a level: the mod's class for mod dimensions, the shim's plain one otherwise. */
