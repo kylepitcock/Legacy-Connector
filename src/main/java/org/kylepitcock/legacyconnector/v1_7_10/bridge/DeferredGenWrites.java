@@ -126,6 +126,9 @@ public final class DeferredGenWrites {
     private static synchronized void listen() {
         if (listening) return;
         listening = true;
+        // writes for chunks that are still to be generated are placed during their own generation
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyWorldGenFeature.addDecorator(
+                (region, chunkX, chunkZ, seed) -> applyDuringGeneration(region, chunkX, chunkZ));
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
             if (!(e.getLevel() instanceof ServerLevel level) || !(e.getChunk() instanceof LevelChunk chunk)) return;
             Map<Long, Queue<Write>> byChunk = PENDING.get(level);
@@ -148,6 +151,41 @@ public final class DeferredGenWrites {
      * the neighbouring chunk when it is still being generated (the server thread hung entering a Thaumcraft dimension).
      */
     private static final int WRITE_FLAGS = 2 | 16 | 32;
+
+    /**
+     * Places the writes waiting for a chunk that is being generated, straight into it through the generation region (called from
+     * the legacy decoration feature of that chunk). Most writes target chunks that do not exist yet; placed here they are plain
+     * world-generation writes: no neighbour or shape updates, no block-change hooks (Sable's per-block hook made the main-thread
+     * path below 3% of the server tick in ATM10), nothing sent to clients. Writes to chunks that are already loaded keep using it.
+     */
+    public static void applyDuringGeneration(net.minecraft.world.level.WorldGenLevel region, int chunkX, int chunkZ) {
+        ServerLevel level = region.getLevel();
+        Map<Long, Queue<Write>> byChunk = PENDING.get(level);
+        if (byChunk == null || byChunk.isEmpty()) return;
+        Queue<Write> writes = byChunk.remove(net.minecraft.world.level.ChunkPos.asLong(chunkX, chunkZ));
+        if (writes == null) return;
+        COUNT.addAndGet(-writes.size());
+        for (Write w : writes) {
+            try {
+                if (w.attach != null) {
+                    BlockEntity be = region.getBlockEntity(w.pos);
+                    if (be != null) w.attach.accept(be);
+                    Map<BlockPos, Object> tiles = TILES.get(level);
+                    if (tiles != null) tiles.remove(w.pos);
+                } else if (w.state != null) {
+                    Map<BlockPos, BlockState> states = STATES.get(level);
+                    if (states != null) states.remove(w.pos, w.state);
+                    region.setBlock(w.pos, w.state, 2);
+                } else {
+                    BlockState current = region.getBlockState(w.pos);
+                    BlockState next = BlockBridge.withMeta(current, w.meta);
+                    if (next != current) region.setBlock(w.pos, next, 2);
+                }
+            } catch (RuntimeException e) {
+                LOG.debug("Deferred legacy generation write at {} failed", w.pos, e);
+            }
+        }
+    }
 
     private static void apply(ServerLevel level, long key) {
         Map<Long, Queue<Write>> byChunk = PENDING.get(level);
