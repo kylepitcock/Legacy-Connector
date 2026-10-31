@@ -46,6 +46,12 @@ public final class DisplayLists {
         LISTS.put(r.id, r.actions);
     }
 
+    /** {@code glIsList}: a list that was compiled (or is being compiled) under this id and not deleted since. */
+    public static boolean exists(int list) {
+        Recording r = RECORDING.get();
+        return LISTS.containsKey(list) || r != null && r.id == list;
+    }
+
     public static boolean recording() {
         return RECORDING.get() != null;
     }

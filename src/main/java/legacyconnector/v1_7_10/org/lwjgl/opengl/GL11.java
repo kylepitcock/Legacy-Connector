@@ -481,6 +481,14 @@ public class GL11 extends GL11Guard {
         DisplayLists.begin(list, mode);
     }
 
+    /**
+     * Whether the id names a compiled list. Traincraft's TMT models call their cached list only while this is true and drop their
+     * geometry once it is compiled, so with an always-false answer every model drawn through ModelBase.render() vanished after one frame.
+     */
+    public static boolean glIsList(int list) {
+        return DisplayLists.exists(list);
+    }
+
     public static void glEndList() {
         DisplayLists.end();
     }
