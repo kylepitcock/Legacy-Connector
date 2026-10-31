@@ -11,7 +11,8 @@
     "MultiNoiseBiomeSourceMixin",
     "MultiNoiseBiomeSourcePossibleMixin",
     "PlacedFeatureOreGateMixin",
-    "TargetingConditionsMixin"
+    "TargetingConditionsMixin",
+    "CreativeTabDuplicateMixin"
   ],
   "client": [
     "ClientLevelSkyColorMixin",
