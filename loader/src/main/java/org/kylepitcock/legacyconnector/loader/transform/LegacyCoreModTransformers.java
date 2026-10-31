@@ -158,7 +158,6 @@ public final class LegacyCoreModTransformers {
                 });
                 if (l != null) loaded.add(l);
             }
-            Ae2CoremodConfig.prepare(lcl, gameDir);
             List<Transformer> out = new ArrayList<>();
             Map<String, String> owners = new LinkedHashMap<>();
             for (Loaded l : loaded) {
