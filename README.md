@@ -19,61 +19,7 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
 
-## Screenshots
-
-All taken in a real game client (NeoForge 1.21.1) with unmodified 1.7.10 mods that have no modern version, running next to modern content.
-
-A Thaumcraft 4 workshop: infusion altar with items on its pedestals, crucible over lava, alchemical furnace with alembics, essentia
-jars, arcane workbench, research table, an aura node over a stabiliser, infused stones with crystal clusters, and greatwood and
-silverwood trees grown by Thaumcraft's own generators:
-
-![A Thaumcraft workshop](docs/images/thaumcraft-workshop.png)
-
-The Thaumonomicon, drawn by Thaumcraft's own font renderer and book code, and the Thaumometer held in both hands after scanning
-stone (the Terra aspect in its lens, research points gained in the corner):
-
-![The Thaumonomicon](docs/images/thaumonomicon.png)
-
-![Scanning with the Thaumometer](docs/images/thaumometer.png)
-
-A Witchery ritual site: chalk ritual circle around a heart glyph, candelabras, the altar with a chalice and crystal ball, a witch's
-oven with its fume funnel, kettle, distillery and spinning wheel (all drawn by Witchery's own tile entity renderers), a crop patch of
-belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan saplings, a coven witch, a mandrake and a toad:
-
-![A Witchery ritual site](docs/images/witchery-ritual.png)
-
-Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI:
-
-![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
-
-Fisk's Superheroes: Doctor Octopus's suit with its tentacles deployed, and the suit's abilities (tentacle jab, grab and strike) on
-Fisk's own HUD:
-
-![Fisk's Superheroes Doctor Octopus](docs/images/fisk-doc-ock.png)
-
-OreSpawn's The King on the plains, with a modern boss bar (OreSpawn itself shows its bosses' health only while you aim at them from 16 blocks or closer):
-
-![OreSpawn's The King with its boss bar](docs/images/orespawn-king-bossbar.png)
-
-A modern village enclosed by Witchery's town walls, with its gatehouses and watchtowers and AgriCraft's greenhouses, all built by
-their legacy village code:
-
-![Legacy village components in a modern village](docs/images/legacy-village-components.png)
-
-A nuclear explosion from HBM's Nuclear Tech Mod: the fireball and mushroom cloud with its condensation rings, flying debris, the
-fallout-tinted sky and the scorched crater, all from HBM's own explosion and effect code:
-
-![An HBM nuclear explosion](docs/images/hbm-nuke.png)
-
-1.12.2: Scape and Run: Parasites. Primitive and adapted parasites (longarms, summoner, manducater, buglin) and an infected cow,
-drawn by the mod's own renderers:
-
-![Scape and Run: Parasites on 1.21.1](docs/images/srparasites-lineup.png)
-
-The same parasites in action: an adapted longarms closes in while a summoner, manducater and buglin charge behind it, with the mod's
-own AI and attacks; the player holds the mod's sentient scythe:
-
-![Scape and Run: Parasites attacking](docs/images/srparasites.png)
+Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#screenshots).
 
 ## How it works
 
@@ -458,6 +404,62 @@ tools/fetch_devtools.sh
 python3 tools/extract_legacy_signatures.py 1.7.10   # needs build/devtools/mojang/client-1.7.10.jar
 python3 tools/extract_legacy_hierarchy.py 1.7.10
 ```
+
+## Screenshots
+
+All taken in a real game client (NeoForge 1.21.1) with unmodified 1.7.10 mods that have no modern version, running next to modern content.
+
+A Thaumcraft 4 workshop: infusion altar with items on its pedestals, crucible over lava, alchemical furnace with alembics, essentia
+jars, arcane workbench, research table, an aura node over a stabiliser, infused stones with crystal clusters, and greatwood and
+silverwood trees grown by Thaumcraft's own generators:
+
+![A Thaumcraft workshop](docs/images/thaumcraft-workshop.png)
+
+The Thaumonomicon, drawn by Thaumcraft's own font renderer and book code, and the Thaumometer held in both hands after scanning
+stone (the Terra aspect in its lens, research points gained in the corner):
+
+![The Thaumonomicon](docs/images/thaumonomicon.png)
+
+![Scanning with the Thaumometer](docs/images/thaumometer.png)
+
+A Witchery ritual site: chalk ritual circle around a heart glyph, candelabras, the altar with a chalice and crystal ball, a witch's
+oven with its fume funnel, kettle, distillery and spinning wheel (all drawn by Witchery's own tile entity renderers), a crop patch of
+belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan saplings, a coven witch, a mandrake and a toad:
+
+![A Witchery ritual site](docs/images/witchery-ritual.png)
+
+Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI:
+
+![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
+
+Fisk's Superheroes: Doctor Octopus's suit with its tentacles deployed, and the suit's abilities (tentacle jab, grab and strike) on
+Fisk's own HUD:
+
+![Fisk's Superheroes Doctor Octopus](docs/images/fisk-doc-ock.png)
+
+OreSpawn's The King on the plains, with a modern boss bar (OreSpawn itself shows its bosses' health only while you aim at them from 16 blocks or closer):
+
+![OreSpawn's The King with its boss bar](docs/images/orespawn-king-bossbar.png)
+
+A modern village enclosed by Witchery's town walls, with its gatehouses and watchtowers and AgriCraft's greenhouses, all built by
+their legacy village code:
+
+![Legacy village components in a modern village](docs/images/legacy-village-components.png)
+
+A nuclear explosion from HBM's Nuclear Tech Mod: the fireball and mushroom cloud with its condensation rings, flying debris, the
+fallout-tinted sky and the scorched crater, all from HBM's own explosion and effect code:
+
+![An HBM nuclear explosion](docs/images/hbm-nuke.png)
+
+1.12.2: Scape and Run: Parasites. Primitive and adapted parasites (longarms, summoner, manducater, buglin) and an infected cow,
+drawn by the mod's own renderers:
+
+![Scape and Run: Parasites on 1.21.1](docs/images/srparasites-lineup.png)
+
+The same parasites in action: an adapted longarms closes in while a summoner, manducater and buglin charge behind it, with the mod's
+own AI and attacks; the player holds the mod's sentient scythe:
+
+![Scape and Run: Parasites attacking](docs/images/srparasites.png)
 
 ## Legal
 

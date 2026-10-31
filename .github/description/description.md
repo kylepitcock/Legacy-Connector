@@ -33,51 +33,7 @@ Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector.
 
 ---
 
-## Screenshots
-
-All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods that have no modern version running next to modern content.
-
-**A Thaumcraft 4 workshop: infusion altar, crucible, alembics, essentia jars, research table, an aura node and magical trees**
-
-![A Thaumcraft workshop](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumcraft-workshop.png)
-
-**The Thaumonomicon, drawn by Thaumcraft's own book and font code**
-
-![The Thaumonomicon](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumonomicon.png)
-
-**Scanning stone with the Thaumometer**
-
-![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
-
-**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery and spinning wheel, crops and Witchery creatures**
-
-![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
-
-**Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI**
-
-![Legacy block GUI](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-block-gui.png)
-
-**Fisk's Superheroes: Doctor Octopus with his tentacles deployed and the suit's abilities**
-
-![Fisk's Superheroes Doctor Octopus](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/fisk-doc-ock.png)
-
-**OreSpawn's The King, with a modern boss bar**
-
-![OreSpawn's The King](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/orespawn-king-bossbar.png)
-
-**A modern village enclosed by Witchery's town walls and watchtowers, with AgriCraft greenhouses, built by their legacy code**
-
-![Legacy village components](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-village-components.png)
-
-**A nuclear explosion from HBM's Nuclear Tech Mod, drawn by its own effect code**
-
-![An HBM nuclear explosion](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/hbm-nuke.png)
-
-**1.12.2: Scape and Run: Parasites**, with its own models, AI and attacks:
-
-![Scape and Run: Parasites](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites.png)
-
----
+Screenshots of legacy mods running on 1.21.1 are at the end of this page.
 
 ## How it works
 
@@ -201,3 +157,49 @@ IDs tab-complete.
 **Legal:** Legacy Connector is released under the MIT License. It contains no Minecraft, Forge or third-party mod code. You supply your own mod jars; please don't redistribute them.
 
 {{links}} · [Compatibility list](https://kylepitcock.github.io/Legacy-Connector/)
+
+## Screenshots
+
+All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods that have no modern version running next to modern content.
+
+**A Thaumcraft 4 workshop: infusion altar, crucible, alembics, essentia jars, research table, an aura node and magical trees**
+
+![A Thaumcraft workshop](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumcraft-workshop.png)
+
+**The Thaumonomicon, drawn by Thaumcraft's own book and font code**
+
+![The Thaumonomicon](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumonomicon.png)
+
+**Scanning stone with the Thaumometer**
+
+![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
+
+**A Witchery ritual site: chalk circle, altar, witch's oven, kettle, distillery and spinning wheel, crops and Witchery creatures**
+
+![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
+
+**Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI**
+
+![Legacy block GUI](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-block-gui.png)
+
+**Fisk's Superheroes: Doctor Octopus with his tentacles deployed and the suit's abilities**
+
+![Fisk's Superheroes Doctor Octopus](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/fisk-doc-ock.png)
+
+**OreSpawn's The King, with a modern boss bar**
+
+![OreSpawn's The King](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/orespawn-king-bossbar.png)
+
+**A modern village enclosed by Witchery's town walls and watchtowers, with AgriCraft greenhouses, built by their legacy code**
+
+![Legacy village components](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-village-components.png)
+
+**A nuclear explosion from HBM's Nuclear Tech Mod, drawn by its own effect code**
+
+![An HBM nuclear explosion](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/hbm-nuke.png)
+
+**1.12.2: Scape and Run: Parasites**, with its own models, AI and attacks:
+
+![Scape and Run: Parasites](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites.png)
+
+---
