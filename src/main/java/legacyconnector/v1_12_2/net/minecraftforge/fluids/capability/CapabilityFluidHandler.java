@@ -25,6 +25,19 @@ public class CapabilityFluidHandler {
             }
         }, () -> new legacyconnector.v1_12_2.net.minecraftforge.fluids.FluidTank(1000));
         FLUID_HANDLER_CAPABILITY = CapabilityManager.INSTANCE.mcc$capability(IFluidHandler.class);
+        // the item capability was never registered, so it stayed null and every mod asking an item stack for it threw (JEI's fluid subtype
+        // interpreter on the Aether's buckets)
+        CapabilityManager.INSTANCE.register(IFluidHandlerItem.class, new Capability.IStorage<IFluidHandlerItem>() {
+            @Override
+            public NBTBase writeNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance, EnumFacing side) {
+                return null;
+            }
+
+            @Override
+            public void readNBT(Capability<IFluidHandlerItem> capability, IFluidHandlerItem instance, EnumFacing side, NBTBase nbt) {
+            }
+        }, () -> null);
+        FLUID_HANDLER_ITEM_CAPABILITY = CapabilityManager.INSTANCE.mcc$capability(IFluidHandlerItem.class);
     }
 
     public static void register() {
