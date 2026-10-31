@@ -15,6 +15,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 
 - Order: finish 1.7.10, then 1.12.2, then 1.20.1 (with Sinytra Connector compatibility), then 1.16.5, then 1.2.5. Don't start a later
   version before the earlier one is done. Keep the README status table and `.gitignore` current.
+- Legacy containers are exposed as NeoForge capabilities BY DEFAULT (items, fluids, energy: RF, IC2 EU, BuildCraft MJ; tiles and items; both versions), not left to addons. New legacy container/energy interfaces get an adapter in `CapabilityRules`/`BuiltinAdapters`/`ForeignEnergy1710`, rates in `LegacyConfig`.
 - Outdated dependencies are bridged to modern equivalents instead of loaded (Baubles -> Curios, Waila -> Jade,
   NEI -> JEI, CoFH RF -> NeoForge energy). NEI is never loaded when JEI is present; everything it registers is mapped into JEI.
 - Only 1.7.10-engine-only mods are skipped (performance/bug-fix patches, ID extenders, mixin loaders, profilers: list in

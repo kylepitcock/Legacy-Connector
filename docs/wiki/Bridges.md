@@ -14,6 +14,8 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 | Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
 | CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
 
+| IC2 EU, BuildCraft MJ, Forge fluids, `IInventory` | NeoForge Energy / Fluid / Item capabilities (built in) | Always on: legacy tiles and items are capabilities by default (EU at `energy.fePerEu` = 4 FE, MJ at `energy.fePerMj` = 10 FE). Details in [Addon-API](Addon-API.md#capabilities). |
+
 Without the modern mod, the legacy library is translated and loaded as usual (except the RF API, which needs none).
 
 Mods that only make sense on 1.7.10's engine or launcher (performance/bug-fix patches such as FastCraft or Hodgepodge,
