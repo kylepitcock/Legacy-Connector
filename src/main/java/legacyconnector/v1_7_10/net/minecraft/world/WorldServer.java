@@ -10,6 +10,21 @@ public class WorldServer extends World {
         super(level);
     }
 
+    /**
+     * 1.7.10's constructor, called by mods that subclass the world to proxy another one (CoFH's WorldServerProxy, which MineFactory
+     * Reloaded's grinders extend to catch the drops and spawns of the mobs they kill). The new world is a second view of the
+     * server's world of that dimension: every call acts on the real level, and the subclass overrides what it intercepts.
+     */
+    public WorldServer(MinecraftServer server, legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler, String name,
+            int dimension, WorldSettings settings, legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
+        super(mcc$levelOf(server, dimension));
+    }
+
+    private static LevelAccessor mcc$levelOf(MinecraftServer server, int dimension) {
+        WorldServer real = server == null ? null : server.worldServerForDimension(dimension);
+        return real == null ? null : real.mcc$level();
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager getPlayerManager() {
         return mcc$fullLevel() instanceof ServerLevel s ? new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager(s) : null;
     }
