@@ -452,6 +452,9 @@ public final class Platform1122 implements LegacyPlatform {
 
     private static void post(legacyconnector.v1_12_2.net.minecraftforge.fml.common.eventhandler.Event event) {
         legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(event);
+        if (event instanceof legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register) {
+            org.kylepitcock.legacyconnector.v1_12_2.bridge.CoreLibRegistry1122.afterRegistryEvent(event);
+        }
     }
 
     @Override
