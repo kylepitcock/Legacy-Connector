@@ -24,7 +24,20 @@ public class BlockModelShapes {
     public IBakedModel getModelForState(IBlockState state) {
         var shaper = net.minecraft.client.Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
         var modern = shaper.getBlockModel(StatesBridge1122.toModern(state));
-        return Models1122.legacy(modern == null ? shaper.getModelManager().getMissingModel() : modern);
+        IBakedModel model = Models1122.legacy(modern == null ? shaper.getModelManager().getMissingModel() : modern);
+        // a state the metadata does not hold gets the whole block's model: without its item overrides (see Models1122.withoutOverrides)
+        return metaHolds(state) ? model : Models1122.withoutOverrides(model);
+    }
+
+    /** Whether the block's metadata stands for this exact state (properties beyond it, such as render parts, are lost). */
+    private static boolean metaHolds(IBlockState state) {
+        if (state == null) return true;
+        try {
+            Block block = state.getBlock();
+            return state.equals(block.getStateFromMeta(block.getMetaFromState(state)));
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
     }
 
     public ModelManager getModelManager() {

@@ -57,6 +57,69 @@ public final class Models1122 {
         return MODERN.computeIfAbsent(legacy, ModernView::new);
     }
 
+    private static final Map<IBakedModel, IBakedModel> BLOCK_ONLY = Collections.synchronizedMap(new WeakHashMap<>());
+
+    /**
+     * A mod's own model as the model of a block state its metadata cannot hold, with no item overrides. In 1.12 such a state (a
+     * property only the mod's renderer uses, e.g. EnderIO's {@code render=} part) had its own blockstate variant with a plain JSON model;
+     * here a state is one modern {@code meta} state, so it gets the model of the whole block, and that model's item overrides may ask
+     * for the same state's model again: EnderIO's item override list collects the quads of its machine's render-part states, got its
+     * own override list back for each and recursed until the creative tab crashed with a StackOverflowError.
+     */
+    public static IBakedModel withoutOverrides(IBakedModel model) {
+        if (model == null || model instanceof LegacyView) return model;
+        return BLOCK_ONLY.computeIfAbsent(model, BlockOnlyView::new);
+    }
+
+    /** A mod model whose item overrides are none (see {@link #withoutOverrides}). */
+    private record BlockOnlyView(IBakedModel model) implements IBakedModel {
+        @Override
+        public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
+            return model.getQuads(state, side, rand);
+        }
+
+        @Override
+        public boolean isAmbientOcclusion() {
+            return model.isAmbientOcclusion();
+        }
+
+        @Override
+        public boolean isAmbientOcclusion(IBlockState state) {
+            return model.isAmbientOcclusion(state);
+        }
+
+        @Override
+        public boolean isGui3d() {
+            return model.isGui3d();
+        }
+
+        @Override
+        public boolean isBuiltInRenderer() {
+            return model.isBuiltInRenderer();
+        }
+
+        @Override
+        public TextureAtlasSprite getParticleTexture() {
+            return model.getParticleTexture();
+        }
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public ItemCameraTransforms getItemCameraTransforms() {
+            return model.getItemCameraTransforms();
+        }
+
+        @Override
+        public ItemOverrideList getOverrides() {
+            return ItemOverrideList.NONE;
+        }
+
+        @Override
+        public Pair<? extends IBakedModel, Matrix4f> handlePerspective(ItemCameraTransforms.TransformType type) {
+            return model.handlePerspective(type);
+        }
+    }
+
     /** The model the game has under a legacy location (the missing model if none). */
     public static IBakedModel legacyModel(ModelResourceLocation location) {
         var manager = Minecraft.getInstance().getModelManager();
