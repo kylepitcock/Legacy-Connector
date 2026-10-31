@@ -31,6 +31,7 @@ public final class LegacyStructures {
             GENERATORS.put(generator, Boolean.TRUE);
         }
         register();
+        MapGenStructures1710.tracked(generator); // may become a modern structure
     }
 
     private static synchronized void register() {
