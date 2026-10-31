@@ -56,6 +56,9 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
   jar references it and no other jar of the mods folder (or jar nested in one) has a package of it; another Trove/config/activation then serves
   the legacy mods, while a foreign Scala (not 2.11) makes the Scala-using legacy mods skipped with a message in the report. `-PembeddedLibs`
   (dev) tests this path with the libraries read from `build/legacy-libs`.
+- APIs shaded by legacy jars that a modern mod of the pack also ships (DragonAPI carries the 1.7.10 AE2 API, `appeng.api.*`, next to modern AE2)
+  are relocated in every legacy jar to `legacyconnector_relocated/<version>/...` (`CrossVersionPackages.modern`), so the two never export the same
+  package. Classes only the modern mod has keep their name; packages of `@Mod` classes are never relocated.
 - Coremods: their plugins are constructed and set up as FML did (construct all, then `getASMTransformerClass` /
   `injectData` / setup hook by sorting index; mod containers count as loaded mods). Their class transformers run over
   the legacy mod classes before translation, in a stand-in LaunchWrapper class loader with the legacy FML API, so
