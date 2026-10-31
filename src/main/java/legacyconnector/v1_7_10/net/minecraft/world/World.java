@@ -910,7 +910,41 @@ public class World implements IBlockAccess {
         return mcc$chunkManager;
     }
 
+    /**
+     * DragonAPI's {@code CustomBiomeDistributionWorld}: a provider that answers {@code getBiomeID(World, x, z)} itself (ChromatiCraft's
+     * dimension has no chunk manager; DragonAPI patched {@code World.getBiomeGenForCoords} to ask the provider). Looked up by interface
+     * name so DragonAPI is not a dependency.
+     */
+    private static final ClassValue<java.lang.reflect.Method> CUSTOM_BIOME_ID = new ClassValue<>() {
+        @Override
+        protected java.lang.reflect.Method computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null; c = c.getSuperclass()) {
+                for (Class<?> i : c.getInterfaces()) {
+                    if (!i.getName().equals("Reika.DragonAPI.Interfaces.CustomBiomeDistributionWorld")) continue;
+                    try {
+                        return i.getMethod("getBiomeID", legacyconnector.v1_7_10.net.minecraft.world.World.class, int.class, int.class);
+                    } catch (ReflectiveOperationException e) {
+                        return null;
+                    }
+                }
+            }
+            return null;
+        }
+    };
+
     public legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase getBiomeGenForCoords(int x, int z) {
+        var customProvider = mcc$get$provider(this);
+        if (customProvider != null) {
+            var custom = CUSTOM_BIOME_ID.get(customProvider.getClass());
+            if (custom != null) {
+                try {
+                    var biome = legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.getBiome((Integer) custom.invoke(customProvider, this, x, z));
+                    if (biome != null) return biome;
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // fall through to the generic lookup
+                }
+            }
+        }
         // A mod dimension's biomes come from its provider's layers (not from the chunks, which may not exist yet).
         var provided = mcc$get$provider(this).worldChunkMgr;
         if (provided != null && !(provided instanceof legacyconnector.v1_7_10.net.minecraft.world.biome.WorldChunkManager.WorldView)) {
