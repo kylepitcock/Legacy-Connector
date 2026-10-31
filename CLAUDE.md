@@ -82,7 +82,9 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   `tools/gen_constants_1122.py` generate `init/Blocks|Items|SoundEvents|MobEffects|Enchantments` from the legacy field list.
 - Test: put 1.12.2 jars in `run-subtest/mods` (keep the 1.7.10 ones in `mods-1710`), delete or move `run-subtest/.legacyconnector/cache` and `run-subtest/world`,
   `./gradlew runServerSubTest`; the log prints "1.12.2 content registered: ..." and "1.12.2 items/blocks per mod: ..."; failing mods are listed under
-  "failed to load". A client smoke test is `./gradlew runClientTest` (mods in `run-clienttest/mods`).
+  "failed to load". The server test also logs "1.12.2 blockstates: N translated, M fell back" (client translation run on the server; `-PassetsDump=<dir>` writes the
+  generated assets, `-PclientProxies=<class,...>` runs those mods' client proxies first so their state mappers exist, e.g. `mekanism.client.ClientProxy`) and
+  "1.12.2 item placement: N of M placed" (a fake player places every ItemBlock; `-Dlegacyconnector.placementDiag=1` adds the legacy checks per failure). A client smoke test is `./gradlew runClientTest` (mods in `run-clienttest/mods`).
 - The bash tool of this project's sessions rejects some large heredocs (unmatched quote); write files with the Write tool or a Python script file.
 
 ## Addon API
