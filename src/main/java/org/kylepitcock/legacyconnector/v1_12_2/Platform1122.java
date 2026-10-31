@@ -40,6 +40,7 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.World1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ClientRegistrations1122.register();
         registerServerLifecycle();
+        org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.registerSelfTest();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Loot1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEventsW1122.register();

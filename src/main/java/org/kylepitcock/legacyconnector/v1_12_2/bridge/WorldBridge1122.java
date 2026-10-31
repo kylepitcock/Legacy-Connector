@@ -97,7 +97,9 @@ public final class WorldBridge1122 {
         if (key == Level.OVERWORLD) id = 0;
         else if (key == Level.NETHER) id = -1;
         else if (key == Level.END) id = 1;
-        else {
+        else if (org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(key.location()) != null) {
+            id = org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(key.location());
+        } else {
             id = 1000 + Math.floorMod(key.location().toString().hashCode(), 1_000_000);
             for (var type : legacyconnector.v1_12_2.net.minecraft.world.DimensionType.values()) {
                 if (type.getName().equals(key.location().getPath())) id = type.getId();

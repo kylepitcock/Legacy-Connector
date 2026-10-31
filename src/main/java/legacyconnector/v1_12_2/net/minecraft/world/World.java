@@ -102,8 +102,8 @@ public class World implements IBlockAccess {
 
     protected World(LevelAccessor access) {
         this.access = access;
-        this.level = access instanceof Level l ? l : access instanceof WorldGenLevel g ? g.getLevel() : null;
-        this.isRemote = access != null && access.isClientSide();
+        this.level = acc() instanceof Level l ? l : acc() instanceof WorldGenLevel g ? g.getLevel() : null;
+        this.isRemote = acc() != null && acc().isClientSide();
         if (level != null) this.seaLevel = level.getSeaLevel();
     }
 
@@ -126,16 +126,49 @@ public class World implements IBlockAccess {
 
     /** What block reads and writes go through: the level, or the generation region. */
     public LevelAccessor mcc$access() {
+        return acc();
+    }
+
+    private static final ThreadLocal<net.minecraft.world.level.WorldGenLevel> REGION = new ThreadLocal<>();
+    private static final java.util.concurrent.atomic.AtomicInteger REGIONS = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * The accessor block reads and writes go through: the level, or, on a thread that is generating a mod dimension's chunk
+     * ({@link #mcc$enterRegion}), the generation region of that level (a mod's chunk generator keeps the level's world and must
+     * write into the region, never wait on the real level).
+     */
+    private LevelAccessor acc() {
+        if (REGIONS.get() != 0 && access instanceof Level full) {
+            var region = REGION.get();
+            if (region != null && region.getLevel() == full) return region;
+        }
         return access;
+    }
+
+    /** Routes this thread's access to the level's world through a generation region until {@link #mcc$leaveRegion}; returns the previous one. */
+    public static net.minecraft.world.level.WorldGenLevel mcc$enterRegion(net.minecraft.world.level.WorldGenLevel region) {
+        var previous = REGION.get();
+        REGION.set(region);
+        if (previous == null) REGIONS.incrementAndGet();
+        return previous;
+    }
+
+    public static void mcc$leaveRegion(net.minecraft.world.level.WorldGenLevel previous) {
+        if (previous == null) {
+            if (REGION.get() != null) REGIONS.decrementAndGet();
+            REGION.remove();
+        } else {
+            REGION.set(previous);
+        }
     }
 
     /** The level for updates, sounds and entities; null while this world is a generation region (those calls would deadlock). */
     public Level mcc$liveLevel() {
-        return access instanceof Level l ? l : null;
+        return acc() instanceof Level l ? l : null;
     }
 
     private ServerLevel serverLevel() {
-        return access instanceof ServerLevel s ? s : null;
+        return acc() instanceof ServerLevel s ? s : null;
     }
 
     private static net.minecraft.core.BlockPos modern(BlockPos p) {
@@ -282,12 +315,12 @@ public class World implements IBlockAccess {
      * wait for it (a deadlock when asked from another thread or while the chunk unloads).
      */
     private boolean unloaded(net.minecraft.core.BlockPos p) {
-        return access instanceof ServerLevel sl && !sl.getChunkSource().hasChunk(p.getX() >> 4, p.getZ() >> 4);
+        return acc() instanceof ServerLevel sl && !sl.getChunkSource().hasChunk(p.getX() >> 4, p.getZ() >> 4);
     }
 
     /** A block read off the server thread: only a chunk that is fully loaded right now is read. Null on the server thread. */
     private BlockState offThreadState(net.minecraft.core.BlockPos p) {
-        if (!(access instanceof ServerLevel sl) || sl.getServer().isSameThread()) return null;
+        if (!(acc() instanceof ServerLevel sl) || sl.getServer().isSameThread()) return null;
         var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4));
         var chunk = holder == null ? null : holder.getChunkIfPresent(net.minecraft.world.level.chunk.status.ChunkStatus.FULL);
         return chunk == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : chunk.getBlockState(p);
@@ -295,28 +328,28 @@ public class World implements IBlockAccess {
 
     /** The modern state at a position as legacy code may read it (air where it is not available). */
     public BlockState mcc$state(net.minecraft.core.BlockPos p) {
-        if (access == null || unloaded(p)) return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
-        if (access instanceof net.minecraft.server.level.WorldGenRegion r && !r.hasChunk(p.getX() >> 4, p.getZ() >> 4)) {
+        if (acc() == null || unloaded(p)) return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion r && !r.hasChunk(p.getX() >> 4, p.getZ() >> 4)) {
             return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         }
         BlockState off = offThreadState(p);
         if (off != null) return off;
-        if (access instanceof ServerLevel sl) {
+        if (acc() instanceof ServerLevel sl) {
             // never wait for a chunk here: a known chunk that is still being finished made Level.getBlockState block the server thread
             // for good (SRParasites' spawner reads blocks around players every tick)
             var chunk = sl.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4);
             return chunk == null ? net.minecraft.world.level.block.Blocks.AIR.defaultBlockState() : chunk.getBlockState(p);
         }
-        return access.getBlockState(p);
+        return acc().getBlockState(p);
     }
 
     /** Legacy generators spill past the chunk being decorated; a generation region only accepts writes within one chunk of its centre. */
     private boolean outsideRegion(net.minecraft.core.BlockPos p) {
-        if (access instanceof net.minecraft.server.level.WorldGenRegion r) {
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion r) {
             var c = r.getCenter();
             return Math.abs((p.getX() >> 4) - c.x) > 1 || Math.abs((p.getZ() >> 4) - c.z) > 1;
         }
-        return access == null;
+        return acc() == null;
     }
 
     @Override
@@ -332,9 +365,13 @@ public class World implements IBlockAccess {
 
     public boolean setBlockState(BlockPos pos, IBlockState state, int flags) {
         var p = modern(pos);
-        if (outsideRegion(p) || isOutsideBuildHeight(pos)) return false;
+        if (isOutsideBuildHeight(pos)) return false;
+        if (outsideRegion(p)) {
+            deferOutsideRegion(p, state);
+            return false;
+        }
         BlockState modernState = StatesBridge1122.toModern(state);
-        if (access instanceof net.minecraft.server.level.WorldGenRegion region) {
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
             if (placed) {
                 region.getChunk(p).markPosForPostprocessing(p);
@@ -342,14 +379,26 @@ public class World implements IBlockAccess {
             }
             return placed;
         }
-        return access.setBlock(p, modernState, flags);
+        return acc().setBlock(p, modernState, flags);
+    }
+
+    /**
+     * A write of a populator of a mod dimension past its generation region is placed once that chunk is loaded: 1.12 generated the
+     * chunk on the spot (Aether's bronze dungeon spans several chunks). Never applied with neighbour updates, so it cannot wait on
+     * another chunk.
+     */
+    private void deferOutsideRegion(net.minecraft.core.BlockPos p, IBlockState state) {
+        if (!(acc() instanceof net.minecraft.server.level.WorldGenRegion r) || state == null) return;
+        if (org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(r.getLevel().dimension().location()) == null) return;
+        BlockState modernState = StatesBridge1122.toModern(state);
+        if (modernState != null && !modernState.isAir()) org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, modernState);
     }
 
     /** Places a modern state (vanilla template blocks keep their properties this way), with the same rules as {@link #setBlockState}. */
     public boolean mcc$setModernState(BlockPos pos, BlockState modernState, int flags) {
         var p = modern(pos);
         if (outsideRegion(p) || isOutsideBuildHeight(pos)) return false;
-        if (access instanceof net.minecraft.server.level.WorldGenRegion region) {
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             boolean placed = region.setBlock(p, modernState, flags & ~1);
             if (placed) {
                 region.getChunk(p).markPosForPostprocessing(p);
@@ -357,7 +406,7 @@ public class World implements IBlockAccess {
             }
             return placed;
         }
-        return access.setBlock(p, modernState, flags);
+        return acc().setBlock(p, modernState, flags);
     }
 
     /** Generation only records a stub for a placed block entity, but legacy generators fill theirs right away (chest loot, spawners). */
@@ -376,7 +425,7 @@ public class World implements IBlockAccess {
     public boolean destroyBlock(BlockPos pos, boolean dropBlock) {
         var p = modern(pos);
         if (outsideRegion(p)) return false;
-        return access.destroyBlock(p, dropBlock);
+        return acc().destroyBlock(p, dropBlock);
     }
 
     @Override
@@ -389,9 +438,9 @@ public class World implements IBlockAccess {
     }
 
     public boolean isBlockLoaded(BlockPos pos, boolean allowEmpty) {
-        if (access == null || isOutsideBuildHeight(pos)) return false;
-        if (access instanceof ServerLevel sl) return sl.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
-        return access.hasChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        if (acc() == null || isOutsideBuildHeight(pos)) return false;
+        if (acc() instanceof ServerLevel sl) return sl.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null;
+        return acc().hasChunk(pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     public boolean isAreaLoaded(BlockPos center, int radius) {
@@ -420,10 +469,10 @@ public class World implements IBlockAccess {
     }
 
     public boolean isAreaLoaded(int x1, int y1, int z1, int x2, int y2, int z2, boolean allowEmpty) {
-        if (access == null || y2 < access.getMinBuildHeight() || y1 >= access.getMaxBuildHeight()) return false;
+        if (acc() == null || y2 < acc().getMinBuildHeight() || y1 >= acc().getMaxBuildHeight()) return false;
         for (int cx = x1 >> 4; cx <= x2 >> 4; cx++) {
             for (int cz = z1 >> 4; cz <= z2 >> 4; cz++) {
-                boolean has = access instanceof ServerLevel sl ? sl.getChunkSource().getChunkNow(cx, cz) != null : access.hasChunk(cx, cz);
+                boolean has = acc() instanceof ServerLevel sl ? sl.getChunkSource().getChunkNow(cx, cz) != null : acc().hasChunk(cx, cz);
                 if (!has) return false;
             }
         }
@@ -431,7 +480,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean isOutsideBuildHeight(BlockPos pos) {
-        return access == null ? pos.getY() < 0 || pos.getY() >= 256 : access.isOutsideBuildHeight(pos.getY());
+        return acc() == null ? pos.getY() < 0 || pos.getY() >= 256 : acc().isOutsideBuildHeight(pos.getY());
     }
 
     public boolean isValid(BlockPos pos) {
@@ -440,13 +489,13 @@ public class World implements IBlockAccess {
 
     public boolean isBlockNormalCube(BlockPos pos, boolean _default) {
         var p = modern(pos);
-        if (access == null || !isBlockLoaded(pos)) return _default;
-        return mcc$state(p).isRedstoneConductor(access, p);
+        if (acc() == null || !isBlockLoaded(pos)) return _default;
+        return mcc$state(p).isRedstoneConductor(acc(), p);
     }
 
     public boolean isBlockFullCube(BlockPos pos) {
         var p = modern(pos);
-        return access != null && mcc$state(p).isCollisionShapeFullBlock(access, p);
+        return acc() != null && mcc$state(p).isCollisionShapeFullBlock(acc(), p);
     }
 
     public boolean isSideSolid(BlockPos pos, EnumFacing side) {
@@ -456,8 +505,8 @@ public class World implements IBlockAccess {
     @Override
     public boolean isSideSolid(BlockPos pos, EnumFacing side, boolean _default) {
         var p = modern(pos);
-        if (access == null || !isBlockLoaded(pos)) return _default;
-        return mcc$state(p).isFaceSturdy(access, p, side.mcc$modern());
+        if (acc() == null || !isBlockLoaded(pos)) return _default;
+        return mcc$state(p).isFaceSturdy(acc(), p, side.mcc$modern());
     }
 
     public boolean isBlockModifiable(EntityPlayer player, BlockPos pos) {
@@ -477,8 +526,8 @@ public class World implements IBlockAccess {
      * heightmaps exist, so the surface is found from the blocks themselves.
      */
     private int surface(int x, int z, Heightmap.Types type) {
-        if (access == null) return 0;
-        if (access instanceof net.minecraft.server.level.WorldGenRegion region) {
+        if (acc() == null) return 0;
+        if (acc() instanceof net.minecraft.server.level.WorldGenRegion region) {
             if (!region.hasChunk(x >> 4, z >> 4)) return region.getSeaLevel();
             net.minecraft.core.BlockPos.MutableBlockPos p = new net.minecraft.core.BlockPos.MutableBlockPos();
             boolean noLeaves = type == Heightmap.Types.MOTION_BLOCKING_NO_LEAVES;
@@ -491,7 +540,7 @@ public class World implements IBlockAccess {
             return region.getMinBuildHeight();
         }
         if (unloaded(new net.minecraft.core.BlockPos(x, 0, z))) return 0;
-        return access.getHeight(type, x, z);
+        return acc().getHeight(type, x, z);
     }
 
     public BlockPos getHeight(BlockPos pos) {
@@ -523,7 +572,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean canSeeSky(BlockPos pos) {
-        return access != null && !unloaded(modern(pos)) && access.canSeeSky(modern(pos));
+        return acc() != null && !unloaded(modern(pos)) && acc().canSeeSky(modern(pos));
     }
 
     public boolean canBlockSeeSky(BlockPos pos) {
@@ -531,11 +580,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean containsAnyLiquid(AxisAlignedBB bb) {
-        return access != null && access.containsAnyLiquid(bb.mcc$modern());
+        return acc() != null && acc().containsAnyLiquid(bb.mcc$modern());
     }
 
     public boolean isMaterialInBB(AxisAlignedBB bb, Material material) {
-        if (access == null) return false;
+        if (acc() == null) return false;
         var box = bb.mcc$modern();
         var p = new net.minecraft.core.BlockPos.MutableBlockPos();
         for (int x = (int) Math.floor(box.minX); x < Math.ceil(box.maxX); x++) {
@@ -551,7 +600,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean isFlammableWithin(AxisAlignedBB bb) {
-        if (access == null) return false;
+        if (acc() == null) return false;
         var box = bb.mcc$modern();
         var p = new net.minecraft.core.BlockPos.MutableBlockPos();
         for (int x = (int) Math.floor(box.minX); x < Math.ceil(box.maxX); x++) {
@@ -571,11 +620,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean collidesWithAnyBlock(AxisAlignedBB bb) {
-        return access != null && access.getBlockCollisions(null, bb.mcc$modern()).iterator().hasNext();
+        return acc() != null && acc().getBlockCollisions(null, bb.mcc$modern()).iterator().hasNext();
     }
 
     public boolean checkBlockCollision(AxisAlignedBB bb) {
-        if (access == null) return false;
+        if (acc() == null) return false;
         var box = bb.mcc$modern();
         var p = new net.minecraft.core.BlockPos.MutableBlockPos();
         for (int x = (int) Math.floor(box.minX); x < Math.ceil(box.maxX); x++) {
@@ -591,9 +640,9 @@ public class World implements IBlockAccess {
     /** Boxes of the blocks colliding with {@code bb} (and the world border, as 1.12 added it). */
     public List<AxisAlignedBB> getCollisionBoxes(Entity entity, AxisAlignedBB bb) {
         List<AxisAlignedBB> out = new ArrayList<>();
-        if (access == null) return out;
+        if (acc() == null) return out;
         var modernEntity = entity == null ? null : entity.mcc$modern();
-        for (var shape : access.getBlockCollisions(modernEntity, bb.mcc$modern())) {
+        for (var shape : acc().getBlockCollisions(modernEntity, bb.mcc$modern())) {
             for (var part : shape.toAabbs()) out.add(AxisAlignedBB.mcc$of(part));
         }
         var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
@@ -609,13 +658,13 @@ public class World implements IBlockAccess {
 
     /** Whether the block may be placed (replaceable target, no entity in the way unless skipped). */
     public boolean mayPlace(Block block, BlockPos pos, boolean skipCollisionCheck, EnumFacing sidePlacedOn, Entity placer) {
-        if (access == null) return false;
+        if (acc() == null) return false;
         var p = modern(pos);
         BlockState here = mcc$state(p);
         BlockState placing = modernBlock(block).defaultBlockState();
         if (!skipCollisionCheck) {
-            var shape = placing.getCollisionShape(access, p);
-            if (!shape.isEmpty() && !access.isUnobstructed(placer == null ? null : placer.mcc$modern(), shape.move(p.getX(), p.getY(), p.getZ()))) return false;
+            var shape = placing.getCollisionShape(acc(), p);
+            if (!shape.isEmpty() && !acc().isUnobstructed(placer == null ? null : placer.mcc$modern(), shape.move(p.getX(), p.getY(), p.getZ()))) return false;
         }
         IBlockState legacyHere = StatesBridge1122.toLegacy(here);
         if (legacyHere != null && legacyHere.getMaterial() != null && legacyHere.getMaterial().isReplaceable()) return true;
@@ -625,7 +674,7 @@ public class World implements IBlockAccess {
     public boolean extinguishFire(EntityPlayer player, BlockPos pos, EnumFacing side) {
         BlockPos fire = pos.offset(side);
         var p = modern(fire);
-        if (access != null && mcc$state(p).is(net.minecraft.tags.BlockTags.FIRE)) {
+        if (acc() != null && mcc$state(p).is(net.minecraft.tags.BlockTags.FIRE)) {
             playEvent(player, 1009, fire, 0);
             setBlockToAir(fire);
             return true;
@@ -634,7 +683,7 @@ public class World implements IBlockAccess {
     }
 
     public float getBlockDensity(Vec3d vec, AxisAlignedBB bb) {
-        if (access == null) return 0.0F;
+        if (acc() == null) return 0.0F;
         double dx = 1.0D / ((bb.maxX - bb.minX) * 2.0D + 1.0D);
         double dy = 1.0D / ((bb.maxY - bb.minY) * 2.0D + 1.0D);
         double dz = 1.0D / ((bb.maxZ - bb.minZ) * 2.0D + 1.0D);
@@ -649,7 +698,7 @@ public class World implements IBlockAccess {
                 for (float fz = 0.0F; fz <= 1.0F; fz = (float) (fz + dz)) {
                     var from = new net.minecraft.world.phys.Vec3(bb.minX + (bb.maxX - bb.minX) * fx + ox, bb.minY + (bb.maxY - bb.minY) * fy,
                             bb.minZ + (bb.maxZ - bb.minZ) * fz + oz);
-                    var hit = access.clip(new net.minecraft.world.level.ClipContext(from, to, net.minecraft.world.level.ClipContext.Block.COLLIDER,
+                    var hit = acc().clip(new net.minecraft.world.level.ClipContext(from, to, net.minecraft.world.level.ClipContext.Block.COLLIDER,
                             net.minecraft.world.level.ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
                     if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) clear++;
                     total++;
@@ -663,7 +712,7 @@ public class World implements IBlockAccess {
 
     @Override
     public int getCombinedLight(BlockPos pos, int lightValue) {
-        if (level == null || access instanceof net.minecraft.server.level.WorldGenRegion) return 15 << 20 | lightValue << 4;
+        if (level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion) return 15 << 20 | lightValue << 4;
         var p = modern(pos);
         int sky = level.getBrightness(net.minecraft.world.level.LightLayer.SKY, p);
         int block = Math.max(lightValue, level.getBrightness(net.minecraft.world.level.LightLayer.BLOCK, p));
@@ -672,19 +721,19 @@ public class World implements IBlockAccess {
 
     @Override
     public Biome getBiome(BlockPos pos) {
-        if (access == null) return legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
+        if (acc() == null) return legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
         var p = modern(pos);
-        boolean loaded = access instanceof net.minecraft.server.level.WorldGenRegion r ? r.getCenter().x == p.getX() >> 4 && r.getCenter().z == p.getZ() >> 4
-                : access instanceof ServerLevel sl ? sl.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4) != null : access.hasChunk(p.getX() >> 4, p.getZ() >> 4);
-        if (!loaded || access instanceof ServerLevel sl2 && !sl2.getServer().isSameThread()) {
+        boolean loaded = acc() instanceof net.minecraft.server.level.WorldGenRegion r ? r.getCenter().x == p.getX() >> 4 && r.getCenter().z == p.getZ() >> 4
+                : acc() instanceof ServerLevel sl ? sl.getChunkSource().getChunkNow(p.getX() >> 4, p.getZ() >> 4) != null : acc().hasChunk(p.getX() >> 4, p.getZ() >> 4);
+        if (!loaded || acc() instanceof ServerLevel sl2 && !sl2.getServer().isSameThread()) {
             Biome generated = mcc$generatorBiome(pos.getX(), pos.getY(), pos.getZ());
             if (generated != null) return generated;
         }
         try {
-            if (access instanceof net.minecraft.server.level.WorldGenRegion) {
-                return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(access.getNoiseBiome(p.getX() >> 2, p.getY() >> 2, p.getZ() >> 2));
+            if (acc() instanceof net.minecraft.server.level.WorldGenRegion) {
+                return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(acc().getNoiseBiome(p.getX() >> 2, p.getY() >> 2, p.getZ() >> 2));
             }
-            return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(access.getBiome(p));
+            return org.kylepitcock.legacyconnector.v1_12_2.bridge.BiomeBridge1122.legacy(acc().getBiome(p));
         } catch (RuntimeException e) {
             Biome generated = mcc$generatorBiome(pos.getX(), pos.getY(), pos.getZ());
             return generated != null ? generated : legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
@@ -714,24 +763,24 @@ public class World implements IBlockAccess {
 
     @Override
     public int getStrongPower(BlockPos pos, EnumFacing direction) {
-        if (access == null) return 0;
+        if (acc() == null) return 0;
         var p = modern(pos);
-        return mcc$state(p).getDirectSignal(access, p, direction.mcc$modern());
+        return mcc$state(p).getDirectSignal(acc(), p, direction.mcc$modern());
     }
 
     public int getStrongPower(BlockPos pos) {
-        return access instanceof SignalGetter s ? s.getDirectSignalTo(modern(pos)) : 0;
+        return acc() instanceof SignalGetter s ? s.getDirectSignalTo(modern(pos)) : 0;
     }
 
     @Override
     public WorldType getWorldType() {
-        return WorldType.mcc$of(access);
+        return WorldType.mcc$of(acc());
     }
 
     // ------------------------------------------------------------------ light
 
     public int getLight(BlockPos pos) {
-        return level == null || access instanceof net.minecraft.server.level.WorldGenRegion ? 15 : level.getMaxLocalRawBrightness(modern(pos));
+        return level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion ? 15 : level.getMaxLocalRawBrightness(modern(pos));
     }
 
     public int getLight(BlockPos pos, boolean checkNeighbors) {
@@ -741,7 +790,7 @@ public class World implements IBlockAccess {
 
     /** The highest light of the block and (for slabs, stairs, farmland: blocks that use neighbour brightness) its neighbours. */
     public int getLightFromNeighbors(BlockPos pos) {
-        if (level == null || access instanceof net.minecraft.server.level.WorldGenRegion) return 15;
+        if (level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion) return 15;
         var p = modern(pos);
         int best = level.getMaxLocalRawBrightness(p);
         if (mcc$state(p).useShapeForLightOcclusion()) {
@@ -751,12 +800,12 @@ public class World implements IBlockAccess {
     }
 
     public int getLightFor(EnumSkyBlock type, BlockPos pos) {
-        if (level == null || access instanceof net.minecraft.server.level.WorldGenRegion) return type.defaultLightValue;
+        if (level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion) return type.defaultLightValue;
         return level.getBrightness(type.mcc$modern(), modern(pos));
     }
 
     public int getLightFromNeighborsFor(EnumSkyBlock type, BlockPos pos) {
-        if (level == null || access instanceof net.minecraft.server.level.WorldGenRegion) return type.defaultLightValue;
+        if (level == null || acc() instanceof net.minecraft.server.level.WorldGenRegion) return type.defaultLightValue;
         var p = modern(pos);
         int best = level.getBrightness(type.mcc$modern(), p);
         if (mcc$state(p).useShapeForLightOcclusion()) {
@@ -785,9 +834,9 @@ public class World implements IBlockAccess {
     }
 
     public int getBlockLightOpacity(BlockPos pos) {
-        if (access == null) return 0;
+        if (acc() == null) return 0;
         var p = modern(pos);
-        return mcc$state(p).getLightBlock(access, p);
+        return mcc$state(p).getLightBlock(acc(), p);
     }
 
     public int getSkylightSubtracted() {
@@ -880,13 +929,13 @@ public class World implements IBlockAccess {
     }
 
     public void scheduleUpdate(BlockPos pos, Block blockIn, int delay) {
-        if (access == null) return;
-        access.scheduleTick(modern(pos), modernBlock(blockIn), delay);
+        if (acc() == null) return;
+        acc().scheduleTick(modern(pos), modernBlock(blockIn), delay);
     }
 
     public void scheduleBlockUpdate(BlockPos pos, Block blockIn, int delay, int priority) {
-        if (access == null) return;
-        access.scheduleTick(modern(pos), modernBlock(blockIn), delay, net.minecraft.world.ticks.TickPriority.byValue(Math.max(-3, Math.min(3, priority))));
+        if (acc() == null) return;
+        acc().scheduleTick(modern(pos), modernBlock(blockIn), delay, net.minecraft.world.ticks.TickPriority.byValue(Math.max(-3, Math.min(3, priority))));
     }
 
     public void updateBlockTick(BlockPos pos, Block blockIn, int delay, int priority) {
@@ -894,16 +943,16 @@ public class World implements IBlockAccess {
     }
 
     public boolean isUpdateScheduled(BlockPos pos, Block blockType) {
-        return access != null && access.getBlockTicks().hasScheduledTick(modern(pos), modernBlock(blockType));
+        return acc() != null && acc().getBlockTicks().hasScheduledTick(modern(pos), modernBlock(blockType));
     }
 
     public boolean isBlockTickPending(BlockPos pos, Block blockType) {
-        return access != null && access.getBlockTicks().willTickThisTick(modern(pos), modernBlock(blockType));
+        return acc() != null && acc().getBlockTicks().willTickThisTick(modern(pos), modernBlock(blockType));
     }
 
     /** Runs the block's tick now (1.12's scheduledUpdatesAreImmediate path): the modern block's scheduled tick. */
     public void immediateBlockTick(BlockPos pos, IBlockState state, Random random) {
-        if (!(access instanceof ServerLevel sl)) return;
+        if (!(acc() instanceof ServerLevel sl)) return;
         var p = modern(pos);
         BlockState s = StatesBridge1122.toModern(state);
         s.tick(sl, p, sl.getRandom());
@@ -920,11 +969,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean isBlockPowered(BlockPos pos) {
-        return access instanceof SignalGetter s && s.hasNeighborSignal(modern(pos));
+        return acc() instanceof SignalGetter s && s.hasNeighborSignal(modern(pos));
     }
 
     public int isBlockIndirectlyGettingPowered(BlockPos pos) {
-        return access instanceof SignalGetter s ? s.getBestNeighborSignal(modern(pos)) : 0;
+        return acc() instanceof SignalGetter s ? s.getBestNeighborSignal(modern(pos)) : 0;
     }
 
     public int getRedstonePowerFromNeighbors(BlockPos pos) {
@@ -932,7 +981,7 @@ public class World implements IBlockAccess {
     }
 
     public int getRedstonePower(BlockPos pos, EnumFacing facing) {
-        return access instanceof SignalGetter s ? s.getSignal(modern(pos), facing.mcc$modern()) : 0;
+        return acc() instanceof SignalGetter s ? s.getSignal(modern(pos), facing.mcc$modern()) : 0;
     }
 
     public boolean isSidePowered(BlockPos pos, EnumFacing side) {
@@ -944,14 +993,14 @@ public class World implements IBlockAccess {
     @Override
     public TileEntity getTileEntity(BlockPos pos) {
         var p = modern(pos);
-        if (access == null || outsideRegion(p) || unloaded(p)) return null;
-        if (access instanceof ServerLevel sl && !sl.getServer().isSameThread()) {
+        if (acc() == null || outsideRegion(p) || unloaded(p)) return null;
+        if (acc() instanceof ServerLevel sl && !sl.getServer().isSameThread()) {
             var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4));
             var chunk = holder == null ? null : holder.getTickingChunk();
             var be = chunk == null ? null : chunk.getBlockEntity(p);
             return be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l ? l.legacy() : null;
         }
-        var be = access.getBlockEntity(p);
+        var be = acc().getBlockEntity(p);
         if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity l) return l.legacy();
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(this, be); // the game's own block entities
     }
@@ -959,8 +1008,8 @@ public class World implements IBlockAccess {
     /** Puts a legacy tile entity at a position whose block hosts legacy tile entities (others have their own modern block entity). */
     public void setTileEntity(BlockPos pos, TileEntity tileEntity) {
         var p = modern(pos);
-        if (access == null || tileEntity == null || outsideRegion(p)) return;
-        var be = access.getBlockEntity(p);
+        if (acc() == null || tileEntity == null || outsideRegion(p)) return;
+        var be = acc().getBlockEntity(p);
         if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity host) {
             tileEntity.setPos(pos);
             host.mcc$setLegacy(tileEntity);
@@ -979,10 +1028,10 @@ public class World implements IBlockAccess {
 
     public void removeTileEntity(BlockPos pos) {
         var p = modern(pos);
-        if (access == null || outsideRegion(p)) return;
+        if (acc() == null || outsideRegion(p)) return;
         Level live = mcc$liveLevel();
         if (live != null) live.removeBlockEntity(p);
-        else access.getChunk(p).removeBlockEntity(p);
+        else acc().getChunk(p).removeBlockEntity(p);
     }
 
     public void markTileEntityForRemoval(TileEntity tile) {
@@ -1002,7 +1051,7 @@ public class World implements IBlockAccess {
      * added (logged, throttled).
      */
     public boolean spawnEntity(Entity entity) {
-        if (entity == null || access == null) return false;
+        if (entity == null || acc() == null) return false;
         var modern = modernOf(entity);
         if (modern == null) {
             modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.hostEntity(this, entity);
@@ -1017,7 +1066,7 @@ public class World implements IBlockAccess {
             return false;
         }
         if (legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$get$world(entity) == null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$world(entity, this);
-        return access.addFreshEntity(modern);
+        return acc().addFreshEntity(modern);
     }
 
     public boolean addWeatherEffect(Entity entity) {
@@ -1191,8 +1240,8 @@ public class World implements IBlockAccess {
     }
 
     public EntityPlayer getClosestPlayer(double x, double y, double z, double distance, boolean spectator) {
-        if (access == null) return null;
-        return legacyPlayer(access.getNearestPlayer(x, y, z, distance, spectator));
+        if (acc() == null) return null;
+        return legacyPlayer(acc().getNearestPlayer(x, y, z, distance, spectator));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -1222,7 +1271,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean isAnyPlayerWithinRangeAt(double x, double y, double z, double range) {
-        return access != null && access.hasNearbyAlivePlayer(x, y, z, range);
+        return acc() != null && acc().hasNearbyAlivePlayer(x, y, z, range);
     }
 
     public EntityPlayer getNearestAttackablePlayer(Entity entity, double maxXZDistance, double maxYDistance) {
@@ -1376,7 +1425,7 @@ public class World implements IBlockAccess {
     // ------------------------------------------------------------------ time and weather
 
     public long getSeed() {
-        if (access instanceof WorldGenLevel g) return g.getSeed();
+        if (acc() instanceof WorldGenLevel g) return g.getSeed();
         return level instanceof ServerLevel sl ? sl.getSeed() : mcc$get$worldInfo(this).getSeed();
     }
 
@@ -1492,7 +1541,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean isRainingAt(BlockPos pos) {
-        return level != null && !(access instanceof net.minecraft.server.level.WorldGenRegion) && level.isRainingAt(modern(pos));
+        return level != null && !(acc() instanceof net.minecraft.server.level.WorldGenRegion) && level.isRainingAt(modern(pos));
     }
 
     public float getRainStrength(float delta) {
@@ -1574,8 +1623,8 @@ public class World implements IBlockAccess {
     }
 
     public DifficultyInstance getDifficultyForLocation(BlockPos pos) {
-        if (access == null) return new DifficultyInstance(EnumDifficulty.NORMAL, 0L, 0L, 0.0F);
-        return DifficultyInstance.mcc$of(access.getCurrentDifficultyAt(modern(pos)));
+        if (acc() == null) return new DifficultyInstance(EnumDifficulty.NORMAL, 0L, 0L, 0.0F);
+        return DifficultyInstance.mcc$of(acc().getCurrentDifficultyAt(modern(pos)));
     }
 
     public GameRules getGameRules() {
@@ -1615,7 +1664,7 @@ public class World implements IBlockAccess {
     }
 
     public int getHeight() {
-        return access == null ? 256 : access.getMaxBuildHeight();
+        return acc() == null ? 256 : acc().getMaxBuildHeight();
     }
 
     public int getActualHeight() {
@@ -1844,7 +1893,7 @@ public class World implements IBlockAccess {
      */
     public legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult rayTraceBlocks(Vec3d start, Vec3d end, boolean stopOnLiquid,
             boolean ignoreBlockWithoutBoundingBox, boolean returnLastUncollidableBlock) {
-        if (start == null || end == null || access == null) return null;
+        if (start == null || end == null || acc() == null) return null;
         if (Double.isNaN(start.x) || Double.isNaN(start.y) || Double.isNaN(start.z) || Double.isNaN(end.x) || Double.isNaN(end.y) || Double.isNaN(end.z)) {
             return null;
         }
@@ -1854,7 +1903,7 @@ public class World implements IBlockAccess {
                 net.minecraft.world.phys.shapes.CollisionContext.empty());
         net.minecraft.world.phys.BlockHitResult hit;
         try {
-            hit = access.clip(context);
+            hit = acc().clip(context);
         } catch (RuntimeException e) {
             return null;
         }
@@ -1918,7 +1967,7 @@ public class World implements IBlockAccess {
 
     /** Whether the block at the position is water (Forge). */
     public boolean isWater(BlockPos pos) {
-        return access != null && access.getFluidState(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ())).is(net.minecraft.tags.FluidTags.WATER);
+        return acc() != null && acc().getFluidState(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ())).is(net.minecraft.tags.FluidTags.WATER);
     }
 
     /** The scheduled block ticks of a chunk (removed from the schedule when {@code remove}), as legacy tick entries. */

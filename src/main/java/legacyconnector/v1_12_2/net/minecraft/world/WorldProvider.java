@@ -353,6 +353,21 @@ public abstract class WorldProvider {
     public static WorldProvider mcc$forLevel(net.minecraft.world.level.Level level, World world) {
         WorldProvider p;
         var key = level.dimension();
+        Integer modId = org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(key.location());
+        if (modId != null) {
+            // a mod's dimension: the mod's own provider class (its init() builds the biome provider, light table and so on)
+            WorldProvider mod = org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.newProvider(modId);
+            if (mod != null) {
+                World.mcc$set$provider(world, mod); // init() and the mod's constructors may ask the world for its provider
+                try {
+                    mod.setWorld(world);
+                } catch (RuntimeException | LinkageError e) {
+                    org.slf4j.LoggerFactory.getLogger("LegacyConnector/Dimensions").error("The world provider of dimension {} failed to initialize", modId, e);
+                    mod.world = world;
+                }
+                return mod;
+            }
+        }
         if (key == net.minecraft.world.level.Level.NETHER) p = new WorldProviderHell();
         else if (key == net.minecraft.world.level.Level.END) p = new WorldProviderEnd();
         else p = new WorldProviderSurface();
