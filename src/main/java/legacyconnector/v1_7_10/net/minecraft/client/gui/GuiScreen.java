@@ -61,7 +61,7 @@ public class GuiScreen extends Gui {
         var gui = RenderContext.gui();
         if (gui == null || lines.isEmpty()) return;
         List<net.minecraft.network.chat.Component> components = new ArrayList<>();
-        for (Object o : lines) components.add(net.minecraft.network.chat.Component.literal(String.valueOf(o)));
+        for (Object o : lines) components.add(org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyText.literal(String.valueOf(o)));
         gui.renderComponentTooltip(net.minecraft.client.Minecraft.getInstance().font, components, x, y);
     }
 

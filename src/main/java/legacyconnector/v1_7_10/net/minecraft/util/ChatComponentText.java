@@ -29,6 +29,7 @@ public class ChatComponentText extends ChatComponentStyle {
 
     @Override
     protected MutableComponent mcc$self() {
-        return Component.literal(text);
+        // DragonAPI font keys select a custom font only legacy drawString knows; the modern chat drops them (LegacyText)
+        return Component.literal(org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyText.strip(text));
     }
 }

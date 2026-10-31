@@ -18,6 +18,7 @@ import legacyconnector.v1_7_10.org.lwjgl.opengl.GL11;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyText;
 import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
 
 /**
@@ -225,6 +226,9 @@ public class FontRenderer implements IResourceManagerReloadListener {
     public int drawString(String text, int x, int y, int color, boolean shadow) {
         if (text == null) return 0;
         if (!mcc$bitmap) {
+            // DragonAPI's font keys (the text of another font; DelegateFontRenderer hands keyed strings it has no font
+            // for to this one) are not drawn: see LegacyText
+            text = LegacyText.strip(text);
             var gui = RenderContext.gui();
             // Legacy colors had no alpha; 0 alpha meant opaque.
             int argb = (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
@@ -386,7 +390,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 
     public int getStringWidth(String text) {
         if (text == null) return 0;
-        if (!mcc$bitmap) return font().width(text);
+        if (!mcc$bitmap) return font().width(LegacyText.strip(text));
         int width = 0;
         boolean bold = false;
         for (int i = 0; i < text.length(); ++i) {
@@ -434,6 +438,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 
     public String trimStringToWidth(String text, int width, boolean reverse) {
         if (!mcc$bitmap) {
+            text = LegacyText.strip(text);
             if (!reverse) return font().plainSubstrByWidth(text, width);
             String r = new StringBuilder(text).reverse().toString();
             return new StringBuilder(font().plainSubstrByWidth(r, width)).reverse().toString();
@@ -495,7 +500,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
     public List listFormattedStringToWidth(String text, int width) {
         if (!mcc$bitmap) {
             List<String> out = new ArrayList<>();
-            for (var line : font().getSplitter().splitLines(text, width, net.minecraft.network.chat.Style.EMPTY)) out.add(line.getString());
+            for (var line : font().getSplitter().splitLines(LegacyText.strip(text), width, net.minecraft.network.chat.Style.EMPTY)) out.add(line.getString());
             return out;
         }
         return Arrays.asList(wrapFormattedStringToWidth(text, width).split("\n"));
@@ -604,6 +609,6 @@ public class FontRenderer implements IResourceManagerReloadListener {
     }
 
     static Component literal(String s) {
-        return Component.literal(s);
+        return LegacyText.literal(s);
     }
 }
