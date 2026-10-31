@@ -48,6 +48,14 @@ public class RenderPlayer extends RenderLivingBase<AbstractClientPlayer> {
         return (ModelPlayer) super.getMainModel();
     }
 
+    /**
+     * The armour layer, run on modern players for legacy armour only (the modern renderer draws vanilla armour; its armour layer
+     * skips every item that is no vanilla {@code ArmorItem}, which all legacy armour is).
+     */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.layers.LayerRenderer<AbstractClientPlayer> mcc$armorLayer() {
+        return layerRenderers.isEmpty() ? null : layerRenderers.get(0);
+    }
+
     /** The layers mods added (drawn over modern players). */
     public java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.layers.LayerRenderer<AbstractClientPlayer>> mcc$modLayers() {
         return layerRenderers.size() <= mcc$builtInLayers ? java.util.List.of() : layerRenderers.subList(mcc$builtInLayers, layerRenderers.size());
