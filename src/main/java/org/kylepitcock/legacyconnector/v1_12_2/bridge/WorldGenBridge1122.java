@@ -33,6 +33,11 @@ public final class WorldGenBridge1122 {
         LegacyWorldGenFeature.addDecorator(WorldGenBridge1122::decorate);
     }
 
+    /** The mods' IWorldGenerators for a chunk of a mod dimension (1.12 ran them in every dimension after the provider's populate). */
+    public static void decorateModDimension(WorldGenLevel level, int chunkX, int chunkZ) {
+        decorate(level, chunkX, chunkZ, level.getSeed());
+    }
+
     private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long worldSeed) {
         List<IWorldGenerator> gens = legacyconnector.v1_12_2.net.minecraftforge.fml.common.registry.GameRegistry.mcc$worldGenerators();
         boolean events = TerrainEvents1122.wanted();

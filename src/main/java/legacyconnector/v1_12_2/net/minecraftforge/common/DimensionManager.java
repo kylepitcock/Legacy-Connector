@@ -83,6 +83,8 @@ public class DimensionManager {
         if (key == null || key == net.minecraft.world.level.Level.OVERWORLD) return 0;
         if (key == net.minecraft.world.level.Level.NETHER) return -1;
         if (key == net.minecraft.world.level.Level.END) return 1;
+        Integer modId = org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(key.location());
+        if (modId != null) return modId;
         Integer known = MODERN_IDS.get(key);
         if (known != null) return known;
         // a stable id across restarts when possible: the levels the server has, in key order

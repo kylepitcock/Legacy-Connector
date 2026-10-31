@@ -185,6 +185,8 @@ public final class EntityBridge1122 {
         if (key == Level.OVERWORLD) return 0;
         if (key == Level.NETHER) return -1;
         if (key == Level.END) return 1;
+        Integer modId = org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(key.location());
+        if (modId != null) return modId;
         String path = key.location().getPath();
         for (var type : legacyconnector.v1_12_2.net.minecraft.world.DimensionType.values()) {
             if (path.equals(type.getName())) return type.getId();

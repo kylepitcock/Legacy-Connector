@@ -50,6 +50,7 @@ public final class LegacyConnector {
     static {
         // Mod dimensions (see org.kylepitcock.legacyconnector.v1_7_10.dimension): ids "legacyconnector:legacy".
         CHUNK_GENERATORS.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.CODEC);
+        CHUNK_GENERATORS.register("legacy_1122", () -> org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyChunkGenerator1122.CODEC);
         BIOME_SOURCES.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.CODEC);
     }
 
