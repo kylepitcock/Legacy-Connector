@@ -20,6 +20,11 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   NEI -> JEI, CoFH RF -> NeoForge energy). NEI is never loaded when JEI is present; everything it registers is mapped into JEI.
 - Only 1.7.10-engine-only mods are skipped (performance/bug-fix patches, ID extenders, mixin loaders, profilers: list in
   `loader/.../LibraryBridges.java`, `OBSOLETE`). Client mods (Inventory Tweaks, JourneyMap, Custom Main Menu, ...) must load.
+- **Native extension points.** Legacy content enters the game the way a 1.21.1 NeoForge mod would add it; the layer only
+  translates the legacy API into that: village buildings -> jigsaw elements in the village pools, structure chests -> loot
+  tables (+ global loot modifiers), ores/features -> placed features + biome modifiers, biomes -> the biome-placement API the
+  pack uses, spawns -> biome modifiers, recipes/tags -> data packs, containers -> capabilities. No post-generation decorators,
+  result-overriding mixins or direct fills when a native hook exists: those ignore the pack's other mods.
 - **Fix generically first.** Make old mods work by implementing or synthesizing the legacy MC/Forge API (shim, bridges,
   synth). A mod-specific fix is allowed only when no umbrella fix works and the mod is popular; keep it minimal, isolated
   (own class, labelled, keyed by mod id) and easy to remove.
