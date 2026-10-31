@@ -80,7 +80,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 - Static constants of vanilla classes the shim does not have (typed with synthesized classes) are produced on first read by `Vanilla1122.resolveStatic`
   (hooked into `Synth.getField`): `Blocks`/`Items` wrappers, enum constants, self-typed constants, state properties. `tools/gen_vanilla_1122.py` and
   `tools/gen_constants_1122.py` generate `init/Blocks|Items|SoundEvents|MobEffects|Enchantments` from the legacy field list.
-- Test: put 1.12.2 jars in `run-subtest/mods` (keep the 1.7.10 ones in `mods-1710`), delete or move `run-subtest/.legacyconnector/cache` and `run-subtest/world`,
+- Test: put 1.12.2 jars in `run-subtest/mods/1.12.2/` (not directly in `mods`: jars that bundle Mixin fail module resolution there; keep the 1.7.10 ones in `mods-1710`), delete or move `run-subtest/.legacyconnector/cache` and `run-subtest/world`,
   `./gradlew runServerSubTest`; the log prints "1.12.2 content registered: ..." and "1.12.2 items/blocks per mod: ..."; failing mods are listed under
   "failed to load". The server test also logs "1.12.2 blockstates: N translated, M fell back" (client translation run on the server; `-PassetsDump=<dir>` writes the
   generated assets, `-PclientProxies=<class,...>` runs those mods' client proxies first so their state mappers exist, e.g. `mekanism.client.ClientProxy`) and
