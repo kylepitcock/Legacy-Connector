@@ -924,7 +924,14 @@ public final class ItemBridge {
             int block = BlockBridge.registeredIdOf(ib.mcc$block());
             if (block >= 0) return block;
         }
-        return modernOnlyId(item);
+        int modernOnly = modernOnlyId(item);
+        if (modernOnly < 0 && item instanceof ItemBlock ib && ib.mcc$block() != null && ib.mcc$block().mcc$vanilla != null
+                && ib.mcc$block().mcc$vanilla.legacyId() < 0) {
+            // the item of a modern block that has none (frosted ice, end gateway, flowing kelp): the block's own modern-only id, which
+            // byId resolves back to this item; -1 made Thaumcraft's Thaumometer look up a null item and poison its aspect table
+            return BlockBridge.idOf(ib.mcc$block());
+        }
+        return modernOnly;
     }
 
     /** {@link #MODERN_ID_BASE} plus the modern registry id for a wrapper of a modern-only item, else -1. */
