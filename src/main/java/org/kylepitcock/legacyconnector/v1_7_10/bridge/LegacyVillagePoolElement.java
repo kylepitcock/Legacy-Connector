@@ -105,34 +105,65 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
         return start;
     }
 
-    /** The component built with its plot corner at (x, y, z), or null when the handler builds nothing. */
-    private StructureComponent build(int x, int y, int z, int mode, long seed) {
+    /** Footprints smaller than this (x by z) are not buildings: a wall post would take a house's place in the village. */
+    private static final int MIN_SPAN = 3;
+    /** Pieces a component may add by continuing the layout (1.7.10's pending list), at most. */
+    private static final int MAX_PIECES = 64;
+
+    /**
+     * The handler's component built with its plot corner at (x, y, z), followed by every piece it adds by continuing the layout
+     * from its own paths, processed as 1.7.10's village start did (Witchery's district wall is a 2x2 post that adds the next post;
+     * on its own it was one post taking a house's plot). Empty when the handler builds nothing.
+     */
+    private List<StructureComponent> build(int x, int y, int z, int mode, long seed) {
         var h = handler();
-        if (h == null) return null;
+        if (h == null) return List.of();
         try {
             Random rand = new Random(seed);
             StructureVillagePieces.PieceWeight weight = h.getVillagePieceWeight(rand, 0);
-            if (weight == null) return null;
-            Object built = h.buildComponent(weight, start(rand), new ArrayList<>(), rand, x, y, z, mode, 1);
-            return built instanceof StructureComponent c && c.getBoundingBox() != null ? c : null;
+            if (weight == null) return List.of();
+            StructureVillagePieces.Start start = start(rand);
+            List<Object> pieces = new ArrayList<>();
+            Object built = h.buildComponent(weight, start, pieces, rand, x, y, z, mode, 1);
+            if (!(built instanceof StructureComponent first) || first.getBoundingBox() == null) return List.of();
+            pieces.add(first);
+            first.buildComponent(start, pieces, rand);
+            for (int guard = 0; !start.field_74932_i.isEmpty() && guard < MAX_PIECES; guard++) {
+                Object next = start.field_74932_i.remove(0);
+                if (next instanceof StructureComponent c) c.buildComponent(start, pieces, rand);
+            }
+            List<StructureComponent> out = new ArrayList<>();
+            for (Object o : pieces) if (o instanceof StructureComponent c && c.getBoundingBox() != null && out.size() < MAX_PIECES) out.add(c);
+            return out;
         } catch (RuntimeException | LinkageError e) {
             LOG.debug("Village creation handler {} built nothing: {}", handler, e.toString());
-            return null;
+            return List.of();
         }
     }
 
-    /** The footprint relative to the plot corner, for a mode; null without a component. Fixed per element and mode. */
+    /** The footprint of the whole group relative to the plot corner, for a mode; null when it is no building. Fixed per mode. */
     private final BoundingBox[] shapes = new BoundingBox[4];
     private final boolean[] shaped = new boolean[4];
 
     private BoundingBox shape(int mode) {
         if (!shaped[mode]) {
-            StructureComponent c = build(0, PLAN_Y, 0, mode, handler.hashCode());
-            StructureBoundingBox b = c == null ? null : c.getBoundingBox();
-            shapes[mode] = b == null ? null : new BoundingBox(b.minX, b.minY - PLAN_Y, b.minZ, b.maxX, b.maxY - PLAN_Y, b.maxZ);
+            BoundingBox union = null;
+            for (StructureComponent c : build(0, PLAN_Y, 0, mode, handler.hashCode())) {
+                StructureBoundingBox b = c.getBoundingBox();
+                BoundingBox m = new BoundingBox(b.minX, b.minY - PLAN_Y, b.minZ, b.maxX, b.maxY - PLAN_Y, b.maxZ);
+                union = union == null ? m : BoundingBox.encapsulatingBoxes(List.of(union, m)).orElse(union);
+            }
+            if (union != null && (union.getXSpan() < MIN_SPAN || union.getZSpan() < MIN_SPAN)) union = null;
+            shapes[mode] = union;
             shaped[mode] = true;
         }
         return shapes[mode];
+    }
+
+    /** Whether the handler builds a real building (some mode has a footprint of at least 3x3): only those join the pools. */
+    public boolean isBuilding() {
+        for (int mode = 0; mode < 4; mode++) if (shape(mode) != null) return true;
+        return false;
     }
 
     // ------------------------------------------------------------------ pool element
@@ -178,27 +209,24 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
     public boolean place(StructureTemplateManager manager, WorldGenLevel level, StructureManager structureManager, ChunkGenerator generator,
             BlockPos offset, BlockPos pivot, Rotation rotation, BoundingBox box, RandomSource random, LiquidSettings liquidSettings, boolean keepJigsaws) {
         int mode = mode(rotation);
-        StructureComponent component = build(offset.getX(), offset.getY() + PLAN_Y, offset.getZ(), mode, handler.hashCode());
-        if (component == null) {
-            if (REPORTED.incrementAndGet() <= 12) LOG.info("Legacy village building of {} at {}: the handler built no component", handler, offset);
-            return false;
-        }
-        // planned at PLAN_Y: down to the street the jigsaw put it on, ground level already found (no 1.7.10 averaging)
-        component.getBoundingBox().offset(0, -PLAN_Y, 0);
-        if (component instanceof StructureVillagePieces.Village v) v.mcc$setGroundLevel(component.getBoundingBox().minY);
-        try {
-            StructureBoundingBox chunk = new StructureBoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
-            boolean done = component.addComponentParts(World.mcc$wrap(level), new Random(random.nextLong()), chunk);
-            if (REPORTED.incrementAndGet() <= 12) {
-                StructureBoundingBox b = component.getBoundingBox();
-                LOG.info("Legacy village building {} at {} (box {},{},{} to {},{},{}, chunk box {}): addComponentParts returned {}",
-                        component.getClass().getName(), offset, b.minX, b.minY, b.minZ, b.maxX, b.maxY, b.maxZ, box, done);
+        if (shape(mode) == null) return false;
+        List<StructureComponent> group = build(offset.getX(), offset.getY() + PLAN_Y, offset.getZ(), mode, handler.hashCode());
+        if (group.isEmpty()) return false;
+        StructureBoundingBox chunk = new StructureBoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
+        World world = World.mcc$wrap(level);
+        Random rand = new Random(random.nextLong());
+        for (StructureComponent component : group) {
+            // planned at PLAN_Y: down to the street the jigsaw put it on, ground level already found (no 1.7.10 averaging)
+            component.getBoundingBox().offset(0, -PLAN_Y, 0);
+            if (component instanceof StructureVillagePieces.Village v) v.mcc$setGroundLevel(group.get(0).getBoundingBox().minY);
+            if (!component.getBoundingBox().intersectsWith(chunk)) continue;
+            try {
+                component.addComponentParts(world, rand, chunk);
+            } catch (RuntimeException | LinkageError e) {
+                if (REPORTED.incrementAndGet() <= 12) LOG.warn("Legacy village building {} failed at {}", component.getClass().getName(), offset, e);
             }
-            return true;
-        } catch (RuntimeException | LinkageError e) {
-            LOG.warn("Legacy village building {} failed at {}", component.getClass().getName(), offset, e);
-            return false;
         }
+        return true;
     }
 
     @Override

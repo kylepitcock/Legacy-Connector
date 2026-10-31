@@ -41,6 +41,8 @@ public final class LegacyVillages {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(LegacyVillages::addToPools);
     }
 
+    private static final java.util.Set<String> NOT_BUILDINGS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /** The vanilla village house pools, by village type. */
     private static final List<String> VILLAGE_TYPES = List.of("plains", "desert", "savanna", "snowy", "taiga");
 
@@ -73,6 +75,12 @@ public final class LegacyVillages {
                 }
                 var element = new LegacyVillagePoolElement(handler.getClass().getName(), type,
                         net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection.RIGID);
+                if (!element.isBuilding()) {
+                    if (NOT_BUILDINGS.add(handler.getClass().getName())) {
+                        LOG.info("Legacy village piece {} is not added to the village pools: it builds no footprint of at least 3x3", handler.getClass().getName());
+                    }
+                    continue;
+                }
                 if (addToPool(pool, element, weight)) added++;
             }
         }
