@@ -120,4 +120,47 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
     public boolean shouldRenderOffScreen(LegacyBlockEntity be) {
         return true;
     }
+
+    /** Whether the block entity is stored where it is drawn (not a contraption's or a Sable sub-level's), so world culling applies. */
+    private static boolean placed(LegacyBlockEntity be, Vec3 camera) {
+        var p = be.getBlockPos();
+        return !org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(be.getLevel())
+                && Math.abs(p.getX() - camera.x) <= FAR && Math.abs(p.getY() - camera.y) <= FAR && Math.abs(p.getZ() - camera.z) <= FAR;
+    }
+
+    /**
+     * 1.7.10's distance cull (TileEntityRendererDispatcher.renderTileEntity): drawn while {@code getDistanceFrom(camera)} is below
+     * {@code getMaxRenderDistanceSquared()}, 64 blocks unless the tile entity says otherwise (ChromatiCraft's pylons, beacons).
+     */
+    @Override
+    public boolean shouldRender(LegacyBlockEntity be, Vec3 camera) {
+        TileEntity te = be.legacy();
+        if (te == null) return false;
+        if (!placed(be, camera)) return BlockEntityRenderer.super.shouldRender(be, camera);
+        try {
+            return te.getDistanceFrom(camera.x, camera.y, camera.z) < te.getMaxRenderDistanceSquared();
+        } catch (RuntimeException | LinkageError e) {
+            return BlockEntityRenderer.super.shouldRender(be, camera);
+        }
+    }
+
+    /**
+     * The frustum cull box: the tile entity's {@code getRenderBoundingBox()}, as 1.7.10's RenderGlobal tested it (renderers that
+     * draw beyond their block declare a bigger or the infinite box; the block's own cube cut them off whenever it left the view).
+     */
+    @Override
+    public net.minecraft.world.phys.AABB getRenderBoundingBox(LegacyBlockEntity be) {
+        TileEntity te = be.legacy();
+        Vec3 camera = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        if (te == null || !placed(be, camera)) return BlockEntityRenderer.super.getRenderBoundingBox(be);
+        try {
+            var box = te.getRenderBoundingBox();
+            if (box == null) return BlockEntityRenderer.super.getRenderBoundingBox(be);
+            if (Double.isInfinite(box.minX) || Double.isInfinite(box.minY) || Double.isInfinite(box.minZ) || Double.isInfinite(box.maxX)
+                    || Double.isInfinite(box.maxY) || Double.isInfinite(box.maxZ)) return net.minecraft.world.phys.AABB.INFINITE;
+            return new net.minecraft.world.phys.AABB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+        } catch (RuntimeException | LinkageError e) {
+            return BlockEntityRenderer.super.getRenderBoundingBox(be);
+        }
+    }
 }

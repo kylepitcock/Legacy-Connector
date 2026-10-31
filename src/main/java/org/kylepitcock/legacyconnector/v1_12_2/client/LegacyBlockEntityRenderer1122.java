@@ -52,9 +52,40 @@ public final class LegacyBlockEntityRenderer1122 implements BlockEntityRenderer<
         return 64;
     }
 
+    /**
+     * 1.12.2's distance cull (TileEntityRendererDispatcher.render): drawn while {@code getDistanceSq(camera)} is below
+     * {@code getMaxRenderDistanceSquared()}, 64 blocks unless the tile entity says otherwise.
+     */
+    @Override
+    public boolean shouldRender(Legacy1122BlockEntity be, net.minecraft.world.phys.Vec3 camera) {
+        TileEntity te = be.legacy();
+        if (te == null) return false;
+        if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(be.getLevel())) return BlockEntityRenderer.super.shouldRender(be, camera);
+        try {
+            return te.getDistanceSq(camera.x, camera.y, camera.z) < te.getMaxRenderDistanceSquared();
+        } catch (RuntimeException | LinkageError e) {
+            return BlockEntityRenderer.super.shouldRender(be, camera);
+        }
+    }
+
+    /**
+     * The frustum cull box: the block and its neighbours (renderers draw a little outside their block) together with the tile
+     * entity's own {@code getRenderBoundingBox()}, which vanilla 1.12.2 culled with (infinite for beacons and big multiblock renderers).
+     */
     @Override
     public AABB getRenderBoundingBox(Legacy1122BlockEntity be) {
         var p = be.getBlockPos();
-        return new AABB(p.getX() - 1, p.getY() - 1, p.getZ() - 1, p.getX() + 2, p.getY() + 2, p.getZ() + 2);
+        AABB around = new AABB(p.getX() - 1, p.getY() - 1, p.getZ() - 1, p.getX() + 2, p.getY() + 2, p.getZ() + 2);
+        TileEntity te = be.legacy();
+        if (te == null || org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(be.getLevel())) return around;
+        try {
+            var box = te.getRenderBoundingBox();
+            if (box == null) return around;
+            if (Double.isInfinite(box.minX) || Double.isInfinite(box.minY) || Double.isInfinite(box.minZ) || Double.isInfinite(box.maxX)
+                    || Double.isInfinite(box.maxY) || Double.isInfinite(box.maxZ)) return AABB.INFINITE;
+            return around.minmax(new AABB(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ));
+        } catch (RuntimeException | LinkageError e) {
+            return around;
+        }
     }
 }
