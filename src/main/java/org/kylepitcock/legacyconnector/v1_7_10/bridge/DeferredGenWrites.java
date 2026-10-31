@@ -87,6 +87,12 @@ public final class DeferredGenWrites {
         });
     }
 
+    /**
+     * Send to clients, but no shape updates: those read the neighbouring blocks, and a write on a chunk border waits forever on
+     * the neighbouring chunk when it is still being generated (the server thread hung entering a Thaumcraft dimension).
+     */
+    private static final int WRITE_FLAGS = 2 | 16 | 32;
+
     private static void apply(ServerLevel level, long key) {
         Map<Long, Queue<Write>> byChunk = PENDING.get(level);
         if (byChunk == null) return;
@@ -96,11 +102,11 @@ public final class DeferredGenWrites {
         for (Write w : writes) {
             try {
                 if (w.state != null) {
-                    level.setBlock(w.pos, w.state, 2);
+                    level.setBlock(w.pos, w.state, WRITE_FLAGS);
                 } else {
                     BlockState current = level.getBlockState(w.pos);
                     BlockState next = BlockBridge.withMeta(current, w.meta);
-                    if (next != current) level.setBlock(w.pos, next, 2);
+                    if (next != current) level.setBlock(w.pos, next, WRITE_FLAGS);
                 }
             } catch (RuntimeException e) {
                 LOG.debug("Deferred legacy generation write at {} failed", w.pos, e);
