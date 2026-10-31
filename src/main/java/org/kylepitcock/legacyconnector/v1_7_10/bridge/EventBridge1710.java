@@ -895,11 +895,26 @@ public final class EventBridge1710 {
 
     static DamageSource legacySource(net.minecraft.world.damagesource.DamageSource modern) {
         String type = modern.getMsgId();
-        var direct = modern.getDirectEntity() == null ? null : EntityBridge.wrap(modern.getDirectEntity());
-        var cause = modern.getEntity() == null ? null : EntityBridge.wrap(modern.getEntity());
-        if (direct != null && cause != null && direct != cause) return new EntityDamageSourceIndirect(type, direct, cause);
-        if (cause != null) return new EntityDamageSource(type, cause);
-        return new DamageSource(type);
+        if (modern.getDirectEntity() != null || modern.getEntity() != null) return DamageSource.mcc$wrap(modern);
+        // Vanilla environmental sources are the legacy singletons (mods compare with == or read the flags: ProjectE's fire immunity).
+        switch (type) {
+            case "inFire": return DamageSource.inFire;
+            case "onFire": return DamageSource.onFire;
+            case "lava": return DamageSource.lava;
+            case "inWall": return DamageSource.inWall;
+            case "drown": return DamageSource.drown;
+            case "starve": return DamageSource.starve;
+            case "cactus": return DamageSource.cactus;
+            case "fall": return DamageSource.fall;
+            case "outOfWorld": return DamageSource.outOfWorld;
+            case "generic": return DamageSource.generic;
+            case "magic": return DamageSource.magic;
+            case "wither": return DamageSource.wither;
+            case "anvil": return DamageSource.anvil;
+            case "fallingBlock": return DamageSource.fallingBlock;
+            default: break;
+        }
+        return DamageSource.mcc$wrap(modern); // keeps the flags (fire, projectile, ...)
     }
 
     private static void notifyFailures(net.minecraft.world.entity.player.Player player) {
