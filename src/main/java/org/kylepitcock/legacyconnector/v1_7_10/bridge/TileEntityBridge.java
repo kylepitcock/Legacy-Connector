@@ -207,7 +207,7 @@ public final class TileEntityBridge {
             view = new VanillaInventoryTile(c);
         } else if (ModernCapabilityTile.offers(be)) {
             // another NeoForge mod's machine: legacy generators and pumps push into IEnergyHandler/IFluidHandler neighbours
-            view = new ModernCapabilityTile(be);
+            view = ModernCapabilityTile.of(be);
         }
         if (view != null) view.mcc$host = be;
         return view;

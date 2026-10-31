@@ -21,11 +21,16 @@ import net.neoforged.neoforge.fluids.capability.IFluidHandler.FluidAction;
  * adjacent {@code IEnergyHandler}), so a modern machine that only pulls through the capability would never get anything from them.
  * Every call goes to the live capability, so the view follows sides and state changes of the modern block.
  */
-public final class ModernCapabilityTile extends TileEntity implements IEnergyHandler, IFluidHandler {
-    private final BlockEntity host;
+public class ModernCapabilityTile extends TileEntity implements IEnergyHandler, IFluidHandler {
+    protected final BlockEntity host;
 
     public ModernCapabilityTile(BlockEntity host) {
         this.host = host;
+    }
+
+    /** The view of a block entity that {@link #offers} something: an {@code ISidedInventory} as well when it has an item handler. */
+    public static ModernCapabilityTile of(BlockEntity be) {
+        return ModernItemTile.hasItems(be) ? new ModernItemTile(be) : new ModernCapabilityTile(be);
     }
 
     /** Whether the block entity offers an energy or fluid capability on any side (or sideless). */
@@ -37,7 +42,7 @@ public final class ModernCapabilityTile extends TileEntity implements IEnergyHan
         for (Direction d : Direction.values()) {
             if (level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, d) != null || level.getCapability(Capabilities.FluidHandler.BLOCK, pos, d) != null) return true;
         }
-        return false;
+        return ModernItemTile.hasItems(be);
     }
 
     private IEnergyStorage energy(ForgeDirection from) {
