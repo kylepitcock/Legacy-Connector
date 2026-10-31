@@ -168,4 +168,24 @@ public class OreDictionary {
             this.Ore = ore;
         }
     }
+
+    /**
+     * A recipe ingredient that is none of the types Forge's ore recipes accept. DragonAPI patches {@code ShapedOreRecipe} (RecipeStackParsing)
+     * so that its {@code BlockKey} (a block with metadata) is an ingredient: it becomes the stack of that block. The raw key stayed in the
+     * recipe here, and IndustrialCraft 2's recipe scan, which accepts stacks, ore names and stack lists only, ended the game at start-up
+     * over 53 RotaryCraft/ChromatiCraft recipes. Any object that offers {@code asItemStack()} becomes that stack; others are kept.
+     */
+    public static Object mcc$ingredient(Object o) {
+        if (o == null || o instanceof ItemStack || o instanceof String || o instanceof java.util.List) return o;
+        try {
+            java.lang.reflect.Method m = o.getClass().getMethod("asItemStack");
+            if (ItemStack.class.isAssignableFrom(m.getReturnType())) {
+                Object stack = m.invoke(o);
+                if (stack != null) return stack;
+            }
+        } catch (ReflectiveOperationException | LinkageError | RuntimeException e) {
+            // not a stack-like ingredient: kept as it is
+        }
+        return o;
+    }
 }

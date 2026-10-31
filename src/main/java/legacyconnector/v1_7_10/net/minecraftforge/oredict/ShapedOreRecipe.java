@@ -60,6 +60,7 @@ public class ShapedOreRecipe implements IRecipe {
             Object v = args[i + 1];
             if (v instanceof Block b) v = new ItemStack(b, 1, 32767);
             else if (v instanceof Item it) v = new ItemStack(it, 1, 32767);
+            else v = OreDictionary.mcc$ingredient(v);
             key.put(c, v);
         }
         for (String row : rows) width = Math.max(width, row.length());

@@ -29,7 +29,7 @@ public class ShapelessOreRecipe implements IRecipe {
         for (Object o : recipe) {
             if (o instanceof legacyconnector.v1_7_10.net.minecraft.block.Block b) input.add(new ItemStack(b, 1, 32767));
             else if (o instanceof Item it) input.add(new ItemStack(it, 1, 32767));
-            else input.add(o);
+            else input.add(OreDictionary.mcc$ingredient(o));
         }
     }
 
