@@ -275,8 +275,22 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     @Override
     protected void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
-        if (!newState.is(this)) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
+        if (!newState.is(this) && !(moving && movesTileEntity(state))) legacy.breakBlock(world(level), pos.getX(), pos.getY(), pos.getZ(), legacy, meta(state));
         super.onRemove(state, level, pos, newState, moving);
+    }
+
+    /**
+     * A block with a tile entity removed as "moving" is being carried away whole (Create contraptions, Sable/Create Aeronautics
+     * sub-levels: the tile entity's NBT is copied to the new position). 1.7.10's pistons never moved tile entities, so breakBlock
+     * always meant destruction; here it would drop the inventory that also travels with the block (a duplicate), so it is skipped.
+     * Blocks without a tile entity still get breakBlock, as when a 1.7.10 piston pushed them.
+     */
+    private boolean movesTileEntity(BlockState state) {
+        try {
+            return legacy.hasTileEntity(meta(state));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     @Override

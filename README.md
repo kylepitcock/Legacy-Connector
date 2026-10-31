@@ -281,6 +281,19 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 - Handler quads of one colour get modern face shading and ambient occlusion (1.7.10's baked-in face shade is divided out).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.
 
+### Create contraptions and Create Aeronautics/Sable ships
+
+Create contraptions (bearings, pistons, gantries, minecart contraptions, trains) and Create Aeronautics/Sable ships can carry
+legacy blocks (1.7.10 and 1.12.2; issue #108, not yet verified in game). The hosted tile entity's NBT travels with the block and
+is loaded at the new position with its coordinates corrected, and `breakBlock` is not run for a tile entity block that is carried
+away (it would drop the inventory that also travels). With Create installed (optional), its movement checks follow the legacy
+piston rules: mobility flag 2 and hardness -1 (also per position) refuse a block, mobility 1 blocks (torches, levers, wires) are
+moved as brittle. On a moving contraption, tile entity renderers draw from the contraption's render world, but legacy tile
+entities there do not tick; on a Sable ship the blocks stay in the real world and tick normally. Limitations: block orientation
+kept in metadata is not rotated when a contraption is placed back turned; legacy inventories are not contraption storage (drills
+and harvesters cannot fill them while moving); tile entities that store other blocks' absolute coordinates (multiblock masters)
+keep pointing at the old place.
+
 ## Changing legacy recipes
 
 Legacy recipes are ordinary modern recipes in a data pack (`legacyconnector_legacy_recipes`) placed below world data packs, so

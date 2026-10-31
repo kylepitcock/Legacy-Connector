@@ -190,9 +190,27 @@ public class World implements IBlockAccess {
             REGION_VIEW.set(view);
             return view;
         }
+        if (org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) {
+            synchronized (VIRTUAL_VIEWS) {
+                var ref = VIRTUAL_VIEWS.get(level);
+                World view = ref == null ? null : ref.get();
+                if (view == null) {
+                    view = level.isClientSide() ? new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient(level) : new World(level);
+                    VIRTUAL_VIEWS.put(level, new java.lang.ref.WeakReference<>(view));
+                }
+                return view;
+            }
+        }
         return VIEWS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
                 : l.isClientSide() ? new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient(l) : new World(l));
     }
+
+    /**
+     * Views of levels other mods build as copies (Create's contraption render worlds, Ponder scenes; see VirtualLevels). Such a level
+     * lives as long as its contraption; held strongly here (the view holds its level) every contraption ever assembled stayed in memory.
+     * The view is held by the tile entities placed in it and goes away with them.
+     */
+    private static final Map<LevelAccessor, java.lang.ref.WeakReference<World>> VIRTUAL_VIEWS = new WeakHashMap<>();
 
     public LevelAccessor mcc$level() {
         return lvl();
