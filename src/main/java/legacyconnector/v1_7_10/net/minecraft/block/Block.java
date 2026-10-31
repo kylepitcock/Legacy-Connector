@@ -589,6 +589,15 @@ public class Block {
         return this.blockIcon;
     }
 
+    /**
+     * The icon registerBlockIcons left in {@code blockIcon}: model generation falls back to it when a mod's getIcon returns
+     * null for every metadata (ChromatiCraft's TESR machines keep their faces in a per-tile table that is empty for them and
+     * register only "chromaticraft:transparent" here, for particles).
+     */
+    public final IIcon mcc$blockIcon() {
+        return this.blockIcon;
+    }
+
     /** The icon of a vanilla block's face under its 1.7.10 name (see {@code VanillaIcons}). */
     protected final IIcon mcc$vanillaBlockIcon(int side, int meta) {
         return mcc$vanillaIcon(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaIcons.name(this, textureName, side, meta));
