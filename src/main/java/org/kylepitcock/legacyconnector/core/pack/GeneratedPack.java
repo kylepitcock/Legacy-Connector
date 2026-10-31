@@ -51,14 +51,30 @@ public final class GeneratedPack implements PackResources {
         if (type == PackType.CLIENT_RESOURCES) GeneratedTranslations.contribute(files);
         List<Contributor> all = new java.util.ArrayList<>(recipes ? RECIPE_CONTRIBUTORS : CONTRIBUTORS);
         if (!recipes) all.addAll(LATE_CONTRIBUTORS);
-        for (Contributor c : all) {
-            try {
-                c.contribute(type, files);
-            } catch (RuntimeException | LinkageError e) {
-                LoggerFactory.getLogger("LegacyConnector/Pack").error("Generated pack contributor {} failed", c, e);
+        BUILDING.incrementAndGet();
+        try {
+            for (Contributor c : all) {
+                try {
+                    c.contribute(type, files);
+                } catch (RuntimeException | LinkageError e) {
+                    LoggerFactory.getLogger("LegacyConnector/Pack").error("Generated pack contributor {} failed", c, e);
+                }
             }
+        } finally {
+            BUILDING.decrementAndGet();
         }
         LoggerFactory.getLogger("LegacyConnector/Pack").info("Generated {} {} file(s) for legacy mods", files.size(), type == PackType.SERVER_DATA ? "data" : "asset");
+    }
+
+    private static final java.util.concurrent.atomic.AtomicInteger BUILDING = new java.util.concurrent.atomic.AtomicInteger();
+
+    /**
+     * Whether a generated pack is being built right now. Legacy mods' TextureStitchEvent.Pre handlers run then (the sprites they
+     * register become atlas sources), before the resources being reloaded are visible: a texture they bind or load at that
+     * moment (OpenComputers preloads its model textures) could not be found (FileNotFoundException logged for files that exist).
+     */
+    public static boolean building() {
+        return BUILDING.get() > 0;
     }
 
     public static void addContributor(Contributor c) {

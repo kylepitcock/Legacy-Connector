@@ -993,7 +993,8 @@ public class World implements IBlockAccess {
     @Override
     public TileEntity getTileEntity(BlockPos pos) {
         var p = modern(pos);
-        if (acc() == null || outsideRegion(p) || unloaded(p)) return null;
+        if (acc() != null && outsideRegion(p)) return deferredTile(p, pos);
+        if (acc() == null || unloaded(p)) return null;
         if (acc() instanceof ServerLevel sl && !sl.getServer().isSameThread()) {
             var holder = sl.getChunkSource().chunkMap.getVisibleChunkIfPresent(net.minecraft.world.level.ChunkPos.asLong(p.getX() >> 4, p.getZ() >> 4));
             var chunk = holder == null ? null : holder.getTickingChunk();
@@ -1005,10 +1006,78 @@ public class World implements IBlockAccess {
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(this, be); // the game's own block entities
     }
 
+    /**
+     * A populator of a mod dimension that placed a block past its generation region (deferred, see {@link #deferOutsideRegion}) and
+     * then fills its tile entity (Aether's bronze dungeon chests) gets a stand-in made by the block; when the block is placed, the
+     * stand-in's data is loaded into the real tile entity.
+     */
+    private TileEntity deferredTile(net.minecraft.core.BlockPos p, BlockPos pos) {
+        if (!(acc() instanceof net.minecraft.server.level.WorldGenRegion r)) return null;
+        if (org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.idOf(r.getLevel().dimension().location()) == null) return null;
+        Object tile = org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.tile(r.getLevel(), p, modernState -> {
+            try {
+                IBlockState state = StatesBridge1122.toLegacy(modernState);
+                var block = StatesBridge1122.legacyBlock(modernState);
+                if (state == null || block == null || !block.hasTileEntity(state)) return null;
+                TileEntity te = block.createTileEntity(this, state);
+                if (te != null) {
+                    te.setWorld(this);
+                    te.setPos(pos);
+                }
+                return te;
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            }
+        }, be -> {
+            // the stand-in is looked up again: the populator may have replaced it by setTileEntity
+            Object stand = org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.standIn(r.getLevel(), p);
+            if (stand instanceof TileEntity te) attachStandIn(be, te);
+        });
+        return tile instanceof TileEntity te ? te : null;
+    }
+
+    private static void attachStandIn(net.minecraft.world.level.block.entity.BlockEntity be, TileEntity stand) {
+        if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity host) {
+            host.mcc$loadFrom(stand);
+        } else if (stand instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityLockableLoot loot) {
+            // a game container (the vanilla chest of Aether's dungeons): the loot table or the items the populator stored
+            var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.TileViews1122.view(org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(be.getLevel()), be);
+            if (view instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityLockableLoot target) {
+                if (loot.getLootTable() != null) {
+                    long seed = loot.writeToNBT(new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound()).getLong("LootTableSeed");
+                    target.setLootTable(loot.getLootTable(), seed);
+                } else {
+                    int n = Math.min(loot.getSizeInventory(), target.getSizeInventory());
+                    for (int i = 0; i < n; i++) {
+                        var stack = loot.getStackInSlot(i);
+                        if (stack != null && !stack.isEmpty()) target.setInventorySlotContents(i, stack);
+                    }
+                }
+            }
+        } else {
+            return;
+        }
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/WorldGen").info("Deferred tile entity {} attached to the block entity at {}", stand.getClass().getName(), be.getBlockPos());
+    }
+
     /** Puts a legacy tile entity at a position whose block hosts legacy tile entities (others have their own modern block entity). */
     public void setTileEntity(BlockPos pos, TileEntity tileEntity) {
         var p = modern(pos);
-        if (acc() == null || tileEntity == null || outsideRegion(p)) return;
+        if (acc() == null || tileEntity == null) return;
+        if (outsideRegion(p)) {
+            if (acc() instanceof net.minecraft.server.level.WorldGenRegion r) {
+                if (org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.replaceStandIn(r.getLevel(), p, tileEntity)) {
+                    tileEntity.setWorld(this);
+                    tileEntity.setPos(pos);
+                } else if (org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.pendingState(r.getLevel(), p) != null) {
+                    deferredTile(p, pos); // makes the stand-in, then replaces it
+                    org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.replaceStandIn(r.getLevel(), p, tileEntity);
+                    tileEntity.setWorld(this);
+                    tileEntity.setPos(pos);
+                }
+            }
+            return;
+        }
         var be = acc().getBlockEntity(p);
         if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity host) {
             tileEntity.setPos(pos);

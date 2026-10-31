@@ -80,6 +80,12 @@ public abstract class TileEntityLockableLoot extends TileEntityLockable {
     }
 
     public void setLootTable(ResourceLocation tableIn, long seed) {
+        // a view of a game container: the game rolls the table when the chest is opened (the view's own copy was never read)
+        if (mcc$host instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity r) {
+            r.setLootTable(tableIn == null ? null : net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.LOOT_TABLE, tableIn.mcc$modern()), seed);
+            this.lootTable = null;
+            return;
+        }
         this.lootTable = tableIn;
         this.lootTableSeed = seed;
     }

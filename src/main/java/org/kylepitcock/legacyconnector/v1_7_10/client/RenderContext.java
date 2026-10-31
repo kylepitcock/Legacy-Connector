@@ -161,6 +161,8 @@ public final class RenderContext {
     }
 
     public static void bindTexture(ResourceLocation rl) {
+        // the resources being reloaded are not visible yet while the pack is built (mods bind textures in TextureStitchEvent.Pre)
+        if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
         checkExists(rl);
         texture = rl;
         RenderSystem.setShaderTexture(0, rl);
