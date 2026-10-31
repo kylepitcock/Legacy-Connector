@@ -56,6 +56,7 @@ public final class ClientGui {
             // GuiContainer draws just the buttons. The container keeps its own window id, as in 1.7.10.
             var inv = mc.player.getInventory();
             var menu = new LegacyMenu(GuiBridge.menuType(), gc.inventorySlots.windowId, inv, gc.inventorySlots, gc);
+            menu.mcc$setDetached(true);
             mc.setScreen(new LegacyContainerScreen(menu, inv, net.minecraft.network.chat.Component.empty()));
             return;
         }
@@ -95,6 +96,29 @@ public final class ClientGui {
             case "GuiStreamOptions" -> new LegacyScreen(new legacyconnector.v1_7_10.net.minecraft.client.gui.stream.GuiStreamUnavailable(screen));
             default -> null;
         };
+    }
+
+    /** The container of a container screen the client opened by itself and no server menu has claimed, or null. */
+    public static Container detachedContainer(net.minecraft.world.entity.player.Player player) {
+        Minecraft mc = Minecraft.getInstance();
+        if (player != mc.player || !(mc.screen instanceof LegacyContainerScreen cs)) return null;
+        return cs.getMenu().mcc$detached() ? cs.getMenu().legacy() : null;
+    }
+
+    /**
+     * The server opened a container by hand (a mod's own packet made this client build the screen, see
+     * {@code GuiBridge.openManual}) under this window id: the screen's menu becomes the player's open menu with that id, so the
+     * server's slot data, progress bars, clicks and closing find it.
+     */
+    public static void manualOpen(int windowId) {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player != null && mc.screen instanceof LegacyContainerScreen cs && cs.getMenu().mcc$detached() && cs.getMenu().mcc$setWindowId(windowId)) {
+            cs.getMenu().mcc$setDetached(false);
+            mc.player.containerMenu = cs.getMenu();
+            return;
+        }
+        // no screen to take the menu (the mod's packet failed): tell the server so that its menu does not swallow the inventory clicks
+        if (mc.getConnection() != null) mc.getConnection().send(new net.minecraft.network.protocol.game.ServerboundContainerClosePacket(windowId));
     }
 
     public static GuiScreen currentLegacyScreen() {

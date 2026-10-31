@@ -103,6 +103,15 @@ public class TextureAtlasSprite implements IIcon {
         return data;
     }
 
+    /**
+     * 1.7.10's real signature (frame data, width, height), which IndustrialCraft 2's BlockTextureStitched looks up by reflection
+     * (func_147960_a) before it loads any sprite: without it the constructor threw "Can't find prepareAnisotropicFiltering method", every
+     * IC2 block icon (ores, cables, machines) came out null and the blocks drew with the missing texture.
+     */
+    private int[][] prepareAnisotropicFiltering(int[][] data, int width, int height) {
+        return data;
+    }
+
     public void loadSprite(BufferedImage[] images, AnimationMetadataSection animation, boolean anisotropic) {
         resetSprite();
         if (images == null || images.length == 0 || images[0] == null) return;

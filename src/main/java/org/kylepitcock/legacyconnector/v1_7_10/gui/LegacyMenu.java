@@ -58,6 +58,46 @@ public class LegacyMenu extends AbstractContainerMenu {
         super.clicked(slotId, button, mode >= 0 && mode < types.length ? types[mode] : net.minecraft.world.inventory.ClickType.PICKUP, player);
     }
 
+    /** The mod adds the player to the container's listeners itself (it opened the container by hand); the menu must not add another. */
+    public void mcc$crafterManaged() {
+        crafterAdded = true;
+    }
+
+    /** Client: the screen was built from a mod's own packet and the server's window id has not arrived yet. */
+    private boolean detached;
+
+    public boolean mcc$detached() {
+        return detached;
+    }
+
+    public void mcc$setDetached(boolean detached) {
+        this.detached = detached;
+    }
+
+    private static final java.lang.reflect.Field CONTAINER_ID = containerIdField();
+
+    private static java.lang.reflect.Field containerIdField() {
+        try {
+            var f = AbstractContainerMenu.class.getField("containerId");
+            f.setAccessible(true);
+            return f;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** Gives a detached menu the window id the server opened its container under ({@code containerId} is final). */
+    public boolean mcc$setWindowId(int id) {
+        if (CONTAINER_ID == null) return false;
+        try {
+            CONTAINER_ID.setInt(this, id);
+            legacy.windowId = id;
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
     public Container legacy() {
         return legacy;
     }
