@@ -11,7 +11,7 @@ import json, pathlib, re, sys, zipfile, collections
 DATA = pathlib.Path(__file__).resolve().parents[2] / "docs" / "data" / "mods.json"
 REPORTS = DATA.parent / "reports.json"
 TIER = ["community", "maintainer", "client", "corpus"]
-ORDER = ["works", "partial", "loads", "fails", "crashes"]
+ORDER = ["perfect", "works", "partial", "loads", "fails", "crashes"]
 IGNORED = {"legacyconnector", "neoforge", "minecraft", "forge", "fml"}
 
 

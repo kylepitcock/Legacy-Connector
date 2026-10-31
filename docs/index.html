@@ -8,18 +8,18 @@
 <style>
   :root {
     --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dfe3e8; --accent: #2f6fed;
-    --works: #1f9d55; --partial: #c98a00; --loads: #2f7fb5; --fails: #d9480f; --crashes: #c92a2a; --untested: #6b7280;
+    --perfect: #7c3aed; --works: #1f9d55; --partial: #c98a00; --loads: #2f7fb5; --fails: #d9480f; --crashes: #c92a2a; --untested: #6b7280;
     --chip: #eef1f5;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
       --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
-      --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+      --perfect: #b794f6; --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
-    --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
+    --perfect: #b794f6; --works: #4cc38a; --partial: #e5b13a; --loads: #5aaee0; --fails: #ff8a54; --crashes: #ff6b6b; --untested: #8b94a3;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
@@ -57,7 +57,7 @@
   .mod summary { list-style: none; display: flex; gap: 12px; align-items: center; padding: 12px 14px; cursor: pointer; }
   .mod summary::-webkit-details-marker { display: none; }
   .badge { flex: none; min-width: 84px; text-align: center; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; color: #fff; }
-  .badge.works { background: var(--works); } .badge.partial { background: var(--partial); } .badge.loads { background: var(--loads); } .badge.fails { background: var(--fails); }
+  .badge.perfect { background: var(--perfect); } .badge.works { background: var(--works); } .badge.partial { background: var(--partial); } .badge.loads { background: var(--loads); } .badge.fails { background: var(--fails); }
   .badge.crashes { background: var(--crashes); } .badge.untested { background: var(--untested); }
   .name { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
   .meta { color: var(--muted); font-size: 0.85rem; white-space: nowrap; }
@@ -120,16 +120,16 @@
 
   <footer>
     <span id="updated"></span>
-    <b>Works</b> = tested in game (by hand, or the in-game test found problems in under 10% of its blocks, items and mobs); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
+    <b>Near-perfect</b> = the maintainer played it and considers it survival-ready (only small known issues); <b>Works</b> = tested in game (by hand, or the in-game test found problems in under 10% of its blocks, items and mobs); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
   </footer>
 </div>
 
 <script>
 (function () {
   var REPO = "kylepitcock/Legacy-Connector";
-  var LABEL = { works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
+  var LABEL = { perfect: "Near-perfect", works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
   var TIER = ["community", "maintainer", "client", "corpus"];
-  var ORDER = ["works", "partial", "loads", "fails", "crashes"];
+  var ORDER = ["perfect", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
   var PLANNED = ["1.20.1", "1.16.5", "1.2.5"];
@@ -204,6 +204,8 @@
         return (counts[b] || 0) - (counts[a] || 0) || (newest[b] || "").localeCompare(newest[a] || "") || ORDER.indexOf(a) - ORDER.indexOf(b);
       })[0];
       if (!counts[m.status]) m.status = "untested";
+      // the maintainer's survival-ready verdict ("perfect") outranks a plain Works from any tier
+      if (m.status === "works" && m.entries.some(function (e) { return e.source === "maintainer" && e.status === "perfect"; })) m.status = "perfect";
       m.entries.sort(function (a, b) { return TIER.indexOf(a.source) - TIER.indexOf(b.source) || (b.date || "").localeCompare(a.date || ""); });
       m.newest = m.entries.reduce(function (d, e) { return (e.date || "") > d ? e.date : d; }, "");
       return m;
@@ -253,9 +255,9 @@
     var box = document.getElementById("stats");
     box.textContent = "";
     var mods = tabMods();
-    var counts = { works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
+    var counts = { perfect: 0, works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
     mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
-    [["Mods listed", mods.length, "all", ""], ["Work", counts.works, "works", ""], ["Partly work", counts.partial, "partial", ""],
+    [["Mods listed", mods.length, "all", ""], ["Near-perfect", counts.perfect, "perfect", "survival-ready"], ["Work", counts.works, "works", ""], ["Partly work", counts.partial, "partial", ""],
      ["Load (startup test)", counts.loads, "loads", ""], ["Fail to load", counts.fails, "fails", "disabled at startup"],
      ["Crash", counts.crashes, "crashes", "take the game down"]].forEach(function (s) {
       var d = el("button", "stat click");
@@ -275,7 +277,7 @@
     var box = document.getElementById("chips");
     box.textContent = "";
     var mods = tabMods();
-    [["all", "All"], ["works", "Works"], ["partial", "Partial"], ["loads", "Loads"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
+    [["all", "All"], ["perfect", "Near-perfect"], ["works", "Works"], ["partial", "Partial"], ["loads", "Loads"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
       var n = c[0] === "all" ? mods.length : mods.filter(function (m) { return m.status === c[0]; }).length;
       var b = el("button", "chip", c[1] + " " + n);
       b.type = "button";
