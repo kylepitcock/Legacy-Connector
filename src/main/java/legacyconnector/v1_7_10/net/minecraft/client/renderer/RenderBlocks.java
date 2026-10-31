@@ -310,6 +310,11 @@ public class RenderBlocks {
             handler.renderInventoryBlock(block, meta, renderType, this);
             return;
         }
+        // 1.7.10 drew nothing for a render type it had no shape for: -1 (a TileEntitySpecialRenderer block) and a mod render
+        // id without a handler went to FML's renderInventoryBlock, which found none. ChromatiCraft's ChromaItemRenderer calls
+        // renderBlockAsItem for every placer whose tile has no TESR (AI Shutdown, Life Emitter: -1 blocks with no icons), which
+        // drew a missing-texture cube here.
+        if (renderType == -1 || renderType > 41) return;
         Tessellator t = Tessellator.instance;
         block.setBlockBoundsForItemRender();
         setRenderBoundsFromBlock(block);
