@@ -613,17 +613,45 @@ public final class EventBridge1710 {
     }
 
     /** The legacy RenderLivingEvent for an entity about to be drawn, or null when nothing listens or the entity has no legacy view. */
-    private static legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent livingRenderEvent(net.minecraft.world.entity.LivingEntity entity, boolean pre) {
+    private static legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent livingRenderEvent(net.minecraft.world.entity.LivingEntity entity, boolean pre,
+            double[] at) {
         boolean wanted = wants(forge(), pre ? legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre.class
                 : legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post.class);
         if (!wanted) return null;
         if (!(EntityBridge.wrap(entity) instanceof EntityLivingBase living)) return null;
-        var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-        double x = entity.getX() - camera.x;
-        double y = entity.getY() - camera.y;
-        double z = entity.getZ() - camera.z;
+        double x = at[0], y = at[1], z = at[2];
         return pre ? new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre(living, null, x, y, z)
                 : new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post(living, null, x, y, z);
+    }
+
+    /**
+     * The 1.7.10 render position (relative to the camera) of an entity whose modern render event carries this pose: in the world the
+     * pose is the camera-relative translation alone (the view rotation is elsewhere); in a GUI (the inventory's player) it is scaled,
+     * and 1.7.10 drew such entities at 0, 0, 0.
+     */
+    private static double[] legacyRenderPos(com.mojang.blaze3d.vertex.PoseStack pose) {
+        var m = pose.last().pose();
+        boolean world = Math.abs(m.m00() - 1) < 1e-3F && Math.abs(m.m11() - 1) < 1e-3F && Math.abs(m.m22() - 1) < 1e-3F;
+        return world ? new double[] {m.m30(), m.m31(), m.m32()} : new double[] {0, 0, 0};
+    }
+
+    /**
+     * Posts a legacy render event with the drawing context its listeners expect: 1.7.10 fired these inside the entity renderer, with
+     * the GL matrix at the camera and the entity at x, y, z, and listeners draw there (Witchery cancels the player's render and
+     * draws its werewolf, wolf or bat form instead, which drew nothing without a context). The modern pose is at the entity, so it
+     * is moved back to the camera first.
+     */
+    private static boolean postInWorld(legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event event, com.mojang.blaze3d.vertex.PoseStack pose,
+            net.minecraft.client.renderer.MultiBufferSource buffers, int light, double[] at) {
+        pose.pushPose();
+        pose.translate(-at[0], -at[1], -at[2]);
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        try {
+            return forge().post(event);
+        } finally {
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
+            pose.popPose();
+        }
     }
 
     /** Client-only events. Registered from the client entrypoint so servers never load client classes. */
@@ -702,37 +730,38 @@ public final class EventBridge1710 {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)
                     && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
-            var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-            double x = e.getEntity().getX() - camera.x;
-            double y = e.getEntity().getY() - camera.y;
-            double z = e.getEntity().getZ() - camera.z;
+            double[] at = legacyRenderPos(e.getPoseStack());
+            double x = at[0], y = at[1], z = at[2];
             float partial = e.getPartialTick();
             var pre = new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre(player, legacyRenderPlayer(), partial, x, y, z);
-            if (forge().post(pre)) {
+            if (postInWorld(pre, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) {
                 e.setCanceled(true);
                 return;
             }
-            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z));
+            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z),
+                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Post e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post.class)
                     && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
-            var camera = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-            double x = e.getEntity().getX() - camera.x;
-            double y = e.getEntity().getY() - camera.y;
-            double z = e.getEntity().getZ() - camera.z;
+            double[] at = legacyRenderPos(e.getPoseStack());
+            double x = at[0], y = at[1], z = at[2];
             float partial = e.getPartialTick();
-            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z));
-            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z));
+            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z),
+                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z),
+                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
-            var legacy = livingRenderEvent(e.getEntity(), true);
-            if (legacy != null && forge().post(legacy)) e.setCanceled(true);
+            double[] at = legacyRenderPos(e.getPoseStack());
+            var legacy = livingRenderEvent(e.getEntity(), true, at);
+            if (legacy != null && postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) -> {
-            var legacy = livingRenderEvent(e.getEntity(), false);
-            if (legacy != null) forge().post(legacy);
+            double[] at = legacyRenderPos(e.getPoseStack());
+            var legacy = livingRenderEvent(e.getEntity(), false, at);
+            if (legacy != null) postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Pre e) -> {
             if (wants(fml(), TickEvent.ClientTickEvent.class)) fml().post(new TickEvent.ClientTickEvent(TickEvent.Phase.START));
