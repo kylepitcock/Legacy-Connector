@@ -75,4 +75,7 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   distance, a dozen blocks and items per mod); mods go in `run-screenshots/mods`.
 - Live probing: start a session with `SCENARIO=control tools/dev/quick-shots.sh`, then `tools/dev/js.sh '<JavaScript>'` evaluates in the running
   game (bindings `mc`, `server`, `log`; any class via `Java.type(...)`).
+- Headless server probing: `./gradlew runServerSubTest -PserverScript=<file.js> [-PserverScriptFrom=200]` evaluates the file on every server tick
+  (bindings `server`, `tick` counted from the first run, `log`; globals persist, so place on one tick and read on the next); output is logged as
+  `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
