@@ -30,6 +30,7 @@ public final class FiskHeroesHooks {
     private static MethodHandle gravity;
     private static MethodHandle healRate;
     private static MethodHandle invisibleToMobs;
+    private static MethodHandle stepSound;
     private static java.lang.reflect.Field tickrateMspt;
     private static int failures;
     private static float lastTickrate = 20.0F;
@@ -39,6 +40,7 @@ public final class FiskHeroesHooks {
     /** The hooks that run on the server too: slow motion changes the server's tick rate (the hero's TickrateHandler computes it). */
     public static void register(net.neoforged.bus.api.IEventBus gameBus) {
         gameBus.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> serverTick(e.getServer()));
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) FiskHeroesClient.register(gameBus);
     }
 
     /**
@@ -86,6 +88,18 @@ public final class FiskHeroesHooks {
         }
     }
 
+    /** {@code ASMHooks.playStepSound}: a hero's suit sounds (Iron Man's walk) are dispatched from the server on every step. */
+    public static void stepSound(net.minecraft.world.entity.Entity entity, net.minecraft.core.BlockPos pos) {
+        if (resolved && absent) return;
+        if (!(entity instanceof net.minecraft.world.entity.player.Player) || entity.level().isClientSide || !ready() || stepSound == null) return;
+        try {
+            stepSound.invoke((legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase) EntityBridge.wrap(entity), pos.getX(), pos.getY(), pos.getZ(),
+                    (legacyconnector.v1_7_10.net.minecraft.block.Block) null);
+        } catch (Throwable e) {
+            if (failures++ < 3) LOG.warn("Fisk's Heroes' step sound hook failed", e);
+        }
+    }
+
     /** {@code SHHelper.isInvisibleToMobs}: invisible, stealthy or tiny heroes are not targeted by mobs (it replaced two target searches). */
     public static boolean invisibleToMobs(net.minecraft.world.entity.LivingEntity target, double distanceSq) {
         if (resolved && absent) return false;
@@ -117,6 +131,8 @@ public final class FiskHeroesHooks {
                 gravity = optional(hooks, "getEntityGravity", MethodType.methodType(double.class, double.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class));
                 healRate = optional(hooks, "getHealRate",
                         MethodType.methodType(int.class, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, int.class));
+                stepSound = optional(hooks, "playStepSound", MethodType.methodType(void.class, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.class,
+                        int.class, int.class, int.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class));
                 invisibleToMobs = optional(Class.forName("com.fiskmods.heroes.util.SHHelper", true, loader), "isInvisibleToMobs",
                         MethodType.methodType(boolean.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class, double.class));
                 try {

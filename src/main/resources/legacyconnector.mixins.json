@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "EntityGravityMixin",
+    "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
     "LivingEntityDimensionsMixin",
     "LivingEntityTravelMixin",
@@ -14,7 +15,9 @@
     "TargetingConditionsMixin"
   ],
   "client": [
-    "ClientLevelSkyColorMixin"
+    "ClientLevelSkyColorMixin",
+    "MinecraftAttackMixin",
+    "MultiPlayerGameModeMixin"
   ],
   "injectors": {
     "defaultRequire": 1
