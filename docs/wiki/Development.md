@@ -88,4 +88,9 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   channel, so mods that skip fake players keep progression data), `placeTile` (right-click placement with the item), `P(label, fn)` (catch + short stack) and
   `legacy(...)`/`lworld(...)` wrappers; `chromaticraft-*.js` there are worked examples (research walk and a finished casting-table cast, dimension 60 stay, machines).
 - `tools/dev/thaumcraft/lib.js` (fake player, `scanAt` = what the Thaumometer computes for a block) and `scan-thaumometer.js` (real `ItemThaumometer.doScan` on placed blocks, PASS/FAIL per block) run on a `-PserverScript=run-subtest/probe -PserverScriptMod=thaumcraft` server (submit `lib.js` first; the directory is relative to `run-subtest`). Place blocks inside chunk 0,0 only: a block in an unloaded chunk makes the script block the server thread on chunk generation.
+  `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks. Ready-made gameplay rigs live in `tools/dev/server-scripts`
+  (`lib.js` places items through a fake player's `useOn`, forceloads the area and reads tiles/fields; ElectriCraft generator -> wire -> motor/battery/RF cable
+  chains and ReactorCraft fission reactor, steam turbine -> shaft and radiation rigs). Gotchas: `forceload add` takes block coordinates, not chunk coordinates
+  (otherwise the rig unloads after one tick); legacy mods that kill entities outside y 0..256 (DragonAPI particle entities such as ReactorCraft neutrons) need
+  rigs at y >= 0; calling methods on a tile whose class mentions an absent optional API (BuildCraft) from Nashorn throws `NoClassDefFoundError`, so read fields via `f()`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
