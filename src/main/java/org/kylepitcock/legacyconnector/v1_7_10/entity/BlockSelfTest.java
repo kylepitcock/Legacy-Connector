@@ -93,6 +93,17 @@ public final class BlockSelfTest {
                     placed++;
                     BlockEntity be = level.getBlockEntity(pos);
                     if (be instanceof LegacyBlockEntity l && l.legacy() == null && l.createFailed()) PROBLEMS.putIfAbsent(name, "tile entity creation threw");
+                    if (modernBlock instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block m1122) {
+                        // 1.12.2: World.setBlockState creates the tile entity at once, so a block that has one must host it right after the placement
+                        boolean wants;
+                        try {
+                            wants = m1122.legacy().hasTileEntity(m1122.legacy().getStateFromMeta(meta)) || m1122.legacy() instanceof legacyconnector.v1_12_2.net.minecraft.block.ITileEntityProvider;
+                        } catch (RuntimeException | LinkageError e) {
+                            wants = false;
+                        }
+                        if (wants && !(be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity)) PROBLEMS.putIfAbsent(name, "has a tile entity but no host block entity");
+                        else if (be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity h && h.legacy() == null) PROBLEMS.putIfAbsent(name, "host without a legacy tile entity");
+                    }
                 } catch (RuntimeException | LinkageError ex) {
                     PROBLEMS.putIfAbsent(name, "placement threw " + describe(ex));
                 }
