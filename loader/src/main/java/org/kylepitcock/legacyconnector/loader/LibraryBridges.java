@@ -120,12 +120,30 @@ public final class LibraryBridges {
         Properties config = readConfig(modsDir);
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
+        boolean realBaubles = hasJarNamed(modsDir, "baubles");
         for (Bridge b : KNOWN) {
             if (!enabled(config, b)) continue;
+            // Baubles API shaded into other mods (Extra Utilities) with neither Baubles nor Curios: the shim's own API still
+            // gives mods an inventory instead of the shaded one's null.
+            if ("baubles".equals(b.configKey) && !realBaubles && !modern.contains("curios")) {
+                out.add(b);
+                continue;
+            }
             if (b.modernModId == null || modern.contains(b.modernModId)
                     || b.legacyModId != null && forced.contains(b.legacyModId.toLowerCase(Locale.ROOT))) out.add(b);
         }
         return out;
+    }
+
+    /** True if a jar in the mods folder has a file name starting with {@code prefix} (case-insensitive). */
+    private static boolean hasJarNamed(Path modsDir, String prefix) {
+        if (!Files.isDirectory(modsDir)) return false;
+        try (Stream<Path> files = Files.list(modsDir)) {
+            return files.anyMatch(f -> f.getFileName().toString().toLowerCase(Locale.ROOT).startsWith(prefix)
+                    && f.toString().endsWith(".jar"));
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     private static Properties readConfig(Path modsDir) {
