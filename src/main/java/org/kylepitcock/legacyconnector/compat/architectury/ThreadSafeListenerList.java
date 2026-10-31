@@ -1,4 +1,4 @@
-package org.kylepitcock.legacyconnector.mixin.compat;
+package org.kylepitcock.legacyconnector.compat.architectury;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * An {@link ArrayList} that other threads may add to while one thread iterates it: changes are synchronized and iteration walks a
- * snapshot. Used for Architectury's event listener lists ({@link ArchitecturyEventImplMixin}).
+ * snapshot. Used for Architectury's event listener lists (org.kylepitcock.legacyconnector.mixin.compat.ArchitecturyEventImplMixin).
  */
 public final class ThreadSafeListenerList<T> extends ArrayList<T> {
     private volatile Object[] snapshot = new Object[0];
