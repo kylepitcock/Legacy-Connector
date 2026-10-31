@@ -539,6 +539,20 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return false;
     }
 
+    /** Whether the item's Forge IItemRenderer draws a 3D block in slots (INVENTORY_BLOCK); false without a renderer. */
+    private static boolean inventoryBlockRenderer(Item item, int meta) {
+        var renderer = legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$renderer(item);
+        if (renderer == null) return false;
+        try {
+            var stack = new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, meta);
+            var inventory = legacyconnector.v1_7_10.net.minecraftforge.client.IItemRenderer.ItemRenderType.INVENTORY;
+            return renderer.shouldUseRenderHelper(inventory, stack,
+                    legacyconnector.v1_7_10.net.minecraftforge.client.IItemRenderer.ItemRendererHelper.INVENTORY_BLOCK);
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
     private static void itemModels(Item item, Map<String, Supplier<byte[]>> out) {
         for (var e : item.mcc$variants.entrySet()) {
             int meta = e.getKey();
@@ -555,7 +569,8 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.addProperty("parent", "minecraft:builtin/entity");
                 model.add("display", GENERATED_DISPLAY.deepCopy());
                 // flat sprites are lit from the front in slots, as item/generated is (side lighting left them dim)
-                if (!legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item)) model.addProperty("gui_light", "front");
+                // (an item renderer that draws a 3D block in slots keeps the side lighting; the icon it falls back to is flat)
+                if (!inventoryBlockRenderer(item, meta)) model.addProperty("gui_light", "front");
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", nameOf(icon));
                 model.add("textures", tex);
