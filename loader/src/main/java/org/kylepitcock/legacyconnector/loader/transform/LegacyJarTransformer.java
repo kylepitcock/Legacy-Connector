@@ -144,6 +144,10 @@ public final class LegacyJarTransformer {
                 }
                 if (name.equals(JarFile.MANIFEST_NAME)) {
                     manifest = new Manifest(new ByteArrayInputStream(data));
+                } else if (name.endsWith(".class") && name.startsWith("java/")) {
+                    // a stray class in the JDK's own package tree (JEI 1.12.2 ships java/mezz/jei/config/Tags): Java 8 never loaded it, but
+                    // the module layer refuses to define such a package at all and the game does not start
+                    continue;
                 } else if (name.endsWith(".class")) {
                     classes.put(name.substring(0, name.length() - 6), data);
                 } else {
