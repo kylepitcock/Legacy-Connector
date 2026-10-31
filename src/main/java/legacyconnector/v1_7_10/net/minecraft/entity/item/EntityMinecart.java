@@ -88,6 +88,16 @@ public abstract class EntityMinecart extends Entity {
         mcc$posYShift = yOffset;
     }
 
+    /**
+     * A cart's legacy posY is its bottom plus its CURRENT {@code yOffset}: mods' carts set their own after the constructor (Traincraft's
+     * rolling stock 0.65, the base 0.35) and derive their position from the box with it, so a fixed 0.35 put them (and their riders and
+     * particles) 0.3 too high.
+     */
+    @Override
+    public double mcc$yShift() {
+        return yOffset;
+    }
+
     private AbstractMinecart mcc$cart() {
         return mcc$entity instanceof AbstractMinecart c ? c : null;
     }

@@ -187,7 +187,7 @@ public abstract class Entity implements ICommandSender {
     protected double mcc$posYShift;
 
     /** {@link #mcc$posYShift} for shim code outside the subclasses (renderers, hosts). */
-    public final double mcc$yShift() {
+    public double mcc$yShift() {
         return mcc$posYShift;
     }
     /** How much less this entity is pushed by collisions (0: fully, 1: not at all). */
@@ -333,13 +333,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$posY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.getY() + e.mcc$posYShift : e.mcc$local_posY;
+        return m != null ? m.getY() + e.mcc$yShift() : e.mcc$local_posY;
     }
 
     public static void mcc$set$posY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.setPos(m.getX(), v - e.mcc$posYShift, m.getZ());
+            m.setPos(m.getX(), v - e.mcc$yShift(), m.getZ());
         } else {
             e.mcc$local_posY = v;
         }
@@ -375,13 +375,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$prevPosY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.yo + e.mcc$posYShift : e.mcc$local_prevPosY;
+        return m != null ? m.yo + e.mcc$yShift() : e.mcc$local_prevPosY;
     }
 
     public static void mcc$set$prevPosY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.yo = v - e.mcc$posYShift;
+            m.yo = v - e.mcc$yShift();
         } else {
             e.mcc$local_prevPosY = v;
         }
@@ -417,13 +417,13 @@ public abstract class Entity implements ICommandSender {
 
     public static double mcc$get$lastTickPosY(Entity e) {
         var m = e.mcc$entity;
-        return m != null ? m.yOld + e.mcc$posYShift : e.mcc$local_lastTickPosY;
+        return m != null ? m.yOld + e.mcc$yShift() : e.mcc$local_lastTickPosY;
     }
 
     public static void mcc$set$lastTickPosY(Entity e, double v) {
         var m = e.mcc$entity;
         if (m != null) {
-            m.yOld = v - e.mcc$posYShift;
+            m.yOld = v - e.mcc$yShift();
         } else {
             e.mcc$local_lastTickPosY = v;
         }
@@ -961,7 +961,7 @@ public abstract class Entity implements ICommandSender {
 
     /** Legacy y is {@code posY}: the modern feet y plus {@link #mcc$posYShift} (eye level for the local player, mid-height for carts). */
     public void setPosition(double x, double y, double z) {
-        if (mcc$entity != null) mcc$entity.setPos(x, y - mcc$posYShift, z);
+        if (mcc$entity != null) mcc$entity.setPos(x, y - mcc$yShift(), z);
         else {
             mcc$set$posX(this, x);
             mcc$set$posY(this, y);
@@ -970,7 +970,7 @@ public abstract class Entity implements ICommandSender {
     }
 
     public void setLocationAndAngles(double x, double y, double z, float yaw, float pitch) {
-        if (mcc$entity != null) mcc$entity.moveTo(x, y - mcc$posYShift, z, yaw, pitch);
+        if (mcc$entity != null) mcc$entity.moveTo(x, y - mcc$yShift(), z, yaw, pitch);
         else {
             setPosition(x, y, z);
             mcc$set$rotationYaw(this, yaw);
@@ -1518,7 +1518,7 @@ public abstract class Entity implements ICommandSender {
         Entity rider = mcc$get$riddenByEntity(this);
         if (rider == null || rider.mcc$entity == null || mcc$entity == null) return;
         if (org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.overrides(getClass(), "getMountedYOffset")) {
-            rider.mcc$entity.setPos(mcc$entity.getX(), mcc$get$posY(this) + getMountedYOffset() + rider.getYOffset() - rider.mcc$posYShift, mcc$entity.getZ());
+            rider.mcc$entity.setPos(mcc$entity.getX(), mcc$get$posY(this) + getMountedYOffset() + rider.getYOffset() - rider.mcc$yShift(), mcc$entity.getZ());
             return;
         }
         var host = mcc$host();
@@ -1568,9 +1568,9 @@ public abstract class Entity implements ICommandSender {
     public void setPositionAndRotation2(double x, double y, double z, float yaw, float pitch, int increments) {
         var host = mcc$host();
         if (host != null) {
-            host.mcc$superLerpTo(x, y - mcc$posYShift, z, yaw, pitch, increments);
+            host.mcc$superLerpTo(x, y - mcc$yShift(), z, yaw, pitch, increments);
         } else if (mcc$entity != null) {
-            mcc$entity.lerpTo(x, y - mcc$posYShift, z, yaw, pitch, increments);
+            mcc$entity.lerpTo(x, y - mcc$yShift(), z, yaw, pitch, increments);
         } else {
             setPosition(x, y, z);
             setRotation(yaw, pitch);
