@@ -4,11 +4,14 @@
   "package": "org.kylepitcock.legacyconnector.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "EntityGravityMixin",
+    "FoodDataHealRateMixin",
     "LivingEntityDimensionsMixin",
     "LivingEntityTravelMixin",
     "MultiNoiseBiomeSourceMixin",
     "MultiNoiseBiomeSourcePossibleMixin",
-    "PlacedFeatureOreGateMixin"
+    "PlacedFeatureOreGateMixin",
+    "TargetingConditionsMixin"
   ],
   "client": [
     "ClientLevelSkyColorMixin"

@@ -50,7 +50,7 @@ function join(name) {
   var prof = new GameProfile(UUID.nameUUIDFromBytes(("OfflinePlayer:" + name).getBytes()), name);
   P = new ServerPlayer(server, server.overworld(), prof, ClientInformation.createDefault());
   server.getConnection().getConnections().add(conn); // the connection ticks, and with it the player (PlayerTickEvent)
-  Java.type("net.neoforged.neoforge.network.registration.ChannelAttributes").getOrCreateAdHocChannels(conn).add(Java.type("net.minecraft.resources.ResourceLocation").parse("legacyconnector:legacy"));
+  Java.type("net.neoforged.neoforge.network.registration.ChannelAttributes").getOrCreateAdHocChannels(conn).addAll(Java.type("java.util.List").of(Java.type("net.minecraft.resources.ResourceLocation").parse("legacyconnector:legacy"), Java.type("net.minecraft.resources.ResourceLocation").parse("neoforge:advanced_open_screen")));
   server.getPlayerList().placeNewPlayer(conn, P, Cookie.createInitial(prof, false));
   FAKES.push({ p: P, conn: conn, chan: chan, out: [] });
   return P;
