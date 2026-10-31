@@ -53,7 +53,13 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
             }
             legacy.mcc$setDragSplitting(isQuickCrafting, dragged);
         }
-        super.render(graphics, mouseX, mouseY, partialTick);
+        // The slot tooltip waits until the legacy screen has drawn: its drawScreen draws on top of the slots (ProjectE's menus showed none).
+        deferTooltip = legacy != null && !failed;
+        try {
+            super.render(graphics, mouseX, mouseY, partialTick);
+        } finally {
+            deferTooltip = false;
+        }
         if (legacy == null || failed) return;
         legacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen.mcc$beginFrame();
         RenderContext.beginGui(graphics);
@@ -63,6 +69,14 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
         } finally {
             RenderContext.end();
         }
+        renderTooltip(graphics, mouseX, mouseY);
+    }
+
+    private boolean deferTooltip;
+
+    @Override
+    protected void renderTooltip(GuiGraphics graphics, int x, int y) {
+        if (!deferTooltip) super.renderTooltip(graphics, x, y);
     }
 
     @Override

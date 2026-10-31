@@ -5,7 +5,7 @@ import legacyconnector.v1_7_10.net.minecraft.entity.EntityAgeable;
 import legacyconnector.v1_7_10.net.minecraft.world.World;
 
 /** 1.7.10 sheep state: fleece colour (low four bits) and the sheared flag (bit 16) in watcher slot 16. */
-public class EntitySheep extends EntityAnimal {
+public class EntitySheep extends EntityAnimal implements legacyconnector.v1_7_10.net.minecraftforge.common.IShearable {
     public static final float[][] fleeceColorTable = {{1.0F, 1.0F, 1.0F}, {0.85F, 0.5F, 0.2F}, {0.7F, 0.3F, 0.85F}, {0.4F, 0.6F, 0.85F}, {0.9F, 0.9F, 0.2F},
             {0.5F, 0.8F, 0.1F}, {0.95F, 0.5F, 0.65F}, {0.3F, 0.3F, 0.3F}, {0.6F, 0.6F, 0.6F}, {0.3F, 0.5F, 0.6F}, {0.5F, 0.25F, 0.7F}, {0.2F, 0.3F, 0.7F},
             {0.4F, 0.3F, 0.2F}, {0.4F, 0.5F, 0.2F}, {0.6F, 0.2F, 0.2F}, {0.1F, 0.1F, 0.1F}};
@@ -92,5 +92,29 @@ public class EntitySheep extends EntityAnimal {
     public float getHeadRotationAngleX(float partialTicks) {
         if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.getHeadEatAngleScale(partialTicks);
         return legacyconnector.v1_7_10.net.minecraft.entity.Entity.mcc$get$rotationPitch(this) / (180.0F / (float) Math.PI);
+    }
+
+    /** Forge: a fleeced adult sheep can be sheared. */
+    @Override
+    public boolean isShearable(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y,
+            int z) {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) return s.readyForShearing();
+        return !getSheared() && !isChild();
+    }
+
+    /** Forge: shearing drops 1-3 wool of the fleece colour (the modern sheep drops its own). */
+    @Override
+    public java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> onSheared(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int fortune) {
+        java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> drops = new java.util.ArrayList<>();
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Sheep s && !mcc$hosted()) {
+            s.shear(net.minecraft.sounds.SoundSource.PLAYERS);
+            return drops;
+        }
+        setSheared(true);
+        int n = 1 + rand.nextInt(3);
+        drops.add(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.wool, n, getFleeceColor()));
+        playSound("mob.sheep.shear", 1.0F, 1.0F);
+        return drops;
     }
 }

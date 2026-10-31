@@ -76,20 +76,41 @@ public class WorldInfo {
         if (level instanceof net.minecraft.server.level.ServerLevel server) change.accept(server);
     }
 
+    /** Weather is shared by all dimensions and lives in the overworld's level data; each setter changes only its own field, as in 1.7.10. */
+    private void data(java.util.function.Consumer<net.minecraft.world.level.storage.ServerLevelData> change) {
+        weather(l -> change.accept(l.getServer().getWorldData().overworldData()));
+    }
+
     public void setRaining(boolean raining) {
-        weather(l -> l.setWeatherParameters(raining ? 0 : 6000, raining ? 6000 : 0, raining, l.isThundering() && raining));
+        data(d -> {
+            d.setRaining(raining);
+            if (!raining) d.setClearWeatherTime(0);
+        });
     }
 
     public void setThundering(boolean thundering) {
-        weather(l -> l.setWeatherParameters(0, 6000, l.isRaining() || thundering, thundering));
+        data(d -> d.setThundering(thundering));
     }
 
     public void setRainTime(int ticks) {
-        weather(l -> l.setWeatherParameters(0, ticks, l.isRaining(), l.isThundering()));
+        data(d -> {
+            d.setRainTime(ticks);
+            if (ticks > 0) d.setClearWeatherTime(0);
+        });
     }
 
     public void setThunderTime(int ticks) {
-        weather(l -> l.setWeatherParameters(0, ticks, l.isRaining(), l.isThundering()));
+        data(d -> d.setThunderTime(ticks));
+    }
+
+    public int getRainTime() {
+        Level level = level();
+        return level instanceof net.minecraft.server.level.ServerLevel l ? l.getServer().getWorldData().overworldData().getRainTime() : 0;
+    }
+
+    public int getThunderTime() {
+        Level level = level();
+        return level instanceof net.minecraft.server.level.ServerLevel l ? l.getServer().getWorldData().overworldData().getThunderTime() : 0;
     }
 
     public void setWorldTime(long time) {

@@ -89,6 +89,16 @@ public class ItemSword extends Item {
         return repair != null && material != null && material.getItem() == repair || super.getIsRepairable(toRepair, material);
     }
 
+    /** Vanilla 1.7.10 adds the weapon damage here; mods call super and add to it, or replace it (ProjectE). */
+    @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public com.google.common.collect.Multimap getItemAttributeModifiers() {
+        com.google.common.collect.Multimap map = super.getItemAttributeModifiers();
+        map.put(legacyconnector.v1_7_10.net.minecraft.entity.SharedMonsterAttributes.attackDamage.getAttributeUnlocalizedName(),
+                new legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes.AttributeModifier(field_111210_e, "Weapon modifier", field_150934_a, 0));
+        return map;
+    }
+
     @Override
     public float mcc$attackDamage() {
         return field_150934_a;
