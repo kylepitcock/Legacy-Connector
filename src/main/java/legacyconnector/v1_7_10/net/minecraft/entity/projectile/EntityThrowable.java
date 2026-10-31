@@ -46,7 +46,7 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         float f = 0.4F;
         mcc$set$motionX(this, -MathHelper.sin(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * MathHelper.cos(mcc$get$rotationPitch(this) / 180.0F * (float) Math.PI) * f);
         mcc$set$motionZ(this, MathHelper.cos(mcc$get$rotationYaw(this) / 180.0F * (float) Math.PI) * MathHelper.cos(mcc$get$rotationPitch(this) / 180.0F * (float) Math.PI) * f);
-        mcc$set$motionY(this, -MathHelper.sin((mcc$get$rotationPitch(this) + getInaccuracy()) / 180.0F * (float) Math.PI) * f);
+        mcc$set$motionY(this, -MathHelper.sin((mcc$get$rotationPitch(this) + func_70183_g()) / 180.0F * (float) Math.PI) * f);
         setThrowableHeading(mcc$get$motionX(this), mcc$get$motionY(this), mcc$get$motionZ(this), func_70182_d(), 1.0F);
         // a view of a vanilla projectile (snowball, pearl, ...) credits its thrower (kills, ender pearl teleports)
         if (!mcc$hosted() && mcc$entity instanceof net.minecraft.world.entity.projectile.Projectile p && thrower != null && thrower.mcc$entity != null) {
@@ -74,10 +74,6 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
 
     protected float func_70182_d() {
         return 1.5F;
-    }
-
-    protected float getInaccuracy() {
-        return 0.0F;
     }
 
     @Override
@@ -253,7 +249,11 @@ public abstract class EntityThrowable extends Entity implements IProjectile {
         return thrower;
     }
 
+    /**
+     * The pitch offset of the throw (1.7.10 has no MCP name for it): 0, potions and Witchery's brews -20 so they arc upwards.
+     * Mods override it under this name, so the constructor must call it by this name.
+     */
     protected float func_70183_g() {
-        return 0.03F;
+        return 0.0F;
     }
 }
