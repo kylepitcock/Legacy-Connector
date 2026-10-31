@@ -143,6 +143,47 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
         return ItemCallbacks.correctTool(legacy, stack, state) || super.isCorrectToolForDrops(stack, state);
     }
 
+    /**
+     * Legacy tools as modern tools: an item that is (or extends) the shim's pickaxe, axe, spade, hoe, sword or shears, or declares the
+     * Forge tool class ({@code getToolClasses}), answers the matching ItemAbilities, so modern code (Create, farming and mining mods)
+     * treats it like any other tool.
+     */
+    @Override
+    public boolean canPerformAction(ItemStack stack, net.neoforged.neoforge.common.ItemAbility ability) {
+        String toolClass = toolClassOf(ability);
+        if (toolClass != null && hasToolClass(toolClass, stack)) return true;
+        return super.canPerformAction(stack, ability);
+    }
+
+    private static String toolClassOf(net.neoforged.neoforge.common.ItemAbility a) {
+        if (a == net.neoforged.neoforge.common.ItemAbilities.PICKAXE_DIG) return "pickaxe";
+        if (a == net.neoforged.neoforge.common.ItemAbilities.AXE_DIG || a == net.neoforged.neoforge.common.ItemAbilities.AXE_STRIP
+                || a == net.neoforged.neoforge.common.ItemAbilities.AXE_SCRAPE || a == net.neoforged.neoforge.common.ItemAbilities.AXE_WAX_OFF) return "axe";
+        if (a == net.neoforged.neoforge.common.ItemAbilities.SHOVEL_DIG || a == net.neoforged.neoforge.common.ItemAbilities.SHOVEL_FLATTEN) return "shovel";
+        if (a == net.neoforged.neoforge.common.ItemAbilities.HOE_DIG || a == net.neoforged.neoforge.common.ItemAbilities.HOE_TILL) return "hoe";
+        if (a == net.neoforged.neoforge.common.ItemAbilities.SWORD_DIG) return "sword";
+        if (a == net.neoforged.neoforge.common.ItemAbilities.SHEARS_DIG || a == net.neoforged.neoforge.common.ItemAbilities.SHEARS_HARVEST) return "shears";
+        return null;
+    }
+
+    private boolean hasToolClass(String toolClass, ItemStack stack) {
+        switch (toolClass) {
+            case "pickaxe": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemPickaxe) return true; break;
+            case "axe": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemAxe) return true; break;
+            case "shovel": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemSpade) return true; break;
+            case "hoe": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemHoe) return true; break;
+            case "sword": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemSword) return true; break;
+            case "shears": if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemShears) return true; break;
+            default: break;
+        }
+        try {
+            var classes = legacy.getToolClasses(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack));
+            return classes != null && classes.contains(toolClass);
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     @Override
     public ItemStack getCraftingRemainingItem(ItemStack stack) {
         return ItemCallbacks.remainder(legacy, stack);
