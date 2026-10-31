@@ -28,3 +28,11 @@ type = "required"
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
+
+# Optional: legacy biomes are placed as a TerraBlender overworld region when it is installed.
+[[dependencies."${mod_id}"]]
+modId = "terrablender"
+type = "optional"
+versionRange = "[4.0,)"
+ordering = "NONE"
+side = "BOTH"

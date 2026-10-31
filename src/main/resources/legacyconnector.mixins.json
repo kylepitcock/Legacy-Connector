@@ -8,8 +8,6 @@
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
     "LivingEntityTravelMixin",
-    "MultiNoiseBiomeSourceMixin",
-    "MultiNoiseBiomeSourcePossibleMixin",
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin"

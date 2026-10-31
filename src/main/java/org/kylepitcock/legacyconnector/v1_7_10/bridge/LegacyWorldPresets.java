@@ -22,8 +22,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Legacy mod world types (Biomes O' Plenty's "BIOMESOP", ...) as 1.21 world presets, listed on the Create World
- * screen's world type button. Each preset is the vanilla overworld with its own copy of the noise settings, whose id
- * tells {@link LegacyBiomeLayers} which legacy world type's biome layers to use for the world.
+ * screen's world type button. Each preset is the vanilla overworld with a {@link LegacyLayeredBiomeSource} (the world type's
+ * biome layers over the vanilla multi-noise parameters) and its own copy of the noise settings, whose id identifies worlds created
+ * with the type before it had its own biome source (kept so those saves still load).
  */
 public final class LegacyWorldPresets {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Biomes");
@@ -56,8 +57,14 @@ public final class LegacyWorldPresets {
         for (WorldType t : types) {
             ResourceLocation id = t.mcc$presetId();
             JsonObject p = preset.deepCopy();
-            p.getAsJsonObject("dimensions").getAsJsonObject("minecraft:overworld").getAsJsonObject("generator")
-                    .addProperty("settings", id.toString());
+            JsonObject generator = p.getAsJsonObject("dimensions").getAsJsonObject("minecraft:overworld").getAsJsonObject("generator");
+            generator.addProperty("settings", id.toString());
+            // The world type's own biome source: the vanilla multi-noise parameters with its legacy biome layers choosing land biomes.
+            JsonObject source = new JsonObject();
+            source.addProperty("type", "legacyconnector:legacy_layers");
+            source.addProperty("preset", "minecraft:overworld");
+            source.addProperty("world_type", t.getWorldTypeName());
+            generator.add("biome_source", source);
             byte[] presetBytes = p.toString().getBytes(StandardCharsets.UTF_8);
             out.put("data/" + id.getNamespace() + "/worldgen/world_preset/" + id.getPath() + ".json", () -> presetBytes);
             out.put("data/" + id.getNamespace() + "/worldgen/noise_settings/" + id.getPath() + ".json", () -> noiseBytes);

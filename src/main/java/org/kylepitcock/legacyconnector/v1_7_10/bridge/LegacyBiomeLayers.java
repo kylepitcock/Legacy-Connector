@@ -13,23 +13,28 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.server.ServerAboutToStartEvent;
+import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
-import org.kylepitcock.legacyconnector.core.worldgen.BiomeOverride;
+import org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Places legacy mod biomes in the overworld using the legacy biome layers. Modern terrain, oceans, rivers, beaches,
- * mountains and cave biomes are kept; where the legacy layer stack (of the mod's world type if a mod registered one,
- * e.g. Biomes O' Plenty's, else the default type with Forge BiomeManager entries) puts a mod biome, it replaces the
- * ordinary land biome at that spot.
+ * Legacy mod biomes in the overworld.
+ * <ul>
+ * <li>Default world: the biomes enter the overworld through the native biome placement ({@link BiomePlacement}): a TerraBlender
+ * region when TerraBlender is installed, else climate points added to the {@code minecraft:overworld} multi-noise parameter list.
+ * Climate and weight come from the legacy data ({@link LegacyBiomeClimate}).</li>
+ * <li>World created with a legacy mod's world type preset (BoP's "BIOMESOP"): its biome source is a {@link LegacyLayeredBiomeSource},
+ * whose land biomes come from that world type's 1.7.10 biome layers (this class holds the layer state of one such source).</li>
+ * </ul>
  */
-public final class LegacyBiomeLayers implements BiomeOverride.Provider {
+public final class LegacyBiomeLayers {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Biomes");
     private static final int REGION = 32;
     /** Modern biomes tied to their terrain (caves, peaks and slopes, shores): never replaced. */
@@ -37,20 +42,19 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
             Biomes.MUSHROOM_FIELDS, Biomes.STONY_SHORE, Biomes.FROZEN_PEAKS, Biomes.JAGGED_PEAKS, Biomes.STONY_PEAKS,
             Biomes.SNOWY_SLOPES);
     private static boolean registered;
-    /** Legacy ocean, river and beach ids: where the legacy layout has water, the modern terrain decides. */
-    private static final Set<Integer> WATER_OR_SHORE = Set.of(0, 7, 10, 11, 16, 24, 25, 26);
+    /** Placement mode of the running server, for the spawn sample log. */
+    private static volatile String mode = "none";
+    private static volatile LegacyLayeredBiomeSource bound;
 
     private final MinecraftServer server;
-    private final BiomeSource overworld;
     private final WorldType type;
     private final long seed;
     private volatile GenLayer layer;
     private final Map<Integer, Holder<Biome>> biomes;
     private final Map<Long, int[]> regions = new ConcurrentHashMap<>();
 
-    private LegacyBiomeLayers(MinecraftServer server, BiomeSource overworld, WorldType type, long seed, Map<Integer, Holder<Biome>> biomes) {
+    private LegacyBiomeLayers(MinecraftServer server, WorldType type, long seed, Map<Integer, Holder<Biome>> biomes) {
         this.server = server;
-        this.overworld = overworld;
         this.type = type;
         this.seed = seed;
         this.biomes = biomes;
@@ -87,106 +91,114 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
     public static synchronized void register() {
         if (registered) return;
         registered = true;
-        NeoForge.EVENT_BUS.addListener(LegacyBiomeLayers::onServerAboutToStart);
-        BiomeOverride.setExtraBiomes(LegacyBiomeLayers::generatedBiomes);
-        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> BiomeOverride.set(null));
-        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStartedEvent e) -> logSample(e.getServer()));
+        BiomePlacement.setEntries(LegacyBiomeClimate::entries);
+        BiomePlacement.registerTerraBlender();
+        // HIGHEST: the parameter list must hold the legacy biomes before anything lists the overworld's possible biomes.
+        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, LegacyBiomeLayers::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> unbind());
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> logSample(e.getServer()));
+    }
+
+    private static void unbind() {
+        LegacyLayeredBiomeSource s = bound;
+        bound = null;
+        if (s != null) s.mcc$bind(null);
+        mode = "none";
     }
 
     private static void onServerAboutToStart(ServerAboutToStartEvent event) {
-        BiomeOverride.set(null);
+        unbind();
         MinecraftServer server = event.getServer();
+        legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = WorldType.DEFAULT;
         try {
-            var registry = server.registryAccess().registryOrThrow(Registries.BIOME);
-            Map<Integer, Holder<Biome>> map = new HashMap<>();
-            int modCount = 0;
-            for (BiomeGenBase b : LegacyBiomes.modBiomes()) {
-                var holder = registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId()));
-                if (holder.isPresent()) {
-                    map.put(b.biomeID, holder.get());
-                    modCount++;
-                }
-            }
-            if (modCount == 0) return;
-            // The legacy layout covers all land: vanilla biomes the legacy layers place map to their modern
-            // counterparts (water and shore biomes are left to the modern terrain).
-            for (BiomeGenBase b : BiomeGenBase.getBiomeGenArray()) {
-                if (b == null || map.containsKey(b.biomeID) || WATER_OR_SHORE.contains(b.biomeID)) continue;
-                var id = LegacyEntitySpawns.modernBiome(b);
-                if (id != null) registry.getHolder(ResourceKey.create(Registries.BIOME, id)).ifPresent(h -> map.put(b.biomeID, h));
+            if (BiomePlacement.terraBlender()) {
+                mode = "TerraBlender region";
+            } else {
+                int n = BiomePlacement.injectIntoOverworldPreset(server);
+                mode = "overworld parameter list";
+                if (n > 0) LOG.info("Placing {} legacy biome(s) in the overworld through the minecraft:overworld biome parameters", n);
             }
             LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD);
-            if (stem == null) return;
-            WorldType type = worldType(stem);
-            long seed = server.getWorldData().worldGenOptions().seed();
-            legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = type;
-            BiomeOverride.set(new LegacyBiomeLayers(server, stem.generator().getBiomeSource(), type, seed, map));
-            LOG.info("Placing {} legacy biome(s) in the overworld with the {} biome layers", modCount, type.getWorldTypeName());
+            if (stem != null && stem.generator().getBiomeSource() instanceof LegacyLayeredBiomeSource layered) bindLayers(server, layered);
+            else if (stem != null) warnOldLayeredWorld(stem);
         } catch (RuntimeException | LinkageError e) {
-            LOG.error("Legacy biome layers could not be set up; legacy biomes will not generate", e);
+            LOG.error("Legacy biome placement could not be set up; legacy biomes may not generate", e);
         }
     }
 
-    /** The generated legacy biomes of the running server (empty without one). */
-    private static java.util.List<Holder<Biome>> generatedBiomes() {
-        MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
-        if (server == null) return java.util.List.of();
-        var registry = server.registryAccess().registryOrThrow(Registries.BIOME);
-        java.util.List<Holder<Biome>> out = new java.util.ArrayList<>();
-        for (BiomeGenBase b : LegacyBiomes.modBiomes()) {
-            registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId())).ifPresent(out::add);
+    /** A world of a legacy world type created before its preset had its own biome source: it gets the default placement. */
+    private static void warnOldLayeredWorld(LevelStem stem) {
+        if (!(stem.generator() instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noise)) return;
+        WorldType mod = noise.generatorSettings().unwrapKey().map(k -> LegacyWorldPresets.bySettings(k.location())).orElse(null);
+        if (mod != null) {
+            LOG.info("This world was created with world type {} before it had its own biome source; new chunks place legacy biomes by climate",
+                    mod.getWorldTypeName());
         }
-        return out;
+    }
+
+    private static void bindLayers(MinecraftServer server, LegacyLayeredBiomeSource source) {
+        WorldType type = null;
+        for (WorldType t : LegacyWorldPresets.modTypes()) if (t.getWorldTypeName().equals(source.mcc$worldType())) type = t;
+        if (type == null) {
+            LOG.warn("World type {} of this world is not installed; the overworld uses the multi-noise biomes", source.mcc$worldType());
+            return;
+        }
+        var registry = server.registryAccess().registryOrThrow(Registries.BIOME);
+        Map<Integer, Holder<Biome>> map = new HashMap<>();
+        int modCount = 0;
+        for (BiomeGenBase b : LegacyBiomes.modBiomes()) {
+            var holder = registry.getHolder(ResourceKey.create(Registries.BIOME, b.mcc$modernId()));
+            if (holder.isPresent()) {
+                map.put(b.biomeID, holder.get());
+                modCount++;
+            }
+        }
+        long seed = server.getWorldData().worldGenOptions().seed();
+        legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = type;
+        source.mcc$bind(new LegacyBiomeLayers(server, type, seed, map));
+        bound = source;
+        mode = type.getWorldTypeName() + " biome layers + " + mode;
+        LOG.info("World type {}: its biome layers choose the overworld land biomes ({} legacy biome(s))", type.getWorldTypeName(), modCount);
     }
 
     /** Samples the overworld biome source on a coarse grid around spawn and logs how much legacy biome there is. */
     private static void logSample(MinecraftServer server) {
-        var level = server.overworld();
-        if (level == null) return;
-        var generator = level.getChunkSource().getGenerator();
-        var sampler = level.getChunkSource().randomState().sampler();
-        Map<String, Integer> counts = new java.util.TreeMap<>();
-        int total = 0;
-        int legacy = 0;
-        var spawn = level.getSharedSpawnPos();
-        for (int dx = -64; dx <= 64; dx += 4) {
-            for (int dz = -64; dz <= 64; dz += 4) {
-                int qx = (spawn.getX() >> 2) + dx * 16;
-                int qz = (spawn.getZ() >> 2) + dz * 16;
-                Holder<Biome> b = generator.getBiomeSource().getNoiseBiome(qx, 16, qz, sampler);
-                String id = b.unwrapKey().map(k -> k.location().toString()).orElse("?");
-                total++;
-                if (!id.startsWith("minecraft:")) {
-                    legacy++;
-                    counts.merge(id, 1, Integer::sum);
+        try {
+            var level = server.overworld();
+            if (level == null) return;
+            var generator = level.getChunkSource().getGenerator();
+            var sampler = level.getChunkSource().randomState().sampler();
+            Map<String, Integer> counts = new java.util.TreeMap<>();
+            int total = 0;
+            int legacy = 0;
+            var spawn = level.getSharedSpawnPos();
+            for (int dx = -64; dx <= 64; dx += 4) {
+                for (int dz = -64; dz <= 64; dz += 4) {
+                    int qx = (spawn.getX() >> 2) + dx * 16;
+                    int qz = (spawn.getZ() >> 2) + dz * 16;
+                    Holder<Biome> b = generator.getBiomeSource().getNoiseBiome(qx, 16, qz, sampler);
+                    String id = b.unwrapKey().map(k -> k.location().toString()).orElse("?");
+                    total++;
+                    if (b.unwrapKey().map(k -> LegacyBiomes.byModernId(k.location()) != null).orElse(false)) {
+                        legacy++;
+                        counts.merge(id, 1, Integer::sum);
+                    }
                 }
             }
+            LOG.info("Biome sample around spawn ({}): {} of {} points are legacy biomes {}", mode, legacy, total, counts);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("Biome sample around spawn failed: {}", e.toString());
         }
-        LOG.info("Biome sample around spawn: {} of {} points are legacy biomes {}", legacy, total, counts);
     }
 
-    /**
-     * The legacy world type of the world: a mod's type when the world was created with its preset (recognised by the
-     * preset's own noise settings), else the default type, whose layers place biomes mods added to Forge's BiomeManager.
-     */
-    private static WorldType worldType(LevelStem stem) {
-        if (stem.generator() instanceof net.minecraft.world.level.levelgen.NoiseBasedChunkGenerator noise) {
-            WorldType mod = noise.generatorSettings().unwrapKey().map(k -> LegacyWorldPresets.bySettings(k.location())).orElse(null);
-            if (mod != null) return mod;
-        }
-        return WorldType.DEFAULT;
-    }
-
-    @Override
-    public Holder<Biome> apply(BiomeSource source, Holder<Biome> modern, int x, int y, int z) {
-        if (source != overworld || modern == null) return null;
+    /** The legacy layout's mod biome at quart position (x, z) where it may replace {@code modern}, else null. */
+    Holder<Biome> replace(Holder<Biome> modern, int x, int z) {
         if (modern.is(BiomeTags.IS_OCEAN) || modern.is(BiomeTags.IS_DEEP_OCEAN) || modern.is(BiomeTags.IS_RIVER)
                 || modern.is(BiomeTags.IS_BEACH)) return null;
         if (modern.unwrapKey().map(KEEP::contains).orElse(false)) return null;
-        Holder<Biome> legacy = biomes.get(legacyAt(x, z));
         // Only mod biomes replace what the modern source chose: where the legacy layout has a vanilla biome, the modern one stays,
-        // so packs with modern biome mods (Biomes O' Plenty, Regions Unexplored through TerraBlender) keep them.
-        return legacy != null && legacy.unwrapKey().map(k -> !k.location().getNamespace().equals("minecraft")).orElse(false) ? legacy : null;
+        // so modern biome mods (TerraBlender regions) keep theirs.
+        return biomes.get(legacyAt(x, z));
     }
 
     /** Legacy biome id at a quart position (the legacy 1:4 biome map has the same scale). */
