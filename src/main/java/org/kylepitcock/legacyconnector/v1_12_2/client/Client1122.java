@@ -42,6 +42,11 @@ public final class Client1122 {
             if (!e.getAtlas().location().equals(TextureAtlas.LOCATION_BLOCKS) || !present()) return;
             TextureMap.mcc$blocks().mcc$synchronize();
             try {
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager.mcc$instance().mcc$reloadAtlases();
+            } catch (RuntimeException | LinkageError ex) {
+                RenderErrors1122.report("building the atlases of mods", ex);
+            }
+            try {
                 MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Post(TextureMap.mcc$blocks()));
             } catch (RuntimeException | LinkageError ex) {
                 RenderErrors1122.report("posting TextureStitchEvent.Post", ex);
