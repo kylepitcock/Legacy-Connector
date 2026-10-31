@@ -13,6 +13,9 @@ public class EntityAreaEffectCloud extends Entity {
     private float mcc$radius = 0.5F;
     private int mcc$duration = 600;
     private int mcc$color;
+    private boolean mcc$colorExplicit;
+    private PotionType mcc$potionType;
+    private final java.util.List<PotionEffect> mcc$added = new java.util.ArrayList<>();
 
     public EntityAreaEffectCloud(World world) {
         super(world);
@@ -96,6 +99,23 @@ public class EntityAreaEffectCloud extends Entity {
         var c = mcc$cloud();
         var modern = potion == null ? null : potion.mcc$modern();
         if (c != null && modern != null) c.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(modern));
+        mcc$potionType = potion;
+        mcc$refreshColor();
+    }
+
+    /**
+     * 1.12 mixed the cloud's colour from its potion's and its own effects (those that show particles) whenever they changed, unless a
+     * colour was set. The modern cloud mixes it itself, but from the converted effects, and drops to the default water blue when
+     * none converted (Scape and Run Parasites' Call of the Hive clouds, whose effect hides its particles: blue swirls instead of the
+     * 1.12 colour, #110).
+     */
+    private void mcc$refreshColor() {
+        if (mcc$colorExplicit) return;
+        java.util.List<PotionEffect> all = new java.util.ArrayList<>();
+        if (mcc$potionType != null) all.addAll(mcc$potionType.getEffects());
+        all.addAll(mcc$added);
+        if (all.isEmpty()) return;
+        mcc$applyColor(legacyconnector.v1_12_2.net.minecraft.potion.PotionUtils.getPotionColorFromEffectList(all));
     }
 
     /** Phantom field: {@link #mcc$get$effects}. */
@@ -127,6 +147,9 @@ public class EntityAreaEffectCloud extends Entity {
         java.util.List<net.minecraft.world.effect.MobEffectInstance> modern = new java.util.ArrayList<>();
         if (v != null) for (PotionEffect p : v) if (p != null && p.mcc$toModern() != null) modern.add(p.mcc$toModern());
         c.setPotionContents(new net.minecraft.world.item.alchemy.PotionContents(contents.potion(), contents.customColor(), modern));
+        e.mcc$added.clear();
+        if (v != null) e.mcc$added.addAll(v);
+        e.mcc$refreshColor();
     }
 
     public void addEffect(PotionEffect effect) {
@@ -134,10 +157,17 @@ public class EntityAreaEffectCloud extends Entity {
         var modern = effect == null ? null : effect.mcc$toModern();
         if (c != null && modern != null) c.addEffect(modern);
         else if (c == null && effect != null) mcc$localEffects.add(effect);
+        if (effect != null) mcc$added.add(effect);
+        mcc$refreshColor();
     }
 
     /** A custom cloud colour (the modern cloud keeps the colour with its potion contents). */
     public void setColor(int color) {
+        mcc$colorExplicit = true;
+        mcc$applyColor(color);
+    }
+
+    private void mcc$applyColor(int color) {
         mcc$color = color;
         var c = mcc$cloud();
         if (c == null) return;
