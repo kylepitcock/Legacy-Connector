@@ -102,18 +102,22 @@ final class IsbrhQuads {
         }
         try {
             var atlas = net.minecraft.client.Minecraft.getInstance().getModelManager().getAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);
-            String found = null;
+            String found = null, onEdge = null;
             java.lang.reflect.Field f = net.minecraft.client.renderer.texture.TextureAtlas.class.getDeclaredField("texturesByName");
             f.setAccessible(true);
             @SuppressWarnings("unchecked")
             java.util.Map<net.minecraft.resources.ResourceLocation, TextureAtlasSprite> sprites = (java.util.Map<net.minecraft.resources.ResourceLocation, TextureAtlasSprite>) f.get(atlas);
             for (var e : sprites.entrySet()) {
                 TextureAtlasSprite s = e.getValue();
-                if (u >= s.getU0() && u <= s.getU1() && v >= s.getV0() && v <= s.getV1()) {
+                // strictly inside: a quad sampling a texel row or column shared by two sprites (a single-point quad on a sprite's edge,
+                // as Reika's pipes draw the middle of the glass icon) would otherwise be named after whichever neighbour comes first
+                if (u > s.getU0() && u < s.getU1() && v > s.getV0() && v < s.getV1()) {
                     found = e.getKey().toString();
                     break;
                 }
+                if (onEdge == null && u >= s.getU0() && u <= s.getU1() && v >= s.getV0() && v <= s.getV1()) onEdge = e.getKey().toString();
             }
+            if (found == null) found = onEdge == null ? null : onEdge + " (on its edge)";
             sb.append(" -> ").append(found == null ? "OUTSIDE every sprite of the block atlas" : "sprite " + found);
         } catch (ReflectiveOperationException | RuntimeException e) {
             sb.append(" (atlas lookup failed: ").append(e).append(")");
