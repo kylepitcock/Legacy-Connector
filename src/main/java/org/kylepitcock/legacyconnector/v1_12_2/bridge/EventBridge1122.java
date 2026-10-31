@@ -222,6 +222,30 @@ public final class EventBridge1122 {
                 e.setCanceled(true);
             }
         });
+        // 1.12.2: a dying player's drops go through PlayerDropsEvent (Tombstone, soulbound mods), everything else through LivingDropsEvent
+        bus.addListener((net.neoforged.neoforge.event.entity.living.LivingDropsEvent e) -> {
+            boolean isPlayer = e.getEntity() instanceof net.minecraft.world.entity.player.Player;
+            Class<? extends Event> type = isPlayer ? legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerDropsEvent.class
+                    : legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDropsEvent.class;
+            if (!wants(type) && !(isPlayer && wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDropsEvent.class))) return;
+            var entity = living(e.getEntity());
+            if (entity == null) return;
+            java.util.ArrayList<legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem> drops = new java.util.ArrayList<>();
+            for (var item : e.getDrops()) if (EntityBridge1122.wrap(item) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem legacyItem) drops.add(legacyItem);
+            var source = legacyconnector.v1_12_2.net.minecraft.util.DamageSource.mcc$of(e.getSource());
+            legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDropsEvent legacy = isPlayer && entity instanceof EntityPlayer p
+                    ? new legacyconnector.v1_12_2.net.minecraftforge.event.entity.player.PlayerDropsEvent(p, source, drops, e.isRecentlyHit())
+                    : new legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingDropsEvent(entity, source, drops, 0, e.isRecentlyHit());
+            if (post(legacy)) {
+                e.setCanceled(true);
+                return;
+            }
+            // listeners may have removed drops or added their own: the modern list becomes what the legacy list holds
+            e.getDrops().clear();
+            for (var item : drops) {
+                if (item != null && item.mcc$entity instanceof net.minecraft.world.entity.item.ItemEntity modern) e.getDrops().add(modern);
+            }
+        });
         bus.addListener((net.neoforged.neoforge.event.entity.living.LivingFallEvent e) -> {
             if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.entity.living.LivingFallEvent.class)) return;
             var entity = living(e.getEntity());
