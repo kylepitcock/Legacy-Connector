@@ -183,7 +183,10 @@ public final class LegacyBiomeLayers implements BiomeOverride.Provider {
         if (modern.is(BiomeTags.IS_OCEAN) || modern.is(BiomeTags.IS_DEEP_OCEAN) || modern.is(BiomeTags.IS_RIVER)
                 || modern.is(BiomeTags.IS_BEACH)) return null;
         if (modern.unwrapKey().map(KEEP::contains).orElse(false)) return null;
-        return biomes.get(legacyAt(x, z));
+        Holder<Biome> legacy = biomes.get(legacyAt(x, z));
+        // Only mod biomes replace what the modern source chose: where the legacy layout has a vanilla biome, the modern one stays,
+        // so packs with modern biome mods (Biomes O' Plenty, Regions Unexplored through TerraBlender) keep them.
+        return legacy != null && legacy.unwrapKey().map(k -> !k.location().getNamespace().equals("minecraft")).orElse(false) ? legacy : null;
     }
 
     /** Legacy biome id at a quart position (the legacy 1:4 biome map has the same scale). */
