@@ -118,7 +118,7 @@ public class Block {
         this.stepSound = soundTypeStone;
         this.blockParticleGravity = 1.0F;
         this.slipperiness = 0.6F;
-        this.unlocalizedName = info.legacyName();
+        this.unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(true, info.legacyName());
         this.textureName = info.legacyName();
         BlockBridge.initVanilla(this, info);
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
