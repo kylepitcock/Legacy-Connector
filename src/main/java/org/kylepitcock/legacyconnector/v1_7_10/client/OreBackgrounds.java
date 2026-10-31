@@ -88,7 +88,7 @@ public final class OreBackgrounds {
             "explore", "shore", "chore", "bore", "snore", "pore", "spore", "fore", "adore", "galore", "lore", "sore", "wore", "tore", "yore");
 
     /** Whether a texture name names an ore: a whole word "ore"/"ores" (camelCase, dots, dashes and underscores separate words), or a word like "copperore". */
-    static boolean isOreName(String name) {
+    public static boolean isOreName(String name) {
         for (String word : name.split("[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])")) {
             String w = word.toLowerCase(Locale.ROOT);
             if (w.equals("ore") || w.equals("ores")) return true;

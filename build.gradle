@@ -186,6 +186,19 @@ tasks.register('checkLegacyMod', JavaExec) {
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it } } as CommandLineArgumentProvider)
 }
 
+// Offline report of the texture modernizer: ./gradlew textureReport -PlegacyJar=a.jar,b.jar [-PmodernClient=1.21.1.jar] [-PsampleDir=dir]
+// prints which textures of each jar are old vanilla copies or backgrounds and writes before/after samples.
+tasks.register('textureReport', JavaExec) {
+    dependsOn tasks.named('classes')
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.core.pack.TextureModernizer'
+    argumentProviders.add({
+        def client = project.findProperty('modernClient') ?: "${System.getenv('APPDATA') ?: System.getProperty('user.home')}/.minecraft/versions/1.21.1/1.21.1.jar"
+        def samples = project.findProperty('sampleDir') ?: layout.buildDirectory.dir('texture-samples').get().asFile.absolutePath
+        [client.toString(), samples.toString()] + (project.findProperty('legacyJar') ?: '').toString().split(',').findAll { it }
+    } as CommandLineArgumentProvider)
+}
+
 // Copies the fixture legacy mods into run/mods so `runServer` / `runClient` exercise the full pipeline.
 tasks.register('installTestMods', Copy) {
     dependsOn ':testmods:assemble'

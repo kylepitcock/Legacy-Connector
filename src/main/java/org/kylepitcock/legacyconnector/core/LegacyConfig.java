@@ -31,6 +31,10 @@ public final class LegacyConfig {
             oreBackgrounds.netherrack = netherrack
             oreBackgrounds.endStone = end_stone
 
+            # Replace old vanilla art inside legacy mod textures with the modern vanilla textures: exact copies of old block, item
+            # and GUI textures, and old backgrounds (smooth stone, cobblestone, planks, ...) that mods painted their art on.
+            modernizeTextures = true
+
             # Legacy worlds ended at y=0. When enabled, legacy world generators (ores, caves, ...) run a second time shifted
             # down so that they also fill the modern world below y=0 (legacy y=0 is modern y=-64).
             deepLayer.enabled = true
@@ -78,6 +82,10 @@ public final class LegacyConfig {
         if (v.equalsIgnoreCase("false")) return false;
         LOG.warn("{}: '{}' is not true or false; using {}", key, v, fallback);
         return fallback;
+    }
+
+    public static boolean modernizeTexturesEnabled() {
+        return bool("modernizeTextures", true);
     }
 
     public static boolean oreBackgroundsEnabled() {
