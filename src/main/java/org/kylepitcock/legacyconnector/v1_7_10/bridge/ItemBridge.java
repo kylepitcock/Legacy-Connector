@@ -195,6 +195,7 @@ public final class ItemBridge {
             Map.entry("furnace_minecart", "ItemMinecart"),
             Map.entry("glass_bottle", "ItemGlassBottle"),
             Map.entry("golden_apple", "ItemAppleGold"),
+            Map.entry("golden_carrot", "ItemFood"),
             Map.entry("golden_axe", "ItemAxe"),
             Map.entry("golden_boots", "ItemArmor"),
             Map.entry("golden_chestplate", "ItemArmor"),
