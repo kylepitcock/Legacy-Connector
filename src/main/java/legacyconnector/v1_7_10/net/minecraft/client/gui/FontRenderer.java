@@ -100,6 +100,24 @@ public class FontRenderer implements IResourceManagerReloadListener {
         return out;
     }
 
+    /**
+     * The width of text before the game's font exists (Minecraft.font is created after mod loading): the widths of vanilla's ASCII
+     * font. ProjectE paginates its manual in postInit with a ManualFontRenderer that asks getCharWidth, and a null font failed the mod.
+     */
+    private static int approximateWidth(String text) {
+        int width = 0;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == 32 || c == 'I') width += 4;
+            else if (c == 't') width += 5;
+            else if ("i!.,:;|'".indexOf(c) >= 0) width += 2;
+            else if (c == 'l' || c == '`') width += 3;
+            else if (c == 'f' || c == 'k' || c == '<' || c == '>' || c == '(' || c == ')' || c == '{' || c == '}' || c == '[' || c == ']' || c == '"' || c == '*') width += 5;
+            else width += 6;
+        }
+        return width;
+    }
+
     private static Font font() {
         return Minecraft.getInstance().font;
     }
@@ -390,7 +408,10 @@ public class FontRenderer implements IResourceManagerReloadListener {
 
     public int getStringWidth(String text) {
         if (text == null) return 0;
-        if (!mcc$bitmap) return font().width(LegacyText.strip(text));
+        if (!mcc$bitmap) {
+            if (font() == null) return approximateWidth(LegacyText.strip(text));
+            return font().width(LegacyText.strip(text));
+        }
         int width = 0;
         boolean bold = false;
         for (int i = 0; i < text.length(); ++i) {
@@ -413,7 +434,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
     }
 
     public int getCharWidth(char c) {
-        if (!mcc$bitmap) return c == 167 ? -1 : font().width(String.valueOf(c));
+        if (!mcc$bitmap) return c == 167 ? -1 : font() == null ? approximateWidth(String.valueOf(c)) : font().width(String.valueOf(c));
         mcc$ensureFont();
         if (c == 167) return -1;
         if (c == 32) return 4;
@@ -439,6 +460,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
     public String trimStringToWidth(String text, int width, boolean reverse) {
         if (!mcc$bitmap) {
             text = LegacyText.strip(text);
+            if (font() == null) return text;
             if (!reverse) return font().plainSubstrByWidth(text, width);
             String r = new StringBuilder(text).reverse().toString();
             return new StringBuilder(font().plainSubstrByWidth(r, width)).reverse().toString();
@@ -500,6 +522,20 @@ public class FontRenderer implements IResourceManagerReloadListener {
     public List listFormattedStringToWidth(String text, int width) {
         if (!mcc$bitmap) {
             List<String> out = new ArrayList<>();
+            if (font() == null) {
+                // before the game's font exists: break at spaces by the approximate widths
+                StringBuilder current = new StringBuilder();
+                for (String word : LegacyText.strip(text).split(" ", -1)) {
+                    if (current.length() > 0 && approximateWidth(current + " " + word) > width) {
+                        out.add(current.toString());
+                        current.setLength(0);
+                    }
+                    if (current.length() > 0) current.append(' ');
+                    current.append(word);
+                }
+                out.add(current.toString());
+                return out;
+            }
             for (var line : font().getSplitter().splitLines(LegacyText.strip(text), width, net.minecraft.network.chat.Style.EMPTY)) out.add(line.getString());
             return out;
         }
