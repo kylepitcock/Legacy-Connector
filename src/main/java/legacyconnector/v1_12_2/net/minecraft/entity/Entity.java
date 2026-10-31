@@ -1390,12 +1390,15 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     }
 
     public double getDistanceSq(double x, double y, double z) {
+        var m = mcc$entity;
+        // through the modern entity, which Sable hooks for blocks on its ships (see the 1.7.10 Entity)
+        if (m != null) return m.distanceToSqr(x, y - (mcc$y() - m.getY()), z);
         double dx = mcc$x() - x, dy = mcc$y() - y, dz = mcc$z() - z;
         return dx * dx + dy * dy + dz * dz;
     }
 
     public double getDistanceSq(BlockPos pos) {
-        return pos.distanceSq(mcc$x(), mcc$y(), mcc$z());
+        return getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
     }
 
     public double getDistanceSqToCenter(BlockPos pos) {

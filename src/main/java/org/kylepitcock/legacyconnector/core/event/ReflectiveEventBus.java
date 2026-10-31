@@ -120,6 +120,20 @@ public final class ReflectiveEventBus {
         interest.clear();
     }
 
+    private static final int DISABLE_AFTER = 1000;
+    /** Failures in a row per handler (reset by a success); only handlers that ever failed are in here. */
+    private static final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicInteger> STREAKS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    private synchronized void disable(Listener l, Throwable t, int failures) {
+        if (!listeners.remove(l)) return;
+        List<Listener> own = byOwner.get(l.owner);
+        if (own != null) own.remove(l);
+        dispatchCache.clear();
+        interest.clear();
+        LOG.error("[{}] Legacy event handler {} is disabled after {} failure(s) (last: {})", name, l.name, failures, t.toString());
+    }
+
     public synchronized void unregister(Object target) {
         List<Listener> removed = byOwner.remove(target);
         if (removed != null) {
@@ -139,6 +153,10 @@ public final class ReflectiveEventBus {
             Object previousOwner = l.ownerToken == null ? null : adapter.enter(l.ownerToken);
             try {
                 l.handle.invoke(event);
+                if (!STREAKS.isEmpty()) {
+                    var streak = STREAKS.get(l.name);
+                    if (streak != null) streak.set(0);
+                }
                 if (!canceledBefore && adapter.isCanceled(event) && CANCELLERS.add(l.name + " " + event.getClass().getName())) {
                     LOG.info("[{}] Legacy handler {} cancels {} (reported once)", name, l.name, event.getClass().getName());
                 }
@@ -151,6 +169,11 @@ public final class ReflectiveEventBus {
                     LOG.error("[{}] Legacy event handler {} keeps failing ({} times so far, last: {}); further failures are not logged", name,
                             l.name, n, t.toString());
                 }
+                // A handler that can never work is dropped instead of paying for an exception on every tick or frame (ChromatiCraft's
+                // handlers, registered before the mod failed for want of DragonAPI, failed ~1,000 times a second): 1,000 failures in a
+                // row without one success is not a passing glitch. (One branch failing on a missing class resets with every success.)
+                int streak = STREAKS.computeIfAbsent(l.name, k -> new java.util.concurrent.atomic.AtomicInteger()).incrementAndGet();
+                if (streak >= DISABLE_AFTER) disable(l, t, n);
                 if (t instanceof Error err && !(t instanceof LinkageError)) throw err;
             } finally {
                 if (l.ownerToken != null) adapter.exit(previousOwner);

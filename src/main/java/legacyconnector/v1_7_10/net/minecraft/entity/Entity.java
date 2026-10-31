@@ -1047,6 +1047,11 @@ public abstract class Entity implements ICommandSender {
     }
 
     public double getDistanceSq(double x, double y, double z) {
+        var m = mcc$entity;
+        // Through the modern entity, which mods that move blocks elsewhere hook: Sable keeps a ship's blocks ~20 million blocks
+        // away and maps distances to them, so a legacy container on a ship (Thaumcraft's arcane workbench) closed at once. The
+        // target moves with the legacy y offset (the client player's eye-level posY), so plain worlds get the 1.7.10 result.
+        if (m != null) return m.distanceToSqr(x, y - (mcc$y() - m.getY()), z);
         double dx = mcc$x() - x, dy = mcc$y() - y, dz = mcc$z() - z;
         return dx * dx + dy * dy + dz * dz;
     }
