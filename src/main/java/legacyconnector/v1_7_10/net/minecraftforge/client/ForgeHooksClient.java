@@ -5,7 +5,17 @@ package legacyconnector.v1_7_10.net.minecraftforge.client;
  * that draw in both passes (BuildCraft pipes) read it to decide what to emit. -1 outside chunk meshing.
  */
 public class ForgeHooksClient {
+    /** Phantom: legacy code reads it through {@link #mcc$get$worldRenderPass} (per thread, as several chunk threads mesh at once). */
     public static int worldRenderPass = -1;
+    private static final ThreadLocal<int[]> WORLD_PASS = ThreadLocal.withInitial(() -> new int[] {-1});
+
+    public static int mcc$get$worldRenderPass() {
+        return WORLD_PASS.get()[0];
+    }
+
+    public static void mcc$set$worldRenderPass(int pass) {
+        WORLD_PASS.get()[0] = pass;
+    }
 
     /** The item/entity render pass legacy renderers query through {@code MinecraftForgeClient.getRenderPass()}. */
     public static int renderPass = -1;
@@ -15,7 +25,7 @@ public class ForgeHooksClient {
     }
 
     public static int getWorldRenderPass() {
-        return worldRenderPass;
+        return mcc$get$worldRenderPass();
     }
 
     /** Draws the stack as a GUI icon through the item's modern model; true when drawn. */

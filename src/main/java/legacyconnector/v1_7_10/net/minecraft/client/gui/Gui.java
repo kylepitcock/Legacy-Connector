@@ -64,7 +64,7 @@ public class Gui {
                 && !icon.getClass().getName().startsWith("legacyconnector.")) {
             // a mod's own IIcon is a UV rectangle on the texture the mod bound (OpenMods' FakeIcons on the guide book
             // sheet; the left page mirrored, minU > maxU): drawn as 1.7.10 did, a quad on the bound texture
-            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
+            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance();
             t.startDrawingQuads();
             t.addVertexWithUV(x, y + height, zLevel, icon.getMinU(), icon.getMaxV());
             t.addVertexWithUV(x + width, y + height, zLevel, icon.getMaxU(), icon.getMaxV());

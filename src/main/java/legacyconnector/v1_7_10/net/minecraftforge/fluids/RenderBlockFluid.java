@@ -68,7 +68,7 @@ public class RenderBlockFluid implements ISimpleBlockRenderingHandler {
     @Override
     public boolean renderWorldBlock(IBlockAccess world, int x, int y, int z, Block block, int modelId, RenderBlocks renderer) {
         if (!(block instanceof BlockFluidBase theFluid)) return false;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int color = block.colorMultiplier(world, x, y, z);
         float red = (color >> 16 & 255) / 255.0F, green = (color >> 8 & 255) / 255.0F, blue = (color & 255) / 255.0F;
         int bMeta = world.getBlockMetadata(x, y, z);

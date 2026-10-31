@@ -23,7 +23,7 @@ public class GroupObject {
 
     public void render() {
         if (faces.isEmpty()) return;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.startDrawing(glDrawingMode);
         render(tessellator);
         tessellator.draw();

@@ -73,7 +73,7 @@ public class RenderGlobal {
 
     /** Draws the 12 edges of a box with the Tessellator ({@code color} RGB, or -1 to keep the current colour). */
     public static void drawOutlinedBoundingBox(legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box, int color) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         t.startDrawing(3);
         if (color != -1) t.setColorOpaque_I(color);
         t.addVertex(box.minX, box.minY, box.minZ);

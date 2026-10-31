@@ -123,7 +123,7 @@ public class WavefrontObject implements IModelCustom {
 
     @Override
     public void renderAll() {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         for (GroupObject group : groupObjects) {
             if (group.faces.isEmpty()) continue;
             tessellator.startDrawing(group.glDrawingMode);

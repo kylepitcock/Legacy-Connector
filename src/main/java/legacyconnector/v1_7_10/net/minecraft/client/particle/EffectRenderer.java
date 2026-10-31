@@ -73,7 +73,7 @@ public class EffectRenderer {
 
     /** Draws all particles; the camera basis arguments follow the legacy ActiveRenderInfo convention. */
     public void mcc$render(float partialTicks, float rx, float rxz, float rz, float ryz, float rxy) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         for (int layer = 0; layer < fxLayers.length; layer++) {
             List<EntityFX> list = fxLayers[layer];
             if (list.isEmpty()) continue;

@@ -33,7 +33,8 @@ public class MinecraftForgeClient {
 
     public static int getRenderPass() {
         // while a chunk is meshed, block renderers (Reika's pipes) ask for the pass of the chunk render, as 1.7.10's shared variable gave
-        int pass = ForgeHooksClient.worldRenderPass >= 0 ? ForgeHooksClient.worldRenderPass : ForgeHooksClient.renderPass;
+        int world = ForgeHooksClient.mcc$get$worldRenderPass();
+        int pass = world >= 0 ? world : ForgeHooksClient.renderPass;
         return pass < 0 ? 0 : pass;
     }
 

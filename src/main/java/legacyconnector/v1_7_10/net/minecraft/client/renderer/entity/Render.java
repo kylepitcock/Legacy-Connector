@@ -53,7 +53,7 @@ public abstract class Render {
     public static void renderOffsetAABB(legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box, double x, double y, double z) {
         if (box == null) return;
         GL11.glDisable(GL11.GL_TEXTURE_2D);
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
         t.startDrawingQuads();
         t.setTranslation(x, y, z);
@@ -95,7 +95,7 @@ public abstract class Render {
     /** Draws a box's six faces with the current texture and colour. */
     public static void renderAABB(legacyconnector.v1_7_10.net.minecraft.util.AxisAlignedBB box) {
         if (box == null) return;
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         t.startDrawingQuads();
         t.addVertex(box.minX, box.maxY, box.minZ);
         t.addVertex(box.maxX, box.maxY, box.minZ);

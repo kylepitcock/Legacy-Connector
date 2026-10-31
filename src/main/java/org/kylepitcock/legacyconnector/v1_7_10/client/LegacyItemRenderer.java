@@ -124,7 +124,7 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                 if (icon == null) continue;
                 int color = item.getColorFromItemStack(view, pass);
                 legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f((color >> 16 & 255) / 255F, (color >> 8 & 255) / 255F, (color & 255) / 255F, 1F);
-                legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer.renderItemIn2D(legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance,
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.ItemRenderer.renderItemIn2D(legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance(),
                         icon.getMinU(), icon.getMinV(), icon.getMaxU(), icon.getMaxV(), icon.getIconWidth(), icon.getIconHeight(), 1F / 16F);
             }
         } catch (RuntimeException | LinkageError e) {
@@ -159,18 +159,18 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
                 pose.mulPose(Axis.XP.rotationDegrees(30));
                 pose.mulPose(Axis.YP.rotationDegrees(-45)); // 1.7.10: rotate(45) then rotate(-90) about Y
             }
-            long before = RenderContext.quadCount;
-            boolean debug = context == ItemDisplayContext.GUI && (Boolean.getBoolean("legacyconnector.debugItemBounds") || System.getenv("LC_DEBUG") != null);
-            if (debug) RenderContext.bounds = new double[] {1e9, 1e9, 1e9, -1e9, -1e9, -1e9};
+            long before = RenderContext.quadCount();
+            boolean debug = context == ItemDisplayContext.GUI && DEBUG_BOUNDS;
+            if (debug) RenderContext.setBounds(new double[] {1e9, 1e9, 1e9, -1e9, -1e9, -1e9});
             handler.renderInventoryBlock(block, view.getItem().getMetadata(view.getItemDamage()), renderId, renderBlocks);
             if (debug) {
-                var b = RenderContext.bounds;
-                RenderContext.bounds = null;
+                var b = RenderContext.bounds();
+                RenderContext.setBounds(null);
                 if (LOGGED.add("bounds:" + block.getClass().getName())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").info(
                         "Inventory bounds of {}: x {}..{} y {}..{} z {}..{}", block.getClass().getName(), b[0], b[3], b[1], b[4], b[2], b[5]);
             }
             // AE2: renderInventoryBlock does nothing, its block items are drawn by an IItemRenderer instead.
-            return RenderContext.quadCount != before;
+            return RenderContext.quadCount() != before;
         } catch (RuntimeException | LinkageError e) {
             logOnce(handler.getClass().getName(), e);
             return true; // a broken legacy renderer must not take the inventory down
@@ -181,6 +181,8 @@ public class LegacyItemRenderer extends BlockEntityWithoutLevelRenderer {
     }
 
     private static final java.util.Set<String> LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** {@code -Dlegacyconnector.debugItemBounds=true} or {@code LC_DEBUG}: logs the inventory bounds of each block handler once. */
+    private static final boolean DEBUG_BOUNDS = Boolean.getBoolean("legacyconnector.debugItemBounds") || System.getenv("LC_DEBUG") != null;
 
     private static void logOnce(String renderer, Throwable e) {
         if (LOGGED.add(renderer)) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").error("Legacy item renderer {} failed (logged once)", renderer, e);

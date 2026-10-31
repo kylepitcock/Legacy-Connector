@@ -245,11 +245,9 @@ public final class LegacyVertices {
         emitFilled(s, v0, v1, v2, v3);
     }
 
-    /** {@code glPolygonMode(..., GL_LINE)}: filled primitives are drawn as their edges (CustomOreGen's wireframes). */
-    public static volatile boolean mcc$lineMode;
-
     private static void emit(Snapshot s, double[] a, double[] b, double[] c, double[] d) {
-        if (mcc$lineMode) {
+        // glPolygonMode(..., GL_LINE), per thread: filled primitives are drawn as their edges (CustomOreGen's wireframes)
+        if (RenderContext.lineMode()) {
             line(s, a, b);
             line(s, b, c);
             if (c != d) {
@@ -283,11 +281,11 @@ public final class LegacyVertices {
                 fz = (float) (cz / len);
             }
         }
-        RenderContext.flatGuiQuad = !s.hasNormal() && RenderContext.gui() != null;
+        RenderContext.setFlatGuiQuad(!s.hasNormal() && RenderContext.gui() != null);
         try {
             RenderContext.quad(new double[][] {a, b, c, d}, fx, fy, fz);
         } finally {
-            RenderContext.flatGuiQuad = false;
+            RenderContext.setFlatGuiQuad(false);
         }
     }
 }

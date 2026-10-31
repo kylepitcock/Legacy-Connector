@@ -92,7 +92,7 @@ public final class VanillaBlockRenderers {
             if (!north && !south && !west && !east) north = south = west = east = true;
             boolean top = block.shouldSideBeRendered(world, x, y + 1, z, 1);
             boolean bottom = block.shouldSideBeRendered(world, x, y - 1, z, 0);
-            Tessellator t = Tessellator.instance;
+            Tessellator t = Tessellator.mcc$get$instance();
             long saved = t.mcc$colorState();
             t.mcc$setColorState(-1L);
             final double lo = 7.0D / 16.0D, hi = 9.0D / 16.0D;

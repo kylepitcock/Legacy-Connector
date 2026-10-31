@@ -87,7 +87,7 @@ public class MapItemRenderer {
         void render(boolean noOverlay) {
             update();
             if (location == null) return;
-            Tessellator t = Tessellator.instance;
+            Tessellator t = Tessellator.mcc$get$instance();
             RenderContext.bindTexture(location);
             GL11.glDisable(GL11.GL_ALPHA_TEST);
             t.startDrawingQuads();

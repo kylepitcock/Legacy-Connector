@@ -97,11 +97,11 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         int ox = relocation(pos.getX()), oz = relocation(pos.getZ());
         RenderContext.Capture capture = RenderContext.beginCapture();
         // 1.7.10's chunk renderer had the Tessellator drawing already when it called the handlers.
-        var tessellator = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
+        var tessellator = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance();
         boolean started = !tessellator.isDrawing;
         if (started) tessellator.startDrawingQuads();
         try {
-            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = pass;
+            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.mcc$set$worldRenderPass(pass);
             // The Tessellator is shared: a renderer that added a translation and then threw (or never took it back) must not
             // shift every later block (Reika's pipes add the block position first and subtract it last).
             tessellator.setTranslation(0, 0, 0);
@@ -122,7 +122,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             }
             return null;
         } finally {
-            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = -1;
+            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.mcc$set$worldRenderPass(-1);
             tessellator.setTranslation(0, 0, 0);
             try {
                 if (started && tessellator.isDrawing) tessellator.draw();

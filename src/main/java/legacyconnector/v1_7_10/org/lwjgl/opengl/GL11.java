@@ -298,7 +298,7 @@ public class GL11 extends GL11Guard {
      */
     private static void mcc$color(float r, float g, float b, float a) {
         RenderContext.color(r, g, b, a);
-        if (IMMEDIATE.isDrawing()) IMMEDIATE.color(r, g, b, a);
+        if (RenderContext.immediate().isDrawing()) RenderContext.immediate().color(r, g, b, a);
     }
 
     public static void glColor4f(float r, float g, float b, float a) {
@@ -422,7 +422,7 @@ public class GL11 extends GL11Guard {
 
     public static void glNormal3f(float x, float y, float z) {
         if (DisplayLists.record(() -> glNormal3f(x, y, z))) return;
-        IMMEDIATE.normal(x, y, z);
+        RenderContext.immediate().normal(x, y, z);
     }
 
     public static void glLightModel(int pname, FloatBuffer params) {
@@ -451,7 +451,7 @@ public class GL11 extends GL11Guard {
     /** Legacy geometry is drawn in batches later, so the real polygon mode would not apply to it: line mode is emulated. */
     public static void glPolygonMode(int face, int mode) {
         if (DisplayLists.record(() -> glPolygonMode(face, mode))) return;
-        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices.mcc$lineMode = mode == 0x1B01; // GL_LINE
+        RenderContext.setLineMode(mode == 0x1B01); // GL_LINE
     }
 
     /** Offset added to every id {@code glCallLists} calls. */
@@ -499,46 +499,46 @@ public class GL11 extends GL11Guard {
 
     // ------------------------------------------------------------------ immediate mode
 
-    private static final org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices IMMEDIATE = new org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices();
+    // glBegin/glEnd vertices are per thread: RenderContext.immediate()
 
     public static void glBegin(int mode) {
         if (DisplayLists.record(() -> glBegin(mode))) return;
-        IMMEDIATE.begin(mode);
+        RenderContext.immediate().begin(mode);
     }
 
     public static void glEnd() {
         if (DisplayLists.record(() -> glEnd())) return;
-        if (IMMEDIATE.isDrawing()) IMMEDIATE.end();
+        if (RenderContext.immediate().isDrawing()) RenderContext.immediate().end();
     }
 
     public static void glVertex3f(float x, float y, float z) {
         if (DisplayLists.record(() -> glVertex3f(x, y, z))) return;
-        IMMEDIATE.vertex(x, y, z);
+        RenderContext.immediate().vertex(x, y, z);
     }
 
     public static void glVertex3d(double x, double y, double z) {
         if (DisplayLists.record(() -> glVertex3d(x, y, z))) return;
-        IMMEDIATE.vertex(x, y, z);
+        RenderContext.immediate().vertex(x, y, z);
     }
 
     public static void glVertex2f(float x, float y) {
         if (DisplayLists.record(() -> glVertex2f(x, y))) return;
-        IMMEDIATE.vertex(x, y, 0);
+        RenderContext.immediate().vertex(x, y, 0);
     }
 
     public static void glVertex2i(int x, int y) {
         if (DisplayLists.record(() -> glVertex2i(x, y))) return;
-        IMMEDIATE.vertex(x, y, 0);
+        RenderContext.immediate().vertex(x, y, 0);
     }
 
     public static void glTexCoord2f(float u, float v) {
         if (DisplayLists.record(() -> glTexCoord2f(u, v))) return;
-        IMMEDIATE.uv(u, v);
+        RenderContext.immediate().uv(u, v);
     }
 
     public static void glTexCoord2d(double u, double v) {
         if (DisplayLists.record(() -> glTexCoord2d(u, v))) return;
-        IMMEDIATE.uv(u, v);
+        RenderContext.immediate().uv(u, v);
     }
 
     // ------------------------------------------------------------------ fixed-function vertex arrays

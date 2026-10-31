@@ -80,6 +80,8 @@ public final class ShimIndexGenerator {
                             return new MethodVisitor(Opcodes.ASM9) {
                                 @Override
                                 public void visitFieldInsn(int opcode, String owner, String fname, String fdesc) {
+                                    // the declaring class may set the value its phantom field shows to reflection (Tessellator.instance)
+                                    if (opcode == Opcodes.PUTSTATIC && mname.equals("<clinit>") && owner.equals(self)) return;
                                     for (ClassInfo c = classes.get(owner); c != null; c = classes.get(c.superName)) {
                                         if (c.methods.keySet().stream().anyMatch(k -> k.startsWith(ShimIndex.GETTER_PREFIX + fname + "("))) {
                                             out.add(self + "." + mname + " -> " + owner + "." + fname);

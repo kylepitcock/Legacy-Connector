@@ -5,7 +5,25 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices;
 
 /** 1.7.10 Tessellator: buffered legacy geometry, emitted into the active render context on draw(). */
 public class Tessellator {
+    /**
+     * The render thread's Tessellator. Legacy code reads the field through {@link #mcc$get$instance} (a virtual field): a
+     * chunk-meshing thread that captures legacy block renderers gets a Tessellator of its own, so it never shares a draw with the
+     * render thread (or another chunk thread), and the public fields mods read back ({@link #color}, {@link #isDrawing}) belong to
+     * the caller's thread.
+     */
     public static final Tessellator instance = new Tessellator();
+    private static final ThreadLocal<Tessellator> LOCAL = new ThreadLocal<>();
+
+    /** {@code Tessellator.instance} as legacy code reads it: this thread's own Tessellator once it has one, else the render thread's. */
+    public static Tessellator mcc$get$instance() {
+        Tessellator own = LOCAL.get();
+        return own != null ? own : instance;
+    }
+
+    /** Gives the calling thread (a chunk-meshing thread about to capture a block renderer) a Tessellator of its own; idempotent. */
+    public static void mcc$bindThread() {
+        if (LOCAL.get() == null) LOCAL.set(new Tessellator());
+    }
 
     public boolean isDrawing;
     /**

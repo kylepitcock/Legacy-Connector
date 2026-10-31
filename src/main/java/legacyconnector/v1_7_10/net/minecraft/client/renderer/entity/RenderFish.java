@@ -18,7 +18,7 @@ public class RenderFish extends Render {
         GL11.glTranslatef((float) x, (float) y, (float) z);
         GL11.glScalef(0.5F, 0.5F, 0.5F);
         bindEntityTexture(hook);
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         float u1 = 8 / 128.0F, u2 = 16 / 128.0F, v1 = 16 / 128.0F, v2 = 24 / 128.0F;
         RenderManager rm = renderManager != null ? renderManager : RenderManager.instance;
         GL11.glRotatef(180.0F - rm.playerViewY, 0.0F, 1.0F, 0.0F);
