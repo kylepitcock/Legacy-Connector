@@ -572,6 +572,27 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
         return legacy instanceof EntityLiving l ? l.getTalkInterval() : super.getAmbientSoundInterval();
     }
 
+    private boolean inSoundSource;
+
+    /**
+     * The sound category of the legacy entity: 1.12's EntityMob (and mods overriding getSoundCategory) play as HOSTILE, but a host is a
+     * PathfinderMob, whose modern ambient/hurt/death/step sounds played as NEUTRAL (Scape and Run: Parasites' mobs followed the "Friendly
+     * Creatures" slider, #110). The legacy default asks the host back, hence the guard.
+     */
+    @Override
+    public net.minecraft.sounds.SoundSource getSoundSource() {
+        if (legacy == null || inSoundSource) return super.getSoundSource();
+        inSoundSource = true;
+        try {
+            var category = legacy.getSoundCategory();
+            return category != null ? category.mcc$modern() : super.getSoundSource();
+        } catch (RuntimeException | LinkageError e) {
+            return super.getSoundSource();
+        } finally {
+            inSoundSource = false;
+        }
+    }
+
     // ------------------------------------------------------------------ spawning, despawning, interaction, size
 
     private net.minecraft.world.level.ServerLevelAccessor spawnLevel;
