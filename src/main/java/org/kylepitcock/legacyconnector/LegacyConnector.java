@@ -141,6 +141,7 @@ public final class LegacyConnector {
             exit.setDaemon(true);
             exit.start();
         });
+        org.kylepitcock.legacyconnector.core.ServerScript.register(game);
         int stopTicks = Integer.getInteger("legacyconnector.autostopTicks", 0);
         if (stopTicks > 0) {
             int[] ticks = {0};
