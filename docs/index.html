@@ -33,7 +33,18 @@
   .btn { display: inline-block; background: var(--accent); color: #fff; padding: 8px 14px; border-radius: 8px; font-weight: 600; border: 0; cursor: pointer; font-size: 0.95rem; }
   .btn:hover { text-decoration: none; filter: brightness(1.08); }
   .btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); font-weight: 500; padding: 5px 10px; font-size: 0.85rem; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 18px 0; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 18px 0 0; border-bottom: 1px solid var(--line); }
+  .tab { background: transparent; color: var(--muted); border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; padding: 8px 16px; cursor: pointer; font-size: 0.98rem; font-weight: 600; margin-bottom: -1px; }
+  .tab:hover:not(:disabled) { color: var(--text); }
+  .tab[aria-selected=true] { background: var(--card); color: var(--accent); border-color: var(--line); }
+  .tab:disabled { cursor: default; opacity: 0.55; font-weight: 500; }
+  .tab small { font-weight: 400; color: var(--muted); margin-left: 6px; }
+  select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 0.92rem; }
+  .stat.click { cursor: pointer; text-align: left; font: inherit; color: inherit; }
+  .stat.click:hover { border-color: var(--accent); }
+  .stat.click[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+  .stat small { display: block; color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0; }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
   .stat b { display: block; font-size: 1.5rem; line-height: 1.1; }
   .stat span { color: var(--muted); font-size: 0.85rem; }
@@ -76,11 +87,23 @@
     </nav>
   </header>
 
+  <div class="tabs" id="tabs" role="tablist" aria-label="Legacy Minecraft version"></div>
   <div class="stats" id="stats"></div>
 
   <div class="controls">
     <input type="search" id="q" placeholder="Search mods…" aria-label="Search mods">
     <div class="chips" id="chips" role="group" aria-label="Filter by result"></div>
+    <label style="color:var(--muted);font-size:.9rem">Sort by
+      <select id="sort" aria-label="Sort mods">
+        <option value="name">Name (A-Z)</option>
+        <option value="namez">Name (Z-A)</option>
+        <option value="most">Most results</option>
+        <option value="fewest">Fewest results</option>
+        <option value="best">Best result first</option>
+        <option value="worst">Worst result first</option>
+        <option value="newest">Newest result</option>
+      </select>
+    </label>
   </div>
 
   <div id="list"></div>
@@ -97,7 +120,7 @@
 
   <footer>
     <span id="updated"></span>
-    <b>Works</b> = tested in game (by hand, or the in-game test found problems in under 10% of its blocks, items and mobs); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
+    <b>Works</b> = tested in game (by hand, or the in-game test found problems in under 10% of its blocks, items and mobs); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
   </footer>
 </div>
 
@@ -107,7 +130,10 @@
   var LABEL = { works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
   var TIER = ["community", "maintainer", "client", "corpus"];
   var ORDER = ["works", "partial", "loads", "fails", "crashes"];
-  var state = { q: "", status: "all", mods: [] };
+  // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
+  var SUPPORTED = ["1.7.10", "1.12.2"];
+  var PLANNED = ["1.20.1", "1.16.5", "1.2.5"];
+  var state = { q: "", status: "all", sort: "name", tab: "", all: [] };
 
   function reportUrl(name) {
     var u = "https://github.com/" + REPO + "/issues/new?template=compatibility_report.yml";
@@ -122,19 +148,35 @@
     return e;
   }
   function safeLink(url) { return /^https?:\/\//i.test(url || "") ? url : ""; }
+  // "1.8 - 1.12.2" or "1.7.10 (forge)" -> the version a report is filed under; unknown text stays empty
+  function mcOf(s) {
+    s = String(s || "");
+    var known = SUPPORTED.concat(PLANNED);
+    for (var i = 0; i < known.length; i++) if (s.indexOf(known[i]) >= 0) return known[i];
+    return "";
+  }
+  function rank(status) { var i = ORDER.indexOf(status); return i < 0 ? ORDER.length : i; }
 
+  // one row per mod and legacy version: the same mod name can have a different result on 1.7.10 and 1.12.2
   function merge(maintainer, community) {
-    var byKey = {};
-    function slot(name) {
-      var k = norm(name);
-      if (!byKey[k]) byKey[k] = { name: name, entries: [] };
+    var byKey = {}, withMc = {};
+    function slot(name, mc) {
+      var k = norm(name) + "|" + mc;
+      if (!byKey[k]) byKey[k] = { name: name, mc: mc, entries: [] };
       return byKey[k];
     }
     maintainer.forEach(function (m) {
-      slot(m.name).entries.push({ source: m.source || "maintainer", version: m.version, mc: m.mc, status: m.status, notes: m.notes || "", date: m.date });
+      var mc = mcOf(m.mc) || "1.7.10";
+      withMc[norm(m.name) + "|" + mc] = true;
+      slot(m.name, mc).entries.push({ source: m.source || "maintainer", version: m.version, mc: mc, status: m.status, notes: m.notes || "", date: m.date });
     });
     community.forEach(function (r) {
-      slot(r.mod).entries.push({ source: "community", version: "", mc: r.mc, status: r.status, notes: r.details, issue: r.issue,
+      var mc = mcOf(r.mc);
+      if (!mc) {
+        // no usable version in the report: file it where the mod already is, else under 1.7.10 (the first supported version)
+        mc = SUPPORTED.filter(function (v) { return withMc[norm(r.mod) + "|" + v]; })[0] || "1.7.10";
+      }
+      slot(r.mod, mc).entries.push({ source: "community", version: "", mc: mc, status: r.status, notes: r.details, issue: r.issue,
         date: r.date, lc: r.lc, link: safeLink(r.link), open: r.open });
     });
     return Object.keys(byKey).map(function (k) {
@@ -150,8 +192,8 @@
         return pool.length > 0;
       });
       if (tierUsed === "client") {
-        var best = Math.min.apply(null, pool.map(function (e) { var i = ORDER.indexOf(e.status); return i < 0 ? ORDER.length : i; }));
-        pool = pool.filter(function (e) { return ORDER.indexOf(e.status) === best; });
+        var best = Math.min.apply(null, pool.map(function (e) { return rank(e.status); }));
+        pool = pool.filter(function (e) { return rank(e.status) === best; });
       }
       var counts = {}, newest = {};
       pool.forEach(function (e) {
@@ -163,23 +205,68 @@
       })[0];
       if (!counts[m.status]) m.status = "untested";
       m.entries.sort(function (a, b) { return TIER.indexOf(a.source) - TIER.indexOf(b.source) || (b.date || "").localeCompare(a.date || ""); });
-      m.mcs = Array.from(new Set(m.entries.map(function (e) { return e.mc; }).filter(Boolean)));
+      m.newest = m.entries.reduce(function (d, e) { return (e.date || "") > d ? e.date : d; }, "");
       return m;
-    }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+    });
+  }
+
+  function versionsWithData() {
+    var seen = {};
+    state.all.forEach(function (m) { seen[m.mc] = true; });
+    return seen;
+  }
+  function tabMods() { return state.all.filter(function (m) { return m.mc === state.tab; }); }
+
+  function renderTabs() {
+    var box = document.getElementById("tabs");
+    box.textContent = "";
+    var seen = versionsWithData();
+    var live = SUPPORTED.concat(Object.keys(seen).filter(function (v) { return SUPPORTED.indexOf(v) < 0; }).sort());
+    live.forEach(function (v) {
+      var n = state.all.filter(function (m) { return m.mc === v; }).length;
+      var b = el("button", "tab", "MC " + v);
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(state.tab === v));
+      b.appendChild(el("small", null, String(n)));
+      b.onclick = function () { selectTab(v); };
+      box.appendChild(b);
+    });
+    PLANNED.filter(function (v) { return !seen[v]; }).forEach(function (v) {
+      var b = el("button", "tab", "MC " + v);
+      b.type = "button";
+      b.disabled = true;
+      b.title = "Planned: no results yet";
+      b.appendChild(el("small", null, "planned"));
+      box.appendChild(b);
+    });
+  }
+
+  function selectTab(v) {
+    state.tab = v;
+    state.status = "all";
+    if (history.replaceState) history.replaceState(null, "", "#" + v);
+    renderTabs(); renderStats(); renderChips(); renderList();
   }
 
   function renderStats() {
     var box = document.getElementById("stats");
     box.textContent = "";
+    var mods = tabMods();
     var counts = { works: 0, partial: 0, loads: 0, fails: 0, crashes: 0 };
-    state.mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
-    [["Mods listed", state.mods.length, ""], ["Work", counts.works, "works"], ["Partly work", counts.partial, "partial"], ["Load (startup test)", counts.loads, "loads"],
-     ["Fail or crash", counts.fails + counts.crashes, "fails"]].forEach(function (s) {
-      var d = el("div", "stat");
+    mods.forEach(function (m) { if (counts[m.status] != null) counts[m.status]++; });
+    [["Mods listed", mods.length, "all", ""], ["Work", counts.works, "works", ""], ["Partly work", counts.partial, "partial", ""],
+     ["Load (startup test)", counts.loads, "loads", ""], ["Fail to load", counts.fails, "fails", "disabled at startup"],
+     ["Crash", counts.crashes, "crashes", "take the game down"]].forEach(function (s) {
+      var d = el("button", "stat click");
+      d.type = "button";
+      d.setAttribute("aria-pressed", String(state.status === s[2]));
       var b = el("b", null, String(s[1]));
-      if (s[2]) b.style.color = "var(--" + s[2] + ")";
+      if (s[2] !== "all") b.style.color = "var(--" + s[2] + ")";
       d.appendChild(b);
       d.appendChild(el("span", null, s[0]));
+      if (s[3]) d.appendChild(el("small", null, s[3]));
+      d.onclick = function () { state.status = state.status === s[2] ? "all" : s[2]; renderStats(); renderChips(); renderList(); };
       box.appendChild(d);
     });
   }
@@ -187,24 +274,37 @@
   function renderChips() {
     var box = document.getElementById("chips");
     box.textContent = "";
+    var mods = tabMods();
     [["all", "All"], ["works", "Works"], ["partial", "Partial"], ["loads", "Loads"], ["fails", "Fails"], ["crashes", "Crashes"]].forEach(function (c) {
-      var b = el("button", "chip", c[1]);
+      var n = c[0] === "all" ? mods.length : mods.filter(function (m) { return m.status === c[0]; }).length;
+      var b = el("button", "chip", c[1] + " " + n);
       b.type = "button";
       b.setAttribute("aria-pressed", String(state.status === c[0]));
-      b.onclick = function () { state.status = c[0]; renderChips(); renderList(); };
+      b.onclick = function () { state.status = c[0]; renderStats(); renderChips(); renderList(); };
       box.appendChild(b);
     });
   }
+
+  var SORTS = {
+    name: function (a, b) { return a.name.localeCompare(b.name); },
+    namez: function (a, b) { return b.name.localeCompare(a.name); },
+    most: function (a, b) { return b.entries.length - a.entries.length || a.name.localeCompare(b.name); },
+    fewest: function (a, b) { return a.entries.length - b.entries.length || a.name.localeCompare(b.name); },
+    best: function (a, b) { return rank(a.status) - rank(b.status) || b.entries.length - a.entries.length || a.name.localeCompare(b.name); },
+    worst: function (a, b) { return rank(b.status) - rank(a.status) || b.entries.length - a.entries.length || a.name.localeCompare(b.name); },
+    newest: function (a, b) { return (b.newest || "").localeCompare(a.newest || "") || a.name.localeCompare(b.name); }
+  };
 
   function renderList() {
     var list = document.getElementById("list");
     list.textContent = "";
     var q = norm(state.q);
-    var shown = state.mods.filter(function (m) {
+    var mods = tabMods();
+    var shown = mods.filter(function (m) {
       return (state.status === "all" || m.status === state.status) && (!q || norm(m.name).indexOf(q) >= 0);
-    });
+    }).sort(SORTS[state.sort] || SORTS.name);
     if (!shown.length) {
-      var e = el("div", "empty", state.mods.length ? "No mod matches. " : "No data yet. ");
+      var e = el("div", "empty", mods.length ? "No mod matches. " : "No data yet. ");
       var a = el("a", null, "Report it");
       a.href = reportUrl(state.q.trim()); a.target = "_blank"; a.rel = "noopener";
       e.appendChild(a);
@@ -216,7 +316,7 @@
       var s = el("summary");
       s.appendChild(el("span", "badge " + m.status, LABEL[m.status]));
       s.appendChild(el("span", "name", m.name));
-      s.appendChild(el("span", "meta", m.entries.length + (m.entries.length === 1 ? " result" : " results") + (m.mcs.length ? " · " + m.mcs.join(", ") : "")));
+      s.appendChild(el("span", "meta", m.entries.length + (m.entries.length === 1 ? " result" : " results")));
       d.appendChild(s);
       var body = el("div", "body");
       m.entries.forEach(function (en) {
@@ -224,7 +324,7 @@
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
         var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : "Player report";
-        top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "") + (en.mc ? " · MC " + en.mc : "")));
+        top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "")));
         if (en.issue) {
           var a = el("a", null, "#" + en.issue);
           a.href = "https://github.com/" + REPO + "/issues/" + en.issue; a.target = "_blank"; a.rel = "noopener";
@@ -255,10 +355,15 @@
 
   document.getElementById("report-top").href = reportUrl("");
   document.getElementById("q").addEventListener("input", function (e) { state.q = e.target.value; renderList(); });
-  renderChips();
+  document.getElementById("sort").addEventListener("change", function (e) { state.sort = e.target.value; renderList(); });
   Promise.all([load("data/mods.json"), load("data/reports.json")]).then(function (res) {
-    state.mods = merge(res[0].mods || [], res[1].reports || []);
+    state.all = merge(res[0].mods || [], res[1].reports || []);
+    var want = decodeURIComponent((location.hash || "").replace(/^#/, ""));
+    var seen = versionsWithData();
+    state.tab = seen[want] ? want : SUPPORTED[0];
+    renderTabs();
     renderStats();
+    renderChips();
     renderList();
   });
 })();
