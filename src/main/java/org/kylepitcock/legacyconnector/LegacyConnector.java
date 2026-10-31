@@ -180,6 +180,7 @@ public final class LegacyConnector {
         // public addon API: addons' rules are asked first, then the 1.12.2 built-ins (see api/LegacyCapabilities)
         org.kylepitcock.legacyconnector.api.internal.CapabilityRules.apply(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.ForeignEnergy1710.registerItems(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.registerCapabilities(event);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemCapabilities1122.register(event);
         var type = org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge.type();

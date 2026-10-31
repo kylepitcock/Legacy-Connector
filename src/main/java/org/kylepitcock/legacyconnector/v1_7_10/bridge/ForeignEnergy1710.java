@@ -45,6 +45,150 @@ public final class ForeignEnergy1710 {
         return null;
     }
 
+    // ------------------------------------------------------------------ IC2 electric items
+
+    /** Registers {@code Capabilities.EnergyStorage.ITEM} for every item implementing IC2's {@code IElectricItem} (EU at {@code energy.fePerEu}). */
+    public static void registerItems(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        for (legacyconnector.v1_7_10.net.minecraft.item.Item item : ItemBridge.modItems()) {
+            Class<?> electric = named(item.getClass(), "ic2.api.item.IElectricItem");
+            if (electric == null) continue;
+            ElectricItem api = ElectricItem.of(item, electric);
+            if (api == null) continue;
+            event.registerItem(net.neoforged.neoforge.capabilities.Capabilities.EnergyStorage.ITEM, (stack, ctx) -> new ItemStorage(api, stack),
+                    item.mcc$variants.values().toArray(new net.minecraft.world.item.Item[0]));
+        }
+    }
+
+    private static final class ElectricItem {
+        Method getMaxCharge;
+        Method getTier;
+        Method canProvide;
+        Method getManager;
+        Method charge;
+        Method discharge;
+        Method getCharge;
+        Object defaultManager;
+        legacyconnector.v1_7_10.net.minecraft.item.Item item;
+
+        static ElectricItem of(legacyconnector.v1_7_10.net.minecraft.item.Item item, Class<?> electric) {
+            ElectricItem e = new ElectricItem();
+            e.item = item;
+            e.getMaxCharge = method(electric, "getMaxCharge", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+            e.getTier = method(electric, "getTier", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+            e.canProvide = method(electric, "canProvideEnergy", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+            Class<?> special = named(item.getClass(), "ic2.api.item.ISpecialElectricItem");
+            if (special != null) e.getManager = method(special, "getManager", legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class);
+            try {
+                Class<?> facade = Class.forName("ic2.api.item.ElectricItem", false, item.getClass().getClassLoader());
+                e.defaultManager = facade.getField("manager").get(null);
+            } catch (ReflectiveOperationException | LinkageError ex) {
+                // only a special item's own manager is available
+            }
+            Object any = e.defaultManager != null ? e.defaultManager : null;
+            Class<?> managerType = any != null ? any.getClass() : null;
+            if (managerType == null && e.getManager == null) return null;
+            return e.getMaxCharge == null ? null : e;
+        }
+
+        Object manager(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+            try {
+                if (getManager != null) return getManager.invoke(item, stack);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                // fall back to the default manager
+            }
+            return defaultManager;
+        }
+
+        double call(Object manager, String name, Object... args) throws ReflectiveOperationException {
+            for (Method m : manager.getClass().getMethods()) {
+                if (m.getName().equals(name) && m.getParameterCount() == args.length) {
+                    m.setAccessible(true);
+                    return ((Number) m.invoke(manager, args)).doubleValue();
+                }
+            }
+            return 0;
+        }
+    }
+
+    private record ItemStorage(ElectricItem api, net.minecraft.world.item.ItemStack stack) implements IEnergyStorage {
+        private legacyconnector.v1_7_10.net.minecraft.item.ItemStack view() {
+            return legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(stack);
+        }
+
+        private int tier(legacyconnector.v1_7_10.net.minecraft.item.ItemStack s) {
+            try {
+                return api.getTier == null ? 1 : ((Number) api.getTier.invoke(api.item, s)).intValue();
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return 1;
+            }
+        }
+
+        @Override
+        public int receiveEnergy(int amount, boolean simulate) {
+            var s = view();
+            Object manager = api.manager(s);
+            long eu = EnergyRates.unitsFromFe(amount, LegacyConfig.fePerEu());
+            if (manager == null || eu <= 0) return 0;
+            try {
+                // charge(stack, amount, tier, ignoreTransferLimit, simulate) returns the EU accepted
+                double charged = api.call(manager, "charge", s, (double) eu, tier(s), false, simulate);
+                return EnergyRates.feFromUnits(charged, LegacyConfig.fePerEu());
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public int extractEnergy(int amount, boolean simulate) {
+            var s = view();
+            Object manager = api.manager(s);
+            long eu = EnergyRates.unitsFromFe(amount, LegacyConfig.fePerEu());
+            if (manager == null || eu <= 0 || !canExtract()) return 0;
+            try {
+                // discharge(stack, amount, tier, ignoreTransferLimit, externally, simulate) returns the EU taken
+                double taken = api.call(manager, "discharge", s, (double) eu, tier(s), false, true, simulate);
+                return EnergyRates.feFromUnits(taken, LegacyConfig.fePerEu());
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public int getEnergyStored() {
+            var s = view();
+            Object manager = api.manager(s);
+            if (manager == null) return 0;
+            try {
+                return EnergyRates.feFromUnits(api.call(manager, "getCharge", s), LegacyConfig.fePerEu());
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public int getMaxEnergyStored() {
+            try {
+                return EnergyRates.feFromUnits(((Number) api.getMaxCharge.invoke(api.item, view())).doubleValue(), LegacyConfig.fePerEu());
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return 0;
+            }
+        }
+
+        @Override
+        public boolean canExtract() {
+            try {
+                return api.canProvide != null && (boolean) api.canProvide.invoke(api.item, view());
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                return false;
+            }
+        }
+
+        @Override
+        public boolean canReceive() {
+            return true;
+        }
+    }
+
     private static Class<?> named(Class<?> type, String name) {
         for (Class<?> c = type; c != null; c = c.getSuperclass()) {
             Class<?> found = search(c, name);
