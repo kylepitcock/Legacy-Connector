@@ -68,7 +68,7 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block diamond_ore = BlockBridge.vanilla("diamond_ore", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block diamond_block = BlockBridge.vanilla("diamond_block", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block crafting_table = BlockBridge.vanilla("crafting_table", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.Block wheat = BlockBridge.vanilla("wheat", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block wheat = BlockBridge.vanilla("wheat", legacyconnector.v1_7_10.net.minecraft.block.BlockCrops.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block farmland = BlockBridge.vanilla("farmland", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block furnace = BlockBridge.vanilla("furnace", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block lit_furnace = BlockBridge.vanilla("lit_furnace", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
@@ -92,7 +92,7 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block snow = BlockBridge.vanilla("snow", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block cactus = BlockBridge.vanilla("cactus", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block clay = BlockBridge.vanilla("clay", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.Block reeds = BlockBridge.vanilla("reeds", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block reeds = BlockBridge.vanilla("reeds", legacyconnector.v1_7_10.net.minecraft.block.BlockReed.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block jukebox = BlockBridge.vanilla("jukebox", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block fence = BlockBridge.vanilla("fence", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block pumpkin = BlockBridge.vanilla("pumpkin", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
@@ -149,8 +149,8 @@ public class Blocks {
     public static final legacyconnector.v1_7_10.net.minecraft.block.BlockBeacon beacon = BlockBridge.vanilla("beacon", legacyconnector.v1_7_10.net.minecraft.block.BlockBeacon.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block cobblestone_wall = BlockBridge.vanilla("cobblestone_wall", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block flower_pot = BlockBridge.vanilla("flower_pot", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.Block carrots = BlockBridge.vanilla("carrots", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
-    public static final legacyconnector.v1_7_10.net.minecraft.block.Block potatoes = BlockBridge.vanilla("potatoes", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block carrots = BlockBridge.vanilla("carrots", legacyconnector.v1_7_10.net.minecraft.block.BlockCrops.class);
+    public static final legacyconnector.v1_7_10.net.minecraft.block.Block potatoes = BlockBridge.vanilla("potatoes", legacyconnector.v1_7_10.net.minecraft.block.BlockCrops.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block wooden_button = BlockBridge.vanilla("wooden_button", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block skull = BlockBridge.vanilla("skull", legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     public static final legacyconnector.v1_7_10.net.minecraft.block.Block anvil = BlockBridge.vanilla("anvil", legacyconnector.v1_7_10.net.minecraft.block.Block.class);

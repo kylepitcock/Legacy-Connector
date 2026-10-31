@@ -103,6 +103,18 @@ public class LegacyBlockEntity extends BlockEntity {
                 && state.hasProperty(LegacyBlockAdapter.META)) {
             refreshForMeta(old.getValue(LegacyBlockAdapter.META), state.getValue(LegacyBlockAdapter.META));
         }
+        // 1.7.10's Chunk.setBlockMetadata told a kept tile entity its new metadata (updateContainingBlockInfo, blockMetadata = meta);
+        // a cached getBlockMetadata() otherwise stays at the value read first. Witchery's fume funnel caches 0 before its facing
+        // is set on placement and never draws the pipes to the oven beside it.
+        if (legacy != null && old.getBlock() == state.getBlock() && old.hasProperty(LegacyBlockAdapter.META) && state.hasProperty(LegacyBlockAdapter.META)
+                && !old.getValue(LegacyBlockAdapter.META).equals(state.getValue(LegacyBlockAdapter.META))) {
+            try {
+                legacy.updateContainingBlockInfo();
+            } catch (RuntimeException | LinkageError ignored) {
+                // a mod's override that needs more world than it has here
+            }
+            legacy.blockMetadata = state.getValue(LegacyBlockAdapter.META);
+        }
     }
 
     public void replaceLegacy(TileEntity te) {
@@ -134,10 +146,33 @@ public class LegacyBlockEntity extends BlockEntity {
         if (legacy != null) legacy.setWorldObj(World.mcc$wrap(level));
     }
 
+    private static final java.util.Map<Class<?>, Boolean> UPDATES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * IndustrialCraft 2's tile entities return false from {@code canUpdate()} (final) and still do all their work in an
+     * {@code updateEntity()} that 1.7.10's world called for them: not a single IC2 machine or generator ran. A tile that
+     * overrides {@code updateEntity} outside the shim ticks whatever {@code canUpdate()} says; the default one is empty.
+     */
+    private static boolean overridesUpdate(Class<?> type) {
+        return UPDATES.computeIfAbsent(type, c -> {
+            for (Class<?> k = c; k != null && !k.getName().startsWith("legacyconnector."); k = k.getSuperclass()) {
+                try {
+                    k.getDeclaredMethod("updateEntity");
+                    return true;
+                } catch (NoSuchMethodException ignored) {
+                    // keep looking up the hierarchy
+                } catch (LinkageError e) {
+                    return false;
+                }
+            }
+            return false;
+        });
+    }
+
     void tick() {
         if (tickFailed || org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
         TileEntity te = legacy();
-        if (te == null || te.isInvalid() || !te.canUpdate()) return;
+        if (te == null || te.isInvalid() || !(te.canUpdate() || overridesUpdate(te.getClass()))) return;
         try {
             te.updateEntity();
         } catch (RuntimeException | LinkageError e) {
