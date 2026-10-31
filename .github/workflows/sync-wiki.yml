@@ -45,7 +45,7 @@ jobs:
           cp docs/wiki/*.md wiki/
           # inside a wiki, [x](Page.md) opens the raw file as plain text: page links must not carry the extension, and links
           # that leave docs/wiki must point at the repository
-          sed -i -E 's#\]\(([A-Za-z0-9_-]+)\.md(\#[A-Za-z0-9_.-]+)?\)#]()#g; s#\]\(\.\./\.\./README\.md\)#](https://github.com/${{ github.repository }}\#readme)#g; s#\]\(\.\./\.\./([A-Za-z0-9_./-]+)\)#](https://github.com/${{ github.repository }}/blob/master/)#g' wiki/*.md
+          sed -i -E 's#\]\(([A-Za-z0-9_-]+)\.md(\#[A-Za-z0-9_.-]+)?\)#](\1\2)#g; s#\]\(\.\./\.\./README\.md\)#](https://github.com/${{ github.repository }}\#readme)#g; s#\]\(\.\./\.\./([A-Za-z0-9_./-]+)\)#](https://github.com/${{ github.repository }}/blob/master/\1)#g' wiki/*.md
           cd wiki
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
