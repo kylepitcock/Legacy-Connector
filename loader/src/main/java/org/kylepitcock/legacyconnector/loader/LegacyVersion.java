@@ -28,6 +28,8 @@ public enum LegacyVersion {
             "net/minecraft/",
             "net/minecraftforge/",
             "cpw/mods/fml/",
+            // Realms' copy of the chat formatting codes, which 1.8-1.12 mods used (the shim has it for 1.12.2)
+            "com/mojang/realmsclient/",
             // LWJGL 2 classes that have no LWJGL 3 equivalent. GL11 is relocated so the shim can emulate the
             // fixed-function pipeline that the 1.21 core profile no longer provides.
             "org/lwjgl/input/",
