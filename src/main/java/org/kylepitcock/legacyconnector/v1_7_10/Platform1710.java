@@ -314,6 +314,7 @@ public final class Platform1710 implements LegacyPlatform {
         legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.mcc$restoreVanillaStatics();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyBiomeLayers.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyWorldPresets.registerNames();
+        org.kylepitcock.legacyconnector.core.ServerScript.register();
         org.kylepitcock.legacyconnector.v1_7_10.entity.EntitySelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.entity.BlockSelfTest.register();
         org.kylepitcock.legacyconnector.v1_7_10.entity.DimensionSelfTest.register();

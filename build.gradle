@@ -82,6 +82,9 @@ neoForge {
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
             systemProperty 'legacyconnector.entitySelfTest', 'true'
+            // -PserverScript=<dir>: runs the *.js files dropped into the directory on the server thread (core.ServerScript); -PserverScriptMod=<legacy mod id>
+            if (project.hasProperty('serverScript')) systemProperty 'legacyconnector.serverScript', project.property('serverScript')
+            if (project.hasProperty('serverScriptMod')) systemProperty 'legacyconnector.serverScriptMod', project.property('serverScriptMod')
         }
 
         // Client smoke test: boots the client in run-clienttest (mods: run-clienttest/mods), reports texture and
