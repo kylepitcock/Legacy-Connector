@@ -4,10 +4,12 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
+import net.minecraft.client.sounds.WeighedSoundEvents;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.SoundBridge;
+import org.kylepitcock.legacyconnector.v1_7_10.client.LegacySoundFiles;
 
 /**
  * The client's sound engine: legacy code hands it sounds by their 1.7.10 name. Each legacy sound played is remembered with
@@ -42,23 +44,33 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
         if (instance != null) net.minecraft.client.Minecraft.getInstance().getSoundManager().playDelayed(instance, delayTicks);
     }
 
-    /** The modern instance for a legacy sound (made and remembered here); null when the sound name is unknown. */
+    /**
+     * The modern instance for a legacy sound (made and remembered here); null when the sound name is unknown. A location
+     * naming a sound file rather than an event (DragonAPI's {@code custom_path:Reika/ChromatiCraft/Sounds/gui4.ogg}) plays
+     * that file, found as 1.7.10 found it ({@link LegacySoundFiles}).
+     */
     public SoundInstance mcc$instance(ISound sound) {
         if (sound == null || sound.getPositionedSoundLocation() == null) return null;
-        String name = sound.getPositionedSoundLocation().getResourceDomain().equals("minecraft") ? sound.getPositionedSoundLocation().getResourcePath()
-                : sound.getPositionedSoundLocation().getResourceDomain() + ":" + sound.getPositionedSoundLocation().getResourcePath();
-        SoundEvent event = SoundBridge.sound(MUSIC_RENAMES.getOrDefault(name, name));
+        var location = sound.getPositionedSoundLocation();
+        LegacySoundFiles.LegacyFile file = LegacySoundFiles.find(sound, location);
+        SoundEvent event;
+        if (file != null) {
+            event = SoundEvent.createVariableRangeEvent(file.id());
+        } else {
+            String name = location.getResourceDomain().equals("minecraft") ? location.getResourcePath() : location.getResourceDomain() + ":" + location.getResourcePath();
+            event = SoundBridge.sound(MUSIC_RENAMES.getOrDefault(name, name));
+        }
         if (event == null) return null;
         SoundSource source = sound instanceof PositionedSoundRecord r && r.mcc$category != null ? r.mcc$category.mcc$source() : SoundSource.MASTER;
         SoundInstance instance;
         if (sound instanceof ITickableSound tickable) {
-            instance = new Tickable(event, source, tickable);
+            instance = new Tickable(event, source, tickable, file);
         } else if (sound.getAttenuationType() == ISound.AttenuationType.NONE) {
-            instance = new SimpleSoundInstance(event.getLocation(), source, sound.getVolume(), sound.getPitch(), RandomSource.create(), sound.canRepeat(),
-                    sound.getRepeatDelay(), SoundInstance.Attenuation.NONE, 0.0D, 0.0D, 0.0D, true);
+            instance = new Simple(event.getLocation(), source, sound.getVolume(), sound.getPitch(), sound.canRepeat(),
+                    sound.getRepeatDelay(), SoundInstance.Attenuation.NONE, 0.0D, 0.0D, 0.0D, true, file);
         } else {
-            instance = new SimpleSoundInstance(event.getLocation(), source, sound.getVolume(), sound.getPitch(), RandomSource.create(), sound.canRepeat(),
-                    sound.getRepeatDelay(), SoundInstance.Attenuation.LINEAR, sound.getXPosF(), sound.getYPosF(), sound.getZPosF(), false);
+            instance = new Simple(event.getLocation(), source, sound.getVolume(), sound.getPitch(), sound.canRepeat(),
+                    sound.getRepeatDelay(), SoundInstance.Attenuation.LINEAR, sound.getXPosF(), sound.getYPosF(), sound.getZPosF(), false, file);
         }
         synchronized (playing) {
             playing.put(sound, instance);
@@ -122,13 +134,34 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
         if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) net.minecraft.client.Minecraft.getInstance().getSoundManager().reload();
     }
 
+    /** A legacy sound played once (or repeating); a sound file plays as the one-sound event built for it. */
+    private static final class Simple extends SimpleSoundInstance {
+        private final LegacySoundFiles.LegacyFile file;
+
+        Simple(net.minecraft.resources.ResourceLocation location, SoundSource source, float volume, float pitch, boolean looping, int delay,
+                SoundInstance.Attenuation attenuation, double x, double y, double z, boolean relative, LegacySoundFiles.LegacyFile file) {
+            super(location, source, volume, pitch, RandomSource.create(), looping, delay, attenuation, x, y, z, relative);
+            this.file = file;
+        }
+
+        @Override
+        public WeighedSoundEvents resolve(net.minecraft.client.sounds.SoundManager manager) {
+            if (file == null) return super.resolve(manager);
+            WeighedSoundEvents events = file.resolve(manager);
+            if (events != null) this.sound = file.sound();
+            return events;
+        }
+    }
+
     /** A legacy sound updated every tick: its position, volume and pitch are copied each time, and it ends when the legacy sound says so. */
     private static final class Tickable extends net.minecraft.client.resources.sounds.AbstractTickableSoundInstance {
         private final ITickableSound legacy;
+        private final LegacySoundFiles.LegacyFile file;
 
-        Tickable(SoundEvent event, SoundSource source, ITickableSound legacy) {
+        Tickable(SoundEvent event, SoundSource source, ITickableSound legacy, LegacySoundFiles.LegacyFile file) {
             super(event, source, RandomSource.create());
             this.legacy = legacy;
+            this.file = file;
             this.looping = legacy.canRepeat();
             this.delay = legacy.getRepeatDelay();
             this.relative = legacy.getAttenuationType() == ISound.AttenuationType.NONE;
@@ -145,6 +178,14 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
             this.x = legacy.getXPosF();
             this.y = legacy.getYPosF();
             this.z = legacy.getZPosF();
+        }
+
+        @Override
+        public WeighedSoundEvents resolve(net.minecraft.client.sounds.SoundManager manager) {
+            if (file == null) return super.resolve(manager);
+            WeighedSoundEvents events = file.resolve(manager);
+            if (events != null) this.sound = file.sound();
+            return events;
         }
 
         @Override

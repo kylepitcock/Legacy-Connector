@@ -85,12 +85,98 @@ public final class SoundBridge {
         }
     }
 
+    /**
+     * Further 1.7.10 sound events whose 1.9+ name the rules in {@link #vanillaEntitySound} do not reach, by modern id (looked
+     * up on first use). Mods play vanilla's sounds by these names: {@code gui.button.press} is the click of every legacy
+     * button a mod draws itself (DragonAPI's, ChromatiCraft's), which the engine reported as an unknown event.
+     */
+    private static final Map<String, String> RENAMES = new HashMap<>();
+
+    static {
+        String[][] renames = {
+            {"gui.button.press", "ui.button.click"},
+            {"ambient.cave.cave", "ambient.cave"},
+            {"damage.fallbig", "entity.player.big_fall"},
+            {"damage.fallsmall", "entity.player.small_fall"},
+            {"liquid.splash", "entity.generic.splash"},
+            {"liquid.swim", "entity.generic.swim"},
+            {"minecart.inside", "entity.minecart.inside"},
+            {"note.bass", "block.note_block.bass"},
+            {"random.hurt", "entity.player.hurt"},
+            {"game.potion.smash", "entity.splash_potion.break"},
+            {"fireworks.blast", "entity.firework_rocket.blast"},
+            {"fireworks.blast_far", "entity.firework_rocket.blast_far"},
+            {"fireworks.largeBlast", "entity.firework_rocket.large_blast"},
+            {"fireworks.largeBlast_far", "entity.firework_rocket.large_blast_far"},
+            {"fireworks.launch", "entity.firework_rocket.launch"},
+            {"fireworks.twinkle", "entity.firework_rocket.twinkle"},
+            {"fireworks.twinkle_far", "entity.firework_rocket.twinkle_far"},
+            {"mob.cat.hitt", "entity.cat.hurt"},
+            {"mob.cat.meow", "entity.cat.ambient"},
+            {"mob.enderdragon.wings", "entity.ender_dragon.flap"},
+            {"mob.enderdragon.end", "entity.ender_dragon.death"},
+            {"mob.ghast.affectionate_scream", "entity.ghast.scream"},
+            {"mob.ghast.charge", "entity.ghast.warn"},
+            {"mob.ghast.fireball", "entity.ghast.shoot"},
+            {"mob.ghast.scream", "entity.ghast.hurt"},
+            {"mob.horse.leather", "entity.horse.saddle"},
+            {"mob.horse.soft", "entity.horse.step"},
+            {"mob.horse.wood", "entity.horse.step_wood"},
+            {"mob.horse.idle", "entity.horse.ambient"},
+            {"mob.irongolem.throw", "entity.iron_golem.attack"},
+            {"mob.magmacube.big", "entity.magma_cube.squish"},
+            {"mob.magmacube.small", "entity.magma_cube.squish_small"},
+            {"mob.slime.big", "entity.slime.squish"},
+            {"mob.slime.small", "entity.slime.squish_small"},
+            {"mob.wolf.bark", "entity.wolf.ambient"},
+            {"mob.wolf.panting", "entity.wolf.pant"},
+            {"mob.zombie.metal", "entity.zombie.attack_iron_door"},
+            {"mob.zombie.wood", "entity.zombie.attack_wooden_door"},
+            {"mob.zombie.woodbreak", "entity.zombie.break_wooden_door"},
+            {"mob.zombie.remedy", "entity.zombie_villager.cure"},
+            {"mob.zombie.unfect", "entity.zombie_villager.converted"},
+            {"mob.zombiepig.zpig", "entity.zombified_piglin.ambient"},
+            {"mob.zombiepig.zpigangry", "entity.zombified_piglin.angry"},
+            {"mob.zombiepig.zpighurt", "entity.zombified_piglin.hurt"},
+            {"mob.zombiepig.zpigdeath", "entity.zombified_piglin.death"},
+        };
+        for (String[] r : renames) RENAMES.put(r[0], r[1]);
+        // game.<player|neutral|hostile>.<die|hurt|hurt.fall.big|hurt.fall.small|swim|swim.splash>
+        for (String[] who : new String[][] {{"player", "player"}, {"neutral", "generic"}, {"hostile", "hostile"}}) {
+            RENAMES.put("game." + who[0] + ".die", "entity." + who[1] + ".death");
+            RENAMES.put("game." + who[0] + ".hurt", "entity." + who[1] + ".hurt");
+            RENAMES.put("game." + who[0] + ".hurt.fall.big", "entity." + who[1] + ".big_fall");
+            RENAMES.put("game." + who[0] + ".hurt.fall.small", "entity." + who[1] + ".small_fall");
+            RENAMES.put("game." + who[0] + ".swim", "entity." + who[1] + ".swim");
+            RENAMES.put("game." + who[0] + ".swim.splash", "entity." + who[1] + ".splash");
+        }
+        // The horse's relatives were sub-sounds of mob.horse: mob.horse.donkey.angry is entity.donkey.angry.
+        for (String[] kind : new String[][] {{"donkey", "donkey"}, {"skeleton", "skeleton_horse"}, {"zombie", "zombie_horse"}}) {
+            RENAMES.put("mob.horse." + kind[0] + ".idle", "entity." + kind[1] + ".ambient");
+            RENAMES.put("mob.horse." + kind[0] + ".hit", "entity." + kind[1] + ".hurt");
+            RENAMES.put("mob.horse." + kind[0] + ".death", "entity." + kind[1] + ".death");
+            RENAMES.put("mob.horse." + kind[0] + ".angry", "entity." + kind[1] + ".angry");
+        }
+        for (String disc : new String[] {"13", "cat", "blocks", "chirp", "far", "mall", "mellohi", "stal", "strad", "ward", "11", "wait"}) {
+            RENAMES.put("records." + disc, "music_disc." + disc);
+        }
+    }
+
     private SoundBridge() {}
 
     public static SoundEvent sound(String legacyName) {
         if (legacyName == null || legacyName.isEmpty()) return null;
         SoundEvent known = SOUNDS.get(legacyName);
         if (known != null) return known;
+        String renamed = RENAMES.get(legacyName.startsWith("minecraft:") ? legacyName.substring("minecraft:".length()) : legacyName);
+        if (renamed != null) {
+            var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace(renamed);
+            known = net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+            if (known != null) {
+                SOUNDS.put(legacyName, known);
+                return known;
+            }
+        }
         known = vanillaEntitySound(legacyName);
         if (known != null) {
             SOUNDS.put(legacyName, known);
@@ -110,6 +196,8 @@ public final class SoundBridge {
             case "irongolem" -> "iron_golem";
             case "zombiepig" -> "zombified_piglin";
             case "snowman" -> "snow_golem";
+            case "enderdragon" -> "ender_dragon";
+            case "magmacube" -> "magma_cube";
             case "villager" -> "villager";
             case "neutral" -> "generic";
             case "hostile" -> "generic";
@@ -119,7 +207,8 @@ public final class SoundBridge {
         StringBuilder rest = new StringBuilder();
         for (int i = 2; i < parts.length; i++) rest.append(i > 2 ? "." : "").append(parts[i]);
         String action = switch (rest.toString()) {
-            case "say", "idle", "moan", "breathe", "bark", "haggle" -> "ambient";
+            case "say", "idle", "moan", "breathe", "bark" -> "ambient";
+            case "haggle" -> "trade";
             case "hit", "hurtflesh" -> "hurt";
             case "kill" -> "death";
             case "walk" -> "step";
