@@ -248,11 +248,35 @@ public abstract class Entity implements ICommandSender {
     // Bridges for the host (legacy protected methods, overridden by mods with protected access).
 
     public final void mcc$readEntityFromNBT(NBTTagCompound tag) {
+        // The modern tag holds CustomName as a JSON text component; 1.7.10 mods read it as the plain name (Witchery's broom).
+        net.minecraft.nbt.CompoundTag modern = tag.mcc$modern();
+        if (modern.contains("CustomName", 8) && mcc$entity != null) {
+            net.minecraft.nbt.CompoundTag plain = modern.copy();
+            try {
+                var c = net.minecraft.network.chat.Component.Serializer.fromJson(modern.getString("CustomName"), mcc$entity.registryAccess());
+                plain.putString("CustomName", c == null ? "" : c.getString());
+            } catch (RuntimeException e) {
+                // already plain text
+            }
+            readEntityFromNBT(new NBTTagCompound(plain));
+            return;
+        }
         readEntityFromNBT(tag);
     }
 
     public final void mcc$writeEntityToNBT(NBTTagCompound tag) {
         writeEntityToNBT(tag);
+        // A mod that writes the plain name itself (1.7.10 format) would make the modern loader fail to parse it: write the JSON text
+        // component, or nothing for an empty name.
+        net.minecraft.nbt.CompoundTag modern = tag.mcc$modern();
+        if (modern.contains("CustomName", 8)) {
+            String s = modern.getString("CustomName");
+            if (s.isEmpty()) modern.remove("CustomName");
+            else if (s.charAt(0) != '"' && s.charAt(0) != '{' && s.charAt(0) != '[') {
+                modern.putString("CustomName", net.minecraft.network.chat.Component.Serializer.toJson(
+                        net.minecraft.network.chat.Component.literal(s), mcc$entity != null ? mcc$entity.registryAccess() : net.minecraft.core.RegistryAccess.EMPTY));
+            }
+        }
     }
 
     public final DataWatcher mcc$dataWatcher() {
