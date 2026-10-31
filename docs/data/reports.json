@@ -131,6 +131,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/projecte/files/all?page=1&pageSize=20&version=1.7.10&showAlphaFiles=hide",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 113,
+   "mod": "Kindred Legacy pre-1.3_1",
+   "mc": "1.8 - 1.12.2",
+   "status": "partial",
+   "details": "- Most base mob AI seems to work fine, though Immortal Arcanine lacks some particles, animations, and the ability to jump - Natural mob spawning doesn't seem to work, though I suspect it probably would if I set up a proper datapack to manually do it - Tameable mob items can't be sneak-right-clicked to open a GUI to view stats/rename; this sends an error message in chat - However, the items do ret…",
+   "lc": "0.3.6",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/kindred-legacy",
+   "date": "2026-10-31",
+   "open": true
   }
  ]
 }
