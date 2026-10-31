@@ -61,8 +61,19 @@ public final class WorldGenBridge {
         long chunkSeed = chunkSeed(level.getSeed(), chunkX, chunkZ);
         Random fmlRandom = new Random(chunkSeed);
         // ---- InPlaceStructureGuard: a call that builds into a modern structure is undone (see the class)
-        org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator,
-                () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY)));
+        World.mcc$setOreSplit(splitsOres(level, e));
+        try {
+            org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator,
+                    () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY)));
+        } finally {
+            World.mcc$setOreSplit(false);
+        }
+    }
+
+    /** Whether the generator's deep layer runs here, so its ores in legacy y 0-63 are shared with it (World.mcc$splitDrops). */
+    private static boolean splitsOres(WorldGenLevel level, Entry e) {
+        return level.getMinBuildHeight() < 0 && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerEnabled()
+                && org.kylepitcock.legacyconnector.core.LegacyConfig.deepLayerAllows(e.generator.getClass().getName());
     }
 
     /** FML's per-chunk seed ({@code GameRegistry.generateWorld}): every generator starts from it. */
@@ -127,7 +138,14 @@ public final class WorldGenBridge {
             try {
                 Runnable call = () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, DUMMY));
                 if (modDimension) call.run();
-                else org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator, call); // InPlaceStructureGuard
+                else {
+                    World.mcc$setOreSplit(splitsOres(level, e));
+                    try {
+                        org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator, call); // InPlaceStructureGuard
+                    } finally {
+                        World.mcc$setOreSplit(false);
+                    }
+                }
             } catch (RuntimeException | LinkageError ex) {
                 int n = DIMENSION_FAILURES.incrementAndGet();
                 if (n <= 3 || n % 200 == 0) {

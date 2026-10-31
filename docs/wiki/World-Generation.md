@@ -84,7 +84,10 @@ modern feature:
 1.7.10 worlds ended at y=0 (bedrock); modern ones reach down to -64. Each legacy `IWorldGenerator` therefore runs a
 second time per chunk with the world shifted so that legacy y=0 is the dimension's bottom: ores, bedrock ores and
 underground structures land in the deep layer too (the generator sees deepslate as stone, everything from modern y=0 up as
-solid rock, air above legacy y=256; only writes below y=0 are kept). This deep pass is a native placed feature per
+solid rock, air above legacy y=256; only writes below y=0 are kept). Legacy ores stay exactly as common as in the original mod: the deep pass keeps only ore writes (natural overworld stone
+replaced by another block), and an ore that lands in legacy y 0-63, the band both passes cover, is kept by exactly one of the two
+passes, chosen per position. A chunk gets the 1.7.10 number of ores, the bottom 64 blocks of them spread over -64..63; underground
+structures are built once, by the normal pass. This deep pass is a native placed feature per
 generator, `<modid>:legacy_worldgen_deep/<generator class, lowercased>` (feature type `legacyconnector:legacy_worldgen_deep`,
 config `{"generator": "<that id>"}`), added to every biome by a biome modifier with the same id (step `underground_ores`).
 Its placement is a `minecraft:height_range` whose y is where legacy y=0 lands (default `{"above_bottom": 0}`); the

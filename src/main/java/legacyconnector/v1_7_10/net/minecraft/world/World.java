@@ -302,6 +302,33 @@ public class World implements IBlockAccess {
     }
 
     /** Whether this thread runs a deep pass (legacy structures made modern are placed once, by the game: MapGenStructures1710). */
+    /** Set while a legacy generator whose deep layer is active runs its normal pass (see {@link #mcc$splitDrops}). */
+    private static final ThreadLocal<Boolean> MCC_ORE_SPLIT = ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    public static void mcc$setOreSplit(boolean on) {
+        MCC_ORE_SPLIT.set(on);
+    }
+
+    /**
+     * Keeps legacy ores as common as in the original mod although the deep pass runs each generator a second time below y=0: an ore
+     * write (natural overworld stone replaced by another solid block) in legacy y 0-63, the band both passes cover, is kept by exactly
+     * one of them, chosen per legacy position; every other write of the deep pass is refused (no second copy of underground
+     * structures). So a chunk gets the 1.7.10 number of ores, the bottom band spread over -64..63.
+     */
+    private boolean mcc$splitDrops(int x, int y, int z, BlockPos p, BlockState state) {
+        boolean deep = inDeepPass();
+        if (!deep && !MCC_ORE_SPLIT.get()) return false;
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) return false;
+        if (!deep && (y < 0 || y > 63)) return false;
+        BlockState current = lvl().getBlockState(p);
+        boolean ore = !state.isAir() && current.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD)
+                && !state.is(net.minecraft.tags.BlockTags.BASE_STONE_OVERWORLD);
+        int h = x * 73856093 ^ y * 19349663 ^ z * 83492791;
+        h ^= h >>> 16;
+        boolean toDeep = (h & 1) == 0;
+        return deep ? !ore || !toDeep : ore && toDeep;
+    }
+
     public static boolean mcc$inDeepPass() {
         return inDeepPass();
     }
@@ -489,6 +516,7 @@ public class World implements IBlockAccess {
             deferOutsideRegion(p, state, -1);
             return false;
         }
+        if (mcc$splitDrops(x, y, z, p, state)) return false; // ore split between the normal and the deep pass
         state = deepslateOre(state, p);
         if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), p, state)) return false; // into a modern structure
         TileEntityBridge.beforeBlockChange(this, p);
