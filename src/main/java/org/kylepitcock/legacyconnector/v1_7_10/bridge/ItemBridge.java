@@ -737,6 +737,15 @@ public final class ItemBridge {
             for (var e : VanillaFlattening.reverseItems(names).entrySet()) {
                 VANILLA_REVERSE.put(e.getKey(), new Object[] {BY_NAME.get((String) e.getValue()[0]), e.getValue()[1]});
             }
+            // The four dyes 1.14 split off ink sac, cocoa beans, lapis and bone meal stand for the 1.7.10 dye damages of those four
+            // (Traincraft paints a train when the dye's damage is the colour's: a modern blue dye read as damage 0 painted nothing).
+            Item dyeItem = BY_NAME.get("minecraft:dye");
+            if (dyeItem != null) {
+                VANILLA_REVERSE.putIfAbsent(Items.BLACK_DYE, new Object[] {dyeItem, 0});
+                VANILLA_REVERSE.putIfAbsent(Items.BROWN_DYE, new Object[] {dyeItem, 3});
+                VANILLA_REVERSE.putIfAbsent(Items.BLUE_DYE, new Object[] {dyeItem, 4});
+                VANILLA_REVERSE.putIfAbsent(Items.WHITE_DYE, new Object[] {dyeItem, 15});
+            }
             // Block items of vanilla blocks without an Items field ("stone", "wool", ...).
             for (int id = 1; id < 256; id++) {
                 Block b = BlockBridge.byId(id);
