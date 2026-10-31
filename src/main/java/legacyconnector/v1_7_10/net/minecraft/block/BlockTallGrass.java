@@ -5,7 +5,7 @@ package legacyconnector.v1_7_10.net.minecraft.block;
  * subclassing, legacy constructors, inherited default behaviour. Vanilla-specific logic is not ported yet.
  * Regenerate with tools/gen_vanilla_shims.py; replace with a hand-written class to add behaviour.
  */
-public class BlockTallGrass extends legacyconnector.v1_7_10.net.minecraft.block.BlockBush implements legacyconnector.v1_7_10.net.minecraft.block.IGrowable {
+public class BlockTallGrass extends legacyconnector.v1_7_10.net.minecraft.block.BlockBush implements legacyconnector.v1_7_10.net.minecraft.block.IGrowable, legacyconnector.v1_7_10.net.minecraftforge.common.IShearable {
     public BlockTallGrass(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
@@ -41,5 +41,18 @@ public class BlockTallGrass extends legacyconnector.v1_7_10.net.minecraft.block.
     @Override
     public int colorMultiplier(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
         return world.mcc$blockTint(x, y, z, 0);
+    }
+
+    /** Forge: shears take the plant itself. */
+    @Override
+    public boolean isShearable(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return true;
+    }
+
+    @Override
+    public java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> onSheared(legacyconnector.v1_7_10.net.minecraft.item.ItemStack item, legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int fortune) {
+        java.util.ArrayList<legacyconnector.v1_7_10.net.minecraft.item.ItemStack> ret = new java.util.ArrayList<>();
+        ret.add(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(this, 1, world.getBlockMetadata(x, y, z)));
+        return ret;
     }
 }
