@@ -27,7 +27,11 @@ public final class VanillaModelIcons {
         if (cached != null) return cached.isEmpty() ? null : cached;
         var models = Minecraft.getInstance().getModelManager();
         var model = models.getBlockModelShaper().getBlockModel(state);
-        if (model == null || model == models.getMissingModel()) return null; // not baked yet: ask again later
+        if (model == null || model == models.getMissingModel()) {
+            // not baked yet (legacy block models are generated before the first bake): read the vanilla blockstate and model files.
+            // Witchery's trapped plants show Blocks.red_flower.getIcon(0, 0), the poppy. Not cached: the baked model answers later.
+            return fromModelFiles(state, side);
+        }
         Direction dir = SIDES[Math.max(0, Math.min(5, side))];
         RandomSource random = RandomSource.create(42L);
         var sprite = pick(model.getQuads(state, dir, random, ModelData.EMPTY, null), dir);
@@ -62,6 +66,85 @@ public final class VanillaModelIcons {
         String name = sprite == null ? null : org.kylepitcock.legacyconnector.v1_7_10.Assets1710.legacyVanillaTexture(sprite.contents().name(), false);
         ITEM_CACHE.put(key, name == null ? NONE : name);
         return name;
+    }
+
+    /** Texture variables a face of each side is most likely drawn with, best first (cube, column, cross and plant models). */
+    private static final String[][] SIDE_TEXTURES = {
+            {"down", "bottom", "end", "all", "texture", "cross", "plant", "crop", "particle"},
+            {"up", "top", "end", "all", "texture", "cross", "plant", "crop", "particle"},
+            {"north", "side", "all", "texture", "cross", "plant", "crop", "particle"},
+            {"south", "side", "all", "texture", "cross", "plant", "crop", "particle"},
+            {"west", "side", "all", "texture", "cross", "plant", "crop", "particle"},
+            {"east", "side", "all", "texture", "cross", "plant", "crop", "particle"}};
+
+    /**
+     * The 1.7.10 icon name of a side of a vanilla block state from the vanilla files: the blockstate variant matching the state
+     * (simple "variants" files only), then that model and its parents' texture variables; null when it cannot tell.
+     */
+    private static String fromModelFiles(BlockState state, int side) {
+        try {
+            var mc = Minecraft.getInstance();
+            if (mc == null || mc.getVanillaPackResources() == null) return null;
+            var key = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(state.getBlock());
+            if (!key.getNamespace().equals("minecraft")) return null;
+            var blockstate = readJson(mc, "blockstates/" + key.getPath() + ".json");
+            if (blockstate == null || !blockstate.has("variants")) return null;
+            String modelName = null;
+            for (var e : blockstate.getAsJsonObject("variants").entrySet()) {
+                if (!matches(state, e.getKey())) continue;
+                var v = e.getValue().isJsonArray() ? e.getValue().getAsJsonArray().get(0) : e.getValue();
+                modelName = v.getAsJsonObject().get("model").getAsString();
+                break;
+            }
+            if (modelName == null) return null;
+            java.util.Map<String, String> textures = new java.util.HashMap<>();
+            for (int depth = 0; modelName != null && depth < 8; depth++) {
+                var id = net.minecraft.resources.ResourceLocation.tryParse(modelName.indexOf(':') < 0 ? "minecraft:" + modelName : modelName);
+                if (id == null || !id.getNamespace().equals("minecraft")) break;
+                var model = readJson(mc, "models/" + id.getPath() + ".json");
+                if (model == null) break;
+                if (model.has("textures")) {
+                    for (var t : model.getAsJsonObject("textures").entrySet()) textures.putIfAbsent(t.getKey(), t.getValue().getAsString());
+                }
+                modelName = model.has("parent") ? model.get("parent").getAsString() : null;
+            }
+            for (String variable : SIDE_TEXTURES[Math.max(0, Math.min(5, side))]) {
+                String ref = textures.get(variable);
+                for (int hops = 0; ref != null && ref.startsWith("#") && hops < 8; hops++) ref = textures.get(ref.substring(1));
+                if (ref == null) continue;
+                var sprite = net.minecraft.resources.ResourceLocation.tryParse(ref.indexOf(':') < 0 ? "minecraft:" + ref : ref);
+                if (sprite != null) return org.kylepitcock.legacyconnector.v1_7_10.Assets1710.legacyVanillaTexture(sprite, true);
+            }
+            return null;
+        } catch (Exception | LinkageError e) {
+            return null;
+        }
+    }
+
+    /** Whether a blockstate variant key ("" or "facing=north,half=top") holds for the state. */
+    private static boolean matches(BlockState state, String variant) {
+        if (variant.isEmpty() || variant.equals("normal")) return true;
+        for (String part : variant.split(",")) {
+            int eq = part.indexOf('=');
+            if (eq < 0) return false;
+            String name = part.substring(0, eq), value = part.substring(eq + 1);
+            var property = state.getBlock().getStateDefinition().getProperty(name);
+            if (property == null || !value.equals(valueName(state, property))) return false;
+        }
+        return true;
+    }
+
+    private static <T extends Comparable<T>> String valueName(BlockState state, net.minecraft.world.level.block.state.properties.Property<T> property) {
+        return property.getName(state.getValue(property));
+    }
+
+    private static com.google.gson.JsonObject readJson(Minecraft mc, String path) throws java.io.IOException {
+        var supplier = mc.getVanillaPackResources().getResource(net.minecraft.server.packs.PackType.CLIENT_RESOURCES,
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("minecraft", path));
+        if (supplier == null) return null;
+        try (var in = new java.io.InputStreamReader(supplier.get(), java.nio.charset.StandardCharsets.UTF_8)) {
+            return com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
+        }
     }
 
     /**

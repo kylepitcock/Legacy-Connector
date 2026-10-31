@@ -813,7 +813,40 @@ public final class EventBridge1710 {
         e.getAffectedEntities().removeIf(entity -> !keptEntities.contains(entity));
     }
 
+    /** Provider classes that declare their own {@code updateWeather} (a mod's dimension), by class. */
+    private static final ClassValue<Boolean> OWN_WEATHER = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && !c.getName().startsWith("legacyconnector."); c = c.getSuperclass()) {
+                try {
+                    c.getDeclaredMethod("updateWeather");
+                    return true;
+                } catch (NoSuchMethodException | LinkageError ignored) {
+                }
+            }
+            return false;
+        }
+    };
+    private static final java.util.Set<Class<?>> WEATHER_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * 1.7.10's World.tick called {@code provider.updateWeather()} every tick on both sides, and mods' dimensions keep their state
+     * there: Witchery's dream world finds out there whether a sleeper has a nightmare (dark sky, disturbed cotton drops instead of
+     * wispy cotton). The modern level runs the weather itself, so only providers that declare their own are called.
+     */
+    private static void providerWeather(net.minecraft.world.level.Level level) {
+        World world = World.mcc$wrap(level);
+        var provider = world == null ? null : World.mcc$get$provider(world);
+        if (provider == null || !OWN_WEATHER.get(provider.getClass())) return;
+        try {
+            provider.updateWeather();
+        } catch (RuntimeException | LinkageError e) {
+            if (WEATHER_FAILURES.add(provider.getClass())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").warn("updateWeather of {} failed (logged once)", provider.getClass().getName(), e);
+        }
+    }
+
     private static void worldTick(net.minecraft.world.level.Level level, TickEvent.Phase phase) {
+        if (phase == TickEvent.Phase.START) providerWeather(level);
         // 1.7.10 posted WorldTickEvent for server worlds only (the client had ClientTickEvent); handlers cast event.world to
         // WorldServer without checking the side (Galacticraft's TickHandlerServer).
         if (level.isClientSide) return;
