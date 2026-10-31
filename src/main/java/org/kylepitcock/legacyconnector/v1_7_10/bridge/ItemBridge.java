@@ -543,12 +543,62 @@ public final class ItemBridge {
                 discovering = null;
             }
             for (Object o : list) if (o instanceof ItemStack s && s.getItem() == item) metas.add(s.getItemDamage() & 0x7FFF);
+            addUnlistedSubtypes(item, metas);
             if (metas.size() > 256) {
                 LOG.warn("{} reports {} subtypes; flattening only the first 256", item, metas.size());
                 while (metas.size() > 256) metas.pollLast();
             }
         }
         return new ArrayList<>(metas);
+    }
+
+    /**
+     * Subtypes a mod keeps out of its creative tab but makes in play: Witchery's bound waystone (meta 13, made by a ritual),
+     * rowan berries and artichoke are hidden {@code ItemGeneral} subtypes. Without a variant of their own their stacks are the
+     * item's first variant and show its icon (the candelabra). A gap between listed metas is a subtype when the item names it
+     * differently from every listed one; probed only for items whose listing is nearly dense (few gaps), so items that name
+     * any damage value ("item.x.37") do not grow hundreds of variants.
+     */
+    private static void addUnlistedSubtypes(Item item, TreeSet<Integer> metas) {
+        if (metas.size() < 2) return;
+        int max = metas.last();
+        int gaps = max + 1 - metas.size();
+        if (max > 1024 || gaps == 0 || gaps > metas.size()) return;
+        java.util.Set<String> names = new java.util.HashSet<>();
+        Item outer = discovering;
+        discovering = item;
+        try {
+            for (int m : metas) {
+                String n = subtypeName(item, m);
+                if (n != null) names.add(n);
+            }
+        } finally {
+            discovering = outer;
+        }
+        if (names.size() < metas.size() / 2) return; // listed subtypes do not have names of their own
+        try {
+            String base = item.getUnlocalizedName();
+            if (base != null) names.add(base);
+        } catch (RuntimeException | LinkageError ignored) {
+        }
+        discovering = item;
+        try {
+            for (int m = 1; m < max; m++) {
+                if (metas.contains(m)) continue;
+                String n = subtypeName(item, m);
+                if (n != null && names.add(n)) metas.add(m);
+            }
+        } finally {
+            discovering = outer;
+        }
+    }
+
+    private static String subtypeName(Item item, int meta) {
+        try {
+            return item.getUnlocalizedName(new ItemStack(item, 1, meta));
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     // ------------------------------------------------------------------ legacy <-> modern stacks
@@ -664,6 +714,24 @@ public final class ItemBridge {
         if (stack.isDamageableItem()) return stack.getDamageValue();
         Object[] reverse = vanillaReverse(stack.getItem());
         return reverse != null ? (Integer) reverse[1] : 0;
+    }
+
+    /**
+     * A stack made for a subtype before the item's subtypes were registered is the item's first variant carrying the metadata as
+     * a component: mods build stacks of their subtypes in preInit/init while subtype discovery waits for the end of their init
+     * (Witchery's rituals, kettle and brew recipes keep {@code itemWaystoneBound.createStack()} and copy it on use, so bound
+     * waystones, charged attuned stones and brews showed the meta 0 icon, the candelabra). Once the subtype exists the stack
+     * becomes that variant; anything else comes back unchanged.
+     */
+    public static net.minecraft.world.item.ItemStack upgradeVariant(Item item, net.minecraft.world.item.ItemStack stack) {
+        if (item == null || item.mcc$vanilla != null || stack.isEmpty() || !(stack.getItem() instanceof LegacyItemHolder)) return stack;
+        Integer meta = stack.get(CompatComponents.legacyMeta());
+        if (meta == null) return stack;
+        net.minecraft.world.item.Item variant = item.mcc$variants.get(meta);
+        if (variant == null || variant == stack.getItem()) return stack;
+        net.minecraft.world.item.ItemStack moved = stack.transmuteCopy(variant, stack.getCount());
+        moved.remove(CompatComponents.legacyMeta());
+        return moved;
     }
 
     public static net.minecraft.world.item.ItemStack withLegacyDamage(Item item, net.minecraft.world.item.ItemStack stack, int damage) {

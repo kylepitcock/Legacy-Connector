@@ -46,6 +46,8 @@ public final class ItemStack {
 
     private net.minecraft.world.item.ItemStack mcc$stack;
     private Item mcc$item;
+    /** Set for views of a modern stack someone else holds (a slot's); their modern stack is never replaced. */
+    private boolean mcc$wrapped;
     private NBTTagCompound mcc$tagView;
     private CustomData mcc$tagSource;
 
@@ -98,6 +100,7 @@ public final class ItemStack {
             return null;
         }
         ItemStack view = new ItemStack(modern, ItemBridge.legacyItemOf(modern));
+        view.mcc$wrapped = true;
         int at = recent[RECENT_SIZE * 2] instanceof Integer n ? n : 0;
         recent[at] = modern;
         recent[at + 1] = view;
@@ -107,11 +110,12 @@ public final class ItemStack {
 
     /** Modern stack backing this view (shared, not a copy). */
     public net.minecraft.world.item.ItemStack mcc$modern() {
+        if (!mcc$wrapped) mcc$stack = ItemBridge.upgradeVariant(mcc$item, mcc$stack);
         return mcc$stack;
     }
 
     public static net.minecraft.world.item.ItemStack mcc$toModern(ItemStack legacy) {
-        return legacy == null ? net.minecraft.world.item.ItemStack.EMPTY : legacy.mcc$stack;
+        return legacy == null ? net.minecraft.world.item.ItemStack.EMPTY : legacy.mcc$modern();
     }
 
     // ------------------------------------------------------------------ virtual fields
@@ -442,7 +446,7 @@ public final class ItemStack {
     // ------------------------------------------------------------------ copies and comparisons
 
     public ItemStack copy() {
-        return new ItemStack(mcc$stack.copy(), mcc$item);
+        return new ItemStack(ItemBridge.upgradeVariant(mcc$item, mcc$stack.copy()), mcc$item);
     }
 
     public static ItemStack copyItemStack(ItemStack stack) {
