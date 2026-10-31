@@ -564,6 +564,8 @@ public final class EventBridge1710 {
         gameBus.addListener((ServerStartedEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStartedEvent()));
         gameBus.addListener((ServerStoppingEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStoppingEvent()));
         gameBus.addListener((ServerStoppedEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStoppedEvent()));
+        // DragonAPI's own events, which its coremod posted from patched vanilla code (mod-specific, removable)
+        org.kylepitcock.legacyconnector.v1_7_10.compat.dragonapi.DragonApiEvents.register(gameBus);
     }
 
     /**
