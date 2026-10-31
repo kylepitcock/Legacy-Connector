@@ -186,7 +186,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 95 items, 49 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors. 13 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 63 items, 33 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Akashic Tome",
@@ -361,12 +361,12 @@
   },
   {
    "name": "Applied Energistics",
-   "version": "2 rv3-beta-695-GTNH",
+   "version": "2 rv3-beta-6",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 343 items, 73 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 281 items, 68 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Applied Energistics 2",
@@ -427,7 +427,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "AsieLib",
@@ -512,12 +512,12 @@
   },
   {
    "name": "Avaritia",
-   "version": "1.77",
+   "version": "1.13",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 13 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 4 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Avaritiaddons",
@@ -692,12 +692,12 @@
   },
   {
    "name": "BC Builders",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 9 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 9 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "BC Energy",
@@ -710,12 +710,12 @@
   },
   {
    "name": "BC Energy",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 5 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 5 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
   },
   {
    "name": "BC Factory",
@@ -728,12 +728,12 @@
   },
   {
    "name": "BC Factory",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 8 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 8 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BC Robotics",
@@ -746,12 +746,12 @@
   },
   {
    "name": "BC Robotics",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "partial",
-   "notes": "Self-tested in the GT New Horizons server test: 5 items, 2 blocks, 1 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (12%)."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 5 items, 2 blocks, 1 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (12%)."
   },
   {
    "name": "BC Silicon",
@@ -764,12 +764,12 @@
   },
   {
    "name": "BC Silicon",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 6 items, 3 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 6 items, 3 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BC Transport",
@@ -782,12 +782,12 @@
   },
   {
    "name": "BC Transport",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 47 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 47 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "BD Lib",
@@ -799,23 +799,13 @@
    "notes": "Loads at startup without errors (blocks, items and entities register). Gameplay not verified yet."
   },
   {
-   "name": "BD lib",
-   "version": "1.11.0-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
    "name": "BD Lib",
    "version": "1.9.4.109",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "works",
-   "library": true,
-   "notes": "Library: every mod tested that requires it works (2: AE2 Stuff, Gendustry)."
+   "status": "loads",
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BeeBetterAtBees",
@@ -1059,21 +1049,21 @@
   },
   {
    "name": "Biomes O' Plenty",
-   "version": "2.1.0",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 300 items, 83 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 11 blocks did not stay placed."
-  },
-  {
-   "name": "Biomes O' Plenty",
    "version": "7.0.1.2445",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 170 items, 128 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 10 blocks did not stay placed."
+  },
+  {
+   "name": "Biomes O' Plenty",
+   "version": "2.1.0",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 306 items, 83 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 24 blocks did not stay placed."
   },
   {
    "name": "BlockLimiter. Restrict your Blocks",
@@ -1181,7 +1171,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 160 items, 39 blocks, 42 entity types; every block placed and used, every item used, every entity spawned; 4 threw errors (2%). 7 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 160 items, 39 blocks, 42 entity types; every block placed and used, every item used, every entity spawned; 3 threw errors (1%). 5 blocks did not stay placed."
   },
   {
    "name": "Bookshelf",
@@ -1300,22 +1290,12 @@
   },
   {
    "name": "Brandon's Core",
-   "version": "1.2.0-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
-  },
-  {
-   "name": "Brandon's Core",
    "version": "1.0.0.12",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "works",
-   "library": true,
-   "notes": "Library: every mod tested that requires it works (1: Draconic Evolution)."
+   "status": "loads",
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "BuildCraft",
@@ -1335,12 +1315,12 @@
   },
   {
    "name": "BuildCraft",
-   "version": "7.1.44",
+   "version": "7.1.23",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 16 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 19 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "BuildCraft Builders",
@@ -1568,12 +1548,12 @@
   },
   {
    "name": "Chisel",
-   "version": "2.16.15-GTNH",
+   "version": "2.9.5.11",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 1811 items, 222 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 1441 items, 203 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Chisel MC1.12.2-1.0.2.45",
@@ -1735,7 +1715,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 22 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 22 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Computronics",
@@ -1948,9 +1928,9 @@
    "version": "1.9.2",
    "mc": "1.7.10",
    "source": "client",
-   "date": "2026-10-27",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 120-mod client session without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Cyclic",
@@ -2079,21 +2059,21 @@
   },
   {
    "name": "Draconic Evolution",
-   "version": "1.4.27-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 99 items, 39 blocks, 11 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
-  },
-  {
-   "name": "Draconic Evolution",
    "version": "2.3.28",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "fails",
    "notes": "Fails during construction: java.lang.NoClassDefFoundError: com/brandon3055/brandonscore/items/ItemEnergyBase (the Legacy Connector layer does not implement this legacy"
+  },
+  {
+   "name": "Draconic Evolution",
+   "version": "1.0.2h",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 97 items, 37 blocks, 11 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "DummyCore",
@@ -2187,21 +2167,21 @@
   },
   {
    "name": "Ender IO",
-   "version": "2.9.28",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 153 items, 68 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 13 blocks did not stay placed."
-  },
-  {
-   "name": "Ender IO",
    "version": "5.3.72",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 399 items, 212 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 45 blocks did not stay placed."
+  },
+  {
+   "name": "Ender IO",
+   "version": "1.7.10-2.3.0.429_beta",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 124 items, 62 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 11 blocks did not stay placed."
   },
   {
    "name": "Ender IO Applied Energistics Conduits",
@@ -2421,12 +2401,12 @@
   },
   {
    "name": "EnderCore",
-   "version": "0.4.8",
-   "mc": "1.7.10",
+   "version": "1.12.2-0.5.76",
+   "mc": "1.12.2",
    "source": "client",
-   "date": "2026-10-28",
+   "date": "2026-10-30",
    "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "EnderCore",
@@ -2434,18 +2414,8 @@
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "works",
-   "library": true,
-   "notes": "Library: every mod tested that requires it works (1: Ender IO)."
-  },
-  {
-   "name": "EnderCore",
-   "version": "1.12.2-0.5.76",
-   "mc": "1.12.2",
-   "source": "client",
-   "date": "2026-10-30",
    "status": "loads",
-   "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "EnderStorage",
@@ -2669,7 +2639,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 83 items, 56 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 82 items, 56 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
   },
   {
    "name": "ExtraTiC",
@@ -2740,7 +2710,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 169 items, 99 blocks, 60 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 13 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 169 items, 99 blocks, 60 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 4 blocks did not stay placed."
   },
   {
    "name": "FiskTag",
@@ -2758,7 +2728,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 4 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 4 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Flood Lights",
@@ -2828,7 +2798,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 574 items, 43 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 597 items, 44 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 17 blocks did not stay placed."
   },
   {
    "name": "Forge Microblocks",
@@ -2936,7 +2906,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "FTBUtilities",
@@ -2972,7 +2942,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 10 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 10 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Future MC",
@@ -3029,12 +2999,12 @@
   },
   {
    "name": "Galacticraft Core",
-   "version": "3.3.13-GTNH",
+   "version": "3.0.12",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "partial",
-   "notes": "In the GT New Horizons server test 2 items, 0 blocks, 0 entity types register, but loading failed during preInit: java.lang.RuntimeException: "
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 147 items, 48 blocks, 14 entity types; every block placed and used, every item used, every entity spawned without errors. 19 blocks did not stay placed."
   },
   {
    "name": "Galacticraft Planets",
@@ -3046,12 +3016,12 @@
   },
   {
    "name": "Galacticraft Planets",
-   "version": "3.3.13-GTNH",
+   "version": "3.0.12",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "partial",
-   "notes": "In the GT New Horizons server test 94 items, 23 blocks, 0 entity types register, but loading failed during init: java.lang.NullPointerException: Cannot invoke \"micdoodle8.mods.galacticraft.core.network.GalacticraftChannelHandler.addDiscriminator(int, ja"
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 94 items, 23 blocks, 12 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (1%). 1 blocks did not stay placed."
   },
   {
    "name": "GalaxySpace",
@@ -3064,12 +3034,12 @@
   },
   {
    "name": "GalaxySpace",
-   "version": "1.1.121-GTNH",
+   "version": "1.2.15 Pre-Final",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "partial",
-   "notes": "In the GT New Horizons server test 288 items, 72 blocks, 18 entity types register, but loading failed during init: java.lang.RuntimeException: Registering satellite without a parent!!!"
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 308 items, 69 blocks, 13 entity types; every block placed and used, every item used, every entity spawned without errors. 7 blocks did not stay placed."
   },
   {
    "name": "Gendustry",
@@ -3438,7 +3408,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 2 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Hardcore Ender Expansion",
@@ -3528,7 +3498,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 2790 items, 1034 blocks, 149 entity types; every block placed and used, every item used, every entity spawned; 22 threw errors (1%). 147 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 2790 items, 1034 blocks, 149 entity types; every block placed and used, every item used, every entity spawned; 19 threw errors (0%). 111 blocks did not stay placed."
   },
   {
    "name": "HBM's Nuclear Tech Mod",
@@ -3670,7 +3640,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Iguana Tinker Tweaks",
@@ -3710,21 +3680,21 @@
   },
   {
    "name": "Immersive Engineering",
-   "version": "0.7.7",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 132 items, 22 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
-  },
-  {
-   "name": "Immersive Engineering",
    "version": "0.12-98",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 180 items, 46 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 17 blocks did not stay placed."
+  },
+  {
+   "name": "Immersive Engineering",
+   "version": "0.7.7",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 135 items, 22 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
    "name": "Immersive Integration",
@@ -3791,12 +3761,12 @@
   },
   {
    "name": "IndustrialCraft",
-   "version": "2 2.2.828-experimental",
+   "version": "2 2.2.827-experimental",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 332 items, 56 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 18 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 332 items, 56 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 16 blocks did not stay placed."
   },
   {
    "name": "IndustrialCraft 2",
@@ -3909,9 +3879,9 @@
    "version": "1.59-dev-152-cf6e263",
    "mc": "1.7.10",
    "source": "client",
-   "date": "2026-10-27",
+   "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 120-mod client session without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Iron Chest",
@@ -3937,7 +3907,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 10 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 10 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Iron Chest Minecarts",
@@ -4057,12 +4027,12 @@
   },
   {
    "name": "JourneyMap",
-   "version": "5.2.10",
+   "version": "5.1.4p2",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Joy of Painting",
@@ -4138,12 +4108,12 @@
   },
   {
    "name": "Logistics Pipes",
-   "version": "1.4.24-GTNH",
+   "version": "0.9.3.132",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "fails",
-   "notes": "Fails during construction: java.lang.RuntimeException: LogisticsPipes FMLLoadingPlugin wasn't loaded. Your download seems to be corrupt/modified. Please redownload LP "
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 116 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "LootGames",
@@ -4291,21 +4261,21 @@
   },
   {
    "name": "Mantle",
-   "version": "0.5.1",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "Mantle",
    "version": "1.12-1.3.3.55",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "loads",
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Mantle",
+   "version": "1.7.10-0.3.2.jenkins191",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Matter Manipulator",
@@ -4692,7 +4662,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 22 items, 12 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 22 items, 12 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
   },
   {
    "name": "Mystical Agradditions",
@@ -4723,12 +4693,12 @@
   },
   {
    "name": "Natura",
-   "version": "2.8.9",
+   "version": "2.2.0",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 211 items, 119 blocks, 5 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 22 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 223 items, 116 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. 27 blocks did not stay placed."
   },
   {
    "name": "Nature's Compass",
@@ -5117,12 +5087,12 @@
   },
   {
    "name": "OpenBlocks",
-   "version": "1.11.7-GTNH",
+   "version": "1.6",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 84 items, 40 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 84 items, 40 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "OpenComputers",
@@ -5162,12 +5132,12 @@
   },
   {
    "name": "OpenMods",
-   "version": "0.10.11",
+   "version": "0.10",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 0 items, 0 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "OpenPeripheralAddons",
@@ -5203,7 +5173,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in a 130-jar server self test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "OpenPeripheralIntegration",
@@ -5275,7 +5245,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 684 items, 211 blocks, 134 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 2 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 684 items, 211 blocks, 134 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%)."
   },
   {
    "name": "Packed Up",
@@ -5621,12 +5591,12 @@
   },
   {
    "name": "Railcraft",
-   "version": "9.16.33",
+   "version": "9.12.2.0",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 395 items, 39 blocks, 29 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 9 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 499 items, 37 blocks, 29 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 7 blocks did not stay placed."
   },
   {
    "name": "RandomThings",
@@ -5808,21 +5778,21 @@
   },
   {
    "name": "RFTools",
-   "version": "4.23",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 172 items, 75 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (1%)."
-  },
-  {
-   "name": "RFTools",
    "version": "7.73",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 153 items, 78 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "RFTools",
+   "version": "4.23",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 175 items, 75 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (1%)."
   },
   {
    "name": "Roguelike Dungeons",
@@ -6213,12 +6183,12 @@
   },
   {
    "name": "Steve's Carts",
-   "version": "2 2.3.12",
+   "version": "2 2.0.0.b18",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 17 items, 10 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 17 items, 10 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Steve's Factory Manager",
@@ -6245,7 +6215,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in a 130-jar server self test: 17 items, 12 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 17 items, 12 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "Steve's Workshop",
@@ -6612,7 +6582,7 @@
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 163 items, 45 blocks, 50 entity types; every block placed and used, every item used, every entity spawned without errors. 8 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 163 items, 45 blocks, 50 entity types; every block placed and used, every item used, every entity spawned without errors. 9 blocks did not stay placed."
   },
   {
    "name": "Thaumcraft Mob Aspects",
@@ -6895,12 +6865,12 @@
   },
   {
    "name": "The Twilight Forest",
-   "version": "2.7.13",
+   "version": "2.3.7",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 349 items, 128 blocks, 77 entity types; every block placed and used, every item used, every entity spawned without errors. 18 blocks did not stay placed."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 300 items, 56 blocks, 76 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
   },
   {
    "name": "Thermal Dynamics",
@@ -7053,21 +7023,21 @@
   },
   {
    "name": "Tinkers' Construct",
-   "version": "1.13.57-GTNH",
-   "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 930 items, 85 blocks, 14 entity types; every block placed and used, every item used, every entity spawned; 6 threw errors (1%). 39 blocks did not stay placed."
-  },
-  {
-   "name": "Tinkers' Construct",
    "version": "1.12.2-2.13.0.183",
    "mc": "1.12.2",
    "source": "client",
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 160 items, 108 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors. 34 blocks did not stay placed."
+  },
+  {
+   "name": "Tinkers' Construct",
+   "version": "1.7.10-1.8.8.build988",
+   "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 910 items, 85 blocks, 14 entity types; every block placed and used, every item used, every entity spawned; 6 threw errors (1%). 37 blocks did not stay placed."
   },
   {
    "name": "Tinkers' Gregworks",
@@ -7267,12 +7237,12 @@
   },
   {
    "name": "Waila",
-   "version": "1.8.15",
+   "version": "1.5.10",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+   "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
   },
   {
    "name": "Waila Harvestability",
@@ -7392,13 +7362,13 @@
    "notes": "Rituals and their workshop models, town walls and towers in modern villages and shops generate. Dream World teleport not re-verified after the teleporter fix."
   },
   {
-   "name": "Witchery++",
-   "version": "1.3.8",
+   "name": "Witchery",
+   "version": "0.24.1",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "loads",
-   "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 220 items, 121 blocks, 55 entity types; every block placed and used, every item used, every entity spawned without errors. 13 blocks did not stay placed."
   },
   {
    "name": "Witching Gadgets",
@@ -7429,12 +7399,12 @@
   },
   {
    "name": "WR-CBE Addons",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "partial",
-   "notes": "Self-tested in the GT New Horizons server test: 8 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (12%)."
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: codechicken/multipart/TMultiPart (the Legacy Connector layer does not implement this legacy API yet - see lo"
   },
   {
    "name": "WR-CBE Core",
@@ -7447,12 +7417,12 @@
   },
   {
    "name": "WR-CBE Core",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 7 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: codechicken/multipart/TMultiPart (the Legacy Connector layer does not implement this legacy API yet - see lo"
   },
   {
    "name": "WR-CBE Logic",
@@ -7465,12 +7435,12 @@
   },
   {
    "name": "WR-CBE Logic",
-   "version": "1.7.1",
+   "version": "1.4.1.9",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
-   "status": "works",
-   "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "status": "fails",
+   "notes": "Fails during construction: java.lang.NoClassDefFoundError: codechicken/multipart/TMultiPart (the Legacy Connector layer does not implement this legacy API yet - see lo"
   },
   {
    "name": "XNet",
