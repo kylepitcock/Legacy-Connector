@@ -64,6 +64,24 @@ public abstract class EntityPlayer extends EntityLivingBase {
         this.mcc$food = new FoodStats(modern.getFoodData());
     }
 
+    /**
+     * A player a mod subclasses directly as a stand-in actor ({@code new DummyChocolate(world, profile)} in Chocolate Quest,
+     * which breaks blocks and fires events as a player): backed by NeoForge's fake player of that profile.
+     */
+    public EntityPlayer(World world, GameProfile profile) {
+        this(mcc$fakeFor(world, profile));
+    }
+
+    private static Player mcc$fakeFor(World world, GameProfile profile) {
+        if (world != null && world.mcc$fullLevel() instanceof net.minecraft.server.level.ServerLevel s) {
+            return net.neoforged.neoforge.common.util.FakePlayerFactory.get(s, profile);
+        }
+        // A client level has no fake players: use the integrated server's overworld when there is one.
+        net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server != null) return net.neoforged.neoforge.common.util.FakePlayerFactory.get(server.overworld(), profile);
+        throw new IllegalStateException("Cannot create a stand-in player without a server");
+    }
+
     public Player mcc$player() {
         return (Player) mcc$entity;
     }
