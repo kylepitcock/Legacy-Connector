@@ -38,6 +38,8 @@ public final class FmlChannelBridge {
 
     private FmlChannelBridge() {}
 
+    private static final java.util.Set<String> UNKNOWN_CHANNELS = ConcurrentHashMap.newKeySet();
+
     public static void register(String name, EnumMap<Side, FMLEmbeddedChannel> channels) {
         CHANNELS.put(name, channels);
     }
@@ -167,7 +169,9 @@ public final class FmlChannelBridge {
                 VanillaPayloads1710.handleServer(channelName, data, s.playerEntity);
                 return;
             }
-            LOG.debug("Message for unknown legacy channel {}", channelName);
+            if (UNKNOWN_CHANNELS.add(channelName + "/" + side)) {
+                LOG.warn("A {}-side custom payload arrived for legacy channel '{}' that no mod registered (logged once per channel; its data is dropped)", side, channelName);
+            }
             return;
         }
         FMLEmbeddedChannel channel = channels.get(side);
