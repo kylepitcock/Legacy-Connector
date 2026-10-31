@@ -183,6 +183,12 @@ After launching, check **`logs/legacyconnector-report.txt`**. For each legacy ja
 
 IDs tab-complete.
 
+## Writing addons
+
+Other NeoForge mods can add modern support to legacy mods through a small public API: lifecycle events, access to legacy classes,
+modern/legacy stack and tile conversion, and NeoForge capabilities for legacy tile entities. Guide and example addon (modern aspects for Thaumcraft 4):
+[Addon API](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Addon-API.md).
+
 ## Roadmap
 
 ✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.20.1** (Forge and Fabric via Sinytra) → **1.16.5** → **1.2.5**
