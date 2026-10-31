@@ -145,8 +145,10 @@ public final class ReflectiveEventBus {
 
     /** @return true if the event was canceled */
     public boolean post(Object event) {
-        List<Listener> targets = dispatchCache.computeIfAbsent(event.getClass(), this::collect);
-        for (Listener l : targets) {
+        List<Listener> targets = targets(event.getClass());
+        // indexed: posted for every entity every tick and for HUD elements every frame (no iterator, no lambda per post)
+        for (int i = 0, count = targets.size(); i < count; i++) {
+            Listener l = targets.get(i);
             boolean canceledBefore = adapter.isCanceled(event);
             if (!l.receiveCanceled && canceledBefore) continue;
             if (l.generic != null && event instanceof GenericEventType g && g.mcc$genericType() != l.generic) continue;
@@ -203,7 +205,16 @@ public final class ReflectiveEventBus {
     }
 
     public boolean hasListeners(Class<?> eventType) {
+        Boolean known = interest.get(eventType);
+        if (known != null) return known;
         return interest.computeIfAbsent(eventType, t -> !collect(t).isEmpty());
+    }
+
+    /** The listeners of an event class in dispatch order: a plain read once cached (computeIfAbsent with this::collect allocates). */
+    private List<Listener> targets(Class<?> eventType) {
+        List<Listener> known = dispatchCache.get(eventType);
+        if (known != null) return known;
+        return dispatchCache.computeIfAbsent(eventType, this::collect);
     }
 
     private List<Listener> collect(Class<?> eventType) {

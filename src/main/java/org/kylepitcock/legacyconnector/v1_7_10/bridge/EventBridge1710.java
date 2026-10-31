@@ -784,12 +784,15 @@ public final class EventBridge1710 {
             postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z),
                     e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });
+        // (every living entity drawn, every frame: nothing is computed or wrapped unless a legacy listener wants the event)
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre.class)) return;
             double[] at = legacyRenderPos(e.getPoseStack());
             var legacy = livingRenderEvent(e.getEntity(), true, at);
             if (legacy != null && postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post.class)) return;
             double[] at = legacyRenderPos(e.getPoseStack());
             var legacy = livingRenderEvent(e.getEntity(), false, at);
             if (legacy != null) postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
