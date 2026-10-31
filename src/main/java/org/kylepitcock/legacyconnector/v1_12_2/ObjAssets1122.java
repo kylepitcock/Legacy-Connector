@@ -26,7 +26,10 @@ public final class ObjAssets1122 {
     private ObjAssets1122() {}
 
     public static boolean isObj(String path) {
-        return path != null && path.toLowerCase(java.util.Locale.ROOT).endsWith(".obj");
+        if (path == null) return false;
+        String p = path.toLowerCase(java.util.Locale.ROOT);
+        // "x.obj", and the mod-specific variants some mods name their OBJ files ("x.obj.ie" of Immersive Engineering, "x.obj.mek" of Mekanism)
+        return p.endsWith(".obj") || p.matches(".*[.]obj[.][a-z0-9]+");
     }
 
     /**

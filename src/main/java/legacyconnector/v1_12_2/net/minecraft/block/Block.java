@@ -144,12 +144,12 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     /** Forge: whether the state has a tile entity (BlockContainer says yes). */
     public boolean hasTileEntity(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
-        return false;
+        return hasTileEntity(); // Forge: an ITileEntityProvider (mcjtylib's GenericBlock is one without being a BlockContainer) has one
     }
 
     public legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity createTileEntity(legacyconnector.v1_12_2.net.minecraft.world.World world,
             legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
-        return null;
+        return this instanceof ITileEntityProvider p ? p.createNewTileEntity(world, getMetaFromState(state)) : null;
     }
 
     public float mcc$hardness() {

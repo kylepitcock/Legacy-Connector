@@ -132,8 +132,24 @@ public class Loader {
         return map;
     }
 
+    /** The indexed mod list: ids match the way {@link #isModLoaded} does (any case), so a mod that asks one then reads the other gets the container. */
+    private static final class IdMap extends LinkedHashMap<String, ModContainer> {
+        @Override
+        public ModContainer get(Object key) {
+            ModContainer c = super.get(key);
+            if (c != null || !(key instanceof String s)) return c;
+            for (var e : entrySet()) if (e.getKey().equalsIgnoreCase(s)) return e.getValue();
+            return null;
+        }
+
+        @Override
+        public boolean containsKey(Object key) {
+            return get(key) != null;
+        }
+    }
+
     public Map<String, ModContainer> getIndexedModList() {
-        Map<String, ModContainer> out = new LinkedHashMap<>();
+        Map<String, ModContainer> out = new IdMap();
         for (LegacyModRecord r : LegacyMods.ordered()) {
             if (r.platformData instanceof LegacyModContainer1122 c) out.put(r.legacyId, c);
         }
@@ -142,6 +158,10 @@ public class Loader {
         for (String id : new String[] {"Forge", "FML", "mcp", "Minecraft"}) out.computeIfAbsent(id, Loader::pseudo);
         for (String bridged : System.getProperty("legacyconnector.bridgedMods", "").split(",")) {
             if (!bridged.isEmpty()) out.computeIfAbsent(bridged, Loader::pseudo);
+        }
+        // mods the pack declares present (isModLoaded says yes, so the indexed list must hold them too)
+        for (String present : System.getProperty("legacyconnector.presentLegacyMods", "").split(",")) {
+            if (!present.isEmpty() && out.get(present) == null) out.put(present, pseudo(present));
         }
         return out;
     }
