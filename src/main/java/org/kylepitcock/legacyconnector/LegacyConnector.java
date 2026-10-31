@@ -187,6 +187,8 @@ public final class LegacyConnector {
 
     /** Hoppers, comparators-by-capability and modern item pipes can use legacy tile entity inventories. */
     private static void registerCapabilities(net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent event) {
+        // public addon API: addons' rules are asked first, then the 1.12.2 built-ins (see api/LegacyCapabilities)
+        org.kylepitcock.legacyconnector.api.internal.CapabilityRules.apply(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.EnergyBridge.registerCapabilities(event);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.registerCapabilities(event);
         var type = org.kylepitcock.legacyconnector.v1_7_10.bridge.TileEntityBridge.type();

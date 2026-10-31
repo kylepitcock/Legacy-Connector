@@ -31,7 +31,7 @@ public final class EnergyBridge {
         }
     }
 
-    static IEnergyStorage forTile(TileEntity legacy, Direction side) {
+    public static IEnergyStorage forTile(TileEntity legacy, Direction side) {
         if (!(legacy instanceof IEnergyReceiver) && !(legacy instanceof IEnergyProvider)) return null;
         ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
         if (legacy instanceof IEnergyConnection c && side != null && !c.canConnectEnergy(from)) return null;

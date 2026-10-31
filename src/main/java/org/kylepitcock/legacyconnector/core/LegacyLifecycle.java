@@ -71,6 +71,7 @@ public final class LegacyLifecycle {
         org.kylepitcock.legacyconnector.compat.jdk.JdkInternals.exportToLegacyMods();
         long start = System.currentTimeMillis();
 
+        org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.DISCOVERED);
         phase(mods, "construction", m -> LegacyMods.platform(m.version).construct(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.beforePreInit();
         for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("preInit");
@@ -88,11 +89,15 @@ public final class LegacyLifecycle {
         for (LegacyPlatform p : LegacyMods.platforms()) p.coreModPhase("postInit");
         phase(mods, "postInit", m -> LegacyMods.platform(m.version).postInit(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.afterPostInit();
+        org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.REGISTERED);
         LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size());
     }
 
     public static void onCommonSetup(FMLCommonSetupEvent event) {
-        event.enqueueWork(() -> phase(LegacyMods.ordered(), "loadComplete", m -> LegacyMods.platform(m.version).loadComplete(m)));
+        event.enqueueWork(() -> {
+            phase(LegacyMods.ordered(), "loadComplete", m -> LegacyMods.platform(m.version).loadComplete(m));
+            if (!LegacyMods.isEmpty()) org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.LOAD_COMPLETE);
+        });
     }
 
     public static void onLoadComplete(FMLLoadCompleteEvent event) {

@@ -127,6 +127,13 @@ public final class FluidBridge {
         }
     }
 
+    /** The NeoForge fluid handler of a legacy Forge {@code IFluidHandler} tile entity seen from {@code side} (public API adapter), or null. */
+    public static net.neoforged.neoforge.fluids.capability.IFluidHandler forTile(Object legacy, Direction side) {
+        if (!(legacy instanceof IFluidHandler handler)) return null;
+        ForgeDirection from = side == null ? ForgeDirection.UNKNOWN : ForgeDirection.getOrientation(side.get3DDataValue());
+        return new TileHandler(handler, from);
+    }
+
     private record TileHandler(IFluidHandler tile, ForgeDirection from) implements net.neoforged.neoforge.fluids.capability.IFluidHandler {
         @Override
         public int getTanks() {

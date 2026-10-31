@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "MIT"
+
+[[mods]]
+modId = "tcmodern"
+version = "${version}"
+displayName = "Thaumcraft Modern Aspects (Legacy Connector example addon)"
+description = '''Gives modern Minecraft items and blocks Thaumcraft 4 aspects and exposes an essentia jar as a fluid handler.'''
+
+# The Legacy Connector addon entry point (see org.kylepitcock.legacyconnector.api.LegacyAddon).
+[modproperties.tcmodern]
+legacyconnector-addon = "example.tcmodern.ThaumcraftModernAspects"
+
+[[dependencies.tcmodern]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.tcmodern]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.22)"
+ordering = "NONE"
+side = "BOTH"
+
+# Legacy Connector provides the API at runtime and must load before this mod.
+[[dependencies.tcmodern]]
+modId = "legacyconnector"
+type = "required"
+versionRange = "[0.3.6,)"
+ordering = "AFTER"
+side = "BOTH"
