@@ -84,6 +84,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
 
     /** One Forge world pass of the handler, as 1.7.10's chunk renderer ran it; null when the handler failed. */
     private List<BakedQuad> capture(ISimpleBlockRenderingHandler handler, BlockAndTintGetter level, BlockPos pos, int pass) {
+        int ox = relocation(pos.getX()), oz = relocation(pos.getZ());
         RenderContext.Capture capture = RenderContext.beginCapture();
         // 1.7.10's chunk renderer had the Tessellator drawing already when it called the handlers.
         var tessellator = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.instance;
@@ -93,8 +94,14 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.worldRenderPass = pass;
             // Called right before drawing, as the chunk renderer did: some blocks note the pass here (BuildCraft pipes).
             block.canRenderInPass(pass);
-            var access = BlockAccessView.of(level);
-            handler.renderWorldBlock(access, pos.getX(), pos.getY(), pos.getZ(), block, renderId, new RenderBlocks(access));
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess access = BlockAccessView.of(level);
+            // Far out (a Sable / Create Aeronautics ship's plot, ~20 million blocks away) the handler runs at coordinates moved
+            // near the origin, over a view shifted back to the real blocks: its own float math (ChromatiCraft's crystals,
+            // Thaumcraft's jars, vanilla's RenderBlocks) would otherwise snap vertices to the 2-block steps of a float there.
+            BlockAccessView shifted = ox != 0 || oz != 0 ? BlockAccessView.shifted(level, ox, oz) : null;
+            if (shifted != null) access = shifted;
+            else ox = oz = 0;
+            handler.renderWorldBlock(access, pos.getX() - ox, pos.getY(), pos.getZ() - oz, block, renderId, new RenderBlocks(access));
         } catch (RuntimeException | LinkageError e) {
             if (FAILED.add(block.getClass().getName())) {
                 LOG.error("Legacy block renderer for {} failed; the block keeps its generated model", block.getClass().getName(), e);
@@ -108,7 +115,16 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
                 RenderContext.endCapture();
             }
         }
-        return IsbrhQuads.bake(capture, pos.getX(), pos.getY(), pos.getZ(), getParticleIcon(ModelData.EMPTY));
+        return IsbrhQuads.bake(capture, pos.getX() - ox, pos.getY(), pos.getZ() - oz, getParticleIcon(ModelData.EMPTY));
+    }
+
+    /**
+     * How far a coordinate is moved toward the origin for the handler: 0 within a million blocks (normal worlds draw as they
+     * always did), else a multiple of 65536 (blocks keep their position within chunks and regions; what is left is below
+     * 65536, where a float still resolves 1/256 of a block).
+     */
+    static int relocation(int c) {
+        return c > -(1 << 20) && c < 1 << 20 ? 0 : c & ~0xFFFF;
     }
 
     @Override

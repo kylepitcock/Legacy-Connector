@@ -444,17 +444,18 @@ public final class RenderContext {
             org.joml.Matrix4f m = p.last().pose();
             org.joml.Matrix3f n = p.last().normal();
             double[][] out = new double[4][];
-            org.joml.Vector3f tmp = new org.joml.Vector3f();
+            // In double: captured positions are absolute block coordinates, made block-relative only when baked. Through a
+            // float they were snapped to a float's step, 2 blocks at a Sable / Create Aeronautics plot (~20 million blocks
+            // out): ChromatiCraft's crystals came out as skewed triangles and Thaumcraft's jar glass vanished on ships.
             for (int i = 0; i < 4; i++) {
                 double[] c = v[i].clone();
-                tmp.set((float) c[0], (float) c[1], (float) c[2]);
-                m.transformPosition(tmp);
-                c[0] = tmp.x;
-                c[1] = tmp.y;
-                c[2] = tmp.z;
+                double x = c[0], y = c[1], z = c[2];
+                c[0] = m.m00() * x + m.m10() * y + m.m20() * z + m.m30();
+                c[1] = m.m01() * x + m.m11() * y + m.m21() * z + m.m31();
+                c[2] = m.m02() * x + m.m12() * y + m.m22() * z + m.m32();
                 out[i] = c;
             }
-            tmp.set(nx, ny, nz);
+            org.joml.Vector3f tmp = new org.joml.Vector3f(nx, ny, nz);
             n.transform(tmp);
             capture.quads.add(out);
             capture.normals.add(new float[] {tmp.x, tmp.y, tmp.z});
