@@ -21,6 +21,8 @@ public class TileEntityChest extends TileEntity implements IInventory {
     public float prevLidAngle;
     public int numPlayersUsing;
     private final net.minecraft.world.Container mcc$inv;
+    /** Set while a chunk's load event is posted: the chunk cannot be fetched yet. */
+    public static final ThreadLocal<Boolean> MCC_CHUNK_LOADING = ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     public TileEntityChest() {
         this.mcc$inv = null;
@@ -34,6 +36,13 @@ public class TileEntityChest extends TileEntity implements IInventory {
 
     public void mcc$refresh() {
         if (mcc$inv == null) return;
+        // Reading a chest with a pending loot table fills it and calls setChanged, which fetches the chunk and blocks the
+        // server thread when the chunk is still being generated or loaded: keep the old snapshot until the chunk is ready.
+        if (mcc$inv instanceof net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity r && r.getLootTable() != null) {
+            var level = r.getLevel();
+            if (level == null || MCC_CHUNK_LOADING.get()) return;
+            if (!level.isClientSide && level.getChunkSource().getChunkNow(r.getBlockPos().getX() >> 4, r.getBlockPos().getZ() >> 4) == null) return;
+        }
         if (chestContents.length != mcc$inv.getContainerSize()) chestContents = new ItemStack[mcc$inv.getContainerSize()];
         for (int i = 0; i < chestContents.length; i++) chestContents[i] = ItemStack.mcc$wrap(mcc$inv.getItem(i));
     }

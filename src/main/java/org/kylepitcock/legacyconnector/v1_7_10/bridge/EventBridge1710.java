@@ -384,7 +384,13 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Load e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Load.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
-            forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Load(new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk())));
+            // the chunk is not fetchable yet while its load event runs: chest views must not fill loot tables (setChanged would wait for it)
+            legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest.MCC_CHUNK_LOADING.set(Boolean.TRUE);
+            try {
+                forge().post(new legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Load(new legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk(World.mcc$wrap(level), e.getChunk())));
+            } finally {
+                legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest.MCC_CHUNK_LOADING.set(Boolean.FALSE);
+            }
         });
         gameBus.addListener((net.neoforged.neoforge.event.level.ChunkEvent.Unload e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.world.ChunkEvent.Unload.class) || !(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
