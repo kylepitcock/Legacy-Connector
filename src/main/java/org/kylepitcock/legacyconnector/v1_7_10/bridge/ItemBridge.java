@@ -785,7 +785,20 @@ public final class ItemBridge {
      * becomes that variant; anything else comes back unchanged.
      */
     public static net.minecraft.world.item.ItemStack upgradeVariant(Item item, net.minecraft.world.item.ItemStack stack) {
-        if (item == null || item.mcc$vanilla != null || stack.isEmpty() || !(stack.getItem() instanceof LegacyItemHolder)) return stack;
+        if (item == null || item.mcc$vanilla != null || stack.isEmpty()) return stack;
+        if (stack.is(Items.BARRIER) && item != discovering && !item.mcc$variants.isEmpty()) {
+            // A stack made before the item was registered (a crop's seed prototype, built while the mod initialises) was a
+            // placeholder: it becomes the real item once the item has its modern counterparts (Witchery's crops dropped barriers).
+            Integer pm = stack.get(CompatComponents.legacyMeta());
+            net.minecraft.world.item.ItemStack real = toModern(item, stack.getCount(), pm == null ? 0 : pm);
+            if (real.is(Items.BARRIER) || real.isEmpty()) return stack;
+            net.minecraft.world.item.ItemStack moved = stack.transmuteCopy(real.getItem(), stack.getCount());
+            Integer rm = real.get(CompatComponents.legacyMeta());
+            if (rm != null) moved.set(CompatComponents.legacyMeta(), rm);
+            else moved.remove(CompatComponents.legacyMeta());
+            return moved;
+        }
+        if (!(stack.getItem() instanceof LegacyItemHolder)) return stack;
         Integer meta = stack.get(CompatComponents.legacyMeta());
         if (meta == null) return stack;
         net.minecraft.world.item.Item variant = item.mcc$variants.get(meta);
