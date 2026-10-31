@@ -48,7 +48,7 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
         try {
             pose.pushPose();
             pose.translate(-x, -y, -z);
-            renderer.renderTileEntityAt(te, x, y, z, partialTick);
+            renderPasses(te, renderer, x, y, z, partialTick);
             if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
         } catch (RuntimeException | LinkageError e) {
             int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
@@ -61,6 +61,26 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
             }
         } finally {
             RenderContext.end();
+        }
+    }
+
+    /**
+     * 1.7.10 drew the tile entities twice a frame: RenderGlobal.renderEntities ran in pass 0 (opaque) and again in pass 1
+     * (translucent), each time for the tile entities whose {@code shouldRenderInPass(pass)} is true, with
+     * {@code MinecraftForgeClient.getRenderPass()} answering that pass. Renderers draw different things per pass: ChromatiCraft's
+     * crystal pylon draws its crystal and halo only in pass 1 (its energy beams in pass 0), so with a single call answering pass 0
+     * a placed pylon was invisible.
+     */
+    private static void renderPasses(TileEntity te, TileEntitySpecialRenderer renderer, double x, double y, double z, float partialTick) {
+        int previous = legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.renderPass;
+        try {
+            for (int pass = 0; pass < 2; pass++) {
+                if (!te.shouldRenderInPass(pass)) continue;
+                legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.renderPass = pass;
+                renderer.renderTileEntityAt(te, x, y, z, partialTick);
+            }
+        } finally {
+            legacyconnector.v1_7_10.net.minecraftforge.client.ForgeHooksClient.renderPass = previous;
         }
     }
 

@@ -278,6 +278,15 @@ public class World implements IBlockAccess {
         return DEEP_PASSES.get() == 0 ? modernY : modernY - deepShift();
     }
 
+    /**
+     * During a deep pass, everything from modern y=0 up is solid rock to the legacy code: writes there are refused, so a surface
+     * generator must not find a surface to build on. It did: ChromatiCraft's PylonGenerator found the real surface (shifted up),
+     * placed a pylon whose every block was refused and then failed on the missing tile entity ("te" is null).
+     */
+    private static boolean mcc$aboveDeepLayer(int legacyY) {
+        return inDeepPass() && legacyY + deepShift() >= 0;
+    }
+
     // ------------------------------------------------------------------ virtual fields
 
     public static EnumDifficulty mcc$get$difficultySetting(World w) {
@@ -348,6 +357,7 @@ public class World implements IBlockAccess {
     @Override
     public Block getBlock(int x, int y, int z) {
         if (unloaded(x, z)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        if (mcc$aboveDeepLayer(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         BlockState offThread = mcc$offThreadState(x, y, z);
         BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
@@ -367,7 +377,7 @@ public class World implements IBlockAccess {
 
     @Override
     public int getBlockMetadata(int x, int y, int z) {
-        if (unloaded(x, z)) return 0;
+        if (unloaded(x, z) || mcc$aboveDeepLayer(y)) return 0;
         BlockState offThread = mcc$offThreadState(x, y, z);
         return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(pos(x, y, z)));
     }
@@ -479,6 +489,7 @@ public class World implements IBlockAccess {
 
     @Override
     public boolean isAirBlock(int x, int y, int z) {
+        if (mcc$aboveDeepLayer(y)) return false;
         BlockState state = lvl().getBlockState(pos(x, y, z));
         return state.isAir() && !mcc$bedrockFloor(y, state);
     }
@@ -533,7 +544,10 @@ public class World implements IBlockAccess {
      * structure code that asks for the surface must be answered from the blocks themselves.
      */
     private int surface(int x, int z, Heightmap.Types type) {
-        return legacyY(modernSurface(x, z, type));
+        int modern = modernSurface(x, z, type);
+        // the deep layer is buried: its top is y=0 (see mcc$aboveDeepLayer)
+        if (inDeepPass()) modern = Math.min(modern, 0);
+        return legacyY(modern);
     }
 
     private int modernSurface(int x, int z, Heightmap.Types type) {
@@ -566,6 +580,7 @@ public class World implements IBlockAccess {
     }
 
     public boolean canBlockSeeTheSky(int x, int y, int z) {
+        if (inDeepPass()) return false; // the deep layer is buried (see mcc$aboveDeepLayer)
         return lvl().canSeeSky(pos(x, y, z));
     }
 
