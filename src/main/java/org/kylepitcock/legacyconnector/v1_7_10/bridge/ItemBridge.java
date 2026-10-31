@@ -335,6 +335,15 @@ public final class ItemBridge {
         return VanillaFlattening.item(legacyName, meta);
     }
 
+    /** The item a vanilla item leaves behind when used up in crafting or fluid handling (bucket for the full buckets), null for none. */
+    public static Item vanillaContainerItem(VanillaInfo info) {
+        net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : vanillaItem(info.legacyName(), 0);
+        if (modern == null || modern == Items.AIR) return null;
+        net.minecraft.world.item.Item remainder = modern.getCraftingRemainingItem();
+        if (remainder == null || remainder == Items.AIR) return null;
+        return legacyItemOf(new net.minecraft.world.item.ItemStack(remainder));
+    }
+
     public static void initVanilla(Item item, VanillaInfo info) {
         net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : vanillaItem(info.legacyName(), 0);
         boolean subtypes = false;
@@ -727,6 +736,15 @@ public final class ItemBridge {
             for (String n : BY_NAME.keySet()) if (n.startsWith("minecraft:") && BY_NAME.get(n).mcc$vanilla != null && BY_NAME.get(n).mcc$vanilla.legacyId() >= 0) names.add(n);
             for (var e : VanillaFlattening.reverseItems(names).entrySet()) {
                 VANILLA_REVERSE.put(e.getKey(), new Object[] {BY_NAME.get((String) e.getValue()[0]), e.getValue()[1]});
+            }
+            // The four dyes 1.14 split off ink sac, cocoa beans, lapis and bone meal stand for the 1.7.10 dye damages of those four
+            // (Traincraft paints a train when the dye's damage is the colour's: a modern blue dye read as damage 0 painted nothing).
+            Item dyeItem = BY_NAME.get("minecraft:dye");
+            if (dyeItem != null) {
+                VANILLA_REVERSE.putIfAbsent(Items.BLACK_DYE, new Object[] {dyeItem, 0});
+                VANILLA_REVERSE.putIfAbsent(Items.BROWN_DYE, new Object[] {dyeItem, 3});
+                VANILLA_REVERSE.putIfAbsent(Items.BLUE_DYE, new Object[] {dyeItem, 4});
+                VANILLA_REVERSE.putIfAbsent(Items.WHITE_DYE, new Object[] {dyeItem, 15});
             }
             // Block items of vanilla blocks without an Items field ("stone", "wool", ...).
             for (int id = 1; id < 256; id++) {

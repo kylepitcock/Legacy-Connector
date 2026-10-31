@@ -70,14 +70,16 @@ public class EnergyStorage implements IEnergyStorage {
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        int received = Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive));
+        // never negative: Traincraft's windmill adds round(y * 0.25) * 10 to the wind, which is below zero under y = 0 (modern worlds
+        // reach y = -64; superflat ground is at -60), and a negative "receive" drained the buffer to -4000 FE
+        int received = Math.max(0, Math.min(capacity - energy, Math.min(this.maxReceive, maxReceive)));
         if (!simulate) energy += received;
         return received;
     }
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        int extracted = Math.min(energy, Math.min(this.maxExtract, maxExtract));
+        int extracted = Math.max(0, Math.min(energy, Math.min(this.maxExtract, maxExtract)));
         if (!simulate) energy -= extracted;
         return extracted;
     }

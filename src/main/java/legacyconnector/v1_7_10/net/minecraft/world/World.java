@@ -332,7 +332,16 @@ public class World implements IBlockAccess {
      */
     public static List mcc$get$loadedEntityList(World w) {
         Level level = w.mcc$fullLevel();
-        if (!(level instanceof ServerLevel s)) return new ArrayList<>();
+        if (!(level instanceof ServerLevel s)) {
+            if (level == null || !level.isClientSide()) return new ArrayList<>();
+            // the client's world held its entities too: Traincraft finds the train of its GUI (openGui x = entity id) in it
+            int clientTick = (int) level.getGameTime();
+            if (w.mcc$entityList != null && w.mcc$entityListTick == clientTick) return w.mcc$entityList;
+            List<Entity> clientOut = org.kylepitcock.legacyconnector.v1_7_10.client.ClientEntities.all(level);
+            w.mcc$entityList = clientOut;
+            w.mcc$entityListTick = clientTick;
+            return clientOut;
+        }
         int tick = s.getServer().getTickCount();
         // entities of the chunks around players arrive a few ticks after the chunk (a player just moved here): wait for them
         boolean waited = s.getServer().isSameThread() && org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityLoading.awaitAround(s);
