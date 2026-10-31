@@ -134,7 +134,7 @@ Create contraptions and Create Aeronautics/Sable ships can carry legacy blocks (
 
 Thaumcraft 4 measured against no legacy mods in a real client: about +38 MB of heap after a full GC. Frame rate and tick
 time vary more between identical runs than between the two setups. Loading Thaumcraft takes about 5.5 s per launch;
-translating its jar adds about 0.5 s on the first launch only (the result is cached). Details are in the README on GitHub.
+translating its jar adds about 0.5 s on the first launch only (the result is cached). Details are in the [documentation on GitHub](https://github.com/kylepitcock/Legacy-Connector/blob/master/docs/wiki/Home.md).
 
 ## Changing legacy recipes
 

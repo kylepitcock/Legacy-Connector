@@ -1,7 +1,10 @@
 # Legacy Connector: notes for Claude (and contributors)
 
 Runs unmodified legacy Forge mods on NeoForge 1.21.1 by translating them at load time (like Sinytra Connector does for
-Fabric). Read `README.md` first for the architecture (loader = FML service that translates jars; runtime = NeoForge mod
+Fabric). Read `README.md` for the overview and `docs/wiki/` (start at `Home.md`) for the detailed docs: architecture, bridges, world
+generation, dimensions, entities, rendering, recipes, performance, development, addon API. **Keep `README.md` short** (landing page: what it is,
+status table, install, config table, links); put technical detail in the matching `docs/wiki` page (relative links, wiki-compatible file names,
+so the folder can be pushed to the GitHub wiki as is). (Architecture summary: loader = FML service that translates jars; runtime = NeoForge mod
 holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bridges under
 `src/main/java/org/kylepitcock/legacyconnector/v1_7_10/bridge`, synthesized API generator under `loader/.../synth`).
 
