@@ -182,7 +182,20 @@ public final class LegacyJarTransformer {
     private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
         int dropped = 0;
+        // Forge 1.12.2 shipped typesafe config and akka; the runtime bundles them. A mod that overrides a class or two of them (OpenComputers
+        // patches one in com.typesafe.config.impl) would split the package with that module: its few classes go, a full shaded copy stays.
+        List<String> partial = new java.util.ArrayList<>();
+        if (jar.version == LegacyVersion.V1_12_2) {
+            for (String lib : List.of("com/typesafe/config/", "akka/")) {
+                if (classes.keySet().stream().filter(n -> n.startsWith(lib)).count() < 20) partial.add(lib);
+            }
+        }
         for (String name : List.copyOf(classes.keySet())) {
+            if (partial.stream().anyMatch(name::startsWith)) {
+                classes.remove(name);
+                dropped++;
+                continue;
+            }
             // Libraries the game already ships: a second copy would split the package between two modules.
             if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith)) {
                 classes.remove(name);
