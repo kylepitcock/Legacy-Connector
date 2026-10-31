@@ -10,6 +10,7 @@ What has been exercised in a real client (not just loaded), so contributors know
 | Magic | Thaumcraft crucible (essentia from items), infusion altar (an Obsidian Rod infusion finishes and drains the jars), all 102 shaped arcane recipes craft with a charged wand, all recipe registries valid, Thaumonomicon GUI, Arcane Lamp, golems spawn; Witchery Witches' Oven, spinning wheel (on altar power), kettle, distillery and brewing cauldron; Botania flower to spreader mana |
 | Storage and world | Iron Chest, Extra Utilities, Chisel, Carpenter's Blocks, Tinkers' Construct, OpenBlocks, AgriCraft crop sticks, Forestry apiary with flowers (queen produces combs), Biomes O' Plenty, Natura, Twilight Forest |
 | Space and mobs | Galacticraft planets and Moon (oxygen warning), Traincraft rolling stock (505 entity types spawn and render), Fisk's Superheroes (the Flash speed ability, armor right-click equip), HBM Nuclear Tech |
+| Network mods | Applied Energistics 2: parts (buses, panels, terminals) draw with their textures; a glass cable between a controller and a drive connects and the network shows its powered colour, also with IC2 loaded |
 | Dimensions | Witchery (dream, torment, mirror), Thaumcraft Outer Lands, Twilight Forest, Galacticraft Moon, Mars and asteroids, OreSpawn; entering every dimension in turn does not hang the server thread |
 
 ## 1.12.2
@@ -25,4 +26,5 @@ What has been exercised in a real client (not just loaded), so contributors know
 
 - A Forge hook the game calls before normal use (`onItemUseFirst`) must be called by probes too; items such as AgriCraft crop sticks and Thaumcraft golem placers only work through it.
 - Legacy code that compares `instanceof` against a vanilla class (`ItemFood`, `ItemShears`) needs the vanilla item objects to be instances of those shim classes.
+- Test network mods across separate server ticks: placing a controller, cables and a machine inside one tick (a single probe call) leaves AE2 tiles without their grid nodes, which looks like a bug but is not what a player does.
 - Hard-coded height limits in legacy code (a lamp's minimum y of 5) misbehave in the deeper modern world.
