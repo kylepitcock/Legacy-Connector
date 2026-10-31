@@ -344,6 +344,11 @@ After launching, read **`logs/legacyconnector-report.txt`**. For every legacy ja
 ids, references that could not be linked, and which legacy APIs were synthesized (they link but do nothing yet).
 At runtime, `LegacyConnector/Stubs` log lines show which synthesized APIs are actually called.
 
+## Writing addons for legacy mods
+
+NeoForge mods can build on running legacy mods (modern aspects for Thaumcraft 4, legacy tile entities as item/fluid/energy
+capabilities, lifecycle events) through the public addon API. See [docs/wiki/Addon-API.md](docs/wiki/Addon-API.md).
+
 ## Development
 
 Requires JDK 21.

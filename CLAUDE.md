@@ -81,6 +81,11 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   "failed to load". A client smoke test is `./gradlew runClientTest` (mods in `run-clienttest/mods`).
 - The bash tool of this project's sessions rejects some large heredocs (unmatched quote); write files with the Write tool or a Python script file.
 
+## Addon API
+
+- Public API for other mods: `src/main/java/org/kylepitcock/legacyconnector/api` (+ `api.event`); implementation and the only code touching shim types: `api/internal` (`Convert`, `ContentKeys`, `BuiltinAdapters`). Docs `docs/wiki/Addon-API.md`, example `examples/thaumcraft-modern-aspects` (standalone build, `./gradlew apiJar` first).
+- Rule: API signatures never contain shim types (legacy objects are `Object`, reached through `LegacyAccess`); keep the API stable (PATCH-compatible), hook calls live in `LegacyLifecycle` (`AddonHost.enter`) and `LegacyConnector.registerCapabilities` (`CapabilityRules.apply`). Update the doc when adding API.
+
 ## Releases
 
 Pre-1.0 versioning: bump the PATCH for every release (0.0.1, 0.0.2, ...); bump the MINOR only for a milestone (a new legacy
