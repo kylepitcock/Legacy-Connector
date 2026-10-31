@@ -83,7 +83,18 @@ public class ChestGenHooks {
     }
 
     public WeightedRandomChestContent[] getItems(Random rnd) {
-        return contents.toArray(new WeightedRandomChestContent[0]);
+        WeightedRandomChestContent[] out = contents.toArray(new WeightedRandomChestContent[0]);
+        MCC$CATEGORIES.put(out, category);
+        return out;
+    }
+
+    /** The category of item lists handed out by {@link #getItems} (arrays compare by identity; entries go with the arrays). */
+    private static final java.util.Map<WeightedRandomChestContent[], String> MCC$CATEGORIES =
+            java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
+
+    /** The category an item list came from, or null (a list the mod built itself). */
+    public static String mcc$categoryOf(WeightedRandomChestContent[] items) {
+        return items == null ? null : MCC$CATEGORIES.get(items);
     }
 
     public int getCount(Random rand) {

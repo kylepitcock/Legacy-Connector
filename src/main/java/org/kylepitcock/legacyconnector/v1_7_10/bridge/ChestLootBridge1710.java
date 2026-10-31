@@ -38,6 +38,13 @@ public final class ChestLootBridge1710 {
 
     private ChestLootBridge1710() {}
 
+    /** The modern loot table of a 1.7.10 chest category, or null (mod categories, the jungle dispenser is not a chest). */
+    public static net.minecraft.resources.ResourceLocation tableFor(String category) {
+        if (category == null || ChestGenHooks.PYRAMID_JUNGLE_DISPENSER.equals(category)) return null;
+        String table = TABLES.get(category);
+        return table == null ? null : net.minecraft.resources.ResourceLocation.parse(table);
+    }
+
     public static void register(IEventBus gameBus) {
         gameBus.addListener((LootTableLoadEvent e) -> {
             for (var entry : TABLES.entrySet()) {

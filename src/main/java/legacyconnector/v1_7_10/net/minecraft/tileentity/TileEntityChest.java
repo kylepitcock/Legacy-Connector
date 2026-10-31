@@ -34,6 +34,11 @@ public class TileEntityChest extends TileEntity implements IInventory {
         mcc$refresh();
     }
 
+    /** The modern container this chest views, or null for a chest made by legacy code. */
+    public net.minecraft.world.Container mcc$container() {
+        return mcc$inv;
+    }
+
     public void mcc$refresh() {
         if (mcc$inv == null) return;
         // Reading a chest with a pending loot table fills it and calls setChanged, which fetches the chunk and blocks the
