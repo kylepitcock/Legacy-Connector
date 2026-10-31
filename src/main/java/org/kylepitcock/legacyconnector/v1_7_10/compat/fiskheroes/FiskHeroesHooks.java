@@ -25,6 +25,8 @@ public final class FiskHeroesHooks {
     private static volatile boolean resolved;
     private static volatile boolean absent;
     private static MethodHandle moveEntityWithHeading;
+    private static MethodHandle posePre;
+    private static MethodHandle posePost;
     private static int failures;
 
     private FiskHeroesHooks() {}
@@ -45,6 +47,16 @@ public final class FiskHeroesHooks {
                 Class<?> hooks = Class.forName("com.fiskmods.heroes.asm.ASMHooks", true, loader);
                 moveEntityWithHeading = MethodHandles.publicLookup().findStatic(hooks, "moveEntityWithHeading",
                         MethodType.methodType(boolean.class, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase.class, float.class, float.class));
+                // ModelHelper: the pose hooks its CTModelBiped patch put at the start and end of ModelBiped.setRotationAngles
+                Class<?> helper = Class.forName("com.fiskmods.heroes.client.model.ModelHelper", true, loader);
+                MethodType pose = MethodType.methodType(void.class, legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped.class, float.class, float.class,
+                        float.class, float.class, float.class, float.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
+                try {
+                    posePre = MethodHandles.publicLookup().findStatic(helper, "setRotationAnglesPre", pose);
+                    posePost = MethodHandles.publicLookup().findStatic(helper, "setRotationAngles", pose);
+                } catch (ReflectiveOperationException | LinkageError e) {
+                    LOG.debug("Fisk's Heroes' pose hooks are not available (a dedicated server): {}", e.toString());
+                }
             } catch (ReflectiveOperationException | LinkageError e) {
                 LOG.warn("Fisk's Heroes' movement hook is not available: {}", e.toString());
                 absent = true;
@@ -64,6 +76,34 @@ public final class FiskHeroesHooks {
         } catch (Throwable e) {
             if (failures++ < 3) LOG.warn("Fisk's Heroes' movement hook failed", e);
             return false;
+        }
+    }
+
+    /** Whether Fisk's Heroes' model pose hooks are installed (a cheap check; false without the mod). */
+    public static boolean poseHooks() {
+        if (resolved) return posePre != null;
+        return ready() && posePre != null;
+    }
+
+    /** ModelBiped.setRotationAngles, first thing: the hero's animation state is read from the model. */
+    public static void setRotationAnglesPre(legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped model, float a, float b, float c, float d, float e, float f,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        call(posePre, model, a, b, c, d, e, f, entity);
+    }
+
+    /** ModelBiped.setRotationAngles, last thing: the hero's pose (flying, aiming, ...) replaces the vanilla angles. */
+    public static void setRotationAngles(legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped model, float a, float b, float c, float d, float e, float f,
+            legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        call(posePost, model, a, b, c, d, e, f, entity);
+    }
+
+    private static void call(MethodHandle handle, legacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped model, float a, float b, float c, float d, float e,
+            float f, legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+        if (handle == null) return;
+        try {
+            handle.invoke(model, a, b, c, d, e, f, entity);
+        } catch (Throwable t) {
+            if (failures++ < 3) LOG.warn("Fisk's Heroes' pose hook failed", t);
         }
     }
 }
