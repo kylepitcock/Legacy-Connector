@@ -77,5 +77,9 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   game (bindings `mc`, `server`, `log`; any class via `Java.type(...)`).
 - Headless server probing: `./gradlew runServerSubTest -PserverScript=<file.js> [-PserverScriptFrom=200]` evaluates the file on every server tick
   (bindings `server`, `tick` counted from the first run, `log`; globals persist, so place on one tick and read on the next); output is logged as
-  `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks.
+  `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks. Ready-made gameplay rigs live in `tools/dev/server-scripts`
+  (`lib.js` places items through a fake player's `useOn`, forceloads the area and reads tiles/fields; ElectriCraft generator -> wire -> motor/battery/RF cable
+  chains and ReactorCraft fission reactor, steam turbine -> shaft and radiation rigs). Gotchas: `forceload add` takes block coordinates, not chunk coordinates
+  (otherwise the rig unloads after one tick); legacy mods that kill entities outside y 0..256 (DragonAPI particle entities such as ReactorCraft neutrons) need
+  rigs at y >= 0; calling methods on a tile whose class mentions an absent optional API (BuildCraft) from Nashorn throws `NoClassDefFoundError`, so read fields via `f()`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
