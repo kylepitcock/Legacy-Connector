@@ -15,7 +15,13 @@ final class SkippedHandlers {
 
     private SkippedHandlers() {}
 
+    /** Handlers the user switched off ({@code events.skip} in config/legacyconnector.properties). */
+    private static volatile Set<String> configured;
+
     static boolean skip(String owner, String method) {
+        Set<String> c = configured;
+        if (c == null) configured = c = org.kylepitcock.legacyconnector.core.LegacyConfig.skippedEventHandlers();
+        if (c.contains(owner + "#*") || c.contains(owner + "#" + method)) return true;
         return SKIPPED.contains(owner + "#*") || SKIPPED.contains(owner + "#" + method);
     }
 }

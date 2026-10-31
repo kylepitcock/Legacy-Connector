@@ -132,6 +132,16 @@ public final class LegacyConfig {
         return v;
     }
 
+    /**
+     * {@code events.skip}: legacy event handlers that are not registered, comma separated, as {@code full.ClassName#method} or
+     * {@code full.ClassName#*} (for finding which legacy handler draws or does something unwanted).
+     */
+    public static java.util.Set<String> skippedEventHandlers() {
+        java.util.Set<String> out = new java.util.HashSet<>();
+        for (String s : string("events.skip", "").split(",")) if (!s.isBlank()) out.add(s.trim());
+        return out;
+    }
+
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
     }
