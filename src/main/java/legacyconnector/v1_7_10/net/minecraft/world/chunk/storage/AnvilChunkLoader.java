@@ -53,7 +53,7 @@ public class AnvilChunkLoader implements IChunkLoader, legacyconnector.v1_7_10.n
     @Override
     public Chunk loadChunk(World world, int x, int z) throws IOException {
         if (world == null) return null;
-        Chunk loaded = world.getChunkFromChunkCoords(x, z);
+        Chunk loaded = world.mcc$chunkOrNull(x, z);
         if (loaded != null) return loaded;
         var level = ownLevel(world);
         if (level == null || !level.getServer().isSameThread() || !savedInRegion(chunkSaveLocation, x, z)) return null;

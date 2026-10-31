@@ -39,7 +39,7 @@ public class ChunkProviderServer implements IChunkProvider {
             public Object getValueByKey(long key) {
                 int x = (int) (key & 0xFFFFFFFFL);
                 int z = (int) (key >>> 32);
-                return mcc$world.chunkExists(x, z) ? mcc$world.getChunkFromChunkCoords(x, z) : null;
+                return mcc$world.chunkExists(x, z) ? mcc$world.mcc$chunkOrNull(x, z) : null;
             }
 
             @Override
@@ -74,7 +74,7 @@ public class ChunkProviderServer implements IChunkProvider {
      * returned, since a worker waiting for the main thread's chunk cache could deadlock).
      */
     public Chunk originalLoadChunk(int x, int z) {
-        Chunk loaded = mcc$world.getChunkFromChunkCoords(x, z);
+        Chunk loaded = mcc$world.mcc$chunkOrNull(x, z);
         if (loaded != null) return loaded;
         if (mcc$world.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel level && level.getServer().isSameThread()) {
             return new Chunk(mcc$world, level.getChunk(x, z));
@@ -97,7 +97,7 @@ public class ChunkProviderServer implements IChunkProvider {
 
     @Override
     public Chunk provideChunk(int x, int z) {
-        Chunk chunk = mcc$world.getChunkFromChunkCoords(x, z);
+        Chunk chunk = mcc$world.mcc$chunkOrNull(x, z);
         // 1.7.10's provideChunk never answered null: an unavailable chunk was the empty chunk (Mystcraft's generator dereferences it)
         return chunk != null ? chunk : new legacyconnector.v1_7_10.net.minecraft.world.chunk.EmptyChunk(mcc$world, x, z);
     }

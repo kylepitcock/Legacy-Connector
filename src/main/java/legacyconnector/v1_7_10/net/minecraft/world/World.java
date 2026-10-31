@@ -987,6 +987,14 @@ public class World implements IBlockAccess {
      * failed on a null one); elsewhere (a generation region, another thread) null when it is not available.
      */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk getChunkFromChunkCoords(int cx, int cz) {
+        var chunk = mcc$chunkOrNull(cx, cz);
+        // 1.7.10 never answered null here (Mystcraft's MystWorldGenerator reads isTerrainPopulated of the result): an empty chunk
+        // stands in for one a generation region or another thread cannot reach
+        return chunk != null ? chunk : new legacyconnector.v1_7_10.net.minecraft.world.chunk.EmptyChunk(this, cx, cz);
+    }
+
+    /** {@link #getChunkFromChunkCoords} for the layer's own code: null where the chunk is not available. */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.Chunk mcc$chunkOrNull(int cx, int cz) {
         if (lvl() instanceof net.minecraft.server.level.ServerLevel sl && !sl.getServer().isSameThread()) {
             // another thread (the render thread reading the integrated server's world, as BuildCraft's RenderTank does): the level would
             // block until the busy server thread answers; 1.7.10 read the loaded chunk directly and had nothing for an unloaded one
