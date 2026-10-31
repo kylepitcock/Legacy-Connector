@@ -19,33 +19,140 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Legacy village components (Forge village creation handlers: Witchery's walls and shops, AgriCraft's greenhouse) in the
- * modern, jigsaw-based villages. Each chunk finds the village starts that reach it, plans the legacy components from the
- * seed (the same plan every time, so nothing is persisted) and lets the components that touch the chunk build themselves
- * there, as 1.7.10's village generator did. Components are placed as 1.7.10 placed them from its paths: beside one of the
- * village's streets, facing it, so their doors open onto the road; components that continue the layout from their own
- * paths get the next building as 1.7.10 chose it. A village's plan is kept for a while, so the chunks it crosses build from
- * the same components (one ground height per building).
+ * Legacy village components (Forge village creation handlers: Witchery's walls and shops, AgriCraft's greenhouse) in the modern,
+ * jigsaw-based villages: each becomes an element of the village house pools ({@link LegacyVillagePoolElement}), so the village
+ * generator places it like a modern mod's house, at a street, clear of the other buildings.
  */
 public final class LegacyVillages {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Villages");
     private static boolean registered;
-    private static final java.util.Set<Long> PLANNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
-    /** Recent plans by seed and village start chunk. */
-    private static final java.util.Map<String, List<StructureComponent>> PLANS = java.util.Collections.synchronizedMap(
-            new java.util.LinkedHashMap<String, List<StructureComponent>>(64, 0.75F, true) {
-                @Override
-                protected boolean removeEldestEntry(java.util.Map.Entry<String, List<StructureComponent>> eldest) {
-                    return size() > 64;
-                }
-            });
 
     private LegacyVillages() {}
 
     public static synchronized void register() {
         if (registered) return;
         registered = true;
-        LegacyWorldGenFeature.addDecorator(LegacyVillages::decorate);
+        // Legacy buildings join the villages as jigsaw pool elements, like any modern mod's houses (LegacyVillagePoolElement):
+        // planned beside the streets by this class instead, they crowded and overlapped the modern buildings.
+        net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType<LegacyVillagePoolElement> type = () -> LegacyVillagePoolElement.CODEC;
+        org.kylepitcock.legacyconnector.core.registry.LegacyRegistrar.register(net.minecraft.core.registries.BuiltInRegistries.STRUCTURE_POOL_ELEMENT,
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_village_building"), type);
+        LegacyVillagePoolElement.TYPE = type;
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(LegacyVillages::addToPools);
+    }
+
+    /** The vanilla village house pools, by village type. */
+    private static final List<String> VILLAGE_TYPES = List.of("plains", "desert", "savanna", "snowy", "taiga");
+
+    /**
+     * Adds every legacy village building to the house pool of each village type. 1.7.10 weights (vanilla's houses 3-20) are
+     * scaled to the modern pools' (2-ish per house); the jigsaw generator then picks them like the pool's other houses.
+     */
+    private static void addToPools(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
+        var handlers = VillagerBridge.creationHandlers();
+        if (handlers.isEmpty()) return;
+        var pools = event.getServer().registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
+        int added = 0;
+        for (String type : VILLAGE_TYPES) {
+            var pool = pools.get(net.minecraft.resources.ResourceLocation.withDefaultNamespace("village/" + type + "/houses"));
+            if (pool == null) continue;
+            for (var handler : handlers) {
+                int weight;
+                try {
+                    var w = handler.getVillagePieceWeight(new Random(handler.getClass().getName().hashCode()), 0);
+                    if (w == null) continue;
+                    weight = Math.max(1, Math.min(6, Math.round(w.villagePieceWeight / 4.0F)));
+                } catch (RuntimeException | LinkageError e) {
+                    LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
+                    continue;
+                }
+                var element = new LegacyVillagePoolElement(handler.getClass().getName(), type,
+                        net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection.RIGID);
+                if (addToPool(pool, element, weight)) added++;
+            }
+        }
+        if (added > 0) LOG.info("Added {} legacy village building(s) to the village house pools", added);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean addToPool(net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool pool,
+            net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement element, int weight) {
+        try {
+            Class<?> c = net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.class;
+            for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                f.setAccessible(true);
+                Object v = f.get(pool);
+                if (v instanceof it.unimi.dsi.fastutil.objects.ObjectArrayList<?> list) {
+                    for (int i = 0; i < weight; i++) ((it.unimi.dsi.fastutil.objects.ObjectArrayList<Object>) list).add(element);
+                } else if (v instanceof List<?> raw && f.getType() == List.class) {
+                    List<Object> copy = new ArrayList<>((List<Object>) raw);
+                    copy.add(com.mojang.datafixers.util.Pair.of(element, weight));
+                    f.set(pool, copy);
+                }
+            }
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOG.warn("Could not add a legacy village building to a village pool: {}", e.toString());
+            return false;
+        }
+    }
+
+    /** The vanilla village house pools, by village type. */
+    private static final List<String> VILLAGE_TYPES = List.of("plains", "desert", "savanna", "snowy", "taiga");
+
+    /**
+     * Adds every legacy village building to the house pool of each village type. 1.7.10 weights (vanilla's houses 3-20) are
+     * scaled to the modern pools' (2-ish per house); the jigsaw generator then picks them like the pool's other houses.
+     */
+    private static void addToPools(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
+        var handlers = VillagerBridge.creationHandlers();
+        if (handlers.isEmpty()) return;
+        var pools = event.getServer().registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
+        int added = 0;
+        for (String type : VILLAGE_TYPES) {
+            var pool = pools.get(net.minecraft.resources.ResourceLocation.withDefaultNamespace("village/" + type + "/houses"));
+            if (pool == null) continue;
+            for (var handler : handlers) {
+                int weight;
+                try {
+                    var w = handler.getVillagePieceWeight(new Random(handler.getClass().getName().hashCode()), 0);
+                    if (w == null) continue;
+                    weight = Math.max(1, Math.min(6, Math.round(w.villagePieceWeight / 4.0F)));
+                } catch (RuntimeException | LinkageError e) {
+                    LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
+                    continue;
+                }
+                var element = new LegacyVillagePoolElement(handler.getClass().getName(), type,
+                        net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection.RIGID);
+                if (addToPool(pool, element, weight)) added++;
+            }
+        }
+        if (added > 0) LOG.info("Added {} legacy village building(s) to the village house pools", added);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean addToPool(net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool pool,
+            net.minecraft.world.level.levelgen.structure.pools.StructurePoolElement element, int weight) {
+        try {
+            Class<?> c = net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.class;
+            for (java.lang.reflect.Field f : c.getDeclaredFields()) {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+                f.setAccessible(true);
+                Object v = f.get(pool);
+                if (v instanceof it.unimi.dsi.fastutil.objects.ObjectArrayList<?> list) {
+                    for (int i = 0; i < weight; i++) ((it.unimi.dsi.fastutil.objects.ObjectArrayList<Object>) list).add(element);
+                } else if (v instanceof List<?> raw && f.getType() == List.class) {
+                    List<Object> copy = new ArrayList<>((List<Object>) raw);
+                    copy.add(com.mojang.datafixers.util.Pair.of(element, weight));
+                    f.set(pool, copy);
+                }
+            }
+            return true;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            LOG.warn("Could not add a legacy village building to a village pool: {}", e.toString());
+            return false;
+        }
     }
 
     /** A piece that is already there (a modern village piece): occupies space, builds nothing. */
@@ -68,130 +175,9 @@ public final class LegacyVillages {
         }
     }
 
-    private static void decorate(WorldGenLevel level, int chunkX, int chunkZ, long seed) {
-        var handlers = VillagerBridge.creationHandlers();
-        if (handlers.isEmpty() || !(level instanceof WorldGenRegion region)) return;
-        StructureManager manager = level.getLevel().structureManager().forWorldGenRegion(region);
-        var registry = level.registryAccess().registryOrThrow(Registries.STRUCTURE);
-        List<StructureStart> starts = manager.startsForStructure(new ChunkPos(chunkX, chunkZ), structure -> {
-            var key = registry.getKey(structure);
-            return key != null && key.getPath().startsWith("village_");
-        });
-        if (starts.isEmpty()) return;
-        World world = World.mcc$wrap(level);
-        StructureBoundingBox chunkBox = new StructureBoundingBox(chunkX << 4, 0, chunkZ << 4, (chunkX << 4) + 15, 255, (chunkZ << 4) + 15);
-        for (StructureStart start : starts) {
-            if (!start.isValid()) continue;
-            BoundingBox box = start.getBoundingBox();
-            ChunkPos origin = start.getChunkPos();
-            var key = registry.getKey(start.getStructure());
-            boolean desert = key != null && key.getPath().contains("desert");
-            String planKey = seed + ":" + origin.toLong();
-            List<StructureComponent> planned = PLANS.get(planKey);
-            if (planned == null) {
-                Random rand = new Random(seed ^ (origin.x * 341873128712L + origin.z * 132897987541L));
-                planned = plan(start, box, rand, desert, world.getBiomeGenForCoords((box.minX() + box.maxX()) / 2, (box.minZ() + box.maxZ()) / 2), handlers);
-                PLANS.put(planKey, planned);
-            }
-            Random buildRand = new Random(seed ^ ((long) chunkX * 3418731287L + (long) chunkZ * 1328979875L));
-            for (StructureComponent component : planned) {
-                // a mod's component that never set its box (its constructor failed or was cancelled) has nothing to build
-                if (component == null || component.getBoundingBox() == null || !component.getBoundingBox().intersectsWith(chunkBox)) continue;
-                try {
-                    component.addComponentParts(world, buildRand, chunkBox);
-                } catch (RuntimeException | LinkageError e) {
-                    LOG.warn("Legacy village component {} failed in chunk {},{}", component.getClass().getName(), chunkX, chunkZ, e);
-                }
-            }
-        }
-    }
 
-    private static List<StructureComponent> plan(StructureStart start, BoundingBox box, Random rand, boolean desert, legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome,
-            List<legacyconnector.v1_7_10.cpw.mods.fml.common.registry.VillagerRegistry.IVillageCreationHandler> handlers) {
-        List<Object> pieces = new ArrayList<>();
-        List<BoundingBox> streets = new ArrayList<>();
-        for (var piece : start.getPieces()) {
-            BoundingBox b = piece.getBoundingBox();
-            StructureBoundingBox box1710 = new StructureBoundingBox(b.minX(), b.minY(), b.minZ(), b.maxX(), b.maxY(), b.maxZ());
-            // The village paths are what legacy components follow (Witchery's walls run along them).
-            boolean street = piece instanceof net.minecraft.world.level.levelgen.structure.PoolElementStructurePiece pool && pool.getElement().toString().contains("street");
-            pieces.add(street ? new StructureVillagePieces.Path(null, 0, rand, box1710, b.getXSpan() >= b.getZSpan() ? 1 : 0) : new Occupied(box1710));
-            if (street) streets.add(b);
-        }
-        int existing = pieces.size();
-        StructureVillagePieces.Start startPiece = new StructureVillagePieces.Start(null, 0, rand, box.minX(), box.minZ(), new ArrayList(), 0);
-        startPiece.inDesert = desert;
-        startPiece.biome = biome;
-        // what a legacy layout continues with (getNextComponentNN/PP of a mod's own path): the vanilla buildings and the mods'
-        List<StructureVillagePieces.PieceWeight> weights = StructureVillagePieces.mcc$vanillaWeights();
-        startPiece.structureVillageWeightedPieceList = weights;
-        java.util.Map<legacyconnector.v1_7_10.cpw.mods.fml.common.registry.VillagerRegistry.IVillageCreationHandler, StructureVillagePieces.PieceWeight> handlerWeights =
-                new java.util.LinkedHashMap<>();
-        for (var handler : handlers) {
-            try {
-                StructureVillagePieces.PieceWeight weight = handler.getVillagePieceWeight(rand, 0);
-                if (weight == null) continue;
-                handlerWeights.put(handler, weight);
-                weights.add(weight);
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
-            }
-        }
-        for (var entry : handlerWeights.entrySet()) {
-            var handler = entry.getKey();
-            StructureVillagePieces.PieceWeight weight = entry.getValue();
-            try {
-                int count = Math.max(weight.villagePiecesLimit, weight.villagePiecesLimit == 0 ? 1 : 0);
-                for (int n = 0; n < count && weight.canSpawnMoreVillagePieces(); n++) {
-                    for (int attempt = 0; attempt < 24; attempt++) {
-                        int[] plot = plot(streets, box, rand);
-                        Object built = handler.buildComponent(weight, startPiece, pieces, rand, plot[0], plot[1], plot[2], plot[3], 1);
-                        if (!(built instanceof StructureComponent component)) continue;
-                        pieces.add(component);
-                        weight.villagePiecesSpawned++;
-                        component.buildComponent(startPiece, pieces, rand);
-                        break;
-                    }
-                }
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
-            }
-        }
-        // buildings added by components continuing the layout get their own turn, as in 1.7.10's village start
-        for (int guard = 0; !startPiece.field_74932_i.isEmpty() && guard < 256; guard++) {
-            Object next = startPiece.field_74932_i.remove(rand.nextInt(startPiece.field_74932_i.size()));
-            try {
-                ((StructureComponent) next).buildComponent(startPiece, pieces, rand);
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Legacy village component {} failed to extend the layout: {}", next.getClass().getName(), e.toString());
-            }
-        }
-        // Not every component checks the pieces it is given (Witchery's village walls ran along 1.7.10's village edge and cut
-        // straight through the modern village's houses): a legacy component that overlaps a modern building is not built.
-        List<StructureBoundingBox> buildings = new ArrayList<>();
-        for (int i = 0; i < existing; i++) if (pieces.get(i) instanceof Occupied o && o.getBoundingBox() != null) buildings.add(o.getBoundingBox());
-        List<StructureComponent> out = new ArrayList<>();
-        int dropped = 0;
-        for (int i = existing; i < pieces.size(); i++) {
-            StructureComponent c = (StructureComponent) pieces.get(i);
-            StructureBoundingBox cb = c.getBoundingBox();
-            if (cb != null && buildings.stream().anyMatch(cb::intersectsWith)) {
-                dropped++;
-                continue;
-            }
-            out.add(c);
-        }
-        if (dropped > 0 && PLANNED.contains(start.getChunkPos().toLong()) == false) {
-            LOG.info("Village at chunk {}: {} legacy component(s) left out because they overlap the village's buildings", start.getChunkPos(), dropped);
-        }
-        if (PLANNED.add(start.getChunkPos().toLong())) {
-            LOG.info("Village at chunk {}: {} legacy component(s) planned: {}", start.getChunkPos(), out.size(), out.stream().map(c -> c.getClass().getSimpleName()).toList());
-        }
-        return out;
-    }
 
-    /**
-     * A plot beside a street as 1.7.10's paths offered them ({@code getNextComponentNN/PP}): x, y, z of the corner at the
+: x, y, z of the corner at the
      * street and the facing that turns the building's front to it. Without streets, a random spot in the village.
      */
     private static int[] plot(List<BoundingBox> streets, BoundingBox village, Random rand) {

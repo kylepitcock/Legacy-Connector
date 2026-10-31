@@ -20,7 +20,11 @@ that mods added to Forge's `BiomeManager` still generate.
 
 `MapGenBase`, `MapGenStructure`, `StructureStart`, `StructureComponent` and `StructureBoundingBox` are ported, so mods'
 dungeons, villages and ruins generate through their own legacy code (structure starts are recomputed from the seed rather
-than persisted). Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
+than persisted). Buildings that mods add to vanilla villages (Forge `IVillageCreationHandler`: Witchery's shops and walls,
+AgriCraft's greenhouse) become elements of the vanilla village house pools (`legacyconnector:legacy_village_building`), so the
+jigsaw generator places them at a street and clear of the other buildings like a modern mod's houses; their 1.7.10 weight is
+scaled to the pools' weights. Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
+loot table, so the pack's loot applies. Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
 by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
 are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and
 register with the controls screen. ForgeMultipart's runtime mixin compiler works (Scala signatures of translated classes are rewritten to the relocated names, and ASM 5's lenient descriptor parsing is kept). Shaders written for the fixed-function pipeline are virtual (they compile "successfully"

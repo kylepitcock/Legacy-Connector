@@ -36,6 +36,11 @@ public class StructureVillagePieces {
 
     public abstract static class Village extends StructureComponent {
         protected int field_143015_k = -1;
+
+        /** The ground height the component builds from (set when the village generator already placed it on the street). */
+        public void mcc$setGroundLevel(int y) {
+            this.field_143015_k = y;
+        }
         private int villagersSpawned;
         private boolean field_143014_b;
 
