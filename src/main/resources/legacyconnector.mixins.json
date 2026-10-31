@@ -8,6 +8,9 @@
     "MultiNoiseBiomeSourcePossibleMixin",
     "PlacedFeatureOreGateMixin"
   ],
+  "client": [
+    "ClientLevelSkyColorMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
