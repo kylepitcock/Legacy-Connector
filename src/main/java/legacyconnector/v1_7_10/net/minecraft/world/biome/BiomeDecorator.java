@@ -38,6 +38,14 @@ public class BiomeDecorator {
             new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers(legacyconnector.v1_7_10.net.minecraft.init.Blocks.brown_mushroom);
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator mushroomRedGen =
             new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenFlowers(legacyconnector.v1_7_10.net.minecraft.init.Blocks.red_mushroom);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator clayGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenClay(4);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator sandGen =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenSand(legacyconnector.v1_7_10.net.minecraft.init.Blocks.sand, 7);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator gravelAsSandGen =
+            new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenSand(legacyconnector.v1_7_10.net.minecraft.init.Blocks.gravel, 6);
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator reedGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenReed();
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator cactusGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenCactus();
+    protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator waterlilyGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenWaterlily();
     protected legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator bigMushroomGen = new legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenBigMushroom();
 
     private static legacyconnector.v1_7_10.net.minecraft.world.gen.feature.WorldGenerator minable(legacyconnector.v1_7_10.net.minecraft.block.Block block, int size) {
