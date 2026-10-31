@@ -130,6 +130,10 @@ Mods work because the legacy API they were written against is rebuilt on top of 
 
 If the modern mod isn't installed, the legacy library loads as usual. Each replacement can also be turned off in the config to load the legacy library instead.
 
+### Create contraptions and Create Aeronautics ships
+
+Create contraptions and Create Aeronautics/Sable ships can carry legacy blocks (1.7.10 and 1.12.2): tile entity data and inventories move with the block, and blocks that legacy pistons could not move are refused. Not yet tested in game. Limitations: blocks are not rotated when placed back turned, and legacy inventories are not contraption storage.
+
 ## Performance
 
 Thaumcraft 4 measured against no legacy mods in a real client: about +38 MB of heap after a full GC. Frame rate and tick

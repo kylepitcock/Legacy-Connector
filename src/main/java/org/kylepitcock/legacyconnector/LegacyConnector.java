@@ -84,6 +84,8 @@ public final class LegacyConnector {
             }
         });
         modBus.addListener(LegacyConnector::registerCapabilities);
+        // Optional: Create's contraption movement checks follow the legacy piston rules (also used by Create Aeronautics).
+        if (net.neoforged.fml.ModList.get().isLoaded("create")) org.kylepitcock.legacyconnector.compat.create.CreateCompat.init();
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.Client1710.register(modBus);
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.register(modBus);
         // LOWEST: legacy loading runs after every modern mod registered its own entries for that registry.
