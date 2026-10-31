@@ -947,7 +947,8 @@ public class World implements IBlockAccess {
             // outside a generation region, ask the generator directly: the region throws, after building a whole crash report
             // with a system report (CustomOreGen samples biomes far around each chunk: generation took an hour)
             // (inside it, the chunk's own biome: getBiome's zoom samples neighbours, which may lie outside the region)
-            if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) holder = lvl().getBiome(pos(x, y, z));
+            // (the exact 4x4x4 cell, not getBiome's fuzzy zoom: a column a mod set (Thaumcraft's taint spread) must read back as set)
+            if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion)) holder = lvl().getNoiseBiome(x >> 2, y >> 2, z >> 2);
             // only the centre chunk is safe to read: hasChunk covers the whole cache, getChunk only the step's radius
             else holder = present ? lvl().getNoiseBiome(x >> 2, y >> 2, z >> 2) : generatorBiome(x, y, z);
         } catch (RuntimeException e) {
@@ -1067,7 +1068,7 @@ public class World implements IBlockAccess {
         var hit = lvl().clip(new net.minecraft.world.level.ClipContext(start.mcc$modern(), end.mcc$modern(),
                 ignoreNoBoundingBox ? net.minecraft.world.level.ClipContext.Block.COLLIDER : net.minecraft.world.level.ClipContext.Block.OUTLINE,
                 liquids ? net.minecraft.world.level.ClipContext.Fluid.ANY : net.minecraft.world.level.ClipContext.Fluid.NONE,
-                net.minecraft.world.phys.shapes.CollisionContext.empty()));
+                org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyRayContext.INSTANCE));
         if (liquids) {
             var source = mcc$legacyLiquidSource(start, end, hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS ? null : hit.getLocation());
             if (source != null) return source;

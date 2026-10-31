@@ -81,12 +81,14 @@ neoForge {
             systemProperty 'legacyconnector.assetsSelfTest', project.findProperty('assetsDump') ?: 'true'
             // -PclientProxies=mekanism.client.ClientProxy,...: runs those mods' client registrations (state mappers) for the translation too
             if (project.hasProperty('clientProxies')) systemProperty 'legacyconnector.assetsClientProxies', project.property('clientProxies')
-            systemProperty 'legacyconnector.entitySelfTest', 'true'
+            systemProperty 'legacyconnector.entitySelfTest', project.findProperty('selfTests') ?: 'true'
             // -PserverScript=<file.js>: runs that JavaScript on every server tick (see core/ServerScript; -PserverScriptFrom=<tick>)
             if (project.hasProperty('serverScript')) {
                 systemProperty 'legacyconnector.serverScript', project.property('serverScript')
                 systemProperty 'legacyconnector.serverScriptFrom', project.findProperty('serverScriptFrom') ?: '200'
             }
+            // -PserverDevScript=<dir>: evaluates dir/*.js on the server thread (core/ServerDevScript)
+            if (project.hasProperty('serverDevScript')) systemProperty 'legacyconnector.serverDevScript', project.property('serverDevScript')
 
             // -PgenTiming: per-generator timing of the legacy world generators (a log line every 20 s and at shutdown)
             if (project.hasProperty('genTiming')) systemProperty 'legacyconnector.genTiming', 'true'

@@ -581,8 +581,10 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 try {
                     AxisAlignedBB box = legacy.getSelectedBoundingBoxFromPool(world(acc), pos.getX(), pos.getY(), pos.getZ());
                     if (box != null) {
-                        return Shapes.create(Math.max(0, box.minX - pos.getX()), Math.max(0, box.minY - pos.getY()), Math.max(0, box.minZ - pos.getZ()),
+                        VoxelShape selected = Shapes.create(Math.max(0, box.minX - pos.getX()), Math.max(0, box.minY - pos.getY()), Math.max(0, box.minZ - pos.getZ()),
                                 Math.min(1, box.maxX - pos.getX()), Math.min(1, box.maxY - pos.getY()), Math.min(1, box.maxZ - pos.getZ()));
+                        // an empty selection box (Thaumcraft's aura nodes) is not drawn, but a legacy ray trace still hit the block's bounds
+                        if (!selected.isEmpty() || context != LegacyRayContext.INSTANCE) return selected;
                     }
                 } catch (RuntimeException | LinkageError e) {
                     shapeFailure(e);
