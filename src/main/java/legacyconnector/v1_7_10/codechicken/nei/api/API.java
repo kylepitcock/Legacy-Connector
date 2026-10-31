@@ -46,6 +46,9 @@ public class API {
     public static void registerGuiOverlayHandler(Class<? extends GuiContainer> gui, IOverlayHandler handler, String identifier) {
     }
 
+    public static void registerNEIGuiHandler(INEIGuiHandler handler) {
+    }
+
     public static void setGuiOffset(Class<? extends GuiContainer> gui, int x, int y) {
     }
 }
