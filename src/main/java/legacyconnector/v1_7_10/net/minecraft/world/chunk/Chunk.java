@@ -28,7 +28,24 @@ public class Chunk {
     public boolean isModified;
     private boolean mcc$modified;
     public boolean hasEntities;
-    public Map<Object, TileEntity> chunkTileEntityMap = new HashMap<>();
+    /** Phantom: redirected to {@link #mcc$get$chunkTileEntityMap} (a world chunk's tile entities live in its block entities). */
+    @Deprecated
+    public Map<Object, TileEntity> chunkTileEntityMap;
+    private final Map<Object, TileEntity> mcc$tiles = new HashMap<>();
+
+    /**
+     * 1.7.10's map of the chunk's tile entities. A generator's chunk has its own; for a world chunk it is a snapshot built from the block entities
+     * (IC2 walks it on ChunkWatchEvent.Watch to send every tile its initial data: with an empty map no client ever received any).
+     */
+    public static Map<Object, TileEntity> mcc$get$chunkTileEntityMap(Chunk c) {
+        if (c.mcc$blocks != null || c.modern == null || c.worldObj == null) return c.mcc$tiles;
+        Map<Object, TileEntity> out = new HashMap<>();
+        for (var pos : c.modern.getBlockEntitiesPos()) {
+            TileEntity te = c.worldObj.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+            if (te != null) out.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(pos.getX() & 15, pos.getY(), pos.getZ() & 15), te);
+        }
+        return out;
+    }
     @SuppressWarnings("unchecked")
     public List<Object>[] entityLists = new List[16];
     public int[] heightMap = new int[256];
@@ -339,7 +356,7 @@ public class Chunk {
     }
 
     public TileEntity func_150806_e(int x, int y, int z) {
-        if (mcc$blocks != null || modern == null) return chunkTileEntityMap.get(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, y, z & 15));
+        if (mcc$blocks != null || modern == null) return mcc$tiles.get(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, y, z & 15));
         return worldObj.getTileEntity(wx(x), y, wz(z));
     }
 
@@ -358,7 +375,7 @@ public class Chunk {
         int z = te.zCoord - (zPosition << 4);
         if (mcc$blocks != null || modern == null) {
             te.setWorldObj(worldObj);
-            chunkTileEntityMap.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, te.yCoord, z & 15), te);
+            mcc$tiles.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, te.yCoord, z & 15), te);
             return;
         }
         if (worldObj != null) worldObj.setTileEntity(te.xCoord, te.yCoord, te.zCoord, te);
@@ -367,8 +384,8 @@ public class Chunk {
     /** Drops an invalidated tile entity from the chunk (a world chunk's own block entity handles this itself). */
     public void removeInvalidTileEntity(int x, int y, int z) {
         var key = new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(x & 15, y, z & 15);
-        TileEntity te = chunkTileEntityMap.get(key);
-        if (te != null && te.isInvalid()) chunkTileEntityMap.remove(key);
+        TileEntity te = mcc$tiles.get(key);
+        if (te != null && te.isInvalid()) mcc$tiles.remove(key);
     }
 
     /**
