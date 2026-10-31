@@ -1,0 +1,12 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "package": "org.kylepitcock.legacyconnector.mixin.compat",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ArchitecturyEventImplMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 0
+  }
+}
