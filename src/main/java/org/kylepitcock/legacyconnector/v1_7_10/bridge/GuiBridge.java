@@ -76,12 +76,15 @@ public final class GuiBridge {
     public static void openGui(EntityPlayer player, Object mod, int id, World world, int x, int y, int z) {
         IGuiHandler handler = handler(mod);
         LegacyModRecord record = recordOf(mod);
-        LOG.debug("openGui id {} of {} at {} {} {} (remote: {})", id, mod, x, y, z, world.isRemote);
+        // FML decided by the player, not the world: ChromatiCraft's Lexicon opens its pages with a null world
+        boolean remote = world != null ? world.isRemote
+                : !(player.mcc$entity instanceof ServerPlayer) && (player.mcc$entity == null || player.mcc$entity.level().isClientSide());
+        LOG.debug("openGui id {} of {} at {} {} {} (remote: {})", id, mod, x, y, z, remote);
         if (handler == null || record == null) {
             LOG.warn("openGui({}) for {} without a registered IGuiHandler (handler {}, mod record {}, handlers registered for {})", id, mod, handler, record, HANDLERS.keySet().stream().map(k -> k + "@" + k.getClass().getClassLoader()).toList() + " asked by loader " + mod.getClass().getClassLoader());
             return;
         }
-        if (world.isRemote) {
+        if (remote) {
             // FML: a client-side openGui shows a client-only GUI immediately; container GUIs come from the server.
             if (FMLEnvironment.dist.isClient()) Client.showClientOnly(handler, player, id, world, x, y, z);
             return;

@@ -79,6 +79,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean sustainsPlants;
     private final boolean customExplosion;
     private final boolean enchantBonus;
+    private final boolean dynamicLight;
 
     protected LegacyBlockAdapter(Block legacy, BlockBehaviour.Properties properties) {
         super(properties);
@@ -105,6 +106,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.customExplosion = overrides(legacy, "onBlockExploded", World.class, int.class, int.class, int.class,
                 legacyconnector.v1_7_10.net.minecraft.world.Explosion.class);
         this.enchantBonus = overrides(legacy, "getEnchantPowerBonus", World.class, int.class, int.class, int.class);
+        this.dynamicLight = overrides(legacy, "getLightValue", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
     }
 
@@ -440,6 +442,25 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         } catch (RuntimeException | LinkageError e) {
             return super.getLightBlock(state, level, pos);
         }
+    }
+
+    /**
+     * Light that depends on the metadata or the tile entity ({@code getLightValue(IBlockAccess, x, y, z)}): the block properties only
+     * hold the plain {@code getLightValue()}, so RotaryCraft's floodlight beam and ChromatiCraft's crystals gave no light.
+     */
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        if (!dynamicLight || level == null || pos == null) return super.getLightEmission(state, level, pos);
+        try {
+            return Math.min(15, Math.max(0, legacy.getLightValue(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ())));
+        } catch (RuntimeException | LinkageError e) {
+            return super.getLightEmission(state, level, pos);
+        }
+    }
+
+    @Override
+    public boolean hasDynamicLightEmission(BlockState state) {
+        return dynamicLight || super.hasDynamicLightEmission(state);
     }
 
     @Override

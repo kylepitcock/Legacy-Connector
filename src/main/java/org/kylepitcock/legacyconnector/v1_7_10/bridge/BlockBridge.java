@@ -302,13 +302,21 @@ public final class BlockBridge {
         return new ArrayList<>(DEEP_VARIANTS);
     }
 
-    /** A full rock block whose name has "ore" as a word ({@code oreCopper}, {@code copper_ore}, {@code tile.ore.tin}, not {@code core}). */
+    /**
+     * A full rock block whose name has "ore" as a word ({@code oreCopper}, {@code copper_ore}, {@code tile.ore.tin}, not {@code core}).
+     * The names are checked first: the block's own methods run during registration only for ore-named blocks (RotaryCraft's
+     * getRenderType initialises its machine registry, which needs blocks not registered yet: the class failed for good and the mod with it).
+     */
     static boolean isOre(Block block, String name) {
+        if (!oreNamed(block, name)) return false;
         try {
-            if (block.getRenderType() != 0 || block.getMaterial() != Material.rock) return false;
+            return block.getMaterial() == Material.rock && block.getRenderType() == 0;
         } catch (RuntimeException | LinkageError e) {
             return false;
         }
+    }
+
+    private static boolean oreNamed(Block block, String name) {
         for (Class<?> c = block.getClass(); c != null && c != Block.class; c = c.getSuperclass()) {
             String n = c.getSimpleName();
             if (n.endsWith("Ore") || n.endsWith("Ores") || n.startsWith("BlockOre")) return true;

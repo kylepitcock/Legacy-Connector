@@ -582,8 +582,9 @@ public class World implements IBlockAccess {
         return lvl().getBrightness(type == EnumSkyBlock.Sky ? net.minecraft.world.level.LightLayer.SKY : net.minecraft.world.level.LightLayer.BLOCK, pos(x, y, z));
     }
 
+    /** Re-checks the light at a block: mods call it when a tile entity changes the light its block gives. */
     public boolean updateAllLightTypes(int x, int y, int z) {
-        return false;
+        return updateLightByType(EnumSkyBlock.Block, x, y, z);
     }
 
     public legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler getSaveHandler() {
