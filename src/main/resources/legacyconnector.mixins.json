@@ -7,7 +7,6 @@
     "EntityGravityMixin",
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
-    "LivingEntityDimensionsMixin",
     "LivingEntityTravelMixin",
     "MultiNoiseBiomeSourceMixin",
     "MultiNoiseBiomeSourcePossibleMixin",

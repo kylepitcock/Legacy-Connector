@@ -1,68 +1,55 @@
 package org.kylepitcock.legacyconnector.v1_7_10.entity;
 
 import java.util.Collections;
-import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
+import virtuoel.pehkui.api.ScaleData;
+import virtuoel.pehkui.api.ScaleType;
+import virtuoel.pehkui.api.ScaleTypes;
 
 /**
  * 1.7.10 mods resized any entity with {@code Entity.setSize(width, height)} (and a player's eye height with the {@code eyeHeight}
  * field): Fisk's Heroes shrinks and grows its heroes, other mods do the same to mobs. The modern game takes an entity's size from its
- * type and pose, so the sizes mods ask for are kept here for entities that are not legacy hosts (players, vanilla mobs) and
- * {@code mixin/LivingEntityDimensionsMixin} substitutes them whenever the game asks for the entity's dimensions. A size equal to the
- * type's own is dropped again, which gives back the poses of the modern game (sneaking, swimming).
+ * type and pose, so the sizes mods ask for are expressed as Pehkui scales relative to the type's own size (hitbox, eye height and
+ * model; Pehkui also keeps the sneaking and swimming poses in proportion). A size equal to the type's own resets the scales.
  */
 public final class EntitySizes1710 {
-    private static final Map<Entity, float[]> SIZES = Collections.synchronizedMap(new WeakHashMap<>());
-    private static volatile boolean any;
+    /** Entities whose eye height a mod set explicitly (otherwise it follows the height). */
+    private static final Set<Entity> EXPLICIT_EYE = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     private EntitySizes1710() {}
 
-    /** {@code Entity.setSize} on an entity that is not a host: the box changes now. */
+    /** {@code Entity.setSize} on an entity that is not a host: the box, the model and (unless set explicitly) the eye height change now. */
     public static void setSize(Entity entity, float width, float height) {
         EntityDimensions own = entity.getType().getDimensions();
-        float[] entry = SIZES.get(entity);
-        float eye = entry == null ? Float.NaN : entry[2];
-        if (entry != null && entry[0] == width && entry[1] == height) return;
-        entry = new float[] {width, height, eye};
-        SIZES.put(entity, entry);
-        any = true;
-        dropIfDefault(entity, entry);
-        entity.refreshDimensions();
+        if (own.width() <= 0 || own.height() <= 0) return;
+        float h = height / own.height();
+        set(ScaleTypes.HITBOX_WIDTH, entity, width / own.width());
+        set(ScaleTypes.HITBOX_HEIGHT, entity, h);
+        set(ScaleTypes.MODEL_WIDTH, entity, width / own.width());
+        set(ScaleTypes.MODEL_HEIGHT, entity, h);
+        if (!EXPLICIT_EYE.contains(entity)) set(ScaleTypes.EYE_HEIGHT, entity, h);
     }
 
     /** The {@code eyeHeight} field of a player: the camera height above the feet. */
     public static void setEyeHeight(Entity entity, float eye) {
-        float[] entry = SIZES.get(entity);
-        if (entry == null) {
-            EntityDimensions own = entity.getType().getDimensions();
-            if (Math.abs(eye - own.eyeHeight()) < 1.0E-4F) return;
-            entry = new float[] {own.width(), own.height(), Float.NaN};
-            SIZES.put(entity, entry);
-            any = true;
-        }
-        if (entry[2] == eye) return;
-        entry[2] = eye;
-        dropIfDefault(entity, entry);
-        entity.refreshDimensions();
+        float own = entity.getType().getDimensions().eyeHeight();
+        if (own <= 0) return;
+        float scale = eye / own;
+        if (Math.abs(scale - 1.0F) < 1.0E-4F) EXPLICIT_EYE.remove(entity);
+        else EXPLICIT_EYE.add(entity);
+        set(ScaleTypes.EYE_HEIGHT, entity, scale);
     }
 
-    private static void dropIfDefault(Entity entity, float[] entry) {
-        EntityDimensions own = entity.getType().getDimensions();
-        if (Math.abs(entry[0] - own.width()) < 1.0E-4F && Math.abs(entry[1] - own.height()) < 1.0E-4F
-                && (Float.isNaN(entry[2]) || Math.abs(entry[2] - own.eyeHeight()) < 1.0E-4F)) {
-            SIZES.remove(entity);
-        }
-    }
-
-    /** What {@code LivingEntity.getDimensions} answers: the size a mod asked for, if any. */
-    public static EntityDimensions apply(Entity entity, EntityDimensions original) {
-        if (!any) return original;
-        float[] entry = SIZES.get(entity);
-        if (entry == null) return original;
-        float ratio = original.height() > 0 ? original.eyeHeight() / original.height() : 0.9F;
-        EntityDimensions out = EntityDimensions.scalable(entry[0], entry[1]);
-        return out.withEyeHeight(Float.isNaN(entry[2]) ? entry[1] * ratio : entry[2]);
+    private static void set(ScaleType type, Entity entity, float value) {
+        if (Math.abs(value - 1.0F) < 1.0E-4F) value = 1.0F;
+        ScaleData data = type.getScaleData(entity);
+        if (Math.abs(data.getTargetScale() - value) < 1.0E-5F && Math.abs(data.getScale() - value) < 1.0E-5F) return;
+        data.setPersistence(Boolean.FALSE);
+        data.setScaleTickDelay(0);
+        data.setScale(value);
+        data.setTargetScale(value);
     }
 }

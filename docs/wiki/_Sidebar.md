@@ -2,6 +2,7 @@
 
 - [Architecture](Architecture.md)
 - [Bridges](Bridges.md)
+- [Library candidates](Library-Candidates.md)
 - [World generation](World-Generation.md)
 - [Mod dimensions](Mod-Dimensions.md)
 - [Entities](Entities.md)
