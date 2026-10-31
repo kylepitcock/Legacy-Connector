@@ -168,6 +168,9 @@ public final class VanillaFlattening {
     public static int itemId(String legacyName) {
         initItemIds();
         Integer id = itemIds.get(modernised(legacyName));
+        // ItemIdFix's own table keeps the 1.7.10 spelling ("cooked_fished" is 350): without an id the cooked fish item had no
+        // reverse mapping, so modern cooked cod became a stranger to legacy code (no Thaumcraft aspects).
+        if (id == null) id = itemIds.get(legacyName.indexOf(':') < 0 ? "minecraft:" + legacyName : legacyName);
         return id == null ? -1 : id;
     }
 
