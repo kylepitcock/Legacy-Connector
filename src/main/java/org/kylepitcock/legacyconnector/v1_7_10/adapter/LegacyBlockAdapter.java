@@ -158,6 +158,10 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         // not rendered - they are air that carries a tile entity.
         if (material == Material.air) p.air();
         if (!material.blocksMovement()) p.noCollission();
+        // 1.7.10 flowing liquids displaced only blocks whose material does not block movement (BlockDynamicLiquid.isBlockSolid); the modern
+        // fluid spreads into every block whose collision shape is smaller than ~73% of a cube (blocksMotion), which washed away
+        // Traincraft's thin rails (material iron) and the trains' tracks. Blocks that block movement are solid for fluids.
+        else p.forceSolidOn();
         if (legacy.getTickRandomly()) p.randomTicks();
         if (material.isReplaceable()) p.replaceable();
         if (!material.isToolNotRequired()) p.requiresCorrectToolForDrops();
