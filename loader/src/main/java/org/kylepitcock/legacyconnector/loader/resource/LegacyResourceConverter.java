@@ -240,7 +240,8 @@ public final class LegacyResourceConverter {
         if (!ns.equals("minecraft")) return ref;
         String path = colon < 0 ? ref : ref.substring(colon + 1);
         String renamed = MODEL_RENAMES.get(path);
-        return renamed == null ? ref : (colon < 0 ? renamed : "minecraft:" + renamed);
+        // always with the namespace: a mod that ships its own block/slab_top.json (SRParasites) must not see the renamed parent as itself
+        return renamed == null ? ref : "minecraft:" + renamed;
     }
 
     /** Vanilla block and item textures: the folders became block/ and item/, and many files were renamed in 1.13. */
