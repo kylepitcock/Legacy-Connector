@@ -457,6 +457,7 @@ public final class Platform1122 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
+        PlacementSelfTest1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles1122.registerItems();
