@@ -335,6 +335,15 @@ public final class ItemBridge {
         return VanillaFlattening.item(legacyName, meta);
     }
 
+    /** The item a vanilla item leaves behind when used up in crafting or fluid handling (bucket for the full buckets), null for none. */
+    public static Item vanillaContainerItem(VanillaInfo info) {
+        net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : vanillaItem(info.legacyName(), 0);
+        if (modern == null || modern == Items.AIR) return null;
+        net.minecraft.world.item.Item remainder = modern.getCraftingRemainingItem();
+        if (remainder == null || remainder == Items.AIR) return null;
+        return legacyItemOf(new net.minecraft.world.item.ItemStack(remainder));
+    }
+
     public static void initVanilla(Item item, VanillaInfo info) {
         net.minecraft.world.item.Item modern = info.modern() instanceof net.minecraft.world.item.Item m ? m : vanillaItem(info.legacyName(), 0);
         boolean subtypes = false;

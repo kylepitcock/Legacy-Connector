@@ -231,12 +231,20 @@ public class Item {
         return new CreativeTabs[] {getCreativeTab()};
     }
 
+    private boolean mcc$vanillaContainerResolved;
+
     public Item getContainerItem() {
+        // vanilla wrappers carry no setContainerItem call: the water, lava and milk buckets leave a bucket (Traincraft's locomotives
+        // swallowed the bucket they were filled from), which the game's own crafting remainder says
+        if (containerItem == null && mcc$vanilla != null && !mcc$vanillaContainerResolved) {
+            mcc$vanillaContainerResolved = true;
+            containerItem = ItemBridge.vanillaContainerItem(mcc$vanilla);
+        }
         return containerItem;
     }
 
     public boolean hasContainerItem() {
-        return containerItem != null;
+        return getContainerItem() != null;
     }
 
     public ItemStack getContainerItem(ItemStack stack) {
