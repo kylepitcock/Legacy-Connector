@@ -280,6 +280,7 @@ public final class LegacyJarTransformer {
         }
         if (optionalStripped > 0) result.notes.add("Stripped " + optionalStripped + " @Optional interface(s)/method(s) for absent mods");
         for (ClassNode node : nodes.values()) CustomMainMenuVersionFix.apply(node);
+        for (ClassNode node : nodes.values()) CofhWorldProxyFix.apply(node);
         int absent = 0;
         for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy);
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");

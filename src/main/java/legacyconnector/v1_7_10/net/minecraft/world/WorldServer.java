@@ -10,6 +10,22 @@ public class WorldServer extends World {
         super(level);
     }
 
+    /**
+     * 1.7.10's {@code new WorldServer(server, saveHandler, name, dimension, settings, profiler)}. A legacy mod that extends
+     * WorldServer (CoFH's WorldServerProxy, behind MineFactory Reloaded's grinder and slaughterhouse: it wraps a world to
+     * intercept the entities spawned into it) cannot build a second level, so this world is another view of the live
+     * level of the dimension: every query and change goes to the same blocks.
+     */
+    public WorldServer(MinecraftServer server, legacyconnector.v1_7_10.net.minecraft.world.storage.ISaveHandler saveHandler, String name,
+            int dimension, WorldSettings settings, legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
+        this(mcc$levelOf(dimension));
+    }
+
+    private static LevelAccessor mcc$levelOf(int dimension) {
+        WorldServer live = legacyconnector.v1_7_10.net.minecraftforge.common.DimensionManager.getWorld(dimension);
+        return live == null ? null : live.mcc$fullLevel();
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager getPlayerManager() {
         return mcc$fullLevel() instanceof ServerLevel s ? new legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager(s) : null;
     }
