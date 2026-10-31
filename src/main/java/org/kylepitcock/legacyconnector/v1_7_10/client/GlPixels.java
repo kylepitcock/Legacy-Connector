@@ -65,6 +65,9 @@ public final class GlPixels {
      * into an offset. Called right before each legacy upload, on the render thread.
      */
     public static void unpackDefaults() {
+        // a mod initialising on the loading thread (OpenComputers' font texture in its client init): there is no GL context there and
+        // calling a native GL function aborts the whole JVM; the guarded GL call that follows drops the upload
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return;
         org.lwjgl.opengl.GL15C.glBindBuffer(0x88EC, 0); // GL_PIXEL_UNPACK_BUFFER
         org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_ROW_LENGTH, 0);
         org.lwjgl.opengl.GL11C.glPixelStorei(org.lwjgl.opengl.GL11C.GL_UNPACK_SKIP_ROWS, 0);

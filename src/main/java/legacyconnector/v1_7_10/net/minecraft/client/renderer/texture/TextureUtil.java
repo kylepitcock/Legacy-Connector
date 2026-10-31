@@ -9,6 +9,7 @@ public class TextureUtil {
     public static final DynamicTexture missingTexture = new DynamicTexture(16, 16);
 
     public static int glGenTextures() {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return 0; // no GL context off the render thread: a native call aborts the JVM
         return GL11C.glGenTextures();
     }
 
@@ -132,6 +133,7 @@ public class TextureUtil {
     }
 
     public static void deleteTexture(int id) {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return; // no GL context off the render thread: a native call aborts the JVM
         GL11C.glDeleteTextures(id);
     }
 
@@ -145,6 +147,7 @@ public class TextureUtil {
     }
 
     public static void allocateTexture(int id, int width, int height) {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return; // no GL context off the render thread: a native call aborts the JVM
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, id);
         GL11C.glTexImage2D(GL11C.GL_TEXTURE_2D, 0, GL11C.GL_RGBA8, width, height, 0, org.lwjgl.opengl.GL12C.GL_BGRA, GL11C.GL_UNSIGNED_BYTE, (IntBuffer) null);
     }
@@ -164,6 +167,7 @@ public class TextureUtil {
     }
 
     public static void uploadTextureSub(int id, int[] pixels, int width, int height, int x, int y, boolean blur, boolean clamp) {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return; // no GL context off the render thread: a native call aborts the JVM
         GL11C.glBindTexture(GL11C.GL_TEXTURE_2D, id);
         IntBuffer buffer = org.kylepitcock.legacyconnector.v1_7_10.client.GlPixels.ints(pixels);
         GL11C.glPixelStorei(GL11C.GL_UNPACK_ROW_LENGTH, 0);
@@ -179,6 +183,7 @@ public class TextureUtil {
 
     /** Uploads precomputed mipmap levels ({@code levels[0]} is the full size image). */
     public static void uploadTextureMipmap(int[][] levels, int width, int height, int x, int y, boolean blur, boolean clamp) {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return; // no GL context off the render thread: a native call aborts the JVM
         for (int level = 0; level < levels.length; level++) {
             int w = Math.max(1, width >> level);
             int h = Math.max(1, height >> level);

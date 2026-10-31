@@ -8,12 +8,15 @@ public abstract class AbstractTexture implements ITextureObject {
 
     @Override
     public int getGlTextureId() {
-        if (glTextureId == -1) glTextureId = GL11C.glGenTextures();
+        if (glTextureId == -1) {
+            if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) return 0; // no GL context here: a native call aborts the JVM
+            glTextureId = GL11C.glGenTextures();
+        }
         return glTextureId;
     }
 
     public void deleteGlTexture() {
-        if (glTextureId != -1) {
+        if (glTextureId != -1 && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
             GL11C.glDeleteTextures(glTextureId);
             glTextureId = -1;
         }
