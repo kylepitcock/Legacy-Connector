@@ -79,6 +79,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean sustainsPlants;
     private final boolean customExplosion;
     private final boolean enchantBonus;
+    /** The block overrides getSelectedBoundingBoxFromPool: its outline and the box the player's crosshair hits are not its block bounds. */
+    private final boolean selectedBox;
     private final boolean dynamicLight;
     private static final java.util.Set<Class<?>> DROP_FAILURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
@@ -106,6 +108,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable.class);
         this.customExplosion = overrides(legacy, "onBlockExploded", World.class, int.class, int.class, int.class,
                 legacyconnector.v1_7_10.net.minecraft.world.Explosion.class);
+        this.selectedBox = overrides(legacy, "getSelectedBoundingBoxFromPool", World.class, int.class, int.class, int.class);
         this.enchantBonus = overrides(legacy, "getEnchantPowerBonus", World.class, int.class, int.class, int.class);
         this.dynamicLight = overrides(legacy, "getLightValue", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
         registerDefaultState(stateDefinition.any().setValue(META, 0));
@@ -528,6 +531,21 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         // air and liquids are never targeted (1.7.10's canCollideCheck): a mod fluid (Thaumcraft's purifying fluid) broke at a click
         if (legacy.getMaterial() == Material.air || legacy.getMaterial().isLiquid()) return Shapes.empty();
+        if (selectedBox && level instanceof LevelAccessor acc) {
+            // IndustrialCraft 2's cables never set their block bounds (full blocks) and answer the selection box from their tile entity:
+            // 1.7.10 outlined and ray traced that box (collisionRayTrace aside), here it is the shape.
+            synchronized (legacy) {
+                try {
+                    AxisAlignedBB box = legacy.getSelectedBoundingBoxFromPool(world(acc), pos.getX(), pos.getY(), pos.getZ());
+                    if (box != null) {
+                        return Shapes.create(Math.max(0, box.minX - pos.getX()), Math.max(0, box.minY - pos.getY()), Math.max(0, box.minZ - pos.getZ()),
+                                Math.min(1, box.maxX - pos.getX()), Math.min(1, box.maxY - pos.getY()), Math.min(1, box.maxZ - pos.getZ()));
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    shapeFailure(e);
+                }
+            }
+        }
         if (!dynamicBounds) {
             int m = meta(state);
             VoxelShape s = staticShapes[m];
