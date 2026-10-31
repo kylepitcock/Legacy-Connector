@@ -104,6 +104,9 @@ public class WavefrontObject implements IModelCustom {
         }
         if (!hasTex) face.textureCoordinates = null;
         if (!hasNormals) face.vertexNormals = null;
+        // Forge's parser computes the face normal here; renderers read the field directly (Chisel's auto chisel feeds it to the
+        // Tessellator before any addFaceForRender could have computed it)
+        face.faceNormal = face.calculateFaceNormal();
         return face;
     }
 
