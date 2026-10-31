@@ -21,10 +21,10 @@ final class IsbrhQuads {
 
     static List<BakedQuad> bake(RenderContext.Capture capture, int bx, int by, int bz, TextureAtlasSprite sprite) {
         LAST.set(capture);
-        List<BakedQuad> out = new ArrayList<>(capture.quads.size());
-        for (int q = 0; q < capture.quads.size(); q++) {
-            double[][] c = capture.quads.get(q);
-            float[] n = capture.normals.get(q);
+        int count = capture.size();
+        List<BakedQuad> out = new ArrayList<>(count);
+        for (int q = 0; q < count; q++) {
+            float n0 = capture.normal(q, 0), n1 = capture.normal(q, 1), n2 = capture.normal(q, 2);
             int[] data = new int[32];
             // A colour the renderer set (Thaumcraft's aspect tint on infused stone, a colorMultiplier) was the final colour in
             // 1.7.10. Uncoloured quads stay white and get modern shading and AO. A single colour on a face lying along an axis
@@ -32,32 +32,47 @@ final class IsbrhQuads {
             // modern pipeline shades it again, with AO, as 1.7.10 did with smooth lighting on. Any other single colour keeps
             // its shade and gets AO; corners of different colours were lit by the renderer itself and are kept as drawn.
             boolean coloured = false;
-            for (double[] v : c) coloured |= v.length > 7 && v[7] != 0.0D;
-            Direction dir = Direction.getNearest(n[0], n[1], n[2]);
-            boolean uniform = coloured && (long) c[0][5] == (long) c[1][5] && (long) c[0][5] == (long) c[2][5] && (long) c[0][5] == (long) c[3][5];
+            for (int i = 0; i < 4; i++) coloured |= capture.ownColor(q, i);
+            Direction dir = Direction.getNearest(n0, n1, n2);
+            long c0 = (long) capture.get(q, 0, 5);
+            boolean uniform = coloured && c0 == (long) capture.get(q, 1, 5) && c0 == (long) capture.get(q, 2, 5) && c0 == (long) capture.get(q, 3, 5);
             float unshade = 1.0F;
-            if (uniform && Math.abs(n[0] * dir.getStepX() + n[1] * dir.getStepY() + n[2] * dir.getStepZ()) > 0.999F) {
+            if (uniform && Math.abs(n0 * dir.getStepX() + n1 * dir.getStepY() + n2 * dir.getStepZ()) > 0.999F) {
                 float shade = legacyShade(dir);
-                int argb = (int) (long) c[0][5];
+                int argb = (int) c0;
                 float max = Math.max((argb >> 16 & 255), Math.max((argb >> 8 & 255), (argb & 255))) / 255.0F;
                 if (max <= shade + 0.01F) unshade = 1.0F / shade;
             }
+            int packedNormal = pack(n0, n1, n2);
             for (int i = 0; i < 4; i++) {
-                double[] v = c[i];
                 int o = i * 8;
-                data[o] = Float.floatToRawIntBits((float) (v[0] - bx));
-                data[o + 1] = Float.floatToRawIntBits((float) (v[1] - by));
-                data[o + 2] = Float.floatToRawIntBits((float) (v[2] - bz));
-                data[o + 3] = coloured ? abgr(unshade == 1.0F ? (long) v[5] : scale((int) (long) v[5], unshade)) : 0xFFFFFFFF;
-                data[o + 4] = Float.floatToRawIntBits((float) v[3]);
-                data[o + 5] = Float.floatToRawIntBits((float) v[4]);
-                data[o + 6] = 0;
-                data[o + 7] = pack(n);
+                long argb = (long) capture.get(q, i, 5);
+                data[o] = Float.floatToRawIntBits((float) (capture.get(q, i, 0) - bx));
+                data[o + 1] = Float.floatToRawIntBits((float) (capture.get(q, i, 1) - by));
+                data[o + 2] = Float.floatToRawIntBits((float) (capture.get(q, i, 2) - bz));
+                data[o + 3] = coloured ? abgr(unshade == 1.0F ? argb : scale((int) argb, unshade)) : 0xFFFFFFFF;
+                data[o + 4] = Float.floatToRawIntBits((float) capture.get(q, i, 3));
+                data[o + 5] = Float.floatToRawIntBits((float) capture.get(q, i, 4));
+                data[o + 6] = emissive(capture, q, i);
+                data[o + 7] = packedNormal;
             }
             if (!coloured) out.add(new BakedQuad(data, -1, dir, sprite, true));
             else out.add(new BakedQuad(data, -1, dir, sprite, unshade != 1.0F, uniform));
         }
         return out;
+    }
+
+    /**
+     * The baked light of a corner: the brightness the renderer set itself ({@code Tessellator.setBrightness}) when it is full block
+     * light, as glowing overlays are drawn in 1.7.10 ({@code setBrightness(240)}: ChromatiCraft's pylon structure runes, glowing ore
+     * layers), else 0. The modern pipeline lights a corner with the larger of the baked and the world light, so those parts glow
+     * in the dark as they did instead of taking the world's light; the world brightness legacy RenderBlocks sets for ordinary faces is
+     * left to the modern lighting (and its ambient occlusion).
+     */
+    private static int emissive(RenderContext.Capture capture, int q, int i) {
+        if (capture.get(q, i, 8) == 0.0D) return 0;
+        int light = (int) capture.get(q, i, 6);
+        return (light & 0xFFFF) >= 0xF0 ? light : 0;
     }
 
     /** 1.7.10's (and the modern) directional shade of a face. */
@@ -84,21 +99,20 @@ final class IsbrhQuads {
         return c & 0xFF00FF00 | (c & 0xFF) << 16 | (c >> 16) & 0xFF;
     }
 
-    private static int pack(float[] n) {
-        return (Mth.clamp((int) (n[0] * 127.0F), -127, 127) & 255) | (Mth.clamp((int) (n[1] * 127.0F), -127, 127) & 255) << 8
-                | (Mth.clamp((int) (n[2] * 127.0F), -127, 127) & 255) << 16;
+    private static int pack(float x, float y, float z) {
+        return (Mth.clamp((int) (x * 127.0F), -127, 127) & 255) | (Mth.clamp((int) (y * 127.0F), -127, 127) & 255) << 8
+                | (Mth.clamp((int) (z * 127.0F), -127, 127) & 255) << 16;
     }
 
     /** One line for the log: where the first captured quad's UVs land in the block atlas (a diagnostic for blocks that draw black or nothing). */
     static String describe(RenderContext.Capture capture) {
-        if (capture.quads.isEmpty()) return "no quads";
-        double[][] c = capture.quads.get(0);
+        if (capture.isEmpty()) return "no quads";
         double u = 0, v = 0;
         StringBuilder sb = new StringBuilder("first quad uv");
         for (int i = 0; i < 4; i++) {
-            u += c[i][3] / 4;
-            v += c[i][4] / 4;
-            sb.append(String.format(" (%.4f,%.4f)", c[i][3], c[i][4]));
+            u += capture.get(0, i, 3) / 4;
+            v += capture.get(0, i, 4) / 4;
+            sb.append(String.format(" (%.4f,%.4f)", capture.get(0, i, 3), capture.get(0, i, 4)));
         }
         try {
             var atlas = net.minecraft.client.Minecraft.getInstance().getModelManager().getAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);

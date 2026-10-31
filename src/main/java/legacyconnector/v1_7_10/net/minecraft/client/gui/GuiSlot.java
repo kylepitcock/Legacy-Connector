@@ -195,7 +195,7 @@ public abstract class GuiSlot {
 
         var gui = RenderContext.gui();
         if (gui == null) return;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         Gui.mcc$drawOptionsBackground(left, top, right, bottom, (int) amountScrolled, 0x202020);
         int x = left + width / 2 - getListWidth() / 2 + 2;
         int y = top + 4 - (int) amountScrolled;
@@ -244,7 +244,7 @@ public abstract class GuiSlot {
 
     protected void drawSelectionBox(int x, int y, int mouseX, int mouseY) {
         int size = getSize();
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         for (int i = 0; i < size; i++) {
             int slotTop = y + i * slotHeight + headerPadding;
             int h = slotHeight - 4;

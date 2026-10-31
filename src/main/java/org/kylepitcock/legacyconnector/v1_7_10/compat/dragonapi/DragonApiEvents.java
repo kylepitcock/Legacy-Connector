@@ -187,6 +187,8 @@ public final class DragonApiEvents {
         private volatile boolean resolved;
         private Class<? extends Event> type;
         private Constructor<?> ctor;
+        /** The constructor's parameter types, read once (getParameterTypes copies the array on every call: posted per stack per tick). */
+        private Class<?>[] params;
         private int failures;
 
         LegacyEvent(String className, int arity) {
@@ -212,6 +214,7 @@ public final class DragonApiEvents {
                 for (Constructor<?> k : c.getConstructors()) {
                     if (k.getParameterCount() == arity) ctor = k;
                 }
+                if (ctor != null) params = ctor.getParameterTypes();
                 if (ctor != null && Event.class.isAssignableFrom(c)) type = c.asSubclass(Event.class);
                 else LOG.warn("DragonAPI event {} has no {}-argument constructor; not bridged", className, arity);
             } catch (ClassNotFoundException | LinkageError ex) {
@@ -224,7 +227,7 @@ public final class DragonApiEvents {
         /** The event built from the arguments, or null when they do not fit its constructor or it threw. */
         Event create(Object... args) {
             if (ctor == null) return null;
-            Class<?>[] params = ctor.getParameterTypes();
+            Class<?>[] params = this.params;
             for (int i = 0; i < params.length; i++) {
                 if (!params[i].isPrimitive() && args[i] != null && !params[i].isInstance(args[i])) return null;
                 if (params[i].isPrimitive() && args[i] == null) return null;

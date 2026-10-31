@@ -358,7 +358,7 @@ public class FontRenderer implements IResourceManagerReloadListener {
 
     /** Draws the strikethrough/underline of a glyph and advances the pen (Forge's hook). */
     protected void doDraw(float advance) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (strikethroughStyle) {
             GL11.glDisable(GL11.GL_TEXTURE_2D);
             t.startDrawingQuads();

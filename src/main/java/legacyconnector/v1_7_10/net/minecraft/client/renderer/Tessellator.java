@@ -5,7 +5,25 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.LegacyVertices;
 
 /** 1.7.10 Tessellator: buffered legacy geometry, emitted into the active render context on draw(). */
 public class Tessellator {
+    /**
+     * The render thread's Tessellator. Legacy code reads the field through {@link #mcc$get$instance} (a virtual field): a
+     * chunk-meshing thread that captures legacy block renderers gets a Tessellator of its own, so it never shares a draw with the
+     * render thread (or another chunk thread), and the public fields mods read back ({@link #color}, {@link #isDrawing}) belong to
+     * the caller's thread.
+     */
     public static final Tessellator instance = new Tessellator();
+    private static final ThreadLocal<Tessellator> LOCAL = new ThreadLocal<>();
+
+    /** {@code Tessellator.instance} as legacy code reads it: this thread's own Tessellator once it has one, else the render thread's. */
+    public static Tessellator mcc$get$instance() {
+        Tessellator own = LOCAL.get();
+        return own != null ? own : instance;
+    }
+
+    /** Gives the calling thread (a chunk-meshing thread about to capture a block renderer) a Tessellator of its own; idempotent. */
+    public static void mcc$bindThread() {
+        if (LOCAL.get() == null) LOCAL.set(new Tessellator());
+    }
 
     public boolean isDrawing;
     /**
@@ -24,7 +42,7 @@ public class Tessellator {
         if (DisplayLists.recording()) {
             // compiling a display list: the draw is kept and replayed by glCallList (also run now when compiling and executing)
             var draw = vertices.take();
-            if (!DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
+            if (!DisplayLists.recording() || !DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
             return draw.vertices().size();
         }
         return vertices.end();
@@ -192,7 +210,10 @@ public class Tessellator {
             color |= v.length > 7 && v[7] != 0.0D;
         }
         var state = new legacyconnector.v1_7_10.net.minecraft.client.shader.TesselatorVertexState(raw, raw.length, list.size(), true, true, false, color);
-        state.mcc$vertices = new java.util.ArrayList<>(list);
+        // copies: the draw's own vertex arrays are reused by the next draws
+        java.util.List<double[]> kept = new java.util.ArrayList<>(list.size());
+        for (double[] v : list) kept.add(v.clone());
+        state.mcc$vertices = kept;
         return state;
     }
 
@@ -201,7 +222,8 @@ public class Tessellator {
         java.util.List<double[]> list = vertices.mcc$vertices();
         list.clear();
         if (state.mcc$vertices != null) {
-            list.addAll(state.mcc$vertices);
+            // copies: the state can be set again, and the draw's arrays are reused once it ends
+            for (double[] v : state.mcc$vertices) list.add(v.clone());
             return;
         }
         int[] raw = state.getRawBuffer();

@@ -245,7 +245,7 @@ public class RenderBlocks {
     }
 
     public boolean renderStandardBlockWithColorMultiplier(Block block, int x, int y, int z, float r, float g, float b) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         long saved = t.mcc$colorState();
         boolean tinted = r < 1.0F || g < 1.0F || b < 1.0F;
         boolean any = false;
@@ -318,7 +318,7 @@ public class RenderBlocks {
         // renderBlockAsItem for every placer whose tile has no TESR (AI Shutdown, Life Emitter: -1 blocks with no icons), which
         // drew a missing-texture cube here.
         if (renderType == -1 || renderType > 41) return;
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         block.setBlockBoundsForItemRender();
         setRenderBoundsFromBlock(block);
         legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glRotatef(90.0F, 0.0F, 1.0F, 0.0F);
@@ -365,7 +365,7 @@ public class RenderBlocks {
 
     /** Draws {@code icon} as two crossing upright squares centred on the block (plants, crops, tall grass). */
     public void drawCrossedSquares(IIcon icon, double x, double y, double z, float scale) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (overrideBlockTexture != null) icon = overrideBlockTexture;
         double u1 = icon.getMinU();
         double u2 = icon.getMaxU();
@@ -444,7 +444,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceYNeg(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinX * 16.0D), u1 = icon.getInterpolatedU(renderMaxX * 16.0D);
@@ -489,7 +489,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceYPos(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinX * 16.0D), u1 = icon.getInterpolatedU(renderMaxX * 16.0D);
@@ -534,7 +534,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceZNeg(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinX * 16.0D), u1 = icon.getInterpolatedU(renderMaxX * 16.0D);
@@ -588,7 +588,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceZPos(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinX * 16.0D), u1 = icon.getInterpolatedU(renderMaxX * 16.0D);
@@ -638,7 +638,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceXNeg(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinZ * 16.0D), u1 = icon.getInterpolatedU(renderMaxZ * 16.0D);
@@ -688,7 +688,7 @@ public class RenderBlocks {
     }
 
     public void renderFaceXPos(Block block, double x, double y, double z, IIcon icon) {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         if (hasOverrideBlockTexture()) icon = overrideBlockTexture;
         if (icon == null) return;
         double u0 = icon.getInterpolatedU(renderMinZ * 16.0D), u1 = icon.getInterpolatedU(renderMaxZ * 16.0D);
@@ -879,7 +879,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockBed(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         // Forge: the bed's own direction and half
         int i1 = block.getBedDirection(this.blockAccess, i, j, k);
@@ -1014,7 +1014,7 @@ public class RenderBlocks {
         this.renderStandardBlock(blockbrewingstand, i, j, k);
         this.renderAllFaces = false;
         this.clearOverrideBlockTexture();
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockbrewingstand.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockbrewingstand.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -1067,7 +1067,7 @@ public class RenderBlocks {
 
     public boolean renderBlockCauldron(BlockCauldron blockcauldron, int i, int j, int k) {
         this.renderStandardBlock(blockcauldron, i, j, k);
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockcauldron.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockcauldron.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -1103,7 +1103,7 @@ public class RenderBlocks {
 
     public boolean renderBlockFlowerpot(BlockFlowerPot blockflowerpot, int i, int j, int k) {
         this.renderStandardBlock(blockflowerpot, i, j, k);
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockflowerpot.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockflowerpot.colorMultiplier(this.blockAccess, i, j, k);
         IIcon iicon = this.getBlockIconFromSide(blockflowerpot, 0);
@@ -1172,7 +1172,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockAnvilMetadata(BlockAnvil blockanvil, int i, int j, int k, int l) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockanvil.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int i1 = blockanvil.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(i1 >> 16 & 0xFF) / 255.0F;
@@ -1249,7 +1249,7 @@ public class RenderBlocks {
         blockanvil.anvilRenderSide = l;
         this.setRenderBounds((double)(0.5F - f1), (double)f, (double)(0.5F - f3), (double)(0.5F + f1), (double)(f + f2), (double)(0.5F + f3));
         if (flag1) {
-            Tessellator tessellator = Tessellator.instance;
+            Tessellator tessellator = Tessellator.mcc$get$instance();
             tessellator.startDrawingQuads();
             tessellator.setNormal(0.0F, -1.0F, 0.0F);
             this.renderFaceYNeg(blockanvil, 0.0, 0.0, 0.0, this.getBlockIconFromSideAndMetadata(blockanvil, 0, i1));
@@ -1283,7 +1283,7 @@ public class RenderBlocks {
 
     public boolean renderBlockTorch(Block block, int i, int j, int k) {
         int l = this.blockAccess.getBlockMetadata(i, j, k);
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(block.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         double d0 = 0.4F;
@@ -1308,7 +1308,7 @@ public class RenderBlocks {
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         int i1 = l & 3;
         int j1 = (l & 12) >> 2;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockredstonerepeater.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         double d0 = -0.1875;
@@ -1384,7 +1384,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockRedstoneComparator(BlockRedstoneComparator blockredstonecomparator, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockredstonecomparator.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         int l = this.blockAccess.getBlockMetadata(i, j, k);
@@ -1434,14 +1434,14 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockRedstoneDiode(BlockRedstoneDiode blockredstonediode, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         this.renderBlockRedstoneDiodeMetadata(blockredstonediode, i, j, k, this.blockAccess.getBlockMetadata(i, j, k) & 3);
         return true;
     }
 
     public void renderBlockRedstoneDiodeMetadata(BlockRedstoneDiode blockredstonediode, int i, int j, int k, int l) {
         this.renderStandardBlock(blockredstonediode, i, j, k);
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockredstonediode.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         int i1 = this.blockAccess.getBlockMetadata(i, j, k);
@@ -1600,7 +1600,7 @@ public class RenderBlocks {
             iicon = this.overrideBlockTexture;
         }
 
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         double d7 = (double)iicon.getMinU();
         double d8 = (double)iicon.getMinV();
         double d9 = (double)iicon.getInterpolatedU(d6);
@@ -1618,7 +1618,7 @@ public class RenderBlocks {
             iicon = this.overrideBlockTexture;
         }
 
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         double d7 = (double)iicon.getMinU();
         double d8 = (double)iicon.getMinV();
         double d9 = (double)iicon.getInterpolatedU(d6);
@@ -1636,7 +1636,7 @@ public class RenderBlocks {
             iicon = this.overrideBlockTexture;
         }
 
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         double d7 = (double)iicon.getMinU();
         double d8 = (double)iicon.getMinV();
         double d9 = (double)iicon.getInterpolatedU(d6);
@@ -1960,7 +1960,7 @@ public class RenderBlocks {
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         int i1 = l & 7;
         boolean flag = (l & 8) > 0;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         boolean flag1 = this.hasOverrideBlockTexture();
         if (!flag1) {
             this.setOverrideBlockTexture(this.getBlockIcon(Blocks.cobblestone));
@@ -2126,7 +2126,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockTripWireSource(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         int i1 = l & 3;
         boolean flag = (l & 4) == 4;
@@ -2425,7 +2425,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockTripWire(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSide(block, 0);
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         boolean flag = (l & 4) == 4;
@@ -2545,7 +2545,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockFire(BlockFire blockfire, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = blockfire.getFireIcon(0);
         IIcon iicon1 = blockfire.getFireIcon(1);
         IIcon iicon2 = iicon;
@@ -2726,7 +2726,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockRedstoneWire(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         IIcon iicon = BlockRedstoneWire.getRedstoneWireIcon("cross");
         IIcon iicon1 = BlockRedstoneWire.getRedstoneWireIcon("line");
@@ -2967,7 +2967,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockMinecartTrack(BlockRailBase blockrailbase, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         IIcon iicon = this.getBlockIconFromSideAndMetadata(blockrailbase, 0, l);
         if (this.hasOverrideBlockTexture()) {
@@ -3034,7 +3034,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockLadder(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSide(block, 0);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -3081,7 +3081,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockVine(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSide(block, 0);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -3155,7 +3155,7 @@ public class RenderBlocks {
 
     public boolean renderBlockStainedGlassPane(Block block, int i, int j, int k) {
         int l = this.blockAccess.getHeight();
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(block.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int i1 = block.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(i1 >> 16 & 0xFF) / 255.0F;
@@ -3497,7 +3497,7 @@ public class RenderBlocks {
 
     public boolean renderBlockPane(BlockPane blockpane, int i, int j, int k) {
         int l = this.blockAccess.getHeight();
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockpane.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int i1 = blockpane.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(i1 >> 16 & 0xFF) / 255.0F;
@@ -3876,7 +3876,7 @@ public class RenderBlocks {
     }
 
     public boolean renderCrossedSquares(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(block.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = block.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -3914,7 +3914,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockDoublePlant(BlockDoublePlant blockdoubleplant, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockdoubleplant.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockdoubleplant.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -3991,7 +3991,7 @@ public class RenderBlocks {
 
     public boolean renderBlockStem(Block block, int i, int j, int k) {
         BlockStem blockstem = (BlockStem)block;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockstem.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockstem.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -4020,7 +4020,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockCrops(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(block.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         this.renderBlockCropsImpl(block, this.blockAccess.getBlockMetadata(i, j, k), (double)i, (double)((float)j - 0.0625F), (double)k);
@@ -4028,7 +4028,7 @@ public class RenderBlocks {
     }
 
     public void renderTorchAtAngle(Block block, double d0, double d1, double d2, double d3, double d4, int i) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSideAndMetadata(block, 0, i);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -4081,7 +4081,7 @@ public class RenderBlocks {
     }
 
     public void renderBlockStemSmall(Block block, int i, double d0, double d1, double d2, double d3) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSideAndMetadata(block, 0, i);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -4114,7 +4114,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockLilyPad(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSide(block, 1);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -4147,7 +4147,7 @@ public class RenderBlocks {
     }
 
     public void renderBlockStemBig(BlockStem blockstem, int j, int i, double d0, double d1, double d2, double d3) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = blockstem.getStemIcon();
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -4191,7 +4191,7 @@ public class RenderBlocks {
     }
 
     public void renderBlockCropsImpl(Block block, int i, double d0, double d1, double d2) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         IIcon iicon = this.getBlockIconFromSideAndMetadata(block, 0, i);
         if (this.hasOverrideBlockTexture()) {
             iicon = this.overrideBlockTexture;
@@ -4244,7 +4244,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockLiquid(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = block.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
         float f1 = (float)(l >> 8 & 0xFF) / 255.0F;
@@ -4455,7 +4455,7 @@ public class RenderBlocks {
         float f1 = 1.0F;
         float f2 = 0.8F;
         float f3 = 0.6F;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.startDrawingQuads();
         tessellator.setBrightness(block.getMixedBrightnessForBlock(world, i, j, k));
         tessellator.setColorOpaque_F(f, f, f);
@@ -4541,7 +4541,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockCocoa(BlockCocoa blockcocoa, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockcocoa.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         tessellator.setColorOpaque_F(1.0F, 1.0F, 1.0F);
         int l = this.blockAccess.getBlockMetadata(i, j, k);
@@ -4711,7 +4711,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockCactusImpl(Block block, int i, int j, int k, float f, float f1, float f2) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         boolean flag = false;
         float f3 = 0.5F;
         float f4 = 1.0F;
@@ -5120,7 +5120,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockHopper(BlockHopper blockhopper, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         tessellator.setBrightness(blockhopper.getMixedBrightnessForBlock(this.blockAccess, i, j, k));
         int l = blockhopper.colorMultiplier(this.blockAccess, i, j, k);
         float f = (float)(l >> 16 & 0xFF) / 255.0F;
@@ -5140,7 +5140,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockHopperMetadata(BlockHopper blockhopper, int i, int j, int k, int l, boolean flag) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int i1 = BlockHopper.getDirectionFromMetadata(l);
         double d0 = 0.625;
         this.setRenderBounds(0.0, d0, 0.0, 1.0, 1.0, 1.0);
@@ -5308,7 +5308,7 @@ public class RenderBlocks {
     }
 
     public boolean renderBlockDoor(Block block, int i, int j, int k) {
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         int l = this.blockAccess.getBlockMetadata(i, j, k);
         if ((l & 8) != 0) {
             if (this.blockAccess.getBlock(i, j - 1, k) != block) {

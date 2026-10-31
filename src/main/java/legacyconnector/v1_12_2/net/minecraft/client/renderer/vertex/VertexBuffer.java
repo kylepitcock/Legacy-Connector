@@ -33,7 +33,7 @@ public class VertexBuffer {
     public void drawArrays(int mode) {
         if (data == null || count == 0) return;
         LegacyVertices.Snapshot draw = WorldVertexBufferUploader.decode(new LegacyVertices(), data, vertexFormat, count, mode, false);
-        if (!DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
+        if (!DisplayLists.recording() || !DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
     }
 
     public void unbindBuffer() {

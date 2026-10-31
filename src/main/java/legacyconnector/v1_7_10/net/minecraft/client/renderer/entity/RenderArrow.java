@@ -25,7 +25,7 @@ public class RenderArrow extends Render {
 
     /** The arrow geometry along +x in the current pose and texture (also the arrows stuck in living entities). */
     static void mcc$drawArrow() {
-        Tessellator t = Tessellator.instance;
+        Tessellator t = Tessellator.mcc$get$instance();
         float shaftU1 = 0.0F, shaftU2 = 0.5F, shaftV1 = 0.0F / 32.0F, shaftV2 = 5.0F / 32.0F;
         float capU1 = 0.0F, capU2 = 0.15625F, capV1 = 5.0F / 32.0F, capV2 = 10.0F / 32.0F;
         float scale = 0.05625F;

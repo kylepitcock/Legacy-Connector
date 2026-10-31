@@ -46,24 +46,24 @@ public final class HudEvents1710 {
             // GuiIngameForge started every frame with the rows above the hotbar at 39; handlers that draw their own rows add to them.
             legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.left_height = 39;
             legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.right_height = 39;
-            if (wants()) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), ElementType.ALL, false);
+            if (wants(RenderGameOverlayEvent.Pre.class)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), ElementType.ALL, false);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post e) -> {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.END,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
-            if (!wants()) return;
             float partial = e.getPartialTick().getGameTimeDeltaPartialTick(false);
-            post(e.getGuiGraphics(), partial, ElementType.TEXT, false);
-            post(e.getGuiGraphics(), partial, ElementType.ALL, true);
+            if (wants(RenderGameOverlayEvent.Text.class)) post(e.getGuiGraphics(), partial, ElementType.TEXT, false);
+            if (wants(RenderGameOverlayEvent.Post.class)) post(e.getGuiGraphics(), partial, ElementType.ALL, true);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre e) -> {
             ElementType type = LAYERS.get(e.getName());
-            if (type != null && wants() && drawnForMode(type) && post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, false)) e.setCanceled(true);
+            if (type != null && wants(RenderGameOverlayEvent.Pre.class) && drawnForMode(type)
+                    && post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, false)) e.setCanceled(true);
         });
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Post e) -> {
             ElementType type = LAYERS.get(e.getName());
             if (type != null && drawnForMode(type)) advanceStack(type);
-            if (type != null && wants() && drawnForMode(type)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, true);
+            if (type != null && wants(RenderGameOverlayEvent.Post.class) && drawnForMode(type)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), type, true);
         });
     }
 
@@ -111,9 +111,12 @@ public final class HudEvents1710 {
         };
     }
 
-    private static boolean wants() {
-        return MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderGameOverlayEvent.class) || MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderGameOverlayEvent.Pre.class)
-                || MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderGameOverlayEvent.Post.class) || MinecraftForge.EVENT_BUS.mcc$hasListeners(RenderGameOverlayEvent.Text.class);
+    /**
+     * Whether a legacy listener receives events of this kind (the bus counts listeners of superclasses, RenderGameOverlayEvent
+     * itself, too): an overlay kind nobody listens to is neither built nor posted, each frame and HUD element.
+     */
+    private static boolean wants(Class<? extends RenderGameOverlayEvent> kind) {
+        return MinecraftForge.EVENT_BUS.mcc$hasListeners(kind);
     }
 
     /** Posts one overlay event; returns whether a Pre listener cancelled it. */

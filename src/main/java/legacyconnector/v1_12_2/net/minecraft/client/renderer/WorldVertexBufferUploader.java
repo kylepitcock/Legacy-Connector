@@ -20,7 +20,7 @@ public class WorldVertexBufferUploader {
         if (buffer.getVertexCount() > 0) {
             try {
                 LegacyVertices.Snapshot draw = decode(vertices, buffer);
-                if (!DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
+                if (!DisplayLists.recording() || !DisplayLists.record(() -> LegacyVertices.emit(draw))) LegacyVertices.emit(draw);
             } catch (RuntimeException e) {
                 org.kylepitcock.legacyconnector.v1_12_2.client.RenderErrors1122.report("drawing a legacy vertex buffer", e);
             }

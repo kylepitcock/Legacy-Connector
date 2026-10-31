@@ -167,7 +167,7 @@ public abstract class GuiScrollingList {
 
         var gui = RenderContext.gui();
         if (gui == null) return;
-        Tessellator tessellator = Tessellator.instance;
+        Tessellator tessellator = Tessellator.mcc$get$instance();
         boolean inWorld = Minecraft.mcc$get$theWorld(client) != null;
         if (inWorld) {
             drawGradientRect(left, top, right, bottom, 0xC0101010, 0xD0101010);
