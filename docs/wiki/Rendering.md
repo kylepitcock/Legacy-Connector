@@ -12,6 +12,9 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   Tile entity special renderers (`TileEntitySpecialRenderer`) run in the render context like entity renderers.
 - **Items:** Forge `IItemRenderer`s and 3D `ISimpleBlockRenderingHandler` inventory renders draw through a
   `builtin/entity` model. `AdvancedModelLoader` loads Wavefront OBJ models for renderers.
+- **Display lists** (`glGenLists`/`glNewList`/`glCallList`) are recorded and replayed (`DisplayLists`); `glIsList` answers whether an id was compiled,
+  because model libraries (Traincraft's bundled TMT) call their cached list only while it is true and drop their geometry after compiling it.
+- **Carts:** a mod cart's legacy `posY` is the modern bottom plus its current `yOffset` field (Traincraft's rolling stock sets 0.65 after the constructor).
 - **Vanilla behaviour constants** (render types, opacity of the vanilla block classes) come from a table generated
   from the 1.7.10 jar (`tools/extract_block_constants.sh`), since the vanilla classes are shells.
 - Handler quads of one colour get modern face shading and ambient occlusion (1.7.10's baked-in face shade is divided out).
