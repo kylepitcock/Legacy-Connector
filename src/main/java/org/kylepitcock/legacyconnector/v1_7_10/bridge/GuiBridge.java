@@ -63,11 +63,13 @@ public final class GuiBridge {
         if (h != null) return h;
         // Mods hand openGui a different object of the mod's class than the one they registered with (AE2's static INSTANCE
         // against the instance FML built): FML resolved both to the same container.
-        for (var e : HANDLERS.entrySet()) if (e.getKey() != null && mod != null && e.getKey().getClass() == mod.getClass()) return e.getValue();
+        for (var e : HANDLERS.entrySet()) if (e.getKey() != null && mod != null && !(mod instanceof String) && e.getKey().getClass() == mod.getClass()) return e.getValue();
         return null;
     }
 
     private static LegacyModRecord recordOf(Object mod) {
+        // FML also took the mod id as the mod argument (FMLCommonHandler.findContainerFor); Fisk's Heroes opens its menus with "fiskheroes"
+        if (mod instanceof String id) return LegacyMods.find(id);
         for (LegacyModRecord r : LegacyMods.all()) if (r.instance == mod) return r;
         for (LegacyModRecord r : LegacyMods.all()) if (r.instance != null && mod != null && r.instance.getClass() == mod.getClass()) return r;
         return null;
