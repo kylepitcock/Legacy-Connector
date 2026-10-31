@@ -12,4 +12,5 @@
 - [Performance](Performance.md)
 - [Compatibility and status](Compatibility-and-Status.md)
 - [Development](Development.md)
+- [Gameplay test log](Gameplay-Test-Log.md)
 - [Addon API](Addon-API.md)
