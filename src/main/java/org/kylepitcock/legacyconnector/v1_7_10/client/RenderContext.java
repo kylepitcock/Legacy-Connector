@@ -208,6 +208,8 @@ public final class RenderContext {
     }
 
     public static void setBlend(boolean on) {
+        if (on == blend) return;
+        if (gui() != null && (blendSrc != 770 || blendDst != 771)) flushBatch();
         blend = on;
     }
 
@@ -255,6 +257,9 @@ public final class RenderContext {
     private static int blendSrc = 770, blendDst = 771; // GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 
     public static void setBlendFunc(int src, int dst) {
+        if (src == blendSrc && dst == blendDst) return;
+        // what a screen batched was drawn with the previous function (the function travels with the render type, see stated)
+        if (blend && gui() != null) flushBatch();
         blendSrc = src;
         blendDst = dst;
         additive = dst == 1; // GL_ONE
@@ -300,7 +305,7 @@ public final class RenderContext {
     private static int depthFunc = 515; // GL_LEQUAL
     private static boolean depthWrite = true;
     private static int colorWrite = 0xF; // r, g, b, a bits
-    private record Stated(RenderType base, int depthFunc, boolean depthWrite, int colorWrite) {}
+    private record Stated(RenderType base, int depthFunc, boolean depthWrite, int colorWrite, int blendSrc, int blendDst) {}
     private static final java.util.Map<Stated, RenderType> STATED = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void setDepthFunc(int func) {
@@ -327,21 +332,46 @@ public final class RenderContext {
         if (gui() != null && RenderSystem.isOnRenderThread()) flushBatch();
     }
 
-    /** The render type, drawing with the legacy depth function and write masks when a screen changed them. */
+    /**
+     * The render type, drawing with the legacy depth function and write masks when a screen changed them, and with the legacy
+     * blend function wherever blending is on with one other than alpha blending: the types only know alpha blending and
+     * additive light, so DragonAPI's other modes drew as alpha blending. ChromatiCraft draws its glows, halos and rune icons
+     * (Crystal Repeater and the other network tiles, in the world and as items in slots) with BlendMode.ADDITIVEDARK,
+     * glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_COLOR), on textures with an opaque black background: black adds nothing there,
+     * alpha blended it covered the slot and its neighbours with black squares and starbursts.
+     */
     private static RenderType stated(RenderType base) {
-        if (gui() == null || depthFunc == 515 && depthWrite && colorWrite == 0xF) return base;
-        return STATED.computeIfAbsent(new Stated(base, depthFunc, depthWrite, colorWrite), k -> new RenderType(
-                base + "/legacy_depth_" + k.depthFunc() + (k.depthWrite() ? "w" : "") + "_c" + k.colorWrite(), base.format(), base.mode(),
+        boolean depthState = gui() != null && !(depthFunc == 515 && depthWrite && colorWrite == 0xF);
+        boolean blendState = blend && (blendSrc != 770 || blendDst != 771);
+        if (!depthState && !blendState) return base;
+        // -1: the part is not carried, the base type's own state stays (a translucent type's depth writes are off)
+        Stated key = new Stated(base, depthState ? depthFunc : -1, !depthState || depthWrite, depthState ? colorWrite : 0xF,
+                blendState ? blendSrc : -1, blendState ? blendDst : -1);
+        return STATED.computeIfAbsent(key, k -> new RenderType(
+                base + (k.depthFunc() < 0 ? "" : "/legacy_depth_" + k.depthFunc() + (k.depthWrite() ? "w" : "") + "_c" + k.colorWrite())
+                        + (k.blendSrc() < 0 ? "" : "/legacy_blend_" + k.blendSrc() + "_" + k.blendDst()), base.format(), base.mode(),
                 base.bufferSize(), base.affectsCrumbling(), base.sortOnUpload(), () -> {
                     base.setupRenderState();
-                    RenderSystem.depthFunc(k.depthFunc());
-                    RenderSystem.depthMask(k.depthWrite());
-                    RenderSystem.colorMask((k.colorWrite() & 1) != 0, (k.colorWrite() & 2) != 0, (k.colorWrite() & 4) != 0, (k.colorWrite() & 8) != 0);
+                    if (k.depthFunc() >= 0) {
+                        RenderSystem.depthFunc(k.depthFunc());
+                        RenderSystem.depthMask(k.depthWrite());
+                        RenderSystem.colorMask((k.colorWrite() & 1) != 0, (k.colorWrite() & 2) != 0, (k.colorWrite() & 4) != 0, (k.colorWrite() & 8) != 0);
+                    }
+                    if (k.blendSrc() >= 0) {
+                        RenderSystem.enableBlend();
+                        RenderSystem.blendFunc(k.blendSrc(), k.blendDst());
+                    }
                 }, () -> {
                     base.clearRenderState();
-                    RenderSystem.depthFunc(515);
-                    RenderSystem.depthMask(true);
-                    RenderSystem.colorMask(true, true, true, true);
+                    if (k.depthFunc() >= 0) {
+                        RenderSystem.depthFunc(515);
+                        RenderSystem.depthMask(true);
+                        RenderSystem.colorMask(true, true, true, true);
+                    }
+                    if (k.blendSrc() >= 0) {
+                        RenderSystem.disableBlend();
+                        RenderSystem.defaultBlendFunc();
+                    }
                 }) {});
     }
 
@@ -426,6 +456,54 @@ public final class RenderContext {
         additiveAlpha = false;
         lighting = true;
         forcedLight = -1;
+        attribs.clear();
+    }
+
+    // glPushAttrib / glPopAttrib over the emulated state. Without them a state change made between the two outlived the
+    // pop: ChromatiCraft's tile renderers (drawn for its items in slots too) push all attributes, switch to
+    // BlendMode.ADDITIVEDARK with depth writes off and pop, and the block drawn after them took the leftover blending.
+
+    private record Attribs(int mask, boolean texture2d, boolean blend, int blendSrc, int blendDst, boolean legacyDepthTest,
+            boolean depthTest, int depthFunc, boolean depthWrite, int colorWrite, boolean lighting, float r, float g, float b, float a) {}
+
+    private static final java.util.ArrayDeque<Attribs> attribs = new java.util.ArrayDeque<>();
+
+    private static final int GL_CURRENT_BIT = 0x1, GL_LIGHTING_BIT = 0x40, GL_DEPTH_BUFFER_BIT = 0x100, GL_ENABLE_BIT = 0x2000,
+            GL_COLOR_BUFFER_BIT = 0x4000, GL_TEXTURE_BIT = 0x40000;
+
+    public static void pushAttrib(int mask) {
+        if (attribs.size() >= 16) return; // GL's own limit (GL_STACK_OVERFLOW): a renderer that never pops must not grow it
+        attribs.push(new Attribs(mask, texture2d, blend, blendSrc, blendDst, legacyDepthTest, depthTest, depthFunc, depthWrite,
+                colorWrite, lighting, r, g, b, a));
+    }
+
+    /** Puts the saved values back through the legacy GL calls, so the real GL state follows the emulated one. */
+    public static void popAttrib() {
+        Attribs s = attribs.poll();
+        if (s == null) return;
+        int m = s.mask();
+        if ((m & (GL_ENABLE_BIT | GL_TEXTURE_BIT)) != 0) enable(3553, s.texture2d()); // GL_TEXTURE_2D
+        if ((m & (GL_ENABLE_BIT | GL_COLOR_BUFFER_BIT)) != 0) enable(3042, s.blend()); // GL_BLEND
+        if ((m & (GL_ENABLE_BIT | GL_DEPTH_BUFFER_BIT)) != 0) {
+            enable(2929, s.legacyDepthTest()); // GL_DEPTH_TEST
+            depthTest = s.depthTest(); // a screen's batched geometry depth-tests while its blits do not (see legacyDepthTest)
+        }
+        if ((m & (GL_ENABLE_BIT | GL_LIGHTING_BIT)) != 0) enable(2896, s.lighting()); // GL_LIGHTING
+        if ((m & GL_COLOR_BUFFER_BIT) != 0) {
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glBlendFunc(s.blendSrc(), s.blendDst());
+            int c = s.colorWrite();
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColorMask((c & 1) != 0, (c & 2) != 0, (c & 4) != 0, (c & 8) != 0);
+        }
+        if ((m & GL_DEPTH_BUFFER_BIT) != 0) {
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDepthFunc(s.depthFunc());
+            legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDepthMask(s.depthWrite());
+        }
+        if ((m & GL_CURRENT_BIT) != 0) color(s.r(), s.g(), s.b(), s.a());
+    }
+
+    private static void enable(int cap, boolean on) {
+        if (on) legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glEnable(cap);
+        else legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDisable(cap);
     }
 
     /**
@@ -457,9 +535,9 @@ public final class RenderContext {
         // blended models keep their blending, as raw geometry does: Thaumcraft's infusion matrix draws its glowing runes as
         // a second additive cube over the stone one, which drew opaque
         if (blend && texture2d && gui() == null) {
-            if (additiveAlpha) return buffers().getBuffer(LegacyRenderTypes.additiveAlpha(texture, depthTest));
-            if (additive) return buffers().getBuffer(RenderType.eyes(texture));
-            return buffers().getBuffer(RenderType.entityTranslucent(texture));
+            if (additiveAlpha) return buffers().getBuffer(stated(LegacyRenderTypes.additiveAlpha(texture, depthTest)));
+            if (additive) return buffers().getBuffer(stated(RenderType.eyes(texture)));
+            return buffers().getBuffer(stated(RenderType.entityTranslucent(texture)));
         }
         return buffers().getBuffer(RenderType.entityCutoutNoCull(texture));
     }

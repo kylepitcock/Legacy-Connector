@@ -34,8 +34,8 @@ public class OpenGlHelper {
     }
 
     public static void glBlendFunc(int srcRgb, int dstRgb, int srcAlpha, int dstAlpha) {
-        RenderSystem.blendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
         RenderContext.setBlendFunc(srcRgb, dstRgb);
+        RenderSystem.blendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
     }
 
     public static boolean isFramebufferEnabled() {

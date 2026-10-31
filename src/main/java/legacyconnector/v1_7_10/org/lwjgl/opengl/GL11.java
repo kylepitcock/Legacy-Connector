@@ -369,8 +369,9 @@ public class GL11 extends GL11Guard {
     public static void glBlendFunc(int src, int dst) {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.record(() -> glBlendFunc(src, dst))) return;
-        RenderSystem.blendFunc(src, dst);
+        // emulated state first: a screen flushes what it batched under the previous function, which puts that one back
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlendFunc(src, dst);
+        RenderSystem.blendFunc(src, dst);
     }
 
     public static void glDepthMask(boolean flag) {
@@ -415,10 +416,17 @@ public class GL11 extends GL11Guard {
     public static void glLightModel(int pname, FloatBuffer params) {
     }
 
+    /** Saves the emulated state (blending, depth, enables, colour) that the legacy code changes until glPopAttrib. */
     public static void glPushAttrib(int mask) {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (DisplayLists.record(() -> glPushAttrib(mask))) return;
+        RenderContext.pushAttrib(mask);
     }
 
     public static void glPopAttrib() {
+        if (!RenderSystem.isOnRenderThread()) return;
+        if (DisplayLists.record(GL11::glPopAttrib)) return;
+        RenderContext.popAttrib();
     }
 
     public static void glCallList(int list) {
