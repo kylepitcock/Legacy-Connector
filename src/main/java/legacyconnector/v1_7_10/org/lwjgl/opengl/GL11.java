@@ -289,34 +289,43 @@ public class GL11 extends GL11Guard {
 
     // ------------------------------------------------------------------ color
 
+    /**
+     * The current colour; between glBegin and glEnd it is also the following vertices' own colour, as in GL (the colour
+     * array of a glDrawElements: CustomOreGen's wireframes took the last vertex's colour for a whole batch and came out banded).
+     */
+    private static void mcc$color(float r, float g, float b, float a) {
+        RenderContext.color(r, g, b, a);
+        if (IMMEDIATE.isDrawing()) IMMEDIATE.color(r, g, b, a);
+    }
+
     public static void glColor4f(float r, float g, float b, float a) {
         if (DisplayLists.record(() -> glColor4f(r, g, b, a))) return;
-        RenderContext.color(r, g, b, a);
+        mcc$color(r, g, b, a);
     }
 
     public static void glColor3f(float r, float g, float b) {
         if (DisplayLists.record(() -> glColor3f(r, g, b))) return;
-        RenderContext.color(r, g, b, 1.0F);
+        mcc$color(r, g, b, 1.0F);
     }
 
     public static void glColor4d(double r, double g, double b, double a) {
         if (DisplayLists.record(() -> glColor4d(r, g, b, a))) return;
-        RenderContext.color((float) r, (float) g, (float) b, (float) a);
+        mcc$color((float) r, (float) g, (float) b, (float) a);
     }
 
     public static void glColor3d(double r, double g, double b) {
         if (DisplayLists.record(() -> glColor3d(r, g, b))) return;
-        RenderContext.color((float) r, (float) g, (float) b, 1.0F);
+        mcc$color((float) r, (float) g, (float) b, 1.0F);
     }
 
     public static void glColor4ub(byte r, byte g, byte b, byte a) {
         if (DisplayLists.record(() -> glColor4ub(r, g, b, a))) return;
-        RenderContext.color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, (a & 255) / 255F);
+        mcc$color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, (a & 255) / 255F);
     }
 
     public static void glColor3ub(byte r, byte g, byte b) {
         if (DisplayLists.record(() -> glColor3ub(r, g, b))) return;
-        RenderContext.color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, 1.0F);
+        mcc$color((r & 255) / 255F, (g & 255) / 255F, (b & 255) / 255F, 1.0F);
     }
 
     // ------------------------------------------------------------------ capabilities
