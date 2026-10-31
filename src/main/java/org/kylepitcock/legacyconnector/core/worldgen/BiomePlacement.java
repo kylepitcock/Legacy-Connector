@@ -73,9 +73,25 @@ public final class BiomePlacement {
         return ModList.get() != null && ModList.get().isLoaded("terrablender");
     }
 
-    /** Registers the TerraBlender region when TerraBlender is installed (once, after the entries are known). */
+    private static boolean commonSetupDone;
+
+    /**
+     * TerraBlender's regions may only be registered from common setup (enqueued work): touching {@code terrablender.api.Regions}
+     * earlier runs its static setup before TerraBlender's config is loaded, which fails and breaks the class for every mod (the
+     * legacy biomes registered it right after legacy loading, during the registry events, and VanillaBackport crashed in ATM10).
+     */
+    public static void onCommonSetup(net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent event) {
+        event.enqueueWork(() -> {
+            synchronized (BiomePlacement.class) {
+                commonSetupDone = true;
+            }
+            registerTerraBlender();
+        });
+    }
+
+    /** Registers the TerraBlender region when TerraBlender is installed (once, from common setup, after the entries are known). */
     public static synchronized void registerTerraBlender() {
-        if (terraBlenderRegistered || !terraBlender()) return;
+        if (terraBlenderRegistered || !commonSetupDone || !terraBlender()) return;
         List<Entry> list = entries();
         if (list.isEmpty()) return;
         terraBlenderRegistered = true;

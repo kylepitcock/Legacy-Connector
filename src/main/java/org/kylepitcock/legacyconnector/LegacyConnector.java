@@ -81,6 +81,7 @@ public final class LegacyConnector {
         FEATURES.register(modBus);
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);
+        modBus.addListener(org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement::onCommonSetup);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
         MENUS.register(modBus);
