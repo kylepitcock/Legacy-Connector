@@ -95,11 +95,20 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public static legacyconnector.v1_7_10.net.minecraft.inventory.Container mcc$get$openContainer(EntityPlayer p) {
         // As 1.7.10: with nothing open (or a menu legacy code knows nothing about) it is the player's own container, never null.
-        return p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m ? m.legacy() : mcc$get$inventoryContainer(p);
+        if (p.mcc$player().containerMenu instanceof org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu m) return m.legacy();
+        // A container screen the client built itself from a mod's own packet (IC2's GUIs) is the open container until the server's menu id arrives.
+        if (p.mcc$player().level().isClientSide && net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            var detached = org.kylepitcock.legacyconnector.v1_7_10.client.ClientGui.detachedContainer(p.mcc$player());
+            if (detached != null) return detached;
+        }
+        return mcc$get$inventoryContainer(p);
     }
 
     public static void mcc$set$openContainer(EntityPlayer p, legacyconnector.v1_7_10.net.minecraft.inventory.Container c) {
-        // Legacy code assigned this when opening containers manually; modern menus are opened by the bridge.
+        // Legacy code assigned this when opening containers by hand (FML's openGui went through the GUI bridge): the server hosts it in a menu.
+        if (p instanceof EntityPlayerMP mp && mp.mcc$entity() instanceof net.minecraft.server.level.ServerPlayer sp) {
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge.openManual(sp, mp.currentWindowId, c);
+        }
     }
 
     public static int mcc$get$experienceLevel(EntityPlayer p) {

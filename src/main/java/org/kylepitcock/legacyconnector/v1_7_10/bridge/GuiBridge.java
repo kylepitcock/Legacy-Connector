@@ -110,6 +110,29 @@ public final class GuiBridge {
         }
     }
 
+    /**
+     * {@code player.openContainer = container}: how 1.7.10 mods opened a container with their own network code (IndustrialCraft 2's
+     * {@code Platform.launchGui} sends its own packet that makes the client build the GUI, then assigns the server container). The
+     * container is hosted in a menu with the window id the mod chose, and the client is told the id so that the screen it built
+     * becomes the player's open menu (see {@code ClientGui.manualOpen}); without a menu the server would not see the clicks.
+     */
+    public static void openManual(ServerPlayer sp, int currentWindowId, Container container) {
+        if (container == null || menuType == null || sp instanceof net.neoforged.neoforge.common.util.FakePlayer) return;
+        if (container.mcc$menu instanceof LegacyMenu m && sp.containerMenu == m) return;
+        if (container instanceof legacyconnector.v1_7_10.net.minecraft.inventory.ContainerPlayer) return; // "close": the player's own container
+        int id = container.windowId != 0 ? container.windowId : currentWindowId > 0 && currentWindowId <= 100 ? currentWindowId : sp.containerMenu.containerId % 100 + 1;
+        if (sp.containerMenu != sp.inventoryMenu) sp.closeContainer();
+        LegacyMenu menu = new LegacyMenu(menuType, id, sp.getInventory(), container, null);
+        menu.mcc$crafterManaged(); // the mod registers the player as the container's listener itself
+        ByteBuf buf = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer().writeInt(id);
+        byte[] data = new byte[buf.readableBytes()];
+        buf.readBytes(data);
+        PacketDistributor.sendToPlayer(sp, new LegacyPayload(FAMILY, "manual", 0, data));
+        sp.containerMenu = menu;
+        sp.initMenu(menu);
+        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player.PlayerContainerEvent.Open(sp, menu));
+    }
+
     /** Client side of {@link MenuType} creation: rebuild the legacy GUI from the menu extra data. */
     public static LegacyMenu clientMenu(int windowId, Inventory inv, RegistryFriendlyByteBuf buf) {
         String modId = buf.readUtf();
@@ -131,6 +154,7 @@ public final class GuiBridge {
         context.enqueueWork(() -> {
             switch (payload.channel()) {
                 case "bar" -> Client.progressBar(buf.readInt(), buf.readInt(), buf.readInt());
+                case "manual" -> Client.manualOpen(buf.readInt());
                 case "open" -> {
                     byte[] modId = new byte[buf.readInt()];
                     buf.readBytes(modId);
@@ -159,6 +183,10 @@ public final class GuiBridge {
         static void openFromServer(String modId, int id, int x, int y, int z) {
             IGuiHandler handler = handlerFor(modId);
             if (handler != null) org.kylepitcock.legacyconnector.v1_7_10.client.ClientGui.openFromServer(handler, id, x, y, z);
+        }
+
+        static void manualOpen(int windowId) {
+            org.kylepitcock.legacyconnector.v1_7_10.client.ClientGui.manualOpen(windowId);
         }
 
         static void progressBar(int windowId, int id, int value) {

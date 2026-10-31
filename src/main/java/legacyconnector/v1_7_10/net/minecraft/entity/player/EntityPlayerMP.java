@@ -102,7 +102,15 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_7
 
     public java.util.List loadedChunks = new java.util.ArrayList();
 
+    /**
+     * The window id of the container opened last (1-100). 1.7.10 mods that open containers themselves (IndustrialCraft 2's
+     * {@code Platform.launchGui}, Forestry, EnderIO) bump it by hand or through {@link #getNextWindowId}, tell the client the number
+     * and put it on {@code openContainer.windowId}.
+     */
+    public int currentWindowId;
+
     public void getNextWindowId() {
+        currentWindowId = currentWindowId % 100 + 1;
     }
 
     private legacyconnector.v1_7_10.net.minecraft.network.NetHandlerPlayServer mcc$netHandler;
