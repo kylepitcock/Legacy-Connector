@@ -133,8 +133,9 @@ public final class Dimensions1122 {
             Map<String, Integer> byNamespace = new java.util.TreeMap<>();
             try {
                 var pos = new net.minecraft.core.BlockPos.MutableBlockPos();
-                for (int cx = -2; cx <= 2; cx++) {
-                    for (int cz = -2; cz <= 2; cz++) {
+                int rad = Integer.getInteger("legacyconnector.dimTestRadius", 2);
+                for (int cx = -rad; cx <= rad; cx++) {
+                    for (int cz = -rad; cz <= rad; cz++) {
                         var chunk = level.getChunk(cx, cz);
                         for (int x = 0; x < 16; x++) {
                             for (int z = 0; z < 16; z++) {
@@ -153,6 +154,23 @@ public final class Dimensions1122 {
                 LOG.info("1.12.2 dimension {} provider {}: skyLight={} surface={} cloudHeight={} id={} reachable={}", id, provider.getClass().getName(),
                         provider.hasSkyLight(), provider.isSurfaceWorld(), provider.getCloudHeight(), provider.getDimension(),
                         org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.level(server, id) == level);
+                final int radF = rad;
+                server.execute(() -> server.execute(() -> {
+                int tiles = 0, loot = 0;
+                for (int cx = -radF - 4; cx <= radF + 4; cx++) {
+                    for (int cz = -radF - 4; cz <= radF + 4; cz++) {
+                        var loaded = level.getChunkSource().getChunkNow(cx, cz);
+                        if (loaded == null) continue;
+                        for (var be : loaded.getBlockEntities().values()) {
+                            if (!(be instanceof org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122BlockEntity) && !(be instanceof net.minecraft.world.level.block.entity.ChestBlockEntity)) continue;
+                            tiles++;
+                            String nbt = be.saveWithoutMetadata(level.registryAccess()).toString();
+                            if (nbt.contains("LootTable") || nbt.contains("Items:[{") || nbt.contains("Items\":[{")) loot++;
+                        }
+                    }
+                }
+                LOG.info("1.12.2 dimension {}: {} legacy tile entities in the generated chunks, {} with loot (loot table or items)", id, tiles, loot);
+                }));
                 LOG.info("1.12.2 dimension {} generated {} non-air blocks {} in {} ms", id, solid, byNamespace, (System.nanoTime() - start) / 1_000_000);
             } catch (RuntimeException | LinkageError ex) {
                 LOG.error("1.12.2 dimension {} failed to generate", id, ex);

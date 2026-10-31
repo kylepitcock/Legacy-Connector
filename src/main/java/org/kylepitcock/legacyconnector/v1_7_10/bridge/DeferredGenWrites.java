@@ -5,6 +5,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -26,8 +29,16 @@ public final class DeferredGenWrites {
     private static final int MAX = 1_000_000;
 
     /** A block to place, or (state null) a metadata change of the block found there. */
-    private record Write(BlockPos pos, BlockState state, int meta) {
+    private record Write(BlockPos pos, BlockState state, int meta, Consumer<BlockEntity> attach) {
+        Write(BlockPos pos, BlockState state, int meta) {
+            this(pos, state, meta, null);
+        }
     }
+
+    /** The block a deferred write will place, per position (what a populator that reads the block back sees). */
+    private static final Map<ServerLevel, Map<BlockPos, BlockState>> STATES = new ConcurrentHashMap<>();
+    /** Stand-ins for the tile entities of deferred blocks, per position. */
+    private static final Map<ServerLevel, Map<BlockPos, Object>> TILES = new ConcurrentHashMap<>();
 
     private static final Map<ServerLevel, Map<Long, Queue<Write>>> PENDING = new ConcurrentHashMap<>();
     private static final AtomicInteger COUNT = new AtomicInteger();
@@ -38,7 +49,50 @@ public final class DeferredGenWrites {
     }
 
     public static void block(ServerLevel level, BlockPos pos, BlockState state) {
-        add(level, new Write(pos.immutable(), state, -1));
+        BlockPos key = pos.immutable();
+        STATES.computeIfAbsent(level, l -> new ConcurrentHashMap<>()).put(key, state);
+        add(level, new Write(key, state, -1));
+    }
+
+    /** The stand-in tile entity of a deferred block, or null. */
+    public static Object standIn(ServerLevel level, BlockPos pos) {
+        Map<BlockPos, Object> m = TILES.get(level);
+        return m == null ? null : m.get(pos);
+    }
+
+    /** The populator set a tile entity itself: it replaces the stand-in (when a block is waiting there). */
+    public static boolean replaceStandIn(ServerLevel level, BlockPos pos, Object tile) {
+        Map<BlockPos, Object> m = TILES.get(level);
+        if (m == null || !m.containsKey(pos)) return false;
+        m.put(pos.immutable(), tile);
+        return true;
+    }
+
+    /** The block still waiting to be placed at the position, or null. */
+    public static BlockState pendingState(ServerLevel level, BlockPos pos) {
+        Map<BlockPos, BlockState> m = STATES.get(level);
+        return m == null ? null : m.get(pos);
+    }
+
+    /**
+     * The stand-in tile entity of the deferred block at the position: made by {@code factory} (given the pending state) on first
+     * request, and handed to {@code attach} when the block is placed, so what the populator stored in it (chest loot) is not lost.
+     * Null when no block is waiting there or the factory made none.
+     */
+    public static Object tile(ServerLevel level, BlockPos pos, Function<BlockState, Object> factory, Consumer<BlockEntity> attach) {
+        BlockState state = pendingState(level, pos);
+        if (state == null) return null;
+        BlockPos key = pos.immutable();
+        Map<BlockPos, Object> tiles = TILES.computeIfAbsent(level, l -> new ConcurrentHashMap<>());
+        Object existing = tiles.get(key);
+        if (existing != null) return existing;
+        Object made = factory.apply(state);
+        if (made == null) return null;
+        LOG.info("Stand-in tile entity {} made for the deferred block {} at {}", made.getClass().getName(), state.getBlock(), key);
+        Object raced = tiles.putIfAbsent(key, made);
+        if (raced != null) return raced;
+        add(level, new Write(key, null, -1, attach));
+        return made;
     }
 
     public static void meta(ServerLevel level, BlockPos pos, int meta) {
@@ -81,6 +135,8 @@ public final class DeferredGenWrites {
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Unload e) -> {
             if (e.getLevel() instanceof ServerLevel level) {
+                STATES.remove(level);
+                TILES.remove(level);
                 Map<Long, Queue<Write>> dropped = PENDING.remove(level);
                 if (dropped != null) dropped.values().forEach(q -> COUNT.addAndGet(-q.size()));
             }
@@ -101,7 +157,14 @@ public final class DeferredGenWrites {
         COUNT.addAndGet(-writes.size());
         for (Write w : writes) {
             try {
-                if (w.state != null) {
+                if (w.attach != null) {
+                    BlockEntity be = level.getBlockEntity(w.pos);
+                    if (be != null) w.attach.accept(be);
+                    Map<BlockPos, Object> tiles = TILES.get(level);
+                    if (tiles != null) tiles.remove(w.pos);
+                } else if (w.state != null) {
+                    Map<BlockPos, BlockState> states = STATES.get(level);
+                    if (states != null) states.remove(w.pos, w.state);
                     level.setBlock(w.pos, w.state, WRITE_FLAGS);
                 } else {
                     BlockState current = level.getBlockState(w.pos);

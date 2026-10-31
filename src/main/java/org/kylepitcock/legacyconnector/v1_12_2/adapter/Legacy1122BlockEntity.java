@@ -63,6 +63,18 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         setChanged();
     }
 
+    /** The data of a tile entity a generator filled before the block existed (a stand-in) becomes this one's. */
+    public void mcc$loadFrom(TileEntity standIn) {
+        CompoundTag tag = standIn.writeToNBT(new NBTTagCompound()).mcc$modern().copy();
+        tag.putInt("x", worldPosition.getX());
+        tag.putInt("y", worldPosition.getY());
+        tag.putInt("z", worldPosition.getZ());
+        legacy = null;
+        failed = false;
+        pending = tag;
+        setChanged();
+    }
+
     private void bind(TileEntity te) {
         te.mcc$host = this;
         te.setWorld(WorldBridge1122.wrap(level));
