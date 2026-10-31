@@ -108,14 +108,31 @@ public final class ClientGui {
 
     private static final GuiScreen FOREIGN_SCREEN = new GuiScreen();
 
+    /** The last GUI the client opened by itself (handler, id, x, y, z) and when: see {@link #openFromServer}. */
+    private static Object[] lastClientOnly;
+    private static long lastClientOnlyAt;
+
     public static void showClientOnly(IGuiHandler handler, EntityPlayer player, int id, World world, int x, int y, int z) {
         Object gui = handler.getClientGuiElement(id, player, world, x, y, z);
-        if (gui instanceof GuiScreen screen && !(gui instanceof GuiContainer)) display(screen);
+        if (gui instanceof GuiScreen screen && !(gui instanceof GuiContainer)) {
+            lastClientOnly = new Object[] {handler, id, x, y, z};
+            lastClientOnlyAt = System.currentTimeMillis();
+            display(screen);
+        }
     }
 
     public static void openFromServer(IGuiHandler handler, int id, int x, int y, int z) {
         var p = Minecraft.getInstance().player;
         if (p == null) return;
+        // FML's server did nothing for a GUI without a server element; the client had opened it from its own right click already.
+        // Opening it again made a second screen (Witchery's books: the first one closed and sent its page state, the second
+        // replaced it) and, for a handler that reads state the first one changed, a different book.
+        Object[] last = lastClientOnly;
+        if (last != null && System.currentTimeMillis() - lastClientOnlyAt < 2000 && last[0] == handler && last[1].equals(id) && last[2].equals(x)
+                && last[3].equals(y) && last[4].equals(z) && Minecraft.getInstance().screen != null) {
+            lastClientOnly = null;
+            return;
+        }
         Object gui = handler.getClientGuiElement(id, (EntityPlayer) EntityBridge.wrap(p), World.mcc$wrap(p.level()), x, y, z);
         if (gui instanceof GuiScreen screen) display(screen);
     }

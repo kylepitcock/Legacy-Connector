@@ -334,7 +334,9 @@ public class World implements IBlockAccess {
         Level level = w.mcc$fullLevel();
         if (!(level instanceof ServerLevel s)) return new ArrayList<>();
         int tick = s.getServer().getTickCount();
-        if (w.mcc$entityList != null && w.mcc$entityListTick == tick) return w.mcc$entityList;
+        // entities of the chunks around players arrive a few ticks after the chunk (a player just moved here): wait for them
+        boolean waited = s.getServer().isSameThread() && org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityLoading.awaitAround(s);
+        if (!waited && w.mcc$entityList != null && w.mcc$entityListTick == tick) return w.mcc$entityList;
         List<Entity> out = new ArrayList<>();
         for (var e : s.getAllEntities()) out.add(EntityBridge.wrap(e));
         w.mcc$entityList = out;
