@@ -231,7 +231,8 @@ public final class LegacyResourceConverter {
             "block/door_bottom", "block/door_bottom_left",
             "block/door_top", "block/door_top_left",
             "block/door_bottom_rh", "block/door_bottom_right",
-            "block/door_top_rh", "block/door_top_right");
+            "block/door_top_rh", "block/door_top_right",
+            "block/slime", "block/slime_block");
 
     private static String vanillaModel(String ref) {
         int colon = ref.indexOf(':');
@@ -281,7 +282,10 @@ public final class LegacyResourceConverter {
                 {"furnace_front_off", "furnace_front"}, {"furnace_front_on", "furnace_front_on"}, {"melon_side", "melon_side"}, {"pumpkin_face_off", "carved_pumpkin"},
                 {"pumpkin_face_on", "jack_o_lantern"}, {"noteblock", "note_block"}, {"portal", "nether_portal"}, {"wheat_stage_7", "wheat_stage7"},
                 {"command_block_front", "command_block_front"}, {"gold_ore", "gold_ore"}, {"lapis_ore", "lapis_ore"}, {"cauldron_inner", "cauldron_inner"},
-                {"snow", "snow"}, {"ice_packed", "packed_ice"}, {"dirt_podzol_top", "podzol_top"}, {"dirt_podzol_side", "podzol_side"},
+                {"snow", "snow"}, {"ice_packed", "packed_ice"}, {"slime", "slime_block"}, {"stone_slab_side", "smooth_stone_slab_side"},
+                {"stone_slab_top", "smooth_stone"}, {"farmland_wet", "farmland_moist"}, {"farmland_dry", "farmland"}, {"grass_path_top", "dirt_path_top"},
+                {"grass_path_side", "dirt_path_side"}, {"quartz_block_lines", "quartz_pillar"}, {"quartz_block_chiseled", "chiseled_quartz_block"},
+                {"red_sandstone_normal", "red_sandstone"}, {"dirt_podzol_top", "podzol_top"}, {"dirt_podzol_side", "podzol_side"},
                 {"coarse_dirt", "coarse_dirt"}, {"red_sand", "red_sand"}, {"sponge_wet", "wet_sponge"}, {"rail_golden", "powered_rail"},
                 {"rail_golden_powered", "powered_rail_on"}, {"rail_detector", "detector_rail"}, {"rail_activator", "activator_rail"},
                 {"rail_normal", "rail"}, {"rail_normal_turned", "rail_corner"}, {"torch_on", "torch"}, {"redstone_torch_on", "redstone_torch"},

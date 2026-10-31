@@ -41,6 +41,9 @@ public enum LegacyVersion {
             "org/lwjgl/opengl/GLContext",
             "org/lwjgl/opengl/OpenGLException",
             "org/lwjgl/LWJGLException",
+            // LWJGL 2's OpenAL context holder and exception (LWJGL 3 has neither); AL10 and the rest are LWJGL 3's own classes
+            "org/lwjgl/openal/AL",
+            "org/lwjgl/openal/OpenALException",
             "org/lwjgl/Sys",
             // The sound library 1.7.10 bundled (mods configure it directly); the modern game has its own engine.
             "paulscode/sound/");

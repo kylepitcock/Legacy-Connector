@@ -89,6 +89,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     }
 
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
+        clientProxies();
         itemModels(out);
         Stats stats = new Stats();
         for (Block block : Registries1122.BLOCKS.getValues()) {
@@ -110,6 +111,34 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         LOG.info("1.12.2 blockstates: {} translated, {} fell back to a plain model{}", stats.translated, stats.fellBack,
                 stats.fallbacks.isEmpty() ? "" : " (" + String.join("; ", stats.fallbacks.subList(0, Math.min(60, stats.fallbacks.size())))
                         + (stats.fallbacks.size() > 60 ? "; ... " + (stats.fallbacks.size() - 60) + " more" : "") + ")");
+    }
+
+    /**
+     * Development only ({@code -Dlegacyconnector.assetsClientProxies=mekanism.client.ClientProxy,...}, set it in the server self test with
+     * {@code -PclientProxies=...}): a dedicated server never runs a mod's client proxy, so the state mappers and model registrations it makes
+     * (ModelLoader.setCustomStateMapper, registerItemRenders) are missing from the self test; this runs {@code registerBlockRenders},
+     * {@code registerItemRenders} and {@code registerModels} of the named client proxy classes.
+     */
+    private static void clientProxies() {
+        String names = System.getProperty("legacyconnector.assetsClientProxies");
+        if (names == null || names.isEmpty()) return;
+        for (String name : names.split(",")) {
+            try {
+                Class<?> c = Class.forName(name.trim(), true, Thread.currentThread().getContextClassLoader());
+                Object proxy = c.getDeclaredConstructor().newInstance();
+                for (String method : new String[] {"registerBlockRenders", "registerItemRenders", "registerModels"}) {
+                    try {
+                        var m = c.getMethod(method);
+                        m.invoke(proxy);
+                    } catch (NoSuchMethodException ignored) {
+                        // this proxy has no such registration
+                    }
+                }
+                LOG.info("Ran the client registrations of {}", name);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                LOG.warn("Could not run the client proxy {}: {}", name, e.toString());
+            }
+        }
     }
 
     /** Item models registered in code (ModelLoader): each subtype's modern item points at the model file the mod named. */
@@ -304,7 +333,13 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             ResourceLocation file = ResourceLocation.fromNamespaceAndPath(Ids.namespace(mapped.getNamespace()), Ids.normalizePath(mapped.getPath()));
             JsonObject mappedFile = readOriginal(file);
             if (mappedFile != null) {
-                Acc viaMapper = merge(mappedFile, props, List.of(mapped.getVariant(), exact));
+                // Forge looked the variant up by the mapper's variant string ("type=plastic" for a block whose state has no such property)
+                TreeMap<String, String> viaProps = new TreeMap<>(props);
+                for (String part : mapped.getVariant().split(",")) {
+                    int eq = part.indexOf('=');
+                    if (eq > 0) viaProps.put(part.substring(0, eq), part.substring(eq + 1));
+                }
+                Acc viaMapper = merge(mappedFile, viaProps, List.of(mapped.getVariant(), exact));
                 if (usable(viaMapper) || acc == null) acc = viaMapper;
             } else {
                 reason = "state mapper file " + file + " not found";
@@ -343,6 +378,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             i++;
         }
         for (JsonObject sub : acc.subs) {
+            // a submodel draws with the textures of the variant it belongs to (RS' cable extensions use the file's "cable" and "border"), its own on top
+            JsonObject base = acc.alts.get(0);
+            if (base.has("textures") && base.get("textures").isJsonObject()) {
+                JsonObject textures = base.getAsJsonObject("textures").deepCopy();
+                if (sub.has("textures") && sub.get("textures").isJsonObject()) for (var t : sub.getAsJsonObject("textures").entrySet()) textures.add(t.getKey(), t.getValue());
+                sub = sub.deepCopy();
+                sub.add("textures", textures);
+            }
             JsonObject m = sub.has("model") ? blockModels(sub, id, key + "_sub" + r.parts.size(), out) : null;
             if (m != null) r.parts.add(m);
         }
@@ -660,6 +703,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * are vanilla's unless the mod has such a file); 1.13 and later name the full path. A variant that overrides textures gets its own generated
      * model file (modern blockstate variants have no texture overrides). Returns null when the model does not exist.
      */
+    private static final Map<String, String> VANILLA_MODEL_RENAMES = Map.of("block/half_slab", "block/slab", "block/upper_slab", "block/slab_top",
+            "block/grass_path", "block/dirt_path", "block/slime", "block/slime_block");
+
     private static JsonObject blockModels(JsonObject source, ResourceLocation blockId, String key, Map<String, Supplier<byte[]>> out) {
         String defaultNamespace = blockId.getNamespace();
         JsonObject copy = new JsonObject();
@@ -684,6 +730,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         int c = model.indexOf(':');
         String modelNs = model.substring(0, c);
         String modelPath = model.substring(c + 1);
+        if (modelNs.equals("minecraft") && VANILLA_MODEL_RENAMES.containsKey(modelPath)) {
+            // a vanilla model of 1.12 that 1.13 renamed (the loader renames the same ones in the mod's own model files)
+            modelPath = VANILLA_MODEL_RENAMES.get(modelPath);
+            model = "minecraft:" + modelPath;
+        }
         if (ObjAssets1122.isObj(model)) {
             // a Forge OBJ model: NeoForge's OBJ loader draws it (with the variant's texture overrides and flip-v)
             if (!modelNs.equals("minecraft") && !resourceExists("assets/" + modelNs + "/models/" + modelPath)) return null;
