@@ -451,11 +451,24 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     @Override
     public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
         if (!dynamicLight || level == null || pos == null) return super.getLightEmission(state, level, pos);
+        BlockGetter view = level;
+        if (level instanceof net.minecraft.world.level.Level l && !onOwnThread(l)) {
+            // the light engine's worker threads: the legacy code reads the chunk being lit, never the level, whose block reads
+            // wait for chunks the busy server thread cannot finish (ChromatiCraft's pylon reads its tile entity: the server hung)
+            var chunk = l.getChunkSource().getChunkForLighting(pos.getX() >> 4, pos.getZ() >> 4);
+            if (!(chunk instanceof BlockGetter c)) return super.getLightEmission(state, level, pos);
+            view = c;
+        }
         try {
-            return Math.min(15, Math.max(0, legacy.getLightValue(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ())));
+            return Math.min(15, Math.max(0, legacy.getLightValue(BlockAccessView.of(view), pos.getX(), pos.getY(), pos.getZ())));
         } catch (RuntimeException | LinkageError e) {
             return super.getLightEmission(state, level, pos);
         }
+    }
+
+    private static boolean onOwnThread(net.minecraft.world.level.Level level) {
+        if (level instanceof net.minecraft.server.level.ServerLevel server) return server.getServer().isSameThread();
+        return com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread();
     }
 
     @Override
