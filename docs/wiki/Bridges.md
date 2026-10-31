@@ -10,7 +10,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 | Legacy library | Modern replacement | Status |
 |---|---|---|
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
-| NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category over its own GUI texture; NEI-hidden items are hidden in JEI. |
+| NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category over its own GUI texture; NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
 | Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
 | CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
 
@@ -42,16 +42,16 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary`, custom `IRecipe` classes (IC2, AE2, Blood Magic, Witchery ...) | data-pack recipes, tags; a custom recipe is a `legacyconnector:legacy_recipe` that matches and crafts through the legacy object |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
 | Fluids | Forge `Fluid` / containers | fluid types |
-| Villagers | `VillagerRegistry` ids, skins, trade handlers | `legacyconnector:villager_<id>` professions, trades, clothes layer; some new unemployed villagers take them |
+| Villagers | `VillagerRegistry` ids, skins, trade handlers, village creation handlers | `legacyconnector:villager_<id>` professions (named after the mod's skin file, e.g. "Wizard"), trades, clothes layer; some new unemployed villagers take a legacy profession; legacy village buildings are elements of the vanilla village house pools with their 1.7.10 share (see [World generation](World-Generation.md)) |
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
 | Commands | `ICommand`, server command manager | Brigadier |
 | Dimension physics | `WorldProvider` gravity, fall damage and sound attenuation (Galacticraft's `IGalacticraftWorldProvider`) | gravity attribute, fall damage multiplier, client sound volume per dimension |
-| Chest loot | `ChestGenHooks.addItem` for dungeon, mineshaft, pyramid, stronghold, village and bonus chests | an extra pool on the matching vanilla chest loot table |
+| Chest loot | `ChestGenHooks.addItem` for dungeon, mineshaft, pyramid, stronghold, village and bonus chests | an extra pool on the matching vanilla chest loot table; chests that legacy structures fill from one of these categories get the matching modern loot table instead, so the pack's loot (and modern mods' loot modifiers) applies |
 | Fishing loot | `FishingHooks` fish, junk and treasure entries (MineFactoryReloaded's junk) | a global loot modifier swaps a catch of the same category for a mod entry with its 1.7.10 weight share |
 | Brewing | `Item.getPotionEffect` ingredients, `PotionHelper` potion values and requirements | one brewing recipe running 1.7.10's potion values: mod ingredients and mod-effect potions brew as in 1.7.10 (redstone, glowstone, gunpowder apply), vanilla potions stay vanilla, water breathing (pufferfish) is back |
-| Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes, `legacyconnector:dim_<id>` |
-| World generation | `IWorldGenerator`, decorators | chunk generation hooks |
+| Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes placed by climate (a TerraBlender region, or the overworld parameter list), legacy world types as their own biome source, `legacyconnector:dim_<id>` |
+| World generation | `IWorldGenerator`, decorators | one placed feature per legacy generator (`<mod>:legacy_worldgen/<generator>`) and one per generator for the layer below y=0 (`<mod>:legacy_worldgen_deep/<generator>`), added by biome modifiers |
 | Events | Forge/FML event buses | NeoForge event bus |
 | Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events, effects, tabs |
 | Stats and achievements | `StatList`, `AchievementList`, `StatBase.addStat` | general stats count in their modern counterparts, mod stats become custom stats named after their legacy key (OpenBlocks' bricks dropped); the stat file reads them back |

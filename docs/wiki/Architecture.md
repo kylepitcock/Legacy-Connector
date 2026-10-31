@@ -39,8 +39,27 @@ were written against:
   arbitrary mod *load* instead of crashing with `NoClassDefFoundError`; the first call to each stub is logged so the
   most-used gaps can be implemented properly.
 
+Legacy content enters the game through the **native extension points** a 1.21.1 mod would use, and the layer only translates
+the legacy API into them: biomes through the pack's biome placement, world generators as placed features in biome modifiers,
+village buildings as jigsaw elements of the village pools, structure chests through loot tables (and global loot modifiers),
+spawns through biome modifiers, recipes and tags as a data pack, containers as capabilities. Post-generation decorators,
+mixins that override a vanilla result, or filling things directly are avoided where a native hook exists: they ignore the pack's
+other mods (legacy village pieces overlapped houses, legacy chests skipped the pack's loot, a biome override was bypassed by
+TerraBlender).
+
 Mod-specific code is the exception: it is used only when no generic fix works, only for popular mods, and it is kept small
 and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
+
+### Mod ids, mod checks and failing handlers
+
+- A legacy mod whose modern id a modern mod of the pack also uses (declares, or names as a dependency) loads under `<id>_legacy`
+  (legacy Witchery is `witchery_legacy` next to mods that integrate with Witchery: Resurrected); its registry namespace stays
+  `<id>`, so items, textures and saves are unchanged.
+- Legacy `Loader.isModLoaded` only counts legacy mods and bridged libraries, never a modern mod of the same id: legacy
+  integrations call the legacy API (ChromatiCraft registered its Forestry bee frame for the modern Forestry and failed).
+- A legacy event handler that fails 1,000 times in a row without one success is unregistered with one log line (handlers of a
+  mod that failed to load threw about 1,000 exceptions a second). `events.skip` switches handlers off by hand.
+- A creative tab that gets the same stack twice skips the duplicate instead of failing the tab build (`CreativeTabDuplicateMixin`).
 
 ## Legacy loader behaviour that is reproduced
 

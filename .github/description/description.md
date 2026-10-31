@@ -17,7 +17,9 @@
 
 Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
-**Beta:** 1.7.10 content mods like Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion, Botania, Biomes O' Plenty and Witchery run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions. Galacticraft and its addons run, with each planet's own gravity. 1.12.2 support is in alpha: big content mods like Botania, Blood Magic, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct and Scape and Run: Parasites load and play with their own models, mobs, GUIs and world generation. Back up your worlds before trying a new mod set.
+**Beta:** 1.7.10 content mods like Iron Chest, Twilight Forest, Thaumcraft, HBM, RFTools, Thermal Expansion, Botania, Biomes O' Plenty and Witchery run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions. Galacticraft and its addons run, with each planet's own gravity. Thaumcraft, Witchery and the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) load inside All the Mods 10. 1.12.2 support is in alpha: big content mods like Botania, Blood Magic, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct and Scape and Run: Parasites load and play with their own models, mobs, GUIs and world generation. Back up your worlds before trying a new mod set.
+
+Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (TerraBlender when it's installed), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
 **[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you.
 
@@ -155,6 +157,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `deepLayer.enabled` | `true` | Runs legacy ore generators again below y=0 |
 | `deepLayer.excludeGenerators` | empty | Generators that shouldn't run below y=0 |
 | `blocks.flattenSubtypes` | `true` | Gives each legacy block subtype with its own item a block of its own, as in the 1.13 flattening, so modern mods see the right subtype |
+| `events.skip` | empty | Legacy event handlers to switch off (`full.ClassName#method`), for tracking down one that misbehaves |
 
 ## Current status
 

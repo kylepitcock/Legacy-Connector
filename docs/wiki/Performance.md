@@ -18,3 +18,11 @@ identical runs than between the two setups, so no cost shows at this resolution.
 measurements is part of Legacy Connector, so "no legacy mods" means Legacy Connector loaded with nothing to translate,
 not a NeoForge install without it. Translation costs about 0.4 to 0.7 s per large jar (AgriCraft, Applied Energistics 2,
 Botania) on first launch.
+
+## World generation writes and per-tick work
+
+- Blocks that a legacy generator writes into a chunk that does not exist yet are kept and placed during that chunk's own
+  generation, as plain world-generation writes (no neighbour updates, no block-change hooks). Only writes into chunks that are
+  already loaded go through `Level.setBlock` (in ATM10 Sable's per-block hook made that path about 3% of the server tick).
+- The legacy `previousEquipment` copy that follows every `LivingUpdateEvent` wraps only equipment slots whose modern stack
+  changed.

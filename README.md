@@ -17,6 +17,11 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 > features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
 > mod set.
 
+Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the pack's biome placement
+(a TerraBlender region when TerraBlender is installed), world generators as placed features in biome modifiers, village buildings
+in the vanilla village pools, structure chest loot through loot tables, items and machines as capabilities. So it works together
+with the pack's other mods instead of being painted over them, and data packs can tune it like any modern content.
+
 **Compatibility list and reports: https://kylepitcock.github.io/Legacy-Connector/** (check a mod, or report how it worked for you).
 
 Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#screenshots).
@@ -25,7 +30,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **Beta.** Content mods, large tech packs, mod biomes, dimensions and entities work; Galacticraft with its addons runs. In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
+| 1.7.10 | **Beta.** Content mods, large tech packs, mod biomes, dimensions and entities work; Galacticraft with its addons runs; Thaumcraft, Witchery and the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) load inside All the Mods 10. In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
 | 1.12.2 | **Alpha (issue #64).** Big content mods (Botania, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct, Quark, ...) load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (the Aether) can be entered. OpenComputers, Mekanism and RFTools machines are being brought up. |
 | 1.20.1 (Forge + Fabric via Sinytra Connector) | Planned. |
 | 1.16.5 | Planned. |
@@ -49,6 +54,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `deepLayer.enabled` | `true` | Run legacy world generators a second time so ores also spawn below y=0 |
 | `deepLayer.excludeGenerators` | empty | Comma separated generator class prefixes that must not run below y=0 |
 | `blocks.flattenSubtypes` | `true` | Each legacy block subtype that has its own item becomes its own block (`mod:name_3`), as in the 1.13 flattening |
+| `events.skip` | empty | Legacy event handlers to leave unregistered (`full.ClassName#method`), for tracking down a handler that misbehaves |
 
 All keys and the deepslate ore twins are described on the [Configuration](docs/wiki/Configuration.md) page.
 
