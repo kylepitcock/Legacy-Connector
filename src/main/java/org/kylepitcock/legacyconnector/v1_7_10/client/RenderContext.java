@@ -625,10 +625,13 @@ public final class RenderContext {
             else setProjection(previous);
             return;
         }
-        PoseStack p = pose();
-        // A pop with nothing pushed (legacy code is sloppy) must not remove the caller's base matrix.
+        Frame f = frames().peek();
+        PoseStack p = f == null ? null : f.pose;
+        // A pop with nothing pushed (legacy code is sloppy) must not remove the caller's base matrix: the caller's own pushes are
+        // below it, and once the base is gone end() pops the whole stack looking for it (an item drawn in FTB Quests then failed
+        // with an empty PoseStack in ItemRenderer.render).
         if (p != null) {
-            if (!p.clear()) p.popPose();
+            if (!p.clear() && p.last() != f.base) p.popPose();
         } else if (strayPushes > 0) {
             strayPushes--;
         }
