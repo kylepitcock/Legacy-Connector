@@ -169,10 +169,20 @@ public class World implements IBlockAccess {
             WorldProvider created = full == null ? new WorldProvider(Level.OVERWORLD, true, false)
                     : org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyDimensions.newProvider(full);
             w.mcc$provider = created;
-            if (full != null && created.worldObj == null) created.registerWorld(w);
+            if (full != null && created.worldObj == null) {
+                try {
+                    created.registerWorld(w);
+                } catch (RuntimeException | LinkageError e) {
+                    w.mcc$providerFailed = true;
+                    throw e;
+                }
+            }
             return created;
         }
     }
+
+    /** True if the mod's world provider threw while being attached to this world (it stays, half built, as {@code provider}). */
+    public boolean mcc$providerFailed;
 
     /**
      * The view of a world generation region, per thread. Regions live for one generation step; in {@link #VIEWS} (weak keys)
@@ -992,6 +1002,11 @@ public class World implements IBlockAccess {
     }
 
     public boolean chunkExists(int cx, int cz) {
+        // a generation region only hands out the chunks of its own radius at their generation status: report exactly those, so that
+        // chunkExists/provideChunk agree (Mystcraft asks the provider for each chunk that exists and dereferences it)
+        if (lvl() instanceof net.minecraft.server.level.WorldGenRegion region) {
+            return region.hasChunk(cx, cz) && region.getChunk(cx, cz, net.minecraft.world.level.chunk.status.ChunkStatus.EMPTY, false) != null;
+        }
         return lvl().hasChunk(cx, cz);
     }
 
