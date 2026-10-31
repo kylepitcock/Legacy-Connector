@@ -29,7 +29,8 @@ public final class LegacyModRecord {
     public LegacyModRecord(String version, String legacyId, String mainClassName, ModContainer container, IEventBus modBus, JsonObject metadata) {
         this.version = version;
         this.legacyId = legacyId;
-        this.modernId = container.getModId();
+        // the registry namespace; the FML id differs when a modern mod uses the same id (witchery -> witchery_legacy)
+        this.modernId = metadata != null && metadata.has("modernId") ? metadata.get("modernId").getAsString() : container.getModId();
         this.mainClassName = mainClassName;
         this.container = container;
         this.modBus = modBus;

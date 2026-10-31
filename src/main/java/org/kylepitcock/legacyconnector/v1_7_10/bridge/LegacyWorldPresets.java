@@ -81,7 +81,8 @@ public final class LegacyWorldPresets {
     }
 
     private static String legacyTranslation(String modId, String key) {
-        var file = ModList.get().getModFileById(modId);
+        var legacy = org.kylepitcock.legacyconnector.core.LegacyMods.find(modId);
+        var file = legacy != null ? legacy.container.getModInfo().getOwningFile() : ModList.get().getModFileById(modId);
         if (file == null) return null;
         Path assets = file.getFile().getSecureJar().getPath("assets");
         if (!Files.isDirectory(assets)) return null;

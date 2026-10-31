@@ -49,10 +49,10 @@ public final class ModMetadataGenerator {
         sb.append("license=").append(q("Unknown (legacy " + jar.version.id() + " mod)")).append('\n');
         sb.append("showAsResourcePack=false\n\n");
         Set<String> ids = new HashSet<>();
-        for (LegacyModDecl mod : jar.mods) ids.add(mod.modernId());
+        for (LegacyModDecl mod : jar.mods) ids.add(mod.fmlId());
         for (LegacyModDecl mod : jar.mods) {
             sb.append("[[mods]]\n");
-            sb.append("modId=").append(q(mod.modernId())).append('\n');
+            sb.append("modId=").append(q(mod.fmlId())).append('\n');
             sb.append("version=").append(q(sanitizeVersion(mod.version))).append('\n');
             sb.append("displayName=").append(q(mod.name)).append('\n');
             if (!mod.authors.isEmpty()) sb.append("authors=").append(q(String.join(", ", mod.authors))).append('\n');
@@ -61,15 +61,15 @@ public final class ModMetadataGenerator {
             if (mod.logoFile != null) sb.append("logoFile=").append(q(mod.logoFile.startsWith("/") ? mod.logoFile.substring(1) : mod.logoFile)).append('\n');
             sb.append("description=").append(q(mod.description == null ? "" : mod.description)).append("\n\n");
 
-            dependency(sb, mod.modernId(), RUNTIME_MOD_ID, true, "AFTER");
+            dependency(sb, mod.fmlId(), RUNTIME_MOD_ID, true, "AFTER");
             for (LegacyModDecl.Dependency dep : mod.parsedDependencies()) {
                 if (dep.isPlatform()) continue;
-                String target = LegacyModDecl.toModernId(dep.legacyId());
-                if (target.equals(mod.modernId())) continue;
+                String target = LegacyModDecl.toFmlId(LegacyModDecl.toModernId(dep.legacyId()));
+                if (target.equals(mod.fmlId())) continue;
                 // Dependencies between mods of the same jar are implicit; FML rejects self-file cycles badly.
                 if (ids.contains(target) && !dep.required()) continue;
                 boolean required = dep.required() && (loadedMods == null || loadedMods.contains(target));
-                dependency(sb, mod.modernId(), target, required, dep.ordering());
+                dependency(sb, mod.fmlId(), target, required, dep.ordering());
             }
         }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
@@ -121,7 +121,7 @@ public final class ModMetadataGenerator {
         ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
         cw.visit(Opcodes.V17, Opcodes.ACC_PUBLIC | Opcodes.ACC_FINAL | Opcodes.ACC_SUPER, name, null, "java/lang/Object", null);
         AnnotationVisitor av = cw.visitAnnotation("Lnet/neoforged/fml/common/Mod;", true);
-        av.visit("value", mod.modernId());
+        av.visit("value", mod.fmlId());
         av.visitEnd();
 
         MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "(Lnet/neoforged/bus/api/IEventBus;Lnet/neoforged/fml/ModContainer;)V", null, null);

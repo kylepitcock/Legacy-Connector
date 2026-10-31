@@ -34,6 +34,30 @@ public final class LegacyModDecl {
         return toModernId(legacyId);
     }
 
+    /**
+     * Modern ids that a modern mod of the pack also uses (declares, or names as a dependency: Bibliowoods' optional
+     * {@code witchery} is Witchery: Resurrected, whose classes it then loads). The legacy mod gets another FML mod id so
+     * {@code ModList.isLoaded} answers for the modern mod; its {@link #modernId()} stays the registry namespace.
+     */
+    private static volatile java.util.Map<String, String> fmlIds = java.util.Map.of();
+
+    public static void setFmlIds(java.util.Map<String, String> modernToFml) {
+        fmlIds = java.util.Map.copyOf(modernToFml);
+    }
+
+    public static java.util.Map<String, String> fmlIds() {
+        return fmlIds;
+    }
+
+    /** The mod id FML knows this mod by (its modern id unless a modern mod uses that id). */
+    public String fmlId() {
+        return toFmlId(modernId());
+    }
+
+    public static String toFmlId(String modernId) {
+        return fmlIds.getOrDefault(modernId, modernId);
+    }
+
     public static String toModernId(String legacyId) {
         StringBuilder sb = new StringBuilder();
         for (char c : legacyId.toLowerCase(Locale.ROOT).toCharArray()) {

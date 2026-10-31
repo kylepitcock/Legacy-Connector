@@ -181,9 +181,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     return coremods.get().apply(name, bytes);
                 }
             });
+            LegacyModDecl.setFmlIds(fmlIdRenames(loading, legacy, List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))));
+            if (!LegacyModDecl.fmlIds().isEmpty()) LOG.info("Legacy Connector: mod ids a modern mod also uses; the legacy mods load as {}", LegacyModDecl.fmlIds());
             org.kylepitcock.legacyconnector.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null)
-                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::modernId).toList());
+                    .flatMap(j -> j.mods.stream()).map(LegacyModDecl::fmlId).toList());
             Map<LegacyJar, String> outcomes = new LinkedHashMap<>();
             List<Path> translated = new ArrayList<>();
             Set<Path> keep = new HashSet<>(libraryKeep);
@@ -330,6 +332,55 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         return out;
     }
 
+    private static final java.util.regex.Pattern TOML_MOD_ID = java.util.regex.Pattern.compile("(?m)^\s*modId\s*=\s*\"([^\"]+)\"");
+
+    /**
+     * Legacy modern ids that a modern jar of the pack declares or names as a dependency, mapped to the FML id the legacy
+     * mod gets instead ({@code witchery -> witchery_legacy}; see {@link LegacyModDecl#fmlId()}). Addons of Legacy
+     * Connector (jars depending on it) mean the legacy mods and are not counted.
+     */
+    private static Map<String, String> fmlIdRenames(List<LegacyJar> loading, List<LegacyJar> allLegacy, List<Path> dirs) {
+        Set<String> legacyIds = new HashSet<>();
+        for (LegacyJar j : loading) for (LegacyModDecl m : j.mods) legacyIds.add(m.modernId());
+        if (legacyIds.isEmpty()) return Map.of();
+        Set<Path> legacyPaths = new HashSet<>();
+        for (LegacyJar j : allLegacy) {
+            legacyPaths.add(j.path.toAbsolutePath().normalize());
+            legacyPaths.add(j.existing().toAbsolutePath().normalize());
+        }
+        Set<String> mentioned = new HashSet<>();
+        for (Path dir : dirs) {
+            if (!Files.isDirectory(dir)) continue;
+            try (Stream<Path> files = Files.list(dir)) {
+                for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar")).toList()) {
+                    if (p.getFileName().toString().toLowerCase().startsWith("legacyconnector") || legacyPaths.contains(p.toAbsolutePath().normalize())) continue;
+                    try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(p.toFile())) {
+                        var e = zip.getEntry("META-INF/neoforge.mods.toml");
+                        if (e == null) continue;
+                        String toml = new String(zip.getInputStream(e).readAllBytes(), StandardCharsets.UTF_8);
+                        Set<String> ids = new HashSet<>();
+                        var m = TOML_MOD_ID.matcher(toml);
+                        while (m.find()) ids.add(m.group(1));
+                        if (ids.contains(org.kylepitcock.legacyconnector.loader.meta.ModMetadataGenerator.RUNTIME_MOD_ID)) continue;
+                        mentioned.addAll(ids);
+                    } catch (IOException | RuntimeException e) {
+                        LOG.debug("Legacy Connector: could not read the mod ids of {}", p, e);
+                    }
+                }
+            } catch (IOException e) {
+                LOG.debug("Legacy Connector: could not list {}", dir, e);
+            }
+        }
+        Map<String, String> out = new java.util.TreeMap<>();
+        for (String id : legacyIds) {
+            if (!mentioned.contains(id)) continue;
+            String fml = id + "_legacy";
+            for (int n = 2; legacyIds.contains(fml) || mentioned.contains(fml); n++) fml = id + "_legacy" + n;
+            out.put(id, fml);
+        }
+        return out;
+    }
+
     /** The class packages that jars of more than one legacy version define (see {@link CrossVersionPackages}). */
     private static org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages crossVersionPackages(List<LegacyJar> jars, List<LegacyJar> allLegacy, List<Path> modernDirs) {
         var out = new org.kylepitcock.legacyconnector.loader.transform.CrossVersionPackages();
@@ -374,8 +425,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             md.update(bridges.toString().getBytes(StandardCharsets.UTF_8));
             md.update(side().getBytes(StandardCharsets.UTF_8)); // @SideOnly stripping differs per side
         }
-        // the relocations depend on the other versions' jars
-        byte[] shared = crossVersion.fingerprint().getBytes(StandardCharsets.UTF_8);
+        // the relocations depend on the other versions' jars, the FML ids on the modern mods
+        byte[] shared = (crossVersion.fingerprint() + "|fmlIds=" + new java.util.TreeMap<>(LegacyModDecl.fmlIds())).getBytes(StandardCharsets.UTF_8);
         digests.forEach((v, md) -> md.update(shared));
         Map<LegacyVersion, byte[]> out = new EnumMap<>(LegacyVersion.class);
         digests.forEach((v, md) -> out.put(v, md.digest()));
