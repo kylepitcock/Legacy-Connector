@@ -180,7 +180,8 @@ public final class AddonHost {
         ModList.get().forEachModContainer((id, container) -> {
             try {
                 ModContainer c = container;
-                c.getEventBus().post(event);
+                // the minecraft container and other mods without code have no mod bus
+                if (c.getEventBus() != null) c.getEventBus().post(event);
             } catch (RuntimeException | LinkageError e) {
                 LOG.error("Mod {} failed handling {}", id, event.getClass().getSimpleName(), e);
             }
