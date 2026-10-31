@@ -84,4 +84,5 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
 - Headless server probing: `./gradlew runServerSubTest -PserverTickScript=<file.js> [-PserverTickScriptFrom=200]` evaluates the file on every server tick
   (bindings `server`, `tick` counted from the first run, `log`; globals persist, so place on one tick and read on the next); output is logged as
   `SERVERSCRIPT:`. Example: count a mod's blocks per height over the loaded overworld chunks.
+- `tools/dev/thaumcraft/lib.js` (fake player, `scanAt` = what the Thaumometer computes for a block) and `scan-thaumometer.js` (real `ItemThaumometer.doScan` on placed blocks, PASS/FAIL per block) run on a `-PserverScript=run-subtest/probe -PserverScriptMod=thaumcraft` server (submit `lib.js` first; the directory is relative to `run-subtest`). Place blocks inside chunk 0,0 only: a block in an unloaded chunk makes the script block the server thread on chunk generation.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
