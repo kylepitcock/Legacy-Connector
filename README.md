@@ -230,7 +230,7 @@ render type (textured, translucent or additive). Biped renderers draw worn armou
 ### Create contraptions and Create Aeronautics/Sable ships
 
 Create contraptions (bearings, pistons, gantries, minecart contraptions, trains) and Create Aeronautics/Sable ships can carry
-legacy blocks (1.7.10 and 1.12.2; issue #108, not yet verified in game). The hosted tile entity's NBT travels with the block and
+legacy blocks (1.7.10 and 1.12.2; issue #108; tested in game with a mechanical bearing and an Aeronautics airship carrying Iron Chest, Thaumcraft, RotaryCraft and ChromatiCraft blocks; minecart contraptions and 1.12.2 not yet). The hosted tile entity's NBT travels with the block and
 is loaded at the new position with its coordinates corrected, and `breakBlock` is not run for a tile entity block that is carried
 away (it would drop the inventory that also travels). With Create installed (optional), its movement checks follow the legacy
 piston rules: mobility flag 2 and hardness -1 (also per position) refuse a block, mobility 1 blocks (torches, levers, wires) are
@@ -415,6 +415,10 @@ jars, arcane workbench, research table, an aura node over a stabiliser, infused 
 silverwood trees grown by Thaumcraft's own generators:
 
 ![A Thaumcraft workshop](docs/images/thaumcraft-workshop.png)
+
+**A Create Aeronautics airship (Sable physics) carrying 1.7.10 blocks: Thaumcraft essentia jars, crucible and arcane workbench, an Iron Chest, a RotaryCraft engine and ChromatiCraft crystals**
+
+![A Create Aeronautics airship carrying legacy blocks](docs/images/create-aeronautics-ship.png)
 
 The Thaumonomicon, drawn by Thaumcraft's own font renderer and book code, and the Thaumometer held in both hands after scanning
 stone (the Terra aspect in its lens, research points gained in the corner):
