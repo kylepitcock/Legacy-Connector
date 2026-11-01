@@ -97,7 +97,10 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
                 }
             }
         }
+        boolean fallback = false;
         if (solid.isEmpty() && translucent.isEmpty()) {
+            // A full opaque cube must never vanish: the generated model (the block's icons on a cube) stands in.
+            fallback = opaqueCube && !hasTileRenderer(level, pos);
             if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
                 // A handler that draws nothing is no defect when the block is drawn by its tile entity's special renderer (Twilight
                 // Forest's cicadas, fireflies and moonworms: their handler is empty), when the position is not a face of the block (a
@@ -115,11 +118,23 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             LOG.info("Legacy block renderer {} drew {} cut-out and {} translucent quad(s) for {}; {}", handler.getClass().getSimpleName(),
                     solid.size(), translucent.size(), block.getClass().getSimpleName(), IsbrhQuads.describeLast());
         }
+        if (fallback) return base;
         return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
     }
 
     /** One Forge world pass of the handler, as 1.7.10's chunk renderer ran it; null when the handler failed. */
     private List<BakedQuad> capture(ISimpleBlockRenderingHandler handler, BlockAndTintGetter level, BlockPos pos, int pass) {
+        // Chunks are meshed on several worker threads (many more with Sodium/Embeddium), but a mod's handler is a singleton that
+        // keeps the pass it is told by canRenderInPass in a field (ChromatiCraft's ISBRH.setRenderPass): two threads meshing blocks of
+        // the same handler would draw each other's pass (the overlay twice and the stone never: a see-through block). The legacy
+        // client had one render thread, so the calls of one handler are made one at a time (different handlers still run in parallel).
+        if (builtIn != null) return captureLocked(handler, level, pos, pass);
+        synchronized (handler) {
+            return captureLocked(handler, level, pos, pass);
+        }
+    }
+
+    private List<BakedQuad> captureLocked(ISimpleBlockRenderingHandler handler, BlockAndTintGetter level, BlockPos pos, int pass) {
         int ox = relocation(pos.getX()), oz = relocation(pos.getZ());
         RenderContext.Capture capture = RenderContext.beginCapture();
         // 1.7.10's chunk renderer had the Tessellator drawing already when it called the handlers.
@@ -174,7 +189,9 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             for (Direction d : DIRECTIONS) {
                 next.setWithOffset(pos, d);
                 if (!net.minecraft.world.level.block.Block.shouldRenderFace(state, level, pos, d, next)) continue;
-                if (covers(solid, d) || covers(translucent, d)) continue;
+                // A block with a cut-out pass is covered by that pass alone: a second-pass overlay on the face (ChromatiCraft's glowing
+                // rune edges) is no base, and counting it left the stone out when the base pass was missing.
+                if (pass0 ? covers(solid, d) : covers(translucent, d)) continue;
                 missing |= 1 << d.get3DDataValue();
             }
         } catch (RuntimeException | LinkageError e) {
