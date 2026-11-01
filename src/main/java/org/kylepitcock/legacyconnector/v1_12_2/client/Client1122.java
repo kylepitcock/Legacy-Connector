@@ -48,6 +48,8 @@ public final class Client1122 {
             }
         });
         modBus.addListener(Client1122::onRegisterRenderers);
+        modBus.addListener((net.neoforged.neoforge.client.event.RegisterDimensionSpecialEffectsEvent e) ->
+                e.register(org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.EFFECTS, new LegacyDimensionEffects1122()));
         // layers mods add to the legacy player renderers run on the modern ones
         modBus.addListener((EntityRenderersEvent.AddLayers e) -> {
             if (present()) LegacyPlayerLayer1122.addTo(e);

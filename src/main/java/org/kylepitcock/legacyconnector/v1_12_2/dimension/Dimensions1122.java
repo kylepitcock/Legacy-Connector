@@ -23,6 +23,7 @@ public final class Dimensions1122 {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/Dimensions");
     private static final String NAMESPACE = "legacyconnector";
     private static final String PREFIX = "dim_";
+    public static final ResourceLocation EFFECTS = ResourceLocation.fromNamespaceAndPath(NAMESPACE, "legacy_dimension_1122");
 
     private Dimensions1122() {}
 
@@ -94,7 +95,7 @@ public final class Dimensions1122 {
             type.addProperty("min_y", 0);
             type.addProperty("height", 256);
             type.addProperty("infiniburn", "#minecraft:infiniburn_overworld");
-            type.addProperty("effects", "minecraft:overworld");
+            type.addProperty("effects", EFFECTS.toString()); // client: LegacyDimensionEffects1122 asks the provider
             byte[] typeBytes = type.toString().getBytes(StandardCharsets.UTF_8);
             String name = PREFIX + id;
             out.put("data/" + NAMESPACE + "/dimension_type/" + name + ".json", () -> typeBytes);

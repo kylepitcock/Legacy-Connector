@@ -23,6 +23,11 @@ public abstract class ClientLevelSkyColorMixin {
             cir.setReturnValue(fromProvider);
             return;
         }
+        fromProvider = org.kylepitcock.legacyconnector.v1_12_2.client.LegacyDimensionEffects1122.skyColor((ClientLevel) (Object) this, color, partialTick);
+        if (fromProvider != color) {
+            cir.setReturnValue(fromProvider);
+            return;
+        }
         Vec3 out = org.kylepitcock.legacyconnector.v1_7_10.compat.dragonapi.DragonApiClientEvents.skyColor(color);
         if (out != color) cir.setReturnValue(out);
     }
@@ -31,6 +36,7 @@ public abstract class ClientLevelSkyColorMixin {
     private void legacyconnector$providerStarBrightness(float partialTick, CallbackInfoReturnable<Float> cir) {
         float current = cir.getReturnValue();
         float out = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyDimensionEffects.starBrightness((ClientLevel) (Object) this, current, partialTick);
+        if (out == current) out = org.kylepitcock.legacyconnector.v1_12_2.client.LegacyDimensionEffects1122.starBrightness((ClientLevel) (Object) this, current, partialTick);
         if (out != current) cir.setReturnValue(out);
     }
 }
