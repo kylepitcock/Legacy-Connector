@@ -32,7 +32,8 @@ public final class LevelReleases {
     /** Unloaded levels, stopped servers and the objects that died with them; identity, weak. */
     private static final Set<Object> DEAD = java.util.Collections.newSetFromMap(new com.google.common.collect.MapMaker().weakKeys().makeMap());
     /** Released views by their key, weak both ways (identity keys). */
-    private static final Map<Object, WeakReference<Object>> RELEASED = new com.google.common.collect.MapMaker().weakKeys().makeMap();
+    /** Released views per key, then per view map (the 1.7.10 and 1.12.2 shims keep views of the same level in maps of their own). */
+    private static final Map<Object, Map<Object, WeakReference<Object>>> RELEASED = new com.google.common.collect.MapMaker().weakKeys().makeMap();
     private static final List<Consumer<LevelAccessor>> LEVEL_ACTIONS = new CopyOnWriteArrayList<>();
     private static final List<Consumer<net.minecraft.server.MinecraftServer>> SERVER_ACTIONS = new CopyOnWriteArrayList<>();
     private static volatile boolean enabled;
@@ -89,7 +90,7 @@ public final class LevelReleases {
         if (key == null) return;
         DEAD.add(key);
         V v = views.remove(key);
-        if (v != null) RELEASED.put(key, new WeakReference<>(v));
+        if (v != null) RELEASED.computeIfAbsent(key, k -> java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>())).put(views, new WeakReference<>(v));
     }
 
     /**
@@ -100,11 +101,12 @@ public final class LevelReleases {
     public static <K, V> V view(Map<K, V> views, K key, Function<? super K, ? extends V> factory) {
         if (!isDead(key)) return views.computeIfAbsent(key, factory);
         synchronized (RELEASED) {
-            WeakReference<Object> ref = RELEASED.get(key);
+            Map<Object, WeakReference<Object>> perViews = RELEASED.computeIfAbsent(key, k -> java.util.Collections.synchronizedMap(new java.util.IdentityHashMap<>()));
+            WeakReference<Object> ref = perViews.get(views);
             Object v = ref == null ? null : ref.get();
             if (v == null) {
                 v = factory.apply(key);
-                if (v != null) RELEASED.put(key, new WeakReference<>(v));
+                if (v != null) perViews.put(views, new WeakReference<>(v));
             }
             return (V) v;
         }
