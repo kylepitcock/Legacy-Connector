@@ -130,7 +130,10 @@ public abstract class MobSpawnerBaseLogic {
         var type = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getOptional(id.mcc$modern());
         if (type.isPresent()) {
             var level = mcc$level();
-            mcc$spawner.setEntityId(type.get(), level, level == null ? net.minecraft.util.RandomSource.create() : level.getRandom(), mcc$pos());
+            // off the server thread (a structure placed during chunk generation) the modern spawner must not read the level: its block
+            // update asks the real level for a chunk that is still being generated, and the generator waits for itself (Atum's tombs)
+            var spawnerLevel = level instanceof net.minecraft.server.level.ServerLevel server && !server.getServer().isSameThread() ? null : level;
+            mcc$spawner.setEntityId(type.get(), spawnerLevel, level == null ? net.minecraft.util.RandomSource.create() : level.getRandom(), mcc$pos());
         }
         cachedEntity = null;
     }
