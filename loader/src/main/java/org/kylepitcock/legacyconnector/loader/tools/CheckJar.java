@@ -56,6 +56,7 @@ public final class CheckJar {
                     + result.links.errorCount() + " unresolved, " + result.links.synthesizedClasses.size() + " synthesized classes, "
                     + result.links.stubbedMembers.size() + " synthesized members");
             if (jar.coreModClass != null) System.out.println("  coremod: " + jar.coreModClass + " (not executed)");
+            for (String note : result.notes) System.out.println("  note: " + note);
             if (!"-q".equals(System.getProperty("legacyconnector.check.quiet", ""))) System.out.print(result.links.render());
         }
         for (var e : demand.entrySet()) {
