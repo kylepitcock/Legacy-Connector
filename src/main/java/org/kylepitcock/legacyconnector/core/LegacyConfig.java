@@ -54,6 +54,11 @@ public final class LegacyConfig {
             bridges.nei.enabled = true
             bridges.cofhEnergy.enabled = true
 
+            # Performance. perf.* switches of Legacy Connector's own work are on by default (they change nothing but its speed);
+            # see docs/wiki/Performance.md.
+            # The generated legacy data and asset packs are not built when the game only reads their metadata (once per pack scan).
+            perf.lazyPackMetadata = true
+
             # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
             # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
             energy.fePerEu = 4
@@ -186,4 +191,15 @@ public final class LegacyConfig {
         }
         return excluded;
     }
+
+    // ------------------------------------------------------------------ perf.* (world load and other performance switches)
+
+    /**
+     * {@code perf.lazyPackMetadata}: the generated packs opened only for their metadata (once per pack repository scan) generate no
+     * content (they built every file each time: about 0.2 to 0.7 s per scan for the data pack in ATM10).
+     */
+    public static boolean perfLazyPackMetadata() {
+        return bool("perf.lazyPackMetadata", true);
+    }
+
 }

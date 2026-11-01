@@ -27,6 +27,25 @@ Botania) on first launch.
 - The legacy `previousEquipment` copy that follows every `LivingUpdateEvent` wraps only equipment slots whose modern stack
   changed.
 
+## World load
+
+Measured from the log of an All the Mods 10 world creation (about 450 mods, 7 legacy 1.7.10 mods: Thaumcraft, Witchery and the Reika
+mods). Creating the world took about 75 s from the data pack load to the spawn area: 33 s of data pack reload (141895 recipes, KubeJS),
+4 s of server start, 33 s creating the 42 levels and 0.8 s for the spawn area. Legacy Connector's share and what was done about it:
+
+- **Feature order cycle (fixed, not a switch).** ChromatiCraft registers one world generator twice. FML keeps generators in a set, so a
+  second registration only changes the weight; the layer listed it twice, which put its placed feature twice into every biome. That is a
+  feature order cycle in every dimension: vanilla's feature indexer fails and Biolith falls back to its resilient indexer, which dropped
+  858 cycle edges caused by it (of 1412; the rest came from a modern mod) while the levels were created (18 s of indexing in total). The
+  generator also ran twice per chunk. Now a generator is registered once and the biome modifier lists every generator once.
+- `perf.lazyPackMetadata` (default on): the game opens every pack once just to read its metadata when it scans the pack repository, and
+  the generated packs built all their files each time (the legacy data pack was built three times per world creation, 0.2 to 0.7 s each).
+  The metadata-only open builds nothing now.
+
+The spawn area size is vanilla's game rule `spawnChunkRadius` (default 2; `/gamerule spawnChunkRadius 0` keeps no chunks loaded around
+the spawn and makes "Preparing spawn area" almost instant); Legacy Connector does not change it. Chunk generation in parallel and faster
+world generation are left to C2ME and friends.
+
 ## Legacy rendering on the client
 
 Measured in ATM10 with the Reika mods (spark, 60 s of the render thread, before 0.3.11): Legacy Connector took 8.3% of the render thread, the pack

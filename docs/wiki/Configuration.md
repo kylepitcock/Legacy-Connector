@@ -14,6 +14,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `blocks.flattenSubtypes` | `true` | Legacy block subtypes become blocks of their own, as in the 1.13 flattening: the item `mod:name_3` places and names the block `mod:name_3`, so modern mods that use an item's block (display stands, framed and copycat blocks) get the right subtype. `false`: one block per legacy block as before; the subtype blocks stay registered and their blocks in saved worlds turn back into the base block when the chunk loads (see [Bridges](Bridges.md#block-subtypes-flattening)) |
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village house pools (with their 1.7.10 share); `false` leaves villages vanilla |
 | `compat.rocketnautics.plasmaEveryTicks` | `4` | Rocketnautics (Create Aeronautics) rebuilds its star plasma sky texture every tick even with its custom sky off (about 11% of frame time); it is rebuilt every N ticks instead. `1` restores the original |
+| `perf.lazyPackMetadata` | `true` | The generated legacy data and asset packs build no content when the game opens them only to read their metadata (once per pack scan; every scan built all files). See [Performance](Performance.md#world-load) |
 | `events.skip` | empty | Comma separated legacy event handlers that are not registered, as `full.ClassName#method` or `full.ClassName#*` (to find which legacy handler draws or does something unwanted) |
 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |

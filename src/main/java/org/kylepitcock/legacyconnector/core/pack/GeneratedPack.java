@@ -46,8 +46,17 @@ public final class GeneratedPack implements PackResources {
     private final Map<String, Supplier<byte[]>> files = new TreeMap<>();
 
     private GeneratedPack(PackLocationInfo location, PackType type, boolean recipes) {
+        this(location, type, recipes, false);
+    }
+
+    /**
+     * @param metadataOnly a pack opened only for its metadata ({@code Pack.ResourcesSupplier.openPrimary}: the pack format, feature
+     *        flags and overlays, read once per pack repository scan): no content is generated, see {@code perf.lazyPackMetadata}
+     */
+    private GeneratedPack(PackLocationInfo location, PackType type, boolean recipes, boolean metadataOnly) {
         this.location = location;
         this.type = type;
+        if (metadataOnly) return;
         if (type == PackType.CLIENT_RESOURCES) GeneratedTranslations.contribute(files);
         List<Contributor> all = new java.util.ArrayList<>(recipes ? RECIPE_CONTRIBUTORS : CONTRIBUTORS);
         if (!recipes) all.addAll(LATE_CONTRIBUTORS);
@@ -117,7 +126,8 @@ public final class GeneratedPack implements PackResources {
         Pack.ResourcesSupplier supplier = new Pack.ResourcesSupplier() {
             @Override
             public PackResources openPrimary(PackLocationInfo location) {
-                return new GeneratedPack(location, type, recipes);
+                // read for the pack metadata only (Pack.readPackMetadata, NeoForge's readMeta), which needs no generated file
+                return new GeneratedPack(location, type, recipes, org.kylepitcock.legacyconnector.core.LegacyConfig.perfLazyPackMetadata());
             }
 
             @Override
