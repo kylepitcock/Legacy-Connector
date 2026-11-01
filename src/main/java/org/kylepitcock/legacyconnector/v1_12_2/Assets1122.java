@@ -503,8 +503,27 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         return ResourceLocation.fromNamespaceAndPath(blockId.getNamespace(), path);
     }
 
-    /** A model with the variant's model as parent and its x/y rotation as root transform (a blockstate turns the model as BlockModelRotation does). */
+    /**
+     * A model drawing the variant's model turned as a blockstate variant turns it: x/y as BlockModelRotation and, unlike a root transform,
+     * uvlock (stairs corners, logs; see VariantModel1122). Only the client bakes models, so the server never reads the loader name.
+     */
     private static JsonObject rotated(JsonObject variant) {
+        int x = variant.has("x") && variant.get("x").isJsonPrimitive() ? variant.get("x").getAsInt() : 0;
+        int y = variant.has("y") && variant.get("y").isJsonPrimitive() ? variant.get("y").getAsInt() : 0;
+        if (x % 90 == 0 && y % 90 == 0) {
+            JsonObject model = new JsonObject();
+            model.addProperty("loader", "legacyconnector:variant1122");
+            model.addProperty("model", variant.get("model").getAsString());
+            if (x != 0) model.addProperty("x", x);
+            if (y != 0) model.addProperty("y", y);
+            if (variant.has("uvlock")) model.add("uvlock", variant.get("uvlock"));
+            return model;
+        }
+        return transformed(variant);
+    }
+
+    /** A model with the variant's model as parent and its x/y rotation as root transform (a blockstate turns the model as BlockModelRotation does). */
+    private static JsonObject transformed(JsonObject variant) {
         JsonObject model = new JsonObject();
         model.addProperty("parent", variant.get("model").getAsString());
         JsonArray rotation = rotationOf(variant);

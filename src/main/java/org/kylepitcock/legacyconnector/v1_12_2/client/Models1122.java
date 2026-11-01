@@ -191,6 +191,12 @@ public final class Models1122 {
     /** The standalone model location of each block state beyond its metadata that has a model of its own (built with the location map). */
     private static volatile Map<IBlockState, net.minecraft.client.resources.model.ModelResourceLocation> stateLocations = Map.of();
 
+    /** The standalone model locations of the block states beyond their metadata that have models of their own. */
+    static Map<IBlockState, net.minecraft.client.resources.model.ModelResourceLocation> stateLocations() {
+        if (locations == null) locations = buildLocations();
+        return stateLocations;
+    }
+
     /**
      * The model of a block state the metadata does not hold, as 1.12 baked it from the state's own variant (see Assets1122.stateModel),
      * or null when it has none.

@@ -61,6 +61,9 @@ public final class Client1122 {
             if (present()) Colors1122.onItemColors(e);
         });
         modBus.addListener(Client1122::onModifyBaking);
+        // the models of states beyond the metadata are blockstate variants baked on their own (rotation with uvlock)
+        modBus.addListener((net.neoforged.neoforge.client.event.ModelEvent.RegisterGeometryLoaders e) ->
+                e.register(VariantModel1122.ID, VariantModel1122.Loader.INSTANCE));
         // model predicates of mod items (Item.addPropertyOverride)
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
             if (present()) ItemProperties1122.register();
@@ -124,6 +127,11 @@ public final class Client1122 {
             RenderErrors1122.report("posting ModelBakeEvent", e);
         }
         CustomModels1122.setBaking(null);
+        try {
+            ActualStateModels1122.wrap(event.getModels());
+        } catch (RuntimeException | LinkageError e) {
+            RenderErrors1122.report("choosing models by actual state", e);
+        }
         if (registry.replaced > 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Models").info("1.12.2 mods replaced {} baked model(s)", registry.replaced);
     }
 

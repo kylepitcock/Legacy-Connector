@@ -77,6 +77,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean collisionList;
     private final boolean pushReaction;
     private final boolean relativeHardness;
+    /** The block traces rays over its collision boxes and has no bounding box of its own (1.12 stairs): those boxes are its outline. */
+    private final boolean tracedBoxes;
     // hooks taking an IBlockAccess
     private final boolean bounds;
     private final boolean collisionBox;
@@ -128,6 +130,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         Class<?> A = legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess.class;
         this.bounds = overrides(legacy, "getBoundingBox", S, A, P);
         this.collisionBox = overrides(legacy, "getCollisionBoundingBox", S, A, P);
+        Class<?> V = legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d.class;
+        this.tracedBoxes = collisionList && !bounds && overrides(legacy, "collisionRayTrace", S, W, P, V, V);
         this.replaceable = overrides(legacy, "isReplaceable", A, P);
         this.lightValue = overrides(legacy, "getLightValue", S, A, P);
         this.lightOpacity = overrides(legacy, "getLightOpacity", S, A, P);
@@ -510,6 +514,11 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     @Override
     protected net.minecraft.world.phys.shapes.VoxelShape getShape(BlockState state, net.minecraft.world.level.BlockGetter getter, BlockPos pos,
             net.minecraft.world.phys.shapes.CollisionContext context) {
+        if (tracedBoxes && getter instanceof Level level && !IN_LEGACY_SHAPE.get()[0] && level.getBlockState(pos).is(this)) {
+            // the block is selected through its collision boxes (1.12 stairs: collisionRayTrace over each box), so they are its outline
+            var b = collisionBoxes(state, level, pos, null);
+            if (b != null && !b.isEmpty()) return b;
+        }
         if (bounds && !IN_LEGACY_SHAPE.get()[0]) {
             var b = legacyBox(state, getter, pos, false);
             if (b != null) return b;
@@ -557,17 +566,28 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             }
             return super.getCollisionShape(state, getter, pos, context);
         }
+        var entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec && ec.getEntity() != null ? entity(ec.getEntity()) : null;
+        var shape = collisionBoxes(state, level, pos, entity);
+        return shape != null ? shape : super.getCollisionShape(state, getter, pos, context);
+    }
+
+    /**
+     * What the mod's addCollisionBoxToList adds for a mask around the block, as one shape (null when it failed). The state given is the
+     * stored one, so the call says it is not the actual state, as 1.12's World.getCollisionBoxes did (stairs and fences work out their
+     * shape and connections from it).
+     */
+    private net.minecraft.world.phys.shapes.VoxelShape collisionBoxes(BlockState state, Level level, BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
         List<legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB> boxes = new ArrayList<>();
         var mask = new legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1, pos.getX() + 2,
                 pos.getY() + 2, pos.getZ() + 2);
-        var entity = context instanceof net.minecraft.world.phys.shapes.EntityCollisionContext ec && ec.getEntity() != null ? entity(ec.getEntity()) : null;
         boolean[] guard = IN_LEGACY_SHAPE.get();
         guard[0] = true;
         try {
-            legacy.addCollisionBoxToList(state(state), world(level), pos(pos), mask, boxes, entity, true);
+            legacy.addCollisionBoxToList(state(state), world(level), pos(pos), mask, boxes, entity, false);
         } catch (RuntimeException | LinkageError e) {
             failure("addCollisionBoxToList", e);
-            return super.getCollisionShape(state, getter, pos, context);
+            return null;
         } finally {
             guard[0] = false;
         }
