@@ -17,8 +17,9 @@ import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 
 /**
  * NEI's base recipe handler, behaving as in NEI 1.0.5: subclasses fill {@link #arecipes} from
- * {@code loadCraftingRecipes}/{@code loadUsageRecipes}. Under Legacy Connector the recipes are shown in JEI; drawing hooks are
- * not called.
+ * {@code loadCraftingRecipes}/{@code loadUsageRecipes}. Under Legacy Connector the recipes are shown in JEI, which calls
+ * {@link #drawBackground}/{@link #drawForeground} inside the recipe area with NEI's origin (the handler's 166-wide area, where
+ * its {@link PositionedStack}s are placed), so the machine picture, gauges and text a handler draws appear as in NEI.
  */
 public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageHandler {
     public int cycleticks;
@@ -55,10 +56,46 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
     public void drawExtras(int recipe) {
     }
 
+    /** NEI: a bar filling over {@code ticks} ticks, restarting (driven by {@link #cycleticks}). */
     public void drawProgressBar(int x, int y, int tx, int ty, int w, int h, int ticks, int direction) {
+        drawProgressBar(x, y, tx, ty, w, h, ticks <= 0 ? 0.0F : (cycleticks % ticks) / (float) ticks, direction);
     }
 
+    /**
+     * NEI: draws the part {@code completion} of the texture region (tx, ty, w, h) at (x, y), growing right (0), down (1), left (2)
+     * or up (3); directions 4-7 are the same directions emptying instead of filling.
+     */
     public void drawProgressBar(int x, int y, int tx, int ty, int w, int h, float completion, int direction) {
+        if (direction > 3) {
+            completion = 1.0F - completion;
+            direction %= 4;
+        }
+        int var = (int) (completion * (direction % 2 == 0 ? w : h));
+        switch (direction) {
+            case 0 -> mcc$drawTexturedModalRect(x, y, tx, ty, var, h);
+            case 1 -> mcc$drawTexturedModalRect(x, y, tx, ty, w, var);
+            case 2 -> mcc$drawTexturedModalRect(x + w - var, y, tx + w - var, ty, var, h);
+            case 3 -> mcc$drawTexturedModalRect(x, y + h - var, tx, ty + h - var, w, var);
+            default -> {
+            }
+        }
+    }
+
+    /** NEI's {@code GuiDraw.changeTexture(String)}: {@code new ResourceLocation(path)} bound through the texture manager. */
+    public static void mcc$changeTexture(String texture) {
+        if (texture == null || texture.isEmpty()) return;
+        legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft().getTextureManager()
+                .bindTexture(MCC$TEXTURES.computeIfAbsent(texture, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation::new));
+    }
+
+    private static final java.util.Map<String, legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation> MCC$TEXTURES =
+            new java.util.concurrent.ConcurrentHashMap<>();
+    private static final legacyconnector.v1_7_10.net.minecraft.client.gui.Gui MCC$GUI = new legacyconnector.v1_7_10.net.minecraft.client.gui.Gui();
+
+    /** NEI's {@code GuiDraw.drawTexturedModalRect}: a region of the bound 256x256 texture. */
+    public static void mcc$drawTexturedModalRect(int x, int y, int u, int v, int w, int h) {
+        if (w <= 0 || h <= 0) return;
+        MCC$GUI.drawTexturedModalRect(x, y, u, v, w, h);
     }
 
     public List<Class<? extends GuiContainer>> getRecipeTransferRectGuis() {
@@ -101,12 +138,23 @@ public abstract class TemplateRecipeHandler implements ICraftingHandler, IUsageH
         return arecipes.size();
     }
 
+    /** NEI: the region (5, 11, 166x65) of the handler's GUI texture at the origin. */
     @Override
     public void drawBackground(int recipe) {
+        legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        String texture = getGuiTexture();
+        if (texture == null) return;
+        mcc$changeTexture(texture);
+        mcc$drawTexturedModalRect(0, 0, 5, 11, 166, 65);
     }
 
+    /** NEI: the GUI texture bound again (progress bars are cut from it), then {@link #drawExtras}. */
     @Override
     public void drawForeground(int recipe) {
+        legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
+        legacyconnector.v1_7_10.org.lwjgl.opengl.GL11.glDisable(2896); // GL_LIGHTING
+        mcc$changeTexture(getGuiTexture());
+        drawExtras(recipe);
     }
 
     @Override

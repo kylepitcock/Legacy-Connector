@@ -29,7 +29,11 @@ public final class NeiBridge {
     /** A slot of a legacy recipe: position in the handler's area and the modern stacks it cycles through. */
     public record Slot(int x, int y, List<net.minecraft.world.item.ItemStack> stacks) {}
 
-    public record Recipe(List<Slot> inputs, List<Slot> outputs, List<Slot> others) {}
+    /**
+     * One recipe: its slots, plus the handler instance that loaded it and its index there, so the JEI category can run the
+     * handler's own drawing ({@code drawBackground(index)}, {@code drawForeground(index)}) for it as NEI did.
+     */
+    public record Recipe(List<Slot> inputs, List<Slot> outputs, List<Slot> others, TemplateRecipeHandler handler, int index) {}
 
     private NeiBridge() {}
 
@@ -137,7 +141,7 @@ public final class NeiBridge {
                 for (int i = 0; i < h.numRecipes(); i++) {
                     try {
                         PositionedStack result = h.getResultStack(i);
-                        out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i))));
+                        out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i));
                     } catch (RuntimeException | LinkageError e) {
                         // skip a broken recipe
                     }
@@ -187,7 +191,7 @@ public final class NeiBridge {
             for (int i = 0; i < h.numRecipes(); i++) {
                 try {
                     PositionedStack result = h.getResultStack(i);
-                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i))));
+                    out.add(new Recipe(slots(h.getIngredientStacks(i)), slots(result == null ? List.of() : List.of(result)), slots(h.getOtherStacks(i)), h, i));
                 } catch (RuntimeException | LinkageError e) {
                     // skip a broken recipe
                 }
