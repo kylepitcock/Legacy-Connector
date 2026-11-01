@@ -651,8 +651,33 @@ public final class EventBridge1710 {
         if (!wanted) return null;
         if (!(EntityBridge.wrap(entity) instanceof EntityLivingBase living)) return null;
         double x = at[0], y = at[1], z = at[2];
-        return pre ? new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre(living, null, x, y, z)
-                : new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post(living, null, x, y, z);
+        var renderer = livingRenderer(living);
+        return pre ? new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre(living, renderer, x, y, z)
+                : new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post(living, renderer, x, y, z);
+    }
+
+    private static final java.util.Map<Class<?>, legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RendererLivingEntity> LIVING_RENDERERS =
+            new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The renderer a 1.7.10 RenderLivingEvent carries: the legacy one registered for the entity, else one stand-in per entity class (a
+     * modern entity draws with its modern renderer, but 1.7.10 events always carried one: ChromatiCraft swaps the slime renderer's model
+     * and threw on null for every slime drawn).
+     */
+    private static legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RendererLivingEntity livingRenderer(EntityLivingBase living) {
+        try {
+            if (legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.instance.getEntityRenderObject(living)
+                    instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RendererLivingEntity r) return r;
+        } catch (RuntimeException | LinkageError e) {
+            // a stand-in
+        }
+        return LIVING_RENDERERS.computeIfAbsent(living.getClass(),
+                c -> new legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RendererLivingEntity(null, 0.5F) {
+                    @Override
+                    protected legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation getEntityTexture(legacyconnector.v1_7_10.net.minecraft.entity.Entity entity) {
+                        return null;
+                    }
+                });
     }
 
     /**
