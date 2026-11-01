@@ -51,23 +51,55 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
     public static final MapCodec<LegacyVillagePoolElement> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.STRING.fieldOf("handler").forGetter(e -> e.handler),
             Codec.STRING.fieldOf("village").forGetter(e -> e.village),
+            BoundingBox.CODEC.listOf().optionalFieldOf("streets", List.of()).forGetter(e -> e.streets),
+            BoundingBox.CODEC.listOf().optionalFieldOf("buildings", List.of()).forGetter(e -> e.buildings),
             projectionCodec()).apply(i, LegacyVillagePoolElement::new));
 
     public static StructurePoolElementType<LegacyVillagePoolElement> TYPE;
 
+    /** The handler: its class and the component class it builds (Witchery registers one handler class per component). */
     private final String handler;
     private final String village;
+    /** The village this piece was added to: its streets and other pieces, handed to the component as 1.7.10's component list. */
+    private final List<BoundingBox> streets;
+    private final List<BoundingBox> buildings;
 
     public LegacyVillagePoolElement(String handler, String village, StructureTemplatePool.Projection projection) {
+        this(handler, village, List.of(), List.of(), projection);
+    }
+
+    public LegacyVillagePoolElement(String handler, String village, List<BoundingBox> streets, List<BoundingBox> buildings,
+            StructureTemplatePool.Projection projection) {
         super(projection);
         this.handler = handler;
         this.village = village;
+        this.streets = List.copyOf(streets);
+        this.buildings = List.copyOf(buildings);
+    }
+
+    /** This building as added to one village: the same component, knowing the village's streets and pieces. */
+    public LegacyVillagePoolElement inVillage(List<BoundingBox> villageStreets, List<BoundingBox> villageBuildings) {
+        return new LegacyVillagePoolElement(handler, village, villageStreets, villageBuildings, getProjection());
+    }
+
+    /** The key a handler is saved under: its class and its component's class (one handler class may build several components). */
+    public static String key(VillagerRegistry.IVillageCreationHandler h) {
+        String component;
+        try {
+            Class<?> c = h.getComponentClass();
+            component = c == null ? "" : c.getName();
+        } catch (RuntimeException | LinkageError e) {
+            component = "";
+        }
+        return component.isEmpty() ? h.getClass().getName() : h.getClass().getName() + "/" + component;
     }
 
     // ------------------------------------------------------------------ the legacy component
 
     private VillagerRegistry.IVillageCreationHandler handler() {
-        for (var h : VillagerBridge.creationHandlers()) if (h.getClass().getName().equals(handler)) return h;
+        for (var h : VillagerBridge.creationHandlers()) if (key(h).equals(handler)) return h;
+        // saved before the key named the component: the handler class alone
+        if (handler.indexOf('/') < 0) for (var h : VillagerBridge.creationHandlers()) if (h.getClass().getName().equals(handler)) return h;
         return null;
     }
 
@@ -105,59 +137,118 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
         return start;
     }
 
-    /** Footprints smaller than this (x by z) are not buildings: a wall post would take a house's place in the village. */
-    private static final int MIN_SPAN = 3;
     /** Pieces a component may add by continuing the layout (1.7.10's pending list), at most. */
     private static final int MAX_PIECES = 64;
 
+    /** A built group: the handler's components, and the whole component list they were built into (with the village's stand-ins). */
+    private record Group(List<StructureComponent> parts, List<StructureComponent> list) {}
+
     /**
      * The handler's component built with its plot corner at (x, y, z), followed by every piece it adds by continuing the layout
-     * from its own paths, processed as 1.7.10's village start did (Witchery's district wall is a 2x2 post that adds the next post;
-     * on its own it was one post taking a house's plot). Empty when the handler builds nothing.
+     * from its own paths, processed as 1.7.10's village start did. The component list it is built into holds the village around it
+     * as 1.7.10's did ({@link #standIns}): components may keep that list (Witchery's town wall hands it to the tile entity that later
+     * walls in the village along its paths). Empty when the handler builds nothing.
      */
-    private List<StructureComponent> build(int x, int y, int z, int mode, long seed) {
+    private Group build(int x, int y, int z, int mode, long seed, boolean withVillage) {
         var h = handler();
-        if (h == null) return List.of();
+        if (h == null) return new Group(List.of(), List.of());
         try {
             Random rand = new Random(seed);
             StructureVillagePieces.PieceWeight weight = h.getVillagePieceWeight(rand, 0);
-            if (weight == null) return List.of();
+            if (weight == null) return new Group(List.of(), List.of());
             StructureVillagePieces.Start start = start(rand);
             List<Object> pieces = new ArrayList<>();
+            if (withVillage) pieces.addAll(standIns(start, PLAN_Y));
+            int known = pieces.size();
             Object built = h.buildComponent(weight, start, pieces, rand, x, y, z, mode, 1);
-            if (!(built instanceof StructureComponent first) || first.getBoundingBox() == null) return List.of();
+            if (!(built instanceof StructureComponent first) || first.getBoundingBox() == null) return new Group(List.of(), List.of());
             pieces.add(first);
             first.buildComponent(start, pieces, rand);
             for (int guard = 0; !start.field_74932_i.isEmpty() && guard < MAX_PIECES; guard++) {
                 Object next = start.field_74932_i.remove(0);
                 if (next instanceof StructureComponent c) c.buildComponent(start, pieces, rand);
             }
-            List<StructureComponent> out = new ArrayList<>();
-            for (Object o : pieces) if (o instanceof StructureComponent c && c.getBoundingBox() != null && out.size() < MAX_PIECES) out.add(c);
-            return out;
+            List<StructureComponent> parts = new ArrayList<>();
+            List<StructureComponent> list = new ArrayList<>();
+            for (int n = 0; n < pieces.size(); n++) {
+                if (!(pieces.get(n) instanceof StructureComponent c) || c.getBoundingBox() == null) continue;
+                list.add(c);
+                if (n >= known && parts.size() < MAX_PIECES) parts.add(c);
+            }
+            return new Group(parts, list);
         } catch (RuntimeException | LinkageError e) {
             LOG.debug("Village creation handler {} built nothing: {}", handler, e.toString());
-            return List.of();
+            return new Group(List.of(), List.of());
         }
     }
 
-    /** The footprint of the whole group relative to the plot corner, for a mode; null when it is no building. Fixed per mode. */
-    private final BoundingBox[] shapes = new BoundingBox[4];
-    private final boolean[] shaped = new boolean[4];
+    /**
+     * The modern village as 1.7.10's component list showed it to a village component (at the planning height): every street as a
+     * {@code Path}, and every other piece of the village too, as one-block strips along its street, so that code taking the
+     * village's extent from its paths (Witchery's town wall: each path widened by 20 blocks along it and 7 across) also covers the
+     * modern buildings, which reach deeper than 1.7.10's. The buildings come first and each one's strip at the street last, and the
+     * streets after them, so the gates such code leaves at the far ends of a path stay at the ends of the streets.
+     */
+    private List<StructureComponent> standIns(StructureVillagePieces.Start start, int dy) {
+        List<StructureComponent> out = new ArrayList<>();
+        Random none = new Random(0);
+        for (BoundingBox b : buildings) {
+            BoundingBox street = nearest(b);
+            if (street == null) continue;
+            boolean alongX = street.getXSpan() >= street.getZSpan();
+            // a strip is one block deep and runs along the street; a piece narrower than 2 along it is no building (a lamp)
+            if ((alongX ? b.getXSpan() : b.getZSpan()) < 2) continue;
+            boolean streetLow = alongX ? street.minZ() + street.maxZ() < b.minZ() + b.maxZ() : street.minX() + street.maxX() < b.minX() + b.maxX();
+            int from = alongX ? b.minZ() : b.minX(), to = alongX ? b.maxZ() : b.maxX();
+            for (int n = 0; n <= to - from; n++) {
+                int at = streetLow ? to - n : from + n; // the strip at the street last
+                StructureBoundingBox strip = alongX
+                        ? new StructureBoundingBox(b.minX(), b.minY() + dy, at, b.maxX(), b.maxY() + dy, at)
+                        : new StructureBoundingBox(at, b.minY() + dy, b.minZ(), at, b.maxY() + dy, b.maxZ());
+                out.add(new StructureVillagePieces.Path(start, 0, none, strip, alongX ? 0 : 1));
+            }
+        }
+        for (BoundingBox s : streets) {
+            StructureBoundingBox box = new StructureBoundingBox(s.minX(), s.minY() + dy, s.minZ(), s.maxX(), s.maxY() + dy, s.maxZ());
+            out.add(new StructureVillagePieces.Path(start, 0, none, box, s.getXSpan() >= s.getZSpan() ? 0 : 1));
+        }
+        return out;
+    }
+
+    /** The street nearest to a box (by the gap between them), or null when the village has none. */
+    private BoundingBox nearest(BoundingBox b) {
+        BoundingBox best = null;
+        long bestGap = Long.MAX_VALUE;
+        for (BoundingBox s : streets) {
+            long gx = Math.max(0, Math.max(s.minX() - b.maxX(), b.minX() - s.maxX()));
+            long gz = Math.max(0, Math.max(s.minZ() - b.maxZ(), b.minZ() - s.maxZ()));
+            long gap = gx * gx + gz * gz;
+            if (gap < bestGap) {
+                bestGap = gap;
+                best = s;
+            }
+        }
+        return best;
+    }
+
+    /** Footprints of the group relative to the plot corner, per handler, village type and mode (empty: builds nothing there). */
+    private static final java.util.Map<String, java.util.Optional<BoundingBox>> SHAPES = new java.util.concurrent.ConcurrentHashMap<>();
 
     private BoundingBox shape(int mode) {
-        if (!shaped[mode]) {
+        String k = handler + "|" + village + "|" + mode;
+        var known = SHAPES.get(k);
+        if (known == null) {
+            // not computeIfAbsent: building the component may load classes that plan other shapes
             BoundingBox union = null;
-            for (StructureComponent c : build(0, PLAN_Y, 0, mode, handler.hashCode())) {
+            for (StructureComponent c : build(0, PLAN_Y, 0, mode, handler.hashCode(), false).parts()) {
                 StructureBoundingBox b = c.getBoundingBox();
                 BoundingBox m = new BoundingBox(b.minX, b.minY - PLAN_Y, b.minZ, b.maxX, b.maxY - PLAN_Y, b.maxZ);
                 union = union == null ? m : BoundingBox.encapsulatingBoxes(List.of(union, m)).orElse(union);
             }
-            if (union != null && (union.getXSpan() < MIN_SPAN || union.getZSpan() < MIN_SPAN)) union = null;
-            shapes[mode] = union;
-            shaped[mode] = true;
+            known = java.util.Optional.ofNullable(union);
+            SHAPES.putIfAbsent(k, known);
         }
-        return shapes[mode];
+        return known.orElse(null);
     }
 
     /** The footprint of the building relative to its plot corner in a 1.7.10 mode (coordBaseMode), or null when it builds nothing there. */
@@ -172,7 +263,10 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
         return b == null ? "none" : b.getXSpan() + "x" + b.getYSpan() + "x" + b.getZSpan();
     }
 
-    /** Whether the handler builds a real building (some mode has a footprint of at least 3x3): only those join the pools. */
+    /**
+     * Whether the handler builds anything. Small components count too: added beside the streets they take no house's place, and
+     * some are village-wide machinery rather than buildings (Witchery's 2x2 town wall post holds the block that later walls the village).
+     */
     public boolean isBuilding() {
         for (int mode = 0; mode < 4; mode++) if (shape(mode) != null) return true;
         return false;
@@ -222,15 +316,17 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
             BlockPos offset, BlockPos pivot, Rotation rotation, BoundingBox box, RandomSource random, LiquidSettings liquidSettings, boolean keepJigsaws) {
         int mode = mode(rotation);
         if (shape(mode) == null) return false;
-        List<StructureComponent> group = build(offset.getX(), offset.getY() + PLAN_Y, offset.getZ(), mode, handler.hashCode());
-        if (group.isEmpty()) return false;
+        Group group = build(offset.getX(), offset.getY() + PLAN_Y, offset.getZ(), mode, handler.hashCode(), true);
+        if (group.parts().isEmpty()) return false;
         StructureBoundingBox chunk = new StructureBoundingBox(box.minX(), box.minY(), box.minZ(), box.maxX(), box.maxY(), box.maxZ());
         World world = World.mcc$wrap(level);
         Random rand = new Random(random.nextLong());
-        for (StructureComponent component : group) {
-            // planned at PLAN_Y: down to the street the jigsaw put it on, ground level already found (no 1.7.10 averaging)
-            component.getBoundingBox().offset(0, -PLAN_Y, 0);
-            if (component instanceof StructureVillagePieces.Village v) v.mcc$setGroundLevel(group.get(0).getBoundingBox().minY);
+        // planned at PLAN_Y: down to the street the jigsaw put it on (the village's stand-ins too, which components may keep)
+        for (StructureComponent c : group.list()) c.getBoundingBox().offset(0, -PLAN_Y, 0);
+        int ground = group.parts().get(0).getBoundingBox().minY;
+        for (StructureComponent component : group.parts()) {
+            // ground level already found (no 1.7.10 averaging)
+            if (component instanceof StructureVillagePieces.Village v) v.mcc$setGroundLevel(ground);
             if (!component.getBoundingBox().intersectsWith(chunk)) continue;
             try {
                 component.addComponentParts(world, rand, chunk);
