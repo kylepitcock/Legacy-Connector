@@ -480,6 +480,16 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     // ------------------------------------------------------------------ sounds
 
+    /**
+     * The periodic idle sound (Mob.baseTick's timer, as 1.7.10's onEntityUpdate). Mods that override {@code playLivingSound}
+     * (to pick among several sounds, play only in some states, or with their own volume and pitch) have theirs run.
+     */
+    @Override
+    public void playAmbientSound() {
+        if (legacy instanceof EntityLiving l && LegacyHookState.customLivingSound(l)) l.playLivingSound();
+        else super.playAmbientSound();
+    }
+
     @Override
     protected SoundEvent getAmbientSound() {
         return legacy instanceof EntityLiving l ? SoundBridge.sound(l.mcc$livingSound()) : super.getAmbientSound();

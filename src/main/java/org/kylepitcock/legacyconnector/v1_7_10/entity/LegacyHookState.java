@@ -61,6 +61,10 @@ final class LegacyHookState {
         return LegacyHosts.overrides(legacy.getClass(), "playStepSound", int.class, int.class, int.class, legacyconnector.v1_7_10.net.minecraft.block.Block.class);
     }
 
+    static boolean customLivingSound(Entity legacy) {
+        return LegacyHosts.overrides(legacy.getClass(), "playLivingSound");
+    }
+
     /** Legacy carts interpolate the server position themselves (EntityMinecart's turnProgress). */
     static boolean customLerp(Entity legacy) {
         if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.item.EntityMinecart) return true;

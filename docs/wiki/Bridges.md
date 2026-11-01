@@ -161,7 +161,15 @@ layer serves each source:
   `custom_path:Reika/.../x.ogg`) are played from that file (`LegacySoundFiles`).
 - **Volume sliders:** 1.7.10 took a sound's category from its sounds.json event (`"category": "block"`); the loader keeps it as
   `legacy_category` (the modern format has none) and the sound plays under the matching `SoundSource` (block, hostile, neutral,
-  player, ambient, weather, record, music, master). Events without one play as blocks (world sounds) or master (client sounds), as before.
+  player, ambient, weather, record, music, master). Events without one play under the entity's own slider (`Entity.playSound`,
+  `playSoundAtEntity`), as blocks (other world sounds) or master (client sounds).
+- **Names:** `modid:name` is the mod's event. A name without a domain was minecraft's in 1.7.10: one a mod declares in its own
+  `assets/minecraft/sounds.json` plays that event, one in the mod's own sounds.json plays the mod's, and the 1.7.10 vanilla names
+  (`mob.zombie.say`, `game.hostile.die`, `random.pop`...) are translated to their 1.9+ events (`SoundBridge`). Only names 1.7.10 itself
+  declared are translated, each to its exact event: an unknown `mob.<mob>.<x>` is not guessed to a modern mob's ambient or hurt sound.
+- **Mob sounds:** a legacy mob's idle, hurt and death sounds are its `getLivingSound`/`getHurtSound`/`getDeathSound`, and a mob that
+  overrides `playLivingSound` plays its idle sounds through it. (OreSpawn's beaver sounding like its frog is the mod's own choice: both
+  use `orespawn:scorpion_hit` as their hurt sound.)
 - **Fall-off with distance** (`LegacyAttenuation`): 1.7.10's sound library computed a linear source's gain itself, `1 - distance / range`
   with range 16 blocks times the volume when that is above 1 (a volume above 1 only reaches further, the gain is capped at 1). The modern
   engine leaves the fall-off to OpenAL, which does not attenuate stereo files, and most mods of that time ship stereo files (111 of

@@ -1383,7 +1383,8 @@ public class World implements IBlockAccess {
 
     public void playSoundAtEntity(Entity entity, String name, float volume, float pitch) {
         Level level = mcc$liveLevel();
-        if (level != null) SoundBridge.play(level, null, entity.mcc$x(), entity.mcc$y(), entity.mcc$z(), name, volume, pitch);
+        if (level != null) SoundBridge.play(level, null, entity.mcc$x(), entity.mcc$y(), entity.mcc$z(), name, volume, pitch,
+                entity.mcc$entity != null ? entity.mcc$entity.getSoundSource() : net.minecraft.sounds.SoundSource.NEUTRAL);
     }
 
     public void playSoundToNearExcept(EntityPlayer player, String name, float volume, float pitch) {

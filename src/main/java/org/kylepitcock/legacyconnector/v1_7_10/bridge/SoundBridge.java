@@ -111,6 +111,8 @@ public final class SoundBridge {
             {"fireworks.launch", "entity.firework_rocket.launch"},
             {"fireworks.twinkle", "entity.firework_rocket.twinkle"},
             {"fireworks.twinkle_far", "entity.firework_rocket.twinkle_far"},
+            {"mob.blaze.breathe", "entity.blaze.ambient"},
+            {"mob.creeper.say", "entity.creeper.hurt"}, // 1.7.10's creeper "say" was its hurt sound
             {"mob.cat.hitt", "entity.cat.hurt"},
             {"mob.cat.meow", "entity.cat.ambient"},
             {"mob.enderdragon.wings", "entity.ender_dragon.flap"},
@@ -243,20 +245,11 @@ public final class SoundBridge {
                         for (var mod : list.getMods()) {
                             String id = mod.getModId();
                             if (id.equals("minecraft") || id.equals("neoforge")) continue;
-                            var path = mod.getOwningFile().getFile().findResource("assets", id, "sounds.json");
-                            if (!java.nio.file.Files.isRegularFile(path)) continue;
-                            try (var in = java.nio.file.Files.newBufferedReader(path)) {
-                                var root = com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
-                                for (var entry : root.entrySet()) {
-                                    String key = entry.getKey();
-                                    keys.putIfAbsent(Ids.normalizePath(key), id);
-                                    if (entry.getValue().isJsonObject() && entry.getValue().getAsJsonObject().get("legacy_category") instanceof com.google.gson.JsonPrimitive c) {
-                                        categories.put(id + ":" + Ids.normalizePath(key), c.getAsString());
-                                    }
-                                }
-                            } catch (Exception ignored) {
-                                // unreadable or malformed sounds.json: that mod declares nothing
-                            }
+                            var file = mod.getOwningFile().getFile();
+                            readSoundKeys(file.findResource("assets", id, "sounds.json"), id, keys, categories, false);
+                            // 1.7.10 read a name without a domain as minecraft's, and mods declared such sounds in their own
+                            // assets/minecraft/sounds.json (merged with vanilla's): those win over the guesses below
+                            readSoundKeys(file.findResource("assets", "minecraft", "sounds.json"), "minecraft", keys, categories, true);
                         }
                     } catch (Throwable t) {
                         // no mod list (tests): nothing declared
@@ -269,11 +262,38 @@ public final class SoundBridge {
         return keys.get(Ids.normalizePath(name));
     }
 
-    /** 1.7.10 vanilla sound events renamed in 1.9: {@code mob.cow.say} is {@code entity.cow.ambient}, {@code mob.zombie.hurt} is {@code entity.zombie.hurt}. */
+    private static void readSoundKeys(java.nio.file.Path path, String namespace, Map<String, String> keys, Map<String, String> categories, boolean override) {
+        if (path == null || !java.nio.file.Files.isRegularFile(path)) return;
+        try (var in = java.nio.file.Files.newBufferedReader(path)) {
+            var root = com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
+            for (var entry : root.entrySet()) {
+                String key = Ids.normalizePath(entry.getKey());
+                if (override) keys.put(key, namespace);
+                else keys.putIfAbsent(key, namespace);
+                if (entry.getValue().isJsonObject() && entry.getValue().getAsJsonObject().get("legacy_category") instanceof com.google.gson.JsonPrimitive c) {
+                    categories.put(namespace + ":" + key, c.getAsString());
+                }
+            }
+        } catch (Exception ignored) {
+            // unreadable or malformed sounds.json: that mod declares nothing
+        }
+    }
+
+    /** The mobs whose sounds 1.7.10's own sounds.json declared ({@code mob.<name>.*}); {@code game.*} covers player/neutral/hostile. */
+    private static final java.util.Set<String> VANILLA_MOBS = java.util.Set.of("bat", "blaze", "cat", "chicken", "cow", "creeper", "enderdragon",
+            "endermen", "ghast", "horse", "irongolem", "magmacube", "pig", "sheep", "silverfish", "skeleton", "slime", "spider", "villager", "wither",
+            "wolf", "zombie", "zombiepig");
+
+    /**
+     * 1.7.10 vanilla sound events renamed in 1.9: {@code mob.cow.say} is {@code entity.cow.ambient}, {@code mob.zombie.hurt} is
+     * {@code entity.zombie.hurt}. Only names 1.7.10 declared are translated, each to its own event: a mod's unknown
+     * {@code mob.frog.say} played nothing in 1.7.10 and must not become 1.19's frog, nor an unknown action a mob's ambient sound.
+     */
     private static SoundEvent vanillaEntitySound(String name) {
         if (name.indexOf(':') >= 0) return null;
         String[] parts = name.split("\\.");
         if (parts.length < 3 || !(parts[0].equals("mob") || parts[0].equals("game"))) return null;
+        if (parts[0].equals("mob") ? !VANILLA_MOBS.contains(parts[1]) : !java.util.Set.of("player", "neutral", "hostile").contains(parts[1])) return null;
         String mob = switch (parts[1]) {
             case "endermen" -> "enderman";
             case "irongolem" -> "iron_golem";
@@ -290,27 +310,29 @@ public final class SoundBridge {
         StringBuilder rest = new StringBuilder();
         for (int i = 2; i < parts.length; i++) rest.append(i > 2 ? "." : "").append(parts[i]);
         String action = switch (rest.toString()) {
-            case "say", "idle", "moan", "breathe", "bark" -> "ambient";
+            case "say", "idle", "moan" -> "ambient";
             case "haggle" -> "trade";
             case "hit", "hurtflesh" -> "hurt";
             case "kill" -> "death";
             case "walk" -> "step";
-            case "no" -> "no";
-            case "yes" -> "yes";
             default -> rest.toString().replace("hurt.fall.big", "big_fall").replace("hurt.fall.small", "small_fall");
         };
-        for (String candidate : new String[] {"entity." + mob + "." + action, "entity." + mob + ".ambient", "entity." + mob + ".hurt"}) {
-            var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace(candidate);
-            if (net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(id)) {
-                return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
-            }
-        }
-        return null;
+        // the exact event only (the two 1.7.10 names that do not follow the rule are in RENAMES)
+        var id = net.minecraft.resources.ResourceLocation.withDefaultNamespace("entity." + mob + "." + action);
+        return net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.containsKey(id) ? net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id) : null;
     }
 
     public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch) {
+        play(level, except, x, y, z, name, volume, pitch, SoundSource.BLOCKS);
+    }
+
+    /**
+     * @param fallback the volume slider when the sound's sounds.json names no category: an entity's sounds go to its own
+     *     ({@code hostile}, {@code neutral}...) as the 1.7.10 vanilla mob sounds did, not to the block slider
+     */
+    public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch, SoundSource fallback) {
         if (name == null || name.isEmpty()) return;
-        level.playSound(except, x, y, z, Holder.direct(sound(name)), legacySource(name, SoundSource.BLOCKS), volume, pitch);
+        level.playSound(except, x, y, z, Holder.direct(sound(name)), legacySource(name, fallback), volume, pitch);
     }
 
     public static void particle(LevelAccessor level, String name, double x, double y, double z, double vx, double vy, double vz) {

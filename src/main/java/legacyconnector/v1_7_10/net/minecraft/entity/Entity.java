@@ -1272,7 +1272,7 @@ public abstract class Entity implements ICommandSender {
     }
 
     public void playSound(String name, float volume, float pitch) {
-        if (mcc$entity != null) SoundBridge.play(mcc$entity.level(), null, mcc$x(), mcc$y(), mcc$z(), name, volume, pitch);
+        if (mcc$entity != null) SoundBridge.play(mcc$entity.level(), null, mcc$x(), mcc$y(), mcc$z(), name, volume, pitch, mcc$entity.getSoundSource());
     }
 
     public EntityItem dropItem(Item item, int count) {
