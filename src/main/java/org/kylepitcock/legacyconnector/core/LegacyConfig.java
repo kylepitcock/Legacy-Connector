@@ -34,6 +34,9 @@ public final class LegacyConfig {
             # Replace old vanilla art inside legacy mod textures with the modern vanilla textures: exact copies of old block, item
             # and GUI textures, and old backgrounds (smooth stone, cobblestone, planks, ...) that mods painted their art on.
             modernizeTextures = true
+            # Rebuild legacy leaf textures that are recolours of the old vanilla leaves (most mod trees) from the modern vanilla
+            # leaves, in the mod's colours (fancy and fast variants). Hand-drawn leaves and animated textures stay as they are.
+            textures.modernLeaves = true
 
             # Legacy worlds ended at y=0. When enabled, legacy world generators (ores, caves, ...) run a second time shifted
             # down so that they also fill the modern world below y=0 (legacy y=0 is modern y=-64).
@@ -183,6 +186,11 @@ public final class LegacyConfig {
 
     public static boolean modernizeTexturesEnabled() {
         return bool("modernizeTextures", true);
+    }
+
+    /** Whether legacy leaf textures that recolour the old vanilla leaves are rebuilt in the modern leaf pattern. */
+    public static boolean modernLeavesEnabled() {
+        return bool("textures.modernLeaves", true);
     }
 
     public static boolean oreBackgroundsEnabled() {

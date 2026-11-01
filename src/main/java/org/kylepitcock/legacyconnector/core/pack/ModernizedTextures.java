@@ -96,7 +96,7 @@ public final class ModernizedTextures {
     }
 
     /** The translated legacy jars ({@code .legacyconnector/cache/<name>-<hash>.jar}), not the runtime or the synthesized API. */
-    private static boolean isTranslated(Path jar) {
+    public static boolean isTranslated(Path jar) {
         if (jar == null || jar.getParent() == null || jar.getParent().getParent() == null) return false;
         String name = jar.getFileName().toString();
         return jar.getParent().getFileName().toString().equals("cache") && jar.getParent().getParent().getFileName().toString().equals(".legacyconnector")
