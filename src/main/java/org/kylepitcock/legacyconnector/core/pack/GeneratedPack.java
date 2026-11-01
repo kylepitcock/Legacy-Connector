@@ -63,8 +63,15 @@ public final class GeneratedPack implements PackResources {
         } finally {
             BUILDING.decrementAndGet();
         }
+        if (SPILL && !files.isEmpty()) {
+            PackSpill spill = new PackSpill(location.id());
+            files.replaceAll((path, data) -> spill.wrap(data));
+        }
         LoggerFactory.getLogger("LegacyConnector/Pack").info("Generated {} {} file(s) for legacy mods", files.size(), type == PackType.SERVER_DATA ? "data" : "asset");
     }
+
+    /** perf.packSpill: file contents leave the heap once read (see PackSpill). */
+    private static final boolean SPILL = org.kylepitcock.legacyconnector.core.LegacyConfig.perfPackSpill();
 
     private static final java.util.concurrent.atomic.AtomicInteger BUILDING = new java.util.concurrent.atomic.AtomicInteger();
 
@@ -130,7 +137,13 @@ public final class GeneratedPack implements PackResources {
     }
 
     private static IoSupplier<InputStream> stream(Supplier<byte[]> data) {
-        return () -> new ByteArrayInputStream(data.get());
+        return () -> {
+            try {
+                return new ByteArrayInputStream(data.get());
+            } catch (java.io.UncheckedIOException e) {
+                throw e.getCause();
+            }
+        };
     }
 
     @Override
