@@ -67,6 +67,10 @@ public final class LegacyConfig {
             perf.sweepRemovedPlayers = true
             # Release cached legacy views of closed connections and of inventories whose block was removed or unloaded.
             perf.sweepDeadViews = true
+            # 1.12.2 item stack views without capabilities are held weakly (off: a tag kept without its stack could lose changes).
+            perf.weakStackViews1122 = false
+            # The loader drops its translation tables after mod discovery (read by the loader at startup).
+            perf.releaseLoaderData = true
             """;
     private static Properties values;
 

@@ -17,4 +17,14 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |
 | `energy.fePerMj` | `10` | FE per BuildCraft MJ for BuildCraft power receptors (BuildCraft's own 1 MJ = 10 RF) |
 
+Memory switches (`perf.*`, see [Performance](Performance.md#memory)); each can be turned off on its own:
+
+| Key | Default | Effect |
+| --- | --- | --- |
+| `perf.releaseUnloadedLevels` | `true` | Legacy views of a level (World, GameRules, MapStorage, chunk tickets, entity and tile views) are released when it unloads, those of a server (MinecraftServer, Scoreboard, 1.12 GameRules) when it has stopped |
+| `perf.sweepRemovedPlayers` | `true` | Views of players removed for good (the old player object after a death and respawn, a player that logged out) are swept, after two sweeps in a row |
+| `perf.sweepDeadViews` | `true` | Views of closed connections (1.7.10 `NetworkManager`), of legacy inventories whose block entity was removed or unloaded, and 1.12.2 views of the game's block entities are swept |
+| `perf.weakStackViews1122` | `false` | 1.12.2 item stack views without capabilities are held weakly, so a stack nobody holds is collected with its view |
+| `perf.releaseLoaderData` | `true` | The loader drops its translation tables (legacy hierarchy, methods, fields, MCP names, library class infos) after mod discovery (read by the loader at startup) |
+
 Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate` twin automatically: the same legacy block (drops, hardness, behaviour) with its stone background replaced by deepslate. Where a generator places an ore into deepslate (the deep layer, and the deepslate band just above y=0) the twin is placed instead. Ores with tile entities are not duplicated. The ore texture of the normal block can also sit on a deepslate background (`oreBackgrounds.stone=deepslate`).
