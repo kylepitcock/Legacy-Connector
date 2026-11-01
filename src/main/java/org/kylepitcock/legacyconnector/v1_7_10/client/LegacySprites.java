@@ -32,7 +32,7 @@ public final class LegacySprites {
     private LegacySprites() {}
 
     /** Mods' resources by legacy resource location (the generated pack is not readable while it is being built). */
-    private static boolean reportedMissing;
+    private static int reportedMissing;
 
     public static final class ModResources extends legacyconnector.v1_7_10.net.minecraft.client.resources.SimpleReloadableResourceManager {
         @Override
@@ -137,8 +137,9 @@ public final class LegacySprites {
                     }
                 };
             }
-            if (!reportedMissing) {
-                reportedMissing = true;
+            // the first few misses (a mod's model or data file that cannot be read is otherwise a silent gap)
+            if (reportedMissing < 10) {
+                reportedMissing++;
                 LOG.warn("Legacy resource {}:{} (assets/{}/{}) not found in {} mod files", location.getResourceDomain(),
                         location.getResourcePath(), ns, path, ModList.get().getModFiles().size());
             }

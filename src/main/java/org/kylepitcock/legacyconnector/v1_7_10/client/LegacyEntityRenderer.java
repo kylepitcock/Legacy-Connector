@@ -32,6 +32,11 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
     /** All failures per renderer class, only for logging (a renderer that works for some entities must not log every frame). */
     private static final java.util.Map<Class<?>, Integer> TOTAL = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** Diagnostics: draws logged per renderer class (the first few show what each legacy renderer actually emitted) and entity classes without a renderer. */
+    private static final java.util.Map<Class<?>, Integer> LOGGED = new ConcurrentHashMap<>();
+    private static final java.util.Set<Class<?>> NO_RENDERER = ConcurrentHashMap.newKeySet();
+    private static final int MAX_DRAW_LOGS = 3;
+
     public LegacyEntityRenderer(EntityRendererProvider.Context context) {
         super(context);
         this.shadowRadius = 0.0F;
@@ -47,6 +52,9 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
         var legacy = entity instanceof LegacyHost h ? h.mcc$legacy() : null;
         Render renderer = legacy == null ? null : RenderManager.instance.getEntityRenderObject(legacy);
         if (renderer instanceof legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderModernEntity) renderer = null;
+        if (renderer == null && legacy != null && NO_RENDERER.add(legacy.getClass())) {
+            LoggerFactory.getLogger("LegacyConnector/Render").info("{} (legacy entity {}) has no legacy renderer registered: nothing is drawn for it", entity.getType(), legacy.getClass().getName());
+        }
         if (renderer != null && FAILURES.getOrDefault(renderer.getClass(), 0) < MAX_FAILURES) {
             this.shadowRadius = renderer.mcc$shadowSize();
             Vec3 cam = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
@@ -60,7 +68,14 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
             pose.pushPose();
             try {
                 pose.translate(-x, -y, -z);
+                long quadsBefore = RenderContext.quadCount();
                 renderer.doRender(legacy, x, y, z, Mth.lerp(partialTicks, entity.yRotO, entity.getYRot()), partialTicks);
+                int logged = LOGGED.merge(renderer.getClass(), 1, Integer::sum);
+                if (logged <= MAX_DRAW_LOGS) {
+                    LoggerFactory.getLogger("LegacyConnector/Render").info("Legacy renderer {} drew {} ({}) at {}, {}, {} relative to the camera: {} quads/lines emitted, texture {}",
+                            renderer.getClass().getName(), legacy.getClass().getName(), entity.getType(), (int) x, (int) y, (int) z,
+                            RenderContext.quadCount() - quadsBefore, RenderContext.texture());
+                }
                 if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
             } catch (RuntimeException | LinkageError e) {
                 int n = FAILURES.merge(renderer.getClass(), 1, Integer::sum);
@@ -74,6 +89,8 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
                 pose.popPose();
                 RenderContext.end();
             }
+        } else if (renderer != null && NO_RENDERER.add(renderer.getClass())) {
+            LoggerFactory.getLogger("LegacyConnector/Render").warn("Legacy entity renderer {} is disabled after repeated failures", renderer.getClass().getName());
         }
         super.render(entity, yaw, partialTicks, pose, buffers, light);
     }
