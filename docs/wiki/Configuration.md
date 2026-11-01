@@ -18,6 +18,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `perf.lazyPackMetadata` | `true` | The generated legacy data and asset packs build no content when the game opens them only to read their metadata (once per pack scan; every scan built all files). See [Performance](Performance.md#world-load) |
 | `perf.biomeJarCache` | `true` | The vanilla biome templates and biome tags that legacy biomes are generated from are read from the game's jars once per session, not on every data pack build. See [Performance](Performance.md#world-load) |
 | `perf.asyncBiomeSample` | `true` | The "Biome sample around spawn" log line (1089 biome lookups after the server started) is computed in the background, not on the server thread the joining player waits for |
+| `compat.auroras.irisPackCheck` | `true` | Auroras (not a legacy mod) draws its auroras after the terrain, without a depth test, whenever Iris's `enableShaders` option is on, even when no shader pack is in use: they covered the terrain (the green/purple band in the End). With this on it asks Iris whether a pack is really in use, so without one the auroras are drawn in the sky as intended |
 | `events.skip` | empty | Comma separated legacy event handlers that are not registered, as `full.ClassName#method` or `full.ClassName#*` (to find which legacy handler draws or does something unwanted) |
 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |

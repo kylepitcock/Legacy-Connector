@@ -56,4 +56,12 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   the terrain (ChromatiCraft's crystalline stone under pylons and rune shrines).
 - **Full-bright parts:** corners a block renderer drew with its own full block light (`setBrightness(240)`, the 1.7.10 idiom for glowing overlays) keep
   that light in the baked quad; the modern pipeline uses the larger of baked and world light, so they glow in the dark.
+- **Sky renderers of vanilla dimensions:** a legacy `WorldProvider.setSkyRenderer` on a vanilla dimension (ChromatiCraft's
+  `EndOverhaulManager` sets its End tendril sky, `Chroma_EndTendrils`) is only stored: legacy sky renderers are drawn only for legacy
+  dimensions (`LegacyDimensionEffects.renderSky`, in the sky pass, logged as "Sky of dimension ..."), so the End keeps its modern sky.
+- **Not ours, End in ATM10:** the green/purple band with vertical streaks drawn across the terrain is the Auroras mod (`config/auroras/the_end.json`):
+  with Iris's `enableShaders` on it draws at the end of `LevelRenderer.renderLevel` with the depth test off, which covered the terrain when no
+  shader pack was actually in use (fixed by the optional pack compat `compat.auroras.irisPackCheck`, see [Configuration](Configuration.md)).
+  The small black squares floating everywhere in Nullscape's shadowlands are that biome's ambient `minecraft:ash` particles, as in basalt deltas.
+  To find out whether a legacy handler draws something, skip it with `events.skip` (see [Configuration](Configuration.md)).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.

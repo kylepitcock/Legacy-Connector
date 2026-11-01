@@ -7,7 +7,8 @@
     "ArchitecturyEventImplMixin"
   ],
   "client": [
-    "RocketnauticsStarPlasmaMixin"
+    "RocketnauticsStarPlasmaMixin",
+    "AurorasIrisStateMixin"
   ],
   "injectors": {
     "defaultRequire": 0

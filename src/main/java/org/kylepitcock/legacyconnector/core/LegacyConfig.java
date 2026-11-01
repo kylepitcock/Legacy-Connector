@@ -237,6 +237,11 @@ public final class LegacyConfig {
         }
     }
 
+    /** {@code compat.auroras.irisPackCheck}: Auroras asks Iris whether a shader pack is in use instead of whether shaders are switched on. */
+    public static boolean aurorasIrisPackCheck() {
+        return bool("compat.auroras.irisPackCheck", true);
+    }
+
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
     }
