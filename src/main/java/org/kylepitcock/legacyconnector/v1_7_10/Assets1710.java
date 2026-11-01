@@ -65,12 +65,17 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));
+        boolean client = net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
         for (Block b : BlockBridge.modBlocks()) {
+            // the icons leaf blocks register are candidates for the modern leaf pattern (ModernLeaves)
+            boolean leaves = client && org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.isLeafBlock(b);
+            int mark = leaves ? org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.mark(blocks) : 0;
             try {
                 b.registerBlockIcons(blocks);
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("registerBlockIcons failed for {}", b, e);
             }
+            if (leaves) org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.noteIcons(blocks, mark);
         }
         for (Item i : ItemBridge.modItems()) {
             try {
@@ -104,6 +109,11 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
+            try {
+                org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.contribute(out);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Modernizing leaf textures failed: {}", e.toString());
+            }
             try {
                 org.kylepitcock.legacyconnector.v1_7_10.client.OreBackgrounds.contribute(blocks, out);
             } catch (RuntimeException | LinkageError e) {
