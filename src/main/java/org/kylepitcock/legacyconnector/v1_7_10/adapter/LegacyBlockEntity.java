@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
  * Modern block entity hosting a 1.7.10 {@link TileEntity}. Persists the legacy NBT verbatim under {@code "legacy"},
  * so the legacy tile entity sees exactly the data it wrote, and forwards ticking and description packets.
  */
-public class LegacyBlockEntity extends BlockEntity {
+public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.legacyconnector.core.perf.StaticTickers.Host {
     private TileEntity legacy;
     private CompoundTag pending;
     private boolean tickFailed;
@@ -92,6 +92,7 @@ public class LegacyBlockEntity extends BlockEntity {
         legacy = null;
         pending = null;
         createFailed = false;
+        tickerMayChange();
     }
 
     /** Client: a metadata change from the server is 1.7.10's client-side setBlock, which refreshes the tile entity as on the server. */
@@ -124,6 +125,7 @@ public class LegacyBlockEntity extends BlockEntity {
         legacy = te;
         if (te != null) attach(te);
         setChanged();
+        tickerMayChange();
     }
 
     private void attach(TileEntity te) {
@@ -179,16 +181,91 @@ public class LegacyBlockEntity extends BlockEntity {
         });
     }
 
+    // ------------------------------------------------------------------ perf.staticTileEntities
+
+    /** Whether {@link #tickedTile} ticks; decided once per tile entity, as 1.7.10 decided when it added the tile entity to the world. */
+    private boolean tileTicks;
+    /** The tile entity {@link #tileTicks} was decided for (null: not yet). */
+    private TileEntity tickedTile;
+    /** The chunk was told to drop this host's ticker. */
+    private boolean tickerDropped;
+
+    /** Classes whose {@code updateEntity()} is the shim's empty TileEntity one: ticking them did nothing in 1.7.10 either. */
+    private static final ClassValue<Boolean> EMPTY_UPDATE = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                return type.getMethod("updateEntity").getDeclaringClass() == TileEntity.class;
+            } catch (NoSuchMethodException | LinkageError | SecurityException e) {
+                return false;
+            }
+        }
+    };
+
+    /** Whether 1.7.10 would have ticked this tile entity at all (Forge's canUpdate(), or the IC2 rule of {@link #overridesUpdate}). */
+    private static boolean ticks(TileEntity te) {
+        if (EMPTY_UPDATE.get(te.getClass())) return false;
+        try {
+            return te.canUpdate() || overridesUpdate(te.getClass());
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
+    @Override
+    public boolean legacyconnector$isStatic() {
+        if (tickFailed) return true; // crashed while ticking: never ticks again
+        if (createFailed && legacy == null) return true; // no tile entity will ever be made (until the metadata changes)
+        return legacy != null && legacy == tickedTile && !tileTicks;
+    }
+
+    /** The tile entity changed: a ticker dropped for the old one is restored (the chunk asks {@link #legacyconnector$isStatic} again). */
+    private void tickerMayChange() {
+        if (tickerDropped && !legacyconnector$isStatic()) {
+            tickerDropped = false;
+            org.kylepitcock.legacyconnector.core.perf.StaticTickers.refresh(this);
+        }
+    }
+
+    private void dropTicker() {
+        if (tickerDropped) return;
+        tickerDropped = true;
+        org.kylepitcock.legacyconnector.core.perf.StaticTickers.refresh(this);
+    }
+
     void tick() {
         if (tickFailed || org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
+        if (org.kylepitcock.legacyconnector.core.perf.Perf.STATIC_TILE_ENTITIES) {
+            TileEntity te = legacy();
+            if (te == null) {
+                if (createFailed) dropTicker();
+                return;
+            }
+            if (te != tickedTile) {
+                tickedTile = te;
+                tileTicks = ticks(te);
+            }
+            if (!tileTicks) {
+                dropTicker();
+                return;
+            }
+            if (te.isInvalid()) return;
+            update(te);
+            return;
+        }
         TileEntity te = legacy();
         if (te == null || te.isInvalid() || !(te.canUpdate() || overridesUpdate(te.getClass()))) return;
+        update(te);
+    }
+
+    private void update(TileEntity te) {
         try {
             te.updateEntity();
         } catch (RuntimeException | LinkageError e) {
             tickFailed = true;
             LoggerFactory.getLogger("LegacyConnector/TileEntity").error("Legacy tile entity {} at {} crashed while ticking; it will no longer tick",
                     te.getClass().getName(), worldPosition, e);
+            if (org.kylepitcock.legacyconnector.core.perf.Perf.STATIC_TILE_ENTITIES) dropTicker();
         }
     }
 

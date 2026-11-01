@@ -12,7 +12,12 @@
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
     "ServerLevelBlockFamilyMixin",
-    "LevelChunkBlockFamilyMixin"
+    "LevelChunkBlockFamilyMixin",
+    "perf.BlockSlotMixin",
+    "perf.BlockStateSlotMixin",
+    "perf.LevelSlotMixin",
+    "perf.EntitySlotMixin",
+    "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [
     "ClientLevelSkyColorMixin",
