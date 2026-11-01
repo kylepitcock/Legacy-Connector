@@ -48,7 +48,16 @@ public class PlayerCapabilities {
     }
 
     public static void mcc$set$isFlying(PlayerCapabilities c, boolean v) {
+        if (!v && c.mcc$spectator()) return;
         c.a().flying = v;
+    }
+
+    /**
+     * 1.7.10 had no spectator mode: mods that take flight away from every player not in creative (flight rings, rituals) would
+     * turn it off for spectators, who pass through blocks and then fall through the world into the void.
+     */
+    private boolean mcc$spectator() {
+        return mcc$player != null && mcc$player.isSpectator();
     }
 
     public static boolean mcc$get$allowFlying(PlayerCapabilities c) {
@@ -56,6 +65,7 @@ public class PlayerCapabilities {
     }
 
     public static void mcc$set$allowFlying(PlayerCapabilities c, boolean v) {
+        if (!v && c.mcc$spectator()) return;
         c.a().mayfly = v;
     }
 
@@ -97,6 +107,11 @@ public class PlayerCapabilities {
 
     public void readCapabilitiesFromNBT(NBTTagCompound tag) {
         a().loadSaveData(tag.mcc$modern());
+        if (mcc$spectator()) {
+            // saved abilities of a non-spectator would ground a spectator (see mcc$spectator)
+            a().mayfly = true;
+            a().flying = true;
+        }
     }
 
     public boolean mcc$creative() {
