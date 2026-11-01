@@ -156,12 +156,17 @@ public final class Hosts1122 {
         return MobCategory.MISC;
     }
 
-    /** Display name of a legacy entity type: the mod's own translation of its name. */
+    /**
+     * Display name of a legacy entity type: the mod's own translation of its name. 1.12 translated it where the name was made (the
+     * server's language for death messages); here it stays a translation of the legacy key, so each client shows its own language, with
+     * the server's translation (or the plain registry name) as the fallback.
+     */
     public static net.minecraft.network.chat.Component displayName(EntityType<?> type) {
         Info i = BY_TYPE.get(type);
         if (i == null) return null;
         String translated = legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(i.translationKey());
-        return net.minecraft.network.chat.Component.literal(translated.equals(i.translationKey()) ? i.fallbackName() : translated);
+        return net.minecraft.network.chat.Component.translatableWithFallback(i.translationKey(),
+                translated.equals(i.translationKey()) ? i.fallbackName() : translated);
     }
 
     public static Info info(EntityType<?> type) {
