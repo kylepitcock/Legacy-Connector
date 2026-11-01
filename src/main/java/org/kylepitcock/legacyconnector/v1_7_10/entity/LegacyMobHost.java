@@ -44,6 +44,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     public LegacyMobHost(EntityType<? extends LegacyMobHost> type, Level level, Entity adopted) {
         super(type, level);
+        this.moveControl = new LegacyMoveControl(this);
         if (adopted != null) {
             legacy = adopted;
         } else {
@@ -186,7 +187,37 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     @Override
     protected void customServerAiStep() {
-        if (legacy instanceof EntityLiving l) l.mcc$serverAiStep();
+        if (legacy instanceof EntityLiving l) {
+            float before = zza;
+            l.mcc$serverAiStep();
+            // the old AI drives the walk by writing moveForward itself (the Travelling Trunk, slimes, mods' own AI)
+            if (zza != before) legacyDrivesForward = zza != 0.0F;
+        }
+    }
+
+    /** The legacy AI wrote the forward input and relies on it staying: the move control that runs after the AI step would reset it. */
+    private boolean legacyDrivesForward;
+
+    /**
+     * Modern move control, except that an idle one (nothing asked it to move) no longer zeroes the forward input the legacy AI set:
+     * in 1.7.10 {@code moveForward} stayed until legacy code changed it, only decaying by 2% a tick.
+     */
+    private static final class LegacyMoveControl extends net.minecraft.world.entity.ai.control.MoveControl {
+        private final LegacyMobHost host;
+
+        LegacyMoveControl(LegacyMobHost host) {
+            super(host);
+            this.host = host;
+        }
+
+        @Override
+        public void tick() {
+            if (operation != Operation.WAIT) host.legacyDrivesForward = false;
+            boolean keep = host.legacyDrivesForward;
+            float zza = host.zza;
+            super.tick();
+            if (keep) host.zza = zza;
+        }
     }
 
     // ------------------------------------------------------------------ damage, death, drops
