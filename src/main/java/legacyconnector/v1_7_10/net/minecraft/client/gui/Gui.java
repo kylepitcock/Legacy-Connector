@@ -54,6 +54,12 @@ public class Gui {
         // blit draws at once while legacy Tessellator geometry waits in the batch: flush it first so the order stays 1.7.10's
         // (Thaumcraft's darkening overlay, batched, covered the Thaumonomicon frame blitted after it)
         RenderContext.mcc$flushGui(gui);
+        if (!RenderContext.texture2dEnabled()) {
+            // glDisable(GL_TEXTURE_2D) makes the quad a flat rectangle in the current colour (Fisk's Heroes' key list draws its
+            // translucent black background this way; it came out as a piece of the bound texture, narrower than its text)
+            gui.fill(x, y, x + width, y + height, RenderContext.argb());
+            return;
+        }
         gui.blit(RenderContext.texture(), x, y, u, v, width, height);
     }
 

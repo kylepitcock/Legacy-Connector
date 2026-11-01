@@ -409,6 +409,11 @@ public final class RenderContext {
         s.r = s.g = s.b = s.a = 1;
     }
 
+    /** glEnable/glDisable(GL_TEXTURE_2D) as the legacy code left it. */
+    public static boolean texture2dEnabled() {
+        return STATE.get().texture2d;
+    }
+
     public static int argb() {
         return argb(STATE.get());
     }
@@ -909,7 +914,12 @@ public final class RenderContext {
             }
             if (s.additiveAlpha) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveAlpha(s.texture, s.depthTest)));
             if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(s.texture)));
-            if (IrisState.compatPack() && binaryAlphaOverlay(s)) return buffers.getBuffer(RenderType.entityCutoutNoCull(s.texture));
+            if (IrisState.compatPack() && binaryAlphaOverlay(s)) {
+                // a lamp layer of a few texels drawn as plain alpha shows nothing in vanilla rendering (Doctor Octopus's claw lights:
+                // the eye cube sits inside the claw), but a shader pack's entity pass showed it as a solid red cube on every claw
+                if (TextureAlpha.sparse(s.texture)) return DISCARD;
+                return buffers.getBuffer(RenderType.entityCutoutNoCull(s.texture));
+            }
             return buffers.getBuffer(stated(s, RenderType.entityTranslucent(s.texture)));
         }
         return buffers.getBuffer(RenderType.entityCutoutNoCull(s.texture));
