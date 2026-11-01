@@ -38,5 +38,14 @@ Memory switches (`perf.*`, see [Performance](Performance.md#memory)); each can b
 | `perf.sweepDeadViews` | `true` | Views of closed connections (1.7.10 `NetworkManager`), of legacy inventories whose block entity was removed or unloaded, and 1.12.2 views of the game's block entities are swept |
 | `perf.weakStackViews1122` | `false` | 1.12.2 item stack views without capabilities are held weakly, so a stack nobody holds is collected with its view |
 | `perf.releaseLoaderData` | `true` | The loader drops its translation tables (legacy hierarchy, methods, fields, MCP names, library class infos) after mod discovery (read by the loader at startup) |
+| `perf.cullLegacyParticles` | `true` | Legacy particles drawn by the built-in particle classes are skipped outside the view (pixel-identical) |
+| `perf.cullModParticles` | `false` | The same for particles mods draw themselves (a beam reaching into the view from outside could vanish) |
+| `perf.particleSetting` | `true` | 1.7.10's `particleSetting` follows the vanilla particle option, so mods spawn fewer particles on Decreased/Minimal as in 1.7.10 |
+| `perf.shareBlockModels` | `true` | Metadata values of a legacy block with identical generated models share one model file and one baked model |
+| `perf.shareItemModels` | `true` | Legacy items with identical generated item models keep one baked model (off by itself with ModernFix) |
+| `perf.packSpill` | `true` | Generated pack files move from the heap to one scratch file under `.legacyconnector/pack-spill` once read |
+| `perf.cacheTextureLocations` | `true` | A legacy mod texture location remembers the modern location it binds |
+
+See [Performance](Performance.md#client-memory-and-frame-time-switches) for what each `perf.*` switch saves.
 
 Ores (full blocks whose name has `ore` as a word) get a hidden `<name>_deepslate` twin automatically: the same legacy block (drops, hardness, behaviour) with its stone background replaced by deepslate. Where a generator places an ore into deepslate (the deep layer, and the deepslate band just above y=0) the twin is placed instead. Ores with tile entities are not duplicated. The ore texture of the normal block can also sit on a deepslate background (`oreBackgrounds.stone=deepslate`).

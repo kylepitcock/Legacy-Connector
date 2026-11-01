@@ -26,11 +26,34 @@ public final class LegacyParticles {
             effects().clearEffects(null);
             return;
         }
+        if (PARTICLE_SETTING) syncParticleSetting(mc);
         if (!mc.isPaused()) effects().updateEffects();
+    }
+
+    private static final boolean CULL_BUILT_IN = org.kylepitcock.legacyconnector.core.LegacyConfig.perfCullLegacyParticles();
+    private static final boolean CULL_MODS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfCullModParticles();
+    private static final boolean PARTICLE_SETTING = org.kylepitcock.legacyconnector.core.LegacyConfig.perfParticleSetting();
+
+    /**
+     * 1.7.10's particleSetting (0 all, 1 decreased, 2 minimal: the same order as the modern option) as the player set it: mods
+     * read it to spawn fewer of their own particles (Thaumcraft, Reika's mods), which 1.7.10 left to them.
+     */
+    private static void syncParticleSetting(Minecraft mc) {
+        var settings = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$gameSettings(null);
+        if (settings == null) return;
+        int value = switch (mc.options.particles().get()) {
+            case ALL -> 0;
+            case DECREASED -> 1;
+            case MINIMAL -> 2;
+        };
+        if (settings.particleSetting != value) settings.particleSetting = value;
     }
 
     private static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+        // no legacy particles: no state setup and no flush of the buffer source (ImmediatelyFast's / Sodium's fully buffered
+        // source walks all its buffers on every endBatch: 0.14% of the render thread in ATM10 with none alive)
+        if (effects().mcc$isEmpty()) return;
         var camera = event.getCamera();
         var cam = camera.getPosition();
         EntityFX.interpPosX = cam.x;
@@ -48,7 +71,7 @@ public final class LegacyParticles {
         RenderContext.beginWorld(event.getPoseStack(), buffers, 0xF000F0, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         try {
             RenderContext.setBlend(true);
-            effects().mcc$render(event.getPartialTick().getGameTimeDeltaPartialTick(false), rx, rxz, rz, ryz, rxy);
+            effects().mcc$render(event.getPartialTick().getGameTimeDeltaPartialTick(false), rx, rxz, rz, ryz, rxy, event.getFrustum(), CULL_BUILT_IN, CULL_MODS);
         } finally {
             RenderContext.end();
         }

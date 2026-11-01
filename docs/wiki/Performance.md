@@ -102,3 +102,28 @@ one lock of the legacy render emulation. Since then:
   (it built a capturing lambda per post), HUD overlay Pre, Post and Text events are each built only when a listener receives that kind,
   `RenderLivingEvent` work is skipped unless listened to, and DragonAPI's reflective events no longer copy their constructor's parameter types per post.
 - Tile entity renderers are culled by distance and bounding box as in 1.7.10.
+
+## Client memory and frame time switches
+
+Each has a `perf.*` key in `config/legacyconnector.properties` (see [Configuration](Configuration.md)). Those on by default draw the same pixels;
+none replaces what Sodium, Embeddium, Iris, ImmediatelyFast, EntityCulling, ModernFix, FerriteCore, MoreCulling or Flywheel do (they work on
+vanilla and modern content; these work on what the legacy layer generates).
+
+| Key | Default | What it does | Expected effect |
+| --- | --- | --- | --- |
+| `perf.shareBlockModels` | on | A 1.7.10 block got one generated model per metadata value (`_m0` .. `_m15`), baked 16 times even when all were the same; identical ones are written once and the variants name the first. 1.12 variant models with the same parent and textures are shared the same way | About 2 KB of baked quads and JSON per duplicate; with 1500 legacy blocks, most drawing all values alike, 20-30 MB of heap and a shorter model bake |
+| `perf.shareItemModels` | on | Legacy subtype items (`mod:name_N`) and block items whose model files are identical keep one baked model after baking. An `item/generated` model of a 16x16 icon is a few hundred quads | 20-50 KB per duplicate item model. Off by itself with ModernFix (dynamic resources bake models on demand) |
+| `perf.packSpill` | on | The generated resource and data packs live as long as the resource manager (the whole session); each file's bytes move to one scratch file (unlinked while open, removed with the process) on its first read and are read back from it later | Every generated model, blockstate, recolored texture and translated recipe leaves the heap: 10-50 MB in large packs. Any I/O failure keeps the bytes in memory |
+| `perf.cacheTextureLocations` | on | A legacy mod texture location remembers the modern location it binds | In ATM10 (spark `kMioCFEa5y`) `TextureLocations.modern` was 0.11% of the render thread, from Thaumcraft's eldritch renderers binding their textures per frame |
+| `perf.cullLegacyParticles` | on | Legacy particles whose renderer is a built-in one (the default quad, the vanilla particle classes) are skipped when a box around them is outside the view frustum (1.7.10 drew all of them) | Proportional to particles behind the camera; Thaumcraft's and Reika's swarms |
+| `perf.cullModParticles` | off | The same for particles drawn by mod code, with a wider box | Beams and rings drawn from a particle outside the view could vanish |
+| `perf.particleSetting` | on | 1.7.10's `GameSettings.particleSetting` follows the vanilla option (All 0, Decreased 1, Minimal 2): mods that check it spawn fewer particles, as they did in 1.7.10 | Only with Decreased or Minimal |
+
+Without a switch (always on, no behaviour change): the legacy particle pass returns at once when no legacy particle is alive (it set up its state
+and flushed the buffer source every frame: 0.14% of the render thread in ATM10 with Sodium's fully buffered source), the 1.12 default particle
+quad is written without new arrays per particle and frame, and the missing-texture check of each bind no longer locks a map bin.
+
+Not done: identical textures under different names stay separate atlas sprites (sharing them would rewrite every model and icon that names them);
+GUI renders of legacy item renderers are not cached (a renderer's output can depend on time or NBT, which cannot be detected reliably).
+ModernizedTextures and LegacySprites keep their own PNG caches for reloads.
+

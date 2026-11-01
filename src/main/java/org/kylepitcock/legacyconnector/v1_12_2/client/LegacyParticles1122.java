@@ -44,6 +44,12 @@ public final class LegacyParticles1122 {
         });
     }
 
+    private static final boolean CULL_BUILT_IN = org.kylepitcock.legacyconnector.core.LegacyConfig.perfCullLegacyParticles();
+    /** Mod particles drawing themselves are culled by a box around the particle only on request (beams reach far from it). */
+    private static final boolean CULL_MODS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfCullModParticles();
+    /** The corners of the default quad handed to RenderContext.quad, which copies them (render thread only). */
+    private static final double[][] QUAD = new double[4][7];
+
     private static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
         var list = effects().mcc$particles();
@@ -69,14 +75,19 @@ public final class LegacyParticles1122 {
         try {
             RenderContext.setBlend(true);
             RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern("minecraft", "textures/particle/particles.png"));
+            var frustum = event.getFrustum();
+            boolean cullBuiltIn = CULL_BUILT_IN && frustum != null, cullMods = CULL_MODS && frustum != null;
+            double[][] v = QUAD;
             for (Particle p : list) {
                 try {
                     if (custom(p.getClass())) {
+                        if (cullMods && p.mcc$outside(frustum, true)) continue;
                         ParticleManager.CustomRenderer r = ParticleManager.mcc$customRenderer;
                         if (r != null) r.render(p, partial, rx, rxz, rz, ryz, rxy);
                         RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern("minecraft", "textures/particle/particles.png"));
                         continue;
                     }
+                    if (cullBuiltIn && p.mcc$outside(frustum, false)) continue;
                     if (p.getFXLayer() != 0) {
                         // a sprite of the block atlas (or a self-drawing layer): the default renderParticle with the atlas bound
                         ParticleManager.CustomRenderer r = ParticleManager.mcc$customRenderer;
@@ -87,8 +98,16 @@ public final class LegacyParticles1122 {
                     double[][] q = p.mcc$defaultQuad(partial, rx, rxz, rz, ryz, rxy);
                     int light = p.getBrightnessForRender(partial);
                     int argb = p.mcc$argb();
-                    double[][] v = new double[4][];
-                    for (int i = 0; i < 4; i++) v[i] = new double[] {q[i][0], q[i][1], q[i][2], q[i][3], q[i][4], argb, light};
+                    for (int i = 0; i < 4; i++) {
+                        double[] c = v[i], from = q[i];
+                        c[0] = from[0];
+                        c[1] = from[1];
+                        c[2] = from[2];
+                        c[3] = from[3];
+                        c[4] = from[4];
+                        c[5] = argb;
+                        c[6] = light;
+                    }
                     RenderContext.quad(v, 0.0F, 1.0F, 0.0F);
                 } catch (RuntimeException | LinkageError e) {
                     p.setExpired();

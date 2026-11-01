@@ -87,6 +87,21 @@ public final class LegacyConfig {
             perf.reuseBlockPos = true
             # "Does this legacy entity class override hook X" answers are cached per class without allocating per call.
             perf.hookOverrideCache = true
+            # Client performance switches (see the Performance page of the wiki). Each can be turned off on its own.
+            # Legacy particles drawn by the built-in particle classes are skipped outside the view (they look the same).
+            perf.cullLegacyParticles = true
+            # The same for particles that mods draw themselves (beams can reach into the view from outside: off by default).
+            perf.cullModParticles = false
+            # Legacy code reads the vanilla particle setting (All / Decreased / Minimal) as 1.7.10's particleSetting.
+            perf.particleSetting = true
+            # Metadata values of a legacy block whose models are identical share one model (baked once, not per value).
+            perf.shareBlockModels = true
+            # Legacy items with identical item models keep one baked model (skipped with ModernFix, which bakes on demand).
+            perf.shareItemModels = true
+            # Generated resource and data pack files are kept on disk (.legacyconnector/pack-spill) once read, not in memory.
+            perf.packSpill = true
+            # A legacy mod texture location remembers the modern one it binds (no new location per bind and frame).
+            perf.cacheTextureLocations = true
             """;
     private static Properties values;
 
@@ -243,5 +258,40 @@ public final class LegacyConfig {
     /** {@code perf.weakStackViews1122} (off): 1.12.2 item stack views without capabilities are held weakly (see Stacks1122). */
     public static boolean perfWeakStackViews1122() {
         return bool("perf.weakStackViews1122", false);
+    }
+
+    /** Legacy particles of the built-in particle classes are not drawn outside the view frustum. */
+    public static boolean perfCullLegacyParticles() {
+        return perf("cullLegacyParticles", true);
+    }
+
+    /** Mod particles that draw themselves are culled too (a beam from outside the view may disappear: off by default). */
+    public static boolean perfCullModParticles() {
+        return perf("cullModParticles", false);
+    }
+
+    /** 1.7.10's {@code GameSettings.particleSetting} follows the vanilla particle option. */
+    public static boolean perfParticleSetting() {
+        return perf("particleSetting", true);
+    }
+
+    /** Identical generated block models of a legacy block's metadata values are written once and shared. */
+    public static boolean perfShareBlockModels() {
+        return perf("shareBlockModels", true);
+    }
+
+    /** Legacy items with identical generated item models share one baked model. */
+    public static boolean perfShareItemModels() {
+        return perf("shareItemModels", true);
+    }
+
+    /** A legacy mod texture location keeps the modern location it binds. */
+    public static boolean perfCacheTextureLocations() {
+        return perf("cacheTextureLocations", true);
+    }
+
+    /** Generated pack files move to a disk file once read instead of staying in memory for the session. */
+    public static boolean perfPackSpill() {
+        return perf("packSpill", true);
     }
 }

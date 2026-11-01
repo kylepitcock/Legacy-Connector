@@ -203,6 +203,17 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         return domain + ":" + (block ? "blocks/" : "items/") + Ids.normalizePath(name);
     }
 
+    /** perf.shareBlockModels: metadata values with identical models share the first one's file. */
+    private static final boolean SHARE_MODELS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfShareBlockModels();
+
+    /** A metadata model that was not written ({@code ns:block/x_m3}) -> the identical model written for it ({@code ns:block/x_m0}). */
+    private static final Map<String, String> SHARED_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The generated model file of a block's metadata model ({@code ns:block/x_mN}), which may be an earlier value's identical one. */
+    public static String blockModel(String model) {
+        return SHARED_MODELS.getOrDefault(model, model);
+    }
+
     private static void blockModels(Block b, Map<String, Supplier<byte[]>> out) {
         if (b.mcc$modern == null) return;
         writeBlockModels(b, BuiltInRegistries.BLOCK.getKey(b.mcc$modern), false, out);
@@ -214,6 +225,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static void writeBlockModels(Block b, ResourceLocation id, boolean deepslate, Map<String, Supplier<byte[]>> out) {
         boolean oreBlock = b.mcc$modern instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a && a.deepVariant() != null;
         JsonObject variants = new JsonObject();
+        Map<String, String> written = SHARE_MODELS ? new java.util.HashMap<>() : null;
         for (int meta = 0; meta < 16; meta++) {
             String[] faces = new String[6];
             for (int side = 0; side < 6; side++) {
@@ -226,7 +238,16 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             boolean stairs = b.getRenderType() == 10;
             JsonObject model = stairs ? stairsModel(faces) : b.getRenderType() == 20 ? vineModel(b, faces[0], meta) : model(b, faces);
             String path = "block/" + id.getPath() + "_m" + meta;
-            put(out, "assets/" + id.getNamespace() + "/models/" + path + ".json", model);
+            String same = written == null ? null : written.putIfAbsent(model.toString(), path);
+            if (same != null) {
+                // the model of an earlier metadata value, unchanged (most blocks draw all 16 values alike; stairs rotate one
+                // model in the variant): the variant names that model, which is baked once instead of once per value
+                SHARED_MODELS.put(id.getNamespace() + ":" + path, id.getNamespace() + ":" + same);
+                path = same;
+            } else {
+                SHARED_MODELS.remove(id.getNamespace() + ":" + path);
+                put(out, "assets/" + id.getNamespace() + "/models/" + path + ".json", model);
+            }
             JsonObject v = new JsonObject();
             v.addProperty("model", id.getNamespace() + ":" + path);
             if (stairs) {
@@ -616,7 +637,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 Block block = ib.mcc$block();
                 ResourceLocation bid = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
                 int blockMeta = item.getMetadata(meta) & 15;
-                model.addProperty("parent", bid.getNamespace() + ":block/" + bid.getPath() + "_m" + blockMeta);
+                model.addProperty("parent", blockModel(bid.getNamespace() + ":block/" + bid.getPath() + "_m" + blockMeta));
             } else {
                 model.addProperty("parent", item.isFull3D() ? "minecraft:item/handheld" : "minecraft:item/generated");
                 JsonObject tex = new JsonObject();
@@ -639,6 +660,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.add("textures", tex);
             }
             put(out, "assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", model);
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, model.toString());
         }
     }
 

@@ -76,6 +76,52 @@ public class EffectRenderer {
 
     /** Draws all particles; the camera basis arguments follow the legacy ActiveRenderInfo convention. */
     public void mcc$render(float partialTicks, float rx, float rxz, float rz, float ryz, float rxy) {
+        mcc$render(partialTicks, rx, rxz, rz, ryz, rxy, null, false, false);
+    }
+
+    /**
+     * Whether a particle class draws with a built-in renderParticle whose quad stays within {@code 0.1 * particleScale} of the
+     * particle (the default camera-facing quad and the vanilla particles): culling those by a box around the particle hides
+     * nothing that would show. Classes with their own renderParticle (beams, rings, trails reaching far from the particle) are
+     * not known to stay near it. EntityLargeExplodeFX draws a quad sized by its own field.
+     */
+    private static final ClassValue<Boolean> mcc$BUILT_IN_RENDER = new ClassValue<>() {
+        @Override
+        protected Boolean computeValue(Class<?> type) {
+            try {
+                Class<?> owner = type.getMethod("renderParticle", Tessellator.class, float.class, float.class, float.class, float.class, float.class,
+                        float.class).getDeclaringClass();
+                return owner.getName().startsWith("legacyconnector.v1_7_10.net.minecraft.") && owner != EntityLargeExplodeFX.class;
+            } catch (NoSuchMethodException | RuntimeException | LinkageError e) {
+                return false;
+            }
+        }
+    };
+
+    /**
+     * Whether a particle can be skipped this frame: its box (previous to current position, grown by its drawn size and a margin)
+     * is outside the view. 1.7.10 drew every particle; the modern particle engine culls its own the same way.
+     */
+    private static boolean mcc$culled(EntityFX fx, net.minecraft.client.renderer.culling.Frustum frustum, boolean builtIn, boolean mods) {
+        boolean own = mcc$BUILT_IN_RENDER.get(fx.getClass());
+        if (own ? !builtIn : !mods) return false;
+        double r = 0.15D * Math.abs(fx.particleScale) + 1.0D;
+        if (!own) r += Math.max(Entity.mcc$get$width(fx), Entity.mcc$get$height(fx)) + 2.0D;
+        double x = fx.mcc$x(), y = fx.mcc$y(), z = fx.mcc$z();
+        double px = Entity.mcc$get$prevPosX(fx), py = Entity.mcc$get$prevPosY(fx), pz = Entity.mcc$get$prevPosZ(fx);
+        if (!Double.isFinite(x + y + z + px + py + pz + r)) return false;
+        return !frustum.isVisible(new net.minecraft.world.phys.AABB(Math.min(x, px) - r, Math.min(y, py) - r, Math.min(z, pz) - r,
+                Math.max(x, px) + r, Math.max(y, py) + r, Math.max(z, pz) + r));
+    }
+
+    /**
+     * Draws all particles; with a frustum, particles outside it are skipped ({@code cullBuiltIn}: those drawn by the built-in
+     * renderers, {@code cullMods}: those drawn by mod code).
+     */
+    public void mcc$render(float partialTicks, float rx, float rxz, float rz, float ryz, float rxy, net.minecraft.client.renderer.culling.Frustum frustum,
+            boolean cullBuiltIn, boolean cullMods) {
+        if (frustum == null) cullBuiltIn = cullMods = false;
+        boolean cull = cullBuiltIn || cullMods;
         Tessellator t = Tessellator.mcc$get$instance();
         for (int layer = 0; layer < fxLayers.length; layer++) {
             List<EntityFX> list = fxLayers[layer];
@@ -89,6 +135,7 @@ public class EffectRenderer {
                 EntityFX fx = snapshot.get(i);
                 if (fx == null) continue;
                 try {
+                    if (cull && mcc$culled(fx, frustum, cullBuiltIn, cullMods)) continue;
                     if (layer == 3) {
                         // lit particles bind their own texture and start/draw the Tessellator themselves
                         t.setBrightness(fx.getBrightnessForRender(partialTicks));
@@ -165,6 +212,12 @@ public class EffectRenderer {
         if (world == null || target == null) return;
         Block block = world.getBlock(x, y, z);
         if (block != null && !block.addHitEffects(world, target, this)) addBlockHitEffects(x, y, z, target.sideHit);
+    }
+
+    /** Whether no legacy particle is alive (nothing to draw: the frame skips the draw setup and the buffer flush). */
+    public boolean mcc$isEmpty() {
+        for (List<EntityFX> list : fxLayers) if (!list.isEmpty()) return false;
+        return true;
     }
 
     public String getStatistics() {

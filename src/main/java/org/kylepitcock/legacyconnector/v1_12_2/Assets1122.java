@@ -91,7 +91,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         translateAll(out);
     }
 
+    /**
+     * perf.shareBlockModels: generated variant models (a model with the variant's textures) by namespace and content, so variants
+     * that name the same model and textures (the metadata values of one look) share one file and one baked model.
+     */
+    private static final boolean SHARE_MODELS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfShareBlockModels();
+    private static final Map<String, String> GENERATED_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
+        GENERATED_MODELS.clear();
         clientProxies();
         itemModels(out);
         Stats stats = new Stats();
@@ -164,8 +172,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
                 JsonObject model = new JsonObject();
                 model.addProperty("parent", target);
-                byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+                String json = GSON.toJson(model);
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
                 out.put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", () -> bytes);
+                if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
             }
         }
     }
@@ -937,8 +947,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             generated.add("textures", textures);
             String path = "block/lc1122/" + blockId.getPath() + "_" + Ids.normalizePath(key);
-            byte[] bytes = GSON.toJson(generated).getBytes(StandardCharsets.UTF_8);
-            out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+            String json = GSON.toJson(generated);
+            String same = SHARE_MODELS ? GENERATED_MODELS.putIfAbsent(blockId.getNamespace() + "|" + json, path) : null;
+            if (same != null) {
+                path = same;
+            } else {
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+            }
             model = blockId.getNamespace() + ":" + path;
         }
         copy.addProperty("model", model);
@@ -1016,8 +1032,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (m == null) continue;
             JsonObject model = new JsonObject();
             model.addProperty("parent", m);
-            byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+            String json = GSON.toJson(model);
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
             out.put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", () -> bytes);
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(itemId, json);
         }
     }
 

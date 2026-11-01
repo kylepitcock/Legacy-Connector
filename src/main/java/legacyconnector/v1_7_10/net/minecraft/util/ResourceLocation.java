@@ -9,6 +9,11 @@ import org.kylepitcock.legacyconnector.core.Ids;
 public class ResourceLocation {
     private final String resourceDomain;
     private final String resourcePath;
+    /**
+     * Not legacy: the modern texture this location binds, worked out on its first bind (TextureLocations.modern), for a plain location
+     * of a mod's namespace (renderers bind the same constant every frame: a new modern location per bind otherwise).
+     */
+    public net.minecraft.resources.ResourceLocation mcc$texture;
 
     public ResourceLocation(String domain, String path) {
         this.resourceDomain = domain;
