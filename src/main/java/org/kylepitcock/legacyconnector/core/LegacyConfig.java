@@ -69,6 +69,8 @@ public final class LegacyConfig {
             perf.particleSetting = true
             # Metadata values of a legacy block whose models are identical share one model (baked once, not per value).
             perf.shareBlockModels = true
+            # Legacy items with identical item models keep one baked model (skipped with ModernFix, which bakes on demand).
+            perf.shareItemModels = true
             # Generated resource and data pack files are kept on disk (.legacyconnector/pack-spill) once read, not in memory.
             perf.packSpill = true
             """;
@@ -208,6 +210,11 @@ public final class LegacyConfig {
     /** Identical generated block models of a legacy block's metadata values are written once and shared. */
     public static boolean perfShareBlockModels() {
         return perf("shareBlockModels", true);
+    }
+
+    /** Legacy items with identical generated item models share one baked model. */
+    public static boolean perfShareItemModels() {
+        return perf("shareItemModels", true);
     }
 
     /** Generated pack files move to a disk file once read instead of staying in memory for the session. */

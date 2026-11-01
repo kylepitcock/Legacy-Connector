@@ -660,6 +660,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 model.add("textures", tex);
             }
             put(out, "assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", model);
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, model.toString());
         }
     }
 

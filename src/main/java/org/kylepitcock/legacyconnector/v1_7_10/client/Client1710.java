@@ -63,6 +63,7 @@ public final class Client1710 {
         modBus.addListener(Client1710::onRegisterItemColors);
         modBus.addListener(Client1710::onRegisterBlockColors);
         modBus.addListener(Client1710::onModifyBaking);
+        SharedItemModels.register(modBus);
         modBus.addListener(Client1710::onAddLayers);
     }
 

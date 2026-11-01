@@ -172,8 +172,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
                 JsonObject model = new JsonObject();
                 model.addProperty("parent", target);
-                byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+                String json = GSON.toJson(model);
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
                 out.put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", () -> bytes);
+                if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
             }
         }
     }
@@ -1030,8 +1032,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (m == null) continue;
             JsonObject model = new JsonObject();
             model.addProperty("parent", m);
-            byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+            String json = GSON.toJson(model);
+            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
             out.put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", () -> bytes);
+            if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(itemId, json);
         }
     }
 
