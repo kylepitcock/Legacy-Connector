@@ -45,10 +45,6 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![A Witchery ritual site](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/witchery-ritual.png)
 
-**Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI**
-
-![Legacy block GUI](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-block-gui.png)
-
 **Fisk's Superheroes: Doctor Octopus with his tentacles deployed and the suit's abilities**
 
 ![Fisk's Superheroes Doctor Octopus](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/fisk-doc-ock.png)
