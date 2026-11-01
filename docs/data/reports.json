@@ -179,6 +179,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/scape-and-spartan-parasites",
    "date": "2026-10-31",
    "open": true
+  },
+  {
+   "issue": 124,
+   "mod": "roguelike-1.7.10-1.5.0b",
+   "mc": "1.7.10",
+   "status": "fails",
+   "details": "The mod loads just fine, however when trying to generate a dungeon, it gives an error and the whole game freezes",
+   "lc": "0.3.12",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/roguelike-dungeons/download/2294894",
+   "date": "2026-11-01",
+   "open": true
   }
  ]
 }
