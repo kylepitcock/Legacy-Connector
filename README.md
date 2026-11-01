@@ -101,10 +101,6 @@ belladonna, mandrake, snowbell, wolfsbane, garlic and wormwood, rowan saplings, 
 
 ![A Witchery ritual site](docs/images/witchery-ritual.png)
 
-Thaumcraft's Arcane Workbench, drawn by its own 1.7.10 GUI code, next to JEI:
-
-![A legacy block's GUI next to JEI](docs/images/legacy-block-gui.png)
-
 Fisk's Superheroes: Doctor Octopus's suit with its tentacles deployed, and the suit's abilities (tentacle jab, grab and strike) on
 Fisk's own HUD:
 
