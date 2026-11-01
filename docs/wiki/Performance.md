@@ -61,6 +61,29 @@ mods'. Heap histograms (`/spark heapsummary`) are what attributes the rest.
 - The legacy `previousEquipment` copy that follows every `LivingUpdateEvent` wraps only equipment slots whose modern stack
   changed.
 
+## Server tick switches
+
+Profile data from ATM10 put the legacy layer at 8.6% of the server thread (event bridges, `LivingUpdateEvent` for every living
+entity, tile entity tickers, view and block lookups). Each optimization below has its own `perf.<name>` key in
+`config/legacyconnector.properties` (read once at startup, see [Configuration](Configuration.md)); all default to `true` because they
+keep the legacy behaviour. They touch only Legacy Connector's own objects, so they do not overlap with Lithium/Canary/Radium,
+ModernFix, C2ME, ServerCore, AI-Improvements or Clumps (those optimize vanilla code paths; none of them knows legacy hosts).
+
+| Key | What it does | Why it is safe |
+| --- | --- | --- |
+| `perf.staticTileEntities` | A legacy tile entity host learns on its first tick whether its tile entity ticks and, if not, asks its chunk to drop its ticker (`StaticTickers`, `LevelChunkStaticTickerMixin` wraps `BlockState.getTicker` in `LevelChunk.updateBlockEntityTicker` for hosts only). Static legacy machines, cables, storage blocks and decorations then cost nothing per tick; vanilla's ticker wrapper did a ticking-range lookup, a profiler push and a block state check for each of them every tick. A tile entity whose class only has the shim's empty `updateEntity()` is never ticked either | 1.7.10 Forge added a tile entity to the ticking list only if `canUpdate()` returned true when it was added (decided once, as here); IndustrialCraft 2's rule (a tile that overrides `updateEntity()` ticks whatever `canUpdate()` says) is kept. 1.12.2 ticked only `ITickable` tile entities. A host whose tile entity changes (`setTileEntity`, a metadata change that refreshes it) gets its ticker back. A tile that crashed while ticking already stopped ticking; now its ticker goes too |
+| `perf.blockLookupCache` | `BlockBridge.legacyBlock` kept the legacy block of each modern block in a map behind the bridge's lock, taken on every legacy `getBlock` on every thread (server and world generation threads queued on it). The answer now sits in a field on the modern block (`BlockSlotMixin`); only the first lookup per block takes the lock. The 1.7.10 metadata of a vanilla state sits on the state (`BlockStateSlotMixin`) | The answer for a modern block never changes once made (the map entries were never replaced); the field mirrors the map |
+| `perf.itemLookupCache` | `ItemBridge.legacyOfModern` (every legacy view of a vanilla or modern-mod stack: equipment of every living entity each tick, DragonAPI's per-stack inventory events) read a concurrent map, about 1% of the ATM10 server thread as self time. The answer is kept on the modern item (`ItemSlotMixin`) with a generation number | The map is cleared whenever a legacy name is indexed; that bumps the generation, so an answer kept from before is never used |
+| `perf.worldViewCache` | `World.mcc$wrap(level)` (every legacy block, tile and entity callback) looked the view up in a synchronized weak map. Real levels keep their view in a field (`LevelSlotMixin`); generation regions and other mods' copies of a level keep their own paths | The same view object the map holds |
+| `perf.entityViewCache` | `EntityBridge.wrap(entity)` (every legacy event and callback of every entity each tick) read a weak-keyed concurrent map; the view is now kept on the entity (`EntitySlotMixin`) | Set wherever the map is set; the map still records all views for saving extended properties and sweeping |
+| `perf.reuseBlockPos` | 1.7.10 `World.getBlock` and `getBlockMetadata` read through one `MutableBlockPos` per thread instead of allocating a `BlockPos` per call | Used only for one `getBlockState` of a chunk that is known to be loaded (no nested legacy code can run while the position is in use); vanilla passes mutable positions to `getBlockState` everywhere |
+| `perf.hookOverrideCache` | Entity hosts ask "does the legacy class override hook X" every tick (`isPushedByWater`, `updateRidden`, `decreaseAirSupply`, `collideWithEntity`, ...); the cache built a string key and a capturing lambda per call. Now a per-class table compared by parameter arrays (`OverrideCache`), and the hot callers pass constant parameter arrays | Same answers, computed by the same hierarchy walk |
+
+Checked and already cheap: the legacy event buses cache "has a listener for this event class" per class (cleared on register,
+unregister and handler disabling), and every per-tick bridge (`EntityTickEvent`, `PlayerTickEvent`, `LevelTickEvent`, the DragonAPI
+events) checks it before building a legacy event; legacy blocks are random-ticked only if `getTickRandomly()` is true (modern
+chunk sections skip random ticks for sections without such blocks).
+
 ## Legacy rendering on the client
 
 Measured in ATM10 with the Reika mods (spark, 60 s of the render thread, before 0.3.11): Legacy Connector took 8.3% of the render thread, the pack

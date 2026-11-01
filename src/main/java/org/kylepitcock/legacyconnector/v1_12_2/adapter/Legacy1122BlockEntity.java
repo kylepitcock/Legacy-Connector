@@ -14,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Modern block entity hosting a 1.12.2 tile entity; the legacy NBT is stored verbatim under "legacy". */
-public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entity.BlockEntity {
+public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entity.BlockEntity
+        implements org.kylepitcock.legacyconnector.core.perf.StaticTickers.Host {
     private static final Logger LOG = LoggerFactory.getLogger("LegacyConnector/TileEntities");
     private TileEntity legacy;
     private CompoundTag pending;
@@ -61,6 +62,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         pending = null;
         bind(te);
         setChanged();
+        tickerMayChange();
     }
 
     /** The data of a tile entity a generator filled before the block existed (a stand-in) becomes this one's. */
@@ -73,6 +75,7 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         failed = false;
         pending = tag;
         setChanged();
+        tickerMayChange();
     }
 
     private void bind(TileEntity te) {
@@ -134,15 +137,47 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         }
     }
 
+    // ------------------------------------------------------------------ perf.staticTileEntities
+
+    /** The tile entity whose update() threw (it stops ticking, as the log says). */
+    private TileEntity tickFailed;
+    /** The chunk was told to drop this host's ticker. */
+    private boolean tickerDropped;
+
+    /** 1.12.2's World ticked only ITickable tile entities: any other one (or one that crashed while ticking) needs no ticker. */
+    @Override
+    public boolean legacyconnector$isStatic() {
+        TileEntity te = legacy;
+        if (te == null) return failed && pending == null; // creation failed: none will be made
+        return !(te instanceof ITickable) || te == tickFailed;
+    }
+
+    /** The tile entity changed: a ticker dropped for the old one is restored (the chunk asks {@link #legacyconnector$isStatic} again). */
+    private void tickerMayChange() {
+        if (tickerDropped && !legacyconnector$isStatic()) {
+            tickerDropped = false;
+            org.kylepitcock.legacyconnector.core.perf.StaticTickers.refresh(this);
+        }
+    }
+
     public void tick() {
         if (org.kylepitcock.legacyconnector.core.VirtualLevels.skipTick(level)) return;
         TileEntity te = legacy();
-        if (te instanceof ITickable t && !te.isInvalid()) {
+        boolean perf = org.kylepitcock.legacyconnector.core.perf.Perf.STATIC_TILE_ENTITIES;
+        if (perf && (te == null ? failed : !(te instanceof ITickable) || te == tickFailed)) {
+            if (!tickerDropped) {
+                tickerDropped = true;
+                org.kylepitcock.legacyconnector.core.perf.StaticTickers.refresh(this);
+            }
+            return;
+        }
+        if (te instanceof ITickable t && !te.isInvalid() && !(perf && te == tickFailed)) {
             try {
                 t.update();
             } catch (RuntimeException | LinkageError e) {
                 if (!failed) LOG.error("Legacy tile entity {} failed while ticking; it stops ticking", te.getClass().getName(), e);
                 failed = true;
+                tickFailed = te;
             }
         }
     }

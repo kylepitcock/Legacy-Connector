@@ -472,7 +472,25 @@ public final class BlockBridge {
 
     // ------------------------------------------------------------------ state translation
 
-    public static synchronized Block legacyBlock(BlockState state) {
+    /**
+     * The legacy block of a modern state. Called for every legacy block read (World.getBlock) on the server thread and on every
+     * world generation thread: the answer for a modern block never changes once made, so it is kept on the block itself
+     * ({@code perf.blockLookupCache}) and only the first lookup per modern block takes the bridge's lock.
+     */
+    public static Block legacyBlock(BlockState state) {
+        var modern = state.getBlock();
+        if (modern instanceof LegacyBlockAdapter a) return (Block) a.legacy();
+        if (org.kylepitcock.legacyconnector.core.perf.Perf.BLOCK_LOOKUP_CACHE) {
+            Object known = ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$slot1710();
+            if (known != null) return (Block) known;
+            Block made = legacyBlockLocked(state);
+            ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$setSlot1710(made);
+            return made;
+        }
+        return legacyBlockLocked(state);
+    }
+
+    private static synchronized Block legacyBlockLocked(BlockState state) {
         if (state.getBlock() instanceof LegacyBlockAdapter a) return (Block) a.legacy();
         Block wrapper = MODERN_WRAPPERS.get(state.getBlock());
         if (wrapper != null) return wrapper;
@@ -502,7 +520,17 @@ public final class BlockBridge {
 
     public static int legacyMeta(BlockState state) {
         if (state.getBlock() instanceof LegacyBlockAdapter) return LegacyBlockAdapter.metaOf(state);
+        if (!org.kylepitcock.legacyconnector.core.perf.Perf.BLOCK_LOOKUP_CACHE) return vanillaMeta(state);
+        // a vanilla state's metadata depends on the state alone (the flattening table): remembered on the state, plus one
+        var slot = (org.kylepitcock.legacyconnector.core.perf.LegacyStateSlot) state;
+        int known = slot.legacyconnector$meta1710();
+        if (known != 0) return known - 1;
+        int meta = vanillaMeta(state);
+        slot.legacyconnector$setMeta1710(meta + 1);
+        return meta;
+    }
 
+    private static int vanillaMeta(BlockState state) {
         Block wrapper = legacyBlock(state);
         if (wrapper.mcc$vanilla == null || wrapper.mcc$vanilla.legacyId() < 0) return 0;
         int key = VanillaFlattening.legacyKey(state);

@@ -268,20 +268,27 @@ public final class LegacyHosts {
      * otherwise.
      */
     public static boolean overrides(Class<?> cls, String name, Class<?>... params) {
+        // perf.hookOverrideCache: asked every tick for some hooks; answered without building a key or a lambda
+        if (org.kylepitcock.legacyconnector.core.perf.Perf.HOOK_OVERRIDE_CACHE) return OVERRIDE_CACHE.get(cls, name, params, LEGACY_SCAN);
         String key = params.length == 0 ? name : name + java.util.Arrays.toString(params);
-        return OVERRIDES.computeIfAbsent(cls, c -> new ConcurrentHashMap<>()).computeIfAbsent(key, k -> {
-            for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
-                String cn = c.getName();
-                if (cn.startsWith("legacyconnector.") || cn.startsWith("legacyconnector_synth.") || cn.startsWith("org.kylepitcock.")) return false;
-                try {
-                    c.getDeclaredMethod(name, params);
-                    return true;
-                } catch (NoSuchMethodException | LinkageError e) {
-                    // look further up
-                }
+        return OVERRIDES.computeIfAbsent(cls, c -> new ConcurrentHashMap<>()).computeIfAbsent(key, k -> scanOverrides(cls, name, params));
+    }
+
+    private static final org.kylepitcock.legacyconnector.core.perf.OverrideCache OVERRIDE_CACHE = new org.kylepitcock.legacyconnector.core.perf.OverrideCache();
+    private static final org.kylepitcock.legacyconnector.core.perf.OverrideCache.Scan LEGACY_SCAN = LegacyHosts::scanOverrides;
+
+    private static boolean scanOverrides(Class<?> cls, String name, Class<?>[] params) {
+        for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
+            String cn = c.getName();
+            if (cn.startsWith("legacyconnector.") || cn.startsWith("legacyconnector_synth.") || cn.startsWith("org.kylepitcock.")) return false;
+            try {
+                c.getDeclaredMethod(name, params);
+                return true;
+            } catch (NoSuchMethodException | LinkageError e) {
+                // look further up
             }
-            return false;
-        });
+        }
+        return false;
     }
 
     // ------------------------------------------------------------------ failures

@@ -71,6 +71,22 @@ public final class LegacyConfig {
             perf.weakStackViews1122 = false
             # The loader drops its translation tables after mod discovery (read by the loader at startup).
             perf.releaseLoaderData = true
+            # Tick performance of the legacy layer. Each switch turns one optimization off (false) if it ever misbehaves;
+            # all of them are on by default because they keep 1.7.10/1.12.2 behaviour. See the Performance wiki page.
+            # Legacy tile entities that never tick (1.7.10 canUpdate() false or no updateEntity, 1.12.2 not ITickable) get no ticker.
+            perf.staticTileEntities = true
+            # The legacy block (and vanilla metadata) of a modern block state is remembered on the block and the state.
+            perf.blockLookupCache = true
+            # The legacy item of a modern item (every legacy view of a vanilla or modern-mod stack) is remembered on the item.
+            perf.itemLookupCache = true
+            # The legacy world view of a level is remembered on the level.
+            perf.worldViewCache = true
+            # The legacy entity view of a modern entity is remembered on the entity.
+            perf.entityViewCache = true
+            # Legacy block reads (getBlock, getBlockMetadata) reuse one position object per thread instead of allocating one.
+            perf.reuseBlockPos = true
+            # "Does this legacy entity class override hook X" answers are cached per class without allocating per call.
+            perf.hookOverrideCache = true
             """;
     private static Properties values;
 
@@ -119,6 +135,14 @@ public final class LegacyConfig {
         }
         LOG.warn("{}: '{}' is not a positive whole number; using {}", key, v, fallback);
         return fallback;
+    }
+
+    /**
+     * {@code perf.<name>}: one tick-performance optimization (see {@code core.perf.Perf}, which reads these once). Unknown or
+     * malformed values keep the default.
+     */
+    public static boolean perf(String name, boolean fallback) {
+        return bool("perf." + name, fallback);
     }
 
     /** FE per IC2 EU for the energy capability of IC2 tiles and items. */

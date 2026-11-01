@@ -18,6 +18,16 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |
 | `energy.fePerMj` | `10` | FE per BuildCraft MJ for BuildCraft power receptors (BuildCraft's own 1 MJ = 10 RF) |
+| `perf.staticTileEntities` | `true` | Legacy tile entities that never ticked in their version (1.7.10: `canUpdate()` false or no `updateEntity()`; 1.12.2: not `ITickable`; or crashed while ticking) get no modern ticker |
+| `perf.blockLookupCache` | `true` | The legacy block of a modern block and the 1.7.10 metadata of a vanilla state are kept on the block and the state (no lock per legacy block read) |
+| `perf.itemLookupCache` | `true` | The 1.7.10 item of a vanilla or modern-mod item is kept on the item (no map lookup per legacy stack view) |
+| `perf.worldViewCache` | `true` | The 1.7.10 world view of a level is kept on the level (no synchronized map lookup per legacy callback) |
+| `perf.entityViewCache` | `true` | The 1.7.10 view of an entity is kept on the entity (no weak map lookup per legacy event or callback) |
+| `perf.reuseBlockPos` | `true` | 1.7.10 `getBlock`/`getBlockMetadata` read with one mutable position per thread instead of a new `BlockPos` per call |
+| `perf.hookOverrideCache` | `true` | "Does this legacy entity class override hook X" is answered per class without building a key or lambda per call |
+
+The `perf.*` switches are read once at startup; each turns one tick optimization off if it ever misbehaves. They are all on by default
+because each keeps 1.7.10/1.12.2 behaviour; see [Performance](Performance.md#server-tick-switches).
 
 Memory switches (`perf.*`, see [Performance](Performance.md#memory)); each can be turned off on its own:
 

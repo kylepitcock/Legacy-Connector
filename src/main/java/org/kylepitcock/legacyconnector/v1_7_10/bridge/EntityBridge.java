@@ -70,10 +70,20 @@ public final class EntityBridge {
 
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern == null) return null;
+        // perf.entityViewCache: the view kept on the entity (wrapped for every legacy event and callback of every entity each tick);
+        // VIEWS stays the record of all views (saving, sweeping), the field only mirrors it
+        if (org.kylepitcock.legacyconnector.core.perf.Perf.ENTITY_VIEW_CACHE
+                && ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$slot1710() instanceof Entity known) {
+            return known;
+        }
         Entity view = VIEWS.get(modern);
-        if (view != null) return view;
+        if (view != null) {
+            remember(modern, view);
+            return view;
+        }
         view = create(modern);
         VIEWS.put(modern, view);
+        remember(modern, view);
         // Legacy fired EntityConstructing for every entity; mods attach attributes and extended properties here.
         view.mcc$fireConstructing();
         if (view.mcc$hasExtended()) {
@@ -120,6 +130,14 @@ public final class EntityBridge {
     public static void bind(Entity legacy, net.minecraft.world.entity.Entity modern) {
         legacy.mcc$entity = modern;
         VIEWS.put(modern, legacy);
+        remember(modern, legacy);
+    }
+
+    /** Mirrors a VIEWS entry into the entity's own field (perf.entityViewCache). */
+    private static void remember(net.minecraft.world.entity.Entity modern, Entity view) {
+        if (org.kylepitcock.legacyconnector.core.perf.Perf.ENTITY_VIEW_CACHE) {
+            ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$setSlot1710(view);
+        }
     }
 
     public static boolean spawn(World world, Entity entity) {
@@ -138,6 +156,7 @@ public final class EntityBridge {
             entity.mcc$entity = host.mcc$self();
         }
         VIEWS.put(entity.mcc$entity, entity);
+        remember(entity.mcc$entity, entity);
         // 1.7.10 added a dead entity and dropped it on the next tick; the modern level refuses it (and logs every attempt).
         if (entity.mcc$entity.isRemoved()) return false;
         if (level instanceof net.minecraft.server.level.ServerLevel sl && sl.getEntity(entity.mcc$entity.getUUID()) == entity.mcc$entity) return true;
