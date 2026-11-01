@@ -10,11 +10,13 @@ public class StatCollector {
     public static String translateToLocal(String key) {
         Language lang = Language.getInstance();
         if (key == null || lang.has(key)) return lang.getOrDefault(key);
+        // Code-registered translations (LanguageRegistry, StringTranslate) and the jars' own en_US lang files, which FML loaded
+        // before constructing the mods: on a server, and on a client before its languages load, no resource pack serves them.
+        String registered = org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_US", key);
+        if (registered != null) return registered;
         String modern = mcc$modernKey(key);
         if (modern != null && lang.has(modern)) return lang.getOrDefault(modern);
-        // Code-registered translations (LanguageRegistry, StringTranslate): on a server no resource pack serves them.
-        String registered = org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_US", key);
-        return registered != null ? registered : lang.getOrDefault(key);
+        return lang.getOrDefault(key);
     }
 
     /** Legacy vanilla keys whose 1.21 counterparts were renamed (vanilla entity names, the spawn egg prefix). */
@@ -40,7 +42,8 @@ public class StatCollector {
             String id = MCC$ENTITY_RENAMES.getOrDefault(name, name.replaceAll("([a-z])([A-Z])", "$1_$2").toLowerCase(java.util.Locale.ROOT));
             return "entity.minecraft." + id;
         }
-        return null;
+        // 1.7.10 vanilla block/item names ("tile.stone.name", "item.ingotIron.name", "tile.cloth.red.name")
+        return org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.modernKey(key);
     }
 
     public static String translateToLocalFormatted(String key, Object... args) {
