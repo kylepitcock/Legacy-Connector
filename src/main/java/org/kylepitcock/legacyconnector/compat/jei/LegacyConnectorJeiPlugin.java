@@ -23,13 +23,18 @@ import net.minecraft.resources.ResourceLocation;
 import org.kylepitcock.legacyconnector.compat.nei.NeiBridge;
 
 /**
- * NEI -> JEI bridge, JEI half: every legacy NEI recipe handler becomes a JEI category showing its recipes over the
- * handler's own GUI texture, with the item slots where the handler put them. Items hidden through NEI are hidden.
+ * NEI -> JEI bridge, JEI half: every legacy NEI recipe handler becomes a JEI category showing its recipes as NEI drew them
+ * (the handler's own {@code drawBackground}/{@code drawForeground}: machine picture, gauges, progress bars, text), with the
+ * item slots where the handler put them. Items hidden through NEI are hidden.
  */
 @JeiPlugin
 public final class LegacyConnectorJeiPlugin implements IModPlugin {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("LegacyConnector/NEI");
     private static final int WIDTH = 166;
+    /** NEI's recipe area: two recipes of 65 pixels a page; a handler showing one recipe a page has the height of both. */
     private static final int HEIGHT = 65;
+    /** Handlers whose drawing threw (logged once each). */
+    private static final java.util.Set<Class<?>> DRAW_FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private final List<Category> categories = new ArrayList<>();
 
     @Override
@@ -77,23 +82,17 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             IDrawable icon = gui.createDrawableItemStack(recipes.isEmpty() || recipes.get(0).outputs().isEmpty()
                     ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE)
                     : recipes.get(0).outputs().get(0).stacks().get(0));
-            categories.add(new Category(type, Component.literal(title == null ? path : title), background(gui, handler), icon, recipes, handler));
+            categories.add(new Category(type, Component.literal(title == null ? path : title), height(handler), icon, recipes, handler));
         }
         if (!categories.isEmpty()) registration.addRecipeCategories(categories.toArray(new IRecipeCategory[0])); // JEI rejects an empty list
     }
 
-    private static IDrawable background(IGuiHelper gui, TemplateRecipeHandler handler) {
+    private static int height(TemplateRecipeHandler handler) {
         try {
-            String tex = handler.getGuiTexture();
-            if (tex != null && !tex.isBlank()) {
-                ResourceLocation rl = ResourceLocation.parse(tex.toLowerCase(java.util.Locale.ROOT));
-                // NEI's default drawBackground: the region (5, 11, 166x65) of the handler's texture at the origin.
-                return gui.createDrawable(rl, 5, 11, WIDTH, HEIGHT);
-            }
+            return handler.recipiesPerPage() <= 1 ? 2 * HEIGHT : HEIGHT;
         } catch (RuntimeException | LinkageError e) {
-            // fall through to blank
+            return HEIGHT;
         }
-        return gui.createBlankDrawable(WIDTH, HEIGHT);
     }
 
     @Override
@@ -144,7 +143,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
         if (!hidden.isEmpty()) runtime.getIngredientManager().removeIngredientsAtRuntime(VanillaTypes.ITEM_STACK, hidden);
     }
 
-    private record Category(RecipeType<NeiBridge.Recipe> type, Component title, IDrawable background, IDrawable icon,
+    private record Category(RecipeType<NeiBridge.Recipe> type, Component title, int height, IDrawable icon,
                             List<NeiBridge.Recipe> recipes, TemplateRecipeHandler handler) implements IRecipeCategory<NeiBridge.Recipe> {
         @Override
         public RecipeType<NeiBridge.Recipe> getRecipeType() {
@@ -163,7 +162,7 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
 
         @Override
         public int getHeight() {
-            return HEIGHT;
+            return height;
         }
 
         @Override
@@ -178,9 +177,27 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             for (NeiBridge.Slot s : recipe.others()) builder.addSlot(RecipeIngredientRole.CATALYST, s.x(), s.y()).addItemStacks(s.stacks());
         }
 
+        /**
+         * NEI's GuiRecipe translated to the recipe's origin and called the handler's {@code drawBackground(i)} and
+         * {@code drawForeground(i)} (which binds the GUI texture and calls {@code drawExtras(i)}); JEI's pose is at the same
+         * origin here. They run as legacy GUI drawing (GL11, Tessellator, texture binds through the legacy render context), so
+         * handlers that bind their texture themselves (DragonAPI's {@code ReikaTextureHelper}, raw GL ids) draw as in their
+         * machine GUIs. NEI advanced {@code cycleticks} every tick: progress bars animate from the clock.
+         */
         @Override
         public void draw(NeiBridge.Recipe recipe, IRecipeSlotsView slots, GuiGraphics graphics, double mouseX, double mouseY) {
-            background.draw(graphics);
+            TemplateRecipeHandler h = recipe.handler();
+            if (h == null) return;
+            h.cycleticks = (int) (net.minecraft.Util.getMillis() / 50L);
+            org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginGui(graphics);
+            try {
+                h.drawBackground(recipe.index());
+                h.drawForeground(recipe.index());
+            } catch (RuntimeException | LinkageError e) {
+                if (DRAW_FAILED.add(h.getClass())) LOG.warn("NEI handler {} failed to draw a recipe: {}", h.getClass().getName(), e.toString());
+            } finally {
+                org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
+            }
         }
     }
 }

@@ -10,7 +10,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 | Legacy library | Modern replacement | Status |
 |---|---|---|
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
-| NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category over its own GUI texture; NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
+| NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
 | Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
 | CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
 
@@ -71,6 +71,25 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
 | 1.12.2 | alpha: most of the API mods use is implemented on both sides; see the status table and issue #64 |
 | 1.20.1 (+ Sinytra), 1.16.5, 1.2.5 bridges | planned, in that order |
+
+## NEI → JEI recipe categories
+
+Every `TemplateRecipeHandler` a mod registers through its `NEI*Config` plugin becomes one JEI category
+(`legacyconnector:nei_<handler class>`, 166 pixels wide like NEI's recipe area; 65 high, or 130 for handlers that show one
+recipe a page). Its recipes are the ones the handler lists for its overlay id and the ids of its transfer rectangles; JEI's
+"recipes / uses of this item" ask the handler with `loadCraftingRecipes("item", stack)` / `loadUsageRecipes("item", stack)`, as
+NEI did. Each recipe keeps the handler instance that loaded it and its index there, and JEI's `draw` runs the handler's own
+`drawBackground(i)` and `drawForeground(i)` (which calls `drawExtras(i)`) inside the legacy GUI render context, at NEI's origin
+(where the handler's `PositionedStack`s are). So whatever the handler draws appears: the machine picture, fuel/energy/fluid
+gauges, progress bars, temperatures, text. `TemplateRecipeHandler` implements NEI's defaults (`drawBackground`: region
+(5, 11, 166x65) of `getGuiTexture()`; `drawForeground`: rebinds it, then `drawExtras`; `drawProgressBar` in its eight
+directions); `cycleticks` follows the clock, so progress bars animate. A handler whose drawing throws is logged once.
+
+Texture names: `getGuiTexture()` is a legacy location string. Domain-qualified names (`witchery:textures/gui/distiller.png`)
+map like any legacy texture. Reika's handlers return class path files (`/Reika/RotaryCraft/Textures/GUI/blastfurngui.png`) and
+bind them through DragonAPI's `ReikaTextureHelper` (raw GL ids, see [Rendering](Rendering.md)); if such a name reaches the texture
+manager anyway (`new ResourceLocation("/Reika/...")`) it is read from the mods' class path with its original case and
+registered once as `legacyconnector:classpath/<path>` (a missing file gets the missing texture once, never a lookup per frame).
 
 ## Block subtypes (flattening)
 
