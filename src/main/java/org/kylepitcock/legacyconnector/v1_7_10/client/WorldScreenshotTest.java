@@ -85,6 +85,14 @@ public final class WorldScreenshotTest {
         mc.options.renderDistance().set(intProp("legacyconnector.shotRenderDistance", 16));
         String type = System.getProperty("legacyconnector.shotWorldType", "");
         long seed = Long.parseLong(System.getProperty("legacyconnector.shotSeed", "20241022"));
+        String existing = System.getProperty("legacyconnector.shotLoadWorld", "");
+        if (!existing.isEmpty()) {
+            // a copy of a real save (big packs whose create-world flow a script cannot drive): opened like the world list does
+            LOG.info("Opening the existing world '{}', shots go to {}", existing, dir);
+            mc.createWorldOpenFlows().openWorld(existing, () -> LOG.error("Opening the world '{}' was cancelled or failed", existing));
+            queueScript();
+            return;
+        }
         LOG.info("Creating the screenshot world through the create-world screen (type '{}', seed {}), shots go to {}", type, seed, dir);
         net.minecraft.client.gui.screens.worldselection.CreateWorldScreen.openFresh(mc, new TitleScreen());
         // The screen builds itself asynchronously; configure it like a player would, then press "Create New World".
@@ -97,7 +105,11 @@ public final class WorldScreenshotTest {
     private static Action createWorld(String type, String seed) {
         int[] waited = {0};
         return mc -> {
-            if (!(mc.screen instanceof net.minecraft.client.gui.screens.worldselection.CreateWorldScreen screen)) return ++waited[0] > 600;
+            if (!(mc.screen instanceof net.minecraft.client.gui.screens.worldselection.CreateWorldScreen screen)) {
+                if (++waited[0] == 600) LOG.error("The create-world screen never showed (screen: {}); use -Dlegacyconnector.shotLoadWorld=<save>",
+                        mc.screen == null ? "none" : mc.screen.getClass().getName());
+                return waited[0] > 600;
+            }
             if (++waited[0] < 20) return false;
             var state = screen.getUiState();
             state.setName("LegacyConnectorShots" + System.currentTimeMillis());
