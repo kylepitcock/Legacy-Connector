@@ -148,7 +148,7 @@ Settings are in `config/legacyconnector.properties`, which is created with comme
 | `oreBackgrounds.enabled` | `true` | Replaces the old stone/netherrack/end stone behind legacy ore textures with modern textures |
 | `oreBackgrounds.stone` (also `.netherrack`, `.endStone`) | `stone` | Texture to use behind ores, e.g. `deepslate` or `tuff`, or `legacy` to keep the old one |
 | `modernizeTextures` | `true` | Replaces old vanilla art inside legacy mod textures (copies of old blocks, items and GUIs, old stone/plank/brick backgrounds behind a mod's art) with the modern vanilla textures |
-| `deepLayer.enabled` | `true` | Runs legacy ore generators again below y=0 |
+| `deepLayer.enabled` | `true` | Spreads legacy ores down below y=0 without adding any: you get the same amount as the original mod |
 | `deepLayer.excludeGenerators` | empty | Generators that shouldn't run below y=0 |
 | `blocks.flattenSubtypes` | `true` | Gives each legacy block subtype with its own item a block of its own, as in the 1.13 flattening, so modern mods see the right subtype |
 | `events.skip` | empty | Legacy event handlers to switch off (`full.ClassName#method`), for tracking down one that misbehaves |
