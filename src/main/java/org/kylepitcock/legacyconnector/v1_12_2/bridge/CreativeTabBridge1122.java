@@ -35,7 +35,7 @@ public final class CreativeTabBridge1122 {
             ResourceLocation id = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy12_" + Ids.normalizePath(label).replace('/', '_').replace('.', '_'));
             if (BuiltInRegistries.CREATIVE_MODE_TAB.containsKey(id)) continue;
             CreativeModeTab modern = CreativeModeTab.builder()
-                    .title(Component.translatableWithFallback("itemGroup." + label, label))
+                    .title(title(tab, label))
                     .icon(() -> icon(tab))
                     .displayItems((params, output) -> {
                         for (var s : contents(tab)) output.accept(s);
@@ -44,6 +44,18 @@ public final class CreativeTabBridge1122 {
                     .build();
             LegacyRegistrar.register(BuiltInRegistries.CREATIVE_MODE_TAB, id, modern);
         }
+    }
+
+    /** As 1.12's creative screen drew it, {@code I18n.format(tab.getTranslatedTabLabel())}: mods override it with a plain or translated name. */
+    private static Component title(CreativeTabs tab, String label) {
+        String key = null;
+        try {
+            key = tab.getTranslatedTabLabel();
+        } catch (RuntimeException | LinkageError e) {
+            // a client-only override that needs the game: the base key
+        }
+        if (key == null || key.isEmpty() || key.equals("itemGroup.")) key = "itemGroup." + label;
+        return Component.translatableWithFallback(key, key.startsWith("itemGroup.") ? label : key);
     }
 
     private static net.minecraft.world.item.ItemStack icon(CreativeTabs tab) {

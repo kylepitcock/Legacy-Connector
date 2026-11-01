@@ -151,7 +151,11 @@ public final class ItemCallbacks {
             if (named != null) return LegacyText.literal(named);
             // DragonAPI font keys in the name (ChromatiCraft's undiscovered crystal colours) are dropped: see LegacyText
             if (customName) return LegacyText.literal(legacy.getItemStackDisplayName(view));
-            return Component.translatable(legacy.getUnlocalizedName(view) + ".name");
+            String key = legacy.getUnlocalizedName(view) + ".name";
+            // A key no lang file serves may still be one the legacy translator knows: code-registered (LanguageRegistry) or a
+            // renamed vanilla key ("tile.stone.name" of a mod item named like a vanilla one)
+            if (net.minecraft.locale.Language.getInstance().has(key)) return Component.translatable(key);
+            return Component.translatableWithFallback(key, legacyconnector.v1_7_10.net.minecraft.util.StatCollector.translateToLocal(key));
         } catch (RuntimeException | LinkageError e) {
             // Names are built for every item at once (the creative search), and a mod's name can depend on another mod that
             // failed to load (BuildCraft facades of MCFrames frames): a broken name must never take the game down.

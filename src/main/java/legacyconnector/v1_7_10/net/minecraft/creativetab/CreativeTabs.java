@@ -3,7 +3,6 @@ package legacyconnector.v1_7_10.net.minecraft.creativetab;
 import java.util.List;
 import legacyconnector.v1_7_10.net.minecraft.item.Item;
 import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
-import legacyconnector.v1_7_10.net.minecraft.util.StatCollector;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.CreativeTabBridge;
 
 /**
@@ -76,8 +75,9 @@ public abstract class CreativeTabs {
         return tabLabel;
     }
 
+    /** The title key (1.7.10 returned the key; the creative screen translated it, so overrides may return a plain name). */
     public String getTranslatedTabLabel() {
-        return StatCollector.translateToLocal("itemGroup." + getTabLabel());
+        return "itemGroup." + getTabLabel();
     }
 
     public ItemStack getIconItemStack() {

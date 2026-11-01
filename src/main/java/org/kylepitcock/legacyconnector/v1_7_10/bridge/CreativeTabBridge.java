@@ -49,10 +49,27 @@ public final class CreativeTabBridge {
         }
     }
 
-    /** The title key is the label's; a tab with no label (Nuclear Control 2) would read "itemGroup.", so it is titled by its mod. */
+    /**
+     * The title as 1.7.10's creative screen drew it: {@code I18n.format(tab.getTranslatedTabLabel())}. The base method gives
+     * "itemGroup.<label>", but mods override it with a literal or already translated name (Railcraft's "Railcraft" for label
+     * "railcraft", Ender Zoo's "EnderZoo", Nuclear Control's translated "nc.itemgroup.tab"), which I18n left as it was. A key
+     * the lang files lack falls back to the label; a tab with no label (Nuclear Control 2) would read "itemGroup.", so it is
+     * titled by its mod.
+     */
     private static Component tabTitle(CreativeTabs tab) {
         String label = tab.getTabLabel();
-        if (label != null && !label.isEmpty()) return Component.translatableWithFallback("itemGroup." + label, label);
+        String key = null;
+        try {
+            key = tab.getTranslatedTabLabel();
+        } catch (RuntimeException | LinkageError e) {
+            // a client-only override that needs the game: use the base key
+        }
+        if (key == null || key.isEmpty()) key = label == null || label.isEmpty() ? null : "itemGroup." + label;
+        if (key != null && !key.equals("itemGroup.")) {
+            boolean baseKey = key.startsWith("itemGroup.");
+            String fallback = baseKey && label != null && !label.isEmpty() ? label : key;
+            return Component.translatableWithFallback(key, fallback);
+        }
         String owner = OWNER.get(tab);
         return Component.literal(owner != null ? owner : "Legacy mod");
     }
