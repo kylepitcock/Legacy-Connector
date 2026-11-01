@@ -189,7 +189,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     }
 
     public static Block getBlockFromItem(legacyconnector.v1_12_2.net.minecraft.item.Item item) {
-        return item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib ? ib.getBlock() : null;
+        // 1.12 never answers null: an item that is no block's item gives air (Atum's kiln recipes call getRegistryName on the answer)
+        return item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock ib && ib.getBlock() != null ? ib.getBlock()
+                : legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR;
     }
 
     /**

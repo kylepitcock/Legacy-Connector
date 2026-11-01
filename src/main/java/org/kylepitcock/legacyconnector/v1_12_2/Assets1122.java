@@ -1061,7 +1061,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         Chain chain = new Chain();
         chainOf(model, out, chain, 0);
         int colon = model.indexOf(':');
-        if (chain.blocked || colon < 0 || model.startsWith("minecraft:")) return copy;
+        if (chain.blocked || colon < 0 || model.startsWith("minecraft:") || model.contains("builtin/")) return copy;
         String path = "block/lc1122/rt/" + model.substring(0, colon) + "_" + Ids.normalizePath(model.substring(colon + 1)).replace('/', '_') + "_" + renderType.substring(10);
         String file = "assets/" + blockId.getNamespace() + "/models/" + path + ".json";
         if (!out.containsKey(file)) {
