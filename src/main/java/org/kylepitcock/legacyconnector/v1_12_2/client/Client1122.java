@@ -59,6 +59,10 @@ public final class Client1122 {
             if (present()) Colors1122.onItemColors(e);
         });
         modBus.addListener(Client1122::onModifyBaking);
+        // model predicates of mod items (Item.addPropertyOverride)
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
+            if (present()) ItemProperties1122.register();
+        }));
         // status icons of mod potions (the modern effect sprites do not exist for them)
         modBus.addListener((net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsEvent e) -> {
             if (present()) EffectIcons1122.register(e);
