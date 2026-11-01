@@ -11,8 +11,8 @@ var Sup=Java.extend(Java.type("java.util.function.Supplier"),{get:function(){
       e.moveTo(pos.getX()+0.5,pos.getY(),pos.getZ()+0.5,0,0); if(e instanceof MOB) e.setNoAi(true); l.addFreshEntity(e);
       var tot=0; for(var tries=0;tries<6;tries++){ var wasAlive=e.isAlive(); if(tries>0) { var e2=t.create(l); e2.moveTo(pos.getX()+0.5,pos.getY(),pos.getZ()+0.5,0,0); l.addFreshEntity(e2); e=e2 } e.hurt(DS.playerAttack(p),1000);
         var its=l.getEntitiesOfClass(IE.class,new AABB(pos).inflate(3)); var names=[]; its.forEach(function(d){ names.push(""+d.getItem().getItem()); d.discard() }); tot+=names.length; if(tries==0) var first=names.join("+") }
-      out.push(k.getPath()+": 6 kills -> "+tot+" drops"+(first?" (e.g. "+first+")":""));
-    }catch(ex){ out.push(k.getPath()+": ERR "+ex) }
+      out.push([k.getPath(),tot,first||""]);
+    }catch(ex){ out.push([k.getPath(),-1,""+ex]) }
   });
   return out.join("\n");
 }});
