@@ -6,6 +6,24 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   ids (vanilla 1.7.10 names map through a rename table to the 1.21 names). `TextureMap`/`TextureAtlasSprite` are real:
   sprites a mod builds itself with a custom loader (Railcraft's unstitched sheets, HBM's recoloured textures) are run
   at pack generation and written out as ordinary textures.
+- **Modern leaves** (`textures.modernLeaves`, `ModernLeaves` + `LeafModernizer`): most mod trees recolour the old vanilla
+  leaves, which 1.14 redrew. The icons legacy leaf blocks register (`BlockLeaves` subclasses, blocks of leaves material) are
+  checked against the cut-out masks of the old oak (= birch, acacia, dark oak), spruce and jungle leaves, known only by
+  their hashes (`leaf-fingerprints.txt`, `tools/gen_leaf_fingerprints.py`; no Mojang pixels are shipped). A texture whose
+  mask matches, also after taking off its decoration pixels (berries, flowers, fruit: colours that do not follow the
+  leaf's colour ramp), is a recolour and becomes the reference of that kind; textures with edited holes are recolours when
+  their brightness pattern correlates with a reference (rank correlation 0.7 or more, at most 64 mask pixels different).
+  A recolour is rebuilt from the modern vanilla leaves of its kind: the mod's leaf colours sorted by brightness are laid on
+  the modern texture's brightness ranks (so hue, saturation and brightness range are the mod's, and grey biome-tinted
+  leaves stay grey), the cut-out is the modern one, and decoration pixels stay where the mod drew them. A fast (opaque)
+  texture that is a filled copy of a converted fancy one (paired by pixels, and by name: `_fast`/`_fancy`, `_opaque`,
+  `low`) gets the same pattern with its holes filled from its own hole colours. Hand-drawn leaves (other shapes or
+  patterns), multi-coloured art, textures with fewer than 120 drawn pixels, animated textures and sizes other than 16x16
+  or clean upscales of it are kept, and exact copies of old vanilla leaves are left to `modernizeTextures`. The log
+  (`LegacyConnector/Leaves`) has a line per converted and per kept texture with the reason, and a summary; results go into
+  the generated pack and are reused on reloads. `java -cp build/classes/java/main;src/main/resources
+  org.kylepitcock.legacyconnector.core.pack.LeafModernizer <1.21.1 client jar> <out dir> <legacy jars...>` converts the
+  leaf textures of jars offline and writes before/after pictures.
 - **Blocks:** the generated block models cover cubes, partial blocks, plants, crops and stairs. Blocks drawn by an
   `ISimpleBlockRenderingHandler` get a model that runs the handler while the chunk is meshed: the Tessellator
   captures its quads (`RenderBlocks` implements the face renderers) and they become the block's baked quads.
