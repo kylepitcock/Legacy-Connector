@@ -210,6 +210,12 @@ public class LegacyItemAdapter extends net.minecraft.world.item.Item implements 
         return ItemCallbacks.enchantability(legacy, stack);
     }
 
+    /** The anvil repairs a legacy tool or armor piece with what its {@code getIsRepairable} accepts (its material's ingot, Thaumium for Thaumcraft's tools). */
+    @Override
+    public boolean isValidRepairItem(ItemStack stack, ItemStack repairCandidate) {
+        return ItemCallbacks.repairable(legacy, stack, repairCandidate);
+    }
+
     @Override
     public boolean onLeftClickEntity(ItemStack stack, Player player, Entity target) {
         return ItemCallbacks.leftClickEntity(legacy, stack, player, target);

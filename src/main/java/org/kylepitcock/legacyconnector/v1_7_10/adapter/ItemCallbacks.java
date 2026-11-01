@@ -215,6 +215,15 @@ public final class ItemCallbacks {
         }
     }
 
+    static boolean repairable(Item legacy, net.minecraft.world.item.ItemStack stack, net.minecraft.world.item.ItemStack material) {
+        if (material.isEmpty()) return false;
+        try {
+            return legacy.getIsRepairable(ItemStack.mcc$wrap(stack), ItemStack.mcc$wrap(material));
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     static boolean leftClickEntity(Item legacy, net.minecraft.world.item.ItemStack stack, Player player, Entity target) {
         return legacy.onLeftClickEntity(ItemStack.mcc$wrap(stack), player(player), EntityBridge.wrap(target));
     }
