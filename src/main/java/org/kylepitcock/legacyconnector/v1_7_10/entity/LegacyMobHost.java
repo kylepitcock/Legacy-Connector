@@ -399,11 +399,15 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     // ------------------------------------------------------------------ collisions, effects, kills
 
     private static final Class<?>[] DAMAGE_PARAMS = {legacyconnector.v1_7_10.net.minecraft.util.DamageSource.class, float.class};
+    // hooks asked every tick: one parameter array each (no varargs array per call)
+    private static final Class<?>[] COLLIDE_PARAMS = {Entity.class};
+    private static final Class<?>[] INT_PARAM = {int.class};
+    private static final Class<?>[] POTION_PARAMS = {legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.class};
 
     @Override
     protected void doPush(net.minecraft.world.entity.Entity other) {
         EntityLivingBase l = living();
-        if (l != null && LegacyHosts.overrides(legacy.getClass(), "collideWithEntity", Entity.class)) l.mcc$collideWithEntity(EntityBridge.wrap(other));
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "collideWithEntity", COLLIDE_PARAMS)) l.mcc$collideWithEntity(EntityBridge.wrap(other));
         else super.doPush(other);
     }
 
@@ -429,7 +433,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     protected int decreaseAirSupply(int air) {
         EntityLivingBase l = living();
-        if (l != null && LegacyHosts.overrides(legacy.getClass(), "decreaseAirSupply", int.class)) return l.mcc$decreaseAirSupply(air);
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "decreaseAirSupply", INT_PARAM)) return l.mcc$decreaseAirSupply(air);
         return super.decreaseAirSupply(air);
     }
 
@@ -460,7 +464,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
     @Override
     public boolean canBeAffected(net.minecraft.world.effect.MobEffectInstance effect) {
         EntityLivingBase l = living();
-        if (l != null && LegacyHosts.overrides(legacy.getClass(), "isPotionApplicable", legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.class)) {
+        if (l != null && LegacyHosts.overrides(legacy.getClass(), "isPotionApplicable", POTION_PARAMS)) {
             var wrapped = legacyconnector.v1_7_10.net.minecraft.potion.PotionEffect.mcc$wrap(effect);
             if (wrapped != null) return l.isPotionApplicable(wrapped);
         }
