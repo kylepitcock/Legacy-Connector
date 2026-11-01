@@ -63,8 +63,6 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 **1.12.2: Atum 2, the desert dimension, with its pyramids, sandstorm haze and creatures**
 
-![Atum's desert dimension](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/atum-pyramid.png)
-
 ![Atum's creatures](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/atum-creatures.png)
 
 **1.12.2: Scape and Run: Parasites**, with its own models, AI and attacks:
