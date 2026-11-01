@@ -56,6 +56,7 @@ public final class LegacyConnector {
         CHUNK_GENERATORS.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("legacy_1122", () -> org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyChunkGenerator1122.CODEC);
         BIOME_SOURCES.register("legacy", () -> org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyBiomeSource.CODEC);
+        BIOME_SOURCES.register("legacy_1122", () -> org.kylepitcock.legacyconnector.v1_12_2.dimension.LegacyBiomeSource1122.CODEC);
         // World presets of legacy mod world types: the overworld multi-noise source with the world type's legacy biome layers.
         BIOME_SOURCES.register("legacy_layers", () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyLayeredBiomeSource.CODEC);
     }
