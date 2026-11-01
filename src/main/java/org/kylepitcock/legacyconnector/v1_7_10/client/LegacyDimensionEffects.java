@@ -36,7 +36,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
     /** The provider of the level the player is in, when it is a mod dimension; null otherwise. */
     private static WorldProvider provider() {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || LegacyDimensions.idOf(level.dimension().location()) == null) return null;
+        if (level == null || !(level.effects() instanceof LegacyDimensionEffects) || LegacyDimensions.idOf(level.dimension().location()) == null) return null;
         try {
             return World.mcc$get$provider(World.mcc$wrap(level));
         } catch (RuntimeException | LinkageError e) {

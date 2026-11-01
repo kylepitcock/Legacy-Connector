@@ -38,7 +38,7 @@ public final class LegacyDimensionEffects1122 extends DimensionSpecialEffects {
 
     private static WorldProvider provider() {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level == null || Dimensions1122.idOf(level.dimension().location()) == null) return null;
+        if (level == null || !(level.effects() instanceof LegacyDimensionEffects1122) || Dimensions1122.idOf(level.dimension().location()) == null) return null;
         try {
             return World.mcc$get$provider(org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level));
         } catch (RuntimeException | LinkageError e) {
