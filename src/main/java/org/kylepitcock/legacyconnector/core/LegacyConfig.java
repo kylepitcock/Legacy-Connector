@@ -61,6 +61,9 @@ public final class LegacyConfig {
             # The vanilla biome templates and biome tags that legacy biomes are generated from are read from the game's jars once per
             # session instead of on every data pack build.
             perf.biomeJarCache = true
+            # The diagnostic sample of legacy biomes around spawn ("Biome sample around spawn" in the log) runs in the background
+            # instead of on the server thread while the player joins.
+            perf.asyncBiomeSample = true
 
             # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
             # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
@@ -211,5 +214,13 @@ public final class LegacyConfig {
      */
     public static boolean perfBiomeJarCache() {
         return bool("perf.biomeJarCache", true);
+    }
+
+    /**
+     * {@code perf.asyncBiomeSample}: the "Biome sample around spawn" diagnostic (1089 biome source lookups after the server started)
+     * runs on a background worker instead of the server thread that the joining player waits for.
+     */
+    public static boolean perfAsyncBiomeSample() {
+        return bool("perf.asyncBiomeSample", true);
     }
 }

@@ -44,6 +44,8 @@ mods). Creating the world took about 75 s from the data pack load to the spawn a
 - `perf.biomeJarCache` (default on): every build of the legacy data pack read the vanilla biome templates and resolved about 150 vanilla
   and NeoForge biome tags from the jars again (about 0.4 s of the first build in ATM10: "Generated 22 legacy biome(s)", "Legacy biomes
   joined 7 biome tag(s)"). They are read once per session now.
+- `perf.asyncBiomeSample` (default on): the diagnostic "Biome sample around spawn" (1089 biome source lookups, up to 0.1 s in ATM10)
+  runs on a background worker after the server started instead of delaying the first ticks the joining player waits for.
 
 The spawn area size is vanilla's game rule `spawnChunkRadius` (default 2; `/gamerule spawnChunkRadius 0` keeps no chunks loaded around
 the spawn and makes "Preparing spawn area" almost instant); Legacy Connector does not change it. Chunk generation in parallel and faster
