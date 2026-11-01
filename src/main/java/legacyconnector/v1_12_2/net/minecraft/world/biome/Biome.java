@@ -85,7 +85,7 @@ public class Biome extends IForgeRegistryEntry.Impl<Biome> {
     }
 
     public BiomeDecorator createBiomeDecorator() {
-        return new BiomeDecorator();
+        return getModdedBiomeDecorator(new BiomeDecorator());
     }
 
     public List<SpawnListEntry> getSpawnableList(EnumCreatureType creatureType) {
