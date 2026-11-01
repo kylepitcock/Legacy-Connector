@@ -59,8 +59,10 @@ public class KeyBinding implements Comparable<KeyBinding> {
     /** The modern mapping, created on first use. */
     public synchronized KeyMapping mcc$modern() {
         if (modern == null) {
-            int glfw = KeyCodes.toGlfw(keyCode);
-            modern = new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, glfw, category);
+            // 1.7.10 stored mouse buttons as -100 + button (middle click -98)
+            modern = keyCode < 0 && keyCode >= -100
+                    ? new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.MOUSE, keyCode + 100, category)
+                    : new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, KeyCodes.toGlfw(keyCode), category);
         }
         return modern;
     }
@@ -93,8 +95,13 @@ public class KeyBinding implements Comparable<KeyBinding> {
         return category;
     }
 
+    /** The bound key in 1.7.10 codes: what the player set in the controls screen once the modern mapping exists. */
     public int getKeyCode() {
-        return keyCode;
+        KeyMapping m = modern;
+        if (m == null) return keyCode;
+        var key = m.getKey();
+        if (key.getType() == com.mojang.blaze3d.platform.InputConstants.Type.MOUSE) return key.getValue() - 100;
+        return key.getValue() == com.mojang.blaze3d.platform.InputConstants.UNKNOWN.getValue() ? 0 : KeyCodes.fromGlfw(key.getValue());
     }
 
     /** The key the binding was made with. */
@@ -108,6 +115,13 @@ public class KeyBinding implements Comparable<KeyBinding> {
 
     public void setKeyCode(int keyCode) {
         this.keyCode = keyCode;
+        KeyMapping m = modern;
+        if (m != null) {
+            m.setKey(keyCode < 0 && keyCode >= -100 ? com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(keyCode + 100)
+                    : keyCode == 0 ? com.mojang.blaze3d.platform.InputConstants.UNKNOWN
+                    : com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM.getOrCreate(KeyCodes.toGlfw(keyCode)));
+            KeyMapping.resetMapping();
+        }
     }
 
     public static void onTick(int keyCode) {
@@ -121,7 +135,7 @@ public class KeyBinding implements Comparable<KeyBinding> {
 
     public static synchronized void resetKeyBindingArrayAndHash() {
         hash.clearMap();
-        for (Object o : keybindArray) hash.addKey(((KeyBinding) o).keyCode, o);
+        for (Object o : keybindArray) hash.addKey(((KeyBinding) o).getKeyCode(), o);
     }
 
     @Override
