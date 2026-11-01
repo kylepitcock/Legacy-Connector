@@ -94,6 +94,13 @@ public class ForgeHooks {
      */
     private static final ThreadLocal<legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent> mcc$pendingBreak = new ThreadLocal<>();
 
+    private static final ThreadLocal<Integer> mcc$legacyBreakDepth = ThreadLocal.withInitial(() -> 0);
+
+    /** Whether the break event being fired comes from legacy code breaking an extra block (not from the player starting to break one). */
+    public static boolean mcc$inLegacyBreak() {
+        return mcc$legacyBreakDepth.get() > 0;
+    }
+
     /** The legacy event to post for the modern break event being fired by {@link #onBlockBreakEvent}, or null. */
     public static legacyconnector.v1_7_10.net.minecraftforge.event.world.BlockEvent.BreakEvent mcc$takePendingBreak() {
         var e = mcc$pendingBreak.get();
@@ -122,6 +129,7 @@ public class ForgeHooks {
         net.minecraft.world.level.GameType type = gameType == null || gameType.getID() < 0 ? sp.gameMode.getGameModeForPlayer()
                 : net.minecraft.world.level.GameType.byId(gameType.getID());
         mcc$pendingBreak.set(event);
+        mcc$legacyBreakDepth.set(mcc$legacyBreakDepth.get() + 1);
         try {
             var modern = net.neoforged.neoforge.common.CommonHooks.fireBlockBreak(level, type, sp, pos, level.getBlockState(pos));
             if (mcc$pendingBreak.get() == event) {
@@ -132,6 +140,7 @@ public class ForgeHooks {
             }
         } finally {
             mcc$pendingBreak.remove();
+            mcc$legacyBreakDepth.set(mcc$legacyBreakDepth.get() - 1);
         }
         return event;
     }

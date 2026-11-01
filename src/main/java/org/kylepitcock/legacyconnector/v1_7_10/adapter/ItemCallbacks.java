@@ -200,6 +200,9 @@ public final class ItemCallbacks {
         try {
             return legacy.onBlockStartBreak(ItemStack.mcc$wrap(stack), pos.getX(), pos.getY(), pos.getZ(), player(player));
         } catch (RuntimeException | LinkageError e) {
+            if (TOOLTIP_FAILURES.incrementAndGet() <= 5) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Items").warn("onBlockStartBreak of {} failed", legacy.getClass().getName(), e);
+            }
             return false;
         }
     }

@@ -54,7 +54,7 @@ public abstract class EntityCreature extends EntityLiving {
             updateWanderPath();
         }
         if (entityToAttack != null) faceEntity(entityToAttack, 30.0F, 30.0F);
-        if ((isInWater() || handleLavaMovement()) && getRNG().nextFloat() < 0.8F) setJumping(true);
+        if ((isInWater() || handleLavaMovement()) && getRNG().nextFloat() < 0.8F) mcc$pulseJump();
     }
 
     /** Picks the best of ten random nearby spots (by getBlockPathWeight) and walks there. */

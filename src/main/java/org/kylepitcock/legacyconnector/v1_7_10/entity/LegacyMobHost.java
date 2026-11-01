@@ -178,6 +178,12 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         super.aiStep();
     }
 
+    /** Airborne speed: the legacy entity's {@code jumpMovementFactor} (the Travelling Trunk sets 0.04 while it hops after its owner). */
+    @Override
+    protected float getFlyingSpeed() {
+        return legacy instanceof EntityLivingBase l ? l.mcc$airSpeed() : super.getFlyingSpeed();
+    }
+
     @Override
     protected void customServerAiStep() {
         if (legacy instanceof EntityLiving l) l.mcc$serverAiStep();

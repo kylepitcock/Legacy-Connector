@@ -236,6 +236,21 @@ public final class EventBridge1710 {
                     BlockBridge.legacyBlock(e.getState()), BlockBridge.legacyMeta(e.getState()), player(e.getPlayer()));
             if (forge().post(legacy)) e.setCanceled(true);
         });
+        // Forge's Item.onBlockStartBreak (NeoForge dropped the hook): after the break event, true cancels the break. Thaumcraft's elemental
+        // axe fells the tree, the shovel and the crusher dig areas, Tinkers' hammers... Blocks legacy code breaks itself are no new start.
+        gameBus.addListener(net.neoforged.bus.api.EventPriority.LOWEST, (net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) -> {
+            if (e.isCanceled() || START_BREAK.get() || legacyconnector.v1_7_10.net.minecraftforge.common.ForgeHooks.mcc$inLegacyBreak()
+                    || !(e.getPlayer() instanceof net.minecraft.server.level.ServerPlayer sp)) return;
+            var stack = sp.getMainHandItem();
+            if (stack.isEmpty() || !(stack.getItem() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemHolder holder)
+                    || !(holder.legacyItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.Item item)) return;
+            START_BREAK.set(true);
+            try {
+                if (org.kylepitcock.legacyconnector.v1_7_10.adapter.ItemCallbacks.blockStartBreak(item, stack, e.getPos(), sp)) e.setCanceled(true);
+            } finally {
+                START_BREAK.set(false);
+            }
+        });
         gameBus.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent e) -> {
             if (!wants(forge(), BlockEvent.PlaceEvent.class) || !(e.getEntity() instanceof net.minecraft.world.entity.player.Player pl)) return;
             var p = e.getPos();
@@ -986,6 +1001,7 @@ public final class EventBridge1710 {
                 + ". See logs/latest.log and logs/legacyconnector-report.txt."));
     }
 
+    private static final ThreadLocal<Boolean> START_BREAK = ThreadLocal.withInitial(() -> false);
     private static final net.minecraft.world.entity.EquipmentSlot[] ARMOR_SLOTS = {net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
             net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET};
     private static int armorTickFailures;

@@ -214,7 +214,7 @@ public abstract class EntityLiving extends EntityLivingBase {
             mcc$set$rotationYaw(this, mcc$get$rotationYaw(this) + randomYawVelocity);
             mcc$set$rotationPitch(this, defaultPitch);
         }
-        if ((isInWater() || handleLavaMovement()) && getRNG().nextFloat() < 0.8F) setJumping(true);
+        if ((isInWater() || handleLavaMovement()) && getRNG().nextFloat() < 0.8F) mcc$pulseJump();
     }
 
     public int getVerticalFaceSpeed() {
@@ -405,6 +405,7 @@ public abstract class EntityLiving extends EntityLivingBase {
     public final void mcc$serverAiStep() {
         if (isAIEnabled()) updateAITasks();
         else updateEntityActionState();
+        mcc$applyJump();
     }
 
     public final int mcc$experience() {

@@ -33,6 +33,52 @@ public abstract class EntityLivingBase extends Entity {
     public float moveStrafing;
     private float mcc$local_moveStrafing;
 
+    /**
+     * Phantom field: the legacy {@code isJumping} input. Modern mobs reset their jumping flag from their jump control right
+     * after the AI step, so a flag the legacy AI sets is handed to that control at the end of the step ({@link #mcc$applyJump}).
+     */
+    @Deprecated
+    public boolean isJumping;
+    private boolean mcc$local_isJumping;
+    private boolean mcc$jumpPulse;
+    /** Phantom field: the horizontal speed in the air (the host's flying speed reads it). */
+    @Deprecated
+    public float jumpMovementFactor;
+    private float mcc$local_jumpMovementFactor = 0.02F;
+
+    public static boolean mcc$get$isJumping(EntityLivingBase e) {
+        return e.mcc$local_isJumping;
+    }
+
+    public static void mcc$set$isJumping(EntityLivingBase e, boolean v) {
+        e.mcc$local_isJumping = v;
+        if (v) e.mcc$jumpPulse = true;
+    }
+
+    public static float mcc$get$jumpMovementFactor(EntityLivingBase e) {
+        return e.mcc$local_jumpMovementFactor;
+    }
+
+    public static void mcc$set$jumpMovementFactor(EntityLivingBase e, float v) {
+        e.mcc$local_jumpMovementFactor = v;
+    }
+
+    /** The speed in the air a host reads for its movement (legacy {@code jumpMovementFactor}). */
+    public final float mcc$airSpeed() {
+        return mcc$local_jumpMovementFactor;
+    }
+
+    /** One jump for the coming movement step (the legacy AI asked for it this tick). */
+    public final void mcc$pulseJump() {
+        mcc$jumpPulse = true;
+    }
+
+    /** Called at the end of the legacy AI step: passes what the legacy AI asked (isJumping) on to the modern jump control. */
+    public final void mcc$applyJump() {
+        if ((mcc$local_isJumping || mcc$jumpPulse) && mcc$entity instanceof net.minecraft.world.entity.Mob m) m.getJumpControl().jump();
+        mcc$jumpPulse = false;
+    }
+
     public static float mcc$get$moveForward(EntityLivingBase e) {
         return e.mcc$entity instanceof LivingEntity l ? l.zza : e.mcc$local_moveForward;
     }
@@ -433,7 +479,9 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public void setJumping(boolean jumping) {
-        if (mcc$entity instanceof LivingEntity l) l.setJumping(jumping);
+        mcc$local_isJumping = jumping;
+        if (jumping) mcc$jumpPulse = true;
+        if (mcc$entity instanceof LivingEntity l && !(l instanceof net.minecraft.world.entity.Mob)) l.setJumping(jumping);
     }
 
     protected void jump() {
