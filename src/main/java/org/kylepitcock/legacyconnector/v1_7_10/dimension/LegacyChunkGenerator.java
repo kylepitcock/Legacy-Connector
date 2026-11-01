@@ -125,11 +125,13 @@ public class LegacyChunkGenerator extends ChunkGenerator {
         IChunkProvider provider = legacy();
         LevelAccessor previous = World.mcc$enterRegion(level);
         try {
+            boolean intercepted = false;
             if (provider != null) {
                 try {
                     synchronized (provider) {
                         synchronized (biomeLock(provider)) {
                             provider.populate(provider, chunk.getPos().x, chunk.getPos().z);
+                            intercepted = intercept(chunk.getPos().x, chunk.getPos().z, provider);
                         }
                     }
                 } catch (RuntimeException | LinkageError e) {
@@ -138,10 +140,42 @@ public class LegacyChunkGenerator extends ChunkGenerator {
             }
             // Chunk.populateChunk ran the mods' IWorldGenerators right after the provider's populate, in every dimension
             // (Thaumcraft's Outer Lands maze, ores and structures other mods add to a mod's dimension).
-            WorldGenBridge.decorateModDimension(level, chunk.getPos().x, chunk.getPos().z, provider);
+            if (!intercepted) WorldGenBridge.decorateModDimension(level, chunk.getPos().x, chunk.getPos().z, provider);
         } finally {
             World.mcc$leaveRegion(previous);
         }
+    }
+
+    /**
+     * Code that coremods patched into {@code ChunkProviderServer.populate} around the IWorldGenerator pass (the call to
+     * {@code GameRegistry.generateWorld}), run here at the same point: after the provider's populate, with the dimension's
+     * world (its writes reach the generation region, see {@code World.mcc$enterRegion}). Returning true skips the pass, as a
+     * cancelled hook did.
+     */
+    public interface PopulationInterceptor {
+        boolean intercept(World world, int chunkX, int chunkZ, IChunkProvider generator);
+    }
+
+    private static final List<PopulationInterceptor> INTERCEPTORS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    public static void addPopulationInterceptor(PopulationInterceptor interceptor) {
+        INTERCEPTORS.add(interceptor);
+    }
+
+    private boolean intercept(int chunkX, int chunkZ, IChunkProvider provider) {
+        if (INTERCEPTORS.isEmpty()) return false;
+        var wp = LegacyDimensions.provider(dimension);
+        World world = wp == null ? null : wp.worldObj;
+        if (world == null) return false;
+        boolean skip = false;
+        for (PopulationInterceptor i : INTERCEPTORS) {
+            try {
+                skip |= i.intercept(world, chunkX, chunkZ, provider);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.error("Population hook {} failed in dimension {} at chunk {},{}", i, dimension, chunkX, chunkZ, e);
+            }
+        }
+        return skip;
     }
 
     /** Legacy biome layers keep per-call state: every use of them from this dimension shares one monitor. */
