@@ -148,8 +148,11 @@ public class CraftingHelper {
             String modId = colon >= 0 ? type.substring(0, colon) : context.getModId();
             String name = colon >= 0 ? type.substring(colon + 1) : type;
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try (var in = loader.getResourceAsStream("assets/" + modId + "/recipes/_factories.json")) {
+            // the translated jar stages recipe JSON under legacyconnector_legacy/ (the loader's resource converter); read through the mod's container
+            try (var in = org.kylepitcock.legacyconnector.v1_12_2.bridge.JsonRecipes1122.open(modId, "_factories.json", loader)) {
                 if (in == null) return null;
+                var mod = org.kylepitcock.legacyconnector.core.LegacyMods.find(modId);
+                if (mod != null && mod.mainClass != null) loader = mod.mainClass.getClassLoader();
                 com.google.gson.JsonObject root = com.google.gson.JsonParser.parseReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
                 if (!root.has(kind) || !root.getAsJsonObject(kind).has(name)) return null;
                 String className = root.getAsJsonObject(kind).get(name).getAsString();
