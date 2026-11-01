@@ -158,6 +158,15 @@ public final class LegacyConfig {
         return bool("villages.legacyBuildings", true);
     }
 
+    /** {@code compat.rocketnautics.plasmaEveryTicks}: how often Rocketnautics' star plasma texture is rebuilt (1 = every tick, as the mod does). */
+    public static int rocketnauticsPlasmaEveryTicks() {
+        try {
+            return Math.max(1, Integer.parseInt(string("compat.rocketnautics.plasmaEveryTicks", "4").trim()));
+        } catch (NumberFormatException e) {
+            return 4;
+        }
+    }
+
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
     }

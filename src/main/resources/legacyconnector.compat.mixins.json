@@ -6,6 +6,9 @@
   "mixins": [
     "ArchitecturyEventImplMixin"
   ],
+  "client": [
+    "RocketnauticsStarPlasmaMixin"
+  ],
   "injectors": {
     "defaultRequire": 0
   }
