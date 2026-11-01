@@ -32,8 +32,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Forge's numeric villager professions as modern ones. Ids 0-4 are the vanilla farmer, librarian, priest, smith and
- * butcher; every id a mod registers becomes a {@code legacyconnector:villager_<id>} profession with the mod's skin as its
- * clothes layer and its trade handlers' trades; some freshly spawned unemployed villagers take such a profession (the
+ * butcher; every id a mod registers becomes a {@code minecraft:villager_<id>} profession with the mod's skin as its
+ * clothes layer and its trade handlers' trades (in the minecraft namespace: a legacy villager is a vanilla villager with
+ * another job, and Jade and the like name a villager's mod after its profession's namespace, which read "Legacy Connector"); some freshly spawned unemployed villagers take such a profession (the
  * modern villages have no hook for legacy village components).
  */
 public final class VillagerBridge {
@@ -61,13 +62,15 @@ public final class VillagerBridge {
     public static void registerId(int id) {
         if (id >= 0 && id <= 4) return;
         CUSTOM.computeIfAbsent(id, i -> {
-            ResourceLocation key = ResourceLocation.fromNamespaceAndPath("legacyconnector", "villager_" + i);
-            VillagerProfession profession = new VillagerProfession("legacyconnector.villager_" + i, holder -> false, holder -> false,
+            ResourceLocation key = ResourceLocation.withDefaultNamespace("villager_" + i);
+            VillagerProfession profession = new VillagerProfession("villager_" + i, holder -> false, holder -> false,
                     ImmutableSet.of(), ImmutableSet.of(), null);
             // 1.7.10 professions had no names: the trade screen showed "entity.minecraft.villager.legacyconnector.villager_243"
             org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", translationKey(i), SKINS.containsKey(i) ? nameFromSkin(SKINS.get(i)) : "Villager");
             try {
-                return LegacyRegistrar.register(BuiltInRegistries.VILLAGER_PROFESSION, key, profession);
+                VillagerProfession registered = LegacyRegistrar.register(BuiltInRegistries.VILLAGER_PROFESSION, key, profession);
+                aliasOldKey(i, key);
+                return registered;
             } catch (RuntimeException e) {
                 LOG.warn("Could not register villager profession {}: {}", i, e.toString());
                 return null;
@@ -76,14 +79,23 @@ public final class VillagerBridge {
         register();
     }
 
+    /** Villagers saved while the professions were {@code legacyconnector:villager_<id>} keep their job. */
+    private static void aliasOldKey(int id, ResourceLocation key) {
+        try {
+            BuiltInRegistries.VILLAGER_PROFESSION.addAlias(ResourceLocation.fromNamespaceAndPath("legacyconnector", "villager_" + id), key);
+        } catch (RuntimeException e) {
+            LOG.debug("No alias for the old key of villager profession {}: {}", id, e.toString());
+        }
+    }
+
     public static void registerSkin(int id, ResourceLocation skin) {
         SKINS.put(id, skin);
         if (id > 4) org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", translationKey(id), nameFromSkin(skin));
     }
 
-    /** Vanilla's key for a villager of a profession outside the minecraft namespace (Villager.getTypeName). */
+    /** Vanilla's key for a villager of a profession in the minecraft namespace (Villager.getTypeName). */
     private static String translationKey(int id) {
-        return "entity.minecraft.villager.legacyconnector.villager_" + id;
+        return "entity.minecraft.villager.villager_" + id;
     }
 
     /** A display name from the skin's file name ({@code villager_wizard.png} is "Wizard"); "Villager" when nothing is left. */
@@ -255,7 +267,7 @@ public final class VillagerBridge {
         for (var e : SKINS.entrySet()) {
             if (!CUSTOM.containsKey(e.getKey())) continue;
             ResourceLocation from = e.getValue();
-            String target = "assets/legacyconnector/textures/entity/villager/profession/villager_" + e.getKey() + ".png";
+            String target = "assets/minecraft/textures/entity/villager/profession/villager_" + e.getKey() + ".png";
             out.put(target, () -> read(from));
         }
     }

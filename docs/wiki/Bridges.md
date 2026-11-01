@@ -42,7 +42,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Recipes and smelting | `GameRegistry` / `CraftingManager` / `OreDictionary`, custom `IRecipe` classes (IC2, AE2, Blood Magic, Witchery ...) | data-pack recipes, tags; a custom recipe is a `legacyconnector:legacy_recipe` that matches and crafts through the legacy object |
 | Entities | `Entity`, spawn/save/load, mob AI | entity types, spawns, saving |
 | Fluids | Forge `Fluid` / containers | fluid types |
-| Villagers | `VillagerRegistry` ids, skins, trade handlers, village creation handlers | `legacyconnector:villager_<id>` professions (named after the mod's skin file, e.g. "Wizard"), trades, clothes layer; some new unemployed villagers take a legacy profession; legacy village buildings are elements of the vanilla village house pools with their 1.7.10 share (see [World generation](World-Generation.md)) |
+| Villagers | `VillagerRegistry` ids, skins, trade handlers, village creation handlers | `minecraft:villager_<id>` professions (a vanilla villager with another job, so Jade names its mod "Minecraft"; named after the mod's skin file, e.g. "Wizard"), trades, clothes layer; some new unemployed villagers take a legacy profession; legacy village buildings are elements of the vanilla village house pools with their 1.7.10 share (see [World generation](World-Generation.md)) |
 | GUIs and containers | `GuiHandler`, `Container` | menus and screens |
 | Networking | FML `SimpleNetworkWrapper` / channels | NeoForge payloads |
 | Commands | `ICommand`, server command manager | Brigadier |
