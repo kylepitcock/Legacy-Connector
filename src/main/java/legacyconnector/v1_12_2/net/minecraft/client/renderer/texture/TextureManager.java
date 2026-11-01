@@ -35,10 +35,17 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().renderEngine;
     }
 
+    /**
+     * Locations a mod registered a TextureMap under (JEI's "jei:textures"). Their sprites are block atlas sprites (TextureMap.registerSprite adds
+     * them to its sources and synchronizes their UVs with it), so binding such a location binds the modern block atlas: a second GL atlas built
+     * next to the block atlas turned every block icon grey.
+     */
+    private static final java.util.Set<ResourceLocation> ATLAS_ALIASES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /** The modern texture a legacy location shows. */
     public static net.minecraft.resources.ResourceLocation mcc$modern(ResourceLocation location) {
         String path = location.getPath();
-        if (path.equals("textures/atlas/blocks.png")) return net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
+        if (path.equals("textures/atlas/blocks.png") || ATLAS_ALIASES.contains(location)) return net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
         return TextureLocations.modern(location.getNamespace(), path);
     }
 
@@ -62,7 +69,11 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         synchronized (this) {
             mapTextureObjects.put(textureLocation, textureObj);
         }
-        if (textureObj instanceof TextureMap) return true; // the block atlas is the modern one
+        if (textureObj instanceof TextureMap) {
+            ATLAS_ALIASES.add(textureLocation); // the block atlas is the modern one
+            return true;
+        }
+        ATLAS_ALIASES.remove(textureLocation);
         var manager = modernManager();
         if (manager == null || !com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread() || org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) {
             synchronized (pending) {
@@ -145,6 +156,10 @@ public class TextureManager implements ITickable, IResourceManagerReloadListener
         ITextureObject old;
         synchronized (this) {
             old = mapTextureObjects.remove(textureLocation);
+        }
+        if (old instanceof TextureMap) {
+            ATLAS_ALIASES.remove(textureLocation);
+            return;
         }
         var manager = modernManager();
         if (old != null && manager != null) {
