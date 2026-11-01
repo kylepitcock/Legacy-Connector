@@ -78,7 +78,7 @@ level render). The adaptations below apply only while a shader pack is in use an
 | --- | --- | --- |
 | ISBRH blocks (`IsbrhBlockModel`) | baked quads through `ModelData`, cutout and translucent passes | the same: Sodium calls `getModelData` with its `LevelSlice`, `getRenderTypes` and `getQuads` with the data and each type (`NeoForgeModelAccess`) → gbuffers_terrain / water |
 | Tile entity and entity renderers, opaque | `entityCutoutNoCull` | gbuffers_entities, gbuffers_block during the block entity phase |
-| ... alpha blended | `entityTranslucent` | the same programs, translucent |
+| ... alpha blended | `entityTranslucent` | the same programs, translucent; a model drawn with plain alpha blending at full colour alpha, depth writes on, whose texture has only opaque and clear texels (`TextureAlpha`, read once per texture) draws as `entityCutoutNoCull`, which looks the same: Iris's translucent batch did not stay behind the opaque models drawn with it (Fisk's Heroes' claw lamp layer showed its whole eye cube through the claw) |
 | ... additive (glows, halos, beams: `GL_SRC_ALPHA, GL_ONE` or `GL_ONE, GL_ONE`) | `additiveAlpha` / `eyes` | `glow`: the beacon beam shader → gbuffers_beaconbeam (falls back to gbuffers_textured; the same in every phase, while the eyes shader becomes the lit gbuffers_block while block entities draw) |
 | ... without a depth test (overlays through walls) | `cutoutNoDepth`, `translucentNoDepth`, `untexturedNoDepth`, `additiveAlpha` no-depth | same programs; Iris's batched rendering draws them last (the class of vanilla's no-depth types) |
 | ... untextured | `debugQuads` / `lightning` | gbuffers_basic / gbuffers_lightning (falls back to gbuffers_entities) |

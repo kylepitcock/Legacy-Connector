@@ -909,9 +909,21 @@ public final class RenderContext {
             }
             if (s.additiveAlpha) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveAlpha(s.texture, s.depthTest)));
             if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(s.texture)));
+            if (IrisState.compatPack() && binaryAlphaOverlay(s)) return buffers.getBuffer(RenderType.entityCutoutNoCull(s.texture));
             return buffers.getBuffer(stated(s, RenderType.entityTranslucent(s.texture)));
         }
         return buffers.getBuffer(RenderType.entityCutoutNoCull(s.texture));
+    }
+
+    /**
+     * An alpha-blended model that looks the same drawn as a cutout: plain alpha blending, full colour alpha, depth writes on and
+     * a texture of only opaque and clear texels (TextureAlpha). With a shader pack it is drawn as one: Iris draws the translucent
+     * entity type in its translucent batch and that did not stay behind the opaque models drawn with it. Fisk's Heroes redraws
+     * Doctor Octopus's claws with a lamp texture (clear but for the red eye cube, which sits inside the claw with only its face
+     * showing), and the whole eye cube drew over the claw as a solid red cube.
+     */
+    private static boolean binaryAlphaOverlay(State s) {
+        return s.blendSrc == 770 && s.blendDst == 771 && s.a >= 0.999F && s.depthWrite && s.depthTest && TextureAlpha.binary(s.texture);
     }
 
     /**
