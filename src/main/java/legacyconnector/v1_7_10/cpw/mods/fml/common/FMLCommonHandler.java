@@ -49,6 +49,11 @@ public class FMLCommonHandler {
         return server == null ? null : MinecraftServer.mcc$wrap(server);
     }
 
+    /** The side's handler: its {@code getServer()} is the server of the running world (MCHeli registers its commands through it). */
+    public IFMLSidedHandler getSidedDelegate() {
+        return this::getMinecraftServerInstance;
+    }
+
     /** A legacy mod giving up must not end the game: it fails (and is disabled) instead. */
     public void exitJava(int exitCode, boolean hardExit) {
         throw org.kylepitcock.legacyconnector.compat.jdk.JdkCompat.exitRequested(exitCode);
