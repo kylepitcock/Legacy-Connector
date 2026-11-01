@@ -25,6 +25,7 @@ public final class Client1710 {
                     org.slf4j.LoggerFactory.getLogger("LegacyConnector/Keys").warn("Could not register key binding {}", key.getKeyDescription(), ex);
                 }
             }
+            legacyconnector.v1_7_10.net.minecraft.client.settings.KeyBinding.mcc$mappingsCollected();
         });
         modBus.addListener(Client1710::onRegisterRenderers);
         modBus.addListener((net.neoforged.neoforge.client.event.sound.SoundEngineLoadEvent e) -> {

@@ -53,7 +53,34 @@ public class KeyBinding implements Comparable<KeyBinding> {
     }
 
     public static synchronized void mcc$register(KeyBinding key) {
-        if (!ALL.contains(key)) ALL.add(key);
+        if (ALL.contains(key)) return;
+        ALL.add(key);
+        if (mappingsCollected) addLate(key);
+    }
+
+    /** Whether the game already collected the key mappings (RegisterKeyMappingsEvent): later bindings join the options directly. */
+    private static boolean mappingsCollected;
+
+    public static synchronized void mcc$mappingsCollected() {
+        mappingsCollected = true;
+    }
+
+    /**
+     * A binding registered after the game collected the key mappings (DragonAPI's KeybindHandler registers ChromatiCraft's from
+     * the client proxy) is added to the options as 1.7.10's ClientRegistry did, with its saved key read back.
+     */
+    private static void addLate(KeyBinding key) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc == null || mc.options == null) return;
+        KeyMapping m = key.mcc$modern();
+        for (KeyMapping existing : mc.options.keyMappings) if (existing == m) return;
+        mc.options.keyMappings = org.apache.commons.lang3.ArrayUtils.add(mc.options.keyMappings, m);
+        try {
+            mc.options.load();
+        } catch (RuntimeException e) {
+            // keeps its default key
+        }
+        KeyMapping.resetMapping();
     }
 
     /** The modern mapping, created on first use. */
