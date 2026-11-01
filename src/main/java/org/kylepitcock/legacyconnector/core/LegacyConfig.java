@@ -66,6 +66,8 @@ public final class LegacyConfig {
             perf.staticTileEntities = true
             # The legacy block (and vanilla metadata) of a modern block state is remembered on the block and the state.
             perf.blockLookupCache = true
+            # The legacy item of a modern item (every legacy view of a vanilla or modern-mod stack) is remembered on the item.
+            perf.itemLookupCache = true
             # The legacy world view of a level is remembered on the level.
             perf.worldViewCache = true
             # The legacy entity view of a modern entity is remembered on the entity.

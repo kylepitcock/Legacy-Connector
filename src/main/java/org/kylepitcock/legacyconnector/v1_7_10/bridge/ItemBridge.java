@@ -321,13 +321,21 @@ public final class ItemBridge {
 
     private static void index(String name, int id, Item item) {
         LEGACY_OF_MODERN.clear(); // a name now taken by another wrapper must not answer from the cache
+        cacheGeneration++;
         BY_NAME.put(name, item);
         NAMES.put(item, name);
         if (id >= 0) {
             BY_ID.putIfAbsent(id, item);
             IDS.put(item, id);
         }
+        cacheGeneration++;
     }
+
+    /** Bumped whenever LEGACY_OF_MODERN is cleared: answers kept on modern items (perf.itemLookupCache) from before are stale. */
+    private static volatile int cacheGeneration;
+
+    /** A legacyOfModern answer kept on the modern item, valid while {@link #cacheGeneration} is unchanged. */
+    private record KnownLegacy(int generation, Item item) {}
 
     /**
      * The modern item of a 1.7.10 vanilla name and damage: the game's own 1.12 upgrade tables, except where 1.7.10 differed from
@@ -713,9 +721,20 @@ public final class ItemBridge {
      * (The cache is declared next to BY_NAME.)
      */
     private static Item legacyOfModern(net.minecraft.world.item.Item modern) {
+        if (!org.kylepitcock.legacyconnector.core.perf.Perf.ITEM_LOOKUP_CACHE) {
+            Item known = LEGACY_OF_MODERN.get(modern);
+            if (known != null) return known;
+            return legacyOfModernLocked(modern);
+        }
+        // perf.itemLookupCache: the answer kept on the modern item (asked for every equipment slot of every living entity each tick
+        // and for every inventory stack DragonAPI's events wrap: the map lookup was ~1% of the ATM10 server thread)
+        var slot = (org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern;
+        int generation = cacheGeneration;
+        if (slot.legacyconnector$slot1710() instanceof KnownLegacy k && k.generation == generation) return k.item;
         Item known = LEGACY_OF_MODERN.get(modern);
-        if (known != null) return known;
-        return legacyOfModernLocked(modern);
+        if (known == null) known = legacyOfModernLocked(modern);
+        if (known != null) slot.legacyconnector$setSlot1710(new KnownLegacy(generation, known));
+        return known;
     }
 
     private static synchronized Item legacyOfModernLocked(net.minecraft.world.item.Item modern) {

@@ -15,6 +15,8 @@ public final class Perf {
     public static final boolean STATIC_TILE_ENTITIES = read("staticTileEntities");
     /** BlockBridge.legacyBlock / legacyMeta answered from a field on the modern block / state, without the bridge's lock. */
     public static final boolean BLOCK_LOOKUP_CACHE = read("blockLookupCache");
+    /** ItemBridge.legacyOfModern answered from a field on the modern item (invalidated by a generation counter). */
+    public static final boolean ITEM_LOOKUP_CACHE = read("itemLookupCache");
     /** World.mcc$wrap answered from a field on the level. */
     public static final boolean WORLD_VIEW_CACHE = read("worldViewCache");
     /** EntityBridge.wrap answered from a field on the entity. */

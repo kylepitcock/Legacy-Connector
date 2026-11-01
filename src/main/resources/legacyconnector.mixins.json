@@ -17,6 +17,7 @@
     "perf.BlockStateSlotMixin",
     "perf.LevelSlotMixin",
     "perf.EntitySlotMixin",
+    "perf.ItemSlotMixin",
     "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [

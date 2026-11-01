@@ -18,6 +18,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `energy.fePerMj` | `10` | FE per BuildCraft MJ for BuildCraft power receptors (BuildCraft's own 1 MJ = 10 RF) |
 | `perf.staticTileEntities` | `true` | Legacy tile entities that never ticked in their version (1.7.10: `canUpdate()` false or no `updateEntity()`; 1.12.2: not `ITickable`; or crashed while ticking) get no modern ticker |
 | `perf.blockLookupCache` | `true` | The legacy block of a modern block and the 1.7.10 metadata of a vanilla state are kept on the block and the state (no lock per legacy block read) |
+| `perf.itemLookupCache` | `true` | The 1.7.10 item of a vanilla or modern-mod item is kept on the item (no map lookup per legacy stack view) |
 | `perf.worldViewCache` | `true` | The 1.7.10 world view of a level is kept on the level (no synchronized map lookup per legacy callback) |
 | `perf.entityViewCache` | `true` | The 1.7.10 view of an entity is kept on the entity (no weak map lookup per legacy event or callback) |
 | `perf.reuseBlockPos` | `true` | 1.7.10 `getBlock`/`getBlockMetadata` read with one mutable position per thread instead of a new `BlockPos` per call |
