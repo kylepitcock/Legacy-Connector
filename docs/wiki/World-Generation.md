@@ -159,7 +159,24 @@ vanilla makes it (its pools are not changed): the buildings become extra pieces 
 (`legacyconnector:legacy_village_building`), beside its streets with the front to the road, on free and dry ground only (a plot
 touching any other piece is skipped). How many: the share mod buildings had in a 1.7.10 village (their weights against vanilla's 91),
 counted against the village's own houses, and each building at most as often per village as 1.7.10 allowed (`villagePiecesLimit`).
-`villages.legacyBuildings=false` leaves them out. Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
+Each added piece also carries the village's streets and other pieces, which its legacy component sees in 1.7.10's component
+list: streets as `Path`s, buildings as one-block `Path` strips along their street (code that takes the village's extent from its
+paths then covers the modern buildings, which reach deeper than 1.7.10's). This is how Witchery's town walls come back: its
+district handler's `Wall` is a 2x2 post whose block entity, about two seconds after the chunk is loaded, builds the wall around
+the paths of the list it was given (each path widened by 20 blocks along it and 7 across, gates where streets end), so the
+wall stands outside the village with gaps at its streets. Handlers are told apart by handler class and component class (Witchery's
+district registers one handler class for its wall, keep, watchtowers and town clusters), small components are added too (they take
+no house's place), and handlers that only add vanilla's own 1.7.10 houses (Witchery's town clusters) are left out, as the modern
+village has its own. Witchery's `TownWallMode`/`TownKeepMode` and cluster settings apply as in 1.7.10. Limits: the wall's block
+entity keeps the paths in memory only (as in 1.7.10), so a chunk saved before it ticked gets no wall, and the wall reads chunks
+that are not loaded as air.
+`villages.legacyBuildings=false` leaves them out. Doors of legacy structures: 1.7.10 kept a door's facing and open state in the lower half's metadata and the hinge in the upper's,
+so a half written on its own would keep the defaults of the rest (an upper half facing east); whenever legacy code writes a door half
+and the other half is there, the world puts both modern halves together (facing and open from the lower, hinge and powered from the
+upper), and reading a door back gives the nearest 1.7.10 metadata. `placeDoorAtCurrentPosition` passes the already rotated facing on
+unchanged and `ItemDoor.placeDoorBlock` picks the hinge from the neighbours, both as in 1.7.10; `getMetadataWithOffset` follows
+1.7.10's table exactly (its modes 1 and 3 mirror the piece, so directional blocks, ladders and pistons there are no plain rotation).
+Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
 loot table, so the pack's loot applies. Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
 by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
 are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and

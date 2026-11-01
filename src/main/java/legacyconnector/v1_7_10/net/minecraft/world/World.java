@@ -554,6 +554,7 @@ public class World implements IBlockAccess {
         if (mcc$splitDrops(x, y, z, p, state)) return false; // ore split between the normal and the deep pass
         state = deepslateOre(state, p);
         if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), p, state)) return false; // into a modern structure
+        state = mcc$pairDoorHalves(p, state);
         TileEntityBridge.beforeBlockChange(this, p);
         TileEntityBridge.beforeSetBlock(this, p, state);
         if (connectsToNeighbours(state)) {
@@ -569,6 +570,36 @@ public class World implements IBlockAccess {
         boolean placed = lvl().setBlock(p, state, flags);
         if (placed && lvl() instanceof net.minecraft.server.level.WorldGenRegion region) ensureGeneratedBlockEntity(region, p, state);
         return placed;
+    }
+
+    /**
+     * A modern door keeps facing, open, hinge and powered in both halves; a 1.7.10 door kept facing and open in the lower half's
+     * metadata and hinge and powered in the upper's (BlockDoor read the pair together). Legacy code writes the halves one at a
+     * time (structures, ItemDoor.placeDoorBlock, mods' own doors), and a generation region runs no shape updates, so each half
+     * would keep the defaults of what its metadata did not say (an upper half facing east, a lower half hinged left). When the
+     * other half is already there, both are put together: facing and open from the lower half, hinge and powered from the upper.
+     */
+    private BlockState mcc$pairDoorHalves(BlockPos p, BlockState state) {
+        if (!(state.getBlock() instanceof net.minecraft.world.level.block.DoorBlock)) return state;
+        try {
+            var halfProp = net.minecraft.world.level.block.DoorBlock.HALF;
+            boolean upper = state.getValue(halfProp) == net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER;
+            BlockPos otherPos = upper ? p.below() : p.above();
+            if (outsideRegion(otherPos)) return state;
+            BlockState other = lvl().getBlockState(otherPos);
+            if (other.getBlock() != state.getBlock() || other.getValue(halfProp) == state.getValue(halfProp)) return state;
+            BlockState lower = upper ? other : state;
+            BlockState top = upper ? state : other;
+            BlockState pairedLower = lower.setValue(net.minecraft.world.level.block.DoorBlock.HINGE, top.getValue(net.minecraft.world.level.block.DoorBlock.HINGE))
+                    .setValue(net.minecraft.world.level.block.DoorBlock.POWERED, top.getValue(net.minecraft.world.level.block.DoorBlock.POWERED));
+            BlockState pairedUpper = pairedLower.setValue(halfProp, net.minecraft.world.level.block.state.properties.DoubleBlockHalf.UPPER);
+            BlockState otherPaired = upper ? pairedLower : pairedUpper;
+            // the partner first, without shape updates (they would copy the half not written yet)
+            if (otherPaired != other) lvl().setBlock(otherPos, otherPaired, net.minecraft.world.level.block.Block.UPDATE_CLIENTS | net.minecraft.world.level.block.Block.UPDATE_KNOWN_SHAPE);
+            return upper ? pairedUpper : pairedLower;
+        } catch (RuntimeException e) {
+            return state;
+        }
     }
 
     /**
@@ -605,7 +636,7 @@ public class World implements IBlockAccess {
             return false;
         }
         BlockState current = lvl().getBlockState(p);
-        BlockState next = BlockBridge.withMeta(current, meta);
+        BlockState next = mcc$pairDoorHalves(p, BlockBridge.withMeta(current, meta));
         if (next == current) return false;
         if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.allowWrite(lvl(), p, next)) return false;
         return lvl().setBlock(p, next, flags);

@@ -543,7 +543,9 @@ public final class BlockBridge {
     private static int vanillaMeta(BlockState state) {
         Block wrapper = legacyBlock(state);
         if (wrapper.mcc$vanilla == null || wrapper.mcc$vanilla.legacyId() < 0) return 0;
-        int key = VanillaFlattening.legacyKey(state);
+        // nearest: a state 1.7.10 never had as such (a lower door half hinged right, a waterlogged stair) reads as the legacy state
+        // sharing most of its properties, not as the block's first metadata (a door's facing would read as east)
+        int key = VanillaFlattening.nearestLegacyKey(state);
         return key >= 0 && key >> 4 == wrapper.mcc$vanilla.legacyId() ? key & 15 : 0;
     }
 

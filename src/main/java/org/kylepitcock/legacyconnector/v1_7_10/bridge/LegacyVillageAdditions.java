@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
  * Legacy village buildings (Forge village creation handlers: Thaumcraft's wizard tower and banker, Witchery's shops...) added to vanilla
  * villages without changing them: the village is assembled exactly as vanilla does it, then the legacy buildings are added as extra
  * pieces of the same structure, beside its streets, front to the road, on free ground only (a plot that touches any piece is
- * skipped). How many: the share mod buildings had in a 1.7.10 village (their weights against vanilla's 91), counted against the
+ * skipped). Each added piece carries the village's streets and pieces, which its legacy component sees as 1.7.10's component list
+ * (Witchery's town wall is built around them). Handlers that add vanilla's own 1.7.10 buildings are left out. How many: the share mod buildings had in a 1.7.10 village (their weights against vanilla's 91), counted against the
  * village's own buildings; each building at most as often per village as 1.7.10 allowed (villagePiecesLimit). Hooked from
  * {@code JigsawStructureLegacyVillageMixin}; switch: {@code villages.legacyBuildings}.
  */
@@ -88,7 +89,8 @@ public final class LegacyVillageAdditions {
             List<Building> out = new ArrayList<>();
             for (var handler : VillagerBridge.creationHandlers()) {
                 try {
-                    var element = new LegacyVillagePoolElement(handler.getClass().getName(), t,
+                    if (buildsVanillaPiece(handler)) continue;
+                    var element = new LegacyVillagePoolElement(LegacyVillagePoolElement.key(handler), t,
                             net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection.RIGID);
                     if (element.isBuilding()) out.add(new Building(handler, element));
                 } catch (RuntimeException | LinkageError e) {
@@ -97,6 +99,20 @@ public final class LegacyVillageAdditions {
             }
             return List.copyOf(out);
         });
+    }
+
+    /**
+     * Whether a handler adds one of vanilla's own 1.7.10 village buildings (Witchery's "town" clusters register extra houses, fields
+     * and churches through its district handler). The modern village already has its own houses of each kind; adding the 1.7.10
+     * ones again would change the vanilla village, so only mods' own buildings are added.
+     */
+    private static boolean buildsVanillaPiece(VillagerRegistry.IVillageCreationHandler handler) {
+        try {
+            Class<?> c = handler.getComponentClass();
+            return c != null && c.getDeclaringClass() == legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureVillagePieces.class;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
     }
 
     /**
@@ -119,12 +135,20 @@ public final class LegacyVillageAdditions {
 
     private static void add(StructurePiecesBuilder builder, List<StructurePiece> vanilla, Structure.GenerationContext context, String type) {
         List<BoundingBox> streets = new ArrayList<>();
+        List<BoundingBox> others = new ArrayList<>();
         int buildings = 0;
         for (StructurePiece p : vanilla) {
-            if (!(p instanceof PoolElementStructurePiece pool)) continue;
+            if (!(p instanceof PoolElementStructurePiece pool)) {
+                others.add(p.getBoundingBox());
+                continue;
+            }
             String element = pool.getElement().toString();
-            if (element.contains("/streets/")) streets.add(p.getBoundingBox());
-            else if (element.contains("/houses/")) buildings++;
+            if (element.contains("/streets/")) {
+                streets.add(p.getBoundingBox());
+                continue;
+            }
+            others.add(p.getBoundingBox());
+            if (element.contains("/houses/")) buildings++;
         }
         if (streets.isEmpty()) return;
         Random rand = new Random(context.seed() ^ context.chunkPos().toLong() * 0x9E3779B97F4A7C15L);
@@ -141,7 +165,7 @@ public final class LegacyVillageAdditions {
             Candidate c = pick(candidates, placed, rand);
             if (c == null) break;
             for (int attempt = 0; attempt < ATTEMPTS; attempt++) {
-                if (tryPlace(builder, context, c, streets, added, rand)) {
+                if (tryPlace(builder, context, c, streets, others, added, rand)) {
                     placed.merge(c, 1, Integer::sum);
                     break;
                 }
@@ -168,7 +192,7 @@ public final class LegacyVillageAdditions {
     }
 
     private static boolean tryPlace(StructurePiecesBuilder builder, Structure.GenerationContext context, Candidate c, List<BoundingBox> streets,
-            List<BoundingBox> added, Random rand) {
+            List<BoundingBox> others, List<BoundingBox> added, Random rand) {
         BoundingBox s = streets.get(rand.nextInt(streets.size()));
         boolean low = rand.nextBoolean();
         boolean alongX = s.getXSpan() >= s.getZSpan();
@@ -194,7 +218,8 @@ public final class LegacyVillageAdditions {
         BoundingBox margin = box.inflatedBy(1);
         if (builder.findCollisionPiece(margin) != null) return false;
         for (BoundingBox b : added) if (b.intersects(margin)) return false;
-        builder.addPiece(new PoolElementStructurePiece(context.structureTemplateManager(), c.element(), new BlockPos(cx, y, cz), 0,
+        // the piece knows its village: legacy components see its streets and buildings in their component list, as in 1.7.10
+        builder.addPiece(new PoolElementStructurePiece(context.structureTemplateManager(), c.element().inVillage(streets, others), new BlockPos(cx, y, cz), 0,
                 rotationOf(mode), box, LiquidSettings.IGNORE_WATERLOGGING));
         added.add(box);
         return true;
