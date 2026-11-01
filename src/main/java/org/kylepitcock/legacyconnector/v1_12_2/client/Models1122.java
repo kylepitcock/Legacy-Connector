@@ -288,6 +288,9 @@ public final class Models1122 {
         return legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer.SOLID;
     }
 
+    /** The legacy (actual, extended) state of a block position, computed in {@code getModelData}. */
+    static final net.neoforged.neoforge.client.model.data.ModelProperty<IBlockState> LEGACY_STATE = new net.neoforged.neoforge.client.model.data.ModelProperty<>();
+
     /** A mod's legacy model as a modern one. */
     public static final class ModernView implements BakedModel {
         final IBakedModel legacy;
@@ -303,21 +306,45 @@ public final class Models1122 {
 
         @Override
         public List<net.minecraft.client.renderer.block.model.BakedQuad> getQuads(BlockState state, net.minecraft.core.Direction side, RandomSource rand) {
-            return quads(state, side, rand, null);
+            return quads(state, side, rand, null, null);
         }
 
         @Override
         public List<net.minecraft.client.renderer.block.model.BakedQuad> getQuads(BlockState state, net.minecraft.core.Direction side, RandomSource rand,
                 net.neoforged.neoforge.client.model.data.ModelData data, net.minecraft.client.renderer.RenderType renderType) {
-            return quads(state, side, rand, renderType);
+            return quads(state, side, rand, renderType, data == null ? null : data.get(LEGACY_STATE));
+        }
+
+        /**
+         * Forge 1.12 asked the block for the state a model draws: {@code getActualState} (connections...) and {@code getExtendedState}
+         * (unlisted render properties, which custom models such as Thaumcraft's crystals cast to IExtendedBlockState). The modern renderer gives the
+         * model only the stored state, so the legacy state is worked out here, where the position is known, and travels as model data.
+         */
+        @Override
+        public net.neoforged.neoforge.client.model.data.ModelData getModelData(net.minecraft.world.level.BlockAndTintGetter level,
+                net.minecraft.core.BlockPos pos, BlockState state, net.neoforged.neoforge.client.model.data.ModelData modelData) {
+            if (state == null || !(state.getBlock() instanceof Legacy1122Block)) return modelData;
+            try {
+                IBlockState base = StatesBridge1122.toLegacy(state);
+                if (base == null) return modelData;
+                var access = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.access(level);
+                var legacyPos = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(pos.getX(), pos.getY(), pos.getZ());
+                IBlockState actual = base.getBlock().getActualState(base, access, legacyPos);
+                IBlockState extended = base.getBlock().getExtendedState(actual == null ? base : actual, access, legacyPos);
+                if (extended == null || extended == base) return modelData;
+                return modelData.derive().with(LEGACY_STATE, extended).build();
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("asking a legacy block for its actual/extended state", e);
+                return modelData;
+            }
         }
 
         private List<net.minecraft.client.renderer.block.model.BakedQuad> quads(BlockState state, net.minecraft.core.Direction side, RandomSource rand,
-                net.minecraft.client.renderer.RenderType renderType) {
+                net.minecraft.client.renderer.RenderType renderType, IBlockState given) {
             var previous = legacyconnector.v1_12_2.net.minecraftforge.client.MinecraftForgeClient.getRenderLayer();
             legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.setRenderLayer(layer(renderType));
             try {
-                IBlockState legacyState = state == null ? null : StatesBridge1122.toLegacy(state);
+                IBlockState legacyState = given != null ? given : state == null ? null : StatesBridge1122.toLegacy(state);
                 List<BakedQuad> quads = legacy.getQuads(legacyState, Quads1122.facing(side), rand.nextLong());
                 if (quads == null || quads.isEmpty()) return List.of();
                 List<net.minecraft.client.renderer.block.model.BakedQuad> out = new ArrayList<>(quads.size());

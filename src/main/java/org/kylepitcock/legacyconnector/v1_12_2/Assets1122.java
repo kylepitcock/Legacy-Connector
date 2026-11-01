@@ -174,7 +174,16 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                             "item/" + Ids.normalizePath(mrl.getPath()), null, null, null, out);
                 }
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
-                JsonObject model = new JsonObject();
+                JsonObject model = blockstateItemModel(mrl, target);
+                if (model != null) {
+                    // no models/item file: Forge took the item's model from the variant of the blockstate file of the same name
+                    String json = GSON.toJson(model);
+                    byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+                    out.put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", () -> bytes);
+                    if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
+                    continue;
+                }
+                model = new JsonObject();
                 model.addProperty("parent", target);
                 String json = GSON.toJson(model);
                 byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
@@ -182,6 +191,55 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
             }
         }
+    }
+
+    /**
+     * The item model Forge built from a blockstate file ({@code ModelResourceLocation("mod:name", "variant")} with no {@code models/item/name.json}):
+     * the variant's {@code forge:item-layer} (or a plain model) with its textures. Null when the item has a model file or the variant is not drawable this way.
+     */
+    private static JsonObject blockstateItemModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mrl, String target) {
+        String ns = Ids.namespace(mrl.getNamespace());
+        String path = Ids.normalizePath(mrl.getPath());
+        if (modelExists(ns, "item/" + path)) return null;
+        JsonObject file = readOriginal(ResourceLocation.fromNamespaceAndPath(ns, path));
+        if (file == null) return null;
+        String variant = mrl.getVariant() == null || mrl.getVariant().isEmpty() ? "normal" : mrl.getVariant();
+        TreeMap<String, String> props = new TreeMap<>();
+        for (String part : variant.split(",")) {
+            int eq = part.indexOf('=');
+            if (eq > 0) props.put(part.substring(0, eq), part.substring(eq + 1));
+        }
+        List<String> keys = new ArrayList<>();
+        keys.add(variant);
+        keys.add(keyOf(props));
+        Acc acc = merge(file, props, keys);
+        if (acc.alts.isEmpty()) return null;
+        JsonObject alt = acc.alts.get(0);
+        String m = alt.has("model") && alt.get("model").isJsonPrimitive() ? alt.get("model").getAsString().toLowerCase(java.util.Locale.ROOT) : "forge:item-layer";
+        if (m.endsWith(".obj")) return null;
+        if (!(alt.has("textures") && alt.get("textures").isJsonObject() && alt.getAsJsonObject("textures").size() > 0)) return null;
+        String parent;
+        if (m.equals("forge:item-layer") || m.equals("builtin/generated") || m.equals("item/generated") || m.equals("minecraft:item/generated")) {
+            parent = "minecraft:item/generated";
+        } else if (m.equals("item/handheld") || m.equals("minecraft:item/handheld")) {
+            parent = "minecraft:item/handheld";
+        } else if (m.startsWith("forge:")) {
+            return null;
+        } else {
+            int colon = m.indexOf(':');
+            String mNs = colon < 0 ? ns : Ids.namespace(m.substring(0, colon));
+            String mPath = Ids.normalizePath(colon < 0 ? m : m.substring(colon + 1));
+            if (mPath.startsWith("item/") || mPath.startsWith("block/")) parent = mNs + ":" + mPath;
+            else parent = mNs + ":" + (modelExists(mNs, "item/" + mPath) ? "item/" : "block/") + mPath;
+        }
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", parent);
+        JsonObject textures = new JsonObject();
+        for (var t : alt.getAsJsonObject("textures").entrySet()) {
+            if (t.getValue().isJsonPrimitive()) textures.addProperty(t.getKey().startsWith("#") ? t.getKey().substring(1) : t.getKey(), lowerRef(t.getValue().getAsString()));
+        }
+        model.add("textures", textures);
+        return model;
     }
 
     // ------------------------------------------------------------------------------------------------------------------------------
