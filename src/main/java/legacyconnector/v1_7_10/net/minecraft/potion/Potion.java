@@ -61,6 +61,20 @@ public class Potion {
     private final int liquidColor;
 
     protected Potion(int id, boolean isBadEffect, int liquidColor) {
+        if (id >= 0 && id < potionTypes.length && potionTypes[id] != null) {
+            // 1.7.10 let the later mod overwrite the slot (and checkers such as DragonAPI's then aborted the game); a free id keeps both
+            int free = Math.max(potionTypes.length, 32);
+            for (int i = 32; i < potionTypes.length; i++) {
+                if (potionTypes[i] == null) {
+                    free = i;
+                    break;
+                }
+            }
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Potions").warn(
+                    "Potion id {} of {} is already used by {}; using {} instead (change one of the ids in the mods' configs)", id,
+                    getClass().getName(), potionTypes[id].getClass().getName(), free);
+            id = free;
+        }
         this.id = id;
         if (id >= potionTypes.length) {
             // Legacy code crashed here unless the array had been enlarged; enlarging is harmless and friendlier.
