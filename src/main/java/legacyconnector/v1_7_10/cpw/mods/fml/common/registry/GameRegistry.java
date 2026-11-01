@@ -38,8 +38,10 @@ public class GameRegistry {
     }
 
     public static void registerWorldGenerator(IWorldGenerator generator, int modGenerationWeight) {
-        worldGenerators.add(generator);
-        sortedGeneratorList.add(generator);
+        synchronized (worldGenerators) {
+            // a set in FML: a second registration of the same generator only changes its weight (WorldGenBridge)
+            if (worldGenerators.add(generator)) sortedGeneratorList.add(generator);
+        }
         WorldGenBridge.register(generator, modGenerationWeight);
     }
 

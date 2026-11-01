@@ -54,6 +54,17 @@ public final class LegacyConfig {
             bridges.nei.enabled = true
             bridges.cofhEnergy.enabled = true
 
+            # Performance. perf.* switches of Legacy Connector's own work are on by default (they change nothing but its speed);
+            # see docs/wiki/Performance.md.
+            # The generated legacy data and asset packs are not built when the game only reads their metadata (once per pack scan).
+            perf.lazyPackMetadata = true
+            # The vanilla biome templates and biome tags that legacy biomes are generated from are read from the game's jars once per
+            # session instead of on every data pack build.
+            perf.biomeJarCache = true
+            # The diagnostic sample of legacy biomes around spawn ("Biome sample around spawn" in the log) runs in the background
+            # instead of on the server thread while the player joins.
+            perf.asyncBiomeSample = true
+
             # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
             # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
             energy.fePerEu = 4
@@ -293,5 +304,31 @@ public final class LegacyConfig {
     /** Generated pack files move to a disk file once read instead of staying in memory for the session. */
     public static boolean perfPackSpill() {
         return perf("packSpill", true);
+    }
+
+    // ------------------------------------------------------------------ perf.* (world load and other performance switches)
+
+    /**
+     * {@code perf.lazyPackMetadata}: the generated packs opened only for their metadata (once per pack repository scan) generate no
+     * content (they built every file each time: about 0.2 to 0.7 s per scan for the data pack in ATM10).
+     */
+    public static boolean perfLazyPackMetadata() {
+        return bool("perf.lazyPackMetadata", true);
+    }
+
+    /**
+     * {@code perf.biomeJarCache}: the vanilla biome templates and the vanilla/NeoForge biome tags legacy biomes are generated from are
+     * read from the jars once per session (every data pack build read them again: about 0.2 to 0.4 s per build in ATM10).
+     */
+    public static boolean perfBiomeJarCache() {
+        return bool("perf.biomeJarCache", true);
+    }
+
+    /**
+     * {@code perf.asyncBiomeSample}: the "Biome sample around spawn" diagnostic (1089 biome source lookups after the server started)
+     * runs on a background worker instead of the server thread that the joining player waits for.
+     */
+    public static boolean perfAsyncBiomeSample() {
+        return bool("perf.asyncBiomeSample", true);
     }
 }

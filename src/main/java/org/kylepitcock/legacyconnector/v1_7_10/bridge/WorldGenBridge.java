@@ -24,7 +24,23 @@ public final class WorldGenBridge {
 
     private WorldGenBridge() {}
 
+    /**
+     * FML's {@code registerWorldGenerator}: its generators are a set with a weight map, so registering a generator again only changes
+     * its weight. Listing it twice ran it twice per chunk and put its placed feature twice into every biome's feature list, which is a
+     * feature order cycle: vanilla's feature indexer fails (Biolith falls back to its slow resilient indexer for every dimension; in All
+     * the Mods 10 with ChromatiCraft, which registers DataTowerGenerator twice, 858 of its 1412 dropped edges and most of the 18 s it
+     * spent before the levels were created).
+     */
     public static synchronized void register(IWorldGenerator generator, int weight) {
+        for (int i = 0; i < GENERATORS.size(); i++) {
+            Entry known = GENERATORS.get(i);
+            if (known.generator != generator) continue;
+            if (known.weight != weight) {
+                GENERATORS.set(i, new Entry(generator, weight, known.lock, known.modId));
+                GENERATORS.sort(Comparator.comparingInt(Entry::weight));
+            }
+            return;
+        }
         GENERATORS.add(new Entry(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator), modIdOf(generator)));
         DeepLayer1710.register(generator, weight, org.kylepitcock.legacyconnector.core.LegacyModLocks.of(generator)); // deep layer feature
         GENERATORS.sort(Comparator.comparingInt(Entry::weight));

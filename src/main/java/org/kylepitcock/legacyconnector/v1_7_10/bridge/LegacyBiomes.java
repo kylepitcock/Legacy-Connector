@@ -101,6 +101,35 @@ public final class LegacyBiomes {
      * {@code #minecraft:is_overworld}, ...): a legacy biome joins every tag that contains the vanilla biome it is modelled on.
      */
     private static void contributeTags(Map<String, Supplier<byte[]>> out) {
+        boolean cache = org.kylepitcock.legacyconnector.core.LegacyConfig.perfBiomeJarCache();
+        List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> keys = cache ? TAG_KEYS : null;
+        if (keys == null) keys = biomeTagKeys();
+        if (cache) TAG_KEYS = keys;
+        // the members of the vanilla and NeoForge biome tags come from their jars, the same for the whole session
+        Map<String, java.util.Set<String>> memberCache = cache ? TAG_MEMBERS : new HashMap<>();
+        Map<String, List<String>> membership = new HashMap<>();
+        for (BiomeGenBase b : modBiomes()) {
+            String template = "minecraft:" + templateFor(b);
+            for (var key : keys) {
+                java.util.Set<String> members;
+                synchronized (memberCache) {
+                    members = resolveTag(key.location(), memberCache, new java.util.HashSet<>());
+                }
+                if (!members.contains(template)) continue;
+                membership.computeIfAbsent("data/" + key.location().getNamespace() + "/tags/worldgen/biome/" + key.location().getPath() + ".json", k -> new ArrayList<>())
+                        .add(b.mcc$modernId().toString());
+            }
+        }
+        writeTags(out, membership);
+    }
+
+    /** Session caches of what {@link #contributeTags} and {@link #template} read from the game's jars ({@code perf.biomeJarCache}). */
+    private static volatile List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> TAG_KEYS;
+    private static final Map<String, java.util.Set<String>> TAG_MEMBERS = new HashMap<>();
+    private static final Map<String, JsonObject> TEMPLATES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The biome tag constants of {@code BiomeTags} and NeoForge's {@code Tags.Biomes}. */
+    private static List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> biomeTagKeys() {
         List<net.minecraft.tags.TagKey<net.minecraft.world.level.biome.Biome>> keys = new ArrayList<>();
         for (Class<?> holder : new Class<?>[] {net.minecraft.tags.BiomeTags.class, net.neoforged.neoforge.common.Tags.Biomes.class}) {
             for (var f : holder.getFields()) {
@@ -114,16 +143,10 @@ public final class LegacyBiomes {
                 }
             }
         }
-        Map<String, java.util.Set<String>> memberCache = new HashMap<>();
-        Map<String, List<String>> membership = new HashMap<>();
-        for (BiomeGenBase b : modBiomes()) {
-            String template = "minecraft:" + templateFor(b);
-            for (var key : keys) {
-                if (!resolveTag(key.location(), memberCache, new java.util.HashSet<>()).contains(template)) continue;
-                membership.computeIfAbsent("data/" + key.location().getNamespace() + "/tags/worldgen/biome/" + key.location().getPath() + ".json", k -> new ArrayList<>())
-                        .add(b.mcc$modernId().toString());
-            }
-        }
+        return List.copyOf(keys);
+    }
+
+    private static void writeTags(Map<String, Supplier<byte[]>> out, Map<String, List<String>> membership) {
         for (var e : membership.entrySet()) {
             JsonObject json = new JsonObject();
             json.addProperty("replace", false);
@@ -218,6 +241,12 @@ public final class LegacyBiomes {
     }
 
     private static JsonObject template(String name) {
+        if (!org.kylepitcock.legacyconnector.core.LegacyConfig.perfBiomeJarCache()) return readTemplate(name);
+        // a copy: biomeJson changes the template it gets
+        return TEMPLATES.computeIfAbsent(name, LegacyBiomes::readTemplate).deepCopy();
+    }
+
+    private static JsonObject readTemplate(String name) {
         String path = "data/minecraft/worldgen/biome/" + name + ".json";
         for (ClassLoader cl : new ClassLoader[] {net.minecraft.world.level.biome.Biome.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
             if (cl == null) continue;

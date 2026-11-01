@@ -59,6 +59,8 @@ public final class DeepLayer1710 {
 
     /** Called for every {@code GameRegistry.registerWorldGenerator}: gives the generator its deep feature id. */
     public static synchronized Generator register(IWorldGenerator generator, int weight, ReentrantLock lock) {
+        // FML keeps its generators in a set: registering one again adds nothing (ChromatiCraft registers DataTowerGenerator twice)
+        for (Generator known : GENERATORS) if (known.generator == generator) return known;
         String id = uniqueId(namespace() + ":legacy_worldgen_deep/" + path(generator.getClass().getName()));
         Generator g = new Generator(generator, weight, lock, id);
         GENERATORS.add(g);

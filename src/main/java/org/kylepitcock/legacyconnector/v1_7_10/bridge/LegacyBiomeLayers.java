@@ -96,7 +96,11 @@ public final class LegacyBiomeLayers {
         // HIGHEST: the parameter list must hold the legacy biomes before anything lists the overworld's possible biomes.
         NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, LegacyBiomeLayers::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> unbind());
-        NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> logSample(e.getServer()));
+        NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
+            // a diagnostic (1089 biome source lookups): off the server thread, which the joining player waits for (perf.asyncBiomeSample)
+            if (org.kylepitcock.legacyconnector.core.LegacyConfig.perfAsyncBiomeSample()) net.minecraft.Util.backgroundExecutor().execute(() -> logSample(e.getServer()));
+            else logSample(e.getServer());
+        });
     }
 
     private static void unbind() {
