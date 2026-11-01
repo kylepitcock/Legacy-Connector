@@ -23,6 +23,10 @@ mods/SomeMod-1.7.10.jar
                   recipes -> data pack, ore dictionary -> tags, GUIs -> menus/screens, networking, world gen, ...)
 ```
 
+## Mods distributed as a folder
+
+A legacy mod can also be a folder in `mods/` (MCHeli: `mods/mcheli/` with `mcmod.info`, the class packages and `assets/`, plus content packs the user adds as zips). FML's own locator ignores folders. The loader packs such a folder into `.legacyconnector/dirmods/<name>.jar` (rebuilt only when a file's name, size or time changes; zips/jars at the folder's top level are left out) and translates that jar like any other. The legacy `ModContainer.getSource()` of the mod stays the real folder, so code that lists its content with `java.io.File` (and reads the content packs next to it) works; for jar mods it is the jar, unchanged.
+
 ## Generic first, per-mod code only as a last resort
 
 The layer is not written for specific mods. Mods are made to work by implementing the **legacy API** they

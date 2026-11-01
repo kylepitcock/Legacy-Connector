@@ -132,6 +132,18 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         }
                     }
                 }
+                // legacy mods distributed as a folder (MCHeli): packed into a jar, the legacy container's source stays the folder
+                for (Path[] packed : DirectoryMods.pack(dir, gameDir.resolve(".legacyconnector").resolve("dirmods"))) {
+                    if (!seenNames.add(packed[0].getFileName().toString().toLowerCase())) continue;
+                    try {
+                        LegacyJar jar = LegacyJarInspector.inspect(packed[0]);
+                        if (jar == null) continue;
+                        jar.sourceDir = packed[1];
+                        legacy.add(jar);
+                    } catch (IOException | RuntimeException e) {
+                        LOG.debug("Legacy Connector: could not inspect {}", packed[1], e);
+                    }
+                }
             }
             if (legacy.isEmpty()) return;
 

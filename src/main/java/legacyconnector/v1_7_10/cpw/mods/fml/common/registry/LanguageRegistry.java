@@ -73,7 +73,8 @@ public class LanguageRegistry {
      * {@code en_us.json} of a translated jar is read the same way. Each jar is read once.
      */
     public static void mcc$loadLanguagesFor(java.nio.file.Path jar) {
-        if (jar == null || !java.nio.file.Files.isRegularFile(jar) || !MCC$SCANNED.add(jar.toAbsolutePath())) return;
+        if (jar == null || java.nio.file.Files.isDirectory(jar)) return; // a mod folder's lang files are in the translated jar's resources
+        if (!java.nio.file.Files.isRegularFile(jar) || !MCC$SCANNED.add(jar.toAbsolutePath())) return;
         try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
             var entries = zip.entries();
             while (entries.hasMoreElements()) {

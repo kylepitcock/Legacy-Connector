@@ -63,7 +63,7 @@ public final class LegacyModRecord {
     public Path originalFile() {
         if (metadata != null && metadata.has("sourcePath")) {
             Path p = Path.of(metadata.get("sourcePath").getAsString());
-            if (java.nio.file.Files.isRegularFile(p)) return p;
+            if (java.nio.file.Files.isRegularFile(p) || java.nio.file.Files.isDirectory(p)) return p; // a mod folder in mods/ is its own source
         }
         return sourceFile();
     }

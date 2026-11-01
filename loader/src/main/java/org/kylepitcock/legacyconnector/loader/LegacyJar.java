@@ -30,6 +30,9 @@ public final class LegacyJar {
     /** {class, field} of every @SidedProxy field in the jar. */
     public final List<String[]> sidedProxies = new ArrayList<>();
 
+    /** For a mod distributed as a folder in mods/ ({@link DirectoryMods}): the folder; {@link #path} is the jar packed from it. */
+    public volatile Path sourceDir;
+
     public LegacyJar(Path path) {
         this.path = path;
     }
