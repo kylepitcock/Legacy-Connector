@@ -373,6 +373,7 @@ public final class Platform1122 implements LegacyPlatform {
         if (!MISSING_HOLDERS.isEmpty()) LOG.warn("Object holders with nothing registered under their name: {}", MISSING_HOLDERS);
     }
 
+    private static final java.util.Set<String> LOG_MODDED_HOLDERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final java.util.Set<String> MISSING_HOLDERS = new java.util.TreeSet<>();
 
     /** {@code ObjectHolderRegistry.applyObjectHolders()}: mods refill their holders after registering late. */
@@ -440,6 +441,11 @@ public final class Platform1122 implements LegacyPlatform {
             // any other registry, mods' own included (TerraFirmaCraft's Metal holders, read by its item registration)
             var reg = registryFor(f.getType());
             if (reg != null && reg.containsKey(key)) value = reg.getValue(key);
+            else if (LOG_MODDED_HOLDERS.add(f.getDeclaringClass().getName() + "." + f.getName())) {
+                // a mod's own registry entry (Vampirism's actions read by its skills): say why it stays null, once per field
+                LOG.debug("Object holder {}.{} ({}): {} for {}", f.getDeclaringClass().getSimpleName(), f.getName(), name,
+                        reg == null ? "no registry holds " + f.getType().getName() : "nothing registered in " + reg.getRegistrySuperType().getSimpleName(), key);
+            }
         }
         if (value == null || !f.getType().isInstance(value)) {
             if (value == null && (legacyconnector.v1_12_2.net.minecraft.block.Block.class.isAssignableFrom(f.getType())

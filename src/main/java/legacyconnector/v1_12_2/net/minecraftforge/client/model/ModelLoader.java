@@ -102,6 +102,15 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
         }
     }
 
+    /**
+     * Forge's private map of the IModel behind each state's model location. Mods read it by reflection in ModelBakeEvent (CTM:
+     * {@code ReflectionHelper.getPrivateValue(ModelLoader.class, loader, "stateModels")}) to wrap the models that carry connected-texture
+     * data; it stays empty here (the game's own bakery owns the models), so those mods find nothing to wrap and the blockstates' plain
+     * base models draw (connected textures show their unconnected texture) instead of the handler failing on a null map.
+     */
+    @SuppressWarnings("unused")
+    private final Map<ModelResourceLocation, IModel> stateModels = new java.util.LinkedHashMap<>();
+
     /** Forge's multipart model wrapper; mods read its private part list by reflection (CTM). */
     public static class MultipartModel {
         private Map<Object, Object> partModels = new java.util.HashMap<>();

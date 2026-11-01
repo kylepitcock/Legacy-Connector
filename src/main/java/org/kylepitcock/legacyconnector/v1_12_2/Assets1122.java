@@ -1053,7 +1053,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * model file (modern blockstate variants have no texture overrides). Returns null when the model does not exist.
      */
     private static final Map<String, String> VANILLA_MODEL_RENAMES = Map.of("block/half_slab", "block/slab", "block/upper_slab", "block/slab_top",
-            "block/grass_path", "block/dirt_path", "block/slime", "block/slime_block");
+            "block/grass_path", "block/dirt_path", "block/slime", "block/slime_block", "block/grass", "block/grass_block");
 
     private static JsonObject blockModels(JsonObject source, ResourceLocation blockId, String key, Map<String, Supplier<byte[]>> out) {
         String defaultNamespace = blockId.getNamespace();
@@ -1121,7 +1121,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         int colon = ref.indexOf(':');
         String ns = colon < 0 ? "minecraft" : ref.substring(0, colon);
         String path = colon < 0 ? ref : ref.substring(colon + 1);
-        return Ids.namespace(ns) + ":" + Ids.normalizePath(path);
+        String normalized = Ids.normalizePath(path);
+        // vanilla textures are named the 1.12 way in a mod's blockstate ("blocks/dirt", "minecraft:blocks/slime")
+        if (Ids.namespace(ns).equals("minecraft")) normalized = VanillaTextures1122.modern(normalized);
+        return Ids.namespace(ns) + ":" + normalized;
     }
 
     /** A plain cube textured with the first texture the variant names (or the block's own texture, or gray concrete): never a missing model. */

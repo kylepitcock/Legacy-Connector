@@ -235,7 +235,8 @@ public final class LegacyResourceConverter {
             "block/door_top", "block/door_top_left",
             "block/door_bottom_rh", "block/door_bottom_right",
             "block/door_top_rh", "block/door_top_right",
-            "block/slime", "block/slime_block");
+            "block/slime", "block/slime_block",
+            "block/grass", "block/grass_block");
 
     private static String vanillaModel(String ref) {
         int colon = ref.indexOf(':');
