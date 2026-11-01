@@ -193,6 +193,21 @@ public class World implements IBlockAccess {
 
     public static World mcc$wrap(LevelAccessor level) {
         if (level == null) return null;
+        // perf.worldViewCache: the view of a real level, kept on the level (every legacy block, tile and entity callback wraps its level;
+        // the synchronized weak map below took a lock per call). Only ever set to the value VIEWS holds for that level.
+        if (level instanceof Level full && org.kylepitcock.legacyconnector.core.perf.Perf.WORLD_VIEW_CACHE) {
+            Object known = ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) full).legacyconnector$slot1710();
+            if (known != null) return (World) known;
+            if (!org.kylepitcock.legacyconnector.core.VirtualLevels.isVirtual(level)) {
+                World view = mcc$wrapSlow(level);
+                ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) full).legacyconnector$setSlot1710(view);
+                return view;
+            }
+        }
+        return mcc$wrapSlow(level);
+    }
+
+    private static World mcc$wrapSlow(LevelAccessor level) {
         if (level instanceof net.minecraft.world.level.WorldGenLevel && !(level instanceof Level)) {
             World cached = REGION_VIEW.get();
             if (cached != null && cached.mcc$level == level) return cached;
@@ -272,6 +287,18 @@ public class World implements IBlockAccess {
 
     protected static BlockPos pos(int x, int y, int z) {
         return DEEP_PASSES.get() == 0 ? new BlockPos(x, y, z) : new BlockPos(x, y + deepShift(), z);
+    }
+
+    private static final ThreadLocal<BlockPos.MutableBlockPos> MCC_READ_POS = ThreadLocal.withInitial(BlockPos.MutableBlockPos::new);
+
+    /**
+     * {@link #pos} for a position that does not escape the call it is passed to (a block state read): one mutable position per thread
+     * ({@code perf.reuseBlockPos}), as vanilla's own loops pass a MutableBlockPos to getBlockState. Use it only for a single
+     * {@code getBlockState} call and never across legacy code (a nested legacy read on the same thread reuses it).
+     */
+    protected static BlockPos mcc$readPos(int x, int y, int z) {
+        if (!org.kylepitcock.legacyconnector.core.perf.Perf.REUSE_BLOCK_POS) return pos(x, y, z);
+        return MCC_READ_POS.get().set(x, DEEP_PASSES.get() == 0 ? y : y + deepShift(), z);
     }
 
     /**
@@ -439,7 +466,7 @@ public class World implements IBlockAccess {
         if (unloaded(x, z) || mcc$aboveLegacyTop(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
         if (mcc$aboveDeepLayer(y)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         BlockState offThread = mcc$offThreadState(x, y, z);
-        BlockState state = offThread != null ? offThread : lvl().getBlockState(pos(x, y, z));
+        BlockState state = offThread != null ? offThread : lvl().getBlockState(mcc$readPos(x, y, z));
         // Ore generators replace stone; the deep layer is deepslate.
         if (state.is(Blocks.DEEPSLATE) && inDeepPass()) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.stone;
         if (mcc$bedrockFloor(y, state)) return legacyconnector.v1_7_10.net.minecraft.init.Blocks.bedrock;
@@ -459,7 +486,7 @@ public class World implements IBlockAccess {
     public int getBlockMetadata(int x, int y, int z) {
         if (unloaded(x, z) || mcc$aboveDeepLayer(y)) return 0;
         BlockState offThread = mcc$offThreadState(x, y, z);
-        return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(pos(x, y, z)));
+        return BlockBridge.legacyMeta(offThread != null ? offThread : lvl().getBlockState(mcc$readPos(x, y, z)));
     }
 
     /**
