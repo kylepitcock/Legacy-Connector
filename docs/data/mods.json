@@ -15,8 +15,8 @@
    "version": "1.11.3",
    "mc": "1.12.2",
    "date": "2026-11-01",
-   "status": "partial",
-   "notes": "Dimensions (Abyssal Wasteland, Dreadlands, Omothol, Dark Realm) generate and load, 166 blocks break and drop, 440 recipes and 9 chest tables load, mobs drop loot. The Gateway Key does nothing in survival (use returns FAIL), so portals cannot be built yet (#126)."
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal, a survival player enters the Abyssal Wasteland (and the Dreadlands, Omothol and Dark Realm generate); 166 blocks break and drop, 440 recipes and 9 chest tables load, mobs drop loot. 39 item models are missing (crystal, shard and fragment variants, staff, dreadkatana, cudgel draw as the missing-model cube)."
   },
   {
    "name": "Additional Banners",
