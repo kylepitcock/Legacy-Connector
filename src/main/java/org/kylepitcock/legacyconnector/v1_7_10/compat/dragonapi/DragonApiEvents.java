@@ -74,6 +74,14 @@ public final class DragonApiEvents {
     // Chunk.setBlock after the change (ChromatiCraft's crystal network path cache, RotaryCraft's EMP)
     static final LegacyEvent SET_BLOCK_POST = new LegacyEvent(EVENTS + "SetBlockEvent$Post", 4);
 
+    /**
+     * ChunkProviderServer.populate, in place of the IWorldGenerator pass (WorldGenInterceptionRegistry.interceptChunkPopulation:
+     * cancelled, the pass is skipped). ChromatiCraft places its dimension structures from it: they are computed whole into
+     * ChunkSplicedGenerator buffers and each chunk's part is placed and dropped here, so without it the structures were missing
+     * and their buffers (millions of Coordinate/SetBlock entries) stayed in memory.
+     */
+    static final LegacyEvent CHUNK_POPULATION = new LegacyEvent(EVENTS + "ChunkPopulationEvent", 5);
+
     private DragonApiEvents() {}
 
     /** DragonAPI's class loader once its main class is loaded; null without DragonAPI (cached) or before it constructs. */
@@ -91,6 +99,8 @@ public final class DragonApiEvents {
     }
 
     public static void register(IEventBus bus) {
+        org.kylepitcock.legacyconnector.v1_7_10.dimension.LegacyChunkGenerator.addPopulationInterceptor((world, chunkX, chunkZ, generator) ->
+                CHUNK_POPULATION.wanted() && CHUNK_POPULATION.post(world, chunkX, chunkZ, generator, generator));
         bus.addListener(EventPriority.HIGH, (net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent e) -> onPlace(e));
         bus.addListener((net.neoforged.neoforge.event.tick.EntityTickEvent.Pre e) -> {
             var entity = e.getEntity();
