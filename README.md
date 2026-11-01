@@ -114,8 +114,8 @@ OreSpawn's The King on the plains, with a modern boss bar (OreSpawn itself shows
 
 ![OreSpawn's The King with its boss bar](docs/images/orespawn-king-bossbar.png)
 
-A modern village enclosed by Witchery's town walls, with its gatehouses and watchtowers and AgriCraft's greenhouses, all built by
-their legacy village code:
+A vanilla village in All the Mods 10 (Complementary shaders) with the buildings 1.7.10 mods add to villages: Witchery's town walls,
+keep and watchtowers and Thaumcraft's wizard tower, all built by their legacy village code beside modern mods' trees and terrain:
 
 ![Legacy village components in a modern village](docs/images/legacy-village-components.png)
 

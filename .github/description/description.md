@@ -63,7 +63,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![OreSpawn's The King](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/orespawn-king-bossbar.png)
 
-**A modern village enclosed by Witchery's town walls and watchtowers, with AgriCraft greenhouses, built by their legacy code**
+**A vanilla village in All the Mods 10 with Witchery's town walls, keep and watchtowers and Thaumcraft's wizard tower, built by their legacy village code**
 
 ![Legacy village components](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/legacy-village-components.png)
 
