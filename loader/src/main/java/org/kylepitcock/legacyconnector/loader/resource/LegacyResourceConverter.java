@@ -73,9 +73,19 @@ public final class LegacyResourceConverter {
             data = sanitizeMcmeta(data);
         } else if (modern.endsWith(".json") && (modern.contains("/models/") || modern.contains("/blockstates/"))) {
             data = lowercaseResourceRefs(data);
+            if (modern.contains("/models/")) addVineModels(data);
         }
         output.putIfAbsent(modern, data);
         return true;
+    }
+
+    /** A model that names one of the 1.12 vanilla vine models as parent gets it generated into the minecraft namespace (1.13 has no such file). */
+    private void addVineModels(byte[] data) {
+        java.util.regex.Matcher m = VINE_MODEL.matcher(new String(data, StandardCharsets.UTF_8));
+        while (m.find()) {
+            String json = vineModel(m.group(1));
+            if (json != null) output.putIfAbsent("assets/minecraft/models/block/" + m.group(1) + ".json", json.getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     /** Called once all entries are seen; returns every resource to write into the transformed jar. */
@@ -226,17 +236,76 @@ public final class LegacyResourceConverter {
         return key.equals("parent") || key.equals("model") || "textures".equals(parentKey);
     }
 
-    /** Vanilla models renamed after 1.12 (parents of mod models). */
-    private static final Map<String, String> MODEL_RENAMES = Map.of(
-            "block/half_slab", "block/slab",
-            "block/upper_slab", "block/slab_top",
-            "block/grass_path", "block/dirt_path",
-            "block/door_bottom", "block/door_bottom_left",
-            "block/door_top", "block/door_top_left",
-            "block/door_bottom_rh", "block/door_bottom_right",
-            "block/door_top_rh", "block/door_top_right",
-            "block/slime", "block/slime_block",
-            "block/grass", "block/grass_block");
+    /**
+     * Vanilla models renamed after 1.12 (parents of mod models). The texture slots of the new models are the ones of the old (wall, texture, pane,
+     * edge, top, bottom, torch, cross), so a rename is enough; the vine_* models no longer exist and are generated ({@link #vineModel}).
+     */
+    private static final Map<String, String> MODEL_RENAMES = Map.ofEntries(
+            Map.entry("block/half_slab", "block/slab"),
+            Map.entry("block/upper_slab", "block/slab_top"),
+            Map.entry("block/grass_path", "block/dirt_path"),
+            Map.entry("block/door_bottom", "block/door_bottom_left"),
+            Map.entry("block/door_top", "block/door_top_left"),
+            Map.entry("block/door_bottom_rh", "block/door_bottom_right"),
+            Map.entry("block/door_top_rh", "block/door_top_right"),
+            Map.entry("block/slime", "block/slime_block"),
+            Map.entry("block/grass", "block/grass_block"),
+            Map.entry("block/wall_post", "block/template_wall_post"),
+            Map.entry("block/wall_side", "block/template_wall_side"),
+            Map.entry("block/fence_gate_closed", "block/template_fence_gate"),
+            Map.entry("block/fence_gate_open", "block/template_fence_gate_open"),
+            Map.entry("block/wall_gate_closed", "block/template_fence_gate_wall"),
+            Map.entry("block/wall_gate_open", "block/template_fence_gate_wall_open"),
+            Map.entry("block/pane_post", "block/template_glass_pane_post"),
+            Map.entry("block/pane_side", "block/template_glass_pane_side"),
+            Map.entry("block/pane_side_alt", "block/template_glass_pane_side_alt"),
+            Map.entry("block/pane_noside", "block/template_glass_pane_noside"),
+            Map.entry("block/pane_noside_alt", "block/template_glass_pane_noside_alt"),
+            Map.entry("block/wooden_trapdoor_top", "block/template_orientable_trapdoor_top"),
+            Map.entry("block/wooden_trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/wooden_trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/trapdoor_top", "block/template_orientable_trapdoor_top"),
+            Map.entry("block/trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/orientable_trapdoor_top", "block/template_orientable_trapdoor_top"),
+            Map.entry("block/orientable_trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/orientable_trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/normal_torch", "block/template_torch"),
+            Map.entry("block/normal_torch_wall", "block/template_torch_wall"),
+            Map.entry("block/tall_grass", "block/short_grass"));
+
+    private static final java.util.regex.Pattern VINE_MODEL = java.util.regex.Pattern.compile("\"minecraft:block/(vine_[a-z0-9_]+)\"");
+
+    /**
+     * The 1.12 vine models (a quad of the vine texture 0.8 pixels inside the block per side, plus a ceiling quad for the "u" ones; 1.13 draws the
+     * vine from one rotated model instead), as JSON; null for a name that is not one of them. Texture slot "vine".
+     */
+    static String vineModel(String name) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("vine_([1-4])?(u)?(_opposite)?").matcher(name);
+        if (!m.matches() || (m.group(1) == null && m.group(2) == null)) return null;
+        int sides = m.group(1) == null ? 0 : Integer.parseInt(m.group(1));
+        boolean up = m.group(2) != null;
+        // north, east, south, west planes; vine_2_opposite is north and south
+        boolean[] on = new boolean[4];
+        if (m.group(3) != null) {
+            on[0] = on[2] = true;
+        } else {
+            for (int i = 0; i < sides; i++) on[i] = true;
+        }
+        String[] planes = {
+                "{\"from\":[0,0,0.8],\"to\":[16,16,0.8],\"shade\":false,\"faces\":{\"north\":{\"uv\":[16,0,0,16],\"texture\":\"#vine\",\"tintindex\":0},\"south\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0}}}",
+                "{\"from\":[15.2,0,0],\"to\":[15.2,16,16],\"shade\":false,\"faces\":{\"west\":{\"uv\":[16,0,0,16],\"texture\":\"#vine\",\"tintindex\":0},\"east\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0}}}",
+                "{\"from\":[0,0,15.2],\"to\":[16,16,15.2],\"shade\":false,\"faces\":{\"north\":{\"uv\":[16,0,0,16],\"texture\":\"#vine\",\"tintindex\":0},\"south\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0}}}",
+                "{\"from\":[0.8,0,0],\"to\":[0.8,16,16],\"shade\":false,\"faces\":{\"west\":{\"uv\":[16,0,0,16],\"texture\":\"#vine\",\"tintindex\":0},\"east\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0}}}"};
+        StringBuilder elements = new StringBuilder();
+        for (int i = 0; i < 4; i++) {
+            if (on[i]) elements.append(elements.length() > 0 ? "," : "").append(planes[i]);
+        }
+        if (up) {
+            elements.append(elements.length() > 0 ? "," : "").append("{\"from\":[0,15.2,0],\"to\":[16,15.2,16],\"shade\":false,\"faces\":{\"up\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0},\"down\":{\"uv\":[0,0,16,16],\"texture\":\"#vine\",\"tintindex\":0}}}");
+        }
+        return "{\"ambientocclusion\":false,\"textures\":{\"particle\":\"#vine\",\"vine\":\"minecraft:block/vine\"},\"elements\":[" + elements + "]}";
+    }
 
     private static String vanillaModel(String ref) {
         int colon = ref.indexOf(':');
@@ -244,6 +313,7 @@ public final class LegacyResourceConverter {
         if (!ns.equals("minecraft")) return ref;
         String path = colon < 0 ? ref : ref.substring(colon + 1);
         String renamed = MODEL_RENAMES.get(path);
+        if (renamed == null && path.startsWith("block/") && vineModel(path.substring(6)) != null) renamed = path; // generated by addVineModels
         // always with the namespace: a mod that ships its own block/slab_top.json (SRParasites) must not see the renamed parent as itself
         return renamed == null ? ref : "minecraft:" + renamed;
     }
@@ -277,7 +347,7 @@ public final class LegacyResourceConverter {
                 {"grass_top", "grass_block_top"}, {"grass_side", "grass_block_side"}, {"grass_side_overlay", "grass_block_side_overlay"},
                 {"stonebrick", "stone_bricks"}, {"brick", "bricks"}, {"cobblestone_mossy", "mossy_cobblestone"}, {"hardened_clay", "terracotta"},
                 {"mob_spawner", "spawner"}, {"reeds", "sugar_cane"}, {"waterlily", "lily_pad"}, {"web", "cobweb"},
-                {"flower_dandelion", "dandelion"}, {"flower_rose", "poppy"}, {"tallgrass", "grass"}, {"deadbush", "dead_bush"},
+                {"flower_dandelion", "dandelion"}, {"flower_rose", "poppy"}, {"tallgrass", "short_grass"}, {"deadbush", "dead_bush"},
                 {"stone_andesite", "andesite"}, {"stone_diorite", "diorite"}, {"stone_granite", "granite"},
                 {"stone_andesite_smooth", "polished_andesite"}, {"stone_diorite_smooth", "polished_diorite"}, {"stone_granite_smooth", "polished_granite"},
                 {"stonebrick_mossy", "mossy_stone_bricks"}, {"stonebrick_cracked", "cracked_stone_bricks"}, {"stonebrick_carved", "chiseled_stone_bricks"},
