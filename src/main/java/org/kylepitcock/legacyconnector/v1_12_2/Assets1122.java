@@ -820,7 +820,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         JsonObject custom = a.has("custom") && a.get("custom").isJsonObject() ? a.getAsJsonObject("custom") : new JsonObject();
         if (model.equals("forge:fluid")) {
             JsonObject m = new JsonObject();
-            m.addProperty("model", "minecraft:block/cube_all");
+            m.addProperty("model", "minecraft:cube_all"); // blockModels puts the block/ folder in front
             JsonObject textures = new JsonObject();
             textures.addProperty("all", "minecraft:block/water_still");
             m.add("textures", textures);
