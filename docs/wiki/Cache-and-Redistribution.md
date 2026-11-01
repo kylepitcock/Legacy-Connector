@@ -2,7 +2,7 @@
 
 Legacy Connector translates the mod jars you put in `mods/` into `.legacyconnector/cache/` the first time they are loaded. Those
 translated jars are machine-made derivatives of somebody else's work, made for your own use. They are not meant to be passed on as
-"updated versions" of the mods. Two measures make that evident and pointless; neither costs startup time or can stop a normal setup.
+"updated versions" of the mods. The watermark and the refusal to load translated jars from `mods/` make that evident and pointless; neither costs startup time or can stop a normal setup.
 
 ## Provenance watermark
 
@@ -17,36 +17,17 @@ Every translated jar carries:
 Nothing in the game reads these; they are only for people who find such a jar. The original SHA-256 is the same hash the cache key
 uses, computed once more when a jar is translated (a few milliseconds).
 
-## Per-installation signature
+## No per-installation signature
 
-On first use Legacy Connector creates a random 256-bit key in the game folder, `.legacyconnector/installation.key`. Nothing is written
-outside the instance (0.3.11 kept the key in the user's data folder, which store malware scanners flag; CurseForge held that release for
-manual review). A translated jar taken out of the cache on its own does not verify on another installation; copying a whole instance
-copies its key, so its cache stays valid. If the key cannot be written, a key for the current run is used and the jars are translated
-again next start.
-
-When a jar is translated it gets a sidecar `<jar>.sig`: an HMAC-SHA256 over the jar's size, a content digest computed once when the
-jar was written, the digest of its last 64 KiB (the zip directory), the original's SHA-256 and the translator version. On every start the
-loader checks each cache entry against its sidecar using only the sidecar, the file size and those last 64 KiB: the jar is never hashed
-again. An entry without a valid signature is deleted and translated again from the original, with one INFO line
-(`cache entry invalid for this installation, re-translating`). The loader also logs how long the check took (a few milliseconds).
+0.3.11 and 0.3.12 also signed every cache entry with a random per-installation key (HMAC-SHA256, `.legacyconnector/installation.key`), so a
+translated jar taken out of the cache did not verify elsewhere. 0.3.13 removed it: a random key file plus cryptography over jar files is
+what store malware scanners flag, and every release with it went to manual review on CurseForge and Modrinth. The watermark above already
+marks a passed-on jar as a local derivative, and the refusal below makes it useless in `mods/`. Leftover `installation.key` and `.sig`
+files of those versions are ignored.
 
 A translated jar found in `mods/` (carrying the watermark) is not loaded: it is claimed and a warning names it. Put the original
 mod there instead.
 
-### What this means for you
-
-- Copying a whole instance (or its `.legacyconnector/cache`) to **another machine** translates everything once there. The originals in
-  `mods/` are all that has to be copied.
-- **Moving** an instance on the same machine, or renaming its folder, changes nothing: the key is per user, not per path.
-- Deleting the key, or reinstalling the OS user, translates once again. Nothing breaks.
-- Dedicated servers, CI and the `run-*` test folders create the key on demand; nothing has to exist beforehand. All instances of one
-  user share the key, so they also share (and may copy between each other) valid cache entries.
-- A cache folder that cannot be modified (read-only) keeps working: an entry that fails verification but cannot be deleted is used as it is.
-- `-Dlegacyconnector.cacheSignatures=false` switches signing and checking off (development, measuring).
-
-The signature is a deterrent and an integrity marker, not copy protection: anyone can still translate the original themselves, which is
-the intended way.
 
 ## Not done: private file extension for cache entries
 

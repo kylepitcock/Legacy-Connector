@@ -224,8 +224,16 @@ final class BundledLibraries {
     private static void deleteStaleLibDirs(Path cacheDir, Path current) {
         try (var dirs = Files.list(cacheDir)) {
             for (Path d : dirs.filter(f -> Files.isDirectory(f) && f.getFileName().toString().startsWith("libs-") && !f.equals(current)).toList()) {
-                try (var files = Files.walk(d)) {
-                    for (Path f : files.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(f);
+                // only the library jars this loader wrote there (flat folder), then the folder if it is empty
+                try (var files = Files.list(d)) {
+                    for (Path f : files.filter(f -> Files.isRegularFile(f) && f.getFileName().toString().matches(".+\\.jar(\\.tmp)?")).toList()) {
+                        Files.deleteIfExists(f);
+                    }
+                }
+                try {
+                    Files.deleteIfExists(d);
+                } catch (java.nio.file.DirectoryNotEmptyException ignored) {
+                    // something else lives there: left alone
                 }
             }
         } catch (IOException | RuntimeException e) {

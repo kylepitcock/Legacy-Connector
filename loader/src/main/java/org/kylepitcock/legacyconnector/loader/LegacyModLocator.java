@@ -222,7 +222,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
-            discardUnsigned(legacy, bridges, modSet, cacheDir, gameDir);
             int uncached = 0;
             for (LegacyJar jar : legacy) {
                 if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
@@ -270,7 +269,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         long start = System.nanoTime();
                         LegacyJarTransformer.Result result = pool.take(jar, out, jarPeers);
                         result.demand.write(demandFile);
-                        CacheSignature.sign(out, hex(fileDigest(jar.existing())), gameDir);
                         LOG.info("Legacy Connector: translated {} ({} classes, {} JDK fixes, {} virtual fields, {} synthesized API classes) in {} ms",
                                 jar.fileName(), result.classes, result.compatRedirects, result.virtualFieldRedirects,
                                 result.links.synthesizedClasses.size(), (System.nanoTime() - start) / 1_000_000);
@@ -289,7 +287,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     keep.add(out);
                     keep.add(linkReport);
                     keep.add(demandFile);
-                    keep.add(CacheSignature.sigFile(out));
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
                 } catch (Exception e) {
@@ -469,39 +466,6 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
     private static String hex(byte[] b) {
         return HexFormat.of().formatHex(b);
-    }
-
-    /**
-     * Cache entries without a valid signature of this installation (a cache copied from elsewhere, a lost key, a translated jar someone
-     * passed on) are deleted so they are translated again. If one cannot be deleted (read-only cache) it is kept and used as before.
-     */
-    private static void discardUnsigned(List<LegacyJar> legacy, List<LibraryBridges.Bridge> bridges, Map<LegacyVersion, byte[]> modSet,
-            Path cacheDir, Path gameDir) throws IOException {
-        if (!CacheSignature.enabled()) return;
-        boolean logged = false;
-        long start = System.nanoTime();
-        int checked = 0;
-        for (LegacyJar jar : legacy) {
-            if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
-            Path cached = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
-            checked++;
-            if (!Files.exists(cached) || CacheSignature.verify(cached, hex(fileDigest(jar.existing())), gameDir)) continue;
-            try {
-                Files.deleteIfExists(CacheSignature.sigFile(cached));
-                Files.deleteIfExists(cached.resolveSibling(cached.getFileName() + ".synth.txt"));
-                Files.deleteIfExists(cached);
-            } catch (IOException e) {
-                LOG.warn("Legacy Connector: cache entry {} has no valid signature but cannot be removed; using it as it is", cached.getFileName());
-                continue;
-            }
-            if (!logged) {
-                LOG.info("Legacy Connector: cache entry invalid for this installation, re-translating (first: {})", cached.getFileName());
-                logged = true;
-            } else {
-                LOG.debug("Legacy Connector: cache entry {} invalid for this installation, re-translating", cached.getFileName());
-            }
-        }
-        LOG.info("Legacy Connector: checked the cache signatures of {} jars in {} ms", checked, (System.nanoTime() - start) / 1_000_000);
     }
 
     /** SHA-256 of a file; the originals are hashed several times per start (cache names, mod set, signatures), so the result is kept. */
