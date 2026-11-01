@@ -40,7 +40,7 @@ final class VanillaTextures1122 {
                 {"grass_top", "grass_block_top"}, {"grass_side", "grass_block_side"}, {"grass_side_overlay", "grass_block_side_overlay"},
                 {"stonebrick", "stone_bricks"}, {"brick", "bricks"}, {"cobblestone_mossy", "mossy_cobblestone"}, {"hardened_clay", "terracotta"},
                 {"mob_spawner", "spawner"}, {"reeds", "sugar_cane"}, {"waterlily", "lily_pad"}, {"web", "cobweb"},
-                {"flower_dandelion", "dandelion"}, {"flower_rose", "poppy"}, {"tallgrass", "grass"}, {"deadbush", "dead_bush"},
+                {"flower_dandelion", "dandelion"}, {"flower_rose", "poppy"}, {"tallgrass", "short_grass"}, {"deadbush", "dead_bush"},
                 {"stone_andesite", "andesite"}, {"stone_diorite", "diorite"}, {"stone_granite", "granite"},
                 {"stone_andesite_smooth", "polished_andesite"}, {"stone_diorite_smooth", "polished_diorite"}, {"stone_granite_smooth", "polished_granite"},
                 {"stonebrick_mossy", "mossy_stone_bricks"}, {"stonebrick_cracked", "cracked_stone_bricks"}, {"stonebrick_carved", "chiseled_stone_bricks"},

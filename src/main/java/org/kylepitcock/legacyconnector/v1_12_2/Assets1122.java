@@ -1110,8 +1110,91 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * are vanilla's unless the mod has such a file); 1.13 and later name the full path. A variant that overrides textures gets its own generated
      * model file (modern blockstate variants have no texture overrides). Returns null when the model does not exist.
      */
-    private static final Map<String, String> VANILLA_MODEL_RENAMES = Map.of("block/half_slab", "block/slab", "block/upper_slab", "block/slab_top",
-            "block/grass_path", "block/dirt_path", "block/slime", "block/slime_block", "block/grass", "block/grass_block");
+    private static final Map<String, String> VANILLA_MODEL_RENAMES = Map.ofEntries(
+            Map.entry("block/half_slab", "block/slab"), Map.entry("block/upper_slab", "block/slab_top"),
+            Map.entry("block/grass_path", "block/dirt_path"), Map.entry("block/slime", "block/slime_block"), Map.entry("block/grass", "block/grass_block"),
+            Map.entry("block/door_bottom", "block/door_bottom_left"), Map.entry("block/door_top", "block/door_top_left"),
+            Map.entry("block/door_bottom_rh", "block/door_bottom_right"), Map.entry("block/door_top_rh", "block/door_top_right"),
+            Map.entry("block/wall_post", "block/template_wall_post"), Map.entry("block/wall_side", "block/template_wall_side"),
+            Map.entry("block/fence_gate_closed", "block/template_fence_gate"), Map.entry("block/fence_gate_open", "block/template_fence_gate_open"),
+            Map.entry("block/wall_gate_closed", "block/template_fence_gate_wall"), Map.entry("block/wall_gate_open", "block/template_fence_gate_wall_open"),
+            Map.entry("block/pane_post", "block/template_glass_pane_post"), Map.entry("block/pane_side", "block/template_glass_pane_side"),
+            Map.entry("block/pane_side_alt", "block/template_glass_pane_side_alt"), Map.entry("block/pane_noside", "block/template_glass_pane_noside"),
+            Map.entry("block/pane_noside_alt", "block/template_glass_pane_noside_alt"),
+            Map.entry("block/wooden_trapdoor_top", "block/template_orientable_trapdoor_top"), Map.entry("block/wooden_trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/wooden_trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/trapdoor_top", "block/template_orientable_trapdoor_top"), Map.entry("block/trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/orientable_trapdoor_top", "block/template_orientable_trapdoor_top"), Map.entry("block/orientable_trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
+            Map.entry("block/orientable_trapdoor_open", "block/template_orientable_trapdoor_open"),
+            Map.entry("block/normal_torch", "block/template_torch"), Map.entry("block/normal_torch_wall", "block/template_torch_wall"),
+            Map.entry("block/tall_grass", "block/short_grass"));
+
+    private static final java.util.regex.Pattern VINE_MODEL = java.util.regex.Pattern.compile("vine_([1-4])?(u)?(_opposite)?");
+
+    /**
+     * The 1.12 vine models ("block/vine_1", "vine_2u", "vine_2_opposite"...) no longer exist in 1.13+; the same geometry (a quad of the "vine" texture 0.8
+     * pixels inside the block per side, a ceiling quad for the "u" ones) written into the mod's namespace. Null when the name is not a vine model.
+     * The loader generates the same models into the minecraft namespace for model files that name them as parent.
+     */
+    private static String vineModelPath(String name, String namespace, Map<String, Supplier<byte[]>> out) {
+        java.util.regex.Matcher m = VINE_MODEL.matcher(name);
+        if (!m.matches() || (m.group(1) == null && m.group(2) == null)) return null;
+        String path = "block/lc1122/" + name;
+        String file = "assets/" + namespace + "/models/" + path + ".json";
+        if (out.containsKey(file)) return path;
+        int sides = m.group(1) == null ? 0 : Integer.parseInt(m.group(1));
+        boolean[] on = new boolean[4]; // north, east, south, west; vine_2_opposite is north and south
+        if (m.group(3) != null) {
+            on[0] = on[2] = true;
+        } else {
+            for (int i = 0; i < sides; i++) on[i] = true;
+        }
+        double[][] from = {{0, 0, 0.8}, {15.2, 0, 0}, {0, 0, 15.2}, {0.8, 0, 0}};
+        double[][] to = {{16, 16, 0.8}, {15.2, 16, 16}, {16, 16, 15.2}, {0.8, 16, 16}};
+        String[][] faces = {{"north", "south"}, {"west", "east"}, {"north", "south"}, {"west", "east"}};
+        JsonArray elements = new JsonArray();
+        for (int i = 0; i < 4; i++) {
+            if (on[i]) elements.add(vineElement(from[i], to[i], faces[i][0], faces[i][1], new int[] {16, 0, 0, 16}));
+        }
+        if (m.group(2) != null) elements.add(vineElement(new double[] {0, 15.2, 0}, new double[] {16, 15.2, 16}, "up", "down", new int[] {0, 0, 16, 16}));
+        JsonObject model = new JsonObject();
+        model.addProperty("ambientocclusion", false);
+        JsonObject textures = new JsonObject();
+        textures.addProperty("particle", "#vine");
+        textures.addProperty("vine", "minecraft:block/vine");
+        model.add("textures", textures);
+        model.add("elements", elements);
+        byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+        out.put(file, () -> bytes);
+        return path;
+    }
+
+    private static JsonObject vineElement(double[] from, double[] to, String face1, String face2, int[] uv1) {
+        JsonObject element = new JsonObject();
+        JsonArray f = new JsonArray();
+        JsonArray t = new JsonArray();
+        for (int i = 0; i < 3; i++) {
+            f.add(from[i]);
+            t.add(to[i]);
+        }
+        element.add("from", f);
+        element.add("to", t);
+        element.addProperty("shade", false);
+        JsonObject faces = new JsonObject();
+        for (int k = 0; k < 2; k++) {
+            JsonObject face = new JsonObject();
+            JsonArray uv = new JsonArray();
+            int[] u = k == 0 ? uv1 : new int[] {0, 0, 16, 16};
+            for (int v : u) uv.add(v);
+            face.add("uv", uv);
+            face.addProperty("texture", "#vine");
+            face.addProperty("tintindex", 0);
+            faces.add(k == 0 ? face1 : face2, face);
+        }
+        element.add("faces", faces);
+        return element;
+    }
 
     private static JsonObject blockModels(JsonObject source, ResourceLocation blockId, String key, Map<String, Supplier<byte[]>> out) {
         String defaultNamespace = blockId.getNamespace();
@@ -1150,6 +1233,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             copy.addProperty("model", blockId.getNamespace() + ":" + emptyPath);
             return copy;
+        }
+        if (modelNs.equals("minecraft") && modelPath.startsWith("block/")) {
+            String vine = vineModelPath(modelPath.substring(6), blockId.getNamespace(), out);
+            if (vine != null) {
+                modelNs = blockId.getNamespace();
+                modelPath = vine;
+                model = modelNs + ":" + modelPath;
+            }
         }
         if (modelNs.equals("minecraft") && VANILLA_MODEL_RENAMES.containsKey(modelPath)) {
             // a vanilla model of 1.12 that 1.13 renamed (the loader renames the same ones in the mod's own model files)
