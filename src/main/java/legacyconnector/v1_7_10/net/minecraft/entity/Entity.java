@@ -1478,9 +1478,12 @@ public abstract class Entity implements ICommandSender {
     protected void updateFallState(double y, boolean onGround) {
     }
 
-    /** Whether the entity's head is inside an opaque block (it suffocates). */
+    /**
+     * Whether the entity's head is inside an opaque block (it suffocates): the modern {@code isInWall} tests the same eye-level
+     * box. Mods unstick their mobs with it (Thaumcraft's golems teleport back to their home when they are stuck in a wall).
+     */
     public boolean isEntityInsideOpaqueBlock() {
-        return false;
+        return mcc$entity != null && mcc$entity.isInWall();
     }
 
     // ------------------------------------------------------------------ Forge drop capture
