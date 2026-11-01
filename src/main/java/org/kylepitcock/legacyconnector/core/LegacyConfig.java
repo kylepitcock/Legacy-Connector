@@ -197,4 +197,9 @@ public final class LegacyConfig {
     public static boolean perfSweepDeadViews() {
         return bool("perf.sweepDeadViews", true);
     }
+
+    /** {@code perf.weakStackViews1122} (off): 1.12.2 item stack views without capabilities are held weakly (see Stacks1122). */
+    public static boolean perfWeakStackViews1122() {
+        return bool("perf.weakStackViews1122", false);
+    }
 }

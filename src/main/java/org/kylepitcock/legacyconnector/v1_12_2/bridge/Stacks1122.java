@@ -99,12 +99,39 @@ public final class Stacks1122 {
     public static ItemStack view(net.minecraft.world.item.ItemStack stack) {
         if (stack == null || stack.isEmpty()) return ItemStack.EMPTY;
         ItemStack view = VIEWS.get(stack);
+        if (view == null && WEAK_VIEWS != null) {
+            var ref = WEAK_VIEWS.get(stack);
+            view = ref == null ? null : ref.get();
+        }
         if (view != null && view.getItem() == legacyOf(stack.getItem())) return view;
         view = fromModern(stack);
         if (view.isEmpty()) return view;
         view.mcc$bind(stack);
-        VIEWS.put(stack, view);
+        if (WEAK_VIEWS != null) {
+            VIEWS.remove(stack);
+            WEAK_VIEWS.put(stack, new java.lang.ref.WeakReference<>(view));
+        } else {
+            VIEWS.put(stack, view);
+        }
         return view;
+    }
+
+    /**
+     * {@code perf.weakStackViews1122} (default off): views are held weakly, so a view nobody holds any more is collected with its
+     * modern stack (in {@link #VIEWS} a view keeps its stack, the key, so every stack ever viewed stayed in memory). A view that
+     * made capabilities ({@link #mcc$pin}) is held strongly as before: its providers may keep state that is not in the tag.
+     */
+    private static final java.util.Map<net.minecraft.world.item.ItemStack, java.lang.ref.WeakReference<ItemStack>> WEAK_VIEWS =
+            org.kylepitcock.legacyconnector.core.LegacyConfig.perfWeakStackViews1122()
+                    ? java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>()) : null;
+
+    /** Keeps a view strongly from now on (it made capabilities). */
+    public static void mcc$pin(ItemStack view) {
+        if (WEAK_VIEWS == null) return;
+        var backing = view.mcc$backing();
+        if (backing == null || backing.isEmpty()) return;
+        var ref = WEAK_VIEWS.get(backing);
+        if (ref != null && ref.get() == view) VIEWS.put(backing, view);
     }
 
     /** The legacy item a modern item stands for (null when it has none). */
