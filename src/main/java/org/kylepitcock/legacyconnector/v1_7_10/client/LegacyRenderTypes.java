@@ -147,8 +147,8 @@ public final class LegacyRenderTypes extends RenderType {
     // The emulation's normal types use the entity shaders, which Iris maps to gbuffers_entities / gbuffers_block (lit, shadowed,
     // fogged as a solid object). With a shader pack in use, legacy geometry that is not an object takes the shader of its vanilla
     // equivalent instead: sky geometry the position_tex_color / position_color shaders (gbuffers_skytextured / skybasic during
-    // the sky phase), particles the particle shader (gbuffers_textured_lit / weather), additive glows the beacon beam shader
-    // (gbuffers_beaconbeam, full bright in every phase; the eyes shader becomes gbuffers_block while block entities draw).
+    // the sky phase), particles the particle shader (gbuffers_particles / weather), additive glows the beacon beam shader
+    // (gbuffers_beaconbeam in every phase; the eyes shader becomes the lit gbuffers_block while block entities draw).
 
     /** Legacy sky geometry: unlit, no depth writes (1.7.10's renderSky ran with glDepthMask(false)). */
     private static final java.util.function.BiFunction<ResourceLocation, Boolean, RenderType> SKY_TEXTURED = Util.memoize((texture, blend) -> create(
