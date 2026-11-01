@@ -40,6 +40,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void construct(LegacyModRecord mod) throws Exception {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.CONSTRUCTING);
+        injectBundledLanguages();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins.runAll(loader);
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$loadApiPackages(loader);
@@ -72,6 +73,25 @@ public final class Platform1710 implements LegacyPlatform {
         dispatch(mod, new legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLConstructionEvent());
         // the mod list's Config button opens the mod's @Mod(guiFactory) screen
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.LegacyConfigScreens.register(mod);
+    }
+
+    private static boolean languagesInjected;
+
+    /**
+     * FML read every mod's bundled en_US lang into the server translation table before constructing the mods (see
+     * {@code LanguageRegistry.mcc$loadLanguagesFor}); done for all 1.7.10 mods before the first one is constructed.
+     */
+    private static void injectBundledLanguages() {
+        if (languagesInjected) return;
+        languagesInjected = true;
+        for (LegacyModRecord m : LegacyMods.ordered()) {
+            if (!m.version.equals("1.7.10")) continue;
+            try {
+                legacyconnector.v1_7_10.cpw.mods.fml.common.registry.LanguageRegistry.mcc$loadLanguagesFor(m.originalFile());
+            } catch (RuntimeException e) {
+                LOG.debug("Could not read the lang files of {}: {}", m, e.toString());
+            }
+        }
     }
 
     private static void injectInstanceAndMetadata(LegacyModRecord mod, LegacyModContainer1710 container) throws IllegalAccessException {

@@ -24,7 +24,8 @@
   "client": [
     "ClientLevelSkyColorMixin",
     "MinecraftAttackMixin",
-    "MultiPlayerGameModeMixin"
+    "MultiPlayerGameModeMixin",
+    "ClientLanguageLegacyKeysMixin"
   ],
   "injectors": {
     "defaultRequire": 1

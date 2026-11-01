@@ -55,6 +55,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Events | Forge/FML event buses | NeoForge event bus |
 | Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events, effects, tabs |
 | Stats and achievements | `StatList`, `AchievementList`, `StatBase.addStat` | general stats count in their modern counterparts, mod stats become custom stats named after their legacy key (OpenBlocks' bricks dropped); the stat file reads them back |
+| Translations | `.lang` files, `LanguageRegistry`, `StatCollector`/`StringTranslate`/`I18n`, vanilla 1.7.10 keys (`tile.stone.name`) | converted `lang/<code>.json` files, a generated lang file, and legacy keys resolved on a miss of the modern language ([translations](#translations)) |
 | Coremods that patch mods | `IClassTransformer` plugins | applied to mod classes before translation |
 | Java 8 → 21 | reflection hacks, removed JDK classes | `ReflectionCompat`, `ResourceCompat`, JDK stand-ins |
 | API drift between mods | a library method whose return type changed | relinked to the installed signature |
@@ -126,3 +127,28 @@ blocks), so with one block every subtype came out as metadata 0 (EvilCraft even 
 
 1.12.2 is not flattened yet: there an `ItemBlock` is one modern item (no per-subtype items), so the flattening would first
 need per-subtype block items.
+
+## Translations
+
+1.7.10 had two tables: the server's `StringTranslate` (what `StatCollector` reads) and the client's `Locale` (`I18n`, which
+replaced the server table once resources loaded). FML read every mod jar's `assets/<domain>/lang/en_US.lang` into the server
+table before constructing the mods, so mods translate in static initializers: ReactorCraft builds its ore names
+(`ore.cadmium` -> "Cadmium Ore") in the constructor of its ore enum, and ElectriCraft and RotaryCraft do the same. How the
+layer serves each source:
+
+- Lang files of a jar become `assets/<ns>/lang/<code>.json` (loader, `LegacyResourceConverter`), which the client loads like
+  any mod's. Before the first 1.7.10 mod is constructed, `Platform1710` also reads every legacy jar's `en_US.lang` into
+  `GeneratedTranslations`' bundled table (`LanguageRegistry.mcc$loadLanguagesFor`), as FML did: `StatCollector` answers from it
+  on the server and on a client whose languages are not loaded yet. These entries are not exported again.
+- Code-registered strings (`LanguageRegistry.addStringLocalization`/`addName`, writes to `StringTranslate.languageList`) go to
+  `GeneratedTranslations`, exported as `assets/legacyconnector/lang/<code>.json` of the generated pack on every reload.
+- Vanilla 1.7.10 keys (`tile.stone.name`, `item.ingotIron.name`, subtypes such as `tile.cloth.red.name` or
+  `item.dyePowder.blue.name`, entity and attribute names) map to their modern keys (`VanillaNames.modernKey`, through the legacy
+  wrapper of the vanilla block or item, so the key names the modern object the bridge maps it to). The legacy `getLocalizedName`
+  of a vanilla wrapper returns the modern block's name: ChromatiCraft's hidden ores name themselves `Blocks.stone.getLocalizedName()`.
+- On the client, a key the loaded languages miss is looked up in all of the above (`ClientLanguageLegacyKeysMixin` ->
+  `LegacyLang`), so strings registered after the last resource reload and legacy vanilla keys also resolve in a
+  `Component.translatable` (item and block names, Jade/WTHIT). Only misses pay.
+- Names: a legacy item that overrides `getItemStackDisplayName` is named by it; otherwise its name is the translatable
+  `<unlocalized>.name`. A modern block's `getName()` (Jade without a pick item) is the legacy `getLocalizedName` when the block
+  overrides it, else its lang key.

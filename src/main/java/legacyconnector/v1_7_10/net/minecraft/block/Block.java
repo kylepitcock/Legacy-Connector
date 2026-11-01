@@ -270,6 +270,16 @@ public class Block {
     }
 
     public String getLocalizedName() {
+        // vanilla wrappers are named like the modern block they stand for ("tile.stone.name" has no modern lang entry; ChromatiCraft's
+        // hidden ores show Blocks.stone.getLocalizedName())
+        if (mcc$vanilla != null) {
+            try {
+                net.minecraft.world.level.block.Block modern = BlockBridge.modernBlock(this);
+                if (modern != net.minecraft.world.level.block.Blocks.AIR) return modern.getName().getString();
+            } catch (RuntimeException | LinkageError ignored) {
+                // not bridged yet: the legacy key below
+            }
+        }
         return StatCollector.translateToLocal(getUnlocalizedName() + ".name");
     }
 

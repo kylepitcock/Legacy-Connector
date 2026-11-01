@@ -106,6 +106,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private List<LegacyBlockAdapter> members = List.of();
     /** Member only: the description id of its subtype item, so the block is named like the subtype. */
     private String memberDescription;
+    /** The legacy block overrides getLocalizedName (its name is computed, not a lang key). */
+    private final boolean customLocalizedName;
 
     protected LegacyBlockAdapter(Block legacy, BlockBehaviour.Properties properties) {
         super(properties);
@@ -138,6 +140,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         this.selectedBox = overrides(legacy, "getSelectedBoundingBoxFromPool", World.class, int.class, int.class, int.class);
         this.enchantBonus = overrides(legacy, "getEnchantPowerBonus", World.class, int.class, int.class, int.class);
         this.dynamicLight = overrides(legacy, "getLightValue", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class, int.class);
+        this.customLocalizedName = overrides(legacy, "getLocalizedName");
         registerDefaultState(metaProperty == null ? stateDefinition.any() : stateDefinition.any().setValue(metaProperty, keyMeta));
     }
 
@@ -375,6 +378,24 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     public String getDescriptionId() {
         if (memberDescription != null) return memberDescription;
         return legacy.getUnlocalizedName() + ".name";
+    }
+
+    /**
+     * The block's name (Jade/WTHIT without a pick item, death messages, the block's stat): a legacy block that computes its name
+     * in {@code getLocalizedName} is named by it, as 1.7.10 showed it; otherwise its lang key (legacy keys resolve through
+     * {@code LegacyLang}).
+     */
+    @Override
+    public net.minecraft.network.chat.MutableComponent getName() {
+        if (memberDescription == null && customLocalizedName) {
+            try {
+                String name = legacy.getLocalizedName();
+                if (name != null && !name.isEmpty()) return net.minecraft.network.chat.Component.literal(name);
+            } catch (RuntimeException | LinkageError ignored) {
+                // a broken name falls back to the key
+            }
+        }
+        return super.getName();
     }
 
     // ------------------------------------------------------------------ interaction
