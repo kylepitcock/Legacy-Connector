@@ -43,7 +43,8 @@ public class ParticleManager {
     }
 
     public void addEffect(Particle effect) {
-        if (effect == null) return;
+        // a tile entity or entity renderer that spawns particles while it draws runs a second time in Iris's shadow pass
+        if (effect == null || org.kylepitcock.legacyconnector.compat.IrisState.compatShadowPass()) return;
         synchronized (queue) {
             queue.add(effect);
         }

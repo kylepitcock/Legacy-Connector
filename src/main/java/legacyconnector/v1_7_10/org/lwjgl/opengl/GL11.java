@@ -337,6 +337,7 @@ public class GL11 extends GL11Guard {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.recording() && DisplayLists.record(() -> glEnable(cap))) return;
         mcc$track(cap, true);
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(cap);
         switch (cap) {
             case GL_BLEND -> RenderSystem.enableBlend();
             case GL_DEPTH_TEST -> RenderSystem.enableDepthTest();
@@ -366,6 +367,7 @@ public class GL11 extends GL11Guard {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.recording() && DisplayLists.record(() -> glDisable(cap))) return;
         mcc$track(cap, false);
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(cap);
         switch (cap) {
             case GL_BLEND -> RenderSystem.disableBlend();
             case GL_DEPTH_TEST -> RenderSystem.disableDepthTest();
@@ -383,6 +385,7 @@ public class GL11 extends GL11Guard {
         if (DisplayLists.recording() && DisplayLists.record(() -> glBlendFunc(src, dst))) return;
         // emulated state first: a screen flushes what it batched under the previous function, which puts that one back
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.setBlendFunc(src, dst);
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0BE1); // GL_BLEND_SRC
         RenderSystem.blendFunc(src, dst);
     }
 
@@ -390,6 +393,7 @@ public class GL11 extends GL11Guard {
         if (!RenderSystem.isOnRenderThread()) return; // a block renderer running on a chunk-building thread: nothing to draw into
         if (DisplayLists.recording() && DisplayLists.record(() -> glDepthMask(flag))) return;
         RenderContext.setDepthWrite(flag);
+        RenderContext.mcc$beforeGlChange(0x0B72); // GL_DEPTH_WRITEMASK
         RenderSystem.depthMask(flag);
     }
 
@@ -397,6 +401,7 @@ public class GL11 extends GL11Guard {
         if (!RenderSystem.isOnRenderThread()) return;
         if (DisplayLists.recording() && DisplayLists.record(() -> glDepthFunc(func))) return;
         RenderContext.setDepthFunc(func);
+        RenderContext.mcc$beforeGlChange(0x0B74); // GL_DEPTH_FUNC
         RenderSystem.depthFunc(func);
     }
 
@@ -404,6 +409,7 @@ public class GL11 extends GL11Guard {
         if (!RenderSystem.isOnRenderThread()) return;
         if (DisplayLists.recording() && DisplayLists.record(() -> glColorMask(r, g, b, a))) return;
         RenderContext.setColorWrite(r, g, b, a);
+        RenderContext.mcc$beforeGlChange(0x0C23); // GL_COLOR_WRITEMASK
         RenderSystem.colorMask(r, g, b, a);
     }
 

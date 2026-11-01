@@ -163,7 +163,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         }
         if (handler == null) return false;
         setupFog.run();
-        return draw(p, "sky", handler, level, partialTick, modelView);
+        return draw(p, "sky", handler, level, partialTick, modelView, RenderContext.KIND_SKY);
     }
 
     @Override
@@ -172,7 +172,7 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         WorldProvider p = provider();
         IRenderHandler handler = p == null || FAILED.contains(p.getClass().getName() + ":clouds") ? null : p.getCloudRenderer();
         if (handler == null) return p != null && vanillaCloudsHidden(p);
-        return draw(p, "clouds", handler, level, partialTick, modelView);
+        return draw(p, "clouds", handler, level, partialTick, modelView, RenderContext.KIND_WORLD);
     }
 
     @Override
@@ -180,16 +180,17 @@ public final class LegacyDimensionEffects extends DimensionSpecialEffects {
         WorldProvider p = provider();
         IRenderHandler handler = p == null || FAILED.contains(p.getClass().getName() + ":weather") ? null : p.getWeatherRenderer();
         if (handler == null) return false;
-        return draw(p, "weather", handler, level, partialTick, new Matrix4f());
+        return draw(p, "weather", handler, level, partialTick, new Matrix4f(), RenderContext.KIND_WORLD);
     }
 
     /** Runs a legacy renderer against the current camera matrix; the geometry it draws is flushed right away. */
-    private static boolean draw(WorldProvider p, String what, IRenderHandler handler, ClientLevel level, float partialTick, Matrix4f modelView) {
+    private static boolean draw(WorldProvider p, String what, IRenderHandler handler, ClientLevel level, float partialTick, Matrix4f modelView,
+            int kind) {
         Minecraft mc = Minecraft.getInstance();
         PoseStack pose = new PoseStack();
         pose.last().pose().set(modelView);
         var buffers = mc.renderBuffers().bufferSource();
-        RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        RenderContext.beginWorld(pose, buffers, LightTexture.FULL_BRIGHT, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY, kind);
         try {
             handler.render(partialTick, (WorldClient) World.mcc$wrap(level), legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft());
             return true;

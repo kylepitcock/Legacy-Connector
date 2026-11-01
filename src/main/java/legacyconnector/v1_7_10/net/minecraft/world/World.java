@@ -1407,6 +1407,8 @@ public class World implements IBlockAccess {
     }
 
     public void spawnParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
+        // renderers that spawn particles while they draw run a second time in Iris's shadow pass (client only: the flag is global)
+        if (isRemote && org.kylepitcock.legacyconnector.compat.IrisState.compatShadowPass()) return;
         SoundBridge.particle(lvl(), name, x, y, z, vx, vy, vz);
     }
 

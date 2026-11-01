@@ -10,6 +10,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import org.kylepitcock.legacyconnector.compat.IrisState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Quaternionf;
@@ -31,7 +32,44 @@ import org.joml.Quaternionf;
  * another renderer).</p>
  */
 public final class RenderContext {
-    private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked) {}
+    private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked,
+            int kind) {}
+
+    /** What a world context draws: objects (tile entities, entities, overlays), a sky, or particles (see {@link #geometryBuffer}). */
+    public static final int KIND_WORLD = 0, KIND_SKY = 1, KIND_PARTICLES = 2;
+
+    /** Swallows geometry that must not be drawn (overlays and glows in Iris's shadow pass). */
+    private static final VertexConsumer DISCARD = new VertexConsumer() {
+        @Override
+        public VertexConsumer addVertex(float x, float y, float z) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setColor(int red, int green, int blue, int alpha) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv(float u, float v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv1(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setUv2(int u, int v) {
+            return this;
+        }
+
+        @Override
+        public VertexConsumer setNormal(float x, float y, float z) {
+            return this;
+        }
+    };
 
     private static final ResourceLocation UNKNOWN_TEXTURE = ResourceLocation.withDefaultNamespace("textures/misc/unknown_pack.png");
     private static final int GL_MODELVIEW = 5888, GL_PROJECTION = 5889, GL_TEXTURE = 5890;
@@ -93,6 +131,8 @@ public final class RenderContext {
         /** While a draw is emitted: the colour its corners without a colour of their own take ({@link #color(State, double[])}). */
         boolean drawColorSet;
         long drawColor;
+        /** The real GL state legacy code changed in this thread's outermost context, put back when it ends. */
+        final LegacyGlState gl = new LegacyGlState();
     }
 
     private static final ThreadLocal<State> STATE = ThreadLocal.withInitial(State::new);
@@ -165,15 +205,21 @@ public final class RenderContext {
         boolean locked = lockRender();
         State s = STATE.get();
         if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
-        s.frames.push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last(), locked));
+        s.frames.push(new Frame(gui, gui.pose(), gui.bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, gui.pose().last(), locked,
+                KIND_WORLD));
         resetColor(s);
     }
 
     public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay) {
+        beginWorld(pose, buffers, light, overlay, KIND_WORLD);
+    }
+
+    /** A world context for sky renderers ({@link #KIND_SKY}) or particles ({@link #KIND_PARTICLES}): see {@link #geometryBuffer}. */
+    public static void beginWorld(PoseStack pose, MultiBufferSource buffers, int light, int overlay, int kind) {
         boolean locked = lockRender();
         State s = STATE.get();
         if (s.frames.isEmpty()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
-        s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked));
+        s.frames.push(new Frame(null, pose, buffers, light, overlay, pose.last(), locked, kind));
         resetColor(s);
     }
 
@@ -191,8 +237,14 @@ public final class RenderContext {
                 }
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
                 resetState();
-                // a depth function legacy code left set must not leak into modern rendering
-                if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
+                // a depth function legacy code left set must not leak into modern rendering, nor the depth test, depth and colour
+                // writes, culling, blending, polygon offset or scissor it changed (LegacyGlState)
+                if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+                    com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
+                    s.gl.restore();
+                } else {
+                    s.gl.clear();
+                }
             }
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
             // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
@@ -214,7 +266,7 @@ public final class RenderContext {
         if (!RenderSystem.isOnRenderThread()) legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$bindThread();
         State s = STATE.get();
         PoseStack pose = new PoseStack();
-        s.frames.push(new Frame(null, pose, null, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose.last(), true));
+        s.frames.push(new Frame(null, pose, null, LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, pose.last(), true, KIND_WORLD));
         resetColor(s);
         Capture c = new Capture();
         s.capture = c;
@@ -228,6 +280,31 @@ public final class RenderContext {
 
     public static boolean active() {
         return !frames().isEmpty();
+    }
+
+    /**
+     * Before legacy code changes the real GL state: {@code what} is the capability (GL_DEPTH_TEST, GL_BLEND, GL_CULL_FACE,
+     * GL_POLYGON_OFFSET_FILL, GL_COLOR_LOGIC_OP, GL_SCISSOR_TEST) or GL_DEPTH_WRITEMASK, GL_COLOR_WRITEMASK, GL_BLEND_SRC,
+     * GL_DEPTH_FUNC or GL_BLEND_EQUATION. The value found is put back when the outermost context ends; outside a context nothing is saved.
+     */
+    public static void mcc$beforeGlChange(int what) {
+        State s = STATE.get();
+        if (s.frames.isEmpty()) return;
+        int part = switch (what) {
+            case 2929 -> LegacyGlState.DEPTH_TEST;
+            case 3042 -> LegacyGlState.BLEND;
+            case 2884 -> LegacyGlState.CULL;
+            case 32823 -> LegacyGlState.POLYGON_OFFSET;
+            case 3058 -> LegacyGlState.LOGIC_OP;
+            case 3089 -> LegacyGlState.SCISSOR;
+            case 0x0B72 -> LegacyGlState.DEPTH_MASK;
+            case 0x0C23 -> LegacyGlState.COLOR_MASK;
+            case 0x0BE1 -> LegacyGlState.BLEND_FUNC;
+            case 0x0B74 -> LegacyGlState.DEPTH_FUNC;
+            case 0x8009 -> LegacyGlState.BLEND_EQUATION;
+            default -> 0;
+        };
+        if (part != 0) s.gl.save(part);
     }
 
     public static GuiGraphics gui() {
@@ -392,10 +469,15 @@ public final class RenderContext {
         State s = STATE.get();
         gui.flush();
         if (!s.legacyDepthTest) {
+            if (!s.frames.isEmpty()) s.gl.save(LegacyGlState.DEPTH_TEST);
             com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
             org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
         }
         if (s.blend) {
+            if (!s.frames.isEmpty()) {
+                s.gl.save(LegacyGlState.BLEND);
+                s.gl.save(LegacyGlState.BLEND_FUNC);
+            }
             com.mojang.blaze3d.systems.RenderSystem.enableBlend();
             com.mojang.blaze3d.systems.RenderSystem.blendFunc(s.blendSrc, s.blendDst);
         }
@@ -463,6 +545,10 @@ public final class RenderContext {
         boolean gui = gui(s) != null;
         ResourceLocation texture = s.texture;
         MultiBufferSource buffers = buffers(s);
+        if (!gui && IrisState.compatPack()) {
+            VertexConsumer shaderPack = shaderPackBuffer(s, buffers, texture);
+            if (shaderPack != null) return shaderPack;
+        }
         if (gui && s.additive && s.texture2d) return buffers.getBuffer(stated(s, LegacyRenderTypes.guiAdditive(texture)));
         // a screen drawing with GL lighting off (Thaumcraft's aspect icons): the lit entity shader dimmed it
         // and a flat screen quad without a normal of its own, lighting or not: GUI item lighting left on by drawing items (the
@@ -476,6 +562,29 @@ public final class RenderContext {
         if (!s.texture2d) return buffers.getBuffer(stated(s, s.additive ? RenderType.lightning() : RenderType.debugQuads()));
         if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(texture)));
         return buffers.getBuffer(stated(s, s.blend ? RenderType.entityTranslucent(texture) : RenderType.entityCutoutNoCull(texture)));
+    }
+
+    /**
+     * World geometry while an Iris shader pack is in use ({@code render.irisCompat}), or null for the normal choice. In the shadow
+     * pass (legacy tile entity and entity renderers run again, drawn from the sun) geometry drawn without a depth test (overlays
+     * through walls) and additive light (glows, beams, halos) is left out: it is no surface, and in the shadow map it cast
+     * shadows over everything. Sky renderers draw with the sky shaders, particles with the particle shader and additive light
+     * with the beacon beam shader, which Iris maps to the gbuffers programs a pack has for them (see LegacyRenderTypes).
+     */
+    private static VertexConsumer shaderPackBuffer(State s, MultiBufferSource buffers, ResourceLocation texture) {
+        if (IrisState.compatShadowPass() && (!s.depthTest || s.additive)) return DISCARD;
+        Frame f = s.frames.peek();
+        int kind = f == null ? KIND_WORLD : f.kind;
+        if (kind == KIND_SKY) {
+            return buffers.getBuffer(stated(s, s.texture2d ? LegacyRenderTypes.skyTextured(texture, s.blend) : LegacyRenderTypes.skyUntextured()));
+        }
+        if (s.texture2d && s.additive) {
+            boolean alphaWeighted = s.blend && s.additiveAlpha;
+            // as the normal choice: GL_SRC_ALPHA, GL_ONE keeps the legacy depth test, GL_ONE, GL_ONE (the eyes type) always tests
+            return buffers.getBuffer(stated(s, LegacyRenderTypes.glow(texture, alphaWeighted, !alphaWeighted || s.depthTest)));
+        }
+        if (kind == KIND_PARTICLES && s.texture2d && s.depthTest) return buffers.getBuffer(stated(s, LegacyRenderTypes.particle(texture, s.blend)));
+        return null;
     }
 
     // Depth function, depth writes and colour writes. Batched legacy geometry draws through modern render types, which set
@@ -532,7 +641,7 @@ public final class RenderContext {
                 blendState ? s.blendSrc : -1, blendState ? s.blendDst : -1);
         RenderType known = STATED.get(key);
         if (known != null) return known;
-        return STATED.computeIfAbsent(key, k -> new RenderType(
+        return STATED.computeIfAbsent(key, k -> withBatchingClass(base, new RenderType(
                 base + (k.depthFunc() < 0 ? "" : "/legacy_depth_" + k.depthFunc() + (k.depthWrite() ? "w" : "") + "_c" + k.colorWrite())
                         + (k.blendSrc() < 0 ? "" : "/legacy_blend_" + k.blendSrc() + "_" + k.blendDst()), base.format(), base.mode(),
                 base.bufferSize(), base.affectsCrumbling(), base.sortOnUpload(), () -> {
@@ -557,7 +666,13 @@ public final class RenderContext {
                         RenderSystem.disableBlend();
                         RenderSystem.defaultBlendFunc();
                     }
-                }) {});
+                }) {}));
+    }
+
+    /** A wrapper is drawn when Iris's batched rendering would draw the type it wraps (see LegacyRenderTypes.batchingClass). */
+    private static RenderType withBatchingClass(RenderType base, RenderType wrapper) {
+        IrisState.copyBatchingClass(base, wrapper);
+        return wrapper;
     }
 
     /** Whether the current geometry buffer takes the full entity vertex format (uv, overlay, light, normal). */
@@ -764,6 +879,7 @@ public final class RenderContext {
         PoseStack p = pose(s);
         if (p == null || s.capture != null) return false;
         s.quadCount++;
+        if (gui(s) == null && IrisState.compatShadowPass()) return true; // lines are overlays: none in Iris's shadow map
         s.drawBuffer = null; // another render type: the quads' buffer may be ended by this lookup
         VertexConsumer buffer = buffers(s).getBuffer(LegacyRenderTypes.lines(s.depthTest));
         PoseStack.Pose last = p.last();
@@ -787,6 +903,10 @@ public final class RenderContext {
         // blended models keep their blending, as raw geometry does: Thaumcraft's infusion matrix draws its glowing runes as
         // a second additive cube over the stone one, which drew opaque
         if (s.blend && s.texture2d && gui(s) == null) {
+            if (s.additive && IrisState.compatPack()) {
+                if (IrisState.compatShadowPass()) return DISCARD;
+                return buffers.getBuffer(stated(s, LegacyRenderTypes.glow(s.texture, s.additiveAlpha, !s.additiveAlpha || s.depthTest)));
+            }
             if (s.additiveAlpha) return buffers.getBuffer(stated(s, LegacyRenderTypes.additiveAlpha(s.texture, s.depthTest)));
             if (s.additive) return buffers.getBuffer(stated(s, RenderType.eyes(s.texture)));
             return buffers.getBuffer(stated(s, RenderType.entityTranslucent(s.texture)));

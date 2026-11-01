@@ -1929,6 +1929,8 @@ public class World implements IBlockAccess {
     private void mcc$particle(legacyconnector.v1_12_2.net.minecraft.util.EnumParticleTypes type, boolean ignoreRange, boolean always, double x, double y,
             double z, double xSpeed, double ySpeed, double zSpeed, int... parameters) {
         if (type == null) return;
+        // renderers that spawn particles while they draw run a second time in Iris's shadow pass (client only: the flag is global)
+        if (isRemote && org.kylepitcock.legacyconnector.compat.IrisState.compatShadowPass()) return;
         for (IWorldEventListener l : mcc$listeners()) {
             if (always) l.spawnParticle(type.getParticleID(), ignoreRange, true, x, y, z, xSpeed, ySpeed, zSpeed, parameters);
             else l.spawnParticle(type.getParticleID(), ignoreRange, x, y, z, xSpeed, ySpeed, zSpeed, parameters);

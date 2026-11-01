@@ -45,7 +45,8 @@ public class EffectRenderer {
     }
 
     public void addEffect(EntityFX fx) {
-        if (fx == null) return;
+        // a tile entity or entity renderer that spawns particles while it draws runs a second time in Iris's shadow pass
+        if (fx == null || org.kylepitcock.legacyconnector.compat.IrisState.compatShadowPass()) return;
         int layer = Math.max(0, Math.min(3, fx.getFXLayer()));
         List<EntityFX> list = fxLayers[layer];
         if (list.size() >= MAX_PER_LAYER) list.remove(0);

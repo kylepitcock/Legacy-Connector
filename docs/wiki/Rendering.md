@@ -65,3 +65,46 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   The small black squares floating everywhere in Nullscape's shadowlands are that biome's ambient `minecraft:ash` particles, as in basalt deltas.
   To find out whether a legacy handler draws something, skip it with `events.skip` (see [Configuration](Configuration.md)).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.
+
+## Iris and Sodium
+
+Checked against Iris 1.8.14 and Sodium 0.8.13 (NeoForge 1.21.1) by reading their bytecode. The emulation registers no shader program of its
+own: every legacy draw goes through a render type whose shader is one of vanilla's `GameRenderer` getters, which Iris overrides with the
+gbuffers program of the current phase, and through the batched buffer sources (nothing is drawn immediately with `BufferUploader` during the
+level render). The adaptations below apply only while a shader pack is in use and can be switched off with `render.irisCompat`
+(see [Configuration](Configuration.md)); Iris is optional and only reached by reflection (`compat/IrisState`).
+
+| Legacy path | Without a shader pack | With a shader pack (Iris program) |
+| --- | --- | --- |
+| ISBRH blocks (`IsbrhBlockModel`) | baked quads through `ModelData`, cutout and translucent passes | the same: Sodium calls `getModelData` with its `LevelSlice`, `getRenderTypes` and `getQuads` with the data and each type (`NeoForgeModelAccess`) → gbuffers_terrain / water |
+| Tile entity and entity renderers, opaque | `entityCutoutNoCull` | gbuffers_entities, gbuffers_block during the block entity phase |
+| ... alpha blended | `entityTranslucent` | the same programs, translucent |
+| ... additive (glows, halos, beams: `GL_SRC_ALPHA, GL_ONE` or `GL_ONE, GL_ONE`) | `additiveAlpha` / `eyes` | `glow`: the beacon beam shader → gbuffers_beaconbeam (falls back to gbuffers_textured; the same in every phase, while the eyes shader becomes the lit gbuffers_block while block entities draw) |
+| ... without a depth test (overlays through walls) | `cutoutNoDepth`, `translucentNoDepth`, `untexturedNoDepth`, `additiveAlpha` no-depth | same programs; Iris's batched rendering draws them last (the class of vanilla's no-depth types) |
+| ... untextured | `debugQuads` / `lightning` | gbuffers_basic / gbuffers_lightning (falls back to gbuffers_entities) |
+| GL_LINES | `lines` | gbuffers_line, drawn with the other lines |
+| Legacy particles (`AFTER_PARTICLES`) | entity types | `particle`: the particle shader → gbuffers_particles (falls back to gbuffers_textured_lit; gbuffers_weather in the rain phase); additive ones `glow` |
+| Legacy sky renderers (`LegacyDimensionEffects.renderSky`, custom sky phase) | entity types | `skyTextured` / `skyUntextured`: position_tex_color / position_color → gbuffers_skytextured / skybasic, no depth writes |
+| Legacy cloud and weather renderers, `RenderWorldLastEvent` (`AFTER_LEVEL`), DragonAPI's entity loop events | entity types | entity programs (drawn into the gbuffers before Iris's composite passes) |
+| Screens and HUD (`guiUnlit`, `guiAdditive`, Stated wrappers) | position_tex_color, depth/blend state carried by the type | unchanged: Iris overrides nothing outside the level render |
+
+**Shadow pass.** Iris draws entities and block entities a second time from the sun (`ShadowRenderer`: `renderEntity`,
+`BlockEntityRenderDispatcher.render`; no render stage events), so legacy tile entity and entity renderers run twice a frame. Overlays
+(no depth test), lines and additive glows are not drawn into the shadow map (they are no surfaces and shadowed everything), and particles legacy
+renderers spawn while they draw (`EffectRenderer.addEffect`, `World.spawnParticle`, 1.12.2's `ParticleManager`) are dropped there, so they
+are not doubled. Render contexts, matrix stacks and counters are per call and balanced, so the second run leaves nothing behind.
+
+**GL state.** Legacy `glDisable(GL_DEPTH_TEST)`, `glDepthMask`, `glColorMask`, `glDisable(GL_CULL_FACE)`, blending, blend function and equation,
+polygon offset, logic op, scissor and depth function go straight to `RenderSystem`. The value each had is saved from GlStateManager's cache
+the first time legacy code changes it in a render context and put back when the outermost context ends (`LegacyGlState`): modern render types
+set only what differs from the defaults, so a leftover depth or colour mask made later drawing (and Iris's passes) lose depth or colour.
+
+**Sodium and model data.** Sodium meshes chunks with `BlockRenderer.renderModel`: `PlatformModelAccess.getModelData(slice, model, state, pos,
+data)` (NeoForge: `BakedModel.getModelData` on the `LevelSlice`), `getModelRenderTypes` (`getRenderTypes(state, random, data)`) and per type
+`getQuads(state, side, random, data, type)`, so legacy block renderers run once per block on the meshing thread exactly as with vanilla's
+section compiler; quads without a cull face are never culled. The `LevelSlice` clones the blocks and block entities of the section and a
+2-block border, the range legacy renderers read.
+
+**Not covered.** Legacy code that binds a framebuffer of its own while the level is drawn (1.12.2 `Framebuffer.bindFramebuffer`) draws into
+it only until the next draw: Iris binds its gbuffers when it applies a program. Iris's `block.properties` ids do not know legacy blocks, so a
+pack treats them as plain blocks (no waving leaves, no emissive ores).

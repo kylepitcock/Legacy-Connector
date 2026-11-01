@@ -38,6 +38,7 @@ public class OpenGlHelper {
 
     public static void glBlendFunc(int srcRgb, int dstRgb, int srcAlpha, int dstAlpha) {
         RenderContext.setBlendFunc(srcRgb, dstRgb);
+        RenderContext.mcc$beforeGlChange(0x0BE1); // GL_BLEND_SRC
         RenderSystem.blendFuncSeparate(srcRgb, dstRgb, srcAlpha, dstAlpha);
     }
 
