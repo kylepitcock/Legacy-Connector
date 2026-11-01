@@ -11,7 +11,7 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   checked against the cut-out masks of the old oak (= birch, acacia, dark oak), spruce and jungle leaves, known only by
   their hashes (`leaf-fingerprints.txt`, `tools/gen_leaf_fingerprints.py`; no Mojang pixels are shipped). A texture whose
   mask matches, also after taking off its decoration pixels (berries, flowers, fruit: colours that do not follow the
-  leaf's colour ramp), is a recolour and becomes the reference of that kind; textures with edited holes are recolours when
+  leaf's colour ramp), is a recolour and becomes the reference of that kind (other leaf-named block textures of the translated jars, such as plain copies of the old leaves, serve as references too); textures with edited holes are recolours when
   their brightness pattern correlates with a reference (rank correlation 0.7 or more, at most 64 mask pixels different).
   A recolour is rebuilt from the modern vanilla leaves of its kind: the mod's leaf colours sorted by brightness are laid on
   the modern texture's brightness ranks (so hue, saturation and brightness range are the mod's, and grey biome-tinted

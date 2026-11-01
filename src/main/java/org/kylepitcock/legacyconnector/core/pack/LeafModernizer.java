@@ -59,8 +59,16 @@ public final class LeafModernizer {
     /** Mean colour difference (per channel) between a fast texture and a fancy one on the leaf pixels to pair them. */
     private static final double MAX_PAIR_DIFFERENCE = 18D;
 
-    /** One texture to look at: its name (for the result), its PNG bytes, and whether it is animated (has a .mcmeta). */
-    public record Source(String name, byte[] png, boolean animated) {}
+    /**
+     * One texture to look at: its name (for the result), its PNG bytes, whether it is animated (has a .mcmeta), and whether
+     * it only serves as a reference of an old pattern (another leaf texture of the pack, e.g. a plain copy of the old jungle
+     * leaves: it gets no result).
+     */
+    public record Source(String name, byte[] png, boolean animated, boolean referenceOnly) {
+        public Source(String name, byte[] png, boolean animated) {
+            this(name, png, animated, false);
+        }
+    }
 
     /** The outcome for one texture: the new PNG, or null with the reason it was left alone. */
     public record Result(String name, byte[] png, String note) {
@@ -129,13 +137,22 @@ public final class LeafModernizer {
 
     /**
      * Converts what it can of the given textures (the icons of legacy leaf blocks); {@code modernTexture} reads a vanilla
-     * texture of the running game by name ({@code block/oak_leaves}). One result per source, in order.
+     * texture of the running game by name ({@code block/oak_leaves}). One result per source that is not reference-only, in order.
      */
     public List<Result> convert(List<Source> sources, Function<String, byte[]> modernTexture) {
         Map<String, Result> results = new LinkedHashMap<>();
         List<Leaf> fancy = new ArrayList<>();
         List<Leaf> fast = new ArrayList<>();
+        List<Leaf> referenceOnly = new ArrayList<>();
         for (Source s : sources) {
+            if (s.referenceOnly()) {
+                Leaf ref = decodeQuietly(s);
+                if (ref != null && ref.opaque >= MIN_FANCY_PIXELS && ref.opaque < 250) {
+                    ref.decoration = decoration(ref);
+                    if (ref.spread <= MAX_SPREAD) referenceOnly.add(ref);
+                }
+                continue;
+            }
             String why = null;
             Leaf leaf = null;
             if (s.animated()) why = "animated";
@@ -172,6 +189,9 @@ public final class LeafModernizer {
         // 1: shapes known by their hash (references of each kind's old pattern)
         Map<String, List<Leaf>> references = new HashMap<>();
         for (Leaf leaf : fancy) {
+            if (matchHash(leaf)) references.computeIfAbsent(leaf.kind, k -> new ArrayList<>()).add(leaf);
+        }
+        for (Leaf leaf : referenceOnly) {
             if (matchHash(leaf)) references.computeIfAbsent(leaf.kind, k -> new ArrayList<>()).add(leaf);
         }
         // 2: edited shapes whose pattern follows a reference
@@ -221,6 +241,19 @@ public final class LeafModernizer {
                     "fast variant of " + partner.source.name() + " (" + partner.kind + " pattern, opaque)"));
         }
         return new ArrayList<>(results.values());
+    }
+
+    /** A 16x16 (or clean upscale) still texture as a leaf, or null. */
+    private static Leaf decodeQuietly(Source s) {
+        if (s.animated()) return null;
+        try {
+            BufferedImage image = ImageIO.read(new ByteArrayInputStream(s.png()));
+            if (image == null || image.getWidth() != image.getHeight() || image.getWidth() % 16 != 0) return null;
+            int[] px16 = downscale(TextureModernizer.argb(image), image.getWidth());
+            return px16 == null ? null : new Leaf(s, px16, image.getWidth() / 16);
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
     }
 
     /** Whether the leaf's mask (or the mask without some decoration pixels) hashes to a known old shape. */
@@ -665,7 +698,8 @@ public final class LeafModernizer {
     /**
      * Offline samples: {@code <1.21.1 client jar> <out dir> <legacy jar>...}. Converts the block textures of each jar whose
      * name says leaf or leaves (in game: the icons of leaf blocks), prints the outcome per texture and writes before/after
-     * pictures (8x, on a checkerboard) into the out directory.
+     * pictures (8x, on a checkerboard) into the out directory. A jar given as {@code ref:<jar>} only provides references
+     * (as the other leaf textures of the pack do in game).
      */
     public static void main(String[] args) throws IOException {
         if (args.length < 3) {
@@ -688,14 +722,15 @@ public final class LeafModernizer {
             };
             List<Source> sources = new ArrayList<>();
             for (int a = 2; a < args.length; a++) {
-                try (ZipFile zip = new ZipFile(args[a])) {
+                boolean ref = args[a].startsWith("ref:");
+                try (ZipFile zip = new ZipFile(ref ? args[a].substring(4) : args[a])) {
                     java.util.Set<String> names = new java.util.HashSet<>();
                     for (Enumeration<? extends ZipEntry> e = zip.entries(); e.hasMoreElements(); ) names.add(e.nextElement().getName());
                     for (String n : new java.util.TreeSet<>(names)) {
                         String low = n.toLowerCase(Locale.ROOT);
                         if (!low.endsWith(".png") || !low.contains("/textures/blocks/") || !(low.contains("leaf") || low.contains("leaves"))) continue;
                         try (InputStream in = zip.getInputStream(zip.getEntry(n))) {
-                            sources.add(new Source(n.replaceAll("^assets/", "").replace("/textures/blocks/", ":"), in.readAllBytes(), names.contains(n + ".mcmeta")));
+                            sources.add(new Source(n.replaceAll("^assets/", "").replace("/textures/blocks/", ":"), in.readAllBytes(), names.contains(n + ".mcmeta"), ref));
                         }
                     }
                 }
@@ -704,12 +739,13 @@ public final class LeafModernizer {
             List<Result> results = m.convert(sources, modern);
             System.out.printf("%d textures in %d ms%n", sources.size(), (System.nanoTime() - start) / 1_000_000);
             int converted = 0;
-            for (int i = 0; i < results.size(); i++) {
-                Result r = results.get(i);
+            Map<String, byte[]> before = new HashMap<>();
+            for (Source s : sources) before.put(s.name(), s.png());
+            for (Result r : results) {
                 System.out.println((r.converted() ? "CONVERTED " : "skipped   ") + r.name() + ": " + r.note());
                 if (!r.converted()) continue;
                 converted++;
-                writeSample(outDir.resolve(r.name().replaceAll("[^A-Za-z0-9._-]", "_")), sources.get(i).png(), r.png());
+                writeSample(outDir.resolve(r.name().replaceAll("[^A-Za-z0-9._-]", "_")), before.get(r.name()), r.png());
             }
             System.out.println(converted + " converted");
         }

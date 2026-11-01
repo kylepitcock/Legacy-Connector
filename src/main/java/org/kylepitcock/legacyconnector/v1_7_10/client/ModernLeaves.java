@@ -74,6 +74,48 @@ public final class ModernLeaves {
         }
     }
 
+    /**
+     * The other leaf textures of the translated legacy jars (block textures named leaf or leaves that no leaf block
+     * registered, e.g. RotaryCraft's copies of the old leaves): they only serve as references of the old patterns, so that
+     * an edited recolour (Witchery's hawthorn, a jungle recolour with other holes) is recognised even when no leaf block
+     * of the pack uses the plain old shape.
+     */
+    private static List<LeafModernizer.Source> references(List<String> names) {
+        Set<String> own = new java.util.HashSet<>();
+        for (String n : names) own.add(Ids.namespace(n.indexOf(':') < 0 ? "minecraft" : n.substring(0, n.indexOf(':'))) + ":"
+                + Ids.normalizePath(n.substring(n.indexOf(':') + 1)));
+        List<LeafModernizer.Source> out = new ArrayList<>();
+        try {
+            for (var file : net.neoforged.fml.ModList.get().getModFiles()) {
+                java.nio.file.Path jar = file.getFile().getFilePath();
+                if (!org.kylepitcock.legacyconnector.core.pack.ModernizedTextures.isTranslated(jar)) continue;
+                try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
+                    for (var e = zip.entries(); e.hasMoreElements() && out.size() < 256; ) {
+                        String n = e.nextElement().getName();
+                        int at = n.indexOf("/textures/blocks/");
+                        if (!n.startsWith("assets/") || at < 0 || !n.endsWith(".png") || n.startsWith("assets/minecraft/")) continue;
+                        String low = n.toLowerCase(java.util.Locale.ROOT);
+                        String file1 = low.substring(low.lastIndexOf('/') + 1);
+                        if (!file1.contains("leaf") && !file1.contains("leaves")) continue;
+                        String name = n.substring("assets/".length(), at) + ":" + n.substring(at + "/textures/blocks/".length(), n.length() - 4);
+                        String key = Ids.namespace(n.substring("assets/".length(), at)) + ":" + Ids.normalizePath(n.substring(at + "/textures/blocks/".length(), n.length() - 4));
+                        if (own.contains(key) || zip.getEntry(n + ".mcmeta") != null) continue;
+                        var entry = zip.getEntry(n);
+                        if (entry.getSize() > 65536) continue;
+                        try (var in = zip.getInputStream(entry)) {
+                            out.add(new LeafModernizer.Source(name, in.readAllBytes(), false, true));
+                        }
+                    }
+                } catch (java.io.IOException | RuntimeException ex) {
+                    // no references from this jar
+                }
+            }
+        } catch (RuntimeException | LinkageError ex) {
+            // no mod list: the leaf blocks' own textures are the only references
+        }
+        return out;
+    }
+
     /** Pack path -> converted texture, logging what happened to each icon; null when the modern textures are unavailable. */
     private static Map<String, byte[]> convert(List<String> names) {
         if (LegacySprites.vanillaTexture("textures/block/oak_leaves.png") == null) {
@@ -100,6 +142,7 @@ public final class ModernLeaves {
                 var hit = TextureModernizer.get().classify("assets/" + domain + "/textures/blocks/" + path + ".png", png);
                 if (hit != null && hit.kind() == TextureModernizer.Kind.EXACT) {
                     skipped.add(name + ": exact copy of an old vanilla texture (modernizeTextures replaces it with " + hit.modern() + ")");
+                    sources.add(new LeafModernizer.Source(name, png, false, true)); // still the old pattern for edited recolours
                     continue;
                 }
             }
@@ -107,6 +150,7 @@ public final class ModernLeaves {
             sources.add(new LeafModernizer.Source(name, png, animated));
             files.put(name, "assets/" + Ids.namespace(domain) + "/textures/blocks/" + Ids.normalizePath(path) + ".png");
         }
+        sources.addAll(references(names));
         List<LeafModernizer.Result> results = LeafModernizer.get().convert(sources,
                 modern -> LegacySprites.vanillaTexture("textures/" + modern + ".png"));
         Map<String, byte[]> made = new java.util.LinkedHashMap<>();
