@@ -99,11 +99,18 @@ public final class DeferredGenWrites {
         add(level, new Write(pos.immutable(), null, meta));
     }
 
-    /** The key of an unloaded chunk next to a border block (diagonals included), else Long.MIN_VALUE. */
+    /** Runs on a later server tick: from the thread itself execute() would run it at once, inside the chunk's own load. */
+    private static void later(ServerLevel level, Runnable task) {
+        var server = level.getServer();
+        server.tell(new net.minecraft.server.TickTask(server.getTickCount(), task));
+    }
+
+    /** The key of an unloaded chunk next to a block near a chunk border (diagonals included), else Long.MIN_VALUE. */
     private static long missingNeighbour(ServerLevel level, BlockPos pos) {
         int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
         int lx = pos.getX() & 15, lz = pos.getZ() & 15;
-        int dx0 = lx == 0 ? -1 : 0, dx1 = lx == 15 ? 1 : 0, dz0 = lz == 0 ? -1 : 0, dz1 = lz == 15 ? 1 : 0;
+        // onPlace and neighbour checks reach two blocks out (a hopper reads the signal of its neighbours' neighbours)
+        int dx0 = lx <= 1 ? -1 : 0, dx1 = lx >= 14 ? 1 : 0, dz0 = lz <= 1 ? -1 : 0, dz1 = lz >= 14 ? 1 : 0;
         for (int dx = dx0; dx <= dx1; dx++) {
             for (int dz = dz0; dz <= dz1; dz++) {
                 if ((dx | dz) != 0 && level.getChunkSource().getChunkNow(cx + dx, cz + dz) == null) return ChunkPos.asLong(cx + dx, cz + dz);
@@ -134,7 +141,7 @@ public final class DeferredGenWrites {
         COUNT.incrementAndGet();
         // the chunk may be loaded already (generated earlier): place the blocks on the server thread, once the populator is done
         if (created[0]) {
-            level.getServer().execute(() -> {
+            later(level, () -> {
                 if (level.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key)) != null) apply(level, key);
             });
         }
@@ -151,7 +158,7 @@ public final class DeferredGenWrites {
             Map<Long, Queue<Write>> byChunk = PENDING.get(level);
             if (byChunk == null) return;
             long key = chunk.getPos().toLong();
-            if (byChunk.containsKey(key)) level.getServer().execute(() -> apply(level, key));
+            if (byChunk.containsKey(key)) later(level, () -> apply(level, key));
         });
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.level.LevelEvent.Unload e) -> {
             if (e.getLevel() instanceof ServerLevel level) {
