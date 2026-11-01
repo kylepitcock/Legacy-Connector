@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
+import legacyconnector.v1_7_10.cpw.mods.fml.common.registry.VillagerRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.block.Rotation;
@@ -36,9 +37,17 @@ public final class LegacyVillageAdditions {
     /** Plots tried per building before giving up on it. */
     private static final int ATTEMPTS = 24;
 
-    private record Candidate(LegacyVillagePoolElement element, int weight, int limit) {}
+    /** A legacy building: its handler and the pool element that draws it. */
+    private record Building(VillagerRegistry.IVillageCreationHandler handler, LegacyVillagePoolElement element) {}
 
-    private static final Map<String, List<Candidate>> CANDIDATES = new java.util.concurrent.ConcurrentHashMap<>();
+    /** A building's entry in one village: weight and limit as its handler gave them for that village. */
+    private record Candidate(Building building, int weight, int limit) {
+        LegacyVillagePoolElement element() {
+            return building.element;
+        }
+    }
+
+    private static final Map<String, List<Building>> BUILDINGS = new java.util.concurrent.ConcurrentHashMap<>();
     private static final java.util.Set<String> LOGGED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private LegacyVillageAdditions() {}
@@ -74,17 +83,14 @@ public final class LegacyVillageAdditions {
         }));
     }
 
-    private static List<Candidate> candidates(String type) {
-        return CANDIDATES.computeIfAbsent(type, t -> {
-            List<Candidate> out = new ArrayList<>();
+    private static List<Building> buildings(String type) {
+        return BUILDINGS.computeIfAbsent(type, t -> {
+            List<Building> out = new ArrayList<>();
             for (var handler : VillagerBridge.creationHandlers()) {
                 try {
-                    var w = handler.getVillagePieceWeight(new Random(handler.getClass().getName().hashCode()), 0);
-                    if (w == null || w.villagePieceWeight <= 0) continue;
                     var element = new LegacyVillagePoolElement(handler.getClass().getName(), t,
                             net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool.Projection.RIGID);
-                    if (!element.isBuilding()) continue;
-                    out.add(new Candidate(element, w.villagePieceWeight, Math.max(0, w.villagePiecesLimit)));
+                    if (element.isBuilding()) out.add(new Building(handler, element));
                 } catch (RuntimeException | LinkageError e) {
                     LOG.warn("Village creation handler {} failed: {}", handler.getClass().getName(), e.toString());
                 }
@@ -93,9 +99,25 @@ public final class LegacyVillageAdditions {
         });
     }
 
+    /**
+     * The legacy buildings of one village, as 1.7.10's getStructureVillageWeightedPieceList made them: every handler is asked for its
+     * weight with the village's random (most give a random limit, Thaumcraft's wizard tower 0 or 1), and a building whose limit is 0
+     * is left out of that village.
+     */
+    private static List<Candidate> candidates(String type, Random rand) {
+        List<Candidate> out = new ArrayList<>();
+        for (Building b : buildings(type)) {
+            try {
+                var w = b.handler.getVillagePieceWeight(rand, 0);
+                if (w != null && w.villagePieceWeight > 0 && w.villagePiecesLimit > 0) out.add(new Candidate(b, w.villagePieceWeight, w.villagePiecesLimit));
+            } catch (RuntimeException | LinkageError e) {
+                // left out of this village
+            }
+        }
+        return out;
+    }
+
     private static void add(StructurePiecesBuilder builder, List<StructurePiece> vanilla, Structure.GenerationContext context, String type) {
-        List<Candidate> candidates = candidates(type);
-        if (candidates.isEmpty()) return;
         List<BoundingBox> streets = new ArrayList<>();
         int buildings = 0;
         for (StructurePiece p : vanilla) {
@@ -105,9 +127,11 @@ public final class LegacyVillageAdditions {
             else if (element.contains("/houses/")) buildings++;
         }
         if (streets.isEmpty()) return;
+        Random rand = new Random(context.seed() ^ context.chunkPos().toLong() * 0x9E3779B97F4A7C15L);
+        List<Candidate> candidates = candidates(type, rand);
+        if (candidates.isEmpty()) return;
         int modWeight = 0;
         for (Candidate c : candidates) modWeight += c.weight;
-        Random rand = new Random(context.seed() ^ context.chunkPos().toLong() * 0x9E3779B97F4A7C15L);
         // in 1.7.10 mod buildings were picked modWeight times in (91 + modWeight) against vanilla's: that share of the village's buildings
         float expected = buildings * modWeight / (VANILLA_1710_WEIGHT + modWeight);
         int target = (int) expected + (rand.nextFloat() < expected - (int) expected ? 1 : 0);
@@ -132,11 +156,11 @@ public final class LegacyVillageAdditions {
     /** A building by weight among those below their per-village limit, or null when none is left. */
     private static Candidate pick(List<Candidate> candidates, Map<Candidate, Integer> placed, Random rand) {
         int left = 0;
-        for (Candidate c : candidates) if (c.limit == 0 || placed.getOrDefault(c, 0) < c.limit) left += c.weight;
+        for (Candidate c : candidates) if (placed.getOrDefault(c, 0) < c.limit) left += c.weight;
         if (left <= 0) return null;
         int roll = rand.nextInt(left);
         for (Candidate c : candidates) {
-            if (c.limit != 0 && placed.getOrDefault(c, 0) >= c.limit) continue;
+            if (placed.getOrDefault(c, 0) >= c.limit) continue;
             roll -= c.weight;
             if (roll < 0) return c;
         }
@@ -150,7 +174,7 @@ public final class LegacyVillageAdditions {
         boolean alongX = s.getXSpan() >= s.getZSpan();
         // the side of the street the building stands on, its front (LegacyVillagePoolElement.front) facing the street
         int mode = alongX ? (low ? 2 : 0) : (low ? 1 : 3);
-        BoundingBox shape = c.element.footprint(mode);
+        BoundingBox shape = c.element().footprint(mode);
         if (shape == null) return false;
         // the plot corner that puts the footprint right beside the street, somewhere along it
         int cx, cz;
@@ -170,7 +194,7 @@ public final class LegacyVillageAdditions {
         BoundingBox margin = box.inflatedBy(1);
         if (builder.findCollisionPiece(margin) != null) return false;
         for (BoundingBox b : added) if (b.intersects(margin)) return false;
-        builder.addPiece(new PoolElementStructurePiece(context.structureTemplateManager(), c.element, new BlockPos(cx, y, cz), 0,
+        builder.addPiece(new PoolElementStructurePiece(context.structureTemplateManager(), c.element(), new BlockPos(cx, y, cz), 0,
                 rotationOf(mode), box, LiquidSettings.IGNORE_WATERLOGGING));
         added.add(box);
         return true;
@@ -186,11 +210,19 @@ public final class LegacyVillageAdditions {
         };
     }
 
-    /** Startup log: the buildings, their 1.7.10 weight and limit per village. */
+    /** Startup log: the buildings with their 1.7.10 weight and limit for one sample village. */
     static void describe() {
-        for (Candidate c : candidates("plains")) {
-            LOG.info("Legacy village building {}: 1.7.10 weight {} (vanilla 91), at most {} per village, footprint {}", c.element,
-                    c.weight, c.limit == 0 ? "any number" : c.limit, c.element.describeFootprint());
+        Random rand = new Random(0);
+        for (Building b : buildings("plains")) {
+            String sample;
+            try {
+                var w = b.handler.getVillagePieceWeight(rand, 0);
+                sample = w == null ? "none" : "weight " + w.villagePieceWeight + ", limit " + w.villagePiecesLimit;
+            } catch (RuntimeException | LinkageError e) {
+                sample = e.toString();
+            }
+            LOG.info("Legacy village building {}: footprint {}, a sample village gives it {} (vanilla buildings weigh 91; limit 0 leaves it out of the village)",
+                    b.element, b.element.describeFootprint(), sample);
         }
     }
 
