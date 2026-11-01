@@ -75,9 +75,14 @@ public class PathNavigate {
         return p == null ? null : new PathEntity(p);
     }
 
+    /**
+     * Walks to the block itself (or, when it cannot be stood in, the reachable block closest to it), as 1.7.10's path finder
+     * did. The modern {@code moveTo(x, y, z, speed)} stops a block short (accuracy 1): Thaumcraft's golems then halted next to
+     * the item they were sent to pick up, out of their pick-up reach, and walked back and forth beside it forever.
+     */
     public boolean tryMoveToXYZ(double x, double y, double z, double speed) {
         PathNavigation n = nav();
-        return n != null && n.moveTo(x, y, z, speed);
+        return n != null && n.moveTo(x, y, z, 0, speed);
     }
 
     public PathEntity getPathToEntityLiving(Entity target) {
@@ -87,9 +92,12 @@ public class PathNavigate {
         return p == null ? null : new PathEntity(p);
     }
 
+    /** To the target's own block, as {@link #tryMoveToXYZ} (the modern {@code moveTo(entity, speed)} stops a block short). */
     public boolean tryMoveToEntityLiving(Entity target, double speed) {
         PathNavigation n = nav();
-        return n != null && target != null && target.mcc$entity != null && n.moveTo(target.mcc$entity, speed);
+        if (n == null || target == null || target.mcc$entity == null) return false;
+        var p = n.createPath(target.mcc$entity, 0);
+        return p != null && n.moveTo(p, speed);
     }
 
     public boolean setPath(PathEntity path, double speed) {

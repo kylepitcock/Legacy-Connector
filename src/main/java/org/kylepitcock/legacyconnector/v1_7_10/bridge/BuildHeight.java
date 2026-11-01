@@ -30,6 +30,16 @@ public final class BuildHeight {
         return 256;
     }
 
+    /**
+     * {@code floor} blocks above the bottom of the tile entity's world: the loader's WorldFloorClampRewriter turns a tile's
+     * {@code if (y < 5) y = 5} on a height picked around itself (Thaumcraft's Arcane Lamp) into a clamp to this, so it means
+     * "above the bedrock floor" in a world that starts below y=0 too.
+     */
+    public static int aboveFloor(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity tile, int floor) {
+        World world = tile == null ? null : tile.worldObj;
+        return world == null ? floor : world.mcc$buildBottom() + floor;
+    }
+
     /** The highest y (255 in 1.7.10). */
     public static int lastY(IBlockAccess world) {
         return top(world) - 1;

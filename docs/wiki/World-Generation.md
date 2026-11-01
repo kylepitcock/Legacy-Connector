@@ -99,6 +99,12 @@ seed is FML's chunk seed xor a constant, so the deep layer is as reproducible as
 deep feature in the loaded data (registered after it was built) and mod dimensions (whose chunk generators do not run
 biome features) keep running their deep pass from the legacy decorator.
 
+Outside world generation, code that hard-codes the old range is rewritten by the loader to ask the world for its real one:
+`y < 0` / `y >= 256` checks on the y parameter of a method taking `(World, x, y, z)` (`BuildHeightRewriter`, RotaryCraft's
+placement bounds), and a tile entity's clamp of a height it picked around itself to the bedrock floor, `if (y < K) y = K`
+with K 0..8 on a local computed from `yCoord` (`WorldFloorClampRewriter`, Thaumcraft's Arcane Lamp), which then counts K from
+the world's bottom. Generation views and 0..256 dimensions answer the 1.7.10 range, so nothing changes there.
+
 ## Structures, fluids and input
 
 ### Legacy structures as modern structures
