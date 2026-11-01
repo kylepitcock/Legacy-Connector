@@ -252,6 +252,7 @@ public class CraftingHelper {
             case "forge:mod_loaded":
                 String modid = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "modid");
                 return () -> legacyconnector.v1_12_2.net.minecraftforge.fml.common.Loader.isModLoaded(modid);
+            case "minecraft:item_exists": // Forge 1.12 registered the check under both names
             case "forge:item_exists":
                 String item = legacyconnector.v1_12_2.net.minecraft.util.JsonUtils.getString(json, "item");
                 return () -> Item.REGISTRY.containsKey(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(item));
