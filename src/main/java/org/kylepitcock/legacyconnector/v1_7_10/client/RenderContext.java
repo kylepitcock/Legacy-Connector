@@ -93,6 +93,8 @@ public final class RenderContext {
         /** While a draw is emitted: the colour its corners without a colour of their own take ({@link #color(State, double[])}). */
         boolean drawColorSet;
         long drawColor;
+        /** The real GL state legacy code changed in this thread's outermost context, put back when it ends. */
+        final LegacyGlState gl = new LegacyGlState();
     }
 
     private static final ThreadLocal<State> STATE = ThreadLocal.withInitial(State::new);
@@ -191,8 +193,14 @@ public final class RenderContext {
                 }
                 legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance().mcc$reset();
                 resetState();
-                // a depth function legacy code left set must not leak into modern rendering
-                if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
+                // a depth function legacy code left set must not leak into modern rendering, nor the depth test, depth and colour
+                // writes, culling, blending, polygon offset or scissor it changed (LegacyGlState)
+                if (com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+                    com.mojang.blaze3d.systems.RenderSystem.depthFunc(515);
+                    s.gl.restore();
+                } else {
+                    s.gl.clear();
+                }
             }
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
             // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
@@ -228,6 +236,31 @@ public final class RenderContext {
 
     public static boolean active() {
         return !frames().isEmpty();
+    }
+
+    /**
+     * Before legacy code changes the real GL state: {@code what} is the capability (GL_DEPTH_TEST, GL_BLEND, GL_CULL_FACE,
+     * GL_POLYGON_OFFSET_FILL, GL_COLOR_LOGIC_OP, GL_SCISSOR_TEST) or GL_DEPTH_WRITEMASK, GL_COLOR_WRITEMASK, GL_BLEND_SRC,
+     * GL_DEPTH_FUNC or GL_BLEND_EQUATION. The value found is put back when the outermost context ends; outside a context nothing is saved.
+     */
+    public static void mcc$beforeGlChange(int what) {
+        State s = STATE.get();
+        if (s.frames.isEmpty()) return;
+        int part = switch (what) {
+            case 2929 -> LegacyGlState.DEPTH_TEST;
+            case 3042 -> LegacyGlState.BLEND;
+            case 2884 -> LegacyGlState.CULL;
+            case 32823 -> LegacyGlState.POLYGON_OFFSET;
+            case 3058 -> LegacyGlState.LOGIC_OP;
+            case 3089 -> LegacyGlState.SCISSOR;
+            case 0x0B72 -> LegacyGlState.DEPTH_MASK;
+            case 0x0C23 -> LegacyGlState.COLOR_MASK;
+            case 0x0BE1 -> LegacyGlState.BLEND_FUNC;
+            case 0x0B74 -> LegacyGlState.DEPTH_FUNC;
+            case 0x8009 -> LegacyGlState.BLEND_EQUATION;
+            default -> 0;
+        };
+        if (part != 0) s.gl.save(part);
     }
 
     public static GuiGraphics gui() {
@@ -392,10 +425,15 @@ public final class RenderContext {
         State s = STATE.get();
         gui.flush();
         if (!s.legacyDepthTest) {
+            if (!s.frames.isEmpty()) s.gl.save(LegacyGlState.DEPTH_TEST);
             com.mojang.blaze3d.systems.RenderSystem.disableDepthTest();
             org.lwjgl.opengl.GL11.glDisable(org.lwjgl.opengl.GL11.GL_DEPTH_TEST);
         }
         if (s.blend) {
+            if (!s.frames.isEmpty()) {
+                s.gl.save(LegacyGlState.BLEND);
+                s.gl.save(LegacyGlState.BLEND_FUNC);
+            }
             com.mojang.blaze3d.systems.RenderSystem.enableBlend();
             com.mojang.blaze3d.systems.RenderSystem.blendFunc(s.blendSrc, s.blendDst);
         }

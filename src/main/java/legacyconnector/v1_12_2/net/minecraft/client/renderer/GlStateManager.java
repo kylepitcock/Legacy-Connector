@@ -118,7 +118,9 @@ public class GlStateManager {
 
     public static void depthFunc(int depthFunc) {
         depthState.depthFunc = depthFunc;
-        if (RenderSystem.isOnRenderThread()) RenderSystem.depthFunc(depthFunc);
+        if (!RenderSystem.isOnRenderThread()) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0B74); // GL_DEPTH_FUNC
+        RenderSystem.depthFunc(depthFunc);
     }
 
     public static void depthMask(boolean flagIn) {
@@ -158,7 +160,9 @@ public class GlStateManager {
     }
 
     public static void glBlendEquation(int blendEquation) {
-        if (RenderSystem.isOnRenderThread()) RenderSystem.blendEquation(blendEquation);
+        if (!RenderSystem.isOnRenderThread()) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x8009); // GL_BLEND_EQUATION
+        RenderSystem.blendEquation(blendEquation);
     }
 
     /** Outline (glowing entity) pass colour: the modern outline pass colours entities itself. */
@@ -373,7 +377,9 @@ public class GlStateManager {
         colorMaskState.green = green;
         colorMaskState.blue = blue;
         colorMaskState.alpha = alpha;
-        if (RenderSystem.isOnRenderThread()) RenderSystem.colorMask(red, green, blue, alpha);
+        if (!RenderSystem.isOnRenderThread()) return;
+        org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.mcc$beforeGlChange(0x0C23); // GL_COLOR_WRITEMASK
+        RenderSystem.colorMask(red, green, blue, alpha);
     }
 
     public static void clearDepth(double depth) {
