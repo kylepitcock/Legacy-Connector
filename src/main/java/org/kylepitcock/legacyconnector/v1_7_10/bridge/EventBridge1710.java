@@ -743,12 +743,14 @@ public final class EventBridge1710 {
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
+            if (!mouseEventsInGame()) return;
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) e.getMouseX(), (int) e.getMouseY(), 0, 0,
                     (int) Math.signum(e.getScrollDeltaY()) * 120, -1, false);
             if (forge().post(event)) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.InputEvent.MouseButton.Pre e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent.class)) return;
+            if (!mouseEventsInGame()) return;
             var mouse = net.minecraft.client.Minecraft.getInstance().mouseHandler;
             var event = new legacyconnector.v1_7_10.net.minecraftforge.client.event.MouseEvent((int) mouse.xpos(), (int) mouse.ypos(), 0, 0, 0,
                     e.getButton(), e.getAction() != 0);
@@ -1001,5 +1003,14 @@ public final class EventBridge1710 {
                 if (armorTickFailures++ < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Events").error("onArmorTick of {} failed", item.getClass().getName(), ex);
             }
         }
+    }
+
+    /**
+     * 1.7.10 posted MouseEvent from the in-game input loop only: a world loaded and no screen open (or one that let input through).
+     * Posted on the title or loading screen, handlers found no player (Witchery's onMouseEvent threw).
+     */
+    private static boolean mouseEventsInGame() {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        return mc.player != null && mc.level != null && mc.screen == null;
     }
 }

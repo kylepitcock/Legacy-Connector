@@ -309,7 +309,11 @@ public final class FluidBridge {
             if (icon == null) continue;
             String modern = icon.mcc$modernName();
             if (modern == null || modern.equals("minecraft:missingno")) continue;
-            ResourceLocation loc = ResourceLocation.parse(org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(modern, true));
+            // an atlas sprite's name already carries its folder (reactorcraft:blocks/fluid/sodium, legacyconnector:block/legacy_water_still);
+            // only a bare legacy icon name gets the block folder (it was added twice: reactorcraft:blocks/blocks/fluid/sodium)
+            String path = modern.substring(modern.indexOf(':') + 1);
+            ResourceLocation loc = path.startsWith("blocks/") || path.startsWith("block/") ? ResourceLocation.parse(modern)
+                    : ResourceLocation.parse(org.kylepitcock.legacyconnector.v1_7_10.Assets1710.texture(modern, true));
             if (first == null) first = loc;
             if (inBlockAtlas(loc)) return loc;
         }
