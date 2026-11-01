@@ -28,8 +28,11 @@ public final class TextureLocations {
     private TextureLocations() {}
 
     public static ResourceLocation modern(String domain, String path) {
+        // "/Reika/RotaryCraft/Textures/GUI/x.png": a class path file, not an asset (an empty path segment is invalid in every pack)
+        if (ClasspathTextures.isClasspath(path)) return ClasspathTextures.location(path);
         String ns = Ids.namespace(domain);
         String p = Ids.normalizePath(path);
+        if (p.contains("//")) p = p.replaceAll("/{2,}", "/");
         if (ns.equals("minecraft")) {
             p = RENAMES.getOrDefault(p, p);
             // 1.7.10 block and item textures under their old names (textures/blocks/planks_oak.png) live under other names now
