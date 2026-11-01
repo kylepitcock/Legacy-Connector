@@ -160,6 +160,13 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
         return shapes[mode];
     }
 
+    /** The footprint (x by y by z) facing north, for the log. */
+    public String describeFootprint() {
+        BoundingBox b = shape(0);
+        if (b == null) for (int m = 1; m < 4 && b == null; m++) b = shape(m);
+        return b == null ? "none" : b.getXSpan() + "x" + b.getYSpan() + "x" + b.getZSpan();
+    }
+
     /** Whether the handler builds a real building (some mode has a footprint of at least 3x3): only those join the pools. */
     public boolean isBuilding() {
         for (int mode = 0; mode < 4; mode++) if (shape(mode) != null) return true;

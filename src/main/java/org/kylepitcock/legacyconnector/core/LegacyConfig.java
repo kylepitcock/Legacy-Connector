@@ -153,6 +153,11 @@ public final class LegacyConfig {
         return bool("blocks.flattenSubtypes", true);
     }
 
+    /** {@code villages.legacyBuildings}: legacy mods' village buildings join the vanilla village house pools. */
+    public static boolean villageLegacyBuildings() {
+        return bool("villages.legacyBuildings", true);
+    }
+
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
     }

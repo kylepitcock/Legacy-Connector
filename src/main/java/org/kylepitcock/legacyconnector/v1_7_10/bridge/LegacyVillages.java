@@ -41,6 +41,7 @@ public final class LegacyVillages {
         net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener(LegacyVillages::addToPools);
     }
 
+    private static final java.util.Set<String> DESCRIBED = java.util.concurrent.ConcurrentHashMap.newKeySet();
     private static final java.util.Set<String> NOT_BUILDINGS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** The vanilla village house pools, by village type. */
@@ -57,6 +58,10 @@ public final class LegacyVillages {
     private static void addToPools(net.neoforged.neoforge.event.server.ServerAboutToStartEvent event) {
         var handlers = VillagerBridge.creationHandlers();
         if (handlers.isEmpty()) return;
+        if (!org.kylepitcock.legacyconnector.core.LegacyConfig.villageLegacyBuildings()) {
+            LOG.info("Legacy village buildings are switched off (villages.legacyBuildings=false)");
+            return;
+        }
         var pools = event.getServer().registryAccess().registryOrThrow(Registries.TEMPLATE_POOL);
         int added = 0;
         for (String type : VILLAGE_TYPES) {
@@ -81,7 +86,13 @@ public final class LegacyVillages {
                     }
                     continue;
                 }
-                if (addToPool(pool, element, weight)) added++;
+                if (addToPool(pool, element, weight)) {
+                    added++;
+                    if (DESCRIBED.add(handler.getClass().getName())) {
+                        LOG.info("Legacy village building {}: 1.7.10 weight {} -> pool weight {} (of {}), footprint {}", handler.getClass().getName(),
+                                Math.round(weight * VANILLA_1710_WEIGHT / poolWeight), weight, Math.round(poolWeight), element.describeFootprint());
+                    }
+                }
             }
         }
         if (added > 0) LOG.info("Added {} legacy village building(s) to the village house pools", added);
