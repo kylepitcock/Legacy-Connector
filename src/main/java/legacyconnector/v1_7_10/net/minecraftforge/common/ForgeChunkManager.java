@@ -28,6 +28,13 @@ public class ForgeChunkManager {
     private static final Map<ServerLevel, SetMultimap<ChunkCoordIntPair, Ticket>> FORCED = new ConcurrentHashMap<>();
     private static Configuration config;
 
+    static {
+        // perf.releaseUnloadedLevels: as Forge's unloadWorld, the tickets of an unloaded level go with it (they hold its world)
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            if (level instanceof ServerLevel s) FORCED.remove(s);
+        });
+    }
+
     public interface LoadingCallback {
         void ticketsLoaded(java.util.List<Ticket> tickets, World world);
     }

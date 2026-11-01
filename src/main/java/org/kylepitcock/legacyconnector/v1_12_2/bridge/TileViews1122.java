@@ -21,6 +21,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public final class TileViews1122 {
     private static final Map<BlockEntity, TileEntity> VIEWS = new WeakHashMap<>();
 
+    static {
+        // the views hold their block entity (and through it its level): dropped when the game is done with it
+        if (org.kylepitcock.legacyconnector.core.ViewLiveness.sweepDeadViews()) {
+            org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.12.2 game block entity", VIEWS,
+                    org.kylepitcock.legacyconnector.core.ViewLiveness::blockEntityGone);
+        }
+    }
+
     private TileViews1122() {}
 
     /** The legacy view of a game block entity (null for one no legacy class stands for). */

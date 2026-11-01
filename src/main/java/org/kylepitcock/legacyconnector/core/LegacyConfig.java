@@ -59,6 +59,14 @@ public final class LegacyConfig {
             energy.fePerEu = 4
             # FE per BuildCraft MJ (BuildCraft's own rule: 1 MJ = 10 RF).
             energy.fePerMj = 10
+
+            # Memory optimizations (see the Performance page of the wiki). Each can be switched off on its own.
+            # Release the legacy views of unloaded levels and stopped servers (old client levels after a dimension change).
+            perf.releaseUnloadedLevels = true
+            # Release the legacy views of players that died or left (after two sweeps, so a respawn in progress keeps its view).
+            perf.sweepRemovedPlayers = true
+            # Release cached legacy views of closed connections and of inventories whose block was removed or unloaded.
+            perf.sweepDeadViews = true
             """;
     private static Properties values;
 
@@ -171,5 +179,22 @@ public final class LegacyConfig {
             excluded = out;
         }
         return excluded;
+    }
+
+    // ------------------------------------------------------------------ perf.* (memory and speed switches)
+
+    /** {@code perf.releaseUnloadedLevels}: legacy views of unloaded levels and stopped servers are released (see LevelReleases). */
+    public static boolean perfReleaseUnloadedLevels() {
+        return bool("perf.releaseUnloadedLevels", true);
+    }
+
+    /** {@code perf.sweepRemovedPlayers}: views of players removed for good (died and respawned, logged out) are swept. */
+    public static boolean perfSweepRemovedPlayers() {
+        return bool("perf.sweepRemovedPlayers", true);
+    }
+
+    /** {@code perf.sweepDeadViews}: views of closed connections and of removed or unloaded inventories are swept. */
+    public static boolean perfSweepDeadViews() {
+        return bool("perf.sweepDeadViews", true);
     }
 }

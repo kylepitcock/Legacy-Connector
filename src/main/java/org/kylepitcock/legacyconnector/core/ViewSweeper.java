@@ -37,6 +37,21 @@ public final class ViewSweeper {
 
     private ViewSweeper() {}
 
+    /** Keys a sweep found dead, for {@link #twice} (identity, weak). */
+    private static final java.util.Set<Object> SEEN_DEAD = java.util.Collections.newSetFromMap(new com.google.common.collect.MapMaker().weakKeys().makeMap());
+
+    /**
+     * For predicates whose "dead" state can be transient: true only when {@code dead} held at this sweep and the previous one
+     * (20 to 40 s after death), so a view is not dropped while the game is between two steps of an operation (a respawn).
+     */
+    public static boolean twice(Object key, boolean dead) {
+        if (!dead) {
+            SEEN_DEAD.remove(key);
+            return false;
+        }
+        return !SEEN_DEAD.add(key);
+    }
+
     public static synchronized <K> void register(String name, Map<K, ?> map, Predicate<K> removed) {
         CACHES.add(new Entry<>(name, map, removed));
         if (thread == null) {

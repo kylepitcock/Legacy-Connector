@@ -46,7 +46,13 @@ public class GameRules {
     /** The rules of a level (one instance per level so mod-created rules persist across calls). */
     public static GameRules mcc$of(Level level) {
         if (level == null) return new GameRules(null);
-        return BY_LEVEL.computeIfAbsent(level, GameRules::new);
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(BY_LEVEL, level, GameRules::new);
+    }
+
+    static {
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            if (level instanceof Level l) org.kylepitcock.legacyconnector.core.LevelReleases.release(BY_LEVEL, l);
+        });
     }
 
     public void addGameRule(String name, String value) {

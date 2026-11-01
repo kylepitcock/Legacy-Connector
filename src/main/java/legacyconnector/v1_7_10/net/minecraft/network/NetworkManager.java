@@ -13,6 +13,14 @@ public class NetworkManager {
     public static final NetworkManager MCC_DUMMY = new NetworkManager();
     private static final Map<Connection, NetworkManager> BY_CONNECTION = java.util.Collections.synchronizedMap(new WeakHashMap<>());
 
+    static {
+        // perf.sweepDeadViews: a view holds its connection (and through its listener the player, or the client level)
+        if (org.kylepitcock.legacyconnector.core.ViewLiveness.sweepDeadViews()) {
+            org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 connection", BY_CONNECTION,
+                    org.kylepitcock.legacyconnector.core.ViewLiveness::connectionGone);
+        }
+    }
+
     private final Connection mcc$connection;
     /** Whether this is the client's end of the connection. */
     public boolean isClientSide;

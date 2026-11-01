@@ -34,7 +34,7 @@ public final class EntityBridge {
 
     static {
         org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 entity", VIEWS,
-                e -> e.isRemoved() && !(e instanceof net.minecraft.world.entity.player.Player)); // players change dimension in place
+                org.kylepitcock.legacyconnector.core.ViewLiveness::entityGone);
     }
     private static boolean warnedCustom;
 

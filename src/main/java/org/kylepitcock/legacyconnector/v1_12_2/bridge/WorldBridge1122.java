@@ -30,9 +30,20 @@ public final class WorldBridge1122 {
             }
             return view;
         }
-        return WORLDS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(WORLDS, level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
                 // the client's level is a WorldClient (Minecraft.world)
                 : l.isClientSide() ? new legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient(l) : new WorldView(l));
+    }
+
+    static {
+        // perf.releaseUnloadedLevels: a view holds its level, so every level ever wrapped stayed in memory
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            if (level instanceof Level l) release(l);
+        });
+    }
+
+    private static synchronized void release(Level level) {
+        org.kylepitcock.legacyconnector.core.LevelReleases.release(WORLDS, level);
     }
 
     /**

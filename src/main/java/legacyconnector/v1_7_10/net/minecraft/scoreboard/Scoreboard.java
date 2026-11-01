@@ -25,7 +25,12 @@ public class Scoreboard {
     private static final Map<net.minecraft.world.scores.Scoreboard, Scoreboard> VIEWS = java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     public static Scoreboard mcc$wrap(net.minecraft.world.scores.Scoreboard modern) {
-        return modern == null ? null : VIEWS.computeIfAbsent(modern, Scoreboard::new);
+        return modern == null ? null : org.kylepitcock.legacyconnector.core.LevelReleases.view(VIEWS, modern, Scoreboard::new);
+    }
+
+    static {
+        // perf.releaseUnloadedLevels: the server's scoreboard holds its server
+        org.kylepitcock.legacyconnector.core.LevelReleases.onServerStopped(s -> org.kylepitcock.legacyconnector.core.LevelReleases.release(VIEWS, s.getScoreboard()));
     }
 
     public net.minecraft.world.scores.Scoreboard mcc$modern() {

@@ -124,6 +124,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122::changedSinceGenerate);
 
         IEventBus game = NeoForge.EVENT_BUS;
+        org.kylepitcock.legacyconnector.core.LevelReleases.register(game);
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.register(game);
         EventBridge1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ForgeEvents1710.register(game);
