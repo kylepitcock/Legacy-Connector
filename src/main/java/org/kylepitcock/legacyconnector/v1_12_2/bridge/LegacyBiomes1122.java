@@ -97,6 +97,7 @@ public final class LegacyBiomes1122 {
         JsonArray features = new JsonArray();
         for (int i = 0; i < STEPS; i++) features.add(new JsonArray());
         json.add("features", features);
+        json.add("carvers", new JsonArray()); // required by the 1.21 biome codec; the mod's own generator carves
         return json;
     }
 
