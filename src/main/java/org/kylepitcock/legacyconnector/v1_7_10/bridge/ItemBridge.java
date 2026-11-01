@@ -479,7 +479,14 @@ public final class ItemBridge {
         MOD_ITEMS.add(item);
         BLOCK_ITEMS.put(block, item);
         ITEM_BLOCKS.put(item, block);
-        LegacyBlockAdapter adapter = (LegacyBlockAdapter) block.mcc$modern;
+        LegacyBlockAdapter adapter = block == null ? null : (LegacyBlockAdapter) block.mcc$modern;
+        if (adapter == null) {
+            // no modern block: a BlockItem without a block breaks every mod that walks the item registry (Supplementaries'
+            // fire behaviours called getBlock().defaultBlockState() and no world could load). The legacy item stays known to legacy code.
+            LOG.warn("Block item {} is not registered as a modern item: its block {} has no modern block", legacyName,
+                    block == null ? null : block.getClass().getName());
+            return;
+        }
         List<Integer> metas = new ArrayList<>(discoverMetas(item));
         Collections.reverse(metas); // meta 0 last, so it becomes the block's canonical BlockItem
         for (int meta : metas) {
