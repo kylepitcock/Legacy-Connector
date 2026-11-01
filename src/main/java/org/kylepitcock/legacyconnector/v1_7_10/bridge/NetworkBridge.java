@@ -68,6 +68,8 @@ public final class NetworkBridge {
 
         private LegacyPayload encode(IMessage message) {
             Integer d = discriminators.get(message.getClass());
+            // a subclass of a registered message travels as the registered type (MCHeli registers W_PacketBase and sends its subclasses)
+            for (Class<?> c = message.getClass().getSuperclass(); d == null && c != null && c != Object.class; c = c.getSuperclass()) d = discriminators.get(c);
             if (d == null) throw new IllegalArgumentException("Message " + message.getClass().getName() + " is not registered on channel " + name);
             ByteBuf buf = org.kylepitcock.legacyconnector.core.network.LegacyBuffers.buffer();
             message.toBytes(buf);
