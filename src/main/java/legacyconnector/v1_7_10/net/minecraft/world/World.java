@@ -961,12 +961,56 @@ public class World implements IBlockAccess {
 
     @Override
     public TileEntity getTileEntity(int x, int y, int z) {
-        if (outsideRegion(pos(x, y, z))) return null;
+        if (outsideRegion(pos(x, y, z))) return deferredTile(pos(x, y, z));
         return TileEntityBridge.legacyAt(this, pos(x, y, z));
     }
 
+    /**
+     * A populator that placed a block past its generation region (deferred, see {@link #deferOutsideRegion}) and then asks for its tile
+     * entity (ChromatiCraft's structure controller, chests filled with loot) gets a stand-in made by the block; when the block is placed,
+     * the stand-in becomes the real block entity's legacy tile entity, so what the populator stored in it is not lost.
+     */
+    private TileEntity deferredTile(BlockPos p) {
+        if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r)) return null;
+        Object tile = org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.tile(r.getLevel(), p, modernState -> {
+            try {
+                Block block = BlockBridge.legacyBlock(modernState);
+                int meta = BlockBridge.legacyMeta(modernState);
+                if (block == null || !block.hasTileEntity(meta)) return null;
+                TileEntity te = block.createTileEntity(this, meta);
+                if (te != null) {
+                    te.worldObj = this;
+                    te.xCoord = p.getX();
+                    te.yCoord = p.getY();
+                    te.zCoord = p.getZ();
+                }
+                return te;
+            } catch (RuntimeException | LinkageError e) {
+                return null;
+            }
+        }, be -> {
+            // the populator may have replaced the stand-in by setTileEntity: look it up again
+            Object stand = org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.standIn(r.getLevel(), p);
+            if (stand instanceof TileEntity te && be instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity host) {
+                te.worldObj = null; // the generation region is gone: the host gives it the real world
+                host.replaceLegacy(te);
+            }
+        });
+        return tile instanceof TileEntity te ? te : null;
+    }
+
     public void setTileEntity(int x, int y, int z, TileEntity te) {
-        if (outsideRegion(pos(x, y, z))) return;
+        if (outsideRegion(pos(x, y, z))) {
+            if (te != null && lvl() instanceof net.minecraft.server.level.WorldGenRegion r) {
+                // the populator hands its own tile entity to a block it deferred: that one is placed instead of the stand-in
+                te.worldObj = this;
+                te.xCoord = x;
+                te.yCoord = y;
+                te.zCoord = z;
+                org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.replaceStandIn(r.getLevel(), pos(x, y, z), te);
+            }
+            return;
+        }
         TileEntityBridge.setAt(this, pos(x, y, z), te);
     }
 
