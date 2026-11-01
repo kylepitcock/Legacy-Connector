@@ -163,7 +163,7 @@ public final class LibraryBridges {
         }
     }
 
-    private static Properties readConfig(Path modsDir) {
+    static Properties readConfig(Path modsDir) {
         Properties p = new Properties();
         Path file = modsDir.resolveSibling("config").resolve("legacyconnector.properties");
         if (Files.isRegularFile(file)) {

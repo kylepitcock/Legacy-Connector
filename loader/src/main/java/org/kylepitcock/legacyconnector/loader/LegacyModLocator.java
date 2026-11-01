@@ -315,6 +315,25 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             pruneCache(cacheDir, keep);
         } catch (IOException e) {
             LOG.error("Legacy Connector: legacy mod discovery failed", e);
+        } finally {
+            releaseLoaderData(modsDir);
+        }
+    }
+
+    /**
+     * {@code perf.releaseLoaderData} (default on): drops the static tables translation filled (legacy hierarchy, methods, fields,
+     * MCP names, library class infos). This service's classes live as long as the game, and nothing reads the tables after
+     * discovery; a later lookup would read them again.
+     */
+    private static void releaseLoaderData(Path modsDir) {
+        try {
+            if ("false".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("perf.releaseLoaderData", "true").trim())) return;
+            org.kylepitcock.legacyconnector.loader.synth.SynthCaches.release();
+            org.kylepitcock.legacyconnector.loader.mapping.McpMappings.releaseCaches();
+            org.kylepitcock.legacyconnector.loader.transform.Hierarchy.releaseCaches();
+            HASHED.clear();
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("Legacy Connector: could not release the loader's tables", e);
         }
     }
 

@@ -23,6 +23,11 @@ public final class LegacyMethods {
 
     private LegacyMethods() {}
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    public static synchronized void releaseCaches() {
+        CACHE.clear();
+    }
+
     private static synchronized Map<String, List<Method>> load(LegacyVersion version) {
         Map<String, List<Method>> map = CACHE.get(version);
         if (map != null) return map;

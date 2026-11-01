@@ -22,6 +22,11 @@ final class InstanceArrays {
 
     private InstanceArrays() {}
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    static synchronized void releaseCaches() {
+        BY_KEY.clear();
+    }
+
     private static synchronized Map<String, int[]> load(LegacyVersion version) {
         Map<String, int[]> map = BY_KEY.get(version);
         if (map != null) return map;
