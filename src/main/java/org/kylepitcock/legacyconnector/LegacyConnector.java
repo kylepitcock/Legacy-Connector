@@ -109,6 +109,8 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement::onCommonSetup);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onSpawnPlacements);
+        modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onSpawnPlacements);
         MENUS.register(modBus);
         modBus.addListener((net.neoforged.neoforge.registries.RegisterEvent e) -> {
             if (e.getRegistryKey().equals(Registries.MENU)) {

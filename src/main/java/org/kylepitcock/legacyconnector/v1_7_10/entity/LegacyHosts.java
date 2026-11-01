@@ -336,6 +336,29 @@ public final class LegacyHosts {
         return false;
     }
 
+    // ------------------------------------------------------------------ spawn placements
+
+    /**
+     * Spawn rules of legacy mobs: on the ground, monsters in the dark, others on a solid block (1.7.10/1.12 mobs checked light and the
+     * block below in getCanSpawnHere). Without a placement NeoForge lets them spawn anywhere, inside blocks and in the air.
+     */
+    public static void onSpawnPlacements(net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent event) {
+        for (EntityType<?> type : allTypes()) {
+            Info i = BY_TYPE.get(type);
+            if (i == null || i.kind() == Kind.ENTITY) continue;
+            boolean monster = i.kind() == Kind.MONSTER;
+            @SuppressWarnings({"unchecked", "rawtypes"})
+            EntityType<? extends net.minecraft.world.entity.Mob> mobType = (EntityType) type;
+            event.register(mobType, net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND, net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                    (t, level, reason, pos, random) -> monster
+                            ? level.getDifficulty() != net.minecraft.world.Difficulty.PEACEFUL
+                                    && net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, pos, random)
+                                    && net.minecraft.world.entity.Mob.checkMobSpawnRules(t, level, reason, pos, random)
+                            : net.minecraft.world.entity.Mob.checkMobSpawnRules(t, level, reason, pos, random),
+                    net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        }
+    }
+
     // ------------------------------------------------------------------ attributes
 
     public static void onAttributeCreation(EntityAttributeCreationEvent event) {
