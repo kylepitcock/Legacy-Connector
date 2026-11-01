@@ -151,7 +151,10 @@ public final class ItemCallbacks {
             if (named != null) return LegacyText.literal(named);
             // DragonAPI font keys in the name (ChromatiCraft's undiscovered crystal colours) are dropped: see LegacyText
             if (customName) return LegacyText.literal(legacy.getItemStackDisplayName(view));
-            String key = legacy.getUnlocalizedName(view) + ".name";
+            // 1.7.10's getItemStackDisplayName translates getUnlocalizedNameInefficiently(stack) + ".name": mods put their lang prefix
+            // there (Botania's ItemMod and ItemBlockMod add "botania:"), so 618 of its 779 items showed raw keys
+            String base = legacy.getUnlocalizedNameInefficiently(view);
+            String key = (base == null || base.isEmpty() ? legacy.getUnlocalizedName(view) : base) + ".name";
             // A key no lang file serves may still be one the legacy translator knows: code-registered (LanguageRegistry) or a
             // renamed vanilla key ("tile.stone.name" of a mod item named like a vanilla one)
             if (net.minecraft.locale.Language.getInstance().has(key)) return Component.translatable(key);
