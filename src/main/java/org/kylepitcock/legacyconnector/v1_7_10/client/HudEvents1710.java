@@ -40,6 +40,7 @@ public final class HudEvents1710 {
     private static final Map<String, Integer> HUD_FAILURES = new java.util.concurrent.ConcurrentHashMap<>();
 
     public static void register() {
+        registerLayers();
         NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Pre e) -> {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.START,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
@@ -48,13 +49,33 @@ public final class HudEvents1710 {
             legacyconnector.v1_7_10.net.minecraftforge.client.GuiIngameForge.right_height = 39;
             if (wants(RenderGameOverlayEvent.Pre.class)) post(e.getGuiGraphics(), e.getPartialTick().getGameTimeDeltaPartialTick(false), ElementType.ALL, false);
         });
-        NeoForge.EVENT_BUS.addListener((RenderGuiEvent.Post e) -> {
+        // 1.7.10 posted RenderTickEvent END and the ALL overlay after the whole HUD: lowest priority and a raised depth keep legacy
+        // overlays (ChromatiCraft's progress cards, Thaumcraft's warp text) above the HUD of modern mods (minimaps draw at a raised z).
+        NeoForge.EVENT_BUS.addListener(net.neoforged.bus.api.EventPriority.LOWEST, (RenderGuiEvent.Post e) -> {
+            e.getGuiGraphics().pose().pushPose();
+            e.getGuiGraphics().pose().translate(0, 0, LEGACY_OVERLAY_Z);
+            try {
+                postEnd(e);
+            } finally {
+                e.getGuiGraphics().pose().popPose();
+            }
+        });
+    }
+
+    /** Depth of the legacy end-of-HUD overlays: above modern HUD layers (minimaps translate to 100-300), below screens (which clear depth). */
+    private static final float LEGACY_OVERLAY_Z = 400.0F;
+
+    private static void postEnd(RenderGuiEvent.Post e) {
+        {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.EventBridge1710.renderTick(legacyconnector.v1_7_10.cpw.mods.fml.common.gameevent.TickEvent.Phase.END,
                     e.getPartialTick().getGameTimeDeltaPartialTick(false), e.getGuiGraphics());
             float partial = e.getPartialTick().getGameTimeDeltaPartialTick(false);
             if (wants(RenderGameOverlayEvent.Text.class)) post(e.getGuiGraphics(), partial, ElementType.TEXT, false);
             if (wants(RenderGameOverlayEvent.Post.class)) post(e.getGuiGraphics(), partial, ElementType.ALL, true);
-        });
+        }
+    }
+
+    private static void registerLayers() {
         NeoForge.EVENT_BUS.addListener((RenderGuiLayerEvent.Pre e) -> {
             ElementType type = LAYERS.get(e.getName());
             if (type != null && wants(RenderGameOverlayEvent.Pre.class) && drawnForMode(type)
