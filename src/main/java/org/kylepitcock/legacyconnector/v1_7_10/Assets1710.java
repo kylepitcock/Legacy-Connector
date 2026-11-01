@@ -44,7 +44,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
     private static volatile legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blockAtlas;
     private static volatile legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap itemAtlas;
 
-    /** The blocks atlas legacy code registers into (what {@code Minecraft.getTextureMapBlocks()} returned); null before the first pack build. */
+    /** The blocks atlas legacy code registers into (what {@code Minecraft.getTextureMapBlocks()} returned); null before the first stitch ({@link #firstStitch}, client). */
     public static legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blockAtlas() {
         return blockAtlas;
     }
@@ -62,10 +62,55 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         var items = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
         blockAtlas = blocks;
         itemAtlas = items;
+        registerAll(blocks, items, net.neoforged.fml.loading.FMLEnvironment.dist.isClient());
+        for (Block b : BlockBridge.modBlocks()) {
+            try {
+                blockModels(b, out);
+            } catch (RuntimeException | LinkageError e) {
+                // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
+                LOG.warn("Model generation failed for {}: {}", b, e.toString(), e);
+            }
+        }
+        for (Item i : ItemBridge.modItems()) {
+            try {
+                itemModels(i, out);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Model generation failed for {}: {}", i, e.toString(), e);
+            }
+        }
+        mcc$finish(blocks, items, out);
+    }
+
+    /**
+     * The first atlas load of 1.7.10's {@code Minecraft.startGame}: the block and item maps were stitched after every mod's preInit
+     * and before init ({@code FMLClientHandler.finishMinecraftLoading} then ran init and postInit and reloaded the resources, which
+     * stitched them again). Mods rely on what that first stitch set up: Forestry's {@code TextureStitchEvent.Pre} handler loads its
+     * {@code TextureManager}, which fills {@code ForestryAPI.textureManager} that Binnie's Extra Trees reads in its init, and
+     * {@code Minecraft.getTextureMapBlocks()} is not null during init. Client only (a dedicated server never stitched); the pack
+     * build stitches again into new maps, as the resource reload did.
+     */
+    public static void firstStitch() {
+        if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient() || blockAtlas != null) return;
+        var blocks = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(0, "textures/blocks");
+        var items = new legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap(1, "textures/items");
+        blockAtlas = blocks;
+        itemAtlas = items;
+        long start = System.nanoTime();
+        registerAll(blocks, items, false);
+        LOG.debug("First legacy atlas stitch (after preInit) took {} ms", (System.nanoTime() - start) / 1_000_000);
+    }
+
+    /**
+     * One stitch of 1.7.10's {@code TextureMap.loadTextureAtlas} for the block and item maps: {@code TextureStitchEvent.Pre} per map,
+     * every block's and item's icons, then {@code TextureStitchEvent.Post}. {@code noteLeaves}: record the icons of leaf blocks for
+     * {@code ModernLeaves} (pack build only).
+     */
+    private static void registerAll(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blocks,
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap items, boolean noteLeaves) {
         // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));
-        boolean client = net.neoforged.fml.loading.FMLEnvironment.dist.isClient();
+        boolean client = noteLeaves;
         for (Block b : BlockBridge.modBlocks()) {
             // the icons leaf blocks register are candidates for the modern leaf pattern (ModernLeaves)
             boolean leaves = client && org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.isLeafBlock(b);
@@ -91,21 +136,11 @@ public final class Assets1710 implements GeneratedPack.Contributor {
         // (There is no atlas yet, so UVs are not final; the event fires again once the real atlas exists, see postStitched.)
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(blocks));
         postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Post(items));
-        for (Block b : BlockBridge.modBlocks()) {
-            try {
-                blockModels(b, out);
-            } catch (RuntimeException | LinkageError e) {
-                // One broken legacy block (e.g. from a mod that failed to load) must not cost every other model.
-                LOG.warn("Model generation failed for {}: {}", b, e.toString(), e);
-            }
-        }
-        for (Item i : ItemBridge.modItems()) {
-            try {
-                itemModels(i, out);
-            } catch (RuntimeException | LinkageError e) {
-                LOG.warn("Model generation failed for {}: {}", i, e.toString(), e);
-            }
-        }
+    }
+
+    /** The rest of the pack build, after the models: sprites mods built themselves and the client's texture rewrites. */
+    private static void mcc$finish(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blocks,
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap items, Map<String, Supplier<byte[]>> out) {
         bakeSprites(blocks, true, out);
         bakeSprites(items, false, out);
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {

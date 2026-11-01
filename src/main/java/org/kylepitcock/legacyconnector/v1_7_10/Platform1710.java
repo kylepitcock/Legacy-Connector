@@ -117,6 +117,12 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void registryEvents() {
         injectObjectHolders();
+        // between preInit and init, 1.7.10's startGame stitched the block and item atlases once (TextureStitchEvent.Pre/Post)
+        try {
+            org.kylepitcock.legacyconnector.v1_7_10.Assets1710.firstStitch();
+        } catch (RuntimeException | LinkageError e) {
+            LOG.warn("The first legacy atlas stitch failed: {}", e.toString());
+        }
     }
 
     private static final String OBJECT_HOLDER = Type.getDescriptor(legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.ObjectHolder.class);
@@ -282,7 +288,6 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(true);
         try {
             dispatch(mod, new FMLPreInitializationEvent(mod));
-            org.kylepitcock.legacyconnector.v1_7_10.compat.ForestryCompat.afterPreInit(mod);
         } finally {
             org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(false);
         }
