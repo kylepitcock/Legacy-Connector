@@ -125,13 +125,13 @@ Atum's creatures (camel, nomad, a mummy burning in daylight, bonestorm, desert w
 
 ![Atum's creatures](docs/images/atum-creatures.png)
 
-1.12.2: Scape and Run: Parasites. Primitive and adapted parasites (longarms, summoner, manducater, buglin) and an infected cow,
-drawn by the mod's own renderers:
+1.12.2: Scape and Run: Parasites. Primitive and adapted parasites (longarms, summoner, manducater, viscera, buglin, an infected human, bear and golem),
+drawn by the mod's own renderers under Complementary shaders:
 
 ![Scape and Run: Parasites on 1.21.1](docs/images/srparasites-lineup.png)
 
-The same parasites in action: an adapted longarms closes in while a summoner, manducater and buglin charge behind it, with the mod's
-own AI and attacks; the player holds the mod's sentient scythe:
+The same parasites in action: an adapted longarms, a buglin and an infected human close in on a villager, with the mod's own AI,
+attacks and particles:
 
 ![Scape and Run: Parasites attacking](docs/images/srparasites.png)
 
