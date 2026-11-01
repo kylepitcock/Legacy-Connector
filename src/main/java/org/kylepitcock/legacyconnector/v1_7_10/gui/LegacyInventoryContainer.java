@@ -22,8 +22,24 @@ public final class LegacyInventoryContainer implements net.minecraft.world.World
         this.inv = inv;
     }
 
-    public static synchronized LegacyInventoryContainer of(IInventory inv) {
-        return VIEWS.computeIfAbsent(inv, LegacyInventoryContainer::new);
+    public static LegacyInventoryContainer of(IInventory inv) {
+        synchronized (VIEWS) { // the map's own lock: the view sweeper takes it too
+            return VIEWS.computeIfAbsent(inv, LegacyInventoryContainer::new);
+        }
+    }
+
+    static {
+        // perf.sweepDeadViews: a view holds its inventory (a tile entity, with its block entity and world)
+        if (org.kylepitcock.legacyconnector.core.ViewLiveness.sweepDeadViews()) {
+            org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 inventory", VIEWS, LegacyInventoryContainer::mcc$gone);
+        }
+    }
+
+    /** The inventory of a tile entity whose block entity was removed or unloaded (or, without one, that was invalidated). */
+    private static boolean mcc$gone(IInventory inv) {
+        if (!(inv instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity te)) return false;
+        var host = te.mcc$host;
+        return host != null ? org.kylepitcock.legacyconnector.core.ViewLiveness.blockEntityGone(host) : te.isInvalid();
     }
 
     public IInventory legacy() {

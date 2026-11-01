@@ -24,6 +24,11 @@ public final class McpMappings {
 
     private static final Map<LegacyVersion, McpMappings> CACHE = new EnumMap<>(LegacyVersion.class);
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    public static synchronized void releaseCaches() {
+        CACHE.clear();
+    }
+
     private final Map<String, String> methods;
     private final Map<String, String> fields;
 

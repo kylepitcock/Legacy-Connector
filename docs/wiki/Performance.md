@@ -19,6 +19,40 @@ measurements is part of Legacy Connector, so "no legacy mods" means Legacy Conne
 not a NeoForge install without it. Translation costs about 0.4 to 0.7 s per large jar (AgriCraft, Applied Energistics 2,
 Botania) on first launch.
 
+## Memory
+
+Legacy views of modern objects (the `World` of a level, an entity's legacy `Entity`, a connection's `NetworkManager`, ...) are
+cached per object so legacy code sees one object per modern one. The caches have weak keys, but each view holds its modern
+object, so an entry never goes away on its own. Each switch below is a `perf.*` key in [Configuration](Configuration.md);
+none duplicates FerriteCore or ModernFix (they work on modern block states, models, shapes and resources, not on these maps).
+
+- `perf.releaseUnloadedLevels` (on): every client level left behind by a dimension change stayed in memory through its `World`
+  view, entity views and tile views (all its chunks, entities and light data: tens of MB at render distance 8, over 100 MB at 16),
+  and every integrated server of a closed singleplayer world through `MinecraftServer`, `Scoreboard` and `GameRules` views. The
+  entries of a level are removed when `LevelEvent.Unload` has reached every other listener (legacy `WorldEvent.Unload`
+  handlers have seen the view), those of a server after `ServerStoppedEvent`. Entity and tile views of an unloaded level are
+  swept too (they used to be kept until the entity was removed, which never happens to a dropped client level). A released
+  view stays the same object for anyone who holds it: asked for again (chunk unload events after the level's at shutdown), the
+  released view comes back while it is held (weak reference), otherwise a new one, which compares equal (views compare by level).
+- `perf.sweepRemovedPlayers` (on): player views were never swept (players change dimension in place, removed and revived in one
+  call), so the old player of every death and respawn stayed. A player removed for another reason than a dimension change at two
+  sweeps in a row (20 to 40 s) is swept.
+- `perf.sweepDeadViews` (on): the 1.7.10 `NetworkManager` of a connection (holding its packet listener, player and on the client the
+  level) is swept two sweeps after its channel closed; the modern container view of a legacy inventory once its block entity is
+  removed or unloaded; the 1.12.2 view of a game block entity likewise.
+- `perf.weakStackViews1122` (off): 1.12.2 keeps one live view per modern item stack, and every stack it ever viewed stayed in
+  memory. With the switch on a view is held weakly unless it made capabilities (their providers may hold state that is not in the
+  tag); tag changes still pending are held by the flush list. Off by default: a mod that keeps a tag compound without its stack
+  and changes it later would see the change lost.
+- `perf.releaseLoaderData` (on): the loader is an FML service whose classes live as long as the game. On a translation run it
+  read the legacy hierarchy, method and field tables (about 3 MB of text per version, several times that as maps), MCP name tables
+  and the class infos of every library class it linked against; they stayed for the whole session. They are dropped when
+  discovery ends.
+
+Profiles of an ATM10 client and server with about seven legacy mods (CPU samples, 2026-10-31) show the legacy layer in under
+3% of the allocating frames of the render thread and under 0.5% on the server thread: the heap of such a pack is the modern
+mods'. Heap histograms (`/spark heapsummary`) are what attributes the rest.
+
 ## World generation writes and per-tick work
 
 - Blocks that a legacy generator writes into a chunk that does not exist yet are kept and placed during that chunk's own

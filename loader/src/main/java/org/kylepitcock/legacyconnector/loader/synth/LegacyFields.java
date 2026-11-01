@@ -15,6 +15,11 @@ public final class LegacyFields {
 
     private static final Map<LegacyVersion, Map<String, Field>> CACHE = new ConcurrentHashMap<>();
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    public static void releaseCaches() {
+        CACHE.clear();
+    }
+
     private LegacyFields() {}
 
     /** Every legacy field of every class (for completing hand-written shim classes), by owner. */

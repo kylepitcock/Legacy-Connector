@@ -24,6 +24,11 @@ public final class LegacyHierarchyData {
 
     private static final Map<LegacyVersion, LegacyHierarchyData> CACHE = new ConcurrentHashMap<>();
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    public static void releaseCaches() {
+        CACHE.clear();
+    }
+
     private final Map<String, Entry> entries;
 
     private LegacyHierarchyData(Map<String, Entry> entries) {

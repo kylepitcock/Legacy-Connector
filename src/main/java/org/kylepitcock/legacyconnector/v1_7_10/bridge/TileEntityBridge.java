@@ -90,7 +90,7 @@ public final class TileEntityBridge {
             java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
 
     static {
-        org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 block entity", VIEWS, net.minecraft.world.level.block.entity.BlockEntity::isRemoved);
+        org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 block entity", VIEWS, org.kylepitcock.legacyconnector.core.ViewLiveness::blockEntityGone);
     }
 
     /**

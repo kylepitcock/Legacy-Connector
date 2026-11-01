@@ -89,7 +89,13 @@ public class WorldInfo {
     /** The info of a modern level (one per level). */
     public static WorldInfo mcc$of(net.minecraft.world.level.Level level) {
         if (level == null) return new WorldInfo();
-        return VIEWS.computeIfAbsent(level, WorldInfo::new);
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(VIEWS, level, WorldInfo::new);
+    }
+
+    static {
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            if (level instanceof net.minecraft.world.level.Level l) org.kylepitcock.legacyconnector.core.LevelReleases.release(VIEWS, l);
+        });
     }
 
     private void copyFrom(WorldInfo o) {

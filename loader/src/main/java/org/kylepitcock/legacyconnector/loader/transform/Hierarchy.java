@@ -21,6 +21,11 @@ public final class Hierarchy {
     /** Library/JDK classes are immutable for the process lifetime, so the cache is shared between jars. */
     private static final Map<String, Optional<ClassInfo>> LIBRARY_CACHE = new ConcurrentHashMap<>();
 
+    /** Drops the library class cache (perf.releaseLoaderData: after discovery; classes are read again if needed). */
+    public static void releaseCaches() {
+        LIBRARY_CACHE.clear();
+    }
+
     private final Map<String, ClassInfo> local = new HashMap<>();
     private final ShimIndex shim;
     private final ClassLoader libraries;

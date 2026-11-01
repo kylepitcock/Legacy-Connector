@@ -27,8 +27,17 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public static synchronized MinecraftServer mcc$wrap(net.minecraft.server.MinecraftServer server) {
-        return server == null ? null : VIEWS.computeIfAbsent(server,
+        return server == null ? null : org.kylepitcock.legacyconnector.core.LevelReleases.view(VIEWS, server,
                 s -> s.isDedicatedServer() ? new legacyconnector.v1_7_10.net.minecraft.server.dedicated.DedicatedServer(s) : new legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer(s));
+    }
+
+    static {
+        // perf.releaseUnloadedLevels: the view holds its server, which held every level of a closed singleplayer world
+        org.kylepitcock.legacyconnector.core.LevelReleases.onServerStopped(MinecraftServer::mcc$release);
+    }
+
+    private static synchronized void mcc$release(net.minecraft.server.MinecraftServer server) {
+        org.kylepitcock.legacyconnector.core.LevelReleases.release(VIEWS, server);
     }
 
     public net.minecraft.server.MinecraftServer mcc$modern() {

@@ -432,6 +432,7 @@ public final class ItemStack {
             try {
                 NBTTagCompound tag = getTagCompound();
                 mcc$capabilities = item.initCapabilities(this, tag != null && tag.hasKey("ForgeCaps", 10) ? tag.getCompoundTag("ForgeCaps") : null);
+                if (mcc$capabilities != null) org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.mcc$pin(this);
             } catch (RuntimeException | LinkageError e) {
                 mcc$capabilities = null;
             }

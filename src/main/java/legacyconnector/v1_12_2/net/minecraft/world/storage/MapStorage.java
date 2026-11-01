@@ -31,7 +31,13 @@ public class MapStorage {
     /** The storage of a server level (the in-memory client one for null). */
     public static MapStorage mcc$of(net.minecraft.server.level.ServerLevel level) {
         if (level == null) return CLIENT;
-        return STORAGES.computeIfAbsent(level.getDataStorage(), MapStorage::new);
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(STORAGES, level.getDataStorage(), MapStorage::new);
+    }
+
+    static {
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            if (level instanceof net.minecraft.server.level.ServerLevel s) org.kylepitcock.legacyconnector.core.LevelReleases.release(STORAGES, s.getDataStorage());
+        });
     }
 
     private static String file(String name) {

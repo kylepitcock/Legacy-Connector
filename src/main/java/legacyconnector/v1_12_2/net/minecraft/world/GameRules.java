@@ -37,7 +37,12 @@ public class GameRules {
     /** One view per modern rule set, so rules mods add stay with it. */
     public static GameRules mcc$of(net.minecraft.world.level.GameRules modern, net.minecraft.server.MinecraftServer server) {
         if (modern == null) return new GameRules();
-        return VIEWS.computeIfAbsent(modern, m -> new GameRules(m, server));
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(VIEWS, modern, m -> new GameRules(m, server));
+    }
+
+    static {
+        // perf.releaseUnloadedLevels: a view holds its server
+        org.kylepitcock.legacyconnector.core.LevelReleases.onServerStopped(s -> org.kylepitcock.legacyconnector.core.LevelReleases.release(VIEWS, s.getGameRules()));
     }
 
     private static Map<String, net.minecraft.world.level.GameRules.Key<?>> modernKeys() {

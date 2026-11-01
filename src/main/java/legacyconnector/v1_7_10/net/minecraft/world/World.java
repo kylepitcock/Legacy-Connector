@@ -79,7 +79,7 @@ public class World implements IBlockAccess {
     private static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage storage(ServerLevel level) {
         if (level == null) return CLIENT_STORAGE;
         var data = level.getDataStorage();
-        return STORAGES.computeIfAbsent(data, d -> new legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage(data));
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(STORAGES, (Object) data, d -> new legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage(data));
     }
 
     public static legacyconnector.v1_7_10.net.minecraft.world.storage.MapStorage mcc$get$mapStorage(World w) {
@@ -211,8 +211,16 @@ public class World implements IBlockAccess {
                 return view;
             }
         }
-        return VIEWS.computeIfAbsent(level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
+        return org.kylepitcock.legacyconnector.core.LevelReleases.view(VIEWS, level, l -> l instanceof net.minecraft.server.level.ServerLevel ? new WorldServer(l)
                 : l.isClientSide() ? new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient(l) : new World(l));
+    }
+
+    static {
+        // perf.releaseUnloadedLevels: the views (and saved data storages) of a level are dropped when it unloads
+        org.kylepitcock.legacyconnector.core.LevelReleases.onLevelUnload(level -> {
+            org.kylepitcock.legacyconnector.core.LevelReleases.release(VIEWS, level);
+            if (level instanceof ServerLevel s) org.kylepitcock.legacyconnector.core.LevelReleases.release(STORAGES, (Object) s.getDataStorage());
+        });
     }
 
     /**

@@ -25,6 +25,12 @@ public final class StaticArrays {
 
     private StaticArrays() {}
 
+    /** Drops the loaded table (perf.releaseLoaderData: after discovery; it is read again if needed). */
+    public static synchronized void releaseCaches() {
+        BY_KEY.clear();
+        SRG.clear();
+    }
+
     private static synchronized void load(LegacyVersion version) {
         if (BY_KEY.containsKey(version)) return;
         Map<String, Entry> values = new HashMap<>();
