@@ -119,4 +119,29 @@ public final class BiomeBridge1122 {
         out.removeIf(id -> id.getPath().equals("dripstone_caves") || id.getPath().equals("lush_caves") || id.getPath().equals("deep_dark"));
         return out;
     }
+
+    /** Whether the biome is a mod's: it has a registry name outside {@code minecraft}. */
+    public static boolean isModBiome(Biome biome) {
+        var name = biome == null ? null : biome.getRegistryName();
+        return name != null && !"minecraft".equals(name.getNamespace());
+    }
+
+    /**
+     * The modern biome a legacy biome is placed as: a mod biome as its own generated biome ({@code <namespace>:<name>}, see
+     * {@link LegacyBiomes1122}), a vanilla one as its first modern counterpart, plains for anything else.
+     */
+    public static ResourceLocation modernId(Biome biome) {
+        if (biome != null) {
+            var name = biome.getRegistryName();
+            if (isModBiome(biome)) return ResourceLocation.fromNamespaceAndPath(name.getNamespace(), name.getPath());
+            var modern = modernIds(biome);
+            if (!modern.isEmpty()) return modern.get(0);
+        }
+        return ResourceLocation.withDefaultNamespace("plains");
+    }
+
+    /** The paths of the modern vanilla biomes that have a 1.12 counterpart. */
+    public static java.util.Set<String> vanillaModernPaths() {
+        return java.util.Set.copyOf(VANILLA.keySet());
+    }
 }

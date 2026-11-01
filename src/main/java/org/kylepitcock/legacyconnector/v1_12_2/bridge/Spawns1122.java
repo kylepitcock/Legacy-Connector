@@ -209,7 +209,7 @@ public final class Spawns1122 {
      * The natural spawner only spawns a mob in the category of its type, and a host type's category comes from the class
      * hierarchy: the kind the mod gave its spawn entry is authoritative (as in the 1.7.10 bridge). Vanilla types are left alone.
      */
-    private static void adoptCategory(EntityType<?> type, net.minecraft.world.entity.MobCategory wanted) {
+    static void adoptCategory(EntityType<?> type, net.minecraft.world.entity.MobCategory wanted) {
         if (type == null || wanted == null || type.getCategory() == wanted) return;
         try {
             java.lang.reflect.Field f = org.kylepitcock.legacyconnector.compat.jdk.ReflectionCompat.getDeclaredField(EntityType.class, "category");
