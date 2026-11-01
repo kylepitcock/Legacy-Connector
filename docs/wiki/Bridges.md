@@ -53,7 +53,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Biomes, world types, mod dimensions | `BiomeGenBase`, `GenLayer`, `WorldProvider` | data-driven biomes placed by climate (a TerraBlender region, or the overworld parameter list), legacy world types as their own biome source, `legacyconnector:dim_<id>` |
 | World generation | `IWorldGenerator`, decorators | one placed feature per legacy generator (`<mod>:legacy_worldgen/<generator>`) and one per generator for the layer below y=0 (`<mod>:legacy_worldgen_deep/<generator>`), added by biome modifiers |
 | Events | Forge/FML event buses | NeoForge event bus |
-| Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events, effects, tabs |
+| Sounds, potions, creative tabs | `SoundHandler`, `Potion`, `CreativeTabs` | sound events ([details](#sounds)), effects, tabs |
 | Stats and achievements | `StatList`, `AchievementList`, `StatBase.addStat` | general stats count in their modern counterparts, mod stats become custom stats named after their legacy key (OpenBlocks' bricks dropped); the stat file reads them back |
 | Translations | `.lang` files, `LanguageRegistry`, `StatCollector`/`StringTranslate`/`I18n`, vanilla 1.7.10 keys (`tile.stone.name`) | converted `lang/<code>.json` files, a generated lang file, and legacy keys resolved on a miss of the modern language ([translations](#translations)) |
 | Coremods that patch mods | `IClassTransformer` plugins | applied to mod classes before translation |
@@ -152,3 +152,19 @@ layer serves each source:
 - Names: a legacy item that overrides `getItemStackDisplayName` is named by it; otherwise its name is the translatable
   `<unlocalized>.name`. A modern block's `getName()` (Jade without a pick item) is the legacy `getLocalizedName` when the block
   overrides it, else its lang key.
+
+## Sounds
+
+- World sounds (`World.playSoundEffect`, `playSoundAtEntity`, ...) become modern level sounds; client sounds (`SoundHandler.playSound` with
+  `PositionedSoundRecord`s or a mod's own `ISound`/`ITickableSound`) become sound instances that keep the legacy object's volume, pitch,
+  position, repeat and attenuation, and stop when the mod stops them. Sounds naming a file instead of an event (DragonAPI's
+  `custom_path:Reika/.../x.ogg`) are played from that file (`LegacySoundFiles`).
+- **Volume sliders:** 1.7.10 took a sound's category from its sounds.json event (`"category": "block"`); the loader keeps it as
+  `legacy_category` (the modern format has none) and the sound plays under the matching `SoundSource` (block, hostile, neutral,
+  player, ambient, weather, record, music, master). Events without one play as blocks (world sounds) or master (client sounds), as before.
+- **Fall-off with distance** (`LegacyAttenuation`): 1.7.10's sound library computed a linear source's gain itself, `1 - distance / range`
+  with range 16 blocks times the volume when that is above 1 (a volume above 1 only reaches further, the gain is capped at 1). The modern
+  engine leaves the fall-off to OpenAL, which does not attenuate stereo files, and most mods of that time ship stereo files (111 of
+  ChromatiCraft's 147): their hums and pulses played at full volume however far away. Legacy positioned sounds (client sounds, and world
+  sounds of a legacy mod's namespace) therefore play without OpenAL attenuation and with the 1.7.10 gain recomputed every tick from the
+  camera distance; loops out of range start silent and fade in.

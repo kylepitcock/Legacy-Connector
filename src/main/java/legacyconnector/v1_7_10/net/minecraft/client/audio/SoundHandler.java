@@ -54,14 +54,17 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
         var location = sound.getPositionedSoundLocation();
         LegacySoundFiles.LegacyFile file = LegacySoundFiles.find(sound, location);
         SoundEvent event;
+        String name = null;
         if (file != null) {
             event = SoundEvent.createVariableRangeEvent(file.id());
         } else {
-            String name = location.getResourceDomain().equals("minecraft") ? location.getResourcePath() : location.getResourceDomain() + ":" + location.getResourcePath();
+            name = location.getResourceDomain().equals("minecraft") ? location.getResourcePath() : location.getResourceDomain() + ":" + location.getResourcePath();
             event = SoundBridge.sound(MUSIC_RENAMES.getOrDefault(name, name));
         }
         if (event == null) return null;
-        SoundSource source = sound instanceof PositionedSoundRecord r && r.mcc$category != null ? r.mcc$category.mcc$source() : SoundSource.MASTER;
+        // 1.7.10 took the slider from the event's sounds.json category (a mod's own ISound naming one of its events)
+        SoundSource source = sound instanceof PositionedSoundRecord r && r.mcc$category != null ? r.mcc$category.mcc$source()
+                : SoundBridge.legacySource(name, SoundSource.MASTER);
         SoundInstance instance;
         if (sound instanceof ITickableSound tickable) {
             instance = new Tickable(event, source, tickable, file);
@@ -72,6 +75,8 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
             instance = new Simple(event.getLocation(), source, sound.getVolume(), sound.getPitch(), sound.canRepeat(),
                     sound.getRepeatDelay(), SoundInstance.Attenuation.LINEAR, sound.getXPosF(), sound.getYPosF(), sound.getZPosF(), false, file);
         }
+        // 1.7.10's software fall-off with distance (stereo files were attenuated too); see LegacyAttenuation
+        instance = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyAttenuation.wrap(instance);
         synchronized (playing) {
             playing.put(sound, instance);
         }

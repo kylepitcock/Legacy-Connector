@@ -37,6 +37,11 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
     private final ISimpleBlockRenderingHandler builtIn;
     /** Forge world passes the block is drawn in: 0 cut out, 1 translucent (pipes draw in both). */
     private final boolean pass0, pass1;
+    /**
+     * The block is a full opaque cube in 1.7.10's terms (isOpaqueCube, renderAsNormalBlock, full bounds): modern neighbours cull
+     * their faces against it, so each of its faces the modern pipeline would show must be drawn (see {@link #fillMissingFaces}).
+     */
+    private final boolean opaqueCube;
     private final ChunkRenderTypeSet renderTypes;
 
     public IsbrhBlockModel(BakedModel original, Block block, int renderId) {
@@ -58,6 +63,15 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (!p0 && !p1) p0 = true;
         this.pass0 = p0;
         this.pass1 = p1;
+        boolean cube = false;
+        try {
+            cube = block.isOpaqueCube() && block.renderAsNormalBlock() && block.getBlockBoundsMinX() <= 0.0D && block.getBlockBoundsMinY() <= 0.0D
+                    && block.getBlockBoundsMinZ() <= 0.0D && block.getBlockBoundsMaxX() >= 1.0D && block.getBlockBoundsMaxY() >= 1.0D
+                    && block.getBlockBoundsMaxZ() >= 1.0D;
+        } catch (RuntimeException | LinkageError e) {
+            // not a cube as far as we can tell
+        }
+        this.opaqueCube = cube;
         var cutout = net.minecraft.client.renderer.RenderType.cutout();
         var translucent = net.minecraft.client.renderer.RenderType.translucent();
         this.renderTypes = p0 && p1 ? ChunkRenderTypeSet.of(cutout, translucent) : ChunkRenderTypeSet.of(p1 ? translucent : cutout);
@@ -71,6 +85,18 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         if (solid == null) return base;
         List<BakedQuad> translucent = pass1 ? capture(handler, level, pos, 1) : List.of();
         if (translucent == null) return base;
+        if (opaqueCube) {
+            List<BakedQuad> filled = fillMissingFaces(level, pos, state, solid, translucent);
+            if (!filled.isEmpty()) {
+                if (pass0) {
+                    solid = new java.util.ArrayList<>(solid);
+                    solid.addAll(filled);
+                } else {
+                    translucent = new java.util.ArrayList<>(translucent);
+                    translucent.addAll(filled);
+                }
+            }
+        }
         if (solid.isEmpty() && translucent.isEmpty()) {
             if (FAILED.add("empty:" + handler.getClass().getName() + ":" + block.getClass().getName())) {
                 // A handler that draws nothing is no defect when the block is drawn by its tile entity's special renderer (Twilight
@@ -131,6 +157,109 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             }
         }
         return IsbrhQuads.bake(capture, pos.getX() - ox, pos.getY(), pos.getZ() - oz, getParticleIcon(ModelData.EMPTY));
+    }
+
+    /**
+     * The faces of a full opaque legacy cube that the modern pipeline shows but the legacy renderer left out, drawn as 1.7.10's
+     * standard cube face with the block's world icon. The modern neighbour of such a face culls its own face against the cube
+     * (the block occludes), so a face the handler skips is a hole through the terrain: the sky shows through. That happens where
+     * 1.7.10's view of a neighbour ({@code shouldSideBeRendered}: its {@code isOpaqueCube}) and the modern one
+     * ({@code Block.shouldRenderFace}: occlusion shapes) disagree, or where the handler skipped the face for its own pass logic.
+     */
+    private List<BakedQuad> fillMissingFaces(BlockAndTintGetter level, BlockPos pos, BlockState state, List<BakedQuad> solid, List<BakedQuad> translucent) {
+        int missing = 0;
+        try {
+            if (!state.canOcclude()) return List.of();
+            BlockPos.MutableBlockPos next = new BlockPos.MutableBlockPos();
+            for (Direction d : DIRECTIONS) {
+                next.setWithOffset(pos, d);
+                if (!net.minecraft.world.level.block.Block.shouldRenderFace(state, level, pos, d, next)) continue;
+                if (covers(solid, d) || covers(translucent, d)) continue;
+                missing |= 1 << d.get3DDataValue();
+            }
+        } catch (RuntimeException | LinkageError e) {
+            return List.of();
+        }
+        if (missing == 0) return List.of();
+        if (FAILED.add("filled:" + block.getClass().getName())) {
+            LOG.info("Legacy block renderer for {} left out visible faces of its full cube (sides {} at {}); they are drawn as standard faces",
+                    block.getClass().getName(), Integer.toBinaryString(missing), pos);
+        }
+        List<BakedQuad> faces = capture(new MissingFaces(missing), level, pos, pass0 ? 0 : 1);
+        return faces == null ? List.of() : faces;
+    }
+
+    private static final Direction[] DIRECTIONS = Direction.values();
+
+    /** Whether some quad lies in the plane of the block's face {@code d} (positions are relative to the block). */
+    private static boolean covers(List<BakedQuad> quads, Direction d) {
+        int axis = d.getAxis().ordinal();
+        float plane = d.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1.0F : 0.0F;
+        for (BakedQuad quad : quads) {
+            int[] v = quad.getVertices();
+            int stride = v.length / 4;
+            boolean onPlane = true;
+            for (int i = 0; i < 4 && onPlane; i++) onPlane = Math.abs(Float.intBitsToFloat(v[i * stride + axis]) - plane) < 1.0F / 32.0F;
+            if (onPlane) return true;
+        }
+        return false;
+    }
+
+    /** Draws the faces in {@code mask} (bit = legacy side) as RenderBlocks' standard cube faces with the block's world icons. */
+    private static final class MissingFaces implements ISimpleBlockRenderingHandler {
+        private static final float[] SHADE = {0.5F, 1.0F, 0.8F, 0.8F, 0.6F, 0.6F};
+        private final int mask;
+
+        MissingFaces(int mask) {
+            this.mask = mask;
+        }
+
+        @Override
+        public void renderInventoryBlock(Block block, int metadata, int modelId, RenderBlocks renderer) {
+        }
+
+        @Override
+        public boolean renderWorldBlock(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, Block block, int modelId,
+                RenderBlocks renderer) {
+            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance();
+            int c = 0xFFFFFF;
+            try {
+                c = block.colorMultiplier(world, x, y, z) & 0xFFFFFF;
+            } catch (RuntimeException e) {
+                c = 0xFFFFFF;
+            }
+            float r = (c >> 16 & 255) / 255.0F, g = (c >> 8 & 255) / 255.0F, b = (c & 255) / 255.0F;
+            for (int side = 0; side < 6; side++) {
+                if ((mask & 1 << side) == 0) continue;
+                float shade = SHADE[side];
+                if (c != 0xFFFFFF) {
+                    t.setColorOpaque_F(r * shade, g * shade, b * shade);
+                } else {
+                    t.mcc$setColorState(-1L);
+                    t.mcc$noteFaceColor(shade);
+                }
+                var icon = renderer.getBlockIcon(block, world, x, y, z, side);
+                switch (side) {
+                    case 0 -> renderer.renderFaceYNeg(block, x, y, z, icon);
+                    case 1 -> renderer.renderFaceYPos(block, x, y, z, icon);
+                    case 2 -> renderer.renderFaceZNeg(block, x, y, z, icon);
+                    case 3 -> renderer.renderFaceZPos(block, x, y, z, icon);
+                    case 4 -> renderer.renderFaceXNeg(block, x, y, z, icon);
+                    default -> renderer.renderFaceXPos(block, x, y, z, icon);
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean shouldRender3DInInventory(int modelId) {
+            return false;
+        }
+
+        @Override
+        public int getRenderId() {
+            return 0;
+        }
     }
 
     /** Whether the legacy tile entity at the position is drawn by a tile entity special renderer. */

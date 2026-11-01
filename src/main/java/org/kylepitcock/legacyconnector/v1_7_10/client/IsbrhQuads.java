@@ -24,6 +24,7 @@ final class IsbrhQuads {
         int count = capture.size();
         List<BakedQuad> out = new ArrayList<>(count);
         for (int q = 0; q < count; q++) {
+            if (degenerate(capture, q)) continue;
             float n0 = capture.normal(q, 0), n1 = capture.normal(q, 1), n2 = capture.normal(q, 2);
             int[] data = new int[32];
             // A colour the renderer set (Thaumcraft's aspect tint on infused stone, a colorMultiplier) was the final colour in
@@ -60,6 +61,21 @@ final class IsbrhQuads {
             else out.add(new BakedQuad(data, -1, dir, sprite, unshade != 1.0F, uniform));
         }
         return out;
+    }
+
+    /**
+     * A quad without area (all corners on one point or one line). DragonAPI's block renderers end every
+     * {@code renderWorldBlock} with four {@code addVertex(0, 0, 0)} (ChromatiCraft's CrystallineStoneRenderer, RuneRenderer and
+     * the rest), so 1.7.10's chunk pass was never empty: baked, that is a zero-size quad at the world origin with whatever UV the
+     * thread's Tessellator held last, in the cut-out and the translucent layer of every such block. It draws nothing, but it gave
+     * every one of those sections translucent geometry thousands of blocks away (Sodium sorts it every frame) and named a random
+     * sprite in the render log. Such quads are dropped.
+     */
+    static boolean degenerate(RenderContext.Capture capture, int q) {
+        double ax = capture.get(q, 2, 0) - capture.get(q, 0, 0), ay = capture.get(q, 2, 1) - capture.get(q, 0, 1), az = capture.get(q, 2, 2) - capture.get(q, 0, 2);
+        double bx = capture.get(q, 3, 0) - capture.get(q, 1, 0), by = capture.get(q, 3, 1) - capture.get(q, 1, 1), bz = capture.get(q, 3, 2) - capture.get(q, 1, 2);
+        double cx = ay * bz - az * by, cy = az * bx - ax * bz, cz = ax * by - ay * bx;
+        return cx * cx + cy * cy + cz * cz < 1.0E-12D;
     }
 
     /**
@@ -106,13 +122,15 @@ final class IsbrhQuads {
 
     /** One line for the log: where the first captured quad's UVs land in the block atlas (a diagnostic for blocks that draw black or nothing). */
     static String describe(RenderContext.Capture capture) {
-        if (capture.isEmpty()) return "no quads";
+        int first = 0;
+        while (first < capture.size() && degenerate(capture, first)) first++;
+        if (first >= capture.size()) return capture.isEmpty() ? "no quads" : "only zero-size quads";
         double u = 0, v = 0;
         StringBuilder sb = new StringBuilder("first quad uv");
         for (int i = 0; i < 4; i++) {
-            u += capture.get(0, i, 3) / 4;
-            v += capture.get(0, i, 4) / 4;
-            sb.append(String.format(" (%.4f,%.4f)", capture.get(0, i, 3), capture.get(0, i, 4)));
+            u += capture.get(first, i, 3) / 4;
+            v += capture.get(first, i, 4) / 4;
+            sb.append(String.format(" (%.4f,%.4f)", capture.get(first, i, 3), capture.get(first, i, 4)));
         }
         try {
             var atlas = net.minecraft.client.Minecraft.getInstance().getModelManager().getAtlas(net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS);

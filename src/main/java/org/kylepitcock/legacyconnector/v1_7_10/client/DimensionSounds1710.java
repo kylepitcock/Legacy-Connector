@@ -63,6 +63,8 @@ public final class DimensionSounds1710 {
             if (amount <= 1.0F) return;
             if (amount >= 8.0F) {
                 e.setSound(null);
+            } else if (sound instanceof LegacyAttenuation attenuated) {
+                attenuated.mcc$divide(amount);
             } else if (!(sound instanceof TickableSoundInstance)) {
                 e.setSound(new Scaled(sound, amount));
             }

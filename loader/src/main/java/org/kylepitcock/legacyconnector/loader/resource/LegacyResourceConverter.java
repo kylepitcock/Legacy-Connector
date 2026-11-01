@@ -155,7 +155,9 @@ public final class LegacyResourceConverter {
 
     /**
      * 1.7.10 sounds.json: sound paths without a namespace meant the mod's own domain (1.21 assumes minecraft), names
-     * could contain upper case, and "category" is gone. Event keys are sanitized like every other resource path.
+     * could contain upper case, and "category" is gone (the volume slider is chosen when a sound is played): it is kept as
+     * "legacy_category", which the modern parser ignores and the sound bridge reads to pick the slider. Event keys are
+     * sanitized like every other resource path.
      */
     static byte[] convertSounds(byte[] data, String namespace) {
         try {
@@ -164,7 +166,8 @@ public final class LegacyResourceConverter {
             for (var e : root.entrySet()) {
                 if (!e.getValue().isJsonObject()) continue;
                 JsonObject event = e.getValue().getAsJsonObject().deepCopy();
-                event.remove("category");
+                JsonElement category = event.remove("category");
+                if (category != null) event.add("legacy_category", category);
                 if (event.has("sounds") && event.get("sounds").isJsonArray()) {
                     JsonArray sounds = new JsonArray();
                     for (JsonElement snd : event.getAsJsonArray("sounds")) {
