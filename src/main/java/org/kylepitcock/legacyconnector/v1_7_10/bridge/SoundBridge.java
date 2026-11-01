@@ -196,6 +196,36 @@ public final class SoundBridge {
         return SoundEvent.createVariableRangeEvent(Ids.location(legacyName, "minecraft"));
     }
 
+    /** "namespace:normalized key" -> the 1.7.10 category ("block", "hostile", ...) its sounds.json gave; built with {@link #modSoundKeys}. */
+    private static volatile Map<String, String> modSoundCategories = Map.of();
+
+    /**
+     * The volume slider of a legacy sound: 1.7.10 took it from the category its sounds.json gave the event ("block", "hostile",
+     * "neutral", "player", "ambient", "weather", "record", "music", "master"), kept by the loader as "legacy_category";
+     * {@code fallback} for vanilla names and events without one.
+     */
+    public static SoundSource legacySource(String name, SoundSource fallback) {
+        if (name == null || name.isEmpty()) return fallback;
+        int colon = name.indexOf(':');
+        String ns = colon < 0 ? modSoundOwner(name) : Ids.namespace(name.substring(0, colon));
+        if (ns == null) return fallback;
+        if (colon >= 0) modSoundOwner(""); // builds the tables
+        String category = modSoundCategories.get(ns + ":" + Ids.normalizePath(colon < 0 ? name : name.substring(colon + 1)));
+        if (category == null) return fallback;
+        return switch (category.toLowerCase(java.util.Locale.ROOT)) {
+            case "master" -> SoundSource.MASTER;
+            case "music" -> SoundSource.MUSIC;
+            case "record", "records" -> SoundSource.RECORDS;
+            case "weather" -> SoundSource.WEATHER;
+            case "block", "blocks" -> SoundSource.BLOCKS;
+            case "hostile" -> SoundSource.HOSTILE;
+            case "neutral" -> SoundSource.NEUTRAL;
+            case "player", "players" -> SoundSource.PLAYERS;
+            case "ambient" -> SoundSource.AMBIENT;
+            default -> fallback;
+        };
+    }
+
     /** Normalized sound event key -> namespace of the first mod whose sounds.json declares it; built on first use. */
     private static volatile Map<String, String> modSoundKeys;
 
@@ -206,6 +236,7 @@ public final class SoundBridge {
                 keys = modSoundKeys;
                 if (keys == null) {
                     keys = new HashMap<>();
+                    Map<String, String> categories = new HashMap<>();
                     try {
                         var list = net.neoforged.fml.ModList.get();
                         if (list == null) return null; // too early: do not cache
@@ -215,8 +246,13 @@ public final class SoundBridge {
                             var path = mod.getOwningFile().getFile().findResource("assets", id, "sounds.json");
                             if (!java.nio.file.Files.isRegularFile(path)) continue;
                             try (var in = java.nio.file.Files.newBufferedReader(path)) {
-                                for (String key : com.google.gson.JsonParser.parseReader(in).getAsJsonObject().keySet()) {
+                                var root = com.google.gson.JsonParser.parseReader(in).getAsJsonObject();
+                                for (var entry : root.entrySet()) {
+                                    String key = entry.getKey();
                                     keys.putIfAbsent(Ids.normalizePath(key), id);
+                                    if (entry.getValue().isJsonObject() && entry.getValue().getAsJsonObject().get("legacy_category") instanceof com.google.gson.JsonPrimitive c) {
+                                        categories.put(id + ":" + Ids.normalizePath(key), c.getAsString());
+                                    }
                                 }
                             } catch (Exception ignored) {
                                 // unreadable or malformed sounds.json: that mod declares nothing
@@ -225,6 +261,7 @@ public final class SoundBridge {
                     } catch (Throwable t) {
                         // no mod list (tests): nothing declared
                     }
+                    modSoundCategories = categories;
                     modSoundKeys = keys;
                 }
             }
@@ -273,7 +310,7 @@ public final class SoundBridge {
 
     public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch) {
         if (name == null || name.isEmpty()) return;
-        level.playSound(except, x, y, z, Holder.direct(sound(name)), SoundSource.BLOCKS, volume, pitch);
+        level.playSound(except, x, y, z, Holder.direct(sound(name)), legacySource(name, SoundSource.BLOCKS), volume, pitch);
     }
 
     public static void particle(LevelAccessor level, String name, double x, double y, double z, double vx, double vy, double vz) {

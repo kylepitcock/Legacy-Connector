@@ -702,6 +702,8 @@ public final class EventBridge1710 {
                     legacyconnector.v1_7_10.net.minecraft.network.NetworkManager.mcc$of(e.getConnection())));
         });
         org.kylepitcock.legacyconnector.v1_7_10.client.DimensionSounds1710.register(gameBus);
+        // after the dimension scaling, which only scales sounds that do not tick
+        org.kylepitcock.legacyconnector.v1_7_10.client.LegacyAttenuation.register(gameBus);
         org.kylepitcock.legacyconnector.v1_7_10.client.LegacyHorizon.register(gameBus);
         org.kylepitcock.legacyconnector.v1_7_10.client.ClientEvents1710.register(gameBus);
         gameBus.addListener((net.neoforged.neoforge.client.event.ViewportEvent.ComputeFogColor e) -> {
