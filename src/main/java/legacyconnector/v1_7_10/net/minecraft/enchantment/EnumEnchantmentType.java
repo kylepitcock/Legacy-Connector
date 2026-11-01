@@ -18,6 +18,8 @@ public enum EnumEnchantmentType {
         }
         if (item instanceof ItemSword) return this == weapon;
         if (item instanceof ItemTool) return this == digger;
+        if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBow) return this == bow;
+        if (item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemFishingRod) return this == fishing_rod;
         return false;
     }
 }

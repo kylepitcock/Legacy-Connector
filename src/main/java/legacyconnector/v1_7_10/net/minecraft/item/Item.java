@@ -360,7 +360,8 @@ public class Item {
     public static final java.util.UUID itemModifierUUID = java.util.UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
 
     public int getItemEnchantability() {
-        return 0;
+        // 1.7.10's ItemBook: the vanilla book wrapper is a plain Item
+        return mcc$vanilla != null && "minecraft:book".equals(mcc$vanilla.legacyName()) ? 1 : 0;
     }
 
     public boolean isItemTool(ItemStack stack) {

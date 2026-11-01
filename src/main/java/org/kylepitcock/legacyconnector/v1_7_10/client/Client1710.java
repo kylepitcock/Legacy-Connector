@@ -161,7 +161,9 @@ public final class Client1710 {
     private static void onRegisterItemColors(net.neoforged.neoforge.client.event.RegisterColorHandlersEvent.Item event) {
         for (Item item : ItemBridge.modItems()) {
             try {
-                if (!org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(item, "getColorFromItemStack",
+                boolean tintedBlock = item instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemBlock ib && ib.mcc$block() != null
+                        && org.kylepitcock.legacyconnector.v1_7_10.Assets1710.tinted(ib.mcc$block());
+                if (!tintedBlock && !org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.overrides(item, "getColorFromItemStack",
                         legacyconnector.v1_7_10.net.minecraft.item.ItemStack.class, int.class)) continue;
             } catch (RuntimeException | LinkageError e) {
                 continue;

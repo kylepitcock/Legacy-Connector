@@ -26,6 +26,12 @@ public class ItemBlock extends Item {
         return blockInstance;
     }
 
+    /** As 1.7.10: the block's own inventory colour (leaves, grass), what tints the held and dropped item. */
+    @Override
+    public int getColorFromItemStack(ItemStack stack, int pass) {
+        return blockInstance == null ? 0xFFFFFF : blockInstance.getRenderColor(stack.getItemDamage());
+    }
+
     @Override
     public ItemBlock setUnlocalizedName(String name) {
         super.setUnlocalizedName(name);
