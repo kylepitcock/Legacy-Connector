@@ -51,4 +51,28 @@ public class API {
 
     public static void setGuiOffset(Class<? extends GuiContainer> gui, int x, int y) {
     }
+
+    /**
+     * The machines that run a handler's recipes (NEI's later {@code RecipeCatalysts}, keyed by the handler's overlay id or class
+     * name): the JEI category's icon and catalysts.
+     */
+    public static void addRecipeCatalyst(ItemStack stack, String handlerId) {
+        NeiBridge.addCatalyst(handlerId, stack);
+    }
+
+    public static void addRecipeCatalyst(ItemStack stack, String handlerId, int priority) {
+        NeiBridge.addCatalyst(handlerId, stack);
+    }
+
+    public static void addRecipeCatalyst(java.util.List<ItemStack> stacks, String handlerId) {
+        if (stacks != null) for (ItemStack s : stacks) NeiBridge.addCatalyst(handlerId, s);
+    }
+
+    public static void addRecipeCatalyst(ItemStack stack, legacyconnector.v1_7_10.codechicken.nei.recipe.IRecipeHandler handler) {
+        NeiBridge.addCatalyst(NeiBridge.handlerId(handler), stack);
+    }
+
+    public static void removeRecipeCatalyst(ItemStack stack, String handlerId) {
+        NeiBridge.removeCatalyst(handlerId, stack);
+    }
 }

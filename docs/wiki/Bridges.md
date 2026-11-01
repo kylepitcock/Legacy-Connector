@@ -76,8 +76,11 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 ## NEI → JEI recipe categories
 
 Every `TemplateRecipeHandler` a mod registers through its `NEI*Config` plugin becomes one JEI category
-(`legacyconnector:nei_<handler class>`, 166 pixels wide like NEI's recipe area; 65 high, or 130 for handlers that show one
-recipe a page). Its recipes are the ones the handler lists for its overlay id and the ids of its transfer rectangles; JEI's
+(`<mod>:nei_<handler class>`, 166 pixels wide like NEI's recipe area; 65 high, or 130 for handlers that show one
+recipe a page). Its title is the handler's `getRecipeName()` (translated when it is a key); its icon and catalysts are the
+machines that run it: the stacks registered with NEI's `API.addRecipeCatalyst`, else the mod's block or item whose name best
+matches the title and the handler's class name, else the vanilla machine of the `crafting`/`smelting`/`brewing` ids. `<mod>` (the
+mod JEI names) is the machine's mod, else the mod whose jar holds the handler, else the mod most of its results come from. Its recipes are the ones the handler lists for its overlay id and the ids of its transfer rectangles; JEI's
 "recipes / uses of this item" ask the handler with `loadCraftingRecipes("item", stack)` / `loadUsageRecipes("item", stack)`, as
 NEI did. Each recipe keeps the handler instance that loaded it and its index there, and JEI's `draw` runs the handler's own
 `drawBackground(i)` and `drawForeground(i)` (which calls `drawExtras(i)`) inside the legacy GUI render context, at NEI's origin

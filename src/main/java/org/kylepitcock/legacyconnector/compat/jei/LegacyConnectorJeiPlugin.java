@@ -72,17 +72,14 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
         for (TemplateRecipeHandler handler : NeiBridge.templateHandlers()) {
             List<NeiBridge.Recipe> recipes = NeiBridge.recipes(handler);
             String path = "nei_" + handler.getClass().getName().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_]", "_");
-            RecipeType<NeiBridge.Recipe> type = RecipeType.create("legacyconnector", path, NeiBridge.Recipe.class);
-            String title;
-            try {
-                title = handler.getRecipeName();
-            } catch (RuntimeException | LinkageError e) {
-                title = handler.getClass().getSimpleName();
-            }
-            IDrawable icon = gui.createDrawableItemStack(recipes.isEmpty() || recipes.get(0).outputs().isEmpty()
-                    ? new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE)
-                    : recipes.get(0).outputs().get(0).stacks().get(0));
-            categories.add(new Category(type, Component.literal(title == null ? path : title), height(handler), icon, recipes, handler));
+            // under the mod's namespace (JEI names a category's mod after it), with the mod's machine as icon and catalyst
+            NeiBridge.Presentation shown = NeiBridge.present(handler, recipes);
+            RecipeType<NeiBridge.Recipe> type = RecipeType.create(shown.namespace(), path, NeiBridge.Recipe.class);
+            net.minecraft.world.item.ItemStack iconStack = !shown.catalysts().isEmpty() ? shown.catalysts().get(0)
+                    : !recipes.isEmpty() && !recipes.get(0).outputs().isEmpty() ? recipes.get(0).outputs().get(0).stacks().get(0)
+                    : new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.CRAFTING_TABLE);
+            IDrawable icon = gui.createDrawableItemStack(iconStack);
+            categories.add(new Category(type, Component.literal(shown.title()), height(handler), icon, recipes, handler, shown.catalysts()));
         }
         if (!categories.isEmpty()) registration.addRecipeCategories(categories.toArray(new IRecipeCategory[0])); // JEI rejects an empty list
     }
@@ -92,6 +89,20 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
             return handler.recipiesPerPage() <= 1 ? 2 * HEIGHT : HEIGHT;
         } catch (RuntimeException | LinkageError e) {
             return HEIGHT;
+        }
+    }
+
+    /** The machines that run each category's recipes (JEI lists them beside the category and under the machine's uses). */
+    @Override
+    public void registerRecipeCatalysts(mezz.jei.api.registration.IRecipeCatalystRegistration registration) {
+        for (Category c : categories) {
+            for (net.minecraft.world.item.ItemStack catalyst : c.catalysts) {
+                try {
+                    registration.addRecipeCatalyst(catalyst, c.type);
+                } catch (RuntimeException e) {
+                    LOG.debug("JEI refused catalyst {} of {}: {}", catalyst, c.type.getUid(), e.toString());
+                }
+            }
         }
     }
 
@@ -144,7 +155,8 @@ public final class LegacyConnectorJeiPlugin implements IModPlugin {
     }
 
     private record Category(RecipeType<NeiBridge.Recipe> type, Component title, int height, IDrawable icon,
-                            List<NeiBridge.Recipe> recipes, TemplateRecipeHandler handler) implements IRecipeCategory<NeiBridge.Recipe> {
+                            List<NeiBridge.Recipe> recipes, TemplateRecipeHandler handler,
+                            List<net.minecraft.world.item.ItemStack> catalysts) implements IRecipeCategory<NeiBridge.Recipe> {
         @Override
         public RecipeType<NeiBridge.Recipe> getRecipeType() {
             return type;
