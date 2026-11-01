@@ -43,10 +43,13 @@ public class LegacyGeneratorFeature extends Feature<LegacyGeneratorFeature.Confi
         }
         int chunkX = ctx.origin().getX() >> 4;
         int chunkZ = ctx.origin().getZ() >> 4;
+        // what the run builds becomes a locatable structure start (LegacyGeneratorStructures); generation itself is unchanged
+        LegacyGeneratorStructures.Observation observed = LegacyGeneratorStructures.begin(ctx.level(), id);
         try {
             g.runner().run(ctx.level(), chunkX, chunkZ);
             return true;
         } catch (RuntimeException | LinkageError e) {
+            if (observed != null) observed.undone = true; // a failed run is not recorded
             int n = FAILURES.incrementAndGet();
             if (n <= 3) {
                 LOG.error("Legacy world generator {} ({}) failed in chunk {},{}", id, g.generator().getClass().getName(), chunkX, chunkZ, e);
@@ -54,6 +57,8 @@ public class LegacyGeneratorFeature extends Feature<LegacyGeneratorFeature.Confi
                 LOG.error("Legacy world generators failed {} times so far (last: {}: {})", n, id, e.toString());
             }
             return false;
+        } finally {
+            LegacyGeneratorStructures.end(observed);
         }
     }
 }

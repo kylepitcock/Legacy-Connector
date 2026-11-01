@@ -44,6 +44,10 @@ public final class LegacyConfig {
             # Comma separated class name prefixes of legacy world generators that must not run below y=0.
             deepLayer.excludeGenerators =
 
+            # What legacy world generators build in place (shrines, towers, huts) is recorded as a modern structure where it is
+            # built, so /locate structure <mod>:legacy/<name> finds the ones in chunks that have generated.
+            structures.locatable = true
+
             # Legacy block subtypes (metadata variants with an item of their own) become blocks of their own, as in the 1.13
             # flattening: the item mod:name_3 places and names the block mod:name_3, so modern mods that use an item's block
             # (display stands, framed and copycat blocks) get the right subtype. false: one block per legacy block, as before
@@ -221,6 +225,14 @@ public final class LegacyConfig {
     /** Whether legacy block subtypes are flattened into blocks of their own (see BlockFlattening1710). */
     public static boolean flattenBlockSubtypes() {
         return bool("blocks.flattenSubtypes", true);
+    }
+
+    /**
+     * {@code structures.locatable}: what legacy world generators build in place is recorded as modern structure starts, so
+     * {@code /locate structure <mod>:legacy/<name>} finds it (LegacyGeneratorStructures).
+     */
+    public static boolean structuresLocatable() {
+        return bool("structures.locatable", true);
     }
 
     /** {@code villages.legacyBuildings}: legacy mods' village buildings join the vanilla village house pools. */
