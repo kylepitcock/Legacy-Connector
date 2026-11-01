@@ -18,10 +18,24 @@ public class ItemDoor extends Item {
         this.doorMaterial = Material.wood;
     }
 
-    /** Places a door at the position: the lower half carries the facing, the upper half is metadata 8. */
-    public static void placeDoorBlock(World world, int x, int y, int z, int facing, Block door) {
-        world.setBlock(x, y, z, door, facing & 3, 2);
-        world.setBlock(x, y + 1, z, door, 8, 2);
+    /**
+     * As 1.7.10: the lower half gets {@code meta} as given (facing, plus 4 when open), the upper half 8, plus 1 for a hinge on the right:
+     * right when a door stands only on the left, or when more full blocks flank the right side than the left (a door against a
+     * wall opens away from it). The modern state of both halves is put together by the world when the second half is written.
+     */
+    public static void placeDoorBlock(World world, int x, int y, int z, int meta, Block door) {
+        int dx = 0, dz = 0;
+        if (meta == 0) dz = 1;
+        if (meta == 1) dx = -1;
+        if (meta == 2) dz = -1;
+        if (meta == 3) dx = 1;
+        int left = (world.getBlock(x - dx, y, z - dz).isNormalCube() ? 1 : 0) + (world.getBlock(x - dx, y + 1, z - dz).isNormalCube() ? 1 : 0);
+        int right = (world.getBlock(x + dx, y, z + dz).isNormalCube() ? 1 : 0) + (world.getBlock(x + dx, y + 1, z + dz).isNormalCube() ? 1 : 0);
+        boolean doorLeft = world.getBlock(x - dx, y, z - dz) == door || world.getBlock(x - dx, y + 1, z - dz) == door;
+        boolean doorRight = world.getBlock(x + dx, y, z + dz) == door || world.getBlock(x + dx, y + 1, z + dz) == door;
+        boolean hingeRight = doorLeft && !doorRight || right > left;
+        world.setBlock(x, y, z, door, meta, 2);
+        world.setBlock(x, y + 1, z, door, 8 | (hingeRight ? 1 : 0), 2);
         world.notifyBlocksOfNeighborChange(x, y, z, door);
         world.notifyBlocksOfNeighborChange(x, y + 1, z, door);
     }

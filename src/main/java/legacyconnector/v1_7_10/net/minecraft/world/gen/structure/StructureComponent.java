@@ -152,10 +152,11 @@ public abstract class StructureComponent {
                         if (meta == 4) return 2;
                         if (meta == 5) return 3;
                     } else if (this.coordBaseMode == 3) {
+                        // as 1.7.10: 4 and 5 map to 2 and 3 here (not mirrored), which mods' layouts were drawn against
                         if (meta == 2) return 5;
                         if (meta == 3) return 4;
-                        if (meta == 4) return 3;
-                        if (meta == 5) return 2;
+                        if (meta == 4) return 2;
+                        if (meta == 5) return 3;
                     }
                 } else if (block == Blocks.stone_button) {
                     if (this.coordBaseMode == 0) {
@@ -184,16 +185,23 @@ public abstract class StructureComponent {
                         } else if (this.coordBaseMode == 3) {
                             if (meta == 2) return 5;
                             if (meta == 3) return 4;
-                            if (meta == 4) return 3;
-                            if (meta == 5) return 2;
+                            if (meta == 4) return 2;
+                            if (meta == 5) return 3;
                         }
                     }
                 } else if (this.coordBaseMode == 0) {
                     if (meta == 0 || meta == 2) return meta + 2 & 3;
                 } else if (this.coordBaseMode == 1) {
-                    return meta + 1 & 3;
+                    // 1.7.10's table (modes 1 and 3 mirror the piece, so this is no plain rotation)
+                    if (meta == 2) return 1;
+                    if (meta == 0) return 3;
+                    if (meta == 1) return 2;
+                    if (meta == 3) return 0;
                 } else if (this.coordBaseMode == 3) {
-                    return meta + 3 & 3;
+                    if (meta == 2) return 3;
+                    if (meta == 0) return 1;
+                    if (meta == 1) return 2;
+                    if (meta == 3) return 0;
                 }
             } else if (this.coordBaseMode == 0) {
                 if (meta == 2) return 3;
@@ -391,26 +399,15 @@ public abstract class StructureComponent {
         return false;
     }
 
+    /**
+     * As 1.7.10: {@code meta} is already the rotated facing (callers pass {@code getMetadataWithOffset(Blocks.wooden_door, m)}), so it
+     * goes to {@code ItemDoor.placeDoorBlock} unchanged; rotating it again here turned the doors of pieces in modes 1 and 3 around.
+     */
     protected void placeDoorAtCurrentPosition(World world, StructureBoundingBox box, Random rand, int x, int y, int z, int meta) {
         int i = this.getXWithOffset(x, z);
         int j = this.getYWithOffset(y);
         int k = this.getZWithOffset(x, z);
-        if (box.isVecInside(i, j, k)) {
-            int rotation = this.getMetadataWithOffset(Blocks.wooden_door, meta) & 3;
-            int dx = 0, dz = 0;
-            if (rotation == 0) dz = 1;
-            if (rotation == 1) dx = -1;
-            if (rotation == 2) dz = -1;
-            if (rotation == 3) dx = 1;
-            Block door = Blocks.wooden_door;
-            int left = (world.getBlock(i - dx, j, k - dz).isNormalCube() ? 1 : 0) + (world.getBlock(i - dx, j + 1, k - dz).isNormalCube() ? 1 : 0);
-            int right = (world.getBlock(i + dx, j, k + dz).isNormalCube() ? 1 : 0) + (world.getBlock(i + dx, j + 1, k + dz).isNormalCube() ? 1 : 0);
-            boolean doorLeft = world.getBlock(i - dx, j, k - dz) == door || world.getBlock(i - dx, j + 1, k - dz) == door;
-            boolean doorRight = world.getBlock(i + dx, j, k + dz) == door || world.getBlock(i + dx, j + 1, k + dz) == door;
-            boolean hinge = doorLeft && !doorRight || right > left;
-            world.setBlock(i, j, k, door, rotation, 2);
-            world.setBlock(i, j + 1, k, door, 8 | (hinge ? 1 : 0), 2);
-        }
+        if (box.isVecInside(i, j, k)) legacyconnector.v1_7_10.net.minecraft.item.ItemDoor.placeDoorBlock(world, i, j, k, meta, Blocks.wooden_door);
     }
 
     /** Chooses the block (and metadata) of each position of a randomized fill. */

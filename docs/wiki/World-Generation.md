@@ -159,7 +159,13 @@ vanilla makes it (its pools are not changed): the buildings become extra pieces 
 (`legacyconnector:legacy_village_building`), beside its streets with the front to the road, on free and dry ground only (a plot
 touching any other piece is skipped). How many: the share mod buildings had in a 1.7.10 village (their weights against vanilla's 91),
 counted against the village's own houses, and each building at most as often per village as 1.7.10 allowed (`villagePiecesLimit`).
-`villages.legacyBuildings=false` leaves them out. Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
+`villages.legacyBuildings=false` leaves them out. Doors of legacy structures: 1.7.10 kept a door's facing and open state in the lower half's metadata and the hinge in the upper's,
+so a half written on its own would keep the defaults of the rest (an upper half facing east); whenever legacy code writes a door half
+and the other half is there, the world puts both modern halves together (facing and open from the lower, hinge and powered from the
+upper), and reading a door back gives the nearest 1.7.10 metadata. `placeDoorAtCurrentPosition` passes the already rotated facing on
+unchanged and `ItemDoor.placeDoorBlock` picks the hinge from the neighbours, both as in 1.7.10; `getMetadataWithOffset` follows
+1.7.10's table exactly (its modes 1 and 3 mirror the piece, so directional blocks, ladders and pistons there are no plain rotation).
+Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
 loot table, so the pack's loot applies. Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
 by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
 are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and
