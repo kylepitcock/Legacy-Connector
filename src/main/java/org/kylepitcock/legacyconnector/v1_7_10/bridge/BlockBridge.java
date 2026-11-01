@@ -465,9 +465,19 @@ public final class BlockBridge {
         }
     }
 
+    /**
+     * 1.7.10's {@code Block.getBlockFromItem} was {@code getBlockById(Item.getIdFromItem(item))} on FML's block registry, which
+     * answers its default ({@code Blocks.air}) for an id without a block: an item that places no block (or null) gives air, never
+     * null. Mods rely on it: DragonAPI's {@code BlockKey} throws on a null block, so its wood/ore lookups by item
+     * ({@code ModWoodList.getModWood(ItemStack)}) failed for every plain item (ChromatiCraft's crystal furnace NEI handler).
+     */
     public static Block fromItem(Item item) {
-        if (item instanceof ItemBlock ib) return ib.mcc$block();
-        return ItemBridge.blockOf(item);
+        Block b = item instanceof ItemBlock ib ? ib.mcc$block() : item == null ? null : ItemBridge.blockOf(item);
+        if (b != null) return b;
+        synchronized (BlockBridge.class) {
+            ensureVanilla();
+            return BY_ID.get(0);
+        }
     }
 
     // ------------------------------------------------------------------ state translation
