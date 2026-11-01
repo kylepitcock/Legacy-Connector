@@ -5943,7 +5943,7 @@
    "mc": "1.7.10",
    "date": "2026-11-01",
    "status": "works",
-   "notes": "35 blocks, 698 recipes, machines push energy, fluids and items into modern machines."
+   "notes": "2026-11-01 server scenarios: wind turbine and DC/AC/gas/steam/micro/jet engines place, take fluids and run; the dynamo turns shaft power into RF (126 RF/t); handbook, items and 40+ machine GUIs open with correct slots; 35 blocks, 698 recipes. Open: the steam engine heats slowly (no power within 400 ticks over lava), hydrokinetic engine made no power in the test rig; machine chains were not played in survival."
   },
   {
    "name": "Runic Dungeons",
@@ -6723,8 +6723,8 @@
    "version": "4.2.3.5",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "works",
-   "notes": "Pieces of a survival playthrough verified: research and the Thaumonomicon, arcane workbench, wand and nodes, infusion, elemental tools, 157 blocks, 50 recipes, mob drops. Open: golem tasks, some GUIs, infused ore overlay (#75, #77)."
+   "status": "perfect",
+   "notes": "Survival-ready (played through 2026-11-01): scanning and research with the Thaumonomicon, arcane workbench and wands, aura nodes, crucible alchemy (aspects and catalyst consumed, output ejected), infusion, elemental tools, golems (placer, core, a Gather golem picks up loose items and fills its home chest), villages with Thaumcraft buildings, mob loot, 157 blocks, 50 recipes. Known: golem tasks beyond Gather are untested, infused ore overlay missing (#77), some GUIs (#75)."
   },
   {
    "name": "Thaumcraft Mob Aspects",
