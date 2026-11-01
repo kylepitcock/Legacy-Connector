@@ -99,7 +99,25 @@ public final class DeferredGenWrites {
         add(level, new Write(pos.immutable(), null, meta));
     }
 
+    /** The key of an unloaded chunk next to a border block (diagonals included), else Long.MIN_VALUE. */
+    private static long missingNeighbour(ServerLevel level, BlockPos pos) {
+        int cx = pos.getX() >> 4, cz = pos.getZ() >> 4;
+        int lx = pos.getX() & 15, lz = pos.getZ() & 15;
+        int dx0 = lx == 0 ? -1 : 0, dx1 = lx == 15 ? 1 : 0, dz0 = lz == 0 ? -1 : 0, dz1 = lz == 15 ? 1 : 0;
+        for (int dx = dx0; dx <= dx1; dx++) {
+            for (int dz = dz0; dz <= dz1; dz++) {
+                if ((dx | dz) != 0 && level.getChunkSource().getChunkNow(cx + dx, cz + dz) == null) return ChunkPos.asLong(cx + dx, cz + dz);
+            }
+        }
+        return Long.MIN_VALUE;
+    }
+
     private static void add(ServerLevel level, Write write) {
+        add(level, write, ChunkPos.asLong(write.pos.getX() >> 4, write.pos.getZ() >> 4));
+    }
+
+    /** Queues a write under the chunk whose load (or generation) releases it. */
+    private static void add(ServerLevel level, Write write, long key) {
         if (COUNT.get() >= MAX) {
             if (!warnedFull) {
                 warnedFull = true;
@@ -108,7 +126,6 @@ public final class DeferredGenWrites {
             return;
         }
         listen();
-        long key = ChunkPos.asLong(write.pos.getX() >> 4, write.pos.getZ() >> 4);
         boolean[] created = {false};
         PENDING.computeIfAbsent(level, l -> new ConcurrentHashMap<>()).computeIfAbsent(key, k -> {
             created[0] = true;
@@ -118,7 +135,7 @@ public final class DeferredGenWrites {
         // the chunk may be loaded already (generated earlier): place the blocks on the server thread, once the populator is done
         if (created[0]) {
             level.getServer().execute(() -> {
-                if (level.getChunkSource().getChunkNow(write.pos.getX() >> 4, write.pos.getZ() >> 4) != null) apply(level, key);
+                if (level.getChunkSource().getChunkNow(ChunkPos.getX(key), ChunkPos.getZ(key)) != null) apply(level, key);
             });
         }
     }
@@ -195,6 +212,13 @@ public final class DeferredGenWrites {
         COUNT.addAndGet(-writes.size());
         for (Write w : writes) {
             try {
+                // a block on a chunk border whose neighbouring chunk is not loaded (onPlace of hoppers, rails, redstone reads the
+                // neighbours, and waits on the main thread for that chunk): wait for the neighbour's load instead
+                long missing = missingNeighbour(level, w.pos);
+                if (missing != Long.MIN_VALUE) {
+                    add(level, w, missing);
+                    continue;
+                }
                 if (w.attach != null) {
                     BlockEntity be = level.getBlockEntity(w.pos);
                     if (be != null) w.attach.accept(be);
