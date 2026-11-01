@@ -57,6 +57,20 @@ public final class LegacyGenerators {
         if (!SOURCES.contains(source)) SOURCES.add(source);
     }
 
+    /** Sources whose legacy world reports its writes to {@link InPlaceStructureGuard} (their builds can be recorded as structures). */
+    private static final java.util.Set<Source> OBSERVABLE = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    /** Feature ids of generators of observable sources. */
+    private static final java.util.Set<ResourceLocation> OBSERVABLE_IDS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * As {@link #addSource}, for a family whose legacy world reports every write to {@link InPlaceStructureGuard#allowWrite}: what its
+     * generators build in place becomes locatable ({@link LegacyGeneratorStructures}).
+     */
+    public static void addObservableSource(Source source) {
+        OBSERVABLE.add(source);
+        addSource(source);
+    }
+
     /** The generator a {@code legacyconnector:legacy_generator} feature names, or null. */
     static Generator byId(ResourceLocation id) {
         return BY_ID.get(id);
@@ -103,6 +117,7 @@ public final class LegacyGenerators {
                         IDS.put(g.generator(), id);
                     }
                     BY_ID.put(id, g);
+                    if (OBSERVABLE.contains(s)) OBSERVABLE_IDS.add(id);
                     out.add(Map.entry(id, g));
                 }
             }
@@ -156,8 +171,10 @@ public final class LegacyGenerators {
     public static void contribute(Map<String, Supplier<byte[]>> out) {
         StringBuilder features = new StringBuilder("\"").append(MODIFIER).append('"');
         StringBuilder tag = new StringBuilder();
+        List<ResourceLocation> observable = new ArrayList<>();
         for (var e : snapshot()) {
             ResourceLocation id = e.getKey();
+            if (OBSERVABLE_IDS.contains(id)) observable.add(id);
             String dir = "data/" + id.getNamespace() + "/worldgen/";
             put(out, dir + "configured_feature/" + id.getPath() + ".json",
                     "{\"type\":\"legacyconnector:legacy_generator\",\"config\":{\"generator\":\"" + id + "\"}}");
@@ -169,6 +186,8 @@ public final class LegacyGenerators {
         put(out, "data/legacyconnector/tags/worldgen/placed_feature/legacy_generators.json", "{\"values\":[" + tag + "]}");
         put(out, "data/legacyconnector/neoforge/biome_modifier/legacy_worldgen.json",
                 "{\"type\":\"neoforge:add_features\",\"biomes\":{\"type\":\"neoforge:any\"},\"features\":[" + features + "],\"step\":\"" + STEP + "\"}");
+        // what the observable generators build in place, as locatable structures
+        LegacyGeneratorStructures.contribute(observable, out);
     }
 
     private static void put(Map<String, Supplier<byte[]>> out, String path, String json) {

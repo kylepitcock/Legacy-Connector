@@ -483,6 +483,8 @@ public class World implements IBlockAccess {
         if (!(lvl() instanceof net.minecraft.server.level.WorldGenRegion r) || p.getY() >= 0 && inDeepPass()) return;
         Runnable write = state != null ? () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.block(r.getLevel(), p, state)
                 : () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.DeferredGenWrites.meta(r.getLevel(), p, meta);
+        // part of what the generator run builds (a locatable legacy structure, LegacyGeneratorStructures)
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructures.observeDeferred(r, p, state);
         // a guarded generator call (InPlaceStructureGuard) keeps its deferred writes until it is known to stay
         if (!org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.holdDeferred(r, write)) write.run();
     }

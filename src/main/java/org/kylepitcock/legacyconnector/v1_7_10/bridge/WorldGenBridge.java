@@ -36,8 +36,33 @@ public final class WorldGenBridge {
         if (!hooked) {
             hooked = true;
             LegacyWorldGenFeature.addDecorator(WorldGenBridge::decorate);
-            org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.addSource(WorldGenBridge::features);
+            // the 1.7.10 world reports every write to InPlaceStructureGuard: what the generators build becomes locatable
+            org.kylepitcock.legacyconnector.core.worldgen.LegacyGenerators.addObservableSource(WorldGenBridge::features);
+            org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructures.addNaturalBlocks(WorldGenBridge::naturalLegacyBlock);
         }
+    }
+
+    /**
+     * Legacy blocks that terrain, trees and plants are made of (they do not make a generator's build a structure): logs, leaves,
+     * plants, vines, fluids, and the natural materials (ground, sand, snow, ice, gourds, cacti, coral).
+     */
+    private static boolean naturalLegacyBlock(net.minecraft.world.level.block.state.BlockState state) {
+        if (!(state.getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter a)) return false;
+        if (!(a.legacy() instanceof legacyconnector.v1_7_10.net.minecraft.block.Block b)) return false;
+        if (b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockLog || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockLeavesBase
+                || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockBush || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockVine
+                || b instanceof legacyconnector.v1_7_10.net.minecraft.block.BlockLiquid || b instanceof legacyconnector.v1_7_10.net.minecraftforge.fluids.IFluidBlock
+                || b instanceof legacyconnector.v1_7_10.net.minecraftforge.common.IPlantable) {
+            return true;
+        }
+        legacyconnector.v1_7_10.net.minecraft.block.material.Material m = b.getMaterial();
+        return m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.leaves || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.plants
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.vine || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.grass
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.ground || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.sand
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.snow || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.ice
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.packedIce || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.gourd
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.cactus || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.coral
+                || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.water || m == legacyconnector.v1_7_10.net.minecraft.block.material.Material.lava;
     }
 
     /** The generators in FML's order (weight, then registration: the sort is stable), each run as a feature of its own. */

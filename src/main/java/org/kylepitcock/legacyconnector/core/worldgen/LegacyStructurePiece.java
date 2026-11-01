@@ -93,12 +93,16 @@ public final class LegacyStructurePiece extends StructurePiece {
             return;
         }
         boolean keep;
+        // placed from inside a legacy generator's run (the mod's call): its blocks belong to this structure, not to the generator's
+        var observed = LegacyGeneratorStructures.suspend();
         try {
             // checked against the other modern structures like an in-place legacy generator (undone in this chunk when it builds into one)
             keep = InPlaceStructureGuard.guarded(level, generator, () -> source.place(h, level, box, seed));
         } catch (RuntimeException | LinkageError e) {
             LegacyStructureRegistry.failed(generator, "placing a piece", e);
             keep = false;
+        } finally {
+            LegacyGeneratorStructures.resume(observed);
         }
         if (!keep) off = true;
     }

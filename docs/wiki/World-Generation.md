@@ -123,7 +123,10 @@ generator, under the legacy mod's namespace and stable across sessions (`<mod>:l
 The pieces are placed in a chunk only when the mod's own call asks for that generator's structures there
 (`generateStructuresInChunk` no longer places anything itself, `generate` no longer lays out starts), so the mod's dimension checks
 and config switches still decide. The game and the mod's call meet in the same chunk's decoration, in either order (a piece handed
-over first waits for the call). `/locate structure <mod>:legacy/<name>` works natively. What stays on the 1.7.10 path: generators
+over first waits for the call). `/locate structure <mod>:legacy/<name>` works natively: the start check (`canSpawnStructureAtCoords`
+with the 1.7.10 seeding, `MapGenStructure.mcc$startAt`) stores nothing and normally reads only the seed and biomes, so it answers
+quickly for chunks that never generated; it can name a start
+the mod's own call then does not place (a dimension or config check of the mod's world generator). What stays on the 1.7.10 path: generators
 constructed after loading (mod dimensions' chunk providers), generators that override `generate`/`generateStructuresInChunk`
 (CustomOreGen, HBM), the layer's vanilla stand-ins, mod dimensions, the deep pass (skipped for modern ones) and levels without the
 set (superflat). `-Dlegacyconnector.modernStructures=false` turns it off. Not ported: Forge `InitMapGenEvent` replacements of
@@ -148,6 +151,42 @@ Limits: a mixed generator (ores, trees and structures in one call) loses its ore
 several chunks is undone only in the chunks where it hits the modern structure; the mod's own records of what it built
 (saved data, registries) are not undone. Thresholds: `-Dlegacyconnector.inPlaceGuard.buildMin`, `...refusedMin`; off:
 `-Dlegacyconnector.inPlaceGuard=false`. 1.12.2 generators are not journaled yet.
+
+### Locating what legacy generators build
+
+What an `IWorldGenerator` builds in place is found by `/locate structure` (`core/worldgen/LegacyGeneratorStructures`). Generation
+does not change: the same generator builds at the same places in the same decoration step; the build is only recorded.
+
+- Every 1.7.10 generator with a placed feature of its own gets a modern structure `<mod>:legacy/<name>` (type
+  `legacyconnector:legacy_generator_structure`), its structure set (`random_spread`, spacing 1, `locate_offset` 8, 0, 8) and the biome tag
+  `<mod>:has_structure/legacy/<name>` (`#minecraft:is_overworld`, `#minecraft:is_nether`, `#minecraft:is_end`). The name is the
+  generator's class in snake case without `_generator`/`_world_generator` and without the mod's name; a mod's one world generator is
+  `structures`. In ATM10 for example: `chromaticraft:legacy/pylon`, `chromaticraft:legacy/dungeon` (all of ChromatiCraft's
+  structures from its dungeon generator), `chromaticraft:legacy/data_tower`, `thaumcraft:legacy/structures`, `witchery:legacy/structures`.
+  The list is logged at startup ("N legacy world generator(s) are locatable structures ...").
+- The game never starts one by itself. Each run of a generator in a chunk is observed (the writes the legacy world makes, the same
+  hook `InPlaceStructureGuard` uses, and writes deferred past the region). A run that built a structure, 24 or more blocks put into
+  air, water or plants (or removed), of which 8 or more are not natural, gets a start: one `legacyconnector:legacy_marker` piece
+  whose box is the built area, in the chunk at the middle of the build. Natural blocks are ground, stone, sand, ores, logs, leaves,
+  plants, vines, snow, ice and fluids (legacy blocks by their class and material), so trees, flowers, lakes and ores are not
+  structures. The piece places nothing. The start is saved with the chunk and the structure check is refreshed, so `/locate`, maps
+  and structure-aware mods see it like any modern structure.
+- A generator whose runs "build" in more than a quarter of 256 or more chunks is no structure generator; it is no longer recorded
+  (logged once). The first recorded starts are logged ("Legacy structure ... recorded at ...").
+- Starts are not predicted. `/locate` finds the structures in chunks that have generated, not in new terrain. Predicting would mean
+  running the legacy generator for chunks that do not exist yet against a side-effect-free copy of the terrain, and the generators
+  that build the structures keep state of their own that such a dry run changes: ChromatiCraft's dungeon generator records each
+  chunk's outcome and skips the chunk afterwards, its pylon generator records every pylon (the pylon finder points at them), Witchery
+  keeps a list of its structures and builds none near one, Thaumcraft keeps a map of what it placed. A dry run would make them skip
+  or misplace the real structure.
+- Cost: one block read per legacy write while a generator runs (the replaced block), and per chunk one empty structure check per
+  generator. `/locate` with spacing 1 reads every chunk's saved structure data out to the nearest find (vanilla's own path; slow only
+  when nothing is found within the radius).
+- Limits: one id per generator (a generator that builds several kinds of structure, like ChromatiCraft's dungeon generator, finds the
+  nearest of any kind); runs undone by `InPlaceStructureGuard` are not recorded; generators without a placed feature (registered after
+  the data was built) and mod dimensions are not observed; 1.12.2 generators are not observed yet (their world does not report writes).
+  Thresholds: `-Dlegacyconnector.locatable.buildMin`, `...madeMin`. Off: `structures.locatable=false` ([Configuration](Configuration.md)),
+  which keeps the structures defined without biomes (so recorded starts still load) and records nothing.
 
 ### Legacy structure code
 

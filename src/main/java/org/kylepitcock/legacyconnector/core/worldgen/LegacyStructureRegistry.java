@@ -84,7 +84,19 @@ public final class LegacyStructureRegistry {
             return;
         }
         GeneratedPack.addContributor(LegacyStructureRegistry::contribute);
-        net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> clearLevels());
+        clearOnStop();
+    }
+
+    private static final java.util.concurrent.atomic.AtomicBoolean CLEARING = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * The level caches hold server levels strongly: they are emptied when the server stops (also used by LegacyGeneratorStructures
+     * without any legacy MapGenStructure, so a single player world reopened does not keep the previous one's levels).
+     */
+    private static void clearOnStop() {
+        if (CLEARING.compareAndSet(false, true)) {
+            net.neoforged.neoforge.common.NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> clearLevels());
+        }
     }
 
     /** Adds the structure generators of a legacy version (asked once legacy loading is over). */
@@ -240,6 +252,7 @@ public final class LegacyStructureRegistry {
         if (level == null || id == null) return false;
         Set<ResourceLocation> sets = SETS.get(level);
         if (sets == null) {
+            clearOnStop();
             Set<ResourceLocation> found = new HashSet<>();
             try {
                 var source = level.getChunkSource();

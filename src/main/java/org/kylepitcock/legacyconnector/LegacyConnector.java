@@ -60,6 +60,28 @@ public final class LegacyConnector {
         BIOME_SOURCES.register("legacy_layers", () -> org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyLayeredBiomeSource.CODEC);
     }
 
+    private static final DeferredRegister<net.minecraft.world.level.levelgen.structure.StructureType<?>> STRUCTURE_TYPES =
+            DeferredRegister.create(Registries.STRUCTURE_TYPE, MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType> STRUCTURE_PIECES =
+            DeferredRegister.create(Registries.STRUCTURE_PIECE, MOD_ID);
+
+    static {
+        // What legacy world generators build in place, recorded as locatable structures (core.worldgen.LegacyGeneratorStructures).
+        // Registered always, so recorded starts load even with structures.locatable=false.
+        STRUCTURE_TYPES.register("legacy_generator_structure", () -> {
+            net.minecraft.world.level.levelgen.structure.StructureType<org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructure> t =
+                    () -> org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructure.CODEC;
+            org.kylepitcock.legacyconnector.core.worldgen.LegacyGeneratorStructure.TYPE = t;
+            return t;
+        });
+        STRUCTURE_PIECES.register("legacy_marker", () -> {
+            net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType.ContextlessType t =
+                    org.kylepitcock.legacyconnector.core.worldgen.LegacyMarkerPiece::new;
+            org.kylepitcock.legacyconnector.core.worldgen.LegacyMarkerPiece.TYPE = t;
+            return t;
+        });
+    }
+
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
             MENUS.register("legacy_1_7_10", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
@@ -81,6 +103,8 @@ public final class LegacyConnector {
         FEATURES.register(modBus);
         CHUNK_GENERATORS.register(modBus);
         BIOME_SOURCES.register(modBus);
+        STRUCTURE_TYPES.register(modBus);
+        STRUCTURE_PIECES.register(modBus);
         modBus.addListener(org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement::onCommonSetup);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);

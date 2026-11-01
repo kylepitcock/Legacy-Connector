@@ -135,7 +135,18 @@ public final class InPlaceStructureGuard {
     /** Called by the legacy world before it writes a block: false refuses the write. */
     public static boolean allowWrite(LevelAccessor level, BlockPos pos, BlockState next) {
         Journal j = JOURNAL.get();
-        if (j == null || j.region != level || next == null) return true;
+        boolean journaled = j != null && j.region == level && next != null;
+        if (!journaled) {
+            // not near a modern structure: the write goes ahead; a generator run being observed (LegacyGeneratorStructures) still sees it
+            if (next != null && LegacyGeneratorStructures.observing(level)) {
+                try {
+                    LegacyGeneratorStructures.observeWrite(level, pos, level.getBlockState(pos), next);
+                } catch (RuntimeException e) {
+                    // a position the region cannot read: not observed
+                }
+            }
+            return true;
+        }
         try {
             BlockState prev = j.region.getBlockState(pos);
             boolean build = isBuild(prev, next);
@@ -147,6 +158,7 @@ public final class InPlaceStructureGuard {
                 return false;
             }
             if (build) j.builds++;
+            LegacyGeneratorStructures.observeWrite(level, pos, prev, next);
             if (!j.old.containsKey(pos)) {
                 CompoundTag be = null;
                 if (prev.hasBlockEntity()) {
@@ -172,7 +184,7 @@ public final class InPlaceStructureGuard {
         return true;
     }
 
-    private static boolean isBuild(BlockState prev, BlockState next) {
+    static boolean isBuild(BlockState prev, BlockState next) {
         if (next.hasBlockEntity()) return true;
         if (next.isAir()) return !prev.isAir();
         return prev.isAir() || prev.canBeReplaced() || !prev.getFluidState().isEmpty();
@@ -215,6 +227,7 @@ public final class InPlaceStructureGuard {
             }
         }
         countEntities(j, true);
+        LegacyGeneratorStructures.undone(j.region); // nothing of the call stays: not a locatable structure either
         int n = UNDONE.incrementAndGet();
         if (n <= 10 || n % 200 == 0) {
             ChunkPos c = j.region.getCenter();
@@ -269,7 +282,8 @@ public final class InPlaceStructureGuard {
                             StructureStart start = startChunk.getStartForStructure(ref.getKey());
                             if (start == null || !start.isValid() || !seen.add(start)) continue;
                             for (StructurePiece piece : start.getPieces()) {
-                                if (piece instanceof LegacyStructurePiece) continue;
+                                // legacy structures (made modern, or recorded where a legacy generator built) are no modern structures here
+                                if (piece instanceof LegacyStructurePiece || piece instanceof LegacyMarkerPiece) continue;
                                 if (piece.getBoundingBox().intersects(area)) out.add(piece.getBoundingBox());
                             }
                         }
