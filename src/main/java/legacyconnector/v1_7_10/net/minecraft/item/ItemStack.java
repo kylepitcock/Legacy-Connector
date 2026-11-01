@@ -73,7 +73,7 @@ public final class ItemStack {
 
     public ItemStack(Item item, int count, int meta) {
         this.mcc$item = item;
-        this.mcc$stack = ItemBridge.toModern(item, count, meta);
+        this.mcc$stack = ItemBridge.toModern(item, count, Math.max(0, meta)); // 1.7.10 clamps a negative damage to 0 (Traincraft's NEI handler loops forever on a damage of -1)
     }
 
     private ItemStack(net.minecraft.world.item.ItemStack modern, Item legacy) {
@@ -189,7 +189,7 @@ public final class ItemStack {
     }
 
     public void setItemDamage(int damage) {
-        mcc$stack = ItemBridge.withLegacyDamage(mcc$item, mcc$stack, damage);
+        mcc$stack = ItemBridge.withLegacyDamage(mcc$item, mcc$stack, Math.max(0, damage));
     }
 
     public int mcc$rawDamage() {
