@@ -1137,6 +1137,20 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         int c = model.indexOf(':');
         String modelNs = model.substring(0, c);
         String modelPath = model.substring(c + 1);
+        if (modelPath.startsWith("builtin/")) {
+            // "builtin/generated", "builtin/entity": the block is drawn by code (a model replaced in ModelBakeEvent, a TESR); the game's own model
+            // is an empty one, so nothing is drawn if the mod does not replace it and no missing-model warning is logged per variant
+            String emptyPath = "block/lc1122/builtin_empty";
+            if (GENERATED_MODELS.putIfAbsent(blockId.getNamespace() + "|builtin_empty", emptyPath) == null) {
+                JsonObject empty = new JsonObject();
+                empty.add("elements", new JsonArray());
+                String emptyJson = GSON.toJson(empty);
+                byte[] emptyBytes = emptyJson.getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + blockId.getNamespace() + "/models/" + emptyPath + ".json", () -> emptyBytes);
+            }
+            copy.addProperty("model", blockId.getNamespace() + ":" + emptyPath);
+            return copy;
+        }
         if (modelNs.equals("minecraft") && VANILLA_MODEL_RENAMES.containsKey(modelPath)) {
             // a vanilla model of 1.12 that 1.13 renamed (the loader renames the same ones in the mod's own model files)
             modelPath = VANILLA_MODEL_RENAMES.get(modelPath);
