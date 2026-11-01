@@ -168,7 +168,7 @@ public final class DeepLayer1710 {
     private static void run(Generator g, Random random, long chunkSeed, int chunkX, int chunkZ, World world) {
         random.setSeed(chunkSeed ^ DEEP_SEED);
         try {
-            LegacyModLocks.generation(g.lock, () -> g.generator.generate(random, chunkX, chunkZ, world, WorldGenBridge.dummyProvider(), WorldGenBridge.dummyProvider()));
+            LegacyModLocks.generation(g.lock, () -> g.generator.generate(random, chunkX, chunkZ, world, WorldGenBridge.dummyProvider(), world.getChunkProvider()));
         } catch (RuntimeException | LinkageError ex) {
             if (FAILED.add(g.className())) {
                 LOG.warn("Legacy world generator {} failed in the deep layer (it keeps running above y=0): {}", g.className(), ex.toString());

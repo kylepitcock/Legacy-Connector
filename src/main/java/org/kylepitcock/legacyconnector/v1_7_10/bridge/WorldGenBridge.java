@@ -105,7 +105,7 @@ public final class WorldGenBridge {
         World.mcc$setOreSplit(splitsOres(level, e));
         try {
             org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, e.generator,
-                    () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, DUMMY)));
+                    () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, DUMMY, world.getChunkProvider())));
         } finally {
             World.mcc$setOreSplit(false);
         }
@@ -168,6 +168,9 @@ public final class WorldGenBridge {
         World world = World.mcc$wrap(level);
         Random fmlRandom = new Random(worldSeed);
         long chunkSeed = chunkSeed(worldSeed, chunkX, chunkZ);
+        // FML's generateWorld passed the world's own chunk provider (ChunkProviderServer) as the last argument: generators call
+        // chunkExists/loadChunk on it and dereference the chunk (Mystcraft's MystWorldGenerator profiles the neighbours this way)
+        IChunkProvider chunkProvider = world.getChunkProvider();
         // the chunk provider's populate came first in 1.7.10, with its terrain events
         if (!modDimension) org.kylepitcock.legacyconnector.core.worldgen.InPlaceStructureGuard.run(level, "populate events",
                 () -> TerrainEvents1710.populate(level, world, chunkX, chunkZ, DUMMY));
@@ -177,7 +180,7 @@ public final class WorldGenBridge {
             fmlRandom.setSeed(chunkSeed);
             IChunkProvider provider = modDimension ? chunkGenerator : DUMMY;
             try {
-                Runnable call = () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, DUMMY));
+                Runnable call = () -> org.kylepitcock.legacyconnector.core.LegacyModLocks.generation(e.lock, () -> e.generator.generate(fmlRandom, chunkX, chunkZ, world, provider, chunkProvider));
                 if (modDimension) call.run();
                 else {
                     World.mcc$setOreSplit(splitsOres(level, e));
