@@ -380,8 +380,9 @@
    "name": "Applied Energistics 2",
    "version": "rv3-beta-6",
    "mc": "1.7.10",
-   "status": "partial",
-   "notes": "Loads, 16 GUIs open, blocks and items render. Some cable/part inventory icons are blank."
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 76 blocks (74 drop), 270 recipes. Network and autocrafting chains were not driven in survival; cable and part inventory icons are partly blank."
   },
   {
    "name": "ArchitectureCraft",
@@ -1509,6 +1510,14 @@
    "notes": "Self-tested in the GT New Horizons server test: 23 items, 18 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors. 7 blocks did not stay placed."
   },
   {
+   "name": "Carpenter's Blocks",
+   "version": "3.3.8.1",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 22 blocks, 22 recipes."
+  },
+  {
    "name": "Carry On",
    "version": "1.12.3",
    "mc": "1.12.2",
@@ -1573,20 +1582,20 @@
   },
   {
    "name": "Chisel",
-   "version": "2.16.15-GTNH",
-   "mc": "1.7.10",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Chiseled blocks render in the world and inventory (#28 fixed); limestone and marble generate."
-  },
-  {
-   "name": "Chisel",
    "version": "2.9.5.11",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 1441 items, 203 blocks, 4 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Chisel",
+   "version": "2.9.5.11",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 1388 block variants (1352 drop), 216 recipes."
   },
   {
    "name": "Chisel MC1.12.2-1.0.2.45",
@@ -1757,6 +1766,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 22 items, 7 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "ComputerCraft",
+   "version": "1.75",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 13 blocks, 647 recipes (turtle upgrades included)."
   },
   {
    "name": "Computronics",
@@ -2092,14 +2109,6 @@
   },
   {
    "name": "Draconic Evolution",
-   "version": "1.0.2h",
-   "mc": "1.7.10",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Draconium ore generates in the right dimensions (#45), the custom dragon and Chaos Guardian fight (#15)."
-  },
-  {
-   "name": "Draconic Evolution",
    "version": "2.3.28",
    "mc": "1.12.2",
    "source": "client",
@@ -2115,6 +2124,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 97 items, 37 blocks, 11 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "Draconic Evolution",
+   "version": "1.0.2h",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 49 blocks, 89 recipes; the Ender Dragon drops draconium dust."
   },
   {
    "name": "DummyCore",
@@ -2457,6 +2474,14 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "EnderIO",
+   "version": "2.3.0.429_beta",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 91 blocks, 152 recipes, wither skeletons drop; conduits and machines were not driven in survival."
   },
   {
    "name": "EnderStorage",
@@ -3822,8 +3847,9 @@
    "name": "IndustrialCraft 2",
    "version": "2.2.827-experimental",
    "mc": "1.7.10",
-   "status": "partial",
-   "notes": "Loads, 72 screens open. Long-running machine behaviour not verified."
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 128 blocks, 370 recipes. Machine chains and EU networks were not driven in survival."
   },
   {
    "name": "Infernal Mobs",
@@ -4775,6 +4801,14 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 223 items, 116 blocks, 5 entity types; every block placed and used, every item used, every entity spawned without errors. 27 blocks did not stay placed."
   },
   {
+   "name": "Natura",
+   "version": "2.2.0.1",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01 with Mantle: 226 blocks, 295 recipes, imps and flame spiders drop their loot."
+  },
+  {
    "name": "Nature's Compass",
    "version": "1.5.0-GTNH",
    "mc": "1.7.10",
@@ -5156,17 +5190,18 @@
    "name": "OpenBlocks",
    "version": "1.6",
    "mc": "1.7.10",
+   "source": "client",
+   "date": "2026-10-28",
    "status": "works",
-   "notes": "11 GUIs open."
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 84 items, 40 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
    "name": "OpenBlocks",
    "version": "1.6",
    "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
+   "date": "2026-11-01",
    "status": "works",
-   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 84 items, 40 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
+   "notes": "Survival-tested 2026-11-01: 71 blocks, 116 recipes."
   },
   {
    "name": "OpenComputers",
@@ -7114,13 +7149,6 @@
   },
   {
    "name": "Tinkers' Construct",
-   "version": "1.8.8",
-   "mc": "1.7.10",
-   "status": "partial",
-   "notes": "Loads, tables and smeltery render, the manual opens. No bridge to a modern Tinkers' Construct yet; manual item icons draw black."
-  },
-  {
-   "name": "Tinkers' Construct",
    "version": "1.12.2-2.13.0.183",
    "mc": "1.12.2",
    "source": "corpus",
@@ -7153,6 +7181,14 @@
    "date": "2026-11-01",
    "status": "works",
    "notes": "246 recipes, blocks and fluids register, slime islands generate. Smeltery and tool station use were not driven in survival yet."
+  },
+  {
+   "name": "Tinkers' Construct",
+   "version": "1.7.10-1.8.8",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 273 blocks, 476 recipes, King Slime and slimes drop their loot; smeltery and tool station were not driven in survival."
   },
   {
    "name": "Tinkers' Gregworks",
