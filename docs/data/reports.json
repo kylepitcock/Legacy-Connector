@@ -191,6 +191,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/roguelike-dungeons/download/2294894",
    "date": "2026-11-01",
    "open": false
+  },
+  {
+   "issue": 128,
+   "mod": "PortalGun-4.0.0-beta-6-fix-1",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "None of the items or blocks works, but the mod loads and you can retrieve the items from creative mode.",
+   "lc": "0.3.10",
+   "neoforge": "21.1.252",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/portal-gun",
+   "date": "2026-11-01",
+   "open": true
   }
  ]
 }
