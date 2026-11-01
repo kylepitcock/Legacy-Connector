@@ -156,8 +156,11 @@ public final class LegacyGenerators {
     public static void contribute(Map<String, Supplier<byte[]>> out) {
         StringBuilder features = new StringBuilder("\"").append(MODIFIER).append('"');
         StringBuilder tag = new StringBuilder();
+        // a feature listed twice in one step is a feature order cycle in every biome (vanilla's indexer throws): each id once
+        java.util.Set<ResourceLocation> seen = new java.util.HashSet<>();
         for (var e : snapshot()) {
             ResourceLocation id = e.getKey();
+            if (!seen.add(id)) continue;
             String dir = "data/" + id.getNamespace() + "/worldgen/";
             put(out, dir + "configured_feature/" + id.getPath() + ".json",
                     "{\"type\":\"legacyconnector:legacy_generator\",\"config\":{\"generator\":\"" + id + "\"}}");
