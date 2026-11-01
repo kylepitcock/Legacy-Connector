@@ -536,6 +536,14 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 4 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Avaritia",
+   "version": "1.13",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 9 blocks, 4 entity types, 18 recipes (extreme crafting table, Neutronium chain), all blocks drop."
+  },
+  {
    "name": "Avaritiaddons",
    "version": "1.9.3-GTNH",
    "mc": "1.7.10",
@@ -1057,14 +1065,6 @@
   },
   {
    "name": "Biomes O' Plenty",
-   "version": "2.1.0",
-   "mc": "1.7.10",
-   "date": "2026-10-28",
-   "status": "works",
-   "notes": "Biomes and the BoP world type generate with their plants and blocks (#4, #58 fixed)."
-  },
-  {
-   "name": "Biomes O' Plenty",
    "version": "7.0.1.2445",
    "mc": "1.12.2",
    "source": "client",
@@ -1080,6 +1080,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 306 items, 83 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors. 24 blocks did not stay placed."
+  },
+  {
+   "name": "Biomes O' Plenty",
+   "version": "2.1.0",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 261 blocks (60 non-dropping are plants, leaves and foliage), 135 recipes, mobs drop; biomes generate."
   },
   {
    "name": "BlockLimiter. Restrict your Blocks",
@@ -1172,6 +1180,14 @@
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 175 items, 41 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 15 blocks did not stay placed."
   },
   {
+   "name": "Blood Magic: Alchemical Wizardry",
+   "version": "1.3.3-17",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 69 blocks, 42 entity types, 134 recipes; demons and elementals drop their loot; altar, rituals and orb chain not played through."
+  },
+  {
    "name": "Blood Magic: Alchemical Wizardry v1.3.3",
    "version": "",
    "mc": "1.7.10",
@@ -1209,19 +1225,20 @@
   },
   {
    "name": "Botania",
-   "version": "r1.8-249",
-   "mc": "1.7.10",
-   "status": "partial",
-   "notes": "Loads with the Baubles bridge (Curios installed): 771 items, 307 blocks and 19 entity types register and self-test. GUIs and gameplay not verified yet."
-  },
-  {
-   "name": "Botania",
    "version": "1.12.28-GTNH",
    "mc": "1.7.10",
    "source": "client",
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 767 items, 306 blocks, 19 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "Botania",
+   "version": "r1.8-249",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 578 blocks, 19 entity types, 1237 recipes (16 custom-class recipes show no static result), 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). Mana networks, petal apothecary and the Gaia fight were not played through."
   },
   {
    "name": "Botania r1.10-363",
@@ -2652,18 +2669,18 @@
    "name": "Extra Utilities",
    "version": "1.2.12",
    "mc": "1.7.10",
+   "source": "client",
    "date": "2026-10-28",
-   "status": "partial",
-   "notes": "Loads; the Deep Dark portal builds its room and the player lands in it. Other machines not verified."
+   "status": "works",
+   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 82 items, 56 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
   },
   {
    "name": "Extra Utilities",
    "version": "1.2.12",
    "mc": "1.7.10",
-   "source": "client",
-   "date": "2026-10-28",
+   "date": "2026-11-01",
    "status": "works",
-   "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 82 items, 56 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+   "notes": "Survival-tested 2026-11-01: 382 blocks (all drop), 456 recipes; a few hidden blocks show raw names."
   },
   {
    "name": "ExtraTiC",
@@ -2792,13 +2809,6 @@
   },
   {
    "name": "Forestry",
-   "version": "4.2.16.64",
-   "mc": "1.7.10",
-   "status": "partial",
-   "notes": "Loads after the BlockCocoa constructor fix; 45 blocks and 533 items register. GUIs and genetics gameplay not verified yet."
-  },
-  {
-   "name": "Forestry",
    "version": "5.8.2.422",
    "mc": "1.12.2",
    "source": "corpus",
@@ -2814,6 +2824,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 564 items, 44 blocks, 3 entity types; every block placed and used, every item used, every entity spawned without errors. 9 blocks did not stay placed."
+  },
+  {
+   "name": "Forestry",
+   "version": "4.2.16.64",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 88 blocks, 395 recipes, bees, trees and farms register; spawned butterflies drop nothing without genome data (test artifact). Bee breeding chains not played through."
   },
   {
    "name": "Forestry for Minecraft",
@@ -5663,6 +5681,14 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 499 items, 37 blocks, 29 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (0%). 7 blocks did not stay placed."
   },
   {
+   "name": "Railcraft",
+   "version": "9.12.2.0",
+   "mc": "1.7.10",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Survival-tested 2026-11-01: 247 blocks, 26 entity types, 669 recipes; blocks break and drop. Carts and boilers not played through."
+  },
+  {
    "name": "RandomThings",
    "version": "2.6.6",
    "mc": "1.7.10",
@@ -7213,8 +7239,9 @@
    "name": "Twilight Forest",
    "version": "2.3.7",
    "mc": "1.7.10",
+   "date": "2026-11-01",
    "status": "works",
-   "notes": "Portal, dimension generation, entities and loot verified."
+   "notes": "Survival-tested 2026-11-01: 143 blocks, 76 entity types; bosses (Snow Queen, Goblin Knight) drop their loot and trophies; 103 recipes. Dimension portal and the boss ladder were not walked end to end."
   },
   {
    "name": "Underlay",
