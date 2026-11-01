@@ -71,7 +71,8 @@ public final class LegacyParticles1122 {
         float rxz = (float) Math.cos(pitch);
         float partial = event.getPartialTick().getGameTimeDeltaPartialTick(false);
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderContext.beginWorld(event.getPoseStack(), buffers, 0xF000F0, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        RenderContext.beginWorld(event.getPoseStack(), buffers, 0xF000F0, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                RenderContext.KIND_PARTICLES);
         try {
             RenderContext.setBlend(true);
             RenderContext.bindTexture(org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern("minecraft", "textures/particle/particles.png"));

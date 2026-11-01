@@ -242,6 +242,14 @@ public final class LegacyConfig {
         return bool("compat.auroras.irisPackCheck", true);
     }
 
+    /**
+     * {@code render.irisCompat}: legacy rendering adapts to an Iris shader pack in use (sky, particle and glow geometry through
+     * the programs Iris has for them, overlays and glows left out of the shadow map, no particles spawned by the shadow pass).
+     */
+    public static boolean renderIrisCompat() {
+        return bool("render.irisCompat", true);
+    }
+
     public static boolean deepLayerEnabled() {
         return bool("deepLayer.enabled", true);
     }

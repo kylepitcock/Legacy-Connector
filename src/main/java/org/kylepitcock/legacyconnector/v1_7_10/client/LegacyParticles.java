@@ -68,7 +68,8 @@ public final class LegacyParticles {
         float rxy = (float) (rx * Math.sin(pitch));
         float rxz = (float) Math.cos(pitch);
         var buffers = Minecraft.getInstance().renderBuffers().bufferSource();
-        RenderContext.beginWorld(event.getPoseStack(), buffers, 0xF000F0, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        RenderContext.beginWorld(event.getPoseStack(), buffers, 0xF000F0, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY,
+                RenderContext.KIND_PARTICLES);
         try {
             RenderContext.setBlend(true);
             effects().mcc$render(event.getPartialTick().getGameTimeDeltaPartialTick(false), rx, rxz, rz, ryz, rxy, event.getFrustum(), CULL_BUILT_IN, CULL_MODS);

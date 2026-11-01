@@ -30,7 +30,7 @@ public final class LegacyRenderTypes extends RenderType {
         super(name, format, mode, size, crumbling, sort, setup, clear);
     }
 
-    private static final Function<ResourceLocation, RenderType> CUTOUT_NO_DEPTH = Util.memoize(texture -> create(
+    private static final Function<ResourceLocation, RenderType> CUTOUT_NO_DEPTH = Util.memoize(texture -> batchingClass(create(
             "legacyconnector_cutout_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, false,
             CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_CUTOUT_NO_CULL_SHADER)
@@ -40,9 +40,9 @@ public final class LegacyRenderTypes extends RenderType {
                     .setLightmapState(LIGHTMAP)
                     .setOverlayState(OVERLAY)
                     .setDepthTestState(LEGACY_NO_DEPTH)
-                    .createCompositeState(true)));
+                    .createCompositeState(true)), "WATER_MASK"));
 
-    private static final Function<ResourceLocation, RenderType> TRANSLUCENT_NO_DEPTH = Util.memoize(texture -> create(
+    private static final Function<ResourceLocation, RenderType> TRANSLUCENT_NO_DEPTH = Util.memoize(texture -> batchingClass(create(
             "legacyconnector_translucent_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, true, true,
             CompositeState.builder()
                     .setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
@@ -53,9 +53,9 @@ public final class LegacyRenderTypes extends RenderType {
                     .setOverlayState(OVERLAY)
                     .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
-                    .createCompositeState(true)));
+                    .createCompositeState(true)), "WATER_MASK"));
 
-    private static final RenderType UNTEXTURED_NO_DEPTH = create("legacyconnector_untextured_no_depth", DefaultVertexFormat.POSITION_COLOR,
+    private static final RenderType UNTEXTURED_NO_DEPTH = batchingClass(create("legacyconnector_untextured_no_depth", DefaultVertexFormat.POSITION_COLOR,
             VertexFormat.Mode.QUADS, 1536, false, true,
             CompositeState.builder()
                     .setShaderState(POSITION_COLOR_SHADER)
@@ -63,7 +63,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
-                    .createCompositeState(false));
+                    .createCompositeState(false)), "WATER_MASK");
 
     /**
      * glBlendFunc(GL_SRC_ALPHA, GL_ONE) with a texture: additive light weighted by alpha (Thaumcraft's aura nodes, beams and
@@ -79,7 +79,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setWriteMaskState(COLOR_WRITE)
                     .createCompositeState(false)));
 
-    private static final Function<ResourceLocation, RenderType> ADDITIVE_ALPHA_NO_DEPTH = Util.memoize(texture -> create(
+    private static final Function<ResourceLocation, RenderType> ADDITIVE_ALPHA_NO_DEPTH = Util.memoize(texture -> batchingClass(create(
             "legacyconnector_additive_alpha_no_depth", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 1536, false, true,
             CompositeState.builder()
                     .setShaderState(RENDERTYPE_EYES_SHADER)
@@ -88,7 +88,7 @@ public final class LegacyRenderTypes extends RenderType {
                     .setCullState(NO_CULL)
                     .setDepthTestState(LEGACY_NO_DEPTH)
                     .setWriteMaskState(COLOR_WRITE)
-                    .createCompositeState(false)));
+                    .createCompositeState(false)), "WATER_MASK"));
 
     /**
      * Additive (GL_SRC_ALPHA, GL_ONE) textured geometry in screens: the eyes shader applies the world's fog, which at GUI
@@ -128,8 +128,92 @@ public final class LegacyRenderTypes extends RenderType {
                         .createCompositeState(false));
     }
 
-    private static final RenderType LINES = legacyLines(true);
-    private static final RenderType LINES_NO_DEPTH = legacyLines(false);
+    private static final RenderType LINES = batchingClass(legacyLines(true), "LINES");
+    private static final RenderType LINES_NO_DEPTH = batchingClass(legacyLines(false), "WATER_MASK");
+
+    /**
+     * Iris's batched entity rendering (with a shader pack) draws render types sorted by a class it derives from vanilla state
+     * shards: vanilla's no-depth types (NO_DEPTH_TEST) and "lines" are drawn after everything else. The legacy no-depth types use
+     * a state shard of their own and the lines type another name, so they fell into the opaque or general translucent class and
+     * were drawn before geometry they were meant to cover. They get the class of their vanilla counterparts.
+     */
+    private static RenderType batchingClass(RenderType type, String irisClass) {
+        org.kylepitcock.legacyconnector.compat.IrisState.setBatchingClass(type, irisClass);
+        return type;
+    }
+
+    // ---------------------------------------------------------------- shader packs (Iris)
+    // Iris picks a gbuffers program by the shader a render type sets (GameRenderer's getters, which it overrides) and the phase.
+    // The emulation's normal types use the entity shaders, which Iris maps to gbuffers_entities / gbuffers_block (lit, shadowed,
+    // fogged as a solid object). With a shader pack in use, legacy geometry that is not an object takes the shader of its vanilla
+    // equivalent instead: sky geometry the position_tex_color / position_color shaders (gbuffers_skytextured / skybasic during
+    // the sky phase), particles the particle shader (gbuffers_textured_lit / weather), additive glows the beacon beam shader
+    // (gbuffers_beaconbeam, full bright in every phase; the eyes shader becomes gbuffers_block while block entities draw).
+
+    /** Legacy sky geometry: unlit, no depth writes (1.7.10's renderSky ran with glDepthMask(false)). */
+    private static final java.util.function.BiFunction<ResourceLocation, Boolean, RenderType> SKY_TEXTURED = Util.memoize((texture, blend) -> create(
+            "legacyconnector_sky_textured", DefaultVertexFormat.POSITION_TEX_COLOR, VertexFormat.Mode.QUADS, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(new ShaderStateShard(net.minecraft.client.renderer.GameRenderer::getPositionTexColorShader))
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(blend ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false)));
+
+    private static final RenderType SKY_UNTEXTURED = create("legacyconnector_sky_untextured", DefaultVertexFormat.POSITION_COLOR,
+            VertexFormat.Mode.QUADS, 1536, false, false,
+            CompositeState.builder()
+                    .setShaderState(POSITION_COLOR_SHADER)
+                    .setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setWriteMaskState(COLOR_WRITE)
+                    .createCompositeState(false));
+
+    /** Legacy particles as vanilla's particle sheets draw: the particle shader, lightmap, depth writes, both sides. */
+    private static final java.util.function.BiFunction<ResourceLocation, Boolean, RenderType> PARTICLE = Util.memoize((texture, blend) -> create(
+            "legacyconnector_particle", DefaultVertexFormat.PARTICLE, VertexFormat.Mode.QUADS, 1536, false, blend,
+            CompositeState.builder()
+                    .setShaderState(new ShaderStateShard(net.minecraft.client.renderer.GameRenderer::getParticleShader))
+                    .setTextureState(new TextureStateShard(texture, false, false))
+                    .setTransparencyState(blend ? TRANSLUCENT_TRANSPARENCY : NO_TRANSPARENCY)
+                    .setCullState(NO_CULL)
+                    .setLightmapState(LIGHTMAP)
+                    .createCompositeState(false)));
+
+    private record GlowKey(ResourceLocation texture, boolean alphaWeighted, boolean depthTest) {}
+
+    /** Additive light (GL_SRC_ALPHA or GL_ONE, GL_ONE) through the beacon beam shader: no depth writes, both sides. */
+    private static final Function<GlowKey, RenderType> GLOW = Util.memoize(k -> {
+        RenderType type = create(k.depthTest() ? "legacyconnector_glow" : "legacyconnector_glow_no_depth", DefaultVertexFormat.BLOCK,
+                VertexFormat.Mode.QUADS, 1536, false, true,
+                CompositeState.builder()
+                        .setShaderState(RENDERTYPE_BEACON_BEAM_SHADER)
+                        .setTextureState(new TextureStateShard(k.texture(), false, false))
+                        .setTransparencyState(k.alphaWeighted() ? LIGHTNING_TRANSPARENCY : ADDITIVE_TRANSPARENCY)
+                        .setCullState(NO_CULL)
+                        .setDepthTestState(k.depthTest() ? LEQUAL_DEPTH_TEST : LEGACY_NO_DEPTH)
+                        .setWriteMaskState(COLOR_WRITE)
+                        .createCompositeState(false));
+        return k.depthTest() ? type : batchingClass(type, "WATER_MASK");
+    });
+
+    public static RenderType skyTextured(ResourceLocation texture, boolean blend) {
+        return SKY_TEXTURED.apply(texture, blend);
+    }
+
+    public static RenderType skyUntextured() {
+        return SKY_UNTEXTURED;
+    }
+
+    public static RenderType particle(ResourceLocation texture, boolean blend) {
+        return PARTICLE.apply(texture, blend);
+    }
+
+    /** Additive textured light under a shader pack; {@code alphaWeighted}: GL_SRC_ALPHA, GL_ONE rather than GL_ONE, GL_ONE. */
+    public static RenderType glow(ResourceLocation texture, boolean alphaWeighted, boolean depthTest) {
+        return GLOW.apply(new GlowKey(texture, alphaWeighted, depthTest));
+    }
 
     /** GL_LINES in the world, one pixel wide (the vanilla line shader widens them in screen space). */
     public static RenderType lines(boolean depthTest) {
