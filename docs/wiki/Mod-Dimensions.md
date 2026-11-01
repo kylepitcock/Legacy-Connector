@@ -6,6 +6,11 @@ A dimension a legacy mod registers with `DimensionManager.registerDimension` bec
 `legacyconnector:dim_<id>`. Its chunk generator (`LegacyChunkGenerator`) runs the mod's `WorldProvider.createChunkGenerator()`:
 terrain comes from `provideChunk` (block/metadata arrays), trees, structures and ores from `populate`. Biomes come from the
 provider's own `WorldChunkManager` layers (`LegacyBiomeSource`), and `World.provider` is an instance of the mod's provider class.
+After `populate` the mods' IWorldGenerators run, as `Chunk.populateChunk` ran them; hooks that coremods patched around that pass
+run first (`LegacyChunkGenerator.addPopulationInterceptor`, a cancelled hook skips the pass): DragonAPI's `ChunkPopulationEvent`,
+from which ChromatiCraft places its dimension structures. Those are computed whole at startup into per-chunk buffers (about
+100 MB in a heap summary of an ATM10 pack) and each chunk's part is placed and dropped when the chunk populates, so the buffers
+of chunks nobody generated stay, as in 1.7.10.
 `ServerConfigurationManager.transferPlayerToDimension` and `Teleporter` work as in 1.7.10. Verified with Twilight Forest's
 terrain, portal and fog, and Galacticraft's planets (per-planet gravity, silent space). A dimension takes its fog colour, cloud height, sky/cloud/weather renderers and flat-world horizon from its legacy `WorldProvider`; legacy sky renderers that draw with unsupported GL fall back to the vanilla sky.
 Dimensions registered while the server runs get the same kind of level on first use (`worldServerForDimension`,
