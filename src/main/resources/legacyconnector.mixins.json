@@ -11,6 +11,7 @@
     "PlacedFeatureOreGateMixin",
     "TargetingConditionsMixin",
     "CreativeTabDuplicateMixin",
+    "JigsawStructureLegacyVillageMixin",
     "ServerLevelBlockFamilyMixin",
     "LevelChunkBlockFamilyMixin",
     "perf.BlockSlotMixin",

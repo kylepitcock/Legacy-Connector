@@ -160,6 +160,11 @@ public final class LegacyVillagePoolElement extends StructurePoolElement {
         return shapes[mode];
     }
 
+    /** The footprint of the building relative to its plot corner in a 1.7.10 mode (coordBaseMode), or null when it builds nothing there. */
+    public BoundingBox footprint(int mode) {
+        return shape(mode);
+    }
+
     /** The footprint (x by y by z) facing north, for the log. */
     public String describeFootprint() {
         BoundingBox b = shape(0);

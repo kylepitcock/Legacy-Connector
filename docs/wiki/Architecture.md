@@ -41,7 +41,7 @@ were written against:
 
 Legacy content enters the game through the **native extension points** a 1.21.1 mod would use, and the layer only translates
 the legacy API into them: biomes through the pack's biome placement, world generators as placed features in biome modifiers,
-village buildings as jigsaw elements of the village pools, structure chests through loot tables (and global loot modifiers),
+village buildings as extra pieces of the vanilla village structure (vanilla's layout untouched), structure chests through loot tables (and global loot modifiers),
 spawns through biome modifiers, recipes and tags as a data pack, containers as capabilities. Post-generation decorators,
 mixins that override a vanilla result, or filling things directly are avoided where a native hook exists: they ignore the pack's
 other mods (legacy village pieces overlapped houses, legacy chests skipped the pack's loot, a biome override was bypassed by
