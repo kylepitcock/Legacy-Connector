@@ -465,7 +465,16 @@ public final class ItemBridge {
         if (!todo.isEmpty()) LOG.debug("Late subtype discovery: {} item(s), {} more item variant(s)", todo.size(), BuiltInRegistries.ITEM.size() - before);
     }
 
-    public static synchronized void registerBlockItem(ItemBlock item, Block block, ResourceLocation blockId, String legacyName) {
+    public static synchronized void registerBlockItem(ItemBlock item, Block block, ResourceLocation requestedId, String legacyName) {
+        ResourceLocation blockId = requestedId;
+        if (blockId == null || blockId.equals(BuiltInRegistries.BLOCK.getDefaultKey())) {
+            // the block's modern twin is not in the block registry (getKey answers the default, air): every such item would
+            // register as minecraft:air and be dropped as a duplicate. Use the legacy name the item is registered by.
+            blockId = Ids.location(legacyName, "minecraft");
+            LOG.warn("Block item {} ({}) of block {} has no registered modern block; registering it as {}", legacyName, item.getClass().getName(),
+                    block == null ? null : block.getClass().getName(), blockId);
+        }
+        final ResourceLocation id = blockId;
         index(legacyName, nextId++, item);
         MOD_ITEMS.add(item);
         BLOCK_ITEMS.put(block, item);
@@ -475,7 +484,7 @@ public final class ItemBridge {
         Collections.reverse(metas); // meta 0 last, so it becomes the block's canonical BlockItem
         for (int meta : metas) {
             LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
-            item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(blockId, meta), modern));
+            item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(id, meta), modern));
         }
         if (discoveryFailed) {
             discoveryFailed = false;
@@ -483,7 +492,7 @@ public final class ItemBridge {
                 for (int meta : discoverMetas(item)) {
                     if (item.mcc$variants.containsKey(meta)) continue;
                     LegacyBlockItemAdapter modern = new LegacyBlockItemAdapter(adapter, item, meta, properties(item));
-                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(blockId, meta), modern));
+                    item.mcc$variants.put(meta, LegacyRegistrar.register(BuiltInRegistries.ITEM, variantId(id, meta), modern));
                 }
             });
         }
@@ -596,9 +605,9 @@ public final class ItemBridge {
             }
             for (Object o : list) if (o instanceof ItemStack s && s.getItem() == item) metas.add(s.getItemDamage() & 0x7FFF);
             addUnlistedSubtypes(item, metas);
-            if (metas.size() > 256) {
-                LOG.warn("{} reports {} subtypes; flattening only the first 256", item, metas.size());
-                while (metas.size() > 256) metas.pollLast();
+            if (metas.size() > 512) {
+                LOG.warn("{} reports {} subtypes; flattening only the first 512", item, metas.size());
+                while (metas.size() > 512) metas.pollLast();
             }
         }
         return new ArrayList<>(metas);

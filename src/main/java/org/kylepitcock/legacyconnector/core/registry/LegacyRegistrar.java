@@ -20,7 +20,8 @@ public final class LegacyRegistrar {
         }
         if (registry.containsKey(id)) {
             // Legacy FML tolerated (and warned about) duplicate names; the modern registry would throw.
-            org.slf4j.LoggerFactory.getLogger("Legacy Connector").warn("Duplicate legacy registration of {} in {}; keeping the first", id, registry.key().location());
+            org.slf4j.LoggerFactory.getLogger("Legacy Connector").warn("Duplicate legacy registration of {} in {}; keeping the first (dropped {})", id, registry.key().location(),
+                    value instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyItemHolder h && h.legacyItem() != null ? h.legacyItem().getClass().getName() : value.getClass().getName());
             return registry.get(id);
         }
         return Registry.register(registry, id, value);
