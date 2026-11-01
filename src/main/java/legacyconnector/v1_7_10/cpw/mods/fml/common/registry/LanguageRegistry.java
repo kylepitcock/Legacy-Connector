@@ -62,6 +62,39 @@ public class LanguageRegistry {
         }
     }
 
+    private static final java.util.Set<java.nio.file.Path> MCC$SCANNED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private static final java.util.regex.Pattern MCC$EN_US = java.util.regex.Pattern.compile("assets/[^/]+/lang/en_us\\.(lang|json)",
+            java.util.regex.Pattern.CASE_INSENSITIVE);
+
+    /**
+     * FML 1.7.10's {@code loadLanguagesFor}: before a mod is constructed, every {@code assets/<domain>/lang/en_US.lang} of its jar
+     * goes into the server translation table, so {@code StatCollector.translateToLocal} works in static initializers and on the
+     * server (ReactorCraft translates its ore names, "ore.cadmium", in the constructor of its ore enum). The converted
+     * {@code en_us.json} of a translated jar is read the same way. Each jar is read once.
+     */
+    public static void mcc$loadLanguagesFor(java.nio.file.Path jar) {
+        if (jar == null || !java.nio.file.Files.isRegularFile(jar) || !MCC$SCANNED.add(jar.toAbsolutePath())) return;
+        try (java.util.zip.ZipFile zip = new java.util.zip.ZipFile(jar.toFile())) {
+            var entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                var e = entries.nextElement();
+                if (e.isDirectory() || !MCC$EN_US.matcher(e.getName()).matches()) continue;
+                try (java.io.InputStream in = zip.getInputStream(e)) {
+                    if (e.getName().endsWith(".json")) {
+                        net.minecraft.locale.Language.loadFromJson(in, (k, v) -> GeneratedTranslations.putBundled("en_US", k, v));
+                    } else {
+                        legacyconnector.v1_7_10.net.minecraft.util.StringTranslate.parseLangFile(in)
+                                .forEach((k, v) -> GeneratedTranslations.putBundled("en_US", k, v.trim()));
+                    }
+                } catch (java.io.IOException | RuntimeException ignored) {
+                    // a broken lang file adds nothing, as in FML
+                }
+            }
+        } catch (java.io.IOException | RuntimeException ignored) {
+            // unreadable jar: FML logged and continued
+        }
+    }
+
     private void mcc$load(java.io.InputStream in, String lang, boolean isXML) {
         try (in) {
             java.util.Properties p = new java.util.Properties();
