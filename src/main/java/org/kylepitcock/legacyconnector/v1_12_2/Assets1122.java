@@ -91,7 +91,15 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         translateAll(out);
     }
 
+    /**
+     * perf.shareBlockModels: generated variant models (a model with the variant's textures) by namespace and content, so variants
+     * that name the same model and textures (the metadata values of one look) share one file and one baked model.
+     */
+    private static final boolean SHARE_MODELS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfShareBlockModels();
+    private static final Map<String, String> GENERATED_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
+        GENERATED_MODELS.clear();
         clientProxies();
         itemModels(out);
         Stats stats = new Stats();
@@ -937,8 +945,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
             generated.add("textures", textures);
             String path = "block/lc1122/" + blockId.getPath() + "_" + Ids.normalizePath(key);
-            byte[] bytes = GSON.toJson(generated).getBytes(StandardCharsets.UTF_8);
-            out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+            String json = GSON.toJson(generated);
+            String same = SHARE_MODELS ? GENERATED_MODELS.putIfAbsent(blockId.getNamespace() + "|" + json, path) : null;
+            if (same != null) {
+                path = same;
+            } else {
+                byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+                out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+            }
             model = blockId.getNamespace() + ":" + path;
         }
         copy.addProperty("model", model);
