@@ -641,11 +641,15 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 icon = item.getIconFromDamage(meta);
             } catch (RuntimeException ignored) {
             }
-            if (legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item) || stackIcons(item)) {
+            // (a cube block whose item class overrides getIcon(stack, pass) is still drawn as the block: Thaumcraft's double slabs were
+            // flat sprites several times the size of a block in the hand)
+            boolean cubeItem = item instanceof ItemBlock cb && cb.mcc$block().getRenderType() == 0 && inventory3d(cb.mcc$block());
+            if (legacyconnector.v1_7_10.net.minecraftforge.client.MinecraftForgeClient.mcc$hasRenderer(item) || (stackIcons(item) && !cubeItem)) {
                 // Forge IItemRenderer, or icons that depend on the stack's NBT (TConstruct tools, Forestry saplings, BuildCraft
                 // gates: their damage-based icons are empty): LegacyItemRenderer draws it (item/generated transforms).
                 model.addProperty("parent", "minecraft:builtin/entity");
-                model.add("display", GENERATED_DISPLAY.deepCopy());
+                // a block drawn by its rendering handler is a cube in hands and as a drop (Thaumcraft's double slabs were 3 times too large)
+                model.add("display", (item instanceof ItemBlock ib0 && isbrhIn3d(ib0.mcc$block()) ? BLOCK_DISPLAY : GENERATED_DISPLAY).deepCopy());
                 // flat sprites are lit from the front in slots, as item/generated is (side lighting left them dim)
                 // (an item renderer that draws a 3D block in slots keeps the side lighting; the icon it falls back to is flat)
                 if (!inventoryBlockRenderer(item, meta)) model.addProperty("gui_light", "front");
@@ -653,9 +657,10 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 tex.addProperty("particle", nameOf(icon));
                 model.add("textures", tex);
             } else if (item instanceof ItemBlock ib && isbrhIn3d(ib.mcc$block())) {
-                // Drawn by the block's ISimpleBlockRenderingHandler (LegacyItemRenderer).
+                // Drawn by the block's ISimpleBlockRenderingHandler (LegacyItemRenderer): a cube, so in hands and as a drop it is as
+                // big as a block, not as a flat sprite (item/generated's scales made it half as large again)
                 model.addProperty("parent", "minecraft:builtin/entity");
-                model.add("display", GENERATED_DISPLAY.deepCopy());
+                model.add("display", BLOCK_DISPLAY.deepCopy());
                 JsonObject tex = new JsonObject();
                 tex.addProperty("particle", iconName(ib.mcc$block(), 1, item.getMetadata(meta) & 15));
                 model.add("textures", tex);
@@ -708,6 +713,18 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, model.toString());
         }
     }
+
+    /** minecraft:block/block's display transforms for blocks the legacy renderer draws as 0..1 cubes (the slot is posed by the renderer). */
+    private static final JsonObject BLOCK_DISPLAY = com.google.gson.JsonParser.parseString("""
+            {"ground": {"rotation": [0, 0, 0], "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25]},
+             "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+             "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375]},
+             "thirdperson_lefthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375]},
+             "firstperson_righthand": {"rotation": [0, 45, 0], "scale": [0.4, 0.4, 0.4]},
+             "firstperson_lefthand": {"rotation": [0, 225, 0], "scale": [0.4, 0.4, 0.4]},
+             "fixed": {"rotation": [0, 180, 0], "scale": [0.5, 0.5, 0.5]},
+             "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]}}
+            """).getAsJsonObject();
 
     /** item/generated's display transforms (builtin/entity models have none of their own). */
     private static final JsonObject GENERATED_DISPLAY = com.google.gson.JsonParser.parseString("""
