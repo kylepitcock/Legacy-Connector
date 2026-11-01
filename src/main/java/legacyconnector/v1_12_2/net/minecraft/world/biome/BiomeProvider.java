@@ -67,9 +67,29 @@ public class BiomeProvider {
     }
 
     public Biome getBiome(BlockPos pos, Biome defaultBiome) {
-        if (world == null && biomeIndexLayer != null) return biomeCache.getBiome(pos.getX(), pos.getZ(), defaultBiome);
+        if (world == null && (biomeIndexLayer != null || overrides("getBiomes", Biome[].class, int.class, int.class, int.class, int.class, boolean.class))) {
+            // 1.12: biomeCache.getBiome -> getBiomes(..., false), which a mod's provider overrides (The Midnight samples its own layers there)
+            return biomeCache.getBiome(pos.getX(), pos.getZ(), defaultBiome);
+        }
+        if (world == null && overrides("getBiomesForGeneration", Biome[].class, int.class, int.class, int.class, int.class)) {
+            Biome[] one = getBiomesForGeneration(new Biome[1], pos.getX() >> 2, pos.getZ() >> 2, 1, 1);
+            if (one != null && one.length > 0 && one[0] != null) return one[0];
+        }
         Biome b = world == null ? null : world.mcc$generatorBiome(pos.getX(), world.getSeaLevel(), pos.getZ());
         return b != null ? b : defaultBiome != null ? defaultBiome : legacyconnector.v1_12_2.net.minecraft.init.Biomes.PLAINS;
+    }
+
+    private final java.util.Map<String, Boolean> mcc$overrides = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Whether a subclass (a mod's provider) overrides the named method of this class. */
+    private boolean overrides(String name, Class<?>... params) {
+        return mcc$overrides.computeIfAbsent(name, n -> {
+            try {
+                return getClass().getMethod(n, params).getDeclaringClass() != BiomeProvider.class;
+            } catch (ReflectiveOperationException | LinkageError e) {
+                return false;
+            }
+        });
     }
 
     public float getTemperatureAtHeight(float temperature, int height) {

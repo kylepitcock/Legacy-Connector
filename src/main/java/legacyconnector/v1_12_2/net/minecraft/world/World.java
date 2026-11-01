@@ -1831,11 +1831,57 @@ public class World implements IBlockAccess {
         return found == null ? null : BlockPos.mcc$of(found);
     }
 
+    private volatile java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation,
+            legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider> mcc$worldCaps;
+
+    /** The view that owns the capabilities of this world: the level's own view (a generation region's view shares it). */
+    private World mcc$capsOwner() {
+        if (level == null) return this;
+        World w = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(level);
+        return w == null ? this : w;
+    }
+
+    /** Forge: AttachCapabilitiesEvent for the world (mods keep per-world data in capabilities, e.g. The Midnight's biome layers), posted on first use. */
+    private java.util.Map<legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation,
+            legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider> mcc$worldCaps() {
+        var caps = mcc$worldCaps;
+        if (caps != null) return caps;
+        synchronized (this) {
+            caps = mcc$worldCaps;
+            if (caps != null) return caps;
+            caps = new java.util.LinkedHashMap<>();
+            mcc$worldCaps = caps; // set first: a handler asking for a capability of its own world must not recurse
+            var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+            if (!bus.mcc$hasListeners(legacyconnector.v1_12_2.net.minecraftforge.event.AttachCapabilitiesEvent.class)) return caps;
+            try {
+                var event = new legacyconnector.v1_12_2.net.minecraftforge.event.AttachCapabilitiesEvent<World>(World.class, this);
+                bus.post(event);
+                caps.putAll(event.getCapabilities());
+            } catch (RuntimeException | LinkageError e) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Worlds1122").warn("Attaching capabilities to the world failed: {}", e.toString());
+            }
+            return caps;
+        }
+    }
+
     public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability, EnumFacing facing) {
+        if (capability == null) return false;
+        World owner = mcc$capsOwner();
+        if (owner != this) return owner.hasCapability(capability, facing);
+        for (var p : mcc$worldCaps().values()) {
+            if (p.hasCapability(capability, facing)) return true;
+        }
         return false;
     }
 
     public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability, EnumFacing facing) {
+        if (capability == null) return null;
+        World owner = mcc$capsOwner();
+        if (owner != this) return owner.getCapability(capability, facing);
+        for (var p : mcc$worldCaps().values()) {
+            T t = p.getCapability(capability, facing);
+            if (t != null) return t;
+        }
         return null;
     }
 

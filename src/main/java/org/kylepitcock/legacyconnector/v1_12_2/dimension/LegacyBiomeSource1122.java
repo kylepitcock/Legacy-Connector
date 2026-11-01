@@ -60,6 +60,13 @@ public class LegacyBiomeSource1122 extends BiomeSource {
         return biomes.stream();
     }
 
+    private static final java.util.concurrent.atomic.AtomicInteger WHY = new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Says (first 5 times) why the fallback biome was answered. */
+    private void why(String reason) {
+        if (WHY.incrementAndGet() <= 5) LOG.warn("1.12.2 dimension {}: fallback biome (plains) answered: {}", dimension, reason);
+    }
+
     private Map<ResourceLocation, Holder<Biome>> byKey() {
         Map<ResourceLocation, Holder<Biome>> map = byKey;
         if (map == null) {
@@ -83,8 +90,12 @@ public class LegacyBiomeSource1122 extends BiomeSource {
     private Holder<Biome> holderOf(legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome) {
         Holder<Biome> h = byLegacy.get(biome);
         if (h == null) {
-            h = byKey().get(BiomeBridge1122.modernId(biome));
-            if (h == null) h = fallback();
+            ResourceLocation id = BiomeBridge1122.modernId(biome);
+            h = byKey().get(id);
+            if (h == null) {
+                why("the legacy biome " + biome.getClass().getName() + " maps to " + id + ", which is not in this dimension's biome list");
+                h = fallback();
+            }
             byLegacy.put(biome, h);
         }
         return h;
@@ -114,9 +125,15 @@ public class LegacyBiomeSource1122 extends BiomeSource {
         Holder<Biome> cached = columns.get(key);
         if (cached != null) return cached;
         BiomeProvider p = provider();
-        if (p == null) return fallback(); // the level does not exist yet: not cached
+        if (p == null) { // the level does not exist yet: not cached
+            why("no provider/level yet (level missing or the provider could not be created)");
+            return fallback();
+        }
         // a provider without layers of its own (the shim's world-backed one) asks this source back: answer plains instead of recursing
-        if (ASKING.get() != null) return fallback();
+        if (ASKING.get() != null) {
+            why("recursive ask: the provider answered from the world's own biome source");
+            return fallback();
+        }
         legacyconnector.v1_12_2.net.minecraft.world.biome.Biome biome;
         ASKING.set(Boolean.TRUE);
         try {
@@ -126,10 +143,12 @@ public class LegacyBiomeSource1122 extends BiomeSource {
         } catch (RuntimeException | LinkageError e) {
             int n = FAILURES.incrementAndGet();
             if (n <= 3 || n % 500 == 0) LOG.error("The biome provider of 1.12.2 dimension {} failed at {},{} ({} failures so far)", dimension, qx << 2, qz << 2, n, e);
+            why("the provider " + p.getClass().getName() + " threw " + e);
             return fallback(); // a broken provider must not take the server down; not cached
         } finally {
             ASKING.remove();
         }
+        if (biome == null) why("the provider " + p.getClass().getName() + " returned no biome at " + (qx << 2) + "," + (qz << 2));
         Holder<Biome> h = biome == null ? fallback() : holderOf(biome);
         if (columns.size() >= CACHE_LIMIT) columns.clear();
         columns.put(key, h);
