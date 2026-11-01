@@ -61,6 +61,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   distance 4, 640x360, 12 blocks/items per mod (`EXTRA="-PshotMods=chisel -PdebugIcons=Stairs"` narrows it and logs icon lookups of block classes
   containing that text). Mods go in `run-screenshots/mods`; move `run-screenshots/.legacyconnector/cache` aside after code changes. The shot list comes from the
   mods' creative tabs, so subtypes a mod never lists (e.g. Chisel stairs `.3`-`.7`) show as missing textures in the log without being a defect.
+- **Performance mods are standard in graphical tests.** `tools/dev/quick-shots.sh` copies the jars in `run-perfmods/` (Sodium, Sodium Extra, Iris, ImmediatelyFast, FerriteCore, ModernFix, EntityCulling, MoreCulling, BadOptimizations, C2ME, Clumps; taken from a real pack, gitignored) into the game's mods folder; `NOPERF=1` tests without them. Defects such as the Sodium meshing thread race (ChromatiCraft see-through blocks) and C2ME's off-thread generation only show with them.
 - Live probing (fastest loop, no restart): start a session with `SCENARIO=control tools/dev/quick-shots.sh` (add `WORLD=minecraft:normal`), then
   `tools/dev/js.sh '<JavaScript>'` or `tools/dev/js.sh -f probe.js` evaluates in the running game (bindings `mc`, `server`, `log`; any class via
   `Java.type(...)`). Command files in `run-screenshots/control/in/*.cmd` also take player verbs: `walk forward|back|left|right [ticks] [sprint]`, `jump`,
