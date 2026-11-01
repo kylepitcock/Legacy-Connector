@@ -13,6 +13,15 @@ public class EntityPlayerSP extends AbstractClientPlayer {
         this.mcc$posYShift = 1.62;
     }
 
+    /** 1.7.10's constructor of the client player: mods subclass it for camera stand-ins (MCHeli's view entity); a remote player is the host. */
+    public EntityPlayerSP(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.util.Session session, int dimension) {
+        super(world, session != null && session.getProfile() != null ? session.getProfile()
+                : new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("legacy-view-entity".getBytes()), "ViewEntity"));
+        this.yOffset = 1.62F;
+        this.mcc$posYShift = 1.62;
+    }
+
     @Override
     public float getEyeHeight() {
         return Float.isNaN(mcc$eyeHeightOverride) ? 0.12F : mcc$eyeHeightOverride;

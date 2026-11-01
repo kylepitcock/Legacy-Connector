@@ -110,6 +110,25 @@ public class GameRegistry {
     }
 
     public static IRecipe addShapedRecipe(ItemStack output, Object... params) {
+        // Forge's GameRegistry.addShapedRecipe is CraftingManager.addRecipe: it answers vanilla ShapedRecipes (MCHeli casts the answer).
+        // A recipe naming ore dictionary entries keeps the ore recipe, which the plain recipe cannot express.
+        boolean plain = output != null && params != null && params.length > 0;
+        if (plain) {
+            int i = params[0] instanceof String[] ? 1 : 0;
+            while (i < params.length && params[i] instanceof String) i++;
+            if (i == params.length) plain = false;
+            for (int k = i + 1; plain && k < params.length; k += 2) {
+                if (!(params[k] instanceof ItemStack || params[k] instanceof legacyconnector.v1_7_10.net.minecraft.item.Item
+                        || params[k] instanceof legacyconnector.v1_7_10.net.minecraft.block.Block)) plain = false;
+            }
+        }
+        if (plain) {
+            try {
+                return legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager.getInstance().addRecipe(output, params);
+            } catch (RuntimeException e) {
+                // a pattern the plain list cannot hold: the ore recipe takes it
+            }
+        }
         return RecipeBridge.addShaped(output, params, true);
     }
 
