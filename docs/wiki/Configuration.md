@@ -15,6 +15,7 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `villages.legacyBuildings` | `true` | Legacy mods' village buildings join the vanilla village house pools (with their 1.7.10 share); `false` leaves villages vanilla |
 | `compat.rocketnautics.plasmaEveryTicks` | `4` | Rocketnautics (Create Aeronautics) rebuilds its star plasma sky texture every tick even with its custom sky off (about 11% of frame time); it is rebuilt every N ticks instead. `1` restores the original |
 | `perf.lazyPackMetadata` | `true` | The generated legacy data and asset packs build no content when the game opens them only to read their metadata (once per pack scan; every scan built all files). See [Performance](Performance.md#world-load) |
+| `perf.biomeJarCache` | `true` | The vanilla biome templates and biome tags that legacy biomes are generated from are read from the game's jars once per session, not on every data pack build. See [Performance](Performance.md#world-load) |
 | `events.skip` | empty | Comma separated legacy event handlers that are not registered, as `full.ClassName#method` or `full.ClassName#*` (to find which legacy handler draws or does something unwanted) |
 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |

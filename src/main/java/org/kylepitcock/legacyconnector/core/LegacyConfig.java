@@ -58,6 +58,9 @@ public final class LegacyConfig {
             # see docs/wiki/Performance.md.
             # The generated legacy data and asset packs are not built when the game only reads their metadata (once per pack scan).
             perf.lazyPackMetadata = true
+            # The vanilla biome templates and biome tags that legacy biomes are generated from are read from the game's jars once per
+            # session instead of on every data pack build.
+            perf.biomeJarCache = true
 
             # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
             # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
@@ -202,4 +205,11 @@ public final class LegacyConfig {
         return bool("perf.lazyPackMetadata", true);
     }
 
+    /**
+     * {@code perf.biomeJarCache}: the vanilla biome templates and the vanilla/NeoForge biome tags legacy biomes are generated from are
+     * read from the jars once per session (every data pack build read them again: about 0.2 to 0.4 s per build in ATM10).
+     */
+    public static boolean perfBiomeJarCache() {
+        return bool("perf.biomeJarCache", true);
+    }
 }
