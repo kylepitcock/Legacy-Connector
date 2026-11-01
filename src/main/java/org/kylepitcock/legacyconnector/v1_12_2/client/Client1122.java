@@ -69,6 +69,10 @@ public final class Client1122 {
             for (var location : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry.mcc$requested()) {
                 e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(location.mcc$modern()));
             }
+            // the models of block states beyond their metadata (their variants have no place in the modern blockstate file)
+            for (var model : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.stateModelIds()) {
+                e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model));
+            }
         });
         // screens, particles, key bindings, resource reloads
         modBus.addListener(ClientGui1122::onRegisterScreens);

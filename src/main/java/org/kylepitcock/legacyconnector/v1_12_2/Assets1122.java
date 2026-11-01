@@ -24,6 +24,7 @@ import org.kylepitcock.legacyconnector.core.Ids;
 import org.kylepitcock.legacyconnector.core.pack.GeneratedPack;
 import org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block;
 import org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122;
+import org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,6 +101,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
 
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
         GENERATED_MODELS.clear();
+        STATE_MODELS_BUILDING.clear();
         clientProxies();
         itemModels(out);
         Stats stats = new Stats();
@@ -119,6 +121,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 }
             }
         }
+        stateModels = Map.copyOf(STATE_MODELS_BUILDING);
+        if (!stateModels.isEmpty()) LOG.info("1.12.2 state models: {} block state(s) beyond their metadata got a model of their own", stateModels.size());
         LOG.info("1.12.2 render types: {} cutout, {} translucent, {} solid", stats.cutout, stats.translucent, stats.solid);
         LOG.info("1.12.2 blockstates: {} translated, {} fell back to a plain model{}", stats.translated, stats.fellBack,
                 stats.fallbacks.isEmpty() ? "" : " (" + String.join("; ", stats.fallbacks.subList(0, Math.min(60, stats.fallbacks.size())))
@@ -262,6 +266,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (best.fallback != null) reasons.add("meta " + meta + ": " + best.fallback);
             if (debug) LOG.info("meta {} of {}: {} parts={} fallback={}", meta, id, best.model, best.parts, best.fallback);
         }
+        try {
+            stateModels(block, id, original, multipart, mapped, results, out);
+        } catch (RuntimeException | LinkageError e) {
+            LOG.debug("No models for the states the metadata of {} does not hold: {}", id, e.toString());
+        }
         boolean anyParts = false;
         for (Res r : results.values()) anyParts |= !r.parts.isEmpty();
         JsonObject result = new JsonObject();
@@ -321,6 +330,152 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         result.add("variants", variants);
         byte[] bytes = GSON.toJson(result).getBytes(StandardCharsets.UTF_8);
         out.put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", () -> bytes);
+    }
+
+    // ------------------------------------------------------------------------------------------------------------------------------
+    // states the metadata does not hold
+
+    /**
+     * Most states beyond the metadata one block may have for them to get models of their own (more are connection states from
+     * getActualState, drawn by the models of their metadata as before).
+     */
+    private static final int MAX_STATE_MODELS = 64;
+    private static final Map<String, ResourceLocation> STATE_MODELS_BUILDING = new java.util.concurrent.ConcurrentHashMap<>();
+    private static volatile Map<String, ResourceLocation> stateModels = Map.of();
+
+    /**
+     * The model generated for a legacy model location that only states beyond their block's metadata use (EnderIO's
+     * {@code enderio:block_alloy_smelter#render=front}), or null. Such a state is not a modern state, so its variant cannot live in the
+     * modern blockstate file: it becomes a standalone model (ModelEvent.RegisterAdditional) the legacy model lookups resolve to.
+     */
+    public static ResourceLocation stateModel(String legacyLocation) {
+        return legacyLocation == null ? null : stateModels.get(legacyLocation);
+    }
+
+    /** All models of {@link #stateModel}, to be baked as standalone models. */
+    public static java.util.Collection<ResourceLocation> stateModelIds() {
+        return stateModels.values();
+    }
+
+    /**
+     * In 1.12 every state of a block had its own blockstate variant, also states whose properties the metadata does not store (render
+     * parts a mod's smart model collects, as EnderIO's machines do with {@code render=front_on_east}). Here a block state is one modern
+     * {@code meta} state; these states get their variant built the same way, as a model file of its own (rotations as root transforms,
+     * submodels as children of a composite model). States that look like their metadata's state keep that model.
+     */
+    private static void stateModels(Block block, ResourceLocation id, JsonObject original, boolean multipart,
+            Map<IBlockState, legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation> mapped,
+            Map<Integer, Res> results, Map<String, Supplier<byte[]>> out) {
+        List<IBlockState> extra = new ArrayList<>();
+        int held = 0;
+        for (IBlockState state : block.getBlockState().getValidStates()) {
+            if (StatesBridge1122.metaHolds(state)) held++;
+            else extra.add(state);
+        }
+        // no state held at all: getStateFromMeta does not answer with the block's own states, so nothing tells the states apart
+        if (held == 0 || extra.isEmpty() || extra.size() > MAX_STATE_MODELS) return;
+        var locations = mapped != null ? mapped
+                : new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper().putStateModelLocations(block);
+        if (locations == null || locations.isEmpty()) return;
+        // a location a state of the metadata also uses is that state's model
+        java.util.Set<String> metaLocations = new java.util.HashSet<>();
+        for (var e : locations.entrySet()) if (e.getValue() != null && StatesBridge1122.metaHolds(e.getKey())) metaLocations.add(e.getValue().toString());
+        java.util.Set<String> done = new java.util.HashSet<>();
+        int n = 0;
+        for (IBlockState state : extra) {
+            var location = locations.get(state);
+            if (location == null) continue;
+            String name = location.toString();
+            if (metaLocations.contains(name) || !done.add(name)) continue;
+            String key = "state_" + n++;
+            Res r;
+            try {
+                r = multipart ? resolveMultipart(original, id, state, key, out) : resolveState(original, id, state, mapped == null ? null : mapped.get(state), key, out);
+            } catch (RuntimeException e) {
+                continue;
+            }
+            if (r.fallback != null) continue; // nothing better than the model of its metadata
+            String renderType = renderTypeOf(block, state, r, out);
+            List<JsonElement> all = new ArrayList<>();
+            if (r.model != null) all.add(renderType == null ? r.model : withRenderType(r.model, renderType, id, out));
+            for (JsonElement part : r.parts) all.add(renderType == null ? part : withRenderType(part, renderType, id, out));
+            int meta;
+            try {
+                meta = block.getMetaFromState(state) & 15;
+            } catch (RuntimeException e) {
+                meta = 0;
+            }
+            Res metaRes = results.get(meta);
+            if (metaRes != null) {
+                List<JsonElement> metaAll = new ArrayList<>();
+                if (metaRes.model != null) metaAll.add(metaRes.model);
+                metaAll.addAll(metaRes.parts);
+                if (GSON.toJson(metaAll).equals(GSON.toJson(all))) continue;
+            }
+            ResourceLocation model = stateModelFile(id, key, all, out);
+            if (model != null) STATE_MODELS_BUILDING.put(name, model);
+        }
+    }
+
+    /** One model of a state's variant: its model as it is, a wrapper with the rotation, or a composite of the variant and its submodels. */
+    private static ResourceLocation stateModelFile(ResourceLocation blockId, String key, List<JsonElement> variants, Map<String, Supplier<byte[]>> out) {
+        List<JsonObject> pieces = new ArrayList<>();
+        for (JsonElement v : variants) {
+            // a weighted variant: its first alternative (a standalone model has no random pick)
+            while (v != null && v.isJsonArray()) v = v.getAsJsonArray().isEmpty() ? null : v.getAsJsonArray().get(0);
+            if (v != null && v.isJsonObject() && v.getAsJsonObject().has("model") && v.getAsJsonObject().get("model").isJsonPrimitive()) pieces.add(v.getAsJsonObject());
+        }
+        if (pieces.isEmpty()) return null;
+        String first = pieces.get(0).get("model").getAsString();
+        if (pieces.size() == 1 && rotationOf(pieces.get(0)) == null) return ResourceLocation.tryParse(first);
+        JsonObject file;
+        if (pieces.size() == 1) {
+            file = rotated(pieces.get(0));
+        } else {
+            file = new JsonObject();
+            file.addProperty("parent", first); // the particle texture and the item transforms
+            file.addProperty("loader", "neoforge:composite");
+            JsonObject children = new JsonObject();
+            for (int i = 0; i < pieces.size(); i++) children.add("part" + i, rotated(pieces.get(i)));
+            file.add("children", children);
+        }
+        String path = "block/lc1122/state/" + blockId.getPath() + "_" + Ids.normalizePath(key);
+        byte[] bytes = GSON.toJson(file).getBytes(StandardCharsets.UTF_8);
+        out.put("assets/" + blockId.getNamespace() + "/models/" + path + ".json", () -> bytes);
+        return ResourceLocation.fromNamespaceAndPath(blockId.getNamespace(), path);
+    }
+
+    /** A model with the variant's model as parent and its x/y rotation as root transform (a blockstate turns the model as BlockModelRotation does). */
+    private static JsonObject rotated(JsonObject variant) {
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", variant.get("model").getAsString());
+        JsonArray rotation = rotationOf(variant);
+        if (rotation != null) {
+            JsonObject transform = new JsonObject();
+            transform.addProperty("origin", "center");
+            transform.add("rotation", rotation);
+            model.add("transform", transform);
+        }
+        return model;
+    }
+
+    /** The rotation of a variant as NeoForge's transform rotation (BlockModelRotation: y then x, both negated), or null for none. */
+    private static JsonArray rotationOf(JsonObject variant) {
+        int x = variant.has("x") && variant.get("x").isJsonPrimitive() ? variant.get("x").getAsInt() : 0;
+        int y = variant.has("y") && variant.get("y").isJsonPrimitive() ? variant.get("y").getAsInt() : 0;
+        if (x == 0 && y == 0) return null;
+        JsonArray rotation = new JsonArray();
+        if (y != 0) {
+            JsonObject r = new JsonObject();
+            r.addProperty("y", -y);
+            rotation.add(r);
+        }
+        if (x != 0) {
+            JsonObject r = new JsonObject();
+            r.addProperty("x", -x);
+            rotation.add(r);
+        }
+        return rotation;
     }
 
     private static String modelOf(JsonElement variant) {

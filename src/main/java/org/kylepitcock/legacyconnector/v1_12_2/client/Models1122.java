@@ -148,12 +148,22 @@ public final class Models1122 {
 
     private static Map<String, List<net.minecraft.client.resources.model.ModelResourceLocation>> buildLocations() {
         Map<String, List<net.minecraft.client.resources.model.ModelResourceLocation>> map = new HashMap<>();
+        Map<IBlockState, net.minecraft.client.resources.model.ModelResourceLocation> byState = new java.util.IdentityHashMap<>();
         for (Block block : Registries1122.BLOCKS.getValues()) {
             if (!(block.mcc$modern instanceof Legacy1122Block modern)) continue;
             try {
                 var mapper = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$stateMapper(block);
                 if (mapper == null) mapper = new legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.DefaultStateMapper();
                 for (var e : mapper.putStateModelLocations(block).entrySet()) {
+                    String name = e.getValue().toString();
+                    var own = StatesBridge1122.metaHolds(e.getKey()) ? null : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.stateModel(name);
+                    if (own != null) {
+                        // a state beyond the metadata with a model of its own (see Assets1122.stateModel)
+                        var target = net.minecraft.client.resources.model.ModelResourceLocation.standalone(own);
+                        map.put(name, new ArrayList<>(List.of(target)));
+                        byState.put(e.getKey(), target);
+                        continue;
+                    }
                     int meta = block.getMetaFromState(e.getKey()) & 15;
                     BlockState state = modern.defaultBlockState().setValue(Legacy1122Block.META, meta);
                     map.computeIfAbsent(e.getValue().toString(), k -> new ArrayList<>()).add(BlockModelShaper.stateToModelLocation(state));
@@ -174,7 +184,24 @@ public final class Models1122 {
                 if (!list.contains(target)) list.add(target);
             }
         }
+        stateLocations = byState;
         return map;
+    }
+
+    /** The standalone model location of each block state beyond its metadata that has a model of its own (built with the location map). */
+    private static volatile Map<IBlockState, net.minecraft.client.resources.model.ModelResourceLocation> stateLocations = Map.of();
+
+    /**
+     * The model of a block state the metadata does not hold, as 1.12 baked it from the state's own variant (see Assets1122.stateModel),
+     * or null when it has none.
+     */
+    public static IBakedModel stateModel(IBlockState state) {
+        if (locations == null) locations = buildLocations();
+        var target = stateLocations.get(state);
+        if (target == null) return null;
+        var manager = Minecraft.getInstance().getModelManager();
+        BakedModel model = manager.getModel(target);
+        return model == null || model == manager.getMissingModel() ? null : legacy(model);
     }
 
     /** Legacy names of the modern models of legacy mods (the keys ModelBakeEvent's registry shows). */

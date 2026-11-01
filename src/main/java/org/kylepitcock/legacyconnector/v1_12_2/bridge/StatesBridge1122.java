@@ -66,6 +66,20 @@ public final class StatesBridge1122 {
         return out;
     }
 
+    /**
+     * Whether the block's metadata stands for this exact state, so that {@link #toModern} keeps all of it. A state with properties
+     * the metadata does not store (a render part only the mod's renderer asks for, a connection from getActualState) is not.
+     */
+    public static boolean metaHolds(IBlockState state) {
+        if (state == null) return true;
+        try {
+            Block block = state.getBlock();
+            return state.equals(block.getStateFromMeta(block.getMetaFromState(state)));
+        } catch (RuntimeException | LinkageError e) {
+            return true;
+        }
+    }
+
     public static BlockState toModern(IBlockState state) {
         if (state == null) return net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
         Block legacy = state.getBlock();

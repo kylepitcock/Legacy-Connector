@@ -22,22 +22,17 @@ public class BlockModelShapes {
     }
 
     public IBakedModel getModelForState(IBlockState state) {
+        boolean metaHolds = StatesBridge1122.metaHolds(state);
+        if (!metaHolds) {
+            // a state beyond the metadata (a render part a smart model collects): the model of its own variant, as 1.12 baked it
+            IBakedModel own = Models1122.stateModel(state);
+            if (own != null) return own;
+        }
         var shaper = net.minecraft.client.Minecraft.getInstance().getBlockRenderer().getBlockModelShaper();
         var modern = shaper.getBlockModel(StatesBridge1122.toModern(state));
         IBakedModel model = Models1122.legacy(modern == null ? shaper.getModelManager().getMissingModel() : modern);
-        // a state the metadata does not hold gets the whole block's model: without its item overrides (see Models1122.withoutOverrides)
-        return metaHolds(state) ? model : Models1122.withoutOverrides(model);
-    }
-
-    /** Whether the block's metadata stands for this exact state (properties beyond it, such as render parts, are lost). */
-    private static boolean metaHolds(IBlockState state) {
-        if (state == null) return true;
-        try {
-            Block block = state.getBlock();
-            return state.equals(block.getStateFromMeta(block.getMetaFromState(state)));
-        } catch (RuntimeException | LinkageError e) {
-            return true;
-        }
+        // without a model of its own such a state gets the whole block's model: without its item overrides (see Models1122.withoutOverrides)
+        return metaHolds ? model : Models1122.withoutOverrides(model);
     }
 
     public ModelManager getModelManager() {
