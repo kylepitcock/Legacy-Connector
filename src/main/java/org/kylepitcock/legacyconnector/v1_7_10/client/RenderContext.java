@@ -290,7 +290,7 @@ public final class RenderContext {
 
     /** Logs (once) a texture a legacy renderer binds that no resource pack has: it draws as the missing texture. */
     private static void checkExists(ResourceLocation rl) {
-        if (!CHECKED.add(rl) || rl.getPath().startsWith("textures/atlas/") || rl.getPath().startsWith("dynamic/")) return;
+        if (CHECKED.contains(rl) || !CHECKED.add(rl) || rl.getPath().startsWith("textures/atlas/") || rl.getPath().startsWith("dynamic/")) return;
         try {
             var mc = net.minecraft.client.Minecraft.getInstance();
             if (mc.getResourceManager().getResource(rl).isEmpty() && mc.getTextureManager().getTexture(rl, null) == null) {

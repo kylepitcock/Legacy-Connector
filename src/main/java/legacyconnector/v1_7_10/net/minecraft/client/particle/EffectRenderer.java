@@ -214,6 +214,12 @@ public class EffectRenderer {
         if (block != null && !block.addHitEffects(world, target, this)) addBlockHitEffects(x, y, z, target.sideHit);
     }
 
+    /** Whether no legacy particle is alive (nothing to draw: the frame skips the draw setup and the buffer flush). */
+    public boolean mcc$isEmpty() {
+        for (List<EntityFX> list : fxLayers) if (!list.isEmpty()) return false;
+        return true;
+    }
+
     public String getStatistics() {
         int n = 0;
         for (List<EntityFX> list : fxLayers) n += list.size();

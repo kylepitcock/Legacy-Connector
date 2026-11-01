@@ -13,7 +13,7 @@ public class TextureManager implements ITickable {
     public void bindTexture(ResourceLocation location) {
         if (location == null) return; // legacy renderers with an unset texture keep the previous one
         mcc$flush();
-        var modern = TextureLocations.modern(location.getResourceDomain(), location.getResourcePath());
+        var modern = TextureLocations.modern(location);
         // a mod's own atlas: its sprites are in the modern block atlas
         if (mcc$modAtlases.contains(modern)) modern = net.minecraft.client.renderer.texture.TextureAtlas.LOCATION_BLOCKS;
         RenderContext.bindTexture(modern);

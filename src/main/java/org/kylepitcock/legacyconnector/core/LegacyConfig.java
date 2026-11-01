@@ -73,6 +73,8 @@ public final class LegacyConfig {
             perf.shareItemModels = true
             # Generated resource and data pack files are kept on disk (.legacyconnector/pack-spill) once read, not in memory.
             perf.packSpill = true
+            # A legacy mod texture location remembers the modern one it binds (no new location per bind and frame).
+            perf.cacheTextureLocations = true
             """;
     private static Properties values;
 
@@ -215,6 +217,11 @@ public final class LegacyConfig {
     /** Legacy items with identical generated item models share one baked model. */
     public static boolean perfShareItemModels() {
         return perf("shareItemModels", true);
+    }
+
+    /** A legacy mod texture location keeps the modern location it binds. */
+    public static boolean perfCacheTextureLocations() {
+        return perf("cacheTextureLocations", true);
     }
 
     /** Generated pack files move to a disk file once read instead of staying in memory for the session. */

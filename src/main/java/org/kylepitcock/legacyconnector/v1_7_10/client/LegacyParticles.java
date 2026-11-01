@@ -51,6 +51,9 @@ public final class LegacyParticles {
 
     private static void onRender(RenderLevelStageEvent event) {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) return;
+        // no legacy particles: no state setup and no flush of the buffer source (ImmediatelyFast's / Sodium's fully buffered
+        // source walks all its buffers on every endBatch: 0.14% of the render thread in ATM10 with none alive)
+        if (effects().mcc$isEmpty()) return;
         var camera = event.getCamera();
         var cam = camera.getPosition();
         EntityFX.interpPosX = cam.x;

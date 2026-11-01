@@ -27,6 +27,23 @@ public final class TextureLocations {
 
     private TextureLocations() {}
 
+    /** perf.cacheTextureLocations: a mod texture location keeps the modern location it maps to. */
+    private static final boolean CACHE = org.kylepitcock.legacyconnector.core.LegacyConfig.perfCacheTextureLocations();
+
+    /**
+     * The modern texture of a legacy location. A plain location outside the vanilla namespace always maps to the same modern one (its
+     * namespace and path normalized), so it is kept on the location (vanilla paths may name generated sheets that are made on demand).
+     */
+    public static ResourceLocation modern(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation legacy) {
+        ResourceLocation cached = legacy.mcc$texture;
+        if (cached != null) return cached;
+        ResourceLocation modern = modern(legacy.getResourceDomain(), legacy.getResourcePath());
+        if (CACHE && legacy.getClass() == legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation.class && !modern.getNamespace().equals("minecraft")) {
+            legacy.mcc$texture = modern;
+        }
+        return modern;
+    }
+
     public static ResourceLocation modern(String domain, String path) {
         String ns = Ids.namespace(domain);
         String p = Ids.normalizePath(path);
