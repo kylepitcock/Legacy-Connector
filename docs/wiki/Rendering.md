@@ -29,6 +29,13 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
 - **Tile entity culling:** a legacy tile entity renderer draws while the camera is closer than its `getMaxRenderDistanceSquared()` (64 blocks by
   default; renderers of big structures return more) and while its `getRenderBoundingBox()` is in the view (infinite boxes always), as 1.7.10 culled
   (1.12.2: the box joined with the block and its neighbours).
+- **Zero-size quads** are dropped when a capture is baked: DragonAPI's renderers (all of ChromatiCraft's) end `renderWorldBlock` with four
+  `addVertex(0, 0, 0)` so 1.7.10's chunk pass was never empty, which baked into a quad at the world origin in both layers of every such block.
+- **Full opaque cubes have no holes:** for a block that is a full opaque cube in 1.7.10's terms (`isOpaqueCube`, `renderAsNormalBlock`, full bounds),
+  modern neighbours cull their faces against it. After the handler ran, every face the modern pipeline shows (`Block.shouldRenderFace`) but no
+  captured quad lies on is drawn as `RenderBlocks`' standard face with the block's world icon (logged once per block class). A face the handler
+  skipped (its view of a neighbour, `isOpaqueCube`, disagreed with the modern occlusion shapes, or its pass logic left it out) showed the sky through
+  the terrain (ChromatiCraft's crystalline stone under pylons and rune shrines).
 - **Full-bright parts:** corners a block renderer drew with its own full block light (`setBrightness(240)`, the 1.7.10 idiom for glowing overlays) keep
   that light in the baked quad; the modern pipeline uses the larger of baked and world light, so they glow in the dark.
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.
