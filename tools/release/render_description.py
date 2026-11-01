@@ -17,10 +17,13 @@ SOURCE = ROOT / ".github" / "description" / "description.md"
 MODRINTH = ("Modrinth", "https://modrinth.com/mod/legacyconnector", "00AF5C", "modrinth")
 CURSEFORGE = ("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/legacy-connector", "F16436", "curseforge")
 GITHUB = ("GitHub", "https://github.com/kylepitcock/Legacy-Connector", "181717", "github")
+# Same account as .github/FUNDING.yml (ko_fi). Button only, not in {{links}}.
+KOFI = ("Ko-fi", "https://ko-fi.com/kylepitcock", "FF5E5B", "kofi")
 
 
 def button(name, url, color, logo):
-    badge = f"https://img.shields.io/badge/{name}-{color}?style=for-the-badge&logo={logo}&logoColor=white"
+    # shields.io badge paths use "-" as separator, a literal dash is "--"
+    badge = f"https://img.shields.io/badge/{name.replace('-', '--')}-{color}?style=for-the-badge&logo={logo}&logoColor=white"
     return f"[![{name}]({badge})]({url})"
 
 
@@ -28,7 +31,7 @@ def render(platform):
     targets = {"modrinth": [CURSEFORGE, GITHUB], "curseforge": [MODRINTH, GITHUB]}[platform]
     text = SOURCE.read_text(encoding="utf-8")
     text = re.sub(r"\A\s*<!--.*?-->\s*", "", text, flags=re.S)
-    text = text.replace("{{buttons}}", " ".join(button(*t) for t in targets))
+    text = text.replace("{{buttons}}", " ".join(button(*t) for t in targets + [KOFI]))
     labels = {"GitHub": "Source & issue tracker (GitHub)"}
     text = text.replace("{{links}}", " · ".join(f"[{labels.get(n, n)}]({u})" for n, u, _, _ in targets))
     return text
