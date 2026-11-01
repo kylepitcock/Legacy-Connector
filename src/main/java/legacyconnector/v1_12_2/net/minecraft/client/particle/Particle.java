@@ -277,6 +277,18 @@ public class Particle {
         return v;
     }
 
+    /**
+     * Whether the default quad (within {@code 0.1 * particleScale} of the particle, interpolated between its previous and current
+     * position) lies wholly outside the view: then drawing it adds no pixel. {@code selfDrawn}: a particle drawing itself, whose
+     * box is grown by its size and two more blocks (still a guess: beams reach farther).
+     */
+    public boolean mcc$outside(net.minecraft.client.renderer.culling.Frustum frustum, boolean selfDrawn) {
+        double r = 0.15D * Math.abs(particleScale) + 1.0D + (selfDrawn ? 2.0D + Math.max(width, height) : 0.0D);
+        if (!Double.isFinite(posX + posY + posZ + prevPosX + prevPosY + prevPosZ + r)) return false;
+        return !frustum.isVisible(new net.minecraft.world.phys.AABB(Math.min(posX, prevPosX) - r, Math.min(posY, prevPosY) - r, Math.min(posZ, prevPosZ) - r,
+                Math.max(posX, prevPosX) + r, Math.max(posY, prevPosY) + r, Math.max(posZ, prevPosZ) + r));
+    }
+
     public int mcc$argb() {
         return ((int) (particleAlpha * 255) & 255) << 24 | ((int) (particleRed * 255) & 255) << 16 | ((int) (particleGreen * 255) & 255) << 8
                 | ((int) (particleBlue * 255) & 255);
