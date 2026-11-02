@@ -23,3 +23,4 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Compatibility and status](Compatibility-and-Status.md) | Status per legacy version, known issues, reading the report |
 | [Development](Development.md) | Building, testing, project layout |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
+| [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
