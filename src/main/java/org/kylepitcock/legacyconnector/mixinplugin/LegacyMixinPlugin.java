@@ -91,7 +91,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
     private static final class Extension implements IExtension {
         private final ConcurrentHashMap<String, Boolean> legacyRoots = new ConcurrentHashMap<>();
         private volatile boolean rootsScanned;
-        private Method getMixins;
+        private java.lang.reflect.Field mixinsField;
 
         @Override
         public boolean checkActive(MixinEnvironment environment) {
@@ -103,11 +103,19 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
             try {
                 String name = context.getClassNode().name;
                 if (!isLegacy(name)) return;
-                if (getMixins == null) {
-                    getMixins = context.getClass().getDeclaredMethod("getMixins");
-                    getMixins.setAccessible(true);
+                if (mixinsField == null) {
+                    // TargetClassContext keeps the mixins to apply in its `mixins` set (no getter in this Mixin version)
+                    for (Class<?> c = context.getClass(); c != null && mixinsField == null; c = c.getSuperclass()) {
+                        try {
+                            mixinsField = c.getDeclaredField("mixins");
+                        } catch (NoSuchFieldException ignored) {
+                            // next superclass
+                        }
+                    }
+                    if (mixinsField == null) throw new NoSuchFieldException("mixins in " + context.getClass().getName());
+                    mixinsField.setAccessible(true);
                 }
-                Collection<?> mixins = (Collection<?>) getMixins.invoke(context);
+                Collection<?> mixins = (Collection<?>) mixinsField.get(context);
                 int before = mixins.size();
                 mixins.removeIf(m -> !((IMixinInfo) m).getConfig().getName().startsWith("legacyconnector"));
                 if (mixins.size() != before) {
