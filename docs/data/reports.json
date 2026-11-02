@@ -203,6 +203,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/portal-gun",
    "date": "2026-11-01",
    "open": true
+  },
+  {
+   "issue": 138,
+   "mod": "RedstoneControl-1.12.2-0.3.1.3.jar and CD4017BE_lib-1.12.2-6.5.1.jar",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "Legacy connector works by itself, but it doesn't work when I add the above mods alongside. This was proven in an isolation test.",
+   "lc": "legacyconnector-0.3.10.jar",
+   "neoforge": "21.1.264",
+   "link": "",
+   "date": "2026-11-02",
+   "open": true
   }
  ]
 }
