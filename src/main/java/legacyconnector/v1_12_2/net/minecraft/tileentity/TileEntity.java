@@ -230,6 +230,9 @@ public abstract class TileEntity implements ICapabilityProvider {
         this.world = worldIn;
     }
 
+    /** 1.12's tile entity logger (mods fetch it by reflection or method handle to report load failures). */
+    private static final org.apache.logging.log4j.Logger LOGGER = org.apache.logging.log4j.LogManager.getLogger();
+
     /** Vanilla's own registration of a tile entity class under a name. */
     public static void register(String id, Class<? extends TileEntity> clazz) {
         if (id == null || clazz == null) return;
