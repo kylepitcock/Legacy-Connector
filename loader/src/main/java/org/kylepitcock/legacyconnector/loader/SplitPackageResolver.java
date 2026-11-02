@@ -69,8 +69,8 @@ final class SplitPackageResolver {
 
         Path sharedJar = cacheDir.resolve("shared-apis-" + key + ".jar");
         List<Path> out = new ArrayList<>();
-        Map<String, byte[]> sharedClasses = new LinkedHashMap<>();
-
+        List<Path> toStrip = new ArrayList<>();
+        Map<Path, Path> strippedOf = new HashMap<>();
         for (Path jar : jars) {
             Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
             mine.retainAll(shared);
@@ -79,29 +79,62 @@ final class SplitPackageResolver {
                 continue;
             }
             Path stripped = cacheDir.resolve(stripExt(jar.getFileName().toString()) + "-split-" + key + ".jar");
-            try (ZipFile zip = new ZipFile(jar.toFile())) {
-                // Collect this jar's copies; a package's "best" copy is the jar with the most classes in it, and
-                // classes only some copies have are unioned in.
-                for (String pkg : mine) {
-                    Path best = bestCopy(pkg, owners.get(pkg), packageSizes);
-                    Enumeration<? extends ZipEntry> en = zip.entries();
-                    while (en.hasMoreElements()) {
-                        ZipEntry e = en.nextElement();
-                        String n = e.getName();
-                        if (!n.endsWith(".class") || n.lastIndexOf('/') < 0 || !n.substring(0, n.lastIndexOf('/')).equals(pkg)) continue;
-                        try (InputStream in = zip.getInputStream(e)) {
-                            byte[] data = in.readAllBytes();
-                            if (best.equals(jar)) sharedClasses.put(n, data);
-                            else sharedClasses.putIfAbsent(n, data);
-                        }
-                    }
-                }
-                if (!Files.exists(stripped)) copyWithout(zip, stripped, mine);
-            }
             out.add(stripped);
+            strippedOf.put(jar, stripped);
+            if (!Files.exists(stripped)) toStrip.add(jar);
         }
 
-        if (!Files.exists(sharedJar)) {
+        // Warm launch: the merged library and every stripped jar exist, so no class has to be read at all (the key names every input).
+        boolean needShared = !Files.exists(sharedJar);
+        if (!needShared && toStrip.isEmpty()) return new Outcome(out, sharedJar, shared);
+
+        // Cold: every jar is independent. The stripped copies and the shared classes are collected in parallel and merged in jar order.
+        Set<Path> toRead = new HashSet<>(toStrip);
+        if (needShared) toRead.addAll(strippedOf.keySet());
+        Map<Path, Map<String, byte[]>> collected = new java.util.concurrent.ConcurrentHashMap<>();
+        Map<Path, IOException> failure = new java.util.concurrent.ConcurrentHashMap<>();
+        jars.parallelStream().filter(toRead::contains).forEach(jar -> {
+            try {
+                Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
+                mine.retainAll(shared);
+                try (ZipFile zip = new ZipFile(jar.toFile())) {
+                    if (needShared) {
+                        Map<String, byte[]> mineClasses = new TreeMap<>();
+                        Enumeration<? extends ZipEntry> en = zip.entries();
+                        while (en.hasMoreElements()) {
+                            ZipEntry e = en.nextElement();
+                            String n = e.getName();
+                            int slash = n.lastIndexOf('/');
+                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash))) continue;
+                            try (InputStream in = zip.getInputStream(e)) {
+                                mineClasses.put(n, in.readAllBytes());
+                            }
+                        }
+                        collected.put(jar, mineClasses);
+                    }
+                    if (!Files.exists(strippedOf.get(jar))) copyWithout(zip, strippedOf.get(jar), mine);
+                }
+            } catch (IOException e) {
+                failure.put(jar, e);
+            }
+        });
+        if (!failure.isEmpty()) throw failure.values().iterator().next();
+
+        if (needShared) {
+            Map<String, byte[]> sharedClasses = new TreeMap<>();
+            for (Path jar : jars) {
+                Map<String, byte[]> classes = collected.get(jar);
+                if (classes == null) continue;
+                Set<String> mine = new HashSet<>(packageSizes.get(jar).keySet());
+                mine.retainAll(shared);
+                Map<String, Boolean> best = new HashMap<>();
+                for (String pkg : mine) best.put(pkg, bestCopy(pkg, owners.get(pkg), packageSizes).equals(jar));
+                for (var e : classes.entrySet()) {
+                    String n = e.getKey();
+                    if (best.get(n.substring(0, n.lastIndexOf('/')))) sharedClasses.put(n, e.getValue());
+                    else sharedClasses.putIfAbsent(n, e.getValue());
+                }
+            }
             Manifest m = new Manifest();
             m.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
             m.getMainAttributes().putValue("FMLModType", "GAMELIBRARY");
@@ -136,28 +169,40 @@ final class SplitPackageResolver {
 
     private static void copyWithout(ZipFile zip, Path target, Set<String> packages) throws IOException {
         Manifest manifest = null;
-        Map<String, byte[]> entries = new LinkedHashMap<>();
-        Enumeration<? extends ZipEntry> en = zip.entries();
-        while (en.hasMoreElements()) {
-            ZipEntry e = en.nextElement();
-            if (e.isDirectory()) continue;
-            String n = e.getName();
-            try (InputStream in = zip.getInputStream(e)) {
-                if (n.equals(JarFile.MANIFEST_NAME)) {
-                    manifest = new Manifest(in);
-                    continue;
-                }
-                int slash = n.lastIndexOf('/');
-                if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) continue;
-                entries.put(n, in.readAllBytes());
+        ZipEntry manifestEntry = zip.getEntry(JarFile.MANIFEST_NAME);
+        if (manifestEntry != null) {
+            try (InputStream in = zip.getInputStream(manifestEntry)) {
+                manifest = new Manifest(in);
             }
         }
-        writeJar(target, manifest == null ? new Manifest() : manifest, entries);
+        Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
+        try (OutputStream os = new java.io.BufferedOutputStream(Files.newOutputStream(tmp), 1 << 16);
+                JarOutputStream jos = new JarOutputStream(os, manifest == null ? new Manifest() : manifest)) {
+            jos.setLevel(java.util.zip.Deflater.BEST_SPEED); // a cache file: size does not matter
+            Set<String> seen = new HashSet<>();
+            Enumeration<? extends ZipEntry> en = zip.entries();
+            while (en.hasMoreElements()) {
+                ZipEntry e = en.nextElement();
+                String n = e.getName();
+                if (e.isDirectory() || n.equals(JarFile.MANIFEST_NAME) || !seen.add(n)) continue;
+                int slash = n.lastIndexOf('/');
+                if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) continue;
+                ZipEntry z = new ZipEntry(n);
+                z.setTime(0);
+                jos.putNextEntry(z);
+                try (InputStream in = zip.getInputStream(e)) {
+                    in.transferTo(jos);
+                }
+                jos.closeEntry();
+            }
+        }
+        Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     }
 
     private static void writeJar(Path target, Manifest manifest, Map<String, byte[]> entries) throws IOException {
         Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
-        try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, manifest)) {
+        try (OutputStream os = new java.io.BufferedOutputStream(Files.newOutputStream(tmp), 1 << 16); JarOutputStream jos = new JarOutputStream(os, manifest)) {
+            jos.setLevel(java.util.zip.Deflater.BEST_SPEED); // a cache file read once per class: size does not matter
             for (var e : entries.entrySet()) {
                 ZipEntry z = new ZipEntry(e.getKey());
                 z.setTime(0);
