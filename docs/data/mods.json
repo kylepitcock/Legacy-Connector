@@ -1239,7 +1239,7 @@
    "mc": "1.7.10",
    "date": "2026-11-02",
    "status": "works",
-   "notes": "Survival-tested 2026-11-01: 578 blocks, 19 entity types, 1237 recipes (16 custom-class recipes show no static result), 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). The petal apothecary absorbs thrown petals (altar shapes taller than a block fixed after 0.3.13) but did not finish a recipe in the test; mana networks and the Gaia fight were not played through."
+   "notes": "Survival-tested 2026-11-02: 578 blocks, 19 entity types, 1237 recipes, 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). The petal apothecary works after two fixes (altar shapes taller than a block; copies of used-up stacks): four white petals and a seed in a watered altar give a special flower. Mana pools, spreaders, runes and the Gaia fight were not played through."
   },
   {
    "name": "Botania r1.10-363",
