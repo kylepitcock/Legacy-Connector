@@ -151,3 +151,16 @@ Not done: identical textures under different names stay separate atlas sprites (
 GUI renders of legacy item renderers are not cached (a renderer's output can depend on time or NBT, which cannot be detected reliably).
 ModernizedTextures and LegacySprites keep their own PNG caches for reloads.
 
+
+## Load time
+
+Every phase of the legacy load logs a `[LegacyConnector/Perf]` line (per phase and per mod over 50 ms; the 1.12.2 asset translation logs its own).
+Costs found with a Flight Recorder profile of a 12-mod server start (Thaumcraft, Witchery, DragonAPI, ChromatiCraft, RotaryCraft, ReactorCraft, ElectriCraft,
+AbyssalCraft, Atum, The Midnight, LLibrary, Forgelin) and removed without a switch (no behaviour change):
+
+- Package merge (`SplitPackageResolver`): a launch whose merged library and stripped jars exist reads no class at all; building them is parallel per jar, and a
+  stripped jar is a byte copy of the translated jar with the shared classes deleted in place (no inflating and deflating of the resources). Cold: 9 s -> 1.2 s.
+- `VanillaFlattening.item` runs each (legacy name, damage) through the data fixers (about a millisecond each; Thaumcraft's crafting scan asks for thousands). The
+  answers are kept in `.legacyconnector/vanilla-items-<data version>.txt`. Thaumcraft's pre-initialization 4.3-5.2 s -> 0.3 s once the file exists.
+- 1.12.2 asset translation: existence checks of mod resources and parsed model JSON are cached by path for the translation run (each check walks the
+  class loader's modules, which grows with the pack's mod count). 5.4 s -> 1.2 s in the test set.
