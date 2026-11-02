@@ -17,6 +17,12 @@ public class Legacy1122BlockItem extends net.minecraft.world.item.BlockItem {
         return legacy;
     }
 
+    @Override
+    public net.minecraft.network.chat.Component getName(ItemStack stack) {
+        net.minecraft.network.chat.Component name = ItemNames1122.name(legacy, stack, 0);
+        return name != null ? name : super.getName(stack);
+    }
+
     /** A mod ItemBlock with its own placement code places through it; otherwise the modern placement with the legacy placement state. */
     @Override
     public net.minecraft.world.InteractionResult useOn(net.minecraft.world.item.context.UseOnContext context) {

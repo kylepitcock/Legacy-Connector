@@ -30,17 +30,8 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
 
     @Override
     public Component getName(ItemStack stack) {
-        try {
-            // only a mod's own override sets the name (the shim's default is the translation of the key, which stays translatable on the client)
-            if (org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.overrides(legacy.getClass(), "getItemStackDisplayName", legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class)) {
-                var view = new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(legacy, 1, meta);
-                String name = legacy.getItemStackDisplayName(view);
-                if (name != null) return Component.literal(name);
-            }
-        } catch (RuntimeException | LinkageError e) {
-            // fall back to the translation key
-        }
-        return super.getName(stack);
+        Component name = ItemNames1122.name(legacy, stack, meta);
+        return name != null ? name : super.getName(stack);
     }
 
     @Override
