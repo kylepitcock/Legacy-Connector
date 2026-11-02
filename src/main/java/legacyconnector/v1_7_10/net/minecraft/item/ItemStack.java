@@ -325,6 +325,7 @@ public final class ItemStack {
         list.appendTag(entry);
         tag.setTag("ench", list);
         setTagCompound(tag);
+        ItemBridge.syncEnchantments(this, false);
     }
 
     public boolean isItemEnchanted() {

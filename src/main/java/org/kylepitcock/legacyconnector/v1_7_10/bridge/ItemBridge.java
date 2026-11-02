@@ -936,6 +936,37 @@ public final class ItemBridge {
             Map.entry("unbreaking", 34), Map.entry("fortune", 35), Map.entry("power", 48), Map.entry("punch", 49), Map.entry("flame", 50),
             Map.entry("infinity", 51), Map.entry("luck_of_the_sea", 61), Map.entry("lure", 62));
 
+    /**
+     * Mirrors the legacy ench / StoredEnchantments list of a stack into the modern enchantment component for the vanilla
+     * enchantments (numeric ids), so tooltips, the anvil and combat see what legacy code (ItemStack.addEnchantment,
+     * EnchantmentHelper.setEnchantments, chest loot) added. Mod enchantments stay in the tag only.
+     */
+    public static void syncEnchantments(ItemStack legacy, boolean stored) {
+        try {
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (legacy == null || server == null) return;
+            NBTTagCompound tag = legacy.getTagCompound();
+            String key = stored ? "StoredEnchantments" : "ench";
+            if (tag == null || !tag.hasKey(key, 9)) return;
+            NBTTagList list = tag.getTagList(key, 10);
+            var registry = server.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT);
+            ItemEnchantments.Mutable m = new ItemEnchantments.Mutable(ItemEnchantments.EMPTY);
+            for (int i = 0; i < list.tagCount(); i++) {
+                NBTTagCompound e = list.getCompoundTagAt(i);
+                int id = e.getShort("id");
+                String path = null;
+                for (var en : ENCHANT_IDS.entrySet()) if (en.getValue() == id) path = en.getKey();
+                if (path == null) continue;
+                var holder = registry.getHolder(net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.ENCHANTMENT,
+                        ResourceLocation.withDefaultNamespace(path)));
+                if (holder.isPresent()) m.set(holder.get(), Math.max(1, e.getShort("lvl")));
+            }
+            legacy.mcc$modern().set(stored ? DataComponents.STORED_ENCHANTMENTS : DataComponents.ENCHANTMENTS, m.toImmutable());
+        } catch (Throwable t) {
+            // best effort: the legacy tag stays the source of truth
+        }
+    }
+
     public static NBTTagList legacyEnchantments(net.minecraft.world.item.ItemStack stack) {
         NBTTagList list = new NBTTagList();
         ItemEnchantments enchants = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);

@@ -42,6 +42,7 @@ public class EnchantmentHelper {
         }
         if (list.tagCount() > 0) {
             stack.setTagInfo("ench", list);
+            org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.syncEnchantments(stack, false);
         } else if (stack.hasTagCompound()) {
             stack.getTagCompound().removeTag("ench");
         }

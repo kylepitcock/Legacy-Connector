@@ -37,6 +37,7 @@ public class ItemEnchantedBook extends legacyconnector.v1_7_10.net.minecraft.ite
         list.appendTag(e);
         tag.setTag("StoredEnchantments", list);
         stack.setTagCompound(tag);
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.syncEnchantments(stack, true);
     }
 
     public ItemStack getEnchantedItemStack(legacyconnector.v1_7_10.net.minecraft.enchantment.EnchantmentData data) {
