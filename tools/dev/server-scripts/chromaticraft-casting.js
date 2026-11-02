@@ -42,7 +42,7 @@ if (tick == 0) {
   });
   T("Reika.ChromatiCraft.Magic.Progression.ProgressionManager").instance.maxPlayerProgression(p, false);
   T("Reika.ChromatiCraft.Magic.Progression.ChromaResearchManager").instance.maxPlayerResearch(p, false);
-  sp.setGameMode(T("net.minecraft.world.level.GameType").CREATIVE);
+  sp.setGameMode(T("net.minecraft.world.level.GameType").SURVIVAL); // survival: the table must draw its energy from the pylons
   out += P("pylon", function () {
     var CS = T("Reika.ChromatiCraft.Registry.ChromaStructures");
     var CE = T("Reika.ChromatiCraft.Registry.CrystalElement");
@@ -115,15 +115,23 @@ if (tick == 30 || tick == 100) {
     return s;
   });
 }
-if (tick == 120) {
+if (tick == 380) {
   out += P("ASSERT cast output", function () {
     var AABB = T("net.minecraft.world.phys.AABB");
     var ents = server.overworld().getEntitiesOfClass(T("net.minecraft.world.entity.item.ItemEntity").class, new AABB(0, 195, -15, 20, 215, 15));
     var found = [];
     ents.forEach(function (e) { found.push(e.getItem().toString()); });
-    var slots = []; for (var i = 0; i < 9; i++) slots.push(String(table.getStackInSlot(i)));
+    var slots = []; for (var i = 0; i < table.getSizeInventory(); i++) slots.push(String(table.getStackInSlot(i)));
     var glow = found.filter(function (f) { return f.indexOf("glow") >= 0; });
+    slots.forEach(function (x) { if (x.indexOf("glow") >= 0) glow.push(x); }); // the product lands in the output slot
     return (glow.length > 0 ? "PASS" : "FAIL") + " glow stacks: " + glow.join(", ") + " (of " + found.length + " items) slots " + slots.join(",");
+  });
+}
+if (tick > 5 && tick < 32) {
+  out += P("t" + tick, function () {
+    var sl = []; for (var i = 0; i < table.getSizeInventory(); i++) sl.push(String(table.getStackInSlot(i)));
+    var n = 0, items = []; server.overworld().getAllEntities().forEach(function (e) { if (String(e.getType()).indexOf("item") >= 0) { n++; items.push(e.getItem ? String(e.getItem()) : "?"); } });
+    return "crafting " + table.isCrafting() + " ctick " + table.getCraftingTick() + " slots " + sl.join("|") + " itemEntities " + n + " " + items.join(",");
   });
 }
 if (tick > 5 && tick % 40 == 0 && tick <= 400) {
