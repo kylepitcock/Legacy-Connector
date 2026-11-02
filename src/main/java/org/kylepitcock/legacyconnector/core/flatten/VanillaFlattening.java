@@ -195,7 +195,7 @@ public final class VanillaFlattening {
             java.nio.file.Path file = fixedFile();
             if (!java.nio.file.Files.exists(file)) return;
             for (String line : java.nio.file.Files.readAllLines(file, java.nio.charset.StandardCharsets.UTF_8)) {
-                int tab = line.indexOf('	');
+                int tab = line.indexOf('\t');
                 if (tab > 0) FIXED_IDS.put(line.substring(0, tab), line.substring(tab + 1));
             }
         } catch (java.io.IOException | RuntimeException e) {
@@ -211,8 +211,7 @@ public final class VanillaFlattening {
             java.nio.file.Path file = fixedFile();
             java.nio.file.Files.createDirectories(file.getParent());
             StringBuilder sb = new StringBuilder();
-            new java.util.TreeMap<>(FIXED_IDS).forEach((k, v) -> sb.append(k).append('	').append(v).append('
-'));
+            new java.util.TreeMap<>(FIXED_IDS).forEach((k, v) -> sb.append(k).append('\t').append(v).append('\n'));
             java.nio.file.Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
             java.nio.file.Files.writeString(tmp, sb, java.nio.charset.StandardCharsets.UTF_8);
             java.nio.file.Files.move(tmp, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
