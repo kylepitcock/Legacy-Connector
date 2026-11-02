@@ -65,9 +65,7 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![Atum's creatures](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/atum-creatures.png)
 
-**1.12.2: Scape and Run: Parasites**, with its own models, AI and attacks:
-
-![Scape and Run: Parasites](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites.png)
+**1.12.2: Scape and Run: Parasites**, with its own models and renderers:
 
 ![Scape and Run: Parasites lineup](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites-lineup.png)
 
