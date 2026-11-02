@@ -333,6 +333,7 @@ public final class Platform1710 implements LegacyPlatform {
         // every subtype item exists now: the subtypes' blocks, which the host block entity type below must accept
         adapters.addAll(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockFlattening1710.register());
         org.kylepitcock.legacyconnector.v1_7_10.bridge.FluidBridge.register();
+        org.kylepitcock.legacyconnector.core.registry.LegacyRegistrar.dumpLegacyKeys();
         TileEntityBridge.registerType(adapters);
         CreativeTabBridge.registerTabs();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles.registerItems();

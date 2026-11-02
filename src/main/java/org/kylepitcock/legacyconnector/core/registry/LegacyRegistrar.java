@@ -56,6 +56,28 @@ public final class LegacyRegistrar {
         return removed;
     }
 
+    /**
+     * Writes the keys of the legacy blocks, items and mob effects to {@code .legacyconnector/registry-keys.txt}. A client that the server
+     * kicks with "registries with unknown keys" and that server each write one; a diff of the two names the differing keys.
+     */
+    public static void dumpLegacyKeys() {
+        try {
+            java.util.TreeSet<String> lines = new java.util.TreeSet<>();
+            for (Registry<?> registry : java.util.List.of(net.minecraft.core.registries.BuiltInRegistries.BLOCK,
+                    net.minecraft.core.registries.BuiltInRegistries.ITEM, net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT)) {
+                for (var e : registry.entrySet()) {
+                    if (isLegacyContent(e.getValue())) lines.add(registry.key().location().getPath() + " " + e.getKey().location());
+                }
+            }
+            java.nio.file.Path file = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve(".legacyconnector").resolve("registry-keys.txt");
+            java.nio.file.Files.createDirectories(file.getParent());
+            java.nio.file.Files.write(file, lines);
+            org.slf4j.LoggerFactory.getLogger("Legacy Connector").info("Wrote {} legacy registry keys to {}", lines.size(), file);
+        } catch (java.io.IOException | RuntimeException e) {
+            org.slf4j.LoggerFactory.getLogger("Legacy Connector").debug("Could not write the legacy registry key list", e);
+        }
+    }
+
     private static boolean isLegacyContent(Object value) {
         String n = value.getClass().getName();
         return n.startsWith("org.kylepitcock.legacyconnector.") || n.startsWith("legacyconnector.") || n.startsWith("legacyconnector_synth.");
