@@ -33,7 +33,11 @@ public class MobSpawnerBaseLogic {
             Map.entry("Chicken", "chicken"), Map.entry("Sheep", "sheep"), Map.entry("Wolf", "wolf"), Map.entry("Bat", "bat"),
             Map.entry("Squid", "squid"), Map.entry("Ozelot", "ocelot"), Map.entry("EntityHorse", "horse"), Map.entry("Giant", "giant"),
             Map.entry("MushroomCow", "mooshroom"), Map.entry("VillagerGolem", "iron_golem"), Map.entry("SnowMan", "snow_golem"),
-            Map.entry("WitherBoss", "wither"), Map.entry("EnderDragon", "ender_dragon"));
+            Map.entry("WitherBoss", "wither"), Map.entry("EnderDragon", "ender_dragon"), Map.entry("PrimedTnt", "tnt"),
+            Map.entry("XPOrb", "experience_orb"), Map.entry("Item", "item"), Map.entry("Arrow", "arrow"), Map.entry("Fireball", "fireball"),
+            Map.entry("SmallFireball", "small_fireball"), Map.entry("FallingSand", "falling_block"), Map.entry("MinecartRideable", "minecart"),
+            Map.entry("MinecartChest", "chest_minecart"), Map.entry("MinecartFurnace", "furnace_minecart"), Map.entry("MinecartTNT", "tnt_minecart"),
+            Map.entry("MinecartHopper", "hopper_minecart"), Map.entry("MinecartSpawner", "spawner_minecart"), Map.entry("EnderCrystal", "end_crystal"));
 
     private final SpawnerBlockEntity host;
 
@@ -93,6 +97,11 @@ public class MobSpawnerBaseLogic {
 
     public void setRandomEntity(WeightedRandomMinecart entity) {
         this.randomEntity = entity;
+        // the modern spawner holds the mob in its own spawn data; a legacy spawn entry (Roguelike Dungeons sets one right after the name) must leave it with an id
+        if (entity != null && host != null && entity.entityTypeName != null) {
+            EntityType<?> type = typeFor(entity.entityTypeName);
+            if (type != null) host.setEntityId(type, RandomSource.create());
+        }
     }
 
     // ------------------------------------------------------------------ where it is (mods' subclasses override these)
