@@ -628,6 +628,19 @@ public class MobHost1122 extends PathfinderMob implements LivingHost1122, IEntit
             net.minecraft.world.entity.SpawnGroupData data) {
         var level = spawnLevel != null ? spawnLevel : level() instanceof ServerLevel sl ? sl : null;
         if (level == null) return data;
+        if (!(level instanceof ServerLevel sl && sl.getServer().isSameThread())) {
+            // off the server thread (chunk population on a worker, e.g. C2ME) the level's RandomSource may be bound to the
+            // server thread: apply the vanilla follow range bonus and left-handedness with a thread-safe source instead
+            var rnd = net.minecraft.util.RandomSource.createThreadSafe();
+            var follow = getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FOLLOW_RANGE);
+            if (follow != null) {
+                follow.addPermanentModifier(new net.minecraft.world.entity.ai.attributes.AttributeModifier(
+                        net.minecraft.resources.ResourceLocation.withDefaultNamespace("random_spawn_bonus"), rnd.triangle(0.0, 0.11485000171139358),
+                        net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_MULTIPLIED_BASE));
+            }
+            setLeftHanded(rnd.nextFloat() < 0.05F);
+            return data;
+        }
         return super.finalizeSpawn(level, difficulty, spawnType != null ? spawnType : net.minecraft.world.entity.MobSpawnType.NATURAL, data);
     }
 
