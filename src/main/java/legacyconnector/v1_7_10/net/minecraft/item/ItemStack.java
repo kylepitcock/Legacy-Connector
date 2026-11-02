@@ -462,6 +462,15 @@ public final class ItemStack {
     // ------------------------------------------------------------------ copies and comparisons
 
     public ItemStack copy() {
+        if (mcc$item != null && mcc$stack.isEmpty()) {
+            // A stack used up to 0 still has its item in 1.7.10, and mods copy it and set the count back (Botania's apothecary decrements the
+            // thrown petal, then stores a copy with stackSize 1): the modern copy of an empty stack is the shared empty stack, which kept the copy at 0.
+            ItemStack c = new ItemStack(ItemBridge.toModern(mcc$item, 1, getItemDamage()), mcc$item);
+            NBTTagCompound tag = getTagCompound();
+            if (tag != null) c.setTagCompound((NBTTagCompound) tag.copy());
+            c.mcc$setCount(0);
+            return c;
+        }
         return new ItemStack(ItemBridge.upgradeVariant(mcc$item, mcc$stack.copy()), mcc$item);
     }
 
