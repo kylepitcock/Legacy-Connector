@@ -1217,7 +1217,12 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             Map.entry("block/orientable_trapdoor_top", "block/template_orientable_trapdoor_top"), Map.entry("block/orientable_trapdoor_bottom", "block/template_orientable_trapdoor_bottom"),
             Map.entry("block/orientable_trapdoor_open", "block/template_orientable_trapdoor_open"),
             Map.entry("block/normal_torch", "block/template_torch"), Map.entry("block/normal_torch_wall", "block/template_torch_wall"),
-            Map.entry("block/tall_grass", "block/short_grass"));
+            Map.entry("block/tall_grass", "block/short_grass"),
+            // iron doors (EnderIO's dark steel door) and the plain rail (Tinkers' wooden rail); the slots are the same
+            Map.entry("block/iron_door_bottom", "block/iron_door_bottom_left"), Map.entry("block/iron_door_top", "block/iron_door_top_left"),
+            Map.entry("block/iron_door_bottom_rh", "block/iron_door_bottom_right"), Map.entry("block/iron_door_top_rh", "block/iron_door_top_right"),
+            Map.entry("block/normal_rail_flat", "block/rail_flat"), Map.entry("block/normal_rail_curved", "block/rail_curved"),
+            Map.entry("block/normal_rail_raised_ne", "block/template_rail_raised_ne"), Map.entry("block/normal_rail_raised_sw", "block/template_rail_raised_sw"));
 
     private static final java.util.regex.Pattern VINE_MODEL = java.util.regex.Pattern.compile("vine_([1-4])?(u)?(_opposite)?");
 
