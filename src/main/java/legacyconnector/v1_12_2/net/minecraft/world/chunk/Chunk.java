@@ -27,8 +27,12 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     private boolean loaded;
     public boolean unloadQueued;
 
+    /** True for the stand-in a provider answers for a chunk that is not loaded (not one a generator fills). */
+    private boolean unloadedStandIn;
+
     public Chunk(World world, int x, int z) {
         this(world, new ChunkPrimer(), x, z);
+        this.unloadedStandIn = true;
     }
 
     public Chunk(World world, ChunkPrimer primer, int x, int z) {
@@ -84,8 +88,22 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
     }
 
     public int getHeightValue(int bx, int bz) {
+        if (access == null && unloadedStandIn && world != null && world.mcc$level() instanceof net.minecraft.server.level.ServerLevel sl
+                && sl.getServer().isSameThread() && legacyconnector.v1_12_2.net.minecraft.world.World.mcc$notGenerating()) {
+            // 1.12 provided (loaded and generated) any chunk: answer with the real height (Midnight rifts place their far end with it)
+            return sl.getChunk(x, z).getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
+        }
         if (access == null) return primer.findGroundBlockIdx(bx & 15, bz & 15) + 1;
-        return access.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
+        int h = access.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING, bx & 15, bz & 15) + 1;
+        if (h <= access.getMinBuildHeight() + 1) {
+            // heightmap not primed yet (a chunk still being generated answers the minimum): 1.12 chunks always had a height map, so scan the column
+            var m = new net.minecraft.core.BlockPos.MutableBlockPos();
+            for (int y = access.getMaxBuildHeight() - 1; y >= access.getMinBuildHeight(); y--) {
+                var st = access.getBlockState(m.set(access.getPos().getMinBlockX() + (bx & 15), y, access.getPos().getMinBlockZ() + (bz & 15)));
+                if (st.blocksMotion() || !st.getFluidState().isEmpty()) return y + 1;
+            }
+        }
+        return h;
     }
 
     public int getLowestHeight() {

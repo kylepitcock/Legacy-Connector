@@ -145,6 +145,11 @@ public class World implements IBlockAccess {
         return access;
     }
 
+    /** Whether this thread is outside a mod dimension's chunk generation (where a synchronous chunk load must not happen). */
+    public static boolean mcc$notGenerating() {
+        return REGION.get() == null;
+    }
+
     /** Routes this thread's access to the level's world through a generation region until {@link #mcc$leaveRegion}; returns the previous one. */
     public static net.minecraft.world.level.WorldGenLevel mcc$enterRegion(net.minecraft.world.level.WorldGenLevel region) {
         var previous = REGION.get();

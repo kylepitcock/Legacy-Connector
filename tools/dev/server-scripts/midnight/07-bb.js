@@ -1,0 +1,10 @@
+var res = "";
+EB = T("org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122");
+res += "rift bb " + rift.getBoundingBox() + " player bb " + sp.getBoundingBox() + "\n";
+var r = EB.wrap(rift);
+res += P("pullIntensity", function () { return r.getPullIntensity(); });
+res += P("geometry", function () { return r.getGeometry(); });
+res += "player delta " + sp.getDeltaMovement() + "\n";
+res += P("pullEntity", function () { r.pullEntity(1.0, EB.wrap(sp)); return "player delta " + sp.getDeltaMovement(); });
+res;
+log.info("SSOUT " + res); 1;

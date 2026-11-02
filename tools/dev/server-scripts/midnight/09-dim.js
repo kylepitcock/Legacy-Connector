@@ -1,0 +1,16 @@
+var res = "";
+var md = sp.level();
+var p = sp.blockPosition();
+res += "dim " + md.dimension().location() + " pos " + p + " minY " + md.getMinBuildHeight() + " maxY " + md.getMaxBuildHeight() + "\n";
+var col = "";
+for (var y = p.getY() + 3; y >= p.getY() - 3; y--) col += y + ":" + md.getBlockState(bp(p.getX(), y, p.getZ())).getBlock().builtInRegistryHolder().key().location().getPath() + " ";
+res += col + "\n";
+var H = T("net.minecraft.world.level.levelgen.Heightmap.Types");
+res += "surface y " + md.getHeight(H.MOTION_BLOCKING_NO_LEAVES, p.getX(), p.getZ()) + " world surface " + md.getHeight(H.WORLD_SURFACE, p.getX(), p.getZ()) + "\n";
+var col2 = "";
+for (var y = 130; y >= 0; y -= 4) col2 += y + ":" + md.getBlockState(bp(p.getX(), y, p.getZ())).getBlock().builtInRegistryHolder().key().location().getPath() + " ";
+res += col2 + "\n";
+var es = [];
+md.getAllEntities().forEach(function (e) { es.push(e.getType().builtInRegistryHolder().key().location() + "@" + e.blockPosition().toShortString()); });
+res += "entities: " + es.join(" ") + "\n";
+res;
