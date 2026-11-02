@@ -5941,9 +5941,9 @@
    "name": "RotaryCraft",
    "version": "V33a",
    "mc": "1.7.10",
-   "date": "2026-11-01",
+   "date": "2026-11-02",
    "status": "works",
-   "notes": "2026-11-01 server scenarios: wind turbine and DC/AC/gas/steam/micro/jet engines place, take fluids and run; the dynamo turns shaft power into RF (126 RF/t); handbook, items and 40+ machine GUIs open with correct slots; 35 blocks, 698 recipes. Open: the steam engine heats slowly (no power within 400 ticks over lava), hydrokinetic engine made no power in the test rig; machine chains were not played in survival."
+   "notes": "Server scenarios 2026-11-02: wind turbine, DC/AC/gas/steam/micro/jet engines place, take fluids and run (a steam engine over lava heats for about 1100 ticks, then delivers 16384 power at 120 degrees); the dynamo turns shaft power into RF (126 RF/t); handbook, items and 40+ machine GUIs open with correct slots; 35 blocks, 698 recipes. The hydrokinetic engine needs lubricant (it ran dry in the rig); machine chains were not played in survival."
   },
   {
    "name": "Runic Dungeons",
