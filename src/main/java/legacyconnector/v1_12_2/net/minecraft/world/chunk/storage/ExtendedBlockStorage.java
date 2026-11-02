@@ -111,7 +111,17 @@ public class ExtendedBlockStorage {
     /** The section's block states (a container that reads and writes this section). */
     public legacyconnector.v1_12_2.net.minecraft.world.chunk.BlockStateContainer getData() {
         if (mcc$data == null) mcc$data = new legacyconnector.v1_12_2.net.minecraft.world.chunk.BlockStateContainer(this);
+        // a caller reads the section's packed storage through the container: show it as it is now
+        mcc$data.mcc$invalidate();
         return mcc$data;
+    }
+
+    /** Phantom: redirected to {@link #mcc$get$data} (the section's block state container). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.world.chunk.BlockStateContainer data;
+
+    public static legacyconnector.v1_12_2.net.minecraft.world.chunk.BlockStateContainer mcc$get$data(ExtendedBlockStorage s) {
+        return s.getData();
     }
 
     public NibbleArray getBlockLight() {

@@ -477,6 +477,14 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
                 public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getByValue(int value) {
                     return getStateById(value);
                 }
+
+                /** One above the highest state id (mods size arrays indexed by state id with it; NTM's radiation scan). */
+                @Override
+                public int size() {
+                    int blocks = 0;
+                    for (Block b : REGISTRY) blocks = Math.max(blocks, getIdFromBlock(b) + 1);
+                    return blocks <= 4096 ? MCC$WIDE_STATE_IDS : MCC$WIDE_STATE_IDS + (blocks << 4);
+                }
             };
 
     /** Forge: whether the block sets entities in it on fire (fire and lava). */

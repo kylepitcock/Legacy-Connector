@@ -40,6 +40,6 @@ public class ObjectIntIdentityMap<T> implements Iterable<T> {
     }
 
     public int size() {
-        return identityMap.size();
+        return objectList.size();
     }
 }

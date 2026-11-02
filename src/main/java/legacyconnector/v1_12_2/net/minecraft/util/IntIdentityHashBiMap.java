@@ -1,70 +1,153 @@
 package legacyconnector.v1_12_2.net.minecraft.util;
 
-import java.util.ArrayList;
-import java.util.IdentityHashMap;
+import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.NoSuchElementException;
 
-/** Objects (by identity) to ids and back: {@link #add} gives the next free id; ids are what block state palettes store. */
+/**
+ * 1.12.2's identity hash map from objects to ints with a reverse array: {@code byId[id]} is the object of an id (a block state
+ * palette is read straight from that array), {@code values}/{@code intKeys} are the open-addressed table.
+ */
 public class IntIdentityHashBiMap<K> implements Iterable<K> {
-    private final Map<K, Integer> ids;
-    private final List<K> byId;
+    public static final Object EMPTY = null;
+    private K[] values;
+    private int[] intKeys;
+    private K[] byId;
     private int nextFreeIndex;
+    private int mapSize;
 
+    @SuppressWarnings("unchecked")
     public IntIdentityHashBiMap(int initialCapacity) {
-        this.ids = new IdentityHashMap<>(initialCapacity);
-        this.byId = new ArrayList<>(initialCapacity);
+        initialCapacity = Math.max(4, (int) ((float) initialCapacity / 0.8F));
+        this.values = (K[]) new Object[initialCapacity];
+        this.intKeys = new int[initialCapacity];
+        this.byId = (K[]) new Object[initialCapacity];
     }
 
     /** The id of the object, or -1. */
-    public int getId(K value) {
-        Integer id = ids.get(value);
-        return id == null ? -1 : id;
+    public int getId(K target) {
+        int index = getIndex(target, hashObject(target));
+        return index == -1 ? -1 : intKeys[index];
     }
 
     public K get(int idIn) {
-        return idIn >= 0 && idIn < byId.size() ? byId.get(idIn) : null;
+        return idIn >= 0 && idIn < byId.length ? byId[idIn] : null;
     }
 
     /** Adds the object under the next free id and returns it. */
-    public int add(K value) {
-        int id = nextId();
-        put(value, id);
-        return id;
+    public int add(K objectIn) {
+        int i = nextId();
+        put(objectIn, i);
+        return i;
     }
 
     private int nextId() {
-        while (nextFreeIndex < byId.size() && byId.get(nextFreeIndex) != null) nextFreeIndex++;
+        while (nextFreeIndex < byId.length && byId[nextFreeIndex] != null) ++nextFreeIndex;
         return nextFreeIndex;
     }
 
-    public void put(K value, int intKey) {
-        Objects.requireNonNull(value);
-        while (byId.size() <= intKey) byId.add(null);
-        K previous = byId.get(intKey);
-        if (previous != null) ids.remove(previous);
-        Integer old = ids.put(value, intKey);
-        if (old != null && old != intKey) byId.set(old, null);
-        byId.set(intKey, value);
-        if (nextFreeIndex == intKey) nextFreeIndex++;
+    @SuppressWarnings("unchecked")
+    private void grow(int capacity) {
+        K[] oldValues = values;
+        int[] oldKeys = intKeys;
+        K[] oldById = byId;
+        values = (K[]) new Object[capacity];
+        intKeys = new int[capacity];
+        byId = (K[]) new Object[capacity];
+        nextFreeIndex = 0;
+        mapSize = 0;
+        for (int i = 0; i < oldValues.length; ++i) if (oldValues[i] != null && oldById[oldKeys[i]] == oldValues[i]) put(oldValues[i], oldKeys[i]);
+    }
+
+    public void put(K objectIn, int intKey) {
+        if (objectIn == null) throw new NullPointerException();
+        int existing = getIndex(objectIn, hashObject(objectIn));
+        if (existing != -1) {
+            // already in: it moves to the new id
+            int oldId = intKeys[existing];
+            if (oldId == intKey) return;
+            if (intKey >= byId.length) grow(Math.max(byId.length << 1, intKey + 1));
+            existing = getIndex(objectIn, hashObject(objectIn));
+            byId[oldId] = null;
+            if (oldId < nextFreeIndex) nextFreeIndex = oldId;
+            intKeys[existing] = intKey;
+            byId[intKey] = objectIn;
+            return;
+        }
+        int needed = Math.max(intKey, mapSize + 1);
+        if ((float) needed >= (float) values.length * 0.8F) {
+            int capacity = values.length << 1;
+            while (capacity <= intKey) capacity <<= 1;
+            grow(capacity);
+        }
+        int k = findEmpty(hashObject(objectIn));
+        values[k] = objectIn;
+        intKeys[k] = intKey;
+        byId[intKey] = objectIn;
+        ++mapSize;
+        if (intKey == nextFreeIndex) ++nextFreeIndex;
+    }
+
+    private int hashObject(K object) {
+        int h = System.identityHashCode(object);
+        h ^= h >>> 16;
+        h *= 0x85ebca6b;
+        h ^= h >>> 13;
+        return (h & Integer.MAX_VALUE) % values.length;
+    }
+
+    private int getIndex(K object, int start) {
+        for (int i = start; i < values.length; ++i) {
+            if (values[i] == object) return i;
+            if (values[i] == EMPTY) return -1;
+        }
+        for (int j = 0; j < start; ++j) {
+            if (values[j] == object) return j;
+            if (values[j] == EMPTY) return -1;
+        }
+        return -1;
+    }
+
+    private int findEmpty(int start) {
+        for (int i = start; i < values.length; ++i) if (values[i] == EMPTY) return i;
+        for (int j = 0; j < start; ++j) if (values[j] == EMPTY) return j;
+        throw new RuntimeException("Overflowed :(");
     }
 
     @Override
     public Iterator<K> iterator() {
-        List<K> present = new ArrayList<>(ids.size());
-        for (K k : byId) if (k != null) present.add(k);
-        return present.iterator();
+        final K[] ids = byId;
+        return new Iterator<K>() {
+            private int next = advance(0);
+
+            private int advance(int from) {
+                while (from < ids.length && ids[from] == null) from++;
+                return from;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return next < ids.length;
+            }
+
+            @Override
+            public K next() {
+                if (next >= ids.length) throw new NoSuchElementException();
+                K k = ids[next];
+                next = advance(next + 1);
+                return k;
+            }
+        };
     }
 
     public void clear() {
-        ids.clear();
-        byId.clear();
+        Arrays.fill(values, null);
+        Arrays.fill(byId, null);
         nextFreeIndex = 0;
+        mapSize = 0;
     }
 
     public int size() {
-        return ids.size();
+        return mapSize;
     }
 }
