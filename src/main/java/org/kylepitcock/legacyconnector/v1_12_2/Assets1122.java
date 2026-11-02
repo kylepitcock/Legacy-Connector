@@ -245,9 +245,17 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     // ------------------------------------------------------------------------------------------------------------------------------
     // one block
 
+    /**
+     * Whether the blockstate file being translated is a Forge blockstate (forge_marker): only those read the "textures" of a variant or
+     * multipart entry; a vanilla 1.12 blockstate ignored them (Scape and Run's fences name a texture file the mod does not have there, the
+     * model's own texture is the real one).
+     */
+    private static final ThreadLocal<Boolean> FORGE_MARKER = ThreadLocal.withInitial(() -> Boolean.TRUE);
+
     private static void translate(Block block, ResourceLocation id, Map<String, Supplier<byte[]>> out, Stats stats) {
         boolean debug = System.getProperty("legacyconnector.debugAssets") != null && id.getPath().equals(System.getProperty("legacyconnector.debugAssets"));
         JsonObject original = readOriginal(id);
+        FORGE_MARKER.set(original != null && original.has("forge_marker"));
         boolean multipart = original != null && original.has("multipart") && original.get("multipart").isJsonArray() && !original.has("variants");
         IBlockState def = null;
         try {
@@ -1269,13 +1277,13 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         if (ObjAssets1122.isObj(model)) {
             // a Forge OBJ model: NeoForge's OBJ loader draws it (with the variant's texture overrides and flip-v)
             if (!modelNs.equals("minecraft") && !resourceExists("assets/" + modelNs + "/models/" + modelPath)) return null;
-            JsonObject textures = source.has("textures") && source.get("textures").isJsonObject() ? source.getAsJsonObject("textures") : null;
+            JsonObject textures = FORGE_MARKER.get() && source.has("textures") && source.get("textures").isJsonObject() ? source.getAsJsonObject("textures") : null;
             copy.addProperty("model", ObjAssets1122.model(modelNs, modelPath, textures, ObjAssets1122.custom(source),
                     textures == null ? null : blockId.getPath() + "_" + key, out));
             return copy;
         }
         if (!modelResolves(modelNs, modelPath, out, 0)) return null;
-        if (source.has("textures") && source.get("textures").isJsonObject() && source.getAsJsonObject("textures").size() > 0) {
+        if (FORGE_MARKER.get() && source.has("textures") && source.get("textures").isJsonObject() && source.getAsJsonObject("textures").size() > 0) {
             JsonObject generated = new JsonObject();
             generated.addProperty("parent", model);
             JsonObject textures = new JsonObject();
