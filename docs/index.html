@@ -44,7 +44,7 @@
   .stat.click:hover { border-color: var(--accent); }
   .stat.click[aria-pressed=true] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
   .stat small { display: block; color: var(--muted); font-size: 0.72rem; margin-top: 2px; }
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 18px 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 10px; margin: 18px 0; }
   .stat { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
   .stat b { display: block; font-size: 1.5rem; line-height: 1.1; }
   .stat span { color: var(--muted); font-size: 0.85rem; }
@@ -70,6 +70,15 @@
   .howto { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin: 22px 0; }
   .howto h2 { margin: 0 0 6px; font-size: 1.1rem; }
   .howto ol { margin: 6px 0 0 18px; padding: 0; }
+  .legend { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 18px 0 0; }
+  .legend h2 { margin: 0 0 10px; font-size: 1.05rem; }
+  .legend .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 8px 18px; }
+  .legend .tier { display: flex; gap: 10px; align-items: flex-start; font-size: 0.88rem; color: var(--muted); }
+  .legend .tier .badge { margin-top: 1px; }
+  .legend .note { margin: 12px 0 0; padding: 9px 12px; border-left: 4px solid var(--works); background: var(--chip); border-radius: 0 8px 8px 0; font-size: 0.9rem; }
+  .legend details { margin-top: 10px; font-size: 0.86rem; color: var(--muted); }
+  .legend summary { cursor: pointer; color: var(--accent); }
+  .legend details p { margin: 6px 0 0; }
   footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
   @media (max-width: 520px) { .meta { display: none; } .badge { min-width: 72px; } }
 </style>
@@ -86,6 +95,23 @@
       <a href="https://github.com/kylepitcock/Legacy-Connector/issues?q=label%3Acompatibility" target="_blank" rel="noopener">All reports</a>
     </nav>
   </header>
+
+  <section class="legend" aria-label="What the ratings mean">
+    <h2>What the ratings mean</h2>
+    <div class="tiers">
+      <div class="tier"><span class="badge perfect">Near-perfect</span><span>The maintainer played it and considers it survival-ready (only small known issues).</span></div>
+      <div class="tier"><span class="badge playable">Playable</span><span>Played in survival and most gameplay works; some mechanics or abilities are known to be broken or not tried.</span></div>
+      <div class="tier"><span class="badge works">Works</span><span>Works on the surface (tested in game, by hand or by the in-game test that found problems in under 10% of its blocks, items and mobs); deeper gameplay mechanics may not work.</span></div>
+      <div class="tier"><span class="badge partial">Partial</span><span>Its content loads in game, but some features are broken or not tested yet.</span></div>
+      <div class="tier"><span class="badge loads">Loads</span><span>Registers at startup without errors, not played yet.</span></div>
+      <div class="tier"><span class="badge fails">Fails</span><span>Disabled at load. <b>Crashes</b> takes the game down.</span></div>
+    </div>
+    <p class="note"><b>Most “Works” entries are simply not tested thoroughly yet</b>, they are not known to be broken.</p>
+    <details>
+      <summary>Where a badge comes from</summary>
+      <p>Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.</p>
+    </details>
+  </section>
 
   <div class="tabs" id="tabs" role="tablist" aria-label="Legacy Minecraft version"></div>
   <div class="stats" id="stats"></div>
@@ -120,7 +146,6 @@
 
   <footer>
     <span id="updated"></span>
-    <b>Near-perfect</b> = the maintainer played it and considers it survival-ready (only small known issues); <b>Playable</b> = played in survival and most of its gameplay works (some mechanics or abilities are still known to be broken or not tried); <b>Works</b> = works on the surface (tested in game, by hand or by the in-game test that found problems in under 10% of its blocks, items and mobs), but deeper gameplay mechanics may not work (most mods here are simply not tested thoroughly yet, not known to be broken); <b>Partial</b> = its content loads in game, but some features are broken or not tested yet; <b>Loads</b> = registers at startup without errors, not played yet; <b>Fails</b> = disabled at load; <b>Crashes</b> = takes the game down. Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.
   </footer>
 </div>
 
@@ -132,7 +157,7 @@
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
-  var PLANNED = ["1.20.1", "1.16.5", "1.2.5"];
+  var PLANNED = ["1.16.5", "1.2.5"];
   var state = { q: "", status: "all", sort: "name", tab: "", all: [] };
 
   function reportUrl(name) {
