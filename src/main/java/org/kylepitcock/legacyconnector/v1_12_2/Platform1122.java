@@ -44,6 +44,7 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.EventBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Loot1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.LootTables1122.register();
+        org.kylepitcock.legacyconnector.core.ArrivalUnstick.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldEventsW1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldSynth1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.CommonSynth1122.register();

@@ -353,6 +353,7 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DevCommands1710.register();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyContentSummary.register();
         org.kylepitcock.legacyconnector.core.RecipeSyncGuard.register();
+        org.kylepitcock.legacyconnector.core.ArrivalUnstick.register();
         LOG.info("1.7.10: {} block(s), {} item(s), {} recipe(s) translated", adapters.size(),
                 org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.modItems().size(), org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.count());
     }
