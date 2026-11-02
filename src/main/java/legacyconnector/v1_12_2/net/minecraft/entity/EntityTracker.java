@@ -36,6 +36,38 @@ public class EntityTracker {
         return out;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$trackedEntityHashTable} (tracker entries by entity id, one per entity while it stays). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<EntityTrackerEntry> trackedEntityHashTable;
+    private final java.util.Map<Integer, EntityTrackerEntry> mcc$entryById = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<EntityTrackerEntry> mcc$get$trackedEntityHashTable(EntityTracker t) {
+        return new legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<EntityTrackerEntry>() {
+            @Override
+            public EntityTrackerEntry lookup(int id) {
+                var level = t.mcc$level();
+                var e = level == null ? null : level.getEntity(id);
+                if (e == null) {
+                    t.mcc$entryById.remove(id);
+                    return null;
+                }
+                var view = org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(e);
+                if (view == null) return null;
+                EntityTrackerEntry entry = t.mcc$entryById.get(id);
+                if (entry == null || entry.getTrackedEntity() != view) {
+                    entry = new EntityTrackerEntry(view, 64, 1, true);
+                    t.mcc$entryById.put(id, entry);
+                }
+                return entry;
+            }
+
+            @Override
+            public boolean containsItem(int id) {
+                return lookup(id) != null;
+            }
+        };
+    }
+
     public static void mcc$set$entries(EntityTracker t, Set<EntityTrackerEntry> v) {
     }
 

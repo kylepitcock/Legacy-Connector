@@ -31,6 +31,29 @@ public class EntityTrackerEntry {
     public static void mcc$set$trackingPlayers(EntityTrackerEntry e, Set<EntityPlayerMP> v) {
     }
 
+    /** Ticks since the entry was made (1.12 counted them; mods reset it to force a position resend). */
+    public int updateCounter;
+    private int mcc$maxRange;
+
+    /** Sends the packet to the players that see the entity. */
+    public void sendPacketToTrackedPlayers(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packet) {
+        var m = trackedEntity == null ? null : trackedEntity.mcc$entity;
+        var modern = packet == null ? null : packet.mcc$modern();
+        if (modern != null && m != null && m.level() instanceof net.minecraft.server.level.ServerLevel level) level.getChunkSource().broadcast(m, modern);
+    }
+
+    /** Sends the packet to the players that see the entity, and to the entity when it is a player. */
+    public void sendToTrackingAndSelf(legacyconnector.v1_12_2.net.minecraft.network.Packet<?> packet) {
+        var m = trackedEntity == null ? null : trackedEntity.mcc$entity;
+        var modern = packet == null ? null : packet.mcc$modern();
+        if (modern != null && m != null && m.level() instanceof net.minecraft.server.level.ServerLevel level) level.getChunkSource().broadcastAndSend(m, modern);
+    }
+
+    /** The modern game decides who sees an entity; the range is only recorded. */
+    public void setMaxRange(int maxRange) {
+        this.mcc$maxRange = maxRange;
+    }
+
     public Entity getTrackedEntity() {
         return trackedEntity;
     }

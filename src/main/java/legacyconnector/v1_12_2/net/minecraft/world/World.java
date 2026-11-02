@@ -230,6 +230,24 @@ public class World implements IBlockAccess {
         return out;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$entitiesById} (entity ids to the world's entities; lookups answer from the live world). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<Entity> entitiesById;
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<Entity> mcc$get$entitiesById(World w) {
+        return new legacyconnector.v1_12_2.net.minecraft.util.IntHashMap<Entity>() {
+            @Override
+            public Entity lookup(int id) {
+                return w.getEntityByID(id);
+            }
+
+            @Override
+            public boolean containsItem(int id) {
+                return w.getEntityByID(id) != null;
+            }
+        };
+    }
+
     public static List<Entity> mcc$get$loadedEntityList(World w) {
         List<Entity> out = new ArrayList<>();
         if (w.mcc$liveLevel() instanceof ServerLevel s) {

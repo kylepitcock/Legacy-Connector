@@ -1074,6 +1074,46 @@ public abstract class EntityLivingBase extends Entity {
         if (slot != null) mcc$slotPut(mcc$slot(slot), stack);
     }
 
+    /** Phantom: redirected to {@link #mcc$get$handInventory} (main hand, off hand: a live view of the entity's equipment). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> handInventory;
+    /** Phantom: redirected to {@link #mcc$get$armorArray} (feet, legs, chest, head: a live view of the entity's equipment). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> armorArray;
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> mcc$get$handInventory(EntityLivingBase e) {
+        return e.mcc$equipmentView(new EntityEquipmentSlot[] {EntityEquipmentSlot.MAINHAND, EntityEquipmentSlot.OFFHAND});
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> mcc$get$armorArray(EntityLivingBase e) {
+        return e.mcc$equipmentView(new EntityEquipmentSlot[] {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST,
+                EntityEquipmentSlot.HEAD});
+    }
+
+    /** A fixed-size list reading and writing the given equipment slots (1.12 kept equipment in such lists, which mods read directly). */
+    private legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack> mcc$equipmentView(EntityEquipmentSlot[] slots) {
+        java.util.List<ItemStack> view = new java.util.AbstractList<>() {
+            @Override
+            public ItemStack get(int index) {
+                return getItemStackFromSlot(slots[index]);
+            }
+
+            @Override
+            public ItemStack set(int index, ItemStack element) {
+                ItemStack old = getItemStackFromSlot(slots[index]);
+                setItemStackToSlot(slots[index], element);
+                return old;
+            }
+
+            @Override
+            public int size() {
+                return slots.length;
+            }
+        };
+        return new legacyconnector.v1_12_2.net.minecraft.util.NonNullList<ItemStack>(view, ItemStack.EMPTY) {
+        };
+    }
+
     public boolean hasItemInSlot(EntityEquipmentSlot slot) {
         return !getItemStackFromSlot(slot).isEmpty();
     }
