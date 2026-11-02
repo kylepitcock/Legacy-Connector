@@ -253,7 +253,9 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
     /** How fast the block's break particles fall. */
     public float blockParticleGravity = 1.0F;
     /** Forge: the player harvesting this block in harvestBlock (read by getDrops). */
-    protected static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer> harvesters = new ThreadLocal<>();
+    private static final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer> HARVESTERS = new ThreadLocal<>();
+    /** Forge's instance field (mods read it with getfield); every block shares the one thread-local the adapter sets. */
+    protected final ThreadLocal<legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer> harvesters = HARVESTERS;
 
     public String getLocalizedName() {
         return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getTranslationKey() + ".name");
@@ -767,8 +769,8 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
 
     /** The player harvesting the block on this thread (Forge's harvesters), for mods' getDrops. */
     public static void mcc$harvester(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
-        if (player == null) harvesters.remove();
-        else harvesters.set(player);
+        if (player == null) HARVESTERS.remove();
+        else HARVESTERS.set(player);
     }
 
     /** How much of the block a player breaks per tick: the modern rule (tool speed, effects, water, air) on the modern state. */
