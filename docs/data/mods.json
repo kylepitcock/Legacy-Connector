@@ -2784,7 +2784,7 @@
    "mc": "1.7.10",
    "date": "2026-11-01",
    "status": "playable",
-   "notes": "112 recipes, suits, HUD, flight and most abilities. Doctor Octopus renders correctly under shader packs; the Iron Man blade, crab cannon and some HUD flicker are open (#118)."
+   "notes": "112 recipes, suits, HUD, flight and most abilities. Doctor Octopus renders correctly under shader packs; the Iron Man blade, crab cannon and some HUD flicker are open (#118). Server survival run (progression/world, 2026-11-01): 231 recipes registered, none with empty results; 129 plain recipes craft from their own ingredients, the custom ones (katana, trick arrow 2, quiver, desert eagle) did not match their own ingredient stacks in a synthetic check and are untested in a real grid; 86 of 99 blocks drop (display stands, pizza, creetle jar, ice layer and nexus soil drop nothing); cactus and creetle mobs drop items; worldgen places titanium, eternium and tutridium ore; legacy player data and achievements persist in the player NBT. Open: suit item names show raw lang keys without a hero NBT, spellwhip entity NBT NPE, trick arrow tooltip NoSuchMethodError, one custom recipe NPE on a null stack."
   },
   {
    "name": "FiskTag",
