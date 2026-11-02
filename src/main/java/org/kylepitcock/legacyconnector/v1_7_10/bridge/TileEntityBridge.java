@@ -151,6 +151,7 @@ public final class TileEntityBridge {
             if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) {
                 chest.mcc$refresh();
                 chest.numPlayersUsing = net.minecraft.world.level.block.entity.ChestBlockEntity.getOpenCount(world.mcc$level(), pos);
+                linkDoubleChest(world, pos, chest);
             } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign sign) {
                 sign.mcc$refresh();
             } else if (view instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityFurnace furnace) {
@@ -158,6 +159,36 @@ public final class TileEntityBridge {
             }
         }
         return view;
+    }
+
+    /**
+     * A modern double chest is two block entities of 27 slots, as 1.7.10's were two tile entities: the half that sits beside this one is
+     * set in the matching {@code adjacentChest*} field, which is where Thaumcraft's golems (InventoryUtils.getDoubleChest) and other mods
+     * look for the other half (without it they only ever saw one half).
+     */
+    private static void linkDoubleChest(World world, BlockPos pos, legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest chest) {
+        chest.adjacentChestXNeg = chest.adjacentChestXPos = chest.adjacentChestZNeg = chest.adjacentChestZPos = null;
+        chest.adjacentChestChecked = true;
+        var level = world.mcc$level();
+        var state = level.getBlockState(pos);
+        if (!(state.getBlock() instanceof net.minecraft.world.level.block.ChestBlock)
+                || state.getValue(net.minecraft.world.level.block.ChestBlock.TYPE) == net.minecraft.world.level.block.state.properties.ChestType.SINGLE) return;
+        net.minecraft.core.Direction d = net.minecraft.world.level.block.ChestBlock.getConnectedDirection(state);
+        BlockPos other = pos.relative(d);
+        if (!(blockEntityAt(level, other) instanceof net.minecraft.world.level.block.entity.ChestBlockEntity otherBe)) return;
+        TileEntity v = VIEWS.computeIfAbsent(otherBe, TileEntityBridge::view);
+        if (!(v instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityChest oc)) return;
+        oc.worldObj = world;
+        oc.xCoord = other.getX();
+        oc.yCoord = other.getY();
+        oc.zCoord = other.getZ();
+        oc.mcc$refresh();
+        switch (d) {
+            case WEST -> chest.adjacentChestXNeg = oc;
+            case EAST -> chest.adjacentChestXPos = oc;
+            case NORTH -> chest.adjacentChestZNeg = oc;
+            default -> chest.adjacentChestZPos = oc;
+        }
     }
 
     /**
