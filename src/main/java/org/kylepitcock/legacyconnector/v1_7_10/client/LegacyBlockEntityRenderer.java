@@ -57,8 +57,10 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
             z = m.m32();
         }
         RenderContext.beginWorld(pose, buffers, light, overlay);
+        boolean pushed = false;
         try {
             pose.pushPose();
+            pushed = true;
             pose.translate(-x, -y, -z);
             renderPasses(te, renderer, x, y, z, partialTick);
             if (FAILURES.containsKey(renderer.getClass())) FAILURES.remove(renderer.getClass());
@@ -72,7 +74,10 @@ public class LegacyBlockEntityRenderer implements BlockEntityRenderer<LegacyBloc
                         total > 1 ? ", later failures are not logged" : "", n >= MAX_FAILURES ? "; it keeps failing and is disabled" : "", total == 1 ? e : null);
             }
         } finally {
+            // the end of the frame only pops what legacy code pushed through GL11: this push is ours (left in place, every legacy tile
+            // entity of the frame leaked a matrix and the frame crashed with "Pose stack not empty")
             RenderContext.end();
+            if (pushed && !pose.clear()) pose.popPose();
         }
     }
 
