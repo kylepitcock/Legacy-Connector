@@ -1218,6 +1218,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             Map.entry("block/orientable_trapdoor_open", "block/template_orientable_trapdoor_open"),
             Map.entry("block/normal_torch", "block/template_torch"), Map.entry("block/normal_torch_wall", "block/template_torch_wall"),
             Map.entry("block/tall_grass", "block/short_grass"),
+            Map.entry("block/waterlily", "block/lily_pad"), Map.entry("block/torch_wall", "block/wall_torch"),
             // iron doors (EnderIO's dark steel door) and the plain rail (Tinkers' wooden rail); the slots are the same
             Map.entry("block/iron_door_bottom", "block/iron_door_bottom_left"), Map.entry("block/iron_door_top", "block/iron_door_top_left"),
             Map.entry("block/iron_door_bottom_rh", "block/iron_door_bottom_right"), Map.entry("block/iron_door_top_rh", "block/iron_door_top_right"),
