@@ -3,6 +3,7 @@
   "minVersion": "0.8",
   "package": "org.kylepitcock.legacyconnector.mixin",
   "compatibilityLevel": "JAVA_21",
+  "plugin": "org.kylepitcock.legacyconnector.mixinplugin.LegacyMixinPlugin",
   "mixins": [
     "EntityGravityMixin",
     "PlayerStepSoundMixin",

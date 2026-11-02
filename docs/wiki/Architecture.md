@@ -64,6 +64,7 @@ and isolated (today: the DragonAPI crafting/smelting hooks in `CoremodHooks`).
 - A legacy event handler that fails 1,000 times in a row without one success is unregistered with one log line (handlers of a
   mod that failed to load threw about 1,000 exceptions a second). `events.skip` switches handlers off by hand.
 - A creative tab that gets the same stack twice skips the duplicate instead of failing the tab build (`CreativeTabDuplicateMixin`).
+- Mixins of other mods are never applied to classes of translated legacy jars (`LegacyMixinPlugin`, a Mixin extension that empties the mixin set of a class whose jar carries the provenance resource). A legacy mod and its modern port share class names (Mekanism `RenderFlame` vs Iris's mixin for the 1.21 one), and the failed injection would take the legacy mod down. This mod's own configs (`legacyconnector*`) still apply.
 
 ## Legacy loader behaviour that is reproduced
 
