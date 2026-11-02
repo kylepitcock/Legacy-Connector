@@ -186,7 +186,13 @@ public class Template {
 
     private static IBlockState transform(IBlockState state, String name, String argDesc, Object arg) {
         try {
-            Object own = org.kylepitcock.legacyconnector.core.synth.Synth.dispatch(state.getBlock(), name, "(" + STATE + argDesc + ")" + STATE, new Object[] {state, arg});
+            // a plain virtual call: it reaches a mod block's own override and the shim's (BlockStairs turns its facing); the synthesized
+            // dispatcher skips the shim's classes, so stairs of structures (Atum's pyramid) stayed unturned while their positions turned
+            Block block = state.getBlock();
+            IBlockState turned = name.equals("withRotation") ? block.withRotation(state, (Rotation) arg)
+                    : name.equals("withMirror") ? block.withMirror(state, (Mirror) arg) : null;
+            if (turned != null) return turned;
+            Object own = org.kylepitcock.legacyconnector.core.synth.Synth.dispatch(block, name, "(" + STATE + argDesc + ")" + STATE, new Object[] {state, arg});
             if (own instanceof IBlockState s) return s;
         } catch (Throwable e) {
             // unchanged
