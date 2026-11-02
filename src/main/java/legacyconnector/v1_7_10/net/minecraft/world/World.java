@@ -994,6 +994,27 @@ public class World implements IBlockAccess {
             if (stand instanceof TileEntity te && be instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity host) {
                 te.worldObj = null; // the generation region is gone: the host gives it the real world
                 host.replaceLegacy(te);
+            } else if (stand instanceof TileEntity te && be != null) {
+                // a vanilla block entity (spawner, chest, ...) got what the populator put into the stand-in: copy it over, else
+                // everything generated past the region came out empty (Roguelike Dungeons' spawners and chests, #124)
+                try {
+                    TileEntity real = TileEntityBridge.viewOf(be);
+                    if (te instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner s
+                            && real instanceof legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityMobSpawner rs) {
+                        var nbt = new legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagCompound();
+                        s.getSpawnerBaseLogic().writeToNBT(nbt);
+                        rs.getSpawnerBaseLogic().readFromNBT(nbt);
+                    } else if (te instanceof legacyconnector.v1_7_10.net.minecraft.inventory.IInventory a
+                            && real instanceof legacyconnector.v1_7_10.net.minecraft.inventory.IInventory b && te != real) {
+                        int n = Math.min(a.getSizeInventory(), b.getSizeInventory());
+                        for (int i = 0; i < n; i++) {
+                            ItemStack stack = a.getStackInSlot(i);
+                            if (stack != null) b.setInventorySlotContents(i, stack);
+                        }
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    // keep the block entity as generated
+                }
             }
         });
         return tile instanceof TileEntity te ? te : null;

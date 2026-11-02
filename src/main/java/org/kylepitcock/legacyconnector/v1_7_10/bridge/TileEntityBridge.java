@@ -214,6 +214,11 @@ public final class TileEntityBridge {
         return view;
     }
 
+    /** A legacy view over a vanilla or foreign block entity (a fresh one; the cached one is TileEntityBridge.legacyAt). */
+    public static TileEntity viewOf(net.minecraft.world.level.block.entity.BlockEntity be) {
+        return view(be);
+    }
+
     private static TileEntity view(net.minecraft.world.level.block.entity.BlockEntity be) {
         TileEntity view = null;
         if (be instanceof net.minecraft.world.level.block.entity.SpawnerBlockEntity spawner) {
