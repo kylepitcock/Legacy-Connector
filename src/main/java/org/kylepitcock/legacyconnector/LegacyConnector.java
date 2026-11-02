@@ -181,6 +181,7 @@ public final class LegacyConnector {
             exit.setDaemon(true);
             exit.start();
         });
+        org.kylepitcock.legacyconnector.core.ConfigPacketSizes.register(game);
         org.kylepitcock.legacyconnector.core.ServerScript.register();
         org.kylepitcock.legacyconnector.core.ServerTickScript.register(game);
         org.kylepitcock.legacyconnector.core.ServerDevScript.register();
