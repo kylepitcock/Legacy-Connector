@@ -47,6 +47,7 @@ public class DataWatcher {
             var m = modern();
             if (m != null) return mcc$flags(m);
         }
+        if (id == 11 && modern() instanceof net.minecraft.world.entity.Mob mob) return (byte) (mob.isCustomNameVisible() ? 1 : 0);
         Object v = value(id);
         return v instanceof Number n ? n.byteValue() : 0;
     }
@@ -72,6 +73,7 @@ public class DataWatcher {
     }
 
     public String getWatchableObjectString(int id) {
+        if (id == 10 && modern() instanceof net.minecraft.world.entity.Mob mob) return mob.getCustomName() == null ? "" : mob.getCustomName().getString();
         Object v = value(id);
         return v instanceof String s ? s : "";
     }
@@ -99,6 +101,16 @@ public class DataWatcher {
             }
             if (id == 6 && value instanceof Number n && m instanceof LivingEntity l) {
                 l.setHealth(n.floatValue());
+                return;
+            }
+            // EntityLiving's own slots: 10 is the custom name, 11 whether it always renders (Witchery's coven witches write their generated
+            // names with updateObject(10, name), and read them back through hasCustomNameTag)
+            if (id == 10 && value instanceof String str && m instanceof net.minecraft.world.entity.Mob) {
+                m.setCustomName(str.isEmpty() ? null : net.minecraft.network.chat.Component.literal(str));
+                return;
+            }
+            if (id == 11 && value instanceof Number n && m instanceof net.minecraft.world.entity.Mob) {
+                m.setCustomNameVisible(n.byteValue() != 0);
                 return;
             }
         }
