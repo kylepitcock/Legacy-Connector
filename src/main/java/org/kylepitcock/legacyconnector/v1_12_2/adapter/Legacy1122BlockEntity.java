@@ -25,6 +25,8 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
         super(TileEntityBridge1122.type(), pos, state);
     }
 
+    private static final java.util.Set<String> MISSING_REPORTED = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     /** The legacy tile entity, created on first use (its creation may need the world). */
     public TileEntity legacy() {
         if (legacy == null && !failed && level != null) {
@@ -41,7 +43,15 @@ public class Legacy1122BlockEntity extends net.minecraft.world.level.block.entit
                 if (legacy != null) bind(legacy);
             } catch (RuntimeException | LinkageError e) {
                 failed = true;
-                LOG.error("Legacy tile entity at {} could not be created", getBlockPos(), e);
+                if (e instanceof NoClassDefFoundError missing) {
+                    // a tile entity needing an absent optional mod (NTM-CE's OpenComputers cable without OpenComputers): the block stays
+                    // inert, named once per missing class instead of a stack trace per placement
+                    if (MISSING_REPORTED.add(String.valueOf(missing.getMessage()))) {
+                        LOG.warn("Legacy tile entity at {} needs {}, which is not installed; the block stays inert", getBlockPos(), missing.getMessage());
+                    }
+                } else {
+                    LOG.error("Legacy tile entity at {} could not be created", getBlockPos(), e);
+                }
             }
         }
         return legacy;
