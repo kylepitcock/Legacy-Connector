@@ -1647,8 +1647,8 @@
    "version": "V33a",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "playable",
-   "notes": "574 blocks, 61 recipes, its dimension, structures, rainbow forest and village buildings; works with Sodium. Progression through the research tiers was not played end to end."
+   "status": "works",
+   "notes": "Server-side survival run (headless): 61 recipes all match their own ingredients; tiered ores generate (about 100 per chunk) and drop their shards/elemental items when mined with a pick as a survival player; pylon structure validates and a casting table crafts in survival; the dimension loads, a player stays in it and the mobs live; the rainbow forest biome is placed (about 300 blocks from spawn) and rainbow leaves, crystals, dye vines and structure chests generate. Not verified: the Lexicon GUI (the server side use does not open a menu), pylon-energy-gated casting recipes and the research tiers beyond the entry level; bare-spawned projectile entities log harmless NPEs."
   },
   {
    "name": "Chunk Loaders",
