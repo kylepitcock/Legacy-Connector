@@ -161,10 +161,13 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void itemModels(Map<String, Supplier<byte[]>> out) {
         for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             if (item.getRegistryName() == null || item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock) continue;
-            for (int meta = 0; meta < 16; meta++) {
+            // every subtype the item registered (metadata goes beyond 15: AbyssalCraft's crystal shards run to 26 and more)
+            for (int meta : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).keySet()) {
                 var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modern(item, meta);
                 if (modern == null) continue;
                 var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
+                // a subtype the mod gave no model of its own shows the base subtype's (instead of the missing-model cube)
+                if (mrl == null && meta != 0) mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, 0);
                 if (mrl == null) continue;
                 ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
                 String target = Ids.namespace(mrl.getNamespace()) + ":item/" + Ids.normalizePath(mrl.getPath());
@@ -174,7 +177,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                             "item/" + Ids.normalizePath(mrl.getPath()), null, null, null, out);
                 }
                 if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
-                JsonObject model = blockstateItemModel(mrl, target);
+                JsonObject model = blockstateItemModel(mrl, target, out);
                 if (model != null) {
                     // no models/item file: Forge took the item's model from the variant of the blockstate file of the same name
                     String json = GSON.toJson(model);
@@ -197,7 +200,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
      * The item model Forge built from a blockstate file ({@code ModelResourceLocation("mod:name", "variant")} with no {@code models/item/name.json}):
      * the variant's {@code forge:item-layer} (or a plain model) with its textures. Null when the item has a model file or the variant is not drawable this way.
      */
-    private static JsonObject blockstateItemModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mrl, String target) {
+    private static JsonObject blockstateItemModel(legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation mrl, String target,
+            Map<String, Supplier<byte[]>> out) {
         String ns = Ids.namespace(mrl.getNamespace());
         String path = Ids.normalizePath(mrl.getPath());
         if (modelExists(ns, "item/" + path)) return null;
@@ -216,7 +220,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         if (acc.alts.isEmpty()) return null;
         JsonObject alt = acc.alts.get(0);
         String m = alt.has("model") && alt.get("model").isJsonPrimitive() ? alt.get("model").getAsString().toLowerCase(java.util.Locale.ROOT) : "forge:item-layer";
-        if (m.endsWith(".obj")) return null;
+        if (ObjAssets1122.isObj(m)) return objItemModel(ns, m, alt, path, out);
         if (!(alt.has("textures") && alt.get("textures").isJsonObject() && alt.getAsJsonObject("textures").size() > 0)) return null;
         String parent;
         if (m.equals("forge:item-layer") || m.equals("builtin/generated") || m.equals("item/generated") || m.equals("minecraft:item/generated")) {
@@ -239,6 +243,63 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             if (t.getValue().isJsonPrimitive()) textures.addProperty(t.getKey().startsWith("#") ? t.getKey().substring(1) : t.getKey(), lowerRef(t.getValue().getAsString()));
         }
         model.add("textures", textures);
+        return model;
+    }
+
+    /**
+     * An item whose blockstate variant names an OBJ model (AbyssalCraft's staff, dread katana, cudgel: {@code "model": "mod:staff.obj"} with the file in
+     * models/item): Forge looked the file up under models/, models/item/ and models/block/. The Forge hand/gui transforms of the variant become display.
+     */
+    private static JsonObject objItemModel(String ns, String m, JsonObject alt, String itemPath, Map<String, Supplier<byte[]>> out) {
+        int colon = m.indexOf(':');
+        String mNs = colon < 0 ? ns : Ids.namespace(m.substring(0, colon));
+        String mPath = Ids.normalizePath(colon < 0 ? m : m.substring(colon + 1));
+        String found = null;
+        for (String prefix : new String[] {"", "item/", "block/"}) {
+            if (resourceExists("assets/" + mNs + "/models/" + prefix + mPath)) {
+                found = prefix + mPath;
+                break;
+            }
+        }
+        if (found == null) return null;
+        JsonObject textures = alt.has("textures") && alt.get("textures").isJsonObject() ? alt.getAsJsonObject("textures") : null;
+        String objModel = ObjAssets1122.model(mNs, found, textures, ObjAssets1122.custom(alt), "item_" + itemPath, out);
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", objModel);
+        if (alt.has("transform") && alt.get("transform").isJsonObject()) {
+            JsonObject display = new JsonObject();
+            for (var e : alt.getAsJsonObject("transform").entrySet()) {
+                if (!e.getValue().isJsonObject()) continue;
+                JsonObject t = e.getValue().getAsJsonObject();
+                JsonObject d = new JsonObject();
+                double[] rot = new double[3];
+                if (t.has("rotation") && t.get("rotation").isJsonArray()) {
+                    for (var r : t.getAsJsonArray("rotation")) {
+                        if (!r.isJsonObject()) continue;
+                        for (var axis : r.getAsJsonObject().entrySet()) {
+                            int i = "xyz".indexOf(axis.getKey());
+                            if (i >= 0 && axis.getValue().isJsonPrimitive()) rot[i] = axis.getValue().getAsDouble();
+                        }
+                    }
+                }
+                com.google.gson.JsonArray ra = new com.google.gson.JsonArray();
+                for (double v : rot) ra.add(v);
+                d.add("rotation", ra);
+                if (t.has("translation") && t.get("translation").isJsonArray()) {
+                    com.google.gson.JsonArray ta = new com.google.gson.JsonArray();
+                    for (var v : t.getAsJsonArray("translation")) ta.add(Math.max(-80, Math.min(80, v.getAsDouble() * 16)));
+                    d.add("translation", ta);
+                }
+                if (t.has("scale") && t.get("scale").isJsonPrimitive()) {
+                    double sc = t.get("scale").getAsDouble();
+                    com.google.gson.JsonArray sa = new com.google.gson.JsonArray();
+                    for (int i = 0; i < 3; i++) sa.add(sc);
+                    d.add("scale", sa);
+                }
+                display.add(e.getKey(), d);
+            }
+            if (display.size() > 0) model.add("display", display);
+        }
         return model;
     }
 
