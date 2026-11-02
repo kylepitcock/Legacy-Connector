@@ -21,7 +21,7 @@ public class ItemBlock extends Item {
     }
 
     @Override
-    public String getUnlocalizedName(ItemStack stack) {
+    protected String defaultKey(ItemStack stack) {
         return block.getUnlocalizedName();
     }
 

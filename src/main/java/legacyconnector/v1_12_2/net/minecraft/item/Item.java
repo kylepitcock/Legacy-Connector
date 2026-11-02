@@ -35,7 +35,18 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         return "item." + unlocalizedName;
     }
 
+    /**
+     * The key of a stack. The mappings turn the mod's override of func_77667_c into getTranslationKey(ItemStack) while the shim's
+     * callers use getUnlocalizedName(ItemStack): whichever name the mod overrode is the one that is called (AbyssalCraft's
+     * metadata items name their variants this way).
+     */
     public String getUnlocalizedName(ItemStack stack) {
+        if (org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.overrides(getClass(), "getTranslationKey", ItemStack.class)) return getTranslationKey(stack);
+        return defaultKey(stack);
+    }
+
+    /** The unoverridden key of a stack (the item's key; an ItemBlock's is its block's). */
+    protected String defaultKey(ItemStack stack) {
         return getUnlocalizedName();
     }
 
@@ -303,7 +314,8 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
     }
 
     public String getTranslationKey(ItemStack stack) {
-        return getUnlocalizedName(stack);
+        if (org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122.overrides(getClass(), "getUnlocalizedName", ItemStack.class)) return getUnlocalizedName(stack);
+        return defaultKey(stack);
     }
 
     public Item setNoRepair() {
