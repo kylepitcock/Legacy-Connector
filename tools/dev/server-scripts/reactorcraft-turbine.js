@@ -12,6 +12,7 @@ function rt(n) { return ms(RT.valueOf(n).getCraftedProduct()); }
 function mr(n) { var s = MR.valueOf(n).getCraftedProduct(); return new LIS(s.getItem(), 1, s.getItemDamage()).mcc$modern(); }
 if (tick == 0) { flat(X - 4, 100, Z - 4, 24, 9, 12); cmd("forceload add " + (X - 40) + " " + (Z - 40) + " " + (X + 60) + " " + (Z + 40)); }
 if (tick == 1) setBlock(X, YL, Z, Blocks.STONE);
+if (tick == 20) { setBlock(X, YL, Z, Blocks.AIR); YAW = (typeof DYNYAW === "undefined") ? -90 : DYNYAW; out += " dynamo:" + placeAt(mr("DYNAMO"), X, YL, Z, Dir.WEST); }
 YAW = -90;
 
 // [kind:name, dx, y, click-target(dx,y), face]
@@ -38,6 +39,10 @@ if (tick > T0 && (tick - T0) % 40 == 5) {
   out += " " + rdTurb(3) + rdTurb(4) + rdTurb(5);
   var tt = T(5); out += " T5{" + fs(tt, ["omega", "forcedlube", "damage", "enabled", "iotick", "readx", "writex", "writey", "writez", "readyForMultiBlock"]) + " lube=" + f(tt, "tank").getLevel() + " " + f(tt, "tank").getActualFluid() + "}";
   var s1 = T(1), s2 = T(2);
-  out += " shaft6=" + (s1 ? fs(s1, ["omega", "torque", "power"]) : "none") + " shaft7=" + (s2 ? fs(s2, ["omega", "torque"]) : "none");
+  out += " blocks=" + [0,1,2].map(function(d){return "" + lvl().getBlockState(bp(X+d,YL,Z)).getBlock();}).join(",") + " s1=" + (s1?fs(s1,["omega","torque","power","writex","readx","iotick","isFlipped","damage"]):"-") + " dyn=" + (T(0)?fs(T(0),["omega","torque","power","readx","readz","iotick"]):"-") + " dynamoRF=" + (T(0) ? T(0).getGenRF() : "none") + " shaft6=" + (s1 ? fs(s1, ["omega", "torque", "power"]) : "none") + " shaft7=" + (s2 ? fs(s2, ["omega", "torque"]) : "none");
 }
+out;
+function dumpAll(t) { var r = [], c = t.getClass(); while (c != null && ("" + c.getName()).indexOf("Reika") == 0) { var fl = c.getDeclaredFields(); for (var i = 0; i < fl.length; i++) { if (java.lang.reflect.Modifier.isStatic(fl[i].getModifiers())) continue; fl[i].setAccessible(true); var v = fl[i].get(t); var sv = "" + v; if (sv.length > 40) sv = sv.substring(0, 40); r.push(fl[i].getName() + "=" + sv); } c = c.getSuperclass(); } return r.join(" "); }
+if (tick > T0 + 80 && tick < T0 + 140 && tick % 4 == 0) { out += " W" + tick + " s1=" + fs(T(1), ["omega","torque","failed","disabled","shutDown"]) + " s2=" + fs(T(2), ["omega","torque","failed"]) + " t3=" + fs(T(3), ["omega","steam","enabled","shutDown","iotick"]) + " " + CLS(T(1)).getSimpleName() + " blk=" + lvl().getBlockState(bp(X+1,YL,Z)).getBlock(); }
+if (tick == T0 + 100) { out += "\nDUMP shaft1: " + dumpAll(T(1)) + "\nDUMP turb3: " + dumpAll(T(3)) + "\nDUMP dyn: " + dumpAll(T(0)); }
 out;

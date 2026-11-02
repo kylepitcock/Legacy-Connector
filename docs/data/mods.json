@@ -2179,6 +2179,14 @@
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "ElectriCraft",
+   "version": "V33a",
+   "mc": "1.7.10",
+   "date": "2026-11-02",
+   "status": "works",
+   "notes": "Server scenarios 2026-11-02: a RotaryCraft gas engine drives the ElectriCraft generator, wires carry the current through a battery to a motor (4096 V, 16 A, the motor turns at 31 rad/s) and the wire network tracks sources, sinks and paths; the RF battery and RF cable network moves 500000 RF end to end and extracts through the NeoForge energy capability. An overloaded jet-engine line (about 35000 V into a 4096 V steel wire) delivers nothing, which is that wire's overvoltage rule. 20 blocks. Not played in survival (GUIs, the EU cable and the transformer were not exercised)."
+  },
+  {
    "name": "Electro-Magic Tools",
    "version": "1.6.18",
    "mc": "1.7.10",
@@ -5749,6 +5757,14 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 215 items, 55 blocks, 24 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+  },
+  {
+   "name": "ReactorCraft",
+   "version": "V33a",
+   "mc": "1.7.10",
+   "date": "2026-11-02",
+   "status": "works",
+   "notes": "Server scenarios 2026-11-02: a fission reactor of 13 uranium rods, water cells, a control rod and a CPU starts up (neutron entities fly, fuel and coolant temperatures rise); a three-stage steam turbine fed with steam and lubricant spins past 12000 rad/s and drives a RotaryCraft shaft and dynamo (979 RF/t) until the wooden shaft overloads and fails, as in the original; radiation damages unprotected animals. A hazmat-suited pig still lost health under lethal radiation (not checked against the original). Neutron and radiation entities log a throttled NBT warning when saved before they are initialised. Meltdown, fuel processing and the multiblock GUIs were not played in survival."
   },
   {
    "name": "Realistic Torches",
