@@ -11,7 +11,7 @@ import json, pathlib, re, sys, zipfile, collections
 DATA = pathlib.Path(__file__).resolve().parents[2] / "docs" / "data" / "mods.json"
 REPORTS = DATA.parent / "reports.json"
 TIER = ["community", "maintainer", "client", "corpus"]
-ORDER = ["perfect", "works", "partial", "loads", "fails", "crashes"]
+ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"]
 IGNORED = {"legacyconnector", "neoforge", "minecraft", "forge", "fml"}
 
 
@@ -72,7 +72,7 @@ while changed:
         if lib not in names or status.get(lib) != "loads" or lib in promoted:
             continue
         users = {u for u in users if u in names}
-        if users and all(status.get(u) == "works" for u in users):
+        if users and all(status.get(u) in ("works", "playable", "perfect") for u in users):
             status[lib] = "works"
             promoted[lib] = sorted(names[u] for u in users)
             changed = True

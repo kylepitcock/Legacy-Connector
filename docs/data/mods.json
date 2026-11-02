@@ -1238,7 +1238,7 @@
    "version": "r1.8-249",
    "mc": "1.7.10",
    "date": "2026-11-02",
-   "status": "works",
+   "status": "playable",
    "notes": "Survival-tested 2026-11-02: 578 blocks, 19 entity types, 1237 recipes, 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). The petal apothecary works after two fixes (altar shapes taller than a block; copies of used-up stacks): four white petals and a seed in a watered altar give a special flower. Mana pools, spreaders, runes and the Gaia fight were not played through."
   },
   {
@@ -1647,7 +1647,7 @@
    "version": "V33a",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "works",
+   "status": "playable",
    "notes": "574 blocks, 61 recipes, its dimension, structures, rainbow forest and village buildings; works with Sodium. Progression through the research tiers was not played end to end."
   },
   {
@@ -2183,7 +2183,7 @@
    "version": "V33a",
    "mc": "1.7.10",
    "date": "2026-11-02",
-   "status": "works",
+   "status": "playable",
    "notes": "Server scenarios 2026-11-02: a RotaryCraft gas engine drives the ElectriCraft generator, wires carry the current through a battery to a motor (4096 V, 16 A, the motor turns at 31 rad/s) and the wire network tracks sources, sinks and paths; the RF battery and RF cable network moves 500000 RF end to end and extracts through the NeoForge energy capability. An overloaded jet-engine line (about 35000 V into a 4096 V steel wire) delivers nothing, which is that wire's overvoltage rule. 20 blocks. Not played in survival (GUIs, the EU cable and the transformer were not exercised)."
   },
   {
@@ -2783,7 +2783,7 @@
    "version": "2.4.0",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "works",
+   "status": "playable",
    "notes": "112 recipes, suits, HUD, flight and most abilities. Doctor Octopus renders correctly under shader packs; the Iron Man blade, crab cannon and some HUD flicker are open (#118)."
   },
   {
@@ -3069,7 +3069,7 @@
    "version": "3.0.12",
    "mc": "1.7.10",
    "date": "2026-10-28",
-   "status": "works",
+   "status": "playable",
    "notes": "Rockets fly and are heard, space is silent (#39, #43), the Catalog and galaxy map draw (#32, #37), planets apply their own gravity (#42) and sky colours."
   },
   {
@@ -3086,7 +3086,7 @@
    "version": "3.0.12",
    "mc": "1.7.10",
    "date": "2026-10-28",
-   "status": "works",
+   "status": "playable",
    "notes": "Planets generate with their own gravity, terrain and sky colour (Mars has its own sky); moon dungeons generate."
   },
   {
@@ -5369,7 +5369,7 @@
    "version": "1.7.10.20.3",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "works",
+   "status": "playable",
    "notes": "211 blocks and 134 entity types; ores, creatures and the King boss fight; 380 recipes."
   },
   {
@@ -5763,7 +5763,7 @@
    "version": "V33a",
    "mc": "1.7.10",
    "date": "2026-11-02",
-   "status": "works",
+   "status": "playable",
    "notes": "Server scenarios 2026-11-02: a fission reactor of 13 uranium rods, water cells, a control rod and a CPU starts up (neutron entities fly, fuel and coolant temperatures rise); a three-stage steam turbine fed with steam and lubricant spins past 12000 rad/s and drives a RotaryCraft shaft and dynamo (979 RF/t) until the wooden shaft overloads and fails, as in the original; radiation damages unprotected animals. A hazmat-suited pig still lost health under lethal radiation (not checked against the original). Neutron and radiation entities log a throttled NBT warning when saved before they are initialised. Meltdown, fuel processing and the multiblock GUIs were not played in survival."
   },
   {
@@ -5958,7 +5958,7 @@
    "version": "V33a",
    "mc": "1.7.10",
    "date": "2026-11-02",
-   "status": "works",
+   "status": "playable",
    "notes": "Server scenarios 2026-11-02: wind turbine, DC/AC/gas/steam/micro/jet engines place, take fluids and run (a steam engine over lava heats for about 1100 ticks, then delivers 16384 power at 120 degrees); the dynamo turns shaft power into RF (126 RF/t); handbook, items and 40+ machine GUIs open with correct slots; 35 blocks, 698 recipes. The hydrokinetic engine needs lubricant (it ran dry in the rig); machine chains were not played in survival."
   },
   {
@@ -6020,7 +6020,7 @@
    "version": "1.10.9",
    "mc": "1.12.2",
    "date": "2026-11-01",
-   "status": "works",
+   "status": "playable",
    "notes": "158 entity types, 293 blocks, 283 JSON recipes; parasites spawn, hunt players and other mobs with their own AI and infect the player (screen overlays and effects). Its lodo loot table has a duplicate pool name and does not load (as in 1.12)."
   },
   {
@@ -7535,7 +7535,7 @@
    "version": "0.24.1",
    "mc": "1.7.10",
    "date": "2026-11-01",
-   "status": "works",
+   "status": "playable",
    "notes": "Villages with the town walls, 273 recipes, 181 blocks, mobs drop their loot, familiars and the oven place (the oven now faces the player), owl and toad taming. Open (#107): thrown brews, coven witch names and hostility, mirror demon skin, poppet outlines; ritual and brewing chains were not played through end to end."
   },
   {
