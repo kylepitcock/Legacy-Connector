@@ -249,6 +249,11 @@ public final class LegacyConfig {
         }
     }
 
+    /** {@code compat.hbm.fastTagStacks}: HBM's TagStack lists a tag's items from the tag, not by scanning the whole item registry. */
+    public static boolean hbmFastTagStacks() {
+        return bool("compat.hbm.fastTagStacks", true);
+    }
+
     /** {@code compat.auroras.irisPackCheck}: Auroras asks Iris whether a shader pack is in use instead of whether shaders are switched on. */
     public static boolean aurorasIrisPackCheck() {
         return bool("compat.auroras.irisPackCheck", true);
