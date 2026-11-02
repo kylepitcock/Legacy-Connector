@@ -69,6 +69,12 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![Scape and Run: Parasites](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites.png)
 
+![Scape and Run: Parasites lineup](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/srparasites-lineup.png)
+
+**1.12.2: The Midnight**, the Deceitful Bog with its own biomes, Bogshrooms and night sky:
+
+![The Midnight's Deceitful Bog](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/midnight-bog.png)
+
 ---
 
 ## How it works
