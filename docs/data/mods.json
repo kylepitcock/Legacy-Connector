@@ -1237,9 +1237,9 @@
    "name": "Botania",
    "version": "r1.8-249",
    "mc": "1.7.10",
-   "date": "2026-11-01",
+   "date": "2026-11-02",
    "status": "works",
-   "notes": "Survival-tested 2026-11-01: 578 blocks, 19 entity types, 1237 recipes (16 custom-class recipes show no static result), 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). Mana networks, petal apothecary and the Gaia fight were not played through."
+   "notes": "Survival-tested 2026-11-01: 578 blocks, 19 entity types, 1237 recipes (16 custom-class recipes show no static result), 553 of 577 blocks drop; item names fixed after 0.3.13 (618 showed raw keys). The petal apothecary absorbs thrown petals (altar shapes taller than a block fixed after 0.3.13) but did not finish a recipe in the test; mana networks and the Gaia fight were not played through."
   },
   {
    "name": "Botania r1.10-363",
@@ -7275,9 +7275,9 @@
    "name": "Twilight Forest",
    "version": "2.3.7",
    "mc": "1.7.10",
-   "date": "2026-11-01",
-   "status": "works",
-   "notes": "Survival-tested 2026-11-01: 143 blocks, 76 entity types; bosses (Snow Queen, Goblin Knight) drop their loot and trophies; 103 recipes. Dimension portal and the boss ladder were not walked end to end."
+   "date": "2026-11-02",
+   "status": "perfect",
+   "notes": "Survival-ready (played through 2026-11-02): the portal forms (diamond dropped into a 2x2 pool ringed with flowers, lightning) and takes a survival player to the Twilight Forest dimension with its biomes (firefly forest), troll caves and mushroom towers generating; 143 blocks, 76 entity types, bosses (Snow Queen, Goblin Knight) drop their loot and trophies; 103 recipes. Untested: walking the boss ladder to the end and the enforced-progression gamerule."
   },
   {
    "name": "Underlay",
