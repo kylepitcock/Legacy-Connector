@@ -79,6 +79,7 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   summarises every packet the server sends, so data syncing and custom packets can be checked), puts a hero suit on, drives data vars and interactions and runs multi-tick scenarios
   (`scenario([step, ...])`, a step may return the ticks to wait; `tools/dev/fisk/wait.sh` waits and prints). The `probe-*.js` and `*-sweep.js` files there are the Fisk's Heroes
   ability checks (damage, beams, web, shield throw, sizes, gravity, healing, recipes, machines, items). A fake client never moves its chunk view by itself: `tp()` tells the chunk map.
+  `tools/dev/fisk/probe-client-keys.js` is the client-side counterpart (run with `tools/dev/js.sh -f` in a control session wearing the Mk50 chest piece): it records, per client tick, every change of the worn suit, the nanites data, sprint/sneak state, the ability keys and the key hint list the HUD draws, and `FLK.report()` prints them (the key hint flicker and the dead Iron Man blade/cannon of issue #118).
 - Live probing: start a session with `SCENARIO=control tools/dev/quick-shots.sh`, then `tools/dev/js.sh '<JavaScript>'` evaluates in the running
   game (bindings `mc`, `server`, `log`; any class via `Java.type(...)`).
 - Headless server probing: `./gradlew runServerSubTest -PserverTickScript=<file.js> [-PserverTickScriptFrom=200]` evaluates the file on every server tick
