@@ -82,6 +82,13 @@ public class ItemBlock extends Item {
     /** Forge hook used by most custom ItemBlocks. */
     public boolean placeBlockAt(ItemStack stack, EntityPlayer player, World world, int x, int y, int z, int side, float hitX, float hitY, float hitZ, int metadata) {
         if (!world.setBlock(x, y, z, blockInstance, metadata, 3)) return false;
+        // 1.7.10 ran onBlockAdded inside setBlock, before onBlockPlacedBy. While a player's placement is captured (NeoForge's block snapshots),
+        // the modern onPlace is replayed only after the whole use, so Witchery's oven set its default direction AFTER the player's facing
+        // and always stood facing south: run it now and skip the replay
+        if (world.mcc$level() instanceof net.minecraft.world.level.Level lv && lv.captureBlockSnapshots && !lv.isClientSide) {
+            org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter.mcc$addedNow(lv, new net.minecraft.core.BlockPos(x, y, z));
+            blockInstance.onBlockAdded(world, x, y, z);
+        }
         if (world.getBlock(x, y, z) == blockInstance) {
             blockInstance.onBlockPlacedBy(world, x, y, z, player, stack);
             blockInstance.onPostBlockPlaced(world, x, y, z, metadata);

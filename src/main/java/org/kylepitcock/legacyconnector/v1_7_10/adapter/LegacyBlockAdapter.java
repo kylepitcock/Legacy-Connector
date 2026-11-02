@@ -426,8 +426,16 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
 
     // ------------------------------------------------------------------ lifecycle in the world
 
+    /** Positions whose onBlockAdded already ran during a captured placement (see ItemBlock.placeBlockAt); their replayed onPlace skips it once. */
+    private static final java.util.Set<Long> ADDED_NOW = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public static void mcc$addedNow(Level level, BlockPos pos) {
+        ADDED_NOW.add(pos.asLong() ^ ((long) System.identityHashCode(level) << 40));
+    }
+
     @Override
     protected void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean moving) {
+        if (ADDED_NOW.remove(pos.asLong() ^ ((long) System.identityHashCode(level) << 40))) return;
         // a metadata change moving the state to another flattened block of the same legacy block is no new block (1.7.10's setBlockMetadata)
         if (!sameFamily(oldState)) {
             legacy.onBlockAdded(world(level), pos.getX(), pos.getY(), pos.getZ());
