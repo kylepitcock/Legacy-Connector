@@ -4500,8 +4500,8 @@
    "version": "0.3.5",
    "mc": "1.12.2",
    "date": "2026-11-01",
-   "status": "works",
-   "notes": "Survival-tested 2026-11-01: 182 recipes, 189 blocks (164 drop; the rest are slabs/hats that drop by design), mob and fishing loot tables, the dimension generates with its own biomes, trees and mushrooms, and nightstags, skulks and crystal bugs spawn naturally. Fixed after 0.3.13: Suavis dropped nothing (Forge's instance field Block.harvesters was static in the shim). Not exercised: entering through a rift from the overworld, the Rifter/Nova fights and the armour/tool progression."
+   "status": "playable",
+   "notes": "Survival-tested 2026-11-01: 182 recipes, 189 blocks (164 drop; the rest are slabs/hats that drop by design), mob and fishing loot tables, the dimension generates with its own biomes, trees and mushrooms, and nightstags, skulks and crystal bugs spawn naturally. Rifts form in the overworld at night by themselves (RiftSpawnHandler) and a player standing in one travels to the Midnight; fixed: the exit landed inside bedrock at y=2 because an unloaded chunk answered height 0 (now the real surface). Fixed after 0.3.13: Suavis dropped nothing. Not exercised yet: Rifter/Nova fights and drops, tool/armour progression and harvest levels, plant growth and bonemeal, spores/Nightshade effects, geodes, structures and their chests, sky/fog rendering and the Rift/Mud/Dark water fluids."
   },
   {
    "name": "Mine & Blade Battlegear",
