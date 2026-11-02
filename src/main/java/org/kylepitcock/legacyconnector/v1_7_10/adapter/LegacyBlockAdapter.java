@@ -784,7 +784,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
         double x2 = legacy.getBlockBoundsMaxX(), y2 = legacy.getBlockBoundsMaxY(), z2 = legacy.getBlockBoundsMaxZ();
         if (x1 <= 0 && y1 <= 0 && z1 <= 0 && x2 >= 1 && y2 >= 1 && z2 >= 1) return Shapes.block();
         if (x2 <= x1 || y2 <= y1 || z2 <= z1) return Shapes.empty();
-        return Shapes.box(Math.max(0, x1), Math.max(0, y1), Math.max(0, z1), Math.min(1, x2), Math.min(1, y2), Math.min(1, z2));
+        // taller than the block is allowed (fences stand 1.5 high): Botania's altar is 1.25 high and watches for items resting on its top
+        return Shapes.box(Math.max(0, x1), Math.max(0, y1), Math.max(0, z1), Math.min(1, x2), Math.min(1.5, y2), Math.min(1, z2));
     }
 
     @Override
