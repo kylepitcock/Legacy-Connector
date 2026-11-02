@@ -174,6 +174,53 @@ public final class VanillaFlattening {
         return id == null ? -1 : id;
     }
 
+    /**
+     * The data fixer's answer per legacy item name and damage ("minecraft:wool|3" -> "minecraft:blue_wool"), kept in
+     * {@code .legacyconnector/vanilla-items-<data version>.txt} across launches: running a stack through the fixer chain costs about a
+     * millisecond each and the legacy mods ask for thousands (recipes, ore dictionary, creative tabs). The answers depend on the game's
+     * data version only.
+     */
+    private static final Map<String, String> FIXED_IDS = new HashMap<>();
+    private static boolean fixedLoaded;
+    private static boolean fixedDirty;
+
+    private static java.nio.file.Path fixedFile() {
+        return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve(".legacyconnector").resolve("vanilla-items-" + dataVersion() + ".txt");
+    }
+
+    private static void loadFixed() {
+        if (fixedLoaded) return;
+        fixedLoaded = true;
+        try {
+            java.nio.file.Path file = fixedFile();
+            if (!java.nio.file.Files.exists(file)) return;
+            for (String line : java.nio.file.Files.readAllLines(file, java.nio.charset.StandardCharsets.UTF_8)) {
+                int tab = line.indexOf('	');
+                if (tab > 0) FIXED_IDS.put(line.substring(0, tab), line.substring(tab + 1));
+            }
+        } catch (java.io.IOException | RuntimeException e) {
+            LOG.debug("Could not read the cache of upgraded legacy item names", e);
+        }
+    }
+
+    /** Writes the cache of upgraded item names when it grew (called once the legacy mods have loaded). */
+    public static synchronized void saveFixedItems() {
+        if (!fixedDirty) return;
+        fixedDirty = false;
+        try {
+            java.nio.file.Path file = fixedFile();
+            java.nio.file.Files.createDirectories(file.getParent());
+            StringBuilder sb = new StringBuilder();
+            new java.util.TreeMap<>(FIXED_IDS).forEach((k, v) -> sb.append(k).append('	').append(v).append('
+'));
+            java.nio.file.Path tmp = file.resolveSibling(file.getFileName() + ".tmp");
+            java.nio.file.Files.writeString(tmp, sb, java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.move(tmp, file, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+        } catch (java.io.IOException | RuntimeException e) {
+            LOG.debug("Could not write the cache of upgraded legacy item names", e);
+        }
+    }
+
     /** Modern item for a legacy vanilla item (or block-item) name and metadata/damage. */
     public static synchronized Item item(String legacyName, int meta) {
         String name = modernised(legacyName);
@@ -181,13 +228,20 @@ public final class VanillaFlattening {
         Item cached = ITEMS.get(key);
         if (cached != null) return cached;
         Item result = Items.AIR;
+        loadFixed();
+        String fixedKey = name + "|" + meta;
+        String id = FIXED_IDS.get(fixedKey);
         try {
-            CompoundTag stack = new CompoundTag();
-            stack.putString("id", name);
-            stack.putByte("Count", (byte) 1);
-            stack.putShort("Damage", (short) meta);
-            Dynamic<Tag> out = DataFixers.getDataFixer().update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, stack), LEGACY_ITEM_VERSION, dataVersion());
-            String id = out.get("id").asString("minecraft:air");
+            if (id == null) {
+                CompoundTag stack = new CompoundTag();
+                stack.putString("id", name);
+                stack.putByte("Count", (byte) 1);
+                stack.putShort("Damage", (short) meta);
+                Dynamic<Tag> out = DataFixers.getDataFixer().update(References.ITEM_STACK, new Dynamic<>(NbtOps.INSTANCE, stack), LEGACY_ITEM_VERSION, dataVersion());
+                id = out.get("id").asString("minecraft:air");
+                FIXED_IDS.put(fixedKey, id);
+                fixedDirty = true;
+            }
             result = BuiltInRegistries.ITEM.get(ResourceLocation.parse(id));
         } catch (RuntimeException e) {
             LOG.debug("Could not upgrade legacy item {}:{}", name, meta, e);

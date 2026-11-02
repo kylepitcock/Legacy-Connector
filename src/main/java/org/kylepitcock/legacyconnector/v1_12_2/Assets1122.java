@@ -102,6 +102,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
         long t0 = System.nanoTime();
         GENERATED_MODELS.clear();
+        RESOURCE_EXISTS.clear();
+        JSON_FILES.clear();
         STATE_MODELS_BUILDING.clear();
         clientProxies();
         itemModels(out);
@@ -1170,13 +1172,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     // ------------------------------------------------------------------------------------------------------------------------------
     // models
 
+    /** Whether a resource of the mods exists, by path: the same few thousand model and texture paths are asked once per block state. */
+    private static final Map<String, Boolean> RESOURCE_EXISTS = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static boolean modelExists(String namespace, String path) {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        return loader.getResource("assets/" + namespace + "/models/" + path + ".json") != null;
+        return resourceExists("assets/" + namespace + "/models/" + path + ".json");
     }
 
     private static boolean resourceExists(String path) {
-        return Thread.currentThread().getContextClassLoader().getResource(path) != null;
+        Boolean known = RESOURCE_EXISTS.get(path);
+        if (known != null) return known;
+        boolean exists = Thread.currentThread().getContextClassLoader().getResource(path) != null;
+        RESOURCE_EXISTS.put(path, exists);
+        return exists;
     }
 
     /** True when the model file exists (in the mods or this pack) and so does every non-vanilla parent up its chain. */
@@ -1467,7 +1475,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         return readJson("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json");
     }
 
+    /** Parsed mod JSON files by path (callers change what they get, so they receive copies). */
+    private static final Map<String, java.util.Optional<JsonObject>> JSON_FILES = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static JsonObject readJson(String path) {
+        var cached = JSON_FILES.get(path);
+        if (cached == null) {
+            cached = java.util.Optional.ofNullable(parseJson(path));
+            JSON_FILES.put(path, cached);
+        }
+        return cached.map(JsonObject::deepCopy).orElse(null);
+    }
+
+    private static JsonObject parseJson(String path) {
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         try (var in = loader.getResourceAsStream(path)) {
             if (in == null) return null;

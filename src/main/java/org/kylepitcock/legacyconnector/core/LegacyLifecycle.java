@@ -90,6 +90,7 @@ public final class LegacyLifecycle {
         phase(mods, "postInit", m -> LegacyMods.platform(m.version).postInit(m));
         for (LegacyPlatform p : LegacyMods.platforms()) p.afterPostInit();
         org.kylepitcock.legacyconnector.api.internal.AddonHost.enter(org.kylepitcock.legacyconnector.api.LegacyPhase.REGISTERED);
+        org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.saveFixedItems();
         LOG.info("Legacy mods loaded in {} ms ({} failed)", System.currentTimeMillis() - start, FAILED.size());
     }
 
