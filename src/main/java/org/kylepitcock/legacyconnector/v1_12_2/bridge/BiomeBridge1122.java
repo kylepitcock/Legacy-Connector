@@ -133,7 +133,8 @@ public final class BiomeBridge1122 {
     public static ResourceLocation modernId(Biome biome) {
         if (biome != null) {
             var name = biome.getRegistryName();
-            if (isModBiome(biome)) return ResourceLocation.fromNamespaceAndPath(name.getNamespace(), name.getPath());
+            // 1.12 registry names could hold anything (Galacticraft's "outer space"); a modern path is [a-z0-9/._-]
+            if (isModBiome(biome)) return ResourceLocation.fromNamespaceAndPath(name.getNamespace(), name.getPath().toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9/._-]", "_"));
             var modern = modernIds(biome);
             if (!modern.isEmpty()) return modern.get(0);
         }

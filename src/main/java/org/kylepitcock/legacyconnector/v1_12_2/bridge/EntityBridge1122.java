@@ -201,7 +201,7 @@ public final class EntityBridge1122 {
         if (dimension == -1) return server.getLevel(Level.NETHER);
         if (dimension == 1) return server.getLevel(Level.END);
         for (ServerLevel l : server.getAllLevels()) if (dimensionId(l) == dimension) return l;
-        return null;
+        return org.kylepitcock.legacyconnector.v1_12_2.dimension.RuntimeDimensions1122.getOrCreate(server, dimension);
     }
 
     /** Entity.changeDimension: the same position in the target level; returns the entity there (null when it could not travel). */

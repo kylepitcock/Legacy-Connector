@@ -7672,6 +7672,30 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 49 items, 41 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
+  },
+  {
+   "name": "Galacticraft Core",
+   "version": "4.0.6",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Server-tested with Galacticraft Planets, GalaxySpace and AsmodeusCore (1.12.2): loads without errors; 177 recipes; 72 of 80 blocks drop items; evolved mobs drop loot; oxygen collector and compressor tick and use energy; a tier 1 rocket fuels, ignites, flies to 1200 and uses fuel; the Moon level generates (gravity 0.062). Planets are registered at server start and get their level on first use (fixed). Not working: moving a player to another planet through Galacticraft's own teleport (it removes the player, then re-adds it; the modern player stays in the overworld). Oxygen sealer, distributor and the GUIs are untested."
+  },
+  {
+   "name": "Galacticraft Planets",
+   "version": "4.0.6",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Loads with Core: 67 recipes, 27 of 33 blocks drop, spider queen and slimeling drop loot, dimensions for Mars, Asteroids and Venus register. Planet travel, Mars/Venus terrain and the boss rooms are untested."
+  },
+  {
+   "name": "GalaxySpace",
+   "version": "2.2.0",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "loads",
+   "notes": "Loads (136 items, 90 blocks) and its 119 recipes register (they were all lost before the recipe registry fix). Its mixins into Galacticraft (thermal status, alien villager trades, launch controller, asteroid and Venus providers) are not applied, so those features are missing. Planet travel and machines untested."
   }
  ],
  "hidden": [

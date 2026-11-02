@@ -58,6 +58,20 @@ public final class DimensionType {
         return providerClass;
     }
 
+    /** A new provider of this kind (its dimension id is set by whoever binds it to a dimension). */
+    public WorldProvider createDimension() {
+        try {
+            if (providerClass == null) {
+                return id == -1 ? new WorldProviderHell() : id == 1 ? new WorldProviderEnd() : new WorldProviderSurface();
+            }
+            var ctor = providerClass.getDeclaredConstructor();
+            ctor.setAccessible(true);
+            return (WorldProvider) ctor.newInstance();
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("Could not create a world provider of " + name, e);
+        }
+    }
+
     public static DimensionType getById(int id) {
         for (DimensionType t : values()) if (t.id == id) return t;
         throw new IllegalArgumentException("Invalid dimension id " + id);

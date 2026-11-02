@@ -119,7 +119,8 @@ public class DimensionManager {
         for (var level : server.getAllLevels()) {
             if (mcc$idOf(level.dimension()) == id) return level;
         }
-        return null;
+        // a dimension a mod registered while the server runs (Galacticraft's planets, at server start): its world is made on first use
+        return org.kylepitcock.legacyconnector.v1_12_2.dimension.RuntimeDimensions1122.getOrCreate(server, id);
     }
 
     public static legacyconnector.v1_12_2.net.minecraft.world.WorldServer getWorld(int id) {
@@ -169,6 +170,7 @@ public class DimensionManager {
 
     /** Modern levels are created by the server; a legacy dimension without one has no world to start. */
     public static void initDimension(int dim) {
+        mcc$level(dim);
     }
 
     public static void unloadWorld(int id) {

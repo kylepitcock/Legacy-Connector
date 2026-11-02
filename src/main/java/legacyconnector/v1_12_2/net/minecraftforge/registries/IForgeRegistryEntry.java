@@ -66,6 +66,11 @@ public interface IForgeRegistryEntry<V> {
         @SuppressWarnings("unchecked")
         @Override
         public final Class<V> getRegistryType() {
+            // Forge resolves the type argument of Impl<V> (ShapedRecipesGC extends Impl<IRecipe> registers as an IRecipe)
+            for (Class<?> g = getClass(); g != null && g != Impl.class; g = g.getSuperclass()) {
+                if (g.getGenericSuperclass() instanceof java.lang.reflect.ParameterizedType pt && pt.getRawType() == Impl.class
+                        && pt.getActualTypeArguments()[0] instanceof Class<?> arg) return (Class<V>) arg;
+            }
             Class<?> c = getClass();
             while (c != null) {
                 // the registry type is the class that extends Impl (Block, Item, ...), not Impl itself
