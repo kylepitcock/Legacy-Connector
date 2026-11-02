@@ -15,3 +15,4 @@
 - [Development](Development.md)
 - [Gameplay test log](Gameplay-Test-Log.md)
 - [Addon API](Addon-API.md)
+- [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md)
