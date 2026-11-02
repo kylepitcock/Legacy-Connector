@@ -74,6 +74,14 @@ public final class ItemStack {
     public ItemStack(Item item, int count, int meta) {
         this.mcc$item = item;
         this.mcc$stack = ItemBridge.toModern(item, count, Math.max(0, meta)); // 1.7.10 clamps a negative damage to 0 (Traincraft's NEI handler loops forever on a damage of -1)
+        if (meta > 0 && mcc$stack.is(net.minecraft.world.item.Items.POTION)) {
+            // a 1.7.10 potion is a damage value (the brewing bits): the modern potion with those effects
+            var potion = org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.stackOf(meta);
+            if (!potion.isEmpty()) {
+                potion.setCount(mcc$stack.getCount());
+                mcc$stack = potion;
+            }
+        }
     }
 
     private ItemStack(net.minecraft.world.item.ItemStack modern, Item legacy) {
@@ -293,6 +301,9 @@ public final class ItemStack {
         CustomData data = CustomData.of(tag.mcc$modern());
         mcc$stack.set(DataComponents.CUSTOM_DATA, data);
         mcc$tagSource = mcc$stack.get(DataComponents.CUSTOM_DATA);
+        if (tag.hasKey("CustomPotionEffects", 9)) org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.syncCustomEffects(this);
+        if (tag.hasKey("ench", 9)) ItemBridge.syncEnchantments(this, false);
+        if (tag.hasKey("StoredEnchantments", 9)) ItemBridge.syncEnchantments(this, true);
     }
 
     public void setTagInfo(String key, NBTBase value) {

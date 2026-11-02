@@ -119,8 +119,33 @@ public final class Brewing1710 {
         return String.join(",", parts);
     }
 
+    /**
+     * Mirrors a potion stack's legacy CustomPotionEffects list (numeric effect ids, as Roguelike Dungeons' loot writes it) into the
+     * modern potion contents, so the potion has the effects, name and colour 1.21 shows.
+     */
+    public static void syncCustomEffects(legacyconnector.v1_7_10.net.minecraft.item.ItemStack legacy) {
+        try {
+            ItemStack modern = legacy.mcc$modern();
+            if (!(modern.is(Items.POTION) || modern.is(Items.SPLASH_POTION) || modern.is(Items.LINGERING_POTION))) return;
+            var tag = legacy.getTagCompound();
+            if (tag == null || !tag.hasKey("CustomPotionEffects", 9)) return;
+            var list = tag.getTagList("CustomPotionEffects", 10);
+            List<MobEffectInstance> effects = new ArrayList<>();
+            for (int i = 0; i < list.tagCount(); i++) {
+                var e = list.getCompoundTagAt(i);
+                Holder<MobEffect> effect = PotionBridge.effectOrNull(e.getByte("Id") & 0xFF);
+                if (effect == null) continue;
+                effects.add(new MobEffectInstance(effect, e.getInteger("Duration"), e.getByte("Amplifier"), e.getBoolean("Ambient"), true));
+            }
+            PotionContents old = modern.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+            modern.set(DataComponents.POTION_CONTENTS, new PotionContents(old.potion(), old.customColor(), effects));
+        } catch (Throwable t) {
+            // best effort
+        }
+    }
+
     /** The modern stack for a 1.7.10 value. */
-    static ItemStack stackOf(int value) {
+    public static ItemStack stackOf(int value) {
         boolean splash = (value & SPLASH) != 0;
         int plain = value & ~SPLASH;
         ItemStack stack = new ItemStack(splash ? Items.SPLASH_POTION : Items.POTION);
