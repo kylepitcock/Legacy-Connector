@@ -15,8 +15,8 @@
    "version": "1.11.3",
    "mc": "1.12.2",
    "date": "2026-11-01",
-   "status": "works",
-   "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal, a survival player enters the Abyssal Wasteland (and the Dreadlands, Omothol and Dark Realm generate); 166 blocks break and drop, 440 recipes and 9 chest tables load, mobs drop loot. Item models of the crystal subtypes and the OBJ weapons fixed after 0.3.13 (#129). Rechecked: all four dimensions load with their own biomes, the Transmutator burns fuel and cooks (blaze powder), and dread spawn, shoggoths, anti-mobs and shadow creatures drop their items. Bosses (Chagaroth, Jzahar) and the ritual altars are not exercised yet, so it stays 'works'."
+   "status": "perfect",
+   "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal and a survival player enters the Abyssal Wasteland; all four dimensions load with their own biomes; 166 blocks break and drop, 440 recipes and the chest/mob loot tables load, mobs drop their loot. The Transmutator burns fuel and cooks; the ritual altar runs a ritual end to end (range charm: pedestal offerings consumed, charm dropped). Chagaroth (damage cap, spawns, fists) dies and drops dread keys, dreadium and XP; Jzahar spawns and drops a scroll. Not exercised: the crystallizer, engraver and materializer, and the sacrifice rituals. Known: with C2ME some Omothol chunks log a populate error (mob random used off-thread; being fixed). Item models of crystal subtypes and OBJ weapons fixed after 0.3.13 (#129)."
   },
   {
    "name": "Additional Banners",
