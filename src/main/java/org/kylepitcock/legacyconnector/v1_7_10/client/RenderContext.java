@@ -32,8 +32,13 @@ import org.joml.Quaternionf;
  * another renderer).</p>
  */
 public final class RenderContext {
+    /** {@code open}: the matrices this frame's legacy code pushed and has not popped yet (what the frame may still pop at its end). */
     private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked,
-            int kind) {}
+            int kind, int[] open) {
+        Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked, int kind) {
+            this(gui, pose, buffers, light, overlay, base, locked, kind, new int[1]);
+        }
+    }
 
     /** What a world context draws: objects (tile entities, entities, overlays), a sky, or particles (see {@link #geometryBuffer}). */
     public static final int KIND_WORLD = 0, KIND_SKY = 1, KIND_PARTICLES = 2;
@@ -248,7 +253,9 @@ public final class RenderContext {
             }
             // Legacy code that pushed more matrices than it popped (or threw midway) must not corrupt the caller's stack.
             // (a legacy renderer that popped too much can leave the stack empty: last() would throw, so check clear() first)
-            for (int guard = 0; !f.pose.clear() && f.pose.last() != f.base && guard < 64; guard++) f.pose.popPose();
+            // Only what this frame itself left pushed: popping 'until the base is reached' emptied the whole stack when the base was already gone
+            // (a legacy renderer that popped the caller's matrix), and the next entity of the frame crashed in EntityRenderDispatcher.render
+            for (int guard = 0; guard < f.open[0] && !f.pose.clear() && f.pose.last() != f.base && guard < 64; guard++) f.pose.popPose();
             if (f.gui != null) f.gui.setColor(1, 1, 1, 1);
             resetColor(s);
         } finally {
@@ -957,8 +964,11 @@ public final class RenderContext {
             return;
         }
         PoseStack p = pose(s);
-        if (p != null) p.pushPose();
-        else s.strayPushes++;
+        if (p != null) {
+            p.pushPose();
+            Frame top = s.frames.peek();
+            if (top != null && top.pose == p) top.open[0]++;
+        } else s.strayPushes++;
     }
 
     public static void pop() {
@@ -980,7 +990,10 @@ public final class RenderContext {
         // below it, and once the base is gone end() pops the whole stack looking for it (an item drawn in FTB Quests then failed
         // with an empty PoseStack in ItemRenderer.render).
         if (p != null) {
-            if (!p.clear() && p.last() != f.base) p.popPose();
+            if (!p.clear() && p.last() != f.base && f.open[0] > 0) {
+                p.popPose();
+                f.open[0]--;
+            }
         } else if (s.strayPushes > 0) {
             s.strayPushes--;
         }
