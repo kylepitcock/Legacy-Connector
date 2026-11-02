@@ -16,7 +16,7 @@
    "mc": "1.12.2",
    "date": "2026-11-01",
    "status": "works",
-   "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal, a survival player enters the Abyssal Wasteland (and the Dreadlands, Omothol and Dark Realm generate); 166 blocks break and drop, 440 recipes and 9 chest tables load, mobs drop loot. 39 item models are missing (crystal, shard and fragment variants, staff, dreadkatana, cudgel draw as the missing-model cube)."
+   "notes": "Survival-tested 2026-11-01: the Gateway Key builds the portal, a survival player enters the Abyssal Wasteland (and the Dreadlands, Omothol and Dark Realm generate); 166 blocks break and drop, 440 recipes and 9 chest tables load, mobs drop loot. Item models of the crystal subtypes and the OBJ weapons fixed after 0.3.13 (#129)."
   },
   {
    "name": "Additional Banners",
@@ -4420,9 +4420,9 @@
    "name": "Mekanism",
    "version": "1.12.2-9.8.3.390",
    "mc": "1.12.2",
-   "date": "2026-11-01",
-   "status": "partial",
-   "notes": "Loads in a pack without Iris. With Iris installed it fails in preInit: Iris's mixin for modern Mekanism's RenderFlame hits the legacy class of the same name (#127). Mekanism Generators and Tools depend on it."
+   "date": "2026-11-02",
+   "status": "works",
+   "notes": "Loads next to Iris since the legacy-class mixin guard (0.3.14, #127): Mekanism, Generators and Tools 9.8.3 (448 + 21 + 65 recipes, 20 blocks drop). Machines and multiblocks were not driven in survival."
   },
   {
    "name": "Mekanism: Generators",
@@ -6724,7 +6724,7 @@
    "mc": "1.7.10",
    "date": "2026-11-01",
    "status": "perfect",
-   "notes": "Survival-ready (played through 2026-11-01): scanning and research with the Thaumonomicon, arcane workbench and wands, aura nodes, crucible alchemy (aspects and catalyst consumed, output ejected), infusion, elemental tools, golems (placer, core, a Gather golem picks up loose items and fills its home chest), villages with Thaumcraft buildings, mob loot, 157 blocks, 50 recipes. Known: golem tasks beyond Gather are untested, infused ore overlay missing (#77), some GUIs (#75)."
+   "notes": "Survival-ready (played through 2026-11-01): scanning and research with the Thaumonomicon, arcane workbench and wands, aura nodes, crucible alchemy (aspects and catalyst consumed, output ejected), infusion, elemental tools, golems (placer, core, a Gather golem picks up loose items and fills its home chest), villages with Thaumcraft buildings, mob loot, 157 blocks, 50 recipes. Known: golem tasks beyond Gather are untested, some GUIs (#75)."
   },
   {
    "name": "Thaumcraft Mob Aspects",
@@ -7520,7 +7520,7 @@
    "mc": "1.7.10",
    "date": "2026-11-01",
    "status": "works",
-   "notes": "Villages with the town walls, 273 recipes, 181 blocks, mobs drop their loot, potions and rituals load. Ritual and brewing chains were not played through end to end."
+   "notes": "Villages with the town walls, 273 recipes, 181 blocks, mobs drop their loot, familiars and the oven place (the oven now faces the player), owl and toad taming. Open (#107): thrown brews, coven witch names and hostility, mirror demon skin, poppet outlines; ritual and brewing chains were not played through end to end."
   },
   {
    "name": "Witching Gadgets",
