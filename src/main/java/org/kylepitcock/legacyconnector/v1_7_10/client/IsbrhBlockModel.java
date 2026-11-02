@@ -79,7 +79,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
 
     @Override
     public ModelData getModelData(BlockAndTintGetter level, BlockPos pos, BlockState state, ModelData base) {
-        ISimpleBlockRenderingHandler handler = builtIn != null ? builtIn : RenderingRegistry.mcc$blockHandler(renderId);
+        ISimpleBlockRenderingHandler handler = currentHandler();
         if (handler == null || FAILED.contains(block.getClass().getName())) return base;
         List<BakedQuad> solid = pass0 ? capture(handler, level, pos, 0) : List.of();
         if (solid == null) return base;
@@ -122,14 +122,39 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
     }
 
+    /**
+     * The mod's handler as the block names it now. The render id is read again on every draw: a mod may register its handlers (and
+     * so change the ids its blocks report) after the models were made, and the old id then names a stale instance that no longer
+     * gets the pass the block hands to the live one (ChromatiCraft re-registers its renderers: pylon stone drew its overlay instead of its sides).
+     */
+    private ISimpleBlockRenderingHandler currentHandler() {
+        if (builtIn != null) return builtIn;
+        ISimpleBlockRenderingHandler handler = RenderingRegistry.mcc$blockHandler(currentRenderId());
+        return handler != null ? handler : RenderingRegistry.mcc$blockHandler(renderId);
+    }
+
+    private int currentRenderId() {
+        if (builtIn != null) return renderId;
+        try {
+            return block.getRenderType();
+        } catch (RuntimeException | LinkageError e) {
+            return renderId;
+        }
+    }
+
     /** One Forge world pass of the handler, as 1.7.10's chunk renderer ran it; null when the handler failed. */
     private List<BakedQuad> capture(ISimpleBlockRenderingHandler handler, BlockAndTintGetter level, BlockPos pos, int pass) {
+        return capture(handler, handler, level, pos, pass);
+    }
+
+    /** {@code lock}: the mod's handler, even when {@code handler} is a stand-in that draws through the block (see {@link #fillMissingFaces}). */
+    private List<BakedQuad> capture(ISimpleBlockRenderingHandler handler, Object lock, BlockAndTintGetter level, BlockPos pos, int pass) {
         // Chunks are meshed on several worker threads (many more with Sodium/Embeddium), but a mod's handler is a singleton that
         // keeps the pass it is told by canRenderInPass in a field (ChromatiCraft's ISBRH.setRenderPass): two threads meshing blocks of
         // the same handler would draw each other's pass (the overlay twice and the stone never: a see-through block). The legacy
         // client had one render thread, so the calls of one handler are made one at a time (different handlers still run in parallel).
         if (builtIn != null) return captureLocked(handler, level, pos, pass);
-        synchronized (handler) {
+        synchronized (lock) {
             return captureLocked(handler, level, pos, pass);
         }
     }
@@ -155,7 +180,7 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             BlockAccessView shifted = ox != 0 || oz != 0 ? BlockAccessView.shifted(level, ox, oz) : null;
             if (shifted != null) access = shifted;
             else ox = oz = 0;
-            handler.renderWorldBlock(access, pos.getX() - ox, pos.getY(), pos.getZ() - oz, block, renderId, new RenderBlocks(access));
+            handler.renderWorldBlock(access, pos.getX() - ox, pos.getY(), pos.getZ() - oz, block, currentRenderId(), new RenderBlocks(access));
         } catch (RuntimeException | LinkageError e) {
             if (FAILED.add(block.getClass().getName())) {
                 LOG.error("Legacy block renderer for {} failed; the block keeps its generated model (render id {}, tile entity at {}: {})", block.getClass().getName(),
@@ -202,7 +227,10 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
             LOG.info("Legacy block renderer for {} left out visible faces of its full cube (sides {} at {}); they are drawn as standard faces",
                     block.getClass().getName(), Integer.toBinaryString(missing), pos);
         }
-        List<BakedQuad> faces = capture(new MissingFaces(missing), level, pos, pass0 ? 0 : 1);
+        // The stand-in calls the block's canRenderInPass, which sets the pass field of the mod's handler: it holds that handler's lock,
+        // or it flips the pass of another thread's draw in progress.
+        ISimpleBlockRenderingHandler real = currentHandler();
+        List<BakedQuad> faces = capture(new MissingFaces(missing), real != null ? real : this, level, pos, pass0 ? 0 : 1);
         return faces == null ? List.of() : faces;
     }
 
