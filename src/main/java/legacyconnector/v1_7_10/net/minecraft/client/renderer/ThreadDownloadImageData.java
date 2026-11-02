@@ -80,7 +80,33 @@ public class ThreadDownloadImageData extends SimpleTexture {
         imageThread.start();
     }
 
+    /**
+     * 1.7.10's skin and cape servers (skins.minecraft.net/MinecraftSkins/&lt;name&gt;.png and /MinecraftCloaks/) are gone: such a
+     * URL is turned into the texture URL of the named profile (null when the player has none). Other URLs are returned as is.
+     */
+    private static String mcc$resolveLegacy(String url) {
+        String lower = url.toLowerCase(java.util.Locale.ROOT);
+        boolean skin = lower.contains("skins.minecraft.net/minecraftskins/");
+        boolean cape = lower.contains("skins.minecraft.net/minecraftcloaks/");
+        if (!skin && !cape) return url;
+        String name = url.substring(url.lastIndexOf('/') + 1);
+        if (name.toLowerCase(java.util.Locale.ROOT).endsWith(".png")) name = name.substring(0, name.length() - 4);
+        try {
+            var profile = net.minecraft.world.level.block.entity.SkullBlockEntity.fetchGameProfile(name)
+                    .get(30, java.util.concurrent.TimeUnit.SECONDS).orElse(null);
+            if (profile == null) return null;
+            var textures = net.minecraft.client.Minecraft.getInstance().getMinecraftSessionService().getTextures(profile);
+            var texture = skin ? textures.skin() : textures.cape();
+            return texture == null ? null : texture.getUrl();
+        } catch (Exception | LinkageError e) {
+            logger.warn("Couldn't look up the {} of {}: {}", skin ? "skin" : "cape", name, e.toString());
+            return null;
+        }
+    }
+
     private void mcc$download() {
+        if (this.imageUrl == null) return;
+        String imageUrl = mcc$resolveLegacy(this.imageUrl);
         if (imageUrl == null) return;
         java.net.HttpURLConnection connection = null;
         logger.debug("Downloading http texture from {} to {}", imageUrl, field_152434_e);
