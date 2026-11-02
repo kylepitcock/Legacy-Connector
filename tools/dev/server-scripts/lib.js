@@ -16,7 +16,7 @@ function realPlayer(name) {
   var CA = T("net.neoforged.neoforge.network.registration.ChannelAttributes");
   var RL = T("net.minecraft.resources.ResourceLocation");
   var ad = CA.getOrCreateAdHocChannels(conn);
-  ["legacyconnector:legacy", "legacyconnector:legacy12", "legacyconnector:fml", "neoforge:advanced_open_screen", "neoforge:extended_server_data", "neoforge:advanced_add_entity"].forEach(function (n) { ad.add(RL.parse(n)); });
+  ["legacyconnector:legacy", "legacyconnector:legacy12", "legacyconnector:fml", "neoforge:advanced_open_screen", "neoforge:extended_server_data", "neoforge:advanced_add_entity", "pehkui:scale"].forEach(function (n) { ad.add(RL.parse(n)); });
   var Cookie = T("net.minecraft.server.network.CommonListenerCookie");
   var cookie = new Cookie(prof, 0, CI.createDefault(), false);
   server.getPlayerList().placeNewPlayer(conn, sp, cookie);

@@ -206,6 +206,7 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public void setUniqueId(String key, java.util.UUID value) {
+        if (value == null) return; // 1.12 threw a NullPointerException here (Galacticraft's laser turret without an owner); an unset id reads back as absent
         setLong(key + "Most", value.getMostSignificantBits());
         setLong(key + "Least", value.getLeastSignificantBits());
     }

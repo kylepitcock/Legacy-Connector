@@ -127,7 +127,8 @@ public final class WorldBridge1122 {
         if (id == -1) return server.getLevel(Level.NETHER);
         if (id == 1) return server.getLevel(Level.END);
         for (var level : server.getAllLevels()) if (dimensionId(level) == id) return level;
-        return null;
+        // a dimension registered while the server runs (Galacticraft's planets) gets its level on first use
+        return org.kylepitcock.legacyconnector.v1_12_2.dimension.RuntimeDimensions1122.getOrCreate(server, id);
     }
 
     private static final class WorldView extends World {

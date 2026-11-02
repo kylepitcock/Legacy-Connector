@@ -277,6 +277,7 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public static void mcc$set$world(Entity e, World v) {
         e.mcc$local_world = v;
+        e.mcc$moveToWorld(v);
     }
 
     public static double mcc$get$posX(Entity e) {
@@ -1451,6 +1452,17 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
 
     public void setWorld(World world) {
         this.mcc$local_world = world;
+        mcc$moveToWorld(world);
+    }
+
+    /**
+     * 1.12 mods moved a player between worlds by hand (Galacticraft: location, {@code entity.world = new}, {@code setWorld}); the modern player is
+     * teleported to its position in the level of that world.
+     */
+    private void mcc$moveToWorld(World world) {
+        if (world == null || !(mcc$entity instanceof net.minecraft.server.level.ServerPlayer sp) || !(world.mcc$liveLevel() instanceof net.minecraft.server.level.ServerLevel target)
+                || sp.level() == target) return;
+        sp.teleportTo(target, sp.getX(), sp.getY(), sp.getZ(), sp.getYRot(), sp.getXRot());
     }
 
     // ------------------------------------------------------------------ state
