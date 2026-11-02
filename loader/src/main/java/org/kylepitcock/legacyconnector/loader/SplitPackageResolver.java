@@ -112,7 +112,7 @@ final class SplitPackageResolver {
                         }
                         collected.put(jar, mineClasses);
                     }
-                    if (!Files.exists(strippedOf.get(jar))) copyWithout(zip, strippedOf.get(jar), mine);
+                    if (!Files.exists(strippedOf.get(jar))) copyWithout(jar, zip, strippedOf.get(jar), mine);
                 }
             } catch (IOException e) {
                 failure.put(jar, e);
@@ -167,7 +167,33 @@ final class SplitPackageResolver {
         return candidates.stream().max((a, b) -> Integer.compare(packageSizes.get(a).get(pkg), packageSizes.get(b).get(pkg))).orElseThrow();
     }
 
-    private static void copyWithout(ZipFile zip, Path target, Set<String> packages) throws IOException {
+    /**
+     * The jar without the classes of the packages: a byte copy of the file whose entries are then deleted in place, which keeps every
+     * remaining entry as it is (no inflating and deflating of the 100 MB of textures and sounds a big mod jar holds); streaming a new jar
+     * is the fallback.
+     */
+    private static void copyWithout(Path jar, ZipFile zip, Path target, Set<String> packages) throws IOException {
+        List<String> doomed = new ArrayList<>();
+        Enumeration<? extends ZipEntry> names = zip.entries();
+        while (names.hasMoreElements()) {
+            String n = names.nextElement().getName();
+            int slash = n.lastIndexOf('/');
+            if (n.endsWith(".class") && slash > 0 && packages.contains(n.substring(0, slash))) doomed.add(n);
+        }
+        Path tmp = target.resolveSibling(target.getFileName() + ".tmp");
+        try {
+            Files.copy(jar, tmp, StandardCopyOption.REPLACE_EXISTING);
+            try (java.nio.file.FileSystem fs = java.nio.file.FileSystems.newFileSystem(tmp)) {
+                for (String n : doomed) Files.deleteIfExists(fs.getPath("/" + n));
+            }
+            Files.move(tmp, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException | RuntimeException e) {
+            Files.deleteIfExists(tmp);
+            streamWithout(zip, target, packages);
+        }
+    }
+
+    private static void streamWithout(ZipFile zip, Path target, Set<String> packages) throws IOException {
         Manifest manifest = null;
         ZipEntry manifestEntry = zip.getEntry(JarFile.MANIFEST_NAME);
         if (manifestEntry != null) {

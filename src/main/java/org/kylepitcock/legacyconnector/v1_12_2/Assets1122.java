@@ -100,10 +100,12 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static final Map<String, String> GENERATED_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
 
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
+        long t0 = System.nanoTime();
         GENERATED_MODELS.clear();
         STATE_MODELS_BUILDING.clear();
         clientProxies();
         itemModels(out);
+        long itemsMs = (System.nanoTime() - t0) / 1_000_000;
         Stats stats = new Stats();
         for (Block block : Registries1122.BLOCKS.getValues()) {
             if (!(block.mcc$modern instanceof Legacy1122Block modern)) continue;
@@ -121,6 +123,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 }
             }
         }
+        LOG.info("[LegacyConnector/Perf] 1.12.2 assets: item models {} ms, blockstates {} ms", itemsMs, (System.nanoTime() - t0) / 1_000_000 - itemsMs);
         stateModels = Map.copyOf(STATE_MODELS_BUILDING);
         if (!stateModels.isEmpty()) LOG.info("1.12.2 state models: {} block state(s) beyond their metadata got a model of their own", stateModels.size());
         LOG.info("1.12.2 render types: {} cutout, {} translucent, {} solid", stats.cutout, stats.translucent, stats.solid);

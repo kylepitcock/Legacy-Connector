@@ -112,8 +112,11 @@ public final class LegacyLifecycle {
     }
 
     private static void phase(List<LegacyModRecord> mods, String name, Phase phase) {
+        long phaseStart = System.nanoTime();
+        StringBuilder perMod = new StringBuilder();
         for (LegacyModRecord mod : new ArrayList<>(mods)) {
             if (FAILED.containsKey(mod)) continue;
+            long modStart = System.nanoTime();
             Thread thread = Thread.currentThread();
             ClassLoader previous = thread.getContextClassLoader();
             try {
@@ -126,7 +129,10 @@ public final class LegacyLifecycle {
                 FAILED.put(mod, wrapped);
             } finally {
                 thread.setContextClassLoader(previous);
+                long ms = (System.nanoTime() - modStart) / 1_000_000;
+                if (ms >= 50) perMod.append(' ').append(mod.legacyId).append('=').append(ms);
             }
         }
+        LOG.info("[LegacyConnector/Perf] phase {} took {} ms:{}", name, (System.nanoTime() - phaseStart) / 1_000_000, perMod.length() == 0 ? " (no mod over 50 ms)" : perMod);
     }
 }
