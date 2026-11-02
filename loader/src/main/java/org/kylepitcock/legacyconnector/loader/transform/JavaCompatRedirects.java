@@ -303,7 +303,43 @@ public final class JavaCompatRedirects {
                 }
             }
         }
+        count += addFilterLifeCycle(node);
         return count;
+    }
+
+    private static final String LOG4J_FILTER = "org/apache/logging/log4j/core/Filter";
+
+    /**
+     * log4j 2.0-beta9's {@code Filter} had no life cycle; later versions extend {@code LifeCycle}, and log4j calls {@code stop()} on every
+     * filter when the game shuts down (DragonAPI's ItemBlockMismatchFilter: an AbstractMethodError in the shutdown hook, printed by every
+     * server stop). A class that implements Filter itself gets the five methods, as an always-started filter.
+     */
+    private static int addFilterLifeCycle(ClassNode node) {
+        if ((node.access & Opcodes.ACC_INTERFACE) != 0 || node.interfaces == null || !node.interfaces.contains(LOG4J_FILTER)) return 0;
+        for (MethodNode m : node.methods) if (m.name.equals("stop") && m.desc.equals("()V")) return 0;
+        for (String[] def : new String[][] {{"initialize", "()V"}, {"start", "()V"}, {"stop", "()V"}}) {
+            MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, def[0], def[1], null, null);
+            m.instructions.add(new InsnNode(Opcodes.RETURN));
+            m.maxStack = 0;
+            m.maxLocals = 1;
+            node.methods.add(m);
+        }
+        for (Object[] def : new Object[][] {{"isStarted", Opcodes.ICONST_1}, {"isStopped", Opcodes.ICONST_0}}) {
+            MethodNode m = new MethodNode(Opcodes.ACC_PUBLIC, (String) def[0], "()Z", null, null);
+            m.instructions.add(new InsnNode((Integer) def[1]));
+            m.instructions.add(new InsnNode(Opcodes.IRETURN));
+            m.maxStack = 1;
+            m.maxLocals = 1;
+            node.methods.add(m);
+        }
+        MethodNode state = new MethodNode(Opcodes.ACC_PUBLIC, "getState", "()Lorg/apache/logging/log4j/core/LifeCycle$State;", null, null);
+        state.instructions.add(new org.objectweb.asm.tree.FieldInsnNode(Opcodes.GETSTATIC, "org/apache/logging/log4j/core/LifeCycle$State", "STARTED",
+                "Lorg/apache/logging/log4j/core/LifeCycle$State;"));
+        state.instructions.add(new InsnNode(Opcodes.ARETURN));
+        state.maxStack = 1;
+        state.maxLocals = 1;
+        node.methods.add(state);
+        return 6;
     }
 
     /**
