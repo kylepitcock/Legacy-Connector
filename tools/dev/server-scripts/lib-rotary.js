@@ -69,7 +69,7 @@ if (typeof L === 'undefined') {
   L.FD = Java.type("legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection");
   L.FR = Java.type("legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidRegistry");
   L.FS = Java.type("legacyconnector.v1_7_10.net.minecraftforge.fluids.FluidStack");
-  L.ET = Java.type("Reika.RotaryCraft.Registry.EngineType");
+  try { L.ET = Java.type("Reika.RotaryCraft.Registry.EngineType"); } catch (e) {}
   L.fluid = function (name, amt) { return new L.FS(L.FR.getFluid(name), amt); };
   // fill a fluid handler from whichever side accepts it
   L.feed = function (t, fluidName, amt) {
