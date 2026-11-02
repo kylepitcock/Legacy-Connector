@@ -176,7 +176,8 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     target = ObjAssets1122.model(Ids.namespace(mrl.getNamespace()),
                             "item/" + Ids.normalizePath(mrl.getPath()), null, null, null, out);
                 }
-                if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue; // the mod's own file already has the id's name
+                // the mod's own models/item file already has the id's name (an item whose model is an .obj file of that name has none to write over)
+                if (target.equals(id.getNamespace() + ":item/" + id.getPath()) && modelExists(id.getNamespace(), "item/" + id.getPath())) continue;
                 JsonObject model = blockstateItemModel(mrl, target, out);
                 if (model != null) {
                     // no models/item file: Forge took the item's model from the variant of the blockstate file of the same name
