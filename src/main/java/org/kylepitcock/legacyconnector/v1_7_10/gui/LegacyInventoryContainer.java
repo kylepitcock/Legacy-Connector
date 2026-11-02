@@ -92,6 +92,21 @@ public final class LegacyInventoryContainer implements net.minecraft.world.World
         return inv.isUseableByPlayer((EntityPlayer) EntityBridge.wrap(player));
     }
 
+    /**
+     * A chest window (EntityPlayer.displayGUIChest) tells its container when a player opens and closes it, as 1.7.10's ContainerChest did
+     * through openInventory/closeInventory: a tile entity counting its viewers (Witchery's leech chest, whose lid opens while somebody looks
+     * in) never saw one.
+     */
+    @Override
+    public void startOpen(Player player) {
+        inv.openInventory();
+    }
+
+    @Override
+    public void stopOpen(Player player) {
+        inv.closeInventory();
+    }
+
     @Override
     public boolean canPlaceItem(int slot, net.minecraft.world.item.ItemStack stack) {
         return inv.isItemValidForSlot(slot, ItemStack.mcc$wrap(stack));
