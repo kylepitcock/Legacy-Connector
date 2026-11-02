@@ -118,6 +118,31 @@ public final class ReflectiveEventBus {
         byOwner.put(target, added);
         dispatchCache.clear();
         interest.clear();
+        runDeferred();
+    }
+
+    private record Deferred(Class<?> eventType, Runnable action) {}
+
+    private final List<Deferred> deferred = new ArrayList<>();
+
+    /**
+     * Runs {@code action} once, as soon as a listener that receives {@code eventType} is registered (now if one already is). Bridges use it
+     * to hook a modern event only when a legacy mod listens, so the modern event has no listener (and e.g. C2ME keeps its optimizations) otherwise.
+     */
+    public synchronized void whenListened(Class<?> eventType, Runnable action) {
+        if (hasListeners(eventType)) action.run();
+        else deferred.add(new Deferred(eventType, action));
+    }
+
+    private void runDeferred() {
+        if (deferred.isEmpty()) return;
+        for (var it = deferred.iterator(); it.hasNext();) {
+            Deferred d = it.next();
+            if (hasListeners(d.eventType)) {
+                it.remove();
+                d.action.run();
+            }
+        }
     }
 
     private static final int DISABLE_AFTER = 1000;

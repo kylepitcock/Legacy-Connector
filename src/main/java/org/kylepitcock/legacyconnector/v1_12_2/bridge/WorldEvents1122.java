@@ -83,11 +83,12 @@ public final class WorldEvents1122 {
             post(new ChunkDataEvent.Load(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk()),
                     new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(e.getData())));
         });
-        b.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
+        // a modern ChunkDataEvent.Save listener makes C2ME turn off optimizations: only hook it once a 1.12.2 mod listens
+        bus().mcc$whenListened(ChunkDataEvent.Save.class, () -> b.addListener((net.neoforged.neoforge.event.level.ChunkDataEvent.Save e) -> {
             if (!listens(ChunkDataEvent.Save.class) || !(e.getLevel() instanceof Level l)) return;
             post(new ChunkDataEvent.Save(legacyconnector.v1_12_2.net.minecraft.world.chunk.Chunk.mcc$of(world(l), e.getChunk()),
                     new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagCompound(e.getData())));
-        });
+        }));
         b.addListener((net.neoforged.neoforge.event.level.BlockEvent.EntityPlaceEvent e) -> {
             if (!(e.getLevel() instanceof Level l)) return;
             if (!(e.getEntity() instanceof net.minecraft.world.entity.player.Player)) {

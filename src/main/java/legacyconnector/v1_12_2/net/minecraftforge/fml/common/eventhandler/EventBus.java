@@ -71,6 +71,11 @@ public class EventBus {
         return delegate.post(event);
     }
 
+    /** Bridge helper: runs the action once a listener of the event type exists. */
+    public void mcc$whenListened(Class<? extends Event> type, Runnable action) {
+        delegate.whenListened(type, action);
+    }
+
     /** Bridge helper: avoids building legacy event objects nobody listens to. */
     public boolean mcc$hasListeners(Class<? extends Event> type) {
         return delegate.hasListeners(type);
