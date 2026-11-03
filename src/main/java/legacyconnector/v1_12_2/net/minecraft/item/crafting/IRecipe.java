@@ -16,12 +16,7 @@ public interface IRecipe extends IForgeRegistryEntry<IRecipe> {
     ItemStack getRecipeOutput();
 
     default NonNullList<ItemStack> getRemainingItems(InventoryCrafting inv) {
-        NonNullList<ItemStack> list = NonNullList.withSize(inv.getSizeInventory(), ItemStack.EMPTY);
-        for (int i = 0; i < list.size(); i++) {
-            ItemStack s = inv.getStackInSlot(i);
-            if (!s.isEmpty() && s.getItem().hasContainerItem()) list.set(i, new ItemStack(s.getItem().getContainerItem()));
-        }
-        return list;
+        return legacyconnector.v1_12_2.net.minecraftforge.common.ForgeHooks.defaultRecipeGetRemainingItems(inv);
     }
 
     default NonNullList<Ingredient> getIngredients() {

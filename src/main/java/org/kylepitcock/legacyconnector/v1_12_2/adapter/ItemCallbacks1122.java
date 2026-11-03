@@ -89,6 +89,35 @@ final class ItemCallbacks1122 {
         return Legacy1122Block.overrides(legacy, name, params);
     }
 
+    /**
+     * Forge's stack-aware container item (ForgeHooks.getContainerItem): what crafting leaves for a used-up ingredient. Works on a copy
+     * of the stack, so a legacy getContainerItem that damages "its" stack (tools) or returns it as is (infinite use) cannot touch the real one.
+     */
+    boolean hasRemainder(net.minecraft.world.item.ItemStack stack) {
+        try {
+            ItemStack view = Stacks1122.fromModern(stack);
+            return !view.isEmpty() && legacy.hasContainerItem(view);
+        } catch (RuntimeException | LinkageError e) {
+            failure("hasContainerItem", e);
+            return false;
+        }
+    }
+
+    net.minecraft.world.item.ItemStack remainder(net.minecraft.world.item.ItemStack stack) {
+        try {
+            ItemStack view = Stacks1122.fromModern(stack);
+            if (view.isEmpty() || !legacy.hasContainerItem(view)) return net.minecraft.world.item.ItemStack.EMPTY;
+            ItemStack out = legacy.getContainerItem(view);
+            if (out == null || out.isEmpty()) return net.minecraft.world.item.ItemStack.EMPTY;
+            // a damageable remainder worn past its maximum is used up (Forge's check)
+            if (out.isItemStackDamageable() && out.getMetadata() > out.getMaxDamage()) return net.minecraft.world.item.ItemStack.EMPTY;
+            return Stacks1122.toModern(out);
+        } catch (RuntimeException | LinkageError e) {
+            failure("getContainerItem", e);
+            return net.minecraft.world.item.ItemStack.EMPTY;
+        }
+    }
+
     private void failure(String callback, Throwable e) {
         if (failures++ < 3) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Items").error("{} of {} threw; the call is skipped{}", callback, legacy.getClass().getName(),

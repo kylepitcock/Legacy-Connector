@@ -265,6 +265,17 @@ public class Legacy1122Item extends net.minecraft.world.item.Item {
         return c != null ? c : super.getBarColor(stack);
     }
 
+    /** 1.12 container items (Forge, stack-aware): the tool that loses durability, the item that is never used up, the bucket left over. */
+    @Override
+    public boolean hasCraftingRemainingItem(ItemStack stack) {
+        return cb().hasRemainder(stack);
+    }
+
+    @Override
+    public ItemStack getCraftingRemainingItem(ItemStack stack) {
+        return cb().remainder(stack);
+    }
+
     @Override
     public void onCraftedBy(ItemStack stack, net.minecraft.world.level.Level level, net.minecraft.world.entity.player.Player player) {
         super.onCraftedBy(stack, level, player);
