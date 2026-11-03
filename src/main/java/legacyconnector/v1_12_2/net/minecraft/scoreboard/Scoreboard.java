@@ -129,6 +129,11 @@ public class Scoreboard {
         return ScorePlayerTeam.mcc$of(scoreboard.addPlayerTeam(name));
     }
 
+    /** Sends a changed team to the players (the server scoreboard's team update packet). */
+    public void broadcastTeamInfoUpdate(ScorePlayerTeam team) {
+        if (team != null) scoreboard.onTeamChanged(team.mcc$modern());
+    }
+
     public void removeTeam(ScorePlayerTeam playerTeam) {
         if (playerTeam != null) scoreboard.removePlayerTeam(playerTeam.mcc$modern());
     }

@@ -51,6 +51,18 @@ public class PlayerAdvancements {
         if (modern != null && sp != null) modern.flushDirty(sp);
     }
 
+    /** The player leaves: the game stops listening to the advancement triggers for it. */
+    public void dispose() {
+        var modern = mcc$modern();
+        if (modern != null) modern.stopListening();
+    }
+
+    /** Opens a tab of the advancements screen on the client (null clears the selection). */
+    public void setSelectedTab(Advancement advancement) {
+        var modern = mcc$modern();
+        if (modern != null) modern.setSelectedTab(advancement == null ? null : advancement.mcc$modern());
+    }
+
     public void save() {
         var modern = mcc$modern();
         if (modern != null) modern.save();

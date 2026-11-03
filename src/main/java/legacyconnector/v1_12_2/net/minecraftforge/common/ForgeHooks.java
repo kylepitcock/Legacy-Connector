@@ -454,6 +454,18 @@ public class ForgeHooks {
         return ret;
     }
 
+    /** The armour points shown in the HUD: the entity's armour value plus what armour with its own display (ISpecialArmor) adds. */
+    public static int getTotalArmorValue(EntityPlayer player) {
+        int ret = player.getTotalArmorValue();
+        var worn = legacyconnector.v1_12_2.net.minecraft.entity.player.InventoryPlayer.mcc$get$armorInventory(
+                legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer.mcc$get$inventory(player));
+        for (int x = 0; x < worn.size(); x++) {
+            ItemStack stack = worn.get(x);
+            if (stack.getItem() instanceof ISpecialArmor armor) ret += armor.getArmorDisplay(player, stack, x);
+        }
+        return ret;
+    }
+
     /** The name of a loot pool being read: its own, else "main", "pool1", ... as 1.12 named the unnamed pools of vanilla tables. */
     public static String readPoolName(com.google.gson.JsonObject json) {
         if (json.has("name")) return json.get("name").getAsString();

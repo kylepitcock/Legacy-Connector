@@ -39,6 +39,37 @@ public class RenderGlobal implements legacyconnector.v1_12_2.net.minecraft.clien
         this.mc = mcIn;
     }
 
+    // The pass entry points of 1.12's chunk renderer. The modern level renderer owns these passes; a mod calling them (to draw a world
+    // of its own into a framebuffer, as NTM's FakeWorldRenderer does) gets no output, but links and runs.
+
+    /** Tile entities drawn outside their chunks (the modern renderer tracks block entities itself). */
+    public Set<Object> setTileEntities = new java.util.HashSet<>();
+
+    public void setupTerrain(Entity viewEntity, double partialTicks, legacyconnector.v1_12_2.net.minecraft.client.renderer.culling.ICamera camera, int frameCount,
+            boolean playerSpectator) {
+    }
+
+    public void updateChunks(long finishTimeNano) {
+    }
+
+    /** Draws a chunk layer; the modern renderer has drawn them already, so no chunk was rendered here. */
+    public int renderBlockLayer(legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer blockLayerIn, double partialTicks, int pass, Entity entityIn) {
+        return 0;
+    }
+
+    public void renderEntities(Entity renderViewEntity, legacyconnector.v1_12_2.net.minecraft.client.renderer.culling.ICamera camera, float partialTicks) {
+    }
+
+    public void renderWorldBorder(Entity entityIn, float partialTicks) {
+    }
+
+    public void drawBlockDamageTexture(Tessellator tessellatorIn, BufferBuilder bufferBuilderIn, Entity entityIn, float partialTicks) {
+    }
+
+    public boolean hasCloudFog(double x, double y, double z, float partialTicks) {
+        return false;
+    }
+
     /** The game's ({@code Minecraft.renderGlobal}). */
     public static synchronized RenderGlobal mcc$instance() {
         if (instance == null) instance = new RenderGlobal(Minecraft.getMinecraft());

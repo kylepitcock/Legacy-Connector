@@ -76,7 +76,7 @@ public class Blocks {
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block EMERALD_BLOCK = Vanilla1122.block("EMERALD_BLOCK");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block EMERALD_ORE = Vanilla1122.block("EMERALD_ORE");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block ENCHANTING_TABLE = VanillaBlocks1122.block("ENCHANTING_TABLE", new legacyconnector.v1_12_2.net.minecraft.block.BlockEnchantmentTable() {});
-    public static final legacyconnector.v1_12_2.net.minecraft.block.Block ENDER_CHEST = Vanilla1122.block("ENDER_CHEST");
+    public static final legacyconnector.v1_12_2.net.minecraft.block.BlockEnderChest ENDER_CHEST = VanillaBlocks1122.block("ENDER_CHEST", new legacyconnector.v1_12_2.net.minecraft.block.BlockEnderChest());
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block END_BRICKS = Vanilla1122.block("END_BRICKS");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block END_GATEWAY = Vanilla1122.block("END_GATEWAY");
     public static final legacyconnector.v1_12_2.net.minecraft.block.Block END_PORTAL = VanillaBlocks1122.block("END_PORTAL", new legacyconnector.v1_12_2.net.minecraft.block.BlockEndPortal(legacyconnector.v1_12_2.net.minecraft.block.material.Material.PORTAL) {});

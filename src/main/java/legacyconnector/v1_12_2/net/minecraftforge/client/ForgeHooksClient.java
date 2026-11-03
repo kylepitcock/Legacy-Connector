@@ -20,6 +20,11 @@ public class ForgeHooksClient {
     /** Items drawn by a tile entity renderer (registerTESRItemStack): item -> meta -> tile entity class. */
     private static final Map<Item, Map<Integer, Class<?>>> TESR_ITEMS = new ConcurrentHashMap<>();
 
+    /** The end of the world pass: mods' RenderWorldLastEvent listeners draw. */
+    public static void dispatchRenderLast(legacyconnector.v1_12_2.net.minecraft.client.renderer.RenderGlobal context, float partialTicks) {
+        legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.RenderWorldLastEvent(context, partialTicks));
+    }
+
     public static void setRenderLayer(BlockRenderLayer layer) {
         if (layer == null) MinecraftForgeClient.RENDER_LAYER.remove();
         else MinecraftForgeClient.RENDER_LAYER.set(layer);

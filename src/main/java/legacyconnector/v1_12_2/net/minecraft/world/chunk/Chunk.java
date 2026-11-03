@@ -448,6 +448,26 @@ public class Chunk implements legacyconnector.v1_12_2.net.minecraftforge.common.
      * The chunk's entities by 16-block section (legacy y 0..255; entities below go to the first, above to the last): a snapshot
      * of the live entities, as the modern game keeps them in its own entity sections.
      */
+    /** Phantom: {@link #getEntityLists()}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] entityLists;
+
+    public static legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] mcc$get$entityLists(Chunk c) {
+        return c.getEntityLists();
+    }
+
+    public static void mcc$set$entityLists(Chunk c, legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] lists) {
+    }
+
+    /** Re-lights the column at (x, z) after a block moved: the modern light engine does it on the block change. */
+    public void relightBlock(int x, int y, int z) {
+        if (world != null) world.checkLight(new BlockPos((this.x << 4) + (x & 15), y, (this.z << 4) + (z & 15)));
+    }
+
+    /** Skylight occlusion follows the blocks in the modern light engine; nothing to propagate. */
+    public void propagateSkylightOcclusion(int x, int z) {
+    }
+
     @SuppressWarnings("unchecked")
     public legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap<Entity>[] getEntityLists() {
         var out = new legacyconnector.v1_12_2.net.minecraft.util.ClassInheritanceMultiMap[16];

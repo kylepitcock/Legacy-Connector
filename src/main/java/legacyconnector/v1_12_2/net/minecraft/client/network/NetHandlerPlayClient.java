@@ -99,6 +99,16 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
         // the server owns it
     }
 
+    /** A close-window packet a mod hands to the client: the open container screen closes. */
+    public void handleCloseWindow(legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketCloseWindow packet) {
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        Runnable close = () -> {
+            if (mc.player != null) mc.player.clientSideCloseContainer();
+        };
+        if (mc.isSameThread()) close.run();
+        else mc.execute(close);
+    }
+
     /** A chat packet a mod hands to the client: chat and system messages go to the chat, game info to the action bar. */
     public void handleChat(legacyconnector.v1_12_2.net.minecraft.network.play.server.SPacketChat packet) {
         if (packet == null || packet.getChatComponent() == null) return;

@@ -56,6 +56,20 @@ public class GuiIngame extends Gui {
         return Minecraft.getMinecraft();
     }
 
+    /** Phantom: the stack whose name the HUD shows above the hotbar after a slot change. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.item.ItemStack highlightingItemStack;
+
+    public static legacyconnector.v1_12_2.net.minecraft.item.ItemStack mcc$get$highlightingItemStack(GuiIngame g) {
+        Object stack = org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.get(hudClass(), hud(), "lastToolHighlight");
+        return stack instanceof net.minecraft.world.item.ItemStack s ? org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.fromModern(s)
+                : legacyconnector.v1_12_2.net.minecraft.item.ItemStack.EMPTY;
+    }
+
+    public static void mcc$set$highlightingItemStack(GuiIngame g, legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack) {
+        setField("lastToolHighlight", stack == null ? net.minecraft.world.item.ItemStack.EMPTY : org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(stack));
+    }
+
     public static int mcc$get$updateCounter(GuiIngame g) {
         return hud().getGuiTicks();
     }

@@ -24,6 +24,8 @@ public class ContextCapabilities {
             GL_EXT_texture_env_combine = true, GL_EXT_secondary_color = true, GL_EXT_fog_coord = true,
             GL_EXT_gpu_shader4 = false, GL_EXT_texture_lod_bias = true, GL_EXT_framebuffer_blit = true,
             GL_EXT_framebuffer_multisample = true, GL_EXT_bgra = true, GL_EXT_abgr = false, GL_EXT_compiled_vertex_array = false;
+    /** Instanced drawing is core in the 3.3 context; the Apple float-pixel extension is not offered. */
+    public final boolean GL_ARB_draw_instanced = true, GL_EXT_draw_instanced = true, GL_APPLE_float_pixels = false;
     public final boolean GL_NV_fog_distance = false, GL_NV_texture_rectangle = false, GL_ATI_texture_float = false,
             GL_KHR_debug = true, GL_AMD_debug_output = false, GL_ARB_debug_output = true;
     /** Buffer, sync and query features of the core 3.3+ context; shader-related ones stay off for the reason above. */
