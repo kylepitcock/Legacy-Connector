@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.v1_7_10.bridge;
 import java.util.Map;
 import java.util.Random;
 import legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent;
+import legacyconnector.v1_7_10.net.minecraft.world.gen.structure.StructureChestFields;
 import legacyconnector.v1_7_10.net.minecraftforge.common.ChestGenHooks;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
@@ -34,7 +35,8 @@ public final class ChestLootBridge1710 {
             Map.entry(ChestGenHooks.STRONGHOLD_LIBRARY, "minecraft:chests/stronghold_library"),
             Map.entry(ChestGenHooks.STRONGHOLD_CROSSING, "minecraft:chests/stronghold_crossing"),
             Map.entry(ChestGenHooks.VILLAGE_BLACKSMITH, "minecraft:chests/village/village_weaponsmith"),
-            Map.entry(ChestGenHooks.BONUS_CHEST, "minecraft:chests/spawn_bonus_chest"));
+            Map.entry(ChestGenHooks.BONUS_CHEST, "minecraft:chests/spawn_bonus_chest"),
+            Map.entry(StructureChestFields.NETHER_FORTRESS, "minecraft:chests/nether_bridge"));
 
     private ChestLootBridge1710() {}
 
@@ -61,8 +63,13 @@ public final class ChestLootBridge1710 {
 
     private static LootPool pool(String category) {
         ChestGenHooks info = ChestGenHooks.getInfo(category);
-        WeightedRandomChestContent[] items = info.getItems(new Random());
-        if (items == null || items.length == 0) return null;
+        WeightedRandomChestContent[] hooked = info.getItems(new Random());
+        // Mods that appended to the structure piece's own chest array (reflection or direct access) instead of ChestGenHooks.
+        WeightedRandomChestContent[] fields = StructureChestFields.extras(category);
+        WeightedRandomChestContent[] items = new WeightedRandomChestContent[hooked.length + fields.length];
+        System.arraycopy(hooked, 0, items, 0, hooked.length);
+        System.arraycopy(fields, 0, items, hooked.length, fields.length);
+        if (items.length == 0) return null;
         LootPool.Builder builder = LootPool.lootPool();
         double weight = 0;
         int added = 0;

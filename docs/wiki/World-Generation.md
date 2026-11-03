@@ -222,7 +222,12 @@ upper), and reading a door back gives the nearest 1.7.10 metadata. `placeDoorAtC
 unchanged and `ItemDoor.placeDoorBlock` picks the hinge from the neighbours, both as in 1.7.10; `getMetadataWithOffset` follows
 1.7.10's table exactly (its modes 1 and 3 mirror the piece, so directional blocks, ladders and pistons there are no plain rotation).
 Chests that legacy structures fill from a Forge `ChestGenHooks` category get the matching modern
-loot table, so the pack's loot applies. Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
+loot table, so the pack's loot applies. `ChestGenHooks.addItem` additions become an extra pool on that table
+(`ChestLootBridge1710`), and so do entries a mod puts straight into a piece class's chest array (`ChestCorridor.strongholdChestContents`,
+`Library.strongholdLibraryChestContents`, `RoomCrossing.strongholdRoomCrossingChestContents`, `StructureMineshaftPieces.Corridor.mineshaftChestContents`,
+`House2.villageBlacksmithChestContents`, `DesertPyramid.itemsToGenerateInTemple`, `JunglePyramid.junglePyramidsChestContents`,
+`StructureNetherBridgePieces.Piece.field_111019_a` -> `chests/nether_bridge`): the arrays start empty and the live field is read when the table loads
+(`StructureChestFields`). Forge fluids (`BlockFluidClassic`/`Finite`, `ItemFluidContainer`) flow by scheduled ticks and are drawn
 by a built-in renderer; every legacy `Fluid` also gets a modern fluid, and fluid tanks of legacy tiles and containers
 are exposed as NeoForge `FluidHandler` capabilities. `Keyboard`, `Mouse` and `KeyBinding` read the modern window and
 register with the controls screen. ForgeMultipart's runtime mixin compiler works (Scala signatures of translated classes are rewritten to the relocated names, and ASM 5's lenient descriptor parsing is kept). Shaders written for the fixed-function pipeline are virtual (they compile "successfully"
