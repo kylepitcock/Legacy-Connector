@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Compatibility list and wiki
+    url: https://kylepitcock.github.io/Legacy-Connector/
+    about: Check whether your mod is already listed, and read the troubleshooting notes, before opening a report.

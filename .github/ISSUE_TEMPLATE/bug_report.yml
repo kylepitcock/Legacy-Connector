@@ -1,0 +1,81 @@
+name: Bug report
+description: Something in Legacy Connector itself is broken (crash, wrong behaviour, performance). For a specific legacy mod, use "Compatibility report" instead.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Reports without logs usually cannot be fixed
+        Please attach these files from your Minecraft folder (drag and drop them into the boxes below; zip them if they are too big):
+        - **`logs/latest.log`** — always. It is overwritten on every launch, so copy it **before** you restart the game.
+        - **`logs/legacyconnector-report.txt`** — the translation report.
+        - the newest file in **`crash-reports/`** if the game crashed.
+
+        Do not paste the text of a log into the form; attach the file.
+
+  - type: textarea
+    id: bug
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what happened instead. Screenshots welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Create a new world
+        2. ...
+
+  - type: input
+    id: legacyconnector-version
+    attributes:
+      label: Legacy Connector version
+      description: It is also printed at the top of logs/legacyconnector-report.txt.
+      placeholder: "0.3.16"
+    validations:
+      required: true
+
+  - type: input
+    id: neoforge-version
+    attributes:
+      label: NeoForge version
+      placeholder: "21.1.265"
+    validations:
+      required: true
+
+  - type: textarea
+    id: mods
+    attributes:
+      label: Legacy mods and other mods installed
+      description: A short list is best.
+
+  - type: textarea
+    id: latest-log
+    attributes:
+      label: latest.log (attach the file)
+      description: Drag `logs/latest.log` into this box from the run where the bug happened. Zip it if GitHub refuses it.
+      placeholder: Drag logs/latest.log here (it appears as a link)
+    validations:
+      required: true
+
+  - type: textarea
+    id: report
+    attributes:
+      label: legacyconnector-report.txt and crash report (attach the files)
+      description: Drag `logs/legacyconnector-report.txt` and, if the game crashed, the newest file from `crash-reports/`.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I attached logs/latest.log from the run where the bug happened (not pasted as text).
+          required: true
+        - label: I searched existing issues.
+          required: true

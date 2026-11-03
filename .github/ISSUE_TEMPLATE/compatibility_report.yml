@@ -7,7 +7,15 @@ body:
     attributes:
       value: |
         Thanks for testing! One report per mod (or per mod + its required libraries) keeps things easy to track.
-        Legacy Connector writes a report of every legacy jar it translated to **`logs/legacyconnector-report.txt`** — please attach it.
+
+        ## Reports without logs usually cannot be fixed
+        Please attach these files from your Minecraft folder (drag and drop them into the boxes at the bottom of this form; if a file is too big, zip it first):
+        - **`logs/latest.log`** — always, even if the game did not crash. It names missing textures, models and errors.
+        - **`logs/legacyconnector-report.txt`** — the translation report.
+        - the newest file in **`crash-reports/`** if the game crashed.
+
+        Copy the logs **right after** the problem happened and **before** you restart the game: `latest.log` is overwritten on every launch.
+        Do not paste the text of a log into the form; attach the file.
 
   - type: input
     id: mod
@@ -105,24 +113,28 @@ body:
   - type: textarea
     id: report
     attributes:
-      label: legacyconnector-report.txt
-      description: Drag the file from `logs/legacyconnector-report.txt` here, or paste the section for this mod.
-      render: text
+      label: legacyconnector-report.txt (attach the file)
+      description: Drag `logs/legacyconnector-report.txt` into this box. Attach the file; do not paste its text.
+      placeholder: Drag the file here (it appears as a link)
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: latest.log and crash report
-      description: Drag `logs/latest.log` and, if the game crashed, the newest file from `crash-reports/` here. Please don't paste whole logs inline.
-
+      label: latest.log (attach the file) and crash report
+      description: Drag `logs/latest.log` into this box, from the run where the problem happened (it is overwritten on the next launch). If the game crashed, also drag the newest file from `crash-reports/`. If GitHub refuses the file, zip it. Do not paste the log text.
+      placeholder: Drag logs/latest.log here (it appears as a link)
+    validations:
+      required: true
   - type: checkboxes
     id: checks
     attributes:
       label: Checklist
       options:
         - label: I searched existing issues for this mod and version.
+          required: true
+        - label: I attached logs/latest.log from the run where the problem happened (not pasted as text).
           required: true
         - label: I tested with the newest Legacy Connector build.
         - label: I tested with only this mod (and its required libraries) installed.
