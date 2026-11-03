@@ -510,7 +510,31 @@
     sel.onchange = function () { state.run = runs[+sel.value]; state.kind = "all"; state.pShown = PAGE_PROBE; renderChart(); renderPList(); renderRunInfo(); };
     renderRunInfo();
   }
-  function renderRunInfo() { $("runinfo").textContent = state.run ? total(state.run.counts) + " mods tested" : ""; }
+  function renderRunInfo() {
+    var host = $("runinfo");
+    host.textContent = "";
+    var r = state.run;
+    if (!r) return;
+    host.appendChild(document.createTextNode(total(r.counts) + " mods checked"));
+    // what changed since the previous run of this version (probe.py "vs"): fixed and regressed mods, so a release that breaks a mod is visible
+    if (r.vs) {
+      var fixed = r.vs.fixedCount || 0, bad = r.vs.regressedCount || 0;
+      var tip = function (list) { return list.map(function (x) { return x[0]; }).join(", "); };
+      var up = el("span", "delta up", " \u25B2 " + fixed + " fixed"); up.title = fixed ? tip(r.vs.fixed) : "nothing changed for the better";
+      var down = el("span", "delta down", " \u25BC " + bad + " got worse"); down.title = bad ? tip(r.vs.regressed) : "nothing got worse";
+      host.appendChild(document.createTextNode(" \u00B7 since " + (r.vs.version ? "Connector " + r.vs.version + ", " : "") + r.vs.date + ":"));
+      host.appendChild(up); host.appendChild(document.createTextNode(","));
+      host.appendChild(down);
+    }
+    // the environment the run used, for telling a change of status from a change of tooling
+    if (r.env) {
+      var bits = [];
+      if (r.env.neoforge) bits.push("NeoForge " + r.env.neoforge);
+      if (r.env.shim) bits.push("shim " + r.env.shim);
+      if (r.env.jars) bits.push(r.env.jars + " jars");
+      if (bits.length) { var e = el("div", "small"); e.style.marginTop = "4px"; e.textContent = "Run environment: " + bits.join(" \u00B7 "); host.appendChild(e); }
+    }
+  }
 
   function setKind(k) { state.kind = state.kind === k ? "all" : k; state.pShown = PAGE_PROBE; renderChart(); renderPList(); }
 

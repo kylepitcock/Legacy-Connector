@@ -125,3 +125,13 @@ python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # con
 - **CI.** `.github/workflows/probe.yml` runs fetch + probe for 1.7.10 and 1.12.2 on every published release, weekly and on demand
   (`workflow_dispatch`, input `limit`), then commits `docs/data/mods.json` and `docs/data/probe.json`. The jars exist only on the runner.
   Local runs against your own corpus (`test-mods2`) work the same way, only the committed results matter.
+
+## Keeping the core mod-agnostic
+
+Fixes are generic first (see `CLAUDE.md`). `tools/dev/check_mod_specific.py` enforces it: it scans the Java sources (comments ignored) for the
+names in `tools/dev/mod-names.txt` and fails when one appears outside the designated places, which are any `compat/` package and the shim of
+another mod's API (`legacyconnector/v*/codechicken`, `cofh`, `baubles`, `thaumcraft`, ...). Mentions that existed when the check was added are frozen
+in `tools/dev/mod-specific-baseline.txt` per file and can only go down: `python3 tools/dev/check_mod_specific.py --update` lowers the numbers after you
+remove some. A new mod-specific fix goes under a `compat/` package, labelled and keyed by mod id, so it stays easy to remove. If outside contributors
+start sending per-mod fixes, the next step is a plugin interface plus a separate optional jar for them (how Sinytra Connector does it with ConnectorExtras).
+

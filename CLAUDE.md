@@ -28,6 +28,9 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
 - **Fix generically first.** Make old mods work by implementing or synthesizing the legacy MC/Forge API (shim, bridges,
   synth). A mod-specific fix is allowed only when no umbrella fix works and the mod is popular; keep it minimal, isolated
   (own class, labelled, keyed by mod id) and easy to remove.
+  **Enforced:** `tools/dev/check_mod_specific.py` (part of `./gradlew check`) fails when a specific mod's name (`tools/dev/mod-names.txt`) shows up in the
+  core outside a `compat/` package or the shim of another mod's API; existing mentions are frozen in `tools/dev/mod-specific-baseline.txt` and can only
+  go down (`--update` lowers it). Put mod-specific code under a `compat/` package.
 - The CurseForge/Modrinth description pages come from `.github/description/description.md` (`sync-description.yml` pushes it to Modrinth on
   master; CurseForge has no description API, so its rendering is a workflow artifact to paste). Whenever you update `README.md`, update that file too.
 - Every report line the layer prints for a mod ends up on the compatibility site (`docs/`), so keep

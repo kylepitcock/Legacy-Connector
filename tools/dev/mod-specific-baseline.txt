@@ -1,0 +1,8 @@
+# Existing mentions of specific mods outside the designated places (see check_mod_specific.py). Only ever lower these.
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/LegacyModDecl.java	2
+loader/src/main/java/org/kylepitcock/legacyconnector/loader/transform/Ae2CoremodConfig.java	1
+src/main/java/org/kylepitcock/legacyconnector/LegacyConnector.java	1
+src/main/java/org/kylepitcock/legacyconnector/core/Ids.java	2
+src/main/java/org/kylepitcock/legacyconnector/core/LegacyConfig.java	5
+src/main/java/org/kylepitcock/legacyconnector/v1_7_10/bridge/ForeignEnergy1710.java	8
+src/main/java/org/kylepitcock/legacyconnector/v1_7_10/client/WorldScreenshotTest.java	2

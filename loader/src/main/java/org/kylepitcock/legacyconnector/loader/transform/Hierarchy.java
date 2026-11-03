@@ -125,9 +125,24 @@ public final class Hierarchy {
         if (info != null) return info;
         if (isSynth(name)) return synthInfo(name);
         info = peers.get(name);
-        if (info != null) return info;
+        if (info != null) {
+            // A mod that shades a (often minimized, method-stripped) copy of a common library must not hide the real one from the other mods:
+            // at runtime the game's own library is the one that loads (see SplitPackageResolver).
+            if (isRuntimeLibrary(name)) {
+                ClassInfo real = LIBRARY_CACHE.computeIfAbsent(name, this::loadLibrary).orElse(null);
+                if (real != null) return real;
+            }
+            return info;
+        }
         if (name.startsWith("[")) return null;
         return LIBRARY_CACHE.computeIfAbsent(name, this::loadLibrary).orElse(null);
+    }
+
+    /** Packages of libraries the game itself ships, which mods commonly bundle (shaded or not). */
+    private static boolean isRuntimeLibrary(String internalName) {
+        return internalName.startsWith("org/apache/") || internalName.startsWith("com/google/") || internalName.startsWith("org/objectweb/asm/")
+                || internalName.startsWith("io/netty/") || internalName.startsWith("org/slf4j/") || internalName.startsWith("it/unimi/")
+                || internalName.startsWith("com/mojang/");
     }
 
     private Optional<ClassInfo> loadLibrary(String name) {

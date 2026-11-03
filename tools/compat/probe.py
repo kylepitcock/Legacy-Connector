@@ -2,7 +2,7 @@
 """Link probe: translates a directory of legacy mod jars offline (no game) and adds the result to docs/data/mods.json,
 like the Sinytra Connector compatibility checker does for Fabric.
 
-usage: probe.py <jar-dir> [--mc 1.7.10] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history]
+usage: probe.py <jar-dir> [--mc 1.7.10] [--date YYYY-MM-DD] [--version <layer version>] [--json out.json] [--dry-run] [--no-history] [--fail-on-regression]
        probe.py --from-json probe.json [...]     (convert an earlier run without translating again)
 
 The jars are only read (test-mods/ stays gitignored, never commit or redistribute them); only results are written.
@@ -132,6 +132,43 @@ def merge(records, mc, date, layer):
     return data, added, refreshed, skipped
 
 
+RANK = {"links": 0, "stubs": 1, "gap_shim": 2, "gap_mod": 2, "gap_lib": 2, "unresolved": 2}   # worse is higher; "obsolete" is not compared
+MAX_CHANGES = 100
+
+
+def environment(layer, jars):
+    """What the result was produced with, so a change of status can be told apart from a change of tooling."""
+    import hashlib
+    env = {"layer": layer, "jars": jars}
+    props = ROOT / "gradle.properties"
+    if props.exists():
+        for line in props.read_text(encoding="utf-8").splitlines():
+            for key, name in (("neo_version=", "neoforge"), ("minecraft_version=", "minecraft")):
+                if line.startswith(key):
+                    env[name] = line[len(key):].strip()
+    index = ROOT / "build" / "generated" / "shimIndex" / "legacyconnector" / "shim-index.txt"
+    if index.exists():
+        env["shim"] = hashlib.sha1(index.read_bytes()).hexdigest()[:12]   # changes whenever the hand-written shim does
+    return env
+
+
+def compare(previous, rows):
+    """Per-mod status changes against the previous run of the same Minecraft version: {"regressed": [[name, from, to]], "fixed": [...]}."""
+    old = {r[0].lower(): r[2] for r in previous["mods"]}
+    out = {"date": previous["date"], "version": previous.get("version", ""), "regressed": [], "fixed": []}
+    for name, version, k, _ in rows:
+        was = old.get(name.lower())
+        if was is None or was not in RANK or k not in RANK or was == k:
+            continue
+        if RANK[k] > RANK[was]:
+            out["regressed"].append([name, was, k])
+        elif RANK[k] < RANK[was]:
+            out["fixed"].append([name, was, k])
+    out["regressedCount"], out["fixedCount"] = len(out["regressed"]), len(out["fixed"])
+    out["regressed"], out["fixed"] = out["regressed"][:MAX_CHANGES], out["fixed"][:MAX_CHANGES]
+    return out
+
+
 def history(records, mc, date, layer):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
@@ -151,14 +188,20 @@ def history(records, mc, date, layer):
     rows.sort(key=lambda x: x[0].lower())
     h = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else {"runs": []}
     h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer)]
-    h["runs"].append({"mc": mc, "date": date, "version": layer, "counts": counts, "mods": rows})
+    prior = [x for x in h["runs"] if x["mc"] == mc and x.get("mods")]
+    prior.sort(key=lambda x: (x["date"], x["version"]))
+    vs = compare(prior[-1], rows) if prior else None
+    run = {"mc": mc, "date": date, "version": layer, "counts": counts, "env": environment(layer, len(records)), "mods": rows}
+    if vs:
+        run["vs"] = vs
+    h["runs"].append(run)
     h["runs"].sort(key=lambda x: (x["mc"], x["date"], x["version"]))
     seen = {}
     for x in reversed(h["runs"]):
         seen[x["mc"]] = seen.get(x["mc"], 0) + 1
         if seen[x["mc"]] > KEEP_MODS:
             x["mods"] = []
-    return h, counts
+    return h, counts, vs
 
 
 def main():
@@ -170,6 +213,7 @@ def main():
     ap.add_argument("--json", help="keep the raw probe records here")
     ap.add_argument("--from-json", help="skip translation, convert this probe file")
     ap.add_argument("--no-history", action="store_true", help="do not add the run to docs/data/probe.json")
+    ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
     a = ap.parse_args()
     if a.from_json:
@@ -189,10 +233,16 @@ def main():
     if not a.dry_run and (added or refreshed):
         DATA.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     if not a.no_history:
-        h, c = history(records, a.mc, a.date, a.version)
+        h, c, vs = history(records, a.mc, a.date, a.version)
         print(f"run {a.mc} {a.version or '-'} {a.date}: " + ", ".join(f"{v} {k}" for k, v in c.items()))
         if not a.dry_run:
             HISTORY.write_text(json.dumps(h, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        if vs:
+            print(f"since {vs['date']} {vs['version'] or ''}: {vs['fixedCount']} fixed, {vs['regressedCount']} regressed")
+            for name, was, now in vs["regressed"]:
+                print(f"  REGRESSED {name}: {was} -> {now}")
+            if a.fail_on_regression and vs["regressedCount"]:
+                sys.exit(2)
 
 
 main()

@@ -1,0 +1,46 @@
+# Names of specific mods whose mention outside the designated places counts as mod-specific code (tools/dev/check_mod_specific.py).
+# Whole words, case-insensitive. Deliberately not listed: libraries the layer bridges by design (nei, waila, baubles, cofh, codechickenlib),
+# and generic words that are also mod names (create).
+thaumcraft
+botania
+industrialcraft
+ic2
+buildcraft
+forestry
+mekanism
+enderio
+tinkers
+chisel
+galacticraft
+twilightforest
+witchery
+bloodmagic
+projectred
+railcraft
+immersiveengineering
+appliedenergistics
+ae2
+thermalexpansion
+thermalfoundation
+computercraft
+opencomputers
+rotarycraft
+reactorcraft
+chromaticraft
+hbm
+orespawn
+customnpc
+gregtech
+draconicevolution
+avaritia
+extrautilities
+biomesoplenty
+natura
+mystcraft
+atum
+lycanites
+flansmod
+minefactoryreloaded
+pneumaticcraft
+journeymap
+twilight

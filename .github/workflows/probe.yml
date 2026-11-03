@@ -42,10 +42,13 @@ jobs:
         run: |
           chmod +x gradlew
           VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          # a mod that got worse than in the previous run fails the job, but only after the results are committed (next step)
+          REGRESSED=0
           for MC in 1.7.10 1.12.2; do
             python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit "$LIMIT"
-            python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION"
+            python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION" --fail-on-regression || REGRESSED=1
           done
+          echo "REGRESSED=$REGRESSED" >> "$GITHUB_ENV"
 
       - name: Commit results
         run: |
@@ -56,3 +59,9 @@ jobs:
           git commit -m "Update automated compatibility results"
           git pull --rebase
           git push
+
+      - name: Fail on regressions
+        if: env.REGRESSED == '1'
+        run: |
+          echo "::error::Some mods got worse than in the previous probe run; see the REGRESSED lines in the Probe step and docs/data/probe.json"
+          exit 1
