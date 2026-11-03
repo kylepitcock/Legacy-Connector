@@ -92,6 +92,8 @@ public final class LegacyConnector {
                     org.kylepitcock.legacyconnector.v1_12_2.bridge.GuiBridge1122::clientMenu));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
+                container.getModInfo().getVersion());
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();
         org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
         org.kylepitcock.legacyconnector.core.EntityCensus.register();

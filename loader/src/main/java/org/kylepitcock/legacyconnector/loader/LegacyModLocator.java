@@ -101,6 +101,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 pipeline.addPath(runtimeJar, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
 
+            LOG.info("Legacy Connector {} (loader) starting", Provenance.translatorVersion());
             ShimIndex index = loadShimIndex(runtimeJar);
             LOG.info("Legacy Connector: shim index has {} legacy API classes", index.size());
 
@@ -637,7 +638,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         try {
             Files.createDirectories(report.getParent());
             try (Writer w = Files.newBufferedWriter(report, StandardCharsets.UTF_8)) {
-                w.write("Legacy Connector legacy mod report - " + LocalDateTime.now() + "\n");
+                w.write("Legacy Connector " + Provenance.translatorVersion() + " legacy mod report - " + LocalDateTime.now() + "\n");
                 w.write("=".repeat(78) + "\n\n");
                 for (var e : outcomes.entrySet()) {
                     LegacyJar jar = e.getKey();
