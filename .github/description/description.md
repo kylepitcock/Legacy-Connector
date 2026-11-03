@@ -210,6 +210,10 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.16.5** → **1.2.5**
 
+## Star history
+
+[![Star History Chart](https://api.star-history.com/svg?repos=kylepitcock/Legacy-Connector&type=Date)](https://star-history.com/#kylepitcock/Legacy-Connector&Date)
+
 ---
 
 **Legal:** Legacy Connector is released under the MIT License. It contains no Minecraft, Forge or third-party mod code. You supply your own mod jars; please don't redistribute them.
