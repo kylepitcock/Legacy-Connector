@@ -98,6 +98,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.core.LegacyLogFilter.install();
         org.kylepitcock.legacyconnector.core.EntityCensus.register();
         org.kylepitcock.legacyconnector.core.LegacyCrashInfo.register();
+        org.kylepitcock.legacyconnector.core.SilentFailureChecks.register();
         LegacyMods.registerPlatform(new Platform1710());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
 
