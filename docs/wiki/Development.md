@@ -101,6 +101,18 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   (items, fluids, RF), persistence across a restart (`persist`, run twice) and the handbook data. Jars go in `run-subtest/mods/1.7.10`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
 
+## Silent-failure checks
+
+The server self test (`-Dlegacyconnector.entitySelfTest=true`, on in `runServerSubTest`) also runs `core/SilentFailureChecks` once at server start. They are read-only and target bugs that crash nothing and log nothing, which link and translation checks cannot see (Sinytra Connector's "attribute registration bypassed, SWIM_SPEED stayed 0, nobody can swim" class). Output: `SILENT FAILURE CHECKS: N passed, M failed`, then one `SILENT FAILURE CHECK FAILED: <check>: <offenders by registry name>` line at ERROR level per failing check (`tools/dev/run-subset.sh` prints them). Add `-Dlegacyconnector.selfTestFailFast=true` to halt the JVM with exit code 3 on any failure.
+
+What is asserted:
+
+- Attributes: the default attribute map of every legacy living-entity host type of both versions (and the player map) exists and has a positive base value for max health, movement speed, step height, gravity, safe fall distance, fall damage multiplier, scale, NeoForge `SWIM_SPEED` and `NAMETAG_DISTANCE`, plus follow range and attack damage for mobs (attack damage and block break speed for the player).
+- Network: no `legacyconnector` payload is registered for the configuration phase (login-phase payloads are not possible through NeoForge's registrar; a handler in either early phase would break proxies and vanilla-compatible joins), the play-phase `LegacyPayload` is registered, encoding a `LegacyPayload` twice gives identical bytes (NeoForge's packet splitter may run an encoder more than once), encoding does not mutate the payload, and decode(encode(p)) equals p.
+- Registries: every host entity type is registered under its host id; every non-vanilla block has a default state, every non-vanilla item is not air and has a non-empty default stack, block items place registered blocks, and every non-vanilla sound event resolves to its own location.
+
+Not covered: music and sound playback (client only; a global hook that cancels or swallows sound events cannot be seen on a dedicated server), proxy login (Velocity modern forwarding needs a real proxy), client rendering (missing models, renderers, textures; see the screenshot tests).
+
 ## Link probe (automated compatibility results)
 
 Like the Sinytra Connector checker, `tools/compat/probe.py` translates mod jars offline, without starting the game, and records whether every

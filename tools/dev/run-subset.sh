@@ -24,15 +24,18 @@ rm -rf $D/world
 [[ -n $LEVELTYPE ]] && sed -i '' "s#^level-type=.*#level-type=${LEVELTYPE//:/\\\\:}#" $D/server.properties
 [[ -z $LEVELTYPE ]] && sed -i '' 's#^level-type=.*#level-type=minecraft\\:normal#' $D/server.properties
 ./gradlew runServerSubTest > build/devtools/subtest.log 2>&1 &
+GPID=$!
 for i in $(seq 1 144); do
   sleep 5
   grep -q -E "BLOCK SELF TEST|Exception generating new chunk" $D/logs/latest.log 2>/dev/null && { sleep ${AFTER:-10}; break; }
   grep -q -E "BUILD (SUCCESSFUL|FAILED)" build/devtools/subtest.log && break
 done
-pkill -f serverSubTestRunProgramArgs; sleep 3; pkill -9 -f serverSubTestRunProgramArgs
+# kill only the server started here: the one whose working directory is this checkout's run-subtest
+for p in $(pgrep -f serverSubTestRunProgramArgs); do [[ "$(lsof -p $p 2>/dev/null | awk '/ cwd /{print $NF}')" == "$PWD/$D" ]] && kill $p; done; sleep 3
+for p in $(pgrep -f serverSubTestRunProgramArgs); do [[ "$(lsof -p $p 2>/dev/null | awk '/ cwd /{print $NF}')" == "$PWD/$D" ]] && kill -9 $p; done
 wait
 L=$D/logs/latest.log
-grep -E "Legacy mods loaded|Legacy content:|LegacyTest SUMMARY|ENTITY SELF TEST|WORLDGEN SELF TEST" $L | cut -c40-300
+grep -E "Legacy mods loaded|Legacy content:|LegacyTest SUMMARY|ENTITY SELF TEST|SILENT FAILURE CHECK|WORLDGEN SELF TEST" $L | cut -c40-300
 echo "--- mod failures"
 grep -E "\] \[LegacyConnector/\]: Legacy mod .* failed during" $L | sed -E 's/.*Legacy mod ([^ ]+) \(.*failed during ([a-zA-Z]+): (.*)/  \1 \2: \3/' | cut -c1-260 | sort -u
 grep -A12 "DIMENSION SELF TEST" $L | head -14 | cut -c40-300
