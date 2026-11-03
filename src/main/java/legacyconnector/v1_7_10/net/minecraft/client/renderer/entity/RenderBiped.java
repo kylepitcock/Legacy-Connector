@@ -70,6 +70,16 @@ public class RenderBiped extends RenderLiving {
     /** Vanilla's armour pass order: 0 helmet, 1 chestplate, 2 leggings, 3 boots (equipment slots 4..1). */
     @Override
     protected int shouldRenderPass(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, int pass, float partialTicks) {
+        return entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving living ? shouldRenderPass(living, pass, partialTicks)
+                : mcc$armorPass(entity, pass);
+    }
+
+    /** 1.7.10's {@code RenderBiped.shouldRenderPass}: the armour pass, which mods' renderers override and call. */
+    protected int shouldRenderPass(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving entity, int pass, float partialTicks) {
+        return mcc$armorPass(entity, pass);
+    }
+
+    private int mcc$armorPass(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity, int pass) {
         legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack = entity.getEquipmentInSlot(4 - pass);
         if (stack == null || !(stack.getItem() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemArmor armor)) return -1;
         if (armor.armorType != pass) return -1;
