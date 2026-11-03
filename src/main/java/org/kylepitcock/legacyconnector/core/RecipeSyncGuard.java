@@ -2,7 +2,6 @@ package org.kylepitcock.legacyconnector.core;
 
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.neoforged.neoforge.common.NeoForge;
@@ -34,20 +33,24 @@ public final class RecipeSyncGuard {
         }
         if (dropped.isEmpty()) return;
         manager.replaceRecipes(keep);
-        LOG.warn("Dropped {} recipe(s) with empty item stacks (clients cannot receive them): {}", dropped.size(), dropped);
+        LOG.warn("Dropped {} recipe(s) that cannot be encoded (empty item stacks; clients cannot receive them): {}", dropped.size(), dropped);
     }
 
+    /** A recipe is sendable when it encodes with its own serializer: the true test, and it keeps recipes of other mods
+     * whose results are not item stacks (CustomMachinery machine recipes have an empty result item). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private static boolean sendable(RecipeHolder<?> holder, net.minecraft.core.RegistryAccess access) {
         try {
             var recipe = holder.value();
-            if (recipe.getResultItem(access).isEmpty() && !recipe.isSpecial()) return false;
-            for (Ingredient ing : recipe.getIngredients()) {
-                if (ing.isCustom()) continue;
-                for (var stack : ing.getItems()) if (stack.isEmpty()) return false;
+            var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), access);
+            try {
+                ((net.minecraft.network.codec.StreamCodec) recipe.getSerializer().streamCodec()).encode(buf, recipe);
+            } finally {
+                buf.release();
             }
             return true;
         } catch (RuntimeException e) {
-            return true; // not ours to judge
+            return false;
         }
     }
 }
