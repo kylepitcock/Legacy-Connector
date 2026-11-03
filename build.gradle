@@ -362,6 +362,9 @@ tasks.register('bundleJar', Jar) {
     dependsOn loaderJar, runtimeJar, syncLegacyLibs
     from(layout.buildDirectory.dir('legacy-libs')) {
         into 'META-INF/legacyconnector/libs'
+        // Stored as *.jar.bin (BundledLibraries.read adds the suffix): CurseForge's upload scan sent every release since 0.3.11 to manual
+        // review once these sat as plain nested .jar files (Scala, Akka, ...) one level below the top of the file.
+        rename { it.endsWith('.jar') ? it + '.bin' : it }
     }
     from({ zipTree(loaderJar.get().archiveFile) }) {
         exclude 'META-INF/MANIFEST.MF'
