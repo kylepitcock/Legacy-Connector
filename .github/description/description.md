@@ -45,6 +45,9 @@ All taken in a real game client on NeoForge 1.21.1, with unmodified 1.7.10 mods 
 
 ![A Thaumcraft workshop](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumcraft-workshop.png)
 
+**Scanning stone with the Thaumometer, held in both hands (Complementary shaders)**
+![Scanning with the Thaumometer](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/thaumometer.png)
+
 **A Create Aeronautics airship (Sable physics) carrying 1.7.10 blocks: Thaumcraft essentia jars, crucible and arcane workbench, an Iron Chest, a RotaryCraft engine and ChromatiCraft crystals**
 
 ![A Create Aeronautics airship](https://raw.githubusercontent.com/kylepitcock/Legacy-Connector/master/docs/images/create-aeronautics-ship.png)
