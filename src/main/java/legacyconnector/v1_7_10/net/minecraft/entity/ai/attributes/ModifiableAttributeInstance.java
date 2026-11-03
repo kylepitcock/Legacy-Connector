@@ -2,22 +2,33 @@ package legacyconnector.v1_7_10.net.minecraft.entity.ai.attributes;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
-/** Attribute instance held by the legacy object itself (mod-defined attributes with no modern counterpart). */
+/**
+ * Attribute instance held by the legacy object itself (mod-defined attributes with no modern counterpart). Keeps 1.7.10's
+ * bookkeeping: modifiers indexed by operation, name and UUID, a cached value, and the "changed since last sync" flag that
+ * puts the instance into the owning map's update set.
+ */
 public class ModifiableAttributeInstance implements IAttributeInstance {
     private final BaseAttributeMap attributeMap;
     private final IAttribute genericAttribute;
-    private final Map<UUID, AttributeModifier> modifiers = new LinkedHashMap<>();
+    private final Map<Integer, Set<AttributeModifier>> mapByOperation = new HashMap<>();
+    private final Map<String, Set<AttributeModifier>> mapByName = new HashMap<>();
+    private final Map<UUID, AttributeModifier> mapByUUID = new LinkedHashMap<>();
     private double baseValue;
+    private boolean needsUpdate = true;
+    private double cachedValue;
 
     public ModifiableAttributeInstance(BaseAttributeMap map, IAttribute attribute) {
         this.attributeMap = map;
         this.genericAttribute = attribute;
         this.baseValue = attribute.getDefaultValue();
+        for (int i = 0; i < 3; i++) mapByOperation.put(i, new HashSet<>());
     }
 
     @Override
@@ -32,7 +43,9 @@ public class ModifiableAttributeInstance implements IAttributeInstance {
 
     @Override
     public void setBaseValue(double value) {
+        if (value == this.baseValue) return;
         this.baseValue = value;
+        flagForUpdate();
     }
 
     @Override
@@ -42,40 +55,66 @@ public class ModifiableAttributeInstance implements IAttributeInstance {
     }
 
     public Collection<AttributeModifier> getModifiersByOperation(int operation) {
-        List<AttributeModifier> out = new ArrayList<>();
-        for (AttributeModifier m : modifiers.values()) if (m.getOperation() == operation) out.add(m);
-        return out;
+        Set<AttributeModifier> set = mapByOperation.get(operation);
+        return set == null ? new ArrayList<>() : new ArrayList<>(set);
     }
 
     @Override
     public Collection<AttributeModifier> func_111122_c() {
-        return new ArrayList<>(modifiers.values());
+        return new ArrayList<>(mapByUUID.values());
     }
 
     @Override
     public AttributeModifier getModifier(UUID id) {
-        return modifiers.get(id);
+        return mapByUUID.get(id);
     }
 
     @Override
     public void applyModifier(AttributeModifier modifier) {
-        if (modifiers.containsKey(modifier.getID())) throw new IllegalArgumentException("Modifier is already applied on this attribute!");
-        modifiers.put(modifier.getID(), modifier);
+        if (mapByUUID.containsKey(modifier.getID())) throw new IllegalArgumentException("Modifier is already applied on this attribute!");
+        mapByName.computeIfAbsent(modifier.getName(), k -> new HashSet<>()).add(modifier);
+        mapByOperation.computeIfAbsent(modifier.getOperation(), k -> new HashSet<>()).add(modifier);
+        mapByUUID.put(modifier.getID(), modifier);
+        flagForUpdate();
+    }
+
+    /** 1.7.10: marks the cached value stale and queues this instance for the next attribute sync. */
+    protected void flagForUpdate() {
+        this.needsUpdate = true;
+        this.attributeMap.addInstanceToUpdate(this);
     }
 
     @Override
     public void removeModifier(AttributeModifier modifier) {
-        modifiers.remove(modifier.getID());
+        for (int op = 0; op < 3; op++) {
+            Set<AttributeModifier> set = mapByOperation.get(op);
+            if (set != null) set.remove(modifier);
+        }
+        Set<AttributeModifier> named = mapByName.get(modifier.getName());
+        if (named != null) {
+            named.remove(modifier);
+            if (named.isEmpty()) mapByName.remove(modifier.getName());
+        }
+        mapByUUID.remove(modifier.getID());
+        flagForUpdate();
     }
 
     @Override
     public void removeAllModifiers() {
-        modifiers.clear();
+        for (AttributeModifier m : func_111122_c()) removeModifier(m);
+    }
+
+    @Override
+    public double getAttributeValue() {
+        if (needsUpdate) {
+            cachedValue = computeValue();
+            needsUpdate = false;
+        }
+        return cachedValue;
     }
 
     /** 1.7.10 order: additions, then multiples of the base, then multiples of the running total; then clamped. */
-    @Override
-    public double getAttributeValue() {
+    private double computeValue() {
         double v = baseValue;
         for (AttributeModifier m : func_111130_a(0)) v += m.getAmount();
         double total = v;

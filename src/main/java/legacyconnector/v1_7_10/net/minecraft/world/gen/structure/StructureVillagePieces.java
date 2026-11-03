@@ -281,6 +281,10 @@ public class StructureVillagePieces {
     }
 
     public static class House2 extends Village {
+        /** 1.7.10 {@code field_74918_a}: the smithy chest; additions end up in the loot table (see StructureChestFields). */
+        public static legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent[] villageBlacksmithChestContents =
+                new legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent[0];
+
         public House2() {
         }
 

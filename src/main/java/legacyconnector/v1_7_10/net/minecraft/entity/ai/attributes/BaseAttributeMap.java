@@ -21,6 +21,10 @@ public abstract class BaseAttributeMap {
         this.mcc$entity = entity;
     }
 
+    /** 1.7.10 hook: an instance changed; the server-side map queues it for the next sync. */
+    public void addInstanceToUpdate(ModifiableAttributeInstance instance) {
+    }
+
     public IAttributeInstance getAttributeInstance(IAttribute attribute) {
         if (attribute == null) return null;
         IAttributeInstance modern = SharedMonsterAttributes.mcc$instance(mcc$entity.get(), attribute);
