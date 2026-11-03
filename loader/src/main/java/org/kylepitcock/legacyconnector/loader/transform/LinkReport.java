@@ -19,6 +19,8 @@ public final class LinkReport {
     public final Map<String, TreeSet<String>> missingLibraryMembers = new TreeMap<>();
     /** Legacy API members the shim lacks that were synthesized (they link, but do nothing yet). Informational. */
     public final Map<String, TreeSet<String>> stubbedMembers = new TreeMap<>();
+    /** Calls whose signature differs from the shim's (another return type, another constructor) and were adapted to it: real behaviour. */
+    public final Map<String, TreeSet<String>> adaptedMembers = new TreeMap<>();
     /** Legacy API classes the shim lacks, generated with their legacy supertypes. Informational. */
     public final java.util.Set<String> synthesizedClasses = new TreeSet<>();
     /** Classes found nowhere: usually optional integrations with other mods. Informational. */
@@ -34,6 +36,10 @@ public final class LinkReport {
 
     void stubbed(String owner, String member, String from) {
         stubbedMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
+    }
+
+    void adapted(String owner, String member, String from) {
+        adaptedMembers.computeIfAbsent(owner + "." + member, k -> new TreeSet<>()).add(from);
     }
 
     void externalClass(String owner, String from) {
@@ -53,6 +59,7 @@ public final class LinkReport {
         section(sb, "Missing shim members", missingShimMembers);
         section(sb, "Removed library/JDK members", missingLibraryMembers);
         section(sb, "Synthesized legacy APIs (link, but have no behaviour yet)", stubbedMembers);
+        section(sb, "Adapted to the shim's signature (real behaviour)", adaptedMembers);
         section(sb, "Unresolved external classes (optional mod integrations, usually harmless)", externalClasses);
         return sb.toString();
     }

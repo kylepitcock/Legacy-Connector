@@ -86,6 +86,32 @@ public class GuiTextField extends Gui {
         cursorPosition = text.length();
     }
 
+    /** The end of the selection: there is no selection here, so it is the cursor. */
+    public int getSelectionEnd() {
+        return cursorPosition;
+    }
+
+    /** Position of the start of the {@code n}th word from the cursor (negative n: backwards). */
+    public int getNthWordFromCursor(int n) {
+        return getNthWordFromPos(n, cursorPosition);
+    }
+
+    public int getNthWordFromPos(int n, int pos) {
+        int p = Math.max(0, Math.min(text.length(), pos));
+        boolean back = n < 0;
+        for (int k = Math.abs(n); k > 0; k--) {
+            if (back) {
+                while (p > 0 && text.charAt(p - 1) == ' ') p--;
+                while (p > 0 && text.charAt(p - 1) != ' ') p--;
+            } else {
+                int len = text.length();
+                while (p < len && text.charAt(p) != ' ') p++;
+                while (p < len && text.charAt(p) == ' ') p++;
+            }
+        }
+        return p;
+    }
+
     public int getCursorPosition() {
         return cursorPosition;
     }

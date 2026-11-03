@@ -163,6 +163,13 @@ public abstract class Entity implements ICommandSender {
     /** Phantom field: accesses are redirected to {@code mcc$get$worldObj}. */
     @Deprecated
     public World worldObj;
+    /** Whether the entity, moved by (x, y, z), would stand in free space with liquid in its box (no block in the way). */
+    public boolean isOffsetPositionInLiquid(double x, double y, double z) {
+        var box = mcc$entity.getBoundingBox().move(x, y, z);
+        var level = mcc$entity.level();
+        return level.noCollision(mcc$entity, box) && !level.containsAnyLiquid(box);
+    }
+
     /** Phantom field: accesses are redirected to {@code mcc$get$boundingBox}. */
     @Deprecated
     public AxisAlignedBB boundingBox;

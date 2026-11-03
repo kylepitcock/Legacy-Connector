@@ -36,6 +36,17 @@ public class CrashReport {
         return cause;
     }
 
+    /** Writes the report to a file; false when that fails. */
+    public boolean saveToFile(java.io.File file) {
+        try {
+            if (file.getParentFile() != null) file.getParentFile().mkdirs();
+            java.nio.file.Files.writeString(file.toPath(), getCompleteReport());
+            return true;
+        } catch (java.io.IOException e) {
+            return false;
+        }
+    }
+
     public String getCompleteReport() {
         StringBuilder sb = new StringBuilder("---- Minecraft Crash Report ----\n\nDescription: ").append(description).append("\n\n");
         if (cause != null) sb.append(cause).append('\n');

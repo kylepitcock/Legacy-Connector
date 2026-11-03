@@ -87,6 +87,25 @@ public class PotionEffect {
         this.isPotionDurationMax = max;
     }
 
+    /** One tick of an effect that is not driven by the modern game (a mod's own countdown): applies it when due and counts down. */
+    public boolean onUpdate(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        if (duration > 0) {
+            Potion p = potionID >= 0 && potionID < Potion.potionTypes.length ? Potion.potionTypes[potionID] : null;
+            if (p != null && p.isReady(duration, amplifier)) performEffect(entity);
+            deincrementDuration();
+        }
+        return duration > 0;
+    }
+
+    public void performEffect(legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        Potion p = potionID >= 0 && potionID < Potion.potionTypes.length ? Potion.potionTypes[potionID] : null;
+        if (p != null) p.performEffect(entity, amplifier);
+    }
+
+    private int deincrementDuration() {
+        return --duration;
+    }
+
     public String getEffectName() {
         Potion p = potionID >= 0 && potionID < Potion.potionTypes.length ? Potion.potionTypes[potionID] : null;
         return p != null ? p.getName() : "potion." + potionID;

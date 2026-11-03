@@ -214,6 +214,16 @@ public final class ShimLinker {
             }
         }
 
+        // A shim method that exists with another reference return type (Forge's OreDictionary.getOres(String, boolean) returned
+        // List in later 1.7.10 builds, ArrayList in the shim): call it and narrow the result instead of stubbing it.
+        if (h.isShim(m.owner)) {
+            AbstractInsnNode cast = relinkReturnType(m, h, report, from, true);
+            if (cast != null) {
+                method.instructions.insert(m, cast);
+                return m;
+            }
+        }
+
         boolean itf = m.itf || m.getOpcode() == Opcodes.INVOKEINTERFACE;
         String anchor = anchor(m.owner, h, itf);
         if (anchor == null) return null;
@@ -310,8 +320,24 @@ public final class ShimLinker {
      * declares ({@code IMutation.getAllele0()} returning {@code IAllele} became {@code IAlleleSpecies}): call the
      * one with the same name and arguments, narrowing the result back to the type the caller expects.
      */
+    private static boolean isSubtype(Hierarchy h, String type, String target, int depth) {
+        if (type.equals(target) || target.equals("java/lang/Object")) return true;
+        if (depth > 12) return false;
+        var info = h.find(type);
+        if (info == null) return false;
+        if (info.superName != null && isSubtype(h, info.superName, target, depth + 1)) return true;
+        for (String i : info.interfaces) if (isSubtype(h, i, target, depth + 1)) return true;
+        return false;
+    }
+
     private static AbstractInsnNode relinkReturnType(MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
-        if (m.owner.startsWith("[") || isShimNamespace(m.owner) || h.isLocal(m.owner) || h.isSynth(m.owner)) return null;
+        return relinkReturnType(m, h, report, from, false);
+    }
+
+    /** {@code shim}: the owner is a hand-written shim class; then the found return type must be related to the wanted one. */
+    private static AbstractInsnNode relinkReturnType(MethodInsnNode m, Hierarchy h, LinkReport report, String from, boolean shim) {
+        if (m.owner.startsWith("[") || h.isLocal(m.owner) || h.isSynth(m.owner)) return null;
+        if (isShimNamespace(m.owner) && !shim) return null;
         if (h.resolveMethod(m.owner, m.name, m.desc) != Hierarchy.Lookup.MISSING_MEMBER) return null;
         String args = m.desc.substring(0, m.desc.indexOf(')') + 1);
         Type wanted = Type.getReturnType(m.desc);
@@ -338,7 +364,11 @@ public final class ShimLinker {
             todo.addAll(info.interfaces);
         }
         if (found == null) return null;
-        report.stubbed(m.owner, m.name + m.desc + " -> " + found, from);
+        if (shim) {
+            String foundName = found.substring(1, found.length() - 1);
+            if (!isSubtype(h, foundName, wanted.getInternalName(), 0) && !isSubtype(h, wanted.getInternalName(), foundName, 0)) return null;
+        }
+        report.adapted(m.owner, m.name + m.desc + " -> " + found, from);
         m.desc = args + found;
         return new TypeInsnNode(Opcodes.CHECKCAST, wanted.getInternalName());
     }

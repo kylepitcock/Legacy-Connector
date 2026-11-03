@@ -10,6 +10,12 @@ import legacyconnector.v1_7_10.net.minecraft.util.WeightedRandom;
  * drops from); behaviour hooks the engine drives are not part of the shim.
  */
 public class ForgeHooks {
+    /** Whether the entity is on a ladder-like block (ladders, vines, mod blocks that answer {@code isLadder}). */
+    public static boolean isLivingOnLadder(legacyconnector.v1_7_10.net.minecraft.block.Block block, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            int x, int y, int z, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        return block != null && block.isLadder(world, x, y, z, entity);
+    }
+
     /** The armour points a player wears (the value the armour bar shows). */
     public static int getTotalArmorValue(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
         return player.getTotalArmorValue();

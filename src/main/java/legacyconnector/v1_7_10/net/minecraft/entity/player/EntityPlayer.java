@@ -351,6 +351,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
         mcc$player().closeContainer();
     }
 
+    /** Removes an effect on the client side only (the server tells the client). */
+    public void removePotionEffectClient(int potionId) {
+        removePotionEffect(potionId);
+    }
+
     public ChunkCoordinates getBedLocation() {
         return null;
     }

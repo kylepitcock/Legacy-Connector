@@ -163,6 +163,56 @@ public class EntityHorse extends EntityAnimal {
         return type == 1 || type == 2;
     }
 
+    /** Tames the horse for the player (a rider that tamed it); false when it is already tame. */
+    public boolean setTamedBy(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (isTame()) return false;
+        setHorseTamed(true);
+        if (player != null) func_152120_b(player.getUniqueID().toString());
+        return true;
+    }
+
+    /** Whether the horse is rearing (up on its hind legs). */
+    public boolean isRearing() {
+        var h = mcc$horse();
+        return h != null ? h.isStanding() : getHorseWatchableObjectIntAsBoolean(64);
+    }
+
+    /** Rears up with the angry whinny. */
+    public void makeHorseRearWithSound() {
+        var h = mcc$horse();
+        if (h != null) h.playSound(net.minecraft.sounds.SoundEvents.HORSE_ANGRY, 1.0F, 1.0F);
+        else setHorseWatchableBoolean(64, true);
+    }
+
+    /** The horse's jump strength (0.4 - 1.0 in 1.7.10; the modern jump strength attribute has the same scale). */
+    public double getHorseJumpStrength() {
+        var h = mcc$horse();
+        return h != null ? h.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.JUMP_STRENGTH) : 0.7D;
+    }
+
+    /** Saddles the horse (or takes the saddle off). */
+    public void setHorseSaddled(boolean saddled) {
+        var h = mcc$horse();
+        if (h != null) {
+            if (saddled) h.equipSaddle(new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.SADDLE), net.minecraft.sounds.SoundSource.NEUTRAL);
+            else h.getSlot(400).set(net.minecraft.world.item.ItemStack.EMPTY); // slot 400: the saddle
+        } else {
+            setHorseWatchableBoolean(4, saddled);
+        }
+    }
+
+    /** Puts horse armor on (an empty stack takes it off). */
+    public void setHorseArmorStack(ItemStack armor) {
+        var h = mcc$horse();
+        if (h != null) {
+            h.setItemSlot(net.minecraft.world.entity.EquipmentSlot.BODY, armor == null ? net.minecraft.world.item.ItemStack.EMPTY : ItemStack.mcc$toModern(armor));
+        } else {
+            int type = armor == null || armor.getItem() == null ? 0 : armor.getItem() == Items.iron_horse_armor ? 1 : armor.getItem() == Items.golden_horse_armor ? 2
+                    : armor.getItem() == Items.diamond_horse_armor ? 3 : 0;
+            dataWatcher.updateObject(22, type);
+        }
+    }
+
     /** Only horses wear armor. */
     public boolean canWearArmor() {
         return getHorseType() == 0;

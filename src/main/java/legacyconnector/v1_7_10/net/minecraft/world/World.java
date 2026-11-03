@@ -1576,6 +1576,9 @@ public class World implements IBlockAccess {
         if (level != null) level.globalLevelEvent(type, pos(x, y, z), data);
     }
 
+    /** The block changes legacy code recorded for an item use (Forge's snapshot list; the modern snapshots are separate). */
+    public java.util.ArrayList capturedBlockSnapshots = new java.util.ArrayList();
+
     /** Phantom: redirected to {@link #mcc$get$captureBlockSnapshots}. Forge's flag that block changes are being recorded for an item use. */
     @Deprecated
     public boolean captureBlockSnapshots;

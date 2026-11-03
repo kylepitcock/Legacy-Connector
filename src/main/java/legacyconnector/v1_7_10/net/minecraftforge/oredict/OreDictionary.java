@@ -143,6 +143,10 @@ public class OreDictionary {
         registerOre(name, new ItemStack(ore));
     }
 
+    public static void registerOre(int id, ItemStack ore) {
+        registerOre(getOreName(id), ore);
+    }
+
     public static void registerOre(String name, ItemStack ore) {
         if (name == null || name.isEmpty() || ore == null || ore.getItem() == null) return;
         int id = getOreID(name);

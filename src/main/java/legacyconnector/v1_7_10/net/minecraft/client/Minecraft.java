@@ -42,6 +42,9 @@ public class Minecraft {
     public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
     /** Read reflectively by mods that add a resource pack; what they add is served to the game (see LegacyResourcePacks). */
     private java.util.List defaultResourcePacks = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.DEFAULT_PACKS;
+    /** The achievement popup (mods announce achievements they award themselves). */
+    public final legacyconnector.v1_7_10.net.minecraft.client.gui.achievement.GuiAchievement guiAchievement =
+            new legacyconnector.v1_7_10.net.minecraft.client.gui.achievement.GuiAchievement();
     public final legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame ingameGUI = new legacyconnector.v1_7_10.net.minecraft.client.gui.GuiIngame();
     /** Mods replace it with their own subclass (by reflection, as it was a plain field). */
     public legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP playerController = new legacyconnector.v1_7_10.net.minecraft.client.multiplayer.PlayerControllerMP();
@@ -106,6 +109,31 @@ public class Minecraft {
     /** Whether this is the demo version of the game (it never is). */
     public boolean isDemo() {
         return false;
+    }
+
+    /** Whether the game runs fullscreen. */
+    public boolean isFullScreen() {
+        return mc().getWindow().isFullscreen();
+    }
+
+    /** Whether the caller is on the client's main (render) thread. */
+    public boolean isCallingFromMinecraftThread() {
+        return mc().isSameThread();
+    }
+
+    /** Runs the task on the client thread (now when already there); the future gives its result. */
+    public com.google.common.util.concurrent.ListenableFuture addScheduledTask(java.util.concurrent.Callable task) {
+        com.google.common.util.concurrent.SettableFuture future = com.google.common.util.concurrent.SettableFuture.create();
+        Runnable run = () -> {
+            try {
+                future.set(task.call());
+            } catch (Throwable t) {
+                future.setException(t);
+            }
+        };
+        if (mc().isSameThread()) run.run();
+        else mc().execute(run);
+        return future;
     }
 
     private static net.minecraft.client.Minecraft mc() {

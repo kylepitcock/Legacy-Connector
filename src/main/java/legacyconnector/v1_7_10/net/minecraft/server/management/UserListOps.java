@@ -33,6 +33,11 @@ public class UserListOps extends UserList<GameProfile, UserListOpsEntry> {
         return names;
     }
 
+    /** Whether the list has any operator. */
+    public boolean hasEntries() {
+        return getKeys().length > 0;
+    }
+
     /** The key of a profile: its UUID. */
     protected String func_152699_b(GameProfile profile) {
         return profile.getId().toString();
