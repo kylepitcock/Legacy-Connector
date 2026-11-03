@@ -5,14 +5,380 @@
    "date": "2026-11-03",
    "version": "0.3.17",
    "counts": {
-    "links": 54,
-    "unresolved": 11,
-    "obsolete": 3
+    "links": 640,
+    "unresolved": 171,
+    "obsolete": 28
    },
    "mods": [
     [
+     "Achievement Detection Fix",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Actually Additions",
+     "1.7.10-r21",
+     "links",
+     ""
+    ],
+    [
+     "Additions to the Outer Rim",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Backups",
+     "3.7.1",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Machines",
+     "59.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Memory Card",
+     "1.2.0-1.7.10-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Repulsion Systems",
+     "59.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Solar Panels",
+     "1.7.10-3.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Technology",
+     "0.3.2",
+     "links",
+     ""
+    ],
+    [
+     "Adventure Backpack",
+     "1.3.13-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Adventure Backpack",
+     "1.7.10-0.8d",
+     "links",
+     ""
+    ],
+    [
+     "AE2 Auto Pattern Upload Fork",
+     "ef5af28",
+     "unresolved",
+     "codechicken.nei.ItemPanel.historyPanel:Lcodechicken.nei.ItemHistoryPanel;"
+    ],
+    [
+     "AE2 Fluid Crafting",
+     "1.4.120-gtnh",
+     "unresolved",
+     "codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;"
+    ],
+    [
+     "AE2 Fluid Crafting",
+     "g92699c9",
+     "unresolved",
+     "appeng.client.me.InternalSlotME.<init>(Lappeng.client.me.ItemRepo;III)V"
+    ],
+    [
+     "AE2 Probability Pattern",
+     "@version@",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "AE2 Stuff",
+     "0.9.9-GTNH",
+     "unresolved",
+     "net.bdew.ae2stuff.nei.EncoderOverlayHandler$.canCraft(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Z"
+    ],
+    [
+     "AE2 Web Integration",
+     "2.0.0-forge-1.7.10",
+     "unresolved",
+     "pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.getDisplayName()Ljava.lang.String;"
+    ],
+    [
+     "AE2 Wireless Crafting Terminal",
+     "1.12.7",
+     "links",
+     ""
+    ],
+    [
+     "AE2NoUltimatePattern",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Aesthetics",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "AFSU Mod",
+     "1.3.1-GTNH",
+     "unresolved",
+     "ic2.core.util.Util.map(DDD)D"
+    ],
+    [
      "AI Improvements",
      "0.0.1.8",
+     "links",
+     ""
+    ],
+    [
+     "Akashic Tome",
+     "1.2.6",
+     "links",
+     ""
+    ],
+    [
+     "akkamaddi's Addenda to Netherrocks",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "akkamaddi's Core API",
+     "1.7.10-2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Alchemical Grate",
+     "1.3.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Alfheim",
+     "67",
+     "unresolved",
+     "alfheim.common.integration.travellersgear.ITravellersGearSynced.onTravelGearEquip(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "All Stone To Tools",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Alternate Current",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Alternative Chunkloading",
+     "1.4.6",
+     "links",
+     ""
+    ],
+    [
+     "Alternative Stained Glass",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "AlwaysSprint",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "AM2 Playground",
+     "0.12.1",
+     "unresolved",
+     "ckathode.weaponmod.PhysHelper.createAdvancedExplosion(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFZZ)Lckathode.weaponmod.AdvancedExplosion;"
+    ],
+    [
+     "Amazing Trophies",
+     "1.3.8",
+     "links",
+     ""
+    ],
+    [
+     "Amun-Ra",
+     "0.8.2",
+     "links",
+     ""
+    ],
+    [
+     "An Extra Touch",
+     "0.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Ancient Warfare Core",
+     "3.0.1-beta-MC1.7.10",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Angelica",
+     "2.2.44",
+     "unresolved",
+     "com.mitchej123.hodgepodge.config.DebugConfig.showChunkGenDebug:Z"
+    ],
+    [
+     "AngelLib",
+     "1.0.0",
+     "unresolved",
+     "com.cleanroommc.modularui.api.widget.IWidget.getName()Ljava.lang.String;"
+    ],
+    [
+     "AngerMod. Makes your Mobs angry!",
+     "0.9.0",
+     "links",
+     ""
+    ],
+    [
+     "AnimFix",
+     "2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "Antiquities",
+     "0.2.53",
+     "links",
+     ""
+    ],
+    [
+     "AntMan",
+     "Beta-1.7.10-1.5.4",
+     "links",
+     ""
+    ],
+    [
+     "AppleCore",
+     "3.3.13",
+     "links",
+     ""
+    ],
+    [
+     "AppleCore",
+     "3.3.7",
+     "links",
+     ""
+    ],
+    [
+     "Applied Energistics 2",
+     "rv3-beta-695-GTNH",
+     "unresolved",
+     "codechicken.nei.LayoutManager.bookmarkPanel:Lcodechicken.nei.BookmarkPanel;"
+    ],
+    [
+     "Aqua Acrobatics",
+     "0.0.6-1-7-10.44+6fc0f073fd-dirty",
+     "links",
+     ""
+    ],
+    [
+     "ArchaicFix",
+     "0.7.7",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "ArchaicFix",
+     "0.8.2",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "ArchaicFix",
+     "V0.7.0fork9-main.1+d07555210c-dirty",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "ArchitectureCraft",
+     "1.11.6",
+     "links",
+     ""
+    ],
+    [
+     "Arda's Uncrafting Table",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Armored Arms",
+     "v1.3.9-1.7.10-release",
+     "unresolved",
+     "xonin.backhand.api.core.BackhandUtils.isUsingOffhand(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)Z"
+    ],
+    [
+     "Aroma1997DimensionFix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Ars Magica 2",
+     "1.6.7",
+     "links",
+     ""
+    ],
+    [
+     "Ashenwheat",
+     "1.7.10-1.2.4",
+     "unresolved",
+     "akkamaddi.ashenwheat.code.agricraft.AgriAkkamaddiCrop.getBlock()Llegacyconnector.v1_7_10.net.minecraft.block.Block;"
+    ],
+    [
+     "AsieLib",
+     "0.7.0",
+     "unresolved",
+     "pl.asie.lib.chat.ChatHandlerEiraIRC.eiraircRelay(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;Ljava.lang.String;Ljava.lang.String;)V"
+    ],
+    [
+     "asielib",
+     "0.5.2",
+     "unresolved",
+     "pl.asie.lib.chat.ChatHandlerEiraIRC.eiraircRelay(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;Ljava.lang.String;Ljava.lang.String;)V"
+    ],
+    [
+     "ASJCore",
+     "1.7.0.3",
+     "unresolved",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "ASMC",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Astraeus' Mercy",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Audino",
+     "1.1.1",
      "links",
      ""
     ],
@@ -23,8 +389,68 @@
      ""
     ],
     [
+     "Auto Torch",
+     "1.10.0",
+     "links",
+     ""
+    ],
+    [
+     "AutoFood",
+     "59.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Automagy",
+     "0.28.2",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Avaritia",
+     "1.77",
+     "unresolved",
+     "codechicken.nei.NEIServerUtils.areStacksSameTypeCraftingWithNBT(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Avaritiaddons",
+     "1.9.3-GTNH",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
      "AzureLib",
      "1.1.5",
+     "links",
+     ""
+    ],
+    [
+     "B0bGary's Growable Ores",
+     "2.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Back To New",
+     "r1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Backhand",
+     "1.7.10",
+     "unresolved",
+     "xonin.backhand.client.ClientTickHandler.invTweaksSwapPatch()V"
+    ],
+    [
+     "Backhand",
+     "1.7.7",
+     "links",
+     ""
+    ],
+    [
+     "Backpack Edited for ModdedNetwork",
+     "2.5.10-GTNH",
      "links",
      ""
     ],
@@ -35,8 +461,176 @@
      ""
     ],
     [
+     "Baka Danmaku",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Balkon's WeaponMod: Legacy",
+     "1.25.2",
+     "links",
+     ""
+    ],
+    [
+     "BareRuins Mod",
+     "1",
+     "links",
+     ""
+    ],
+    [
+     "Baubles",
+     "2.1.19-GTNH",
+     "unresolved",
+     "codechicken.nei.api.API.hideItem(Ljava.lang.String;)V"
+    ],
+    [
+     "Baubles Expanded",
+     "2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "BC Builders",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Energy",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Factory",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Robotics",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Robotics",
+     "7.1.44",
+     "links",
+     ""
+    ],
+    [
+     "BC Silicon",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Transport",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BD lib",
+     "1.11.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Beddium",
+     "1.2.5-j8",
+     "unresolved",
+     "org.lwjgl.PointerBuffer.getPointerSize()I"
+    ],
+    [
+     "BeeBetterAtBees",
+     "0.4.3-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Better Achievements",
+     "0.3.0",
+     "obsolete",
+     "1.21 replaced achievements with advancements"
+    ],
+    [
+     "Better Builder's Wands",
+     "0.8.1",
+     "links",
+     ""
+    ],
+    [
+     "Better Caves",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Command",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Foliage - Legacy Edition",
+     "1.2.4",
+     "links",
+     ""
+    ],
+    [
+     "Better Gamemode",
+     "1.4.0",
+     "links",
+     ""
+    ],
+    [
+     "Better HeroPack Reloading",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Line Break",
+     "1.0.1",
+     "unresolved",
+     "kpan.b_line_break.asm.core.MyTextifier.buf:Ljava.lang.StringBuffer;"
+    ],
+    [
+     "Better Loading Screen",
+     "1.3.10",
+     "obsolete",
+     "1.7.10 loading screen; NeoForge has its own"
+    ],
+    [
+     "Better Loading Screen GTNH",
+     "1.7.2-GTNH",
+     "obsolete",
+     "1.7.10 loading screen; NeoForge has its own"
+    ],
+    [
      "Better Ping",
      "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Search",
+     "1.6.2",
+     "unresolved",
+     "codechicken.nei.api.API.addSearchProvider(Lcodechicken.nei.SearchTokenParser$ISearchParserProvider;)V"
+    ],
+    [
+     "Better Sprinting",
+     "2.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Thunder",
+     "1.2.0",
      "links",
      ""
     ],
@@ -47,8 +641,80 @@
      ""
     ],
     [
+     "BetterBuildersWands",
+     "0.13.3-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "BetterCrashes",
+     "1.4.0-GTNH",
+     "obsolete",
+     "1.7.10 crash handling; not applicable"
+    ],
+    [
+     "BetterP2P",
+     "1.3.3",
+     "links",
+     ""
+    ],
+    [
+     "BetterWithPatches",
+     "0.6.16",
+     "links",
+     ""
+    ],
+    [
      "BHMenu",
      "2.4.7",
+     "links",
+     ""
+    ],
+    [
+     "BiblioCraft",
+     "1.11.7",
+     "links",
+     ""
+    ],
+    [
+     "BiblioWoods Biomes O'Plenty Edition",
+     "1.9",
+     "links",
+     ""
+    ],
+    [
+     "BiblioWoods Forestry Edition",
+     "1.7",
+     "links",
+     ""
+    ],
+    [
+     "BiblioWoods Natura Edition",
+     "1.5",
+     "links",
+     ""
+    ],
+    [
+     "Bigger Crafting Tables",
+     "1.7.10-1.7",
+     "links",
+     ""
+    ],
+    [
+     "Binnie Core",
+     "2.0.22.7",
+     "links",
+     ""
+    ],
+    [
+     "Biome ID Extender",
+     "1.0a",
+     "links",
+     ""
+    ],
+    [
+     "Biome Stats",
+     "v1.0.1",
      "links",
      ""
     ],
@@ -59,14 +725,80 @@
      ""
     ],
     [
+     "Blahaj",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Block Blocker",
+     "1.4.3",
+     "links",
+     ""
+    ],
+    [
+     "Block Replacer",
+     "v1.3",
+     "links",
+     ""
+    ],
+    [
+     "BlockLimiter. Restrict your Blocks",
+     "0.7.0",
+     "links",
+     ""
+    ],
+    [
+     "BlockRenderer6343",
+     "1.3.17",
+     "unresolved",
+     "codechicken.nei.ItemList.loadFinished:Z"
+    ],
+    [
+     "Blood Arsenal",
+     "1.4.10",
+     "unresolved",
+     "WayofTime.alchemicalWizardry.AlchemicalWizardry.lpPerSacrificeBase:I"
+    ],
+    [
      "Blood Magic: Alchemical Wizardry",
      "v1.3.3",
+     "links",
+     ""
+    ],
+    [
+     "Blood Magic: Alchemical Wizardry",
+     "1.7.52",
      "unresolved",
-     "WayofTime.alchemicalWizardry.AlchemicalWizardry.registerBMBook()V"
+     "codechicken.nei.NEIServerUtils.areStacksSameTypeCraftingWithNBT(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Blood Particles",
+     "1.8.0",
+     "links",
+     ""
+    ],
+    [
+     "Bob Fluid Translator",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "boihm",
+     "a58",
+     "links",
+     ""
     ],
     [
      "Bookshelf",
      "1.0.4.187",
+     "links",
+     ""
+    ],
+    [
+     "BOP Integrations",
+     "1.7.3",
      "links",
      ""
     ],
@@ -77,8 +809,80 @@
      ""
     ],
     [
+     "Botania",
+     "1.12.28-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "botanichorizons",
+     "1.11.27-GTNH",
+     "unresolved",
+     "vazkii.botania.common.core.handler.ConfigHandler.noMobSpawnOnBlocks:Z"
+    ],
+    [
+     "Bouncing Balls",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
      "Brandon's Core",
      "1.0.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Brandon's Core",
+     "1.2.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Budding Polar",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "BugTorch",
+     "1.2.14",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "BugTorch",
+     "1.3.1",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "BuildCraft",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BuildCraft Compat",
+     "7.1.18",
+     "unresolved",
+     "buildcraft.compat.CompatHooksImpl.getInjectableBluePower(Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;)Lbuildcraft.api.transport.IInjectable;"
+    ],
+    [
+     "BuildCraft Compat",
+     "7.1.9",
+     "unresolved",
+     "buildcraft.compat.CompatHooksImpl.getInjectableBluePower(Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;)Lbuildcraft.api.transport.IInjectable;"
+    ],
+    [
+     "BuildCraft Oil Tweak",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Campfire Backport",
+     "1.7.10-1.11.3",
      "links",
      ""
     ],
@@ -89,8 +893,206 @@
      "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
     ],
     [
+     "Carpenter's Blocks",
+     "3.7.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "CartLoad",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Cat Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CatFrame",
+     "0.10.11",
+     "links",
+     ""
+    ],
+    [
+     "Catwalks Mod",
+     "2.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Cauldron++",
+     "1.1.0-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "ChaoticKarma",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Chest DNA",
+     "1.03q",
+     "links",
+     ""
+    ],
+    [
      "ChickenChunks",
      "1.3.4.19",
+     "links",
+     ""
+    ],
+    [
+     "Chisel",
+     "2.16.15-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Chisel Tones",
+     "1.2.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "ChocoCraft Plus",
+     "4.5.10",
+     "links",
+     ""
+    ],
+    [
+     "Chronos Backups",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "ChunkAPI",
+     "0.8.4",
+     "links",
+     ""
+    ],
+    [
+     "Cinematic Respawn",
+     "1.4.3",
+     "links",
+     ""
+    ],
+    [
+     "Classic Oceans",
+     "1.7.10-1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Classical Alchemy",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Clienthax's ChocoCraft",
+     "4.1.5",
+     "links",
+     ""
+    ],
+    [
+     "Cloud Storage",
+     "59.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Cloudflared",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "CobaltMod",
+     "1.5.7.1",
+     "links",
+     ""
+    ],
+    [
+     "CoFH Core",
+     "1.7.10R3.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Colorful Health Bar",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Colorful Mobs",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Command Blocks for Better Questing",
+     "3.7.15-GTNH",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.server.management.PlayerProfileCache.<init>(Llegacyconnector.v1_7_10.net.minecraft.server.MinecraftServer;Ljava.io.File;)V"
+    ],
+    [
+     "Command Modification",
+     "2.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Common Capabilities",
+     "26.10.31.1",
+     "unresolved",
+     "com.cleanroommc.modularui.api.drawable.IRichTextBuilder.moveCursorToEnd()Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;"
+    ],
+    [
+     "Compact F3 Plus",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Compact Kinetic Wind and Water Generators",
+     "1.7.10-1.0",
+     "links",
+     ""
+    ],
+    [
+     "CompatLib",
+     "1.7.10",
+     "unresolved",
+     "org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V"
+    ],
+    [
+     "ComputerCraft",
+     "1.75",
+     "links",
+     ""
+    ],
+    [
+     "Computronics",
+     "1.9.3-GTNH",
+     "unresolved",
+     "pl.asie.computronics.cc.multiperipheral.MultiPeripheralProvider.getOpenPeripheral(Llegacyconnector.v1_7_10.net.minecraft.world.World;III)Lpl.asie.computronics.api.multiperipheral.IMultiPeripheral;"
+    ],
+    [
+     "Config Backuper",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "ContentTweaker",
+     "1.0.5",
      "links",
      ""
     ],
@@ -101,8 +1103,74 @@
      ""
     ],
     [
+     "Controlling",
+     "2.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Cooking For Blockheads",
+     "1.4.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "CoreTweaks",
+     "0.3.3.6-GTNH",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "Cosmetic Armor",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "CPM OSC Compat",
+     "1.6.1",
+     "unresolved",
+     "com.tom.cpm.shared.animation.AnimationState.localState:Lcom.tom.cpm.shared.animation.ServerAnimationState;"
+    ],
+    [
+     "Craftable Bedrock v3.1",
+     "3.1",
+     "links",
+     ""
+    ],
+    [
+     "Craftable Creatures",
+     "1.1.7",
+     "links",
+     ""
+    ],
+    [
+     "Craftable Horse Armour [CHA&S]",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Craftable Saddles",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "CraftPresence",
+     "2.6.2",
+     "unresolved",
+     "craftpresence.external.org.slf4j.helpers.MessageFormatter.trimmedCopy([Ljava.lang.Object;)[Ljava.lang.Object;"
+    ],
+    [
      "CraftPresence",
      "2.7.1",
+     "links",
+     ""
+    ],
+    [
+     "Crampedness",
+     "1.0.0",
      "links",
      ""
     ],
@@ -113,8 +1181,200 @@
      "java.awt.Window.getPeer()Ljava.awt.peer.ComponentPeer;"
     ],
     [
+     "CreateWorldUI",
+     "7.1.1",
+     "unresolved",
+     "decok.dfcdvadstf.createworldui.api.DifficultyLocker.applyToWorldData(Llegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;)V"
+    ],
+    [
+     "CreeperConfetti",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CrNOBr",
+     "0.0.2",
+     "links",
+     ""
+    ],
+    [
+     "CropLoadCore",
+     "0.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Crops++",
+     "1.8.11",
+     "unresolved",
+     "ic2.core.util.StackUtil.getBlock(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Llegacyconnector.v1_7_10.net.minecraft.block.Block;"
+    ],
+    [
+     "CrossTie",
+     "1.0.0-SNAPSHOT",
+     "unresolved",
+     "net.coderbot.iris.Iris.enabled:Z"
+    ],
+    [
+     "Ctyrka4 Addon for Traincraft",
+     "1.6",
+     "links",
+     ""
+    ],
+    [
+     "Curvy Pipes",
+     "1.15.12",
+     "links",
+     ""
+    ],
+    [
+     "Custom Cursor Mod",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Custom Main Menu",
+     "1.12.2",
+     "links",
+     ""
+    ],
+    [
      "Customizable Player Models",
      "0.6.27a",
+     "links",
+     ""
+    ],
+    [
+     "CustomizedLore",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPC+",
+     "1.11.1",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPC+ DBC Addon",
+     "1.2.1",
+     "unresolved",
+     "JinRyuu.DragonBC.common.DBCConfig.MysticKaiokenOn:Z"
+    ],
+    [
+     "CustomNPC-Plus-AW-Addon",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPC-Plus-Gecko-Addon",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPCs Crafting View",
+     "b79a52f-1-7-10+b79a52f239-dirty",
+     "links",
+     ""
+    ],
+    [
+     "CustomSaveDirs",
+     "0.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Cute Mob Models",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "CutePuppyMod",
+     "0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Cybersus",
+     "1.0",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "DangerRPG",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Darkerer",
+     "1.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Darkerer",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "DCS Recipes",
+     "1.7.9.5",
+     "unresolved",
+     "JinRyuu.JRMCore.JRMCoreCliTicH.lockOn:Llegacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;"
+    ],
+    [
+     "Deathly Hallows",
+     "1.1.5",
+     "links",
+     ""
+    ],
+    [
+     "DeeperCaves",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "DeepResonance",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Default Configs",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Default World Generator",
+     "0.4.0",
+     "links",
+     ""
+    ],
+    [
+     "Dimensional Anchors",
+     "59.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "Divine Intervention",
+     "NO-GIT-TAG-SET",
      "links",
      ""
     ],
@@ -125,10 +1385,76 @@
      ""
     ],
     [
+     "DonutAntiESP",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Draconic Evolution",
+     "1.4.27-GTNH",
+     "links",
+     ""
+    ],
+    [
      "Draconic Evolution",
      "1.0.2h",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Block Apollo Bridge",
+     "ver. 1.3.1 build #20",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Block Apollo Client",
+     "ver. 1.3.1 build #20",
      "unresolved",
-     "com.brandon3055.draconicevolution.integration.computers.CCOCIntegration.initCC()V"
+     "com.gtnewhorizons.angelica.config.AngelicaConfig.enableAmpersandConversion:Z"
+    ],
+    [
+     "Dragon Mounts",
+     "r41-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Drama Generator: Ruby Edition Splash",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "DummyCore",
+     "1.20.0",
+     "links",
+     ""
+    ],
+    [
+     "DuraDisplay",
+     "1.3.4",
+     "links",
+     ""
+    ],
+    [
+     "Dynamic Surroundings",
+     "1.0.9.0",
+     "unresolved",
+     "org.lwjgl.openal.ALC10.alcGetInteger(Lorg.lwjgl.openal.ALCdevice;ILjava.nio.IntBuffer;)V"
+    ],
+    [
+     "DynamicLights Patch",
+     "0.0.1",
+     "links",
+     ""
+    ],
+    [
+     "e4mc Retro",
+     "1.0.2",
+     "links",
+     ""
     ],
     [
      "Ears",
@@ -143,8 +1469,122 @@
      ""
     ],
     [
+     "Edit Mob Drops",
+     "1.4.4",
+     "links",
+     ""
+    ],
+    [
+     "Effortless Building Gadgets",
+     "0.10.1",
+     "links",
+     ""
+    ],
+    [
+     "Electrical Age - jrddunbr's build",
+     "1.24.6",
+     "links",
+     ""
+    ],
+    [
+     "Electro-Magic Tools",
+     "1.6.18",
+     "unresolved",
+     "ic2.core.Platform.messagePlayer(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Ljava.lang.String;[Ljava.lang.Object;)V"
+    ],
+    [
+     "Elytra Mining",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Embeddium",
+     "1.0.0-beta66b",
+     "unresolved",
+     "com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat.writeQuad(Lcom.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;Ljava.nio.ByteBuffer;)V"
+    ],
+    [
+     "EMI",
+     "1.1.24-beta1",
+     "unresolved",
+     "codechicken.nei.LayoutManager.bookmarksButton:Lcodechicken.nei.ButtonCycled;"
+    ],
+    [
+     "Enchanting Plus",
+     "3.0.2-d",
+     "links",
+     ""
+    ],
+    [
+     "Enchantment ID Extender",
+     "1.0a",
+     "links",
+     ""
+    ],
+    [
+     "Ender IO",
+     "2.9.28",
+     "unresolved",
+     "codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;"
+    ],
+    [
+     "Ender Utilities",
+     "0.5.3",
+     "links",
+     ""
+    ],
+    [
+     "Ender Zoo",
+     "1.3.3",
+     "links",
+     ""
+    ],
+    [
+     "Ender Zoo : Patched",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "EnderCore",
+     "0.4.8",
+     "unresolved",
+     "com.enderio.core.EnderCore.registerNEICompat()V"
+    ],
+    [
      "EnderStorage",
      "1.4.7.37",
+     "links",
+     ""
+    ],
+    [
+     "EnderStorage",
+     "1.7.7",
+     "links",
+     ""
+    ],
+    [
+     "EndlessIDs",
+     "1.7.4",
+     "links",
+     ""
+    ],
+    [
+     "Enhanced LootBags",
+     "1.2.8",
+     "links",
+     ""
+    ],
+    [
+     "Entity Culling Unofficial",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Entity Render Extender",
+     "1.0c",
      "links",
      ""
     ],
@@ -155,10 +1595,148 @@
      ""
     ],
     [
+     "EnviroMine",
+     "1.3.132",
+     "links",
+     ""
+    ],
+    [
+     "EnviroMine",
+     "1.3.148-FINAL kotmatross edition",
+     "unresolved",
+     "com.hbm.handler.radiation.ChunkRadiationHandlerSimple$SimpleRadiationPerWorld.radiation:Ljava.util.HashMap;"
+    ],
+    [
+     "Environmental Creepers",
+     "174ef7d",
+     "links",
+     ""
+    ],
+    [
+     "Essentia Pipes",
+     "1.7.10-v1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Et Futurum Requiem",
+     "2.6.2.25-GTNH",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Et Futurum Requiem",
+     "2.6.2",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Eternal Singularity",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "Euphoria Companion",
+     "2.0.2",
+     "unresolved",
+     "eclipse.euphoriacompanion.integration.NEIIntegration.getVisibleItems()Ljava.util.List;"
+    ],
+    [
      "Euphoria Patcher",
      "_1.10.5",
      "links",
      ""
+    ],
+    [
+     "Expanded Armory: Legacy",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Extra Bees",
+     "2.5.24",
+     "unresolved",
+     "binnie.core.nei.NEIHook.addHandler()V"
+    ],
+    [
+     "Extra Planets",
+     "1.7.10-2.1.4",
+     "unresolved",
+     "micdoodle8.mods.galacticraft.core.client.gui.screen.GuiCelestialSelection.<init>(ZLjava.util.List;)V"
+    ],
+    [
+     "Extra Player Renderer",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Extra Utilities",
+     "1.2.12",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "ExtraButtons",
+     "1.7.10.1",
+     "links",
+     ""
+    ],
+    [
+     "Extreme Sound Muffler Legacy",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Eyes in the Shadows",
+     "0.0.3",
+     "links",
+     ""
+    ],
+    [
+     "F3 + F4 Gamemode Switcher for Older Versions",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Factorization Miscellaneous Nonsense",
+     "0.8.109",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "FalsePatternLib",
+     "1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "FalseTweaks",
+     "4.4.5",
+     "unresolved",
+     "it.unimi.dsi.fastutil.objects.Object2IntMap.forEach(Lit.unimi.dsi.fastutil.objects.ObjectIntBiConsumer;)V"
+    ],
+    [
+     "FarLands",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "farlands",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "FindIt",
+     "1.4.0",
+     "unresolved",
+     "codechicken.nei.NEIClientConfig.isKeyHashDown(Ljava.lang.String;)Z"
     ],
     [
      "FiskTag",
@@ -167,10 +1745,106 @@
      "mods.battlegear2.client.utils.BattlegearRenderHelper.moveOffHandArm(Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;Llegacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped;F)V"
     ],
     [
+     "Flaxbeard's Steam Power",
+     "0.29.3",
+     "links",
+     ""
+    ],
+    [
+     "FlenixRoads",
+     "0.10.0",
+     "links",
+     ""
+    ],
+    [
+     "Floocraft",
+     "1.7.10-1.7",
+     "links",
+     ""
+    ],
+    [
+     "Flood Lights",
+     "1.5.4",
+     "unresolved",
+     "de.keridos.floodlights.compatability.ModCompatibility.hideNEIItems()V"
+    ],
+    [
+     "Fluxed-Core",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "Flying Cullers",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
      "FoamFix",
      "@VERSION@",
      "obsolete",
      "1.12.2 performance/memory patches; not applicable to 1.21.1"
+    ],
+    [
+     "Food Addition",
+     "2.4",
+     "links",
+     ""
+    ],
+    [
+     "Forbidden Magic",
+     "0.8.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Forestry",
+     "4.10.17",
+     "unresolved",
+     "forestry.core.utils.InventoryUtil.internal_moveOneItemToPipe(Llegacyconnector.v1_7_10.net.minecraft.inventory.IInventory;Lforestry.core.tiles.AdjacentTileCache;[Llegacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection;)Z"
+    ],
+    [
+     "ForeverLoveSword",
+     "0.0.0-legacy",
+     "unresolved",
+     "org.objectweb.asm.AnnotationWriter.next:Lorg.objectweb.asm.AnnotationWriter;"
+    ],
+    [
+     "Forge Essentials",
+     "7.5.3",
+     "unresolved",
+     "com.google.common.base.CharMatcher.WHITESPACE:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Forge Essentials Client Addon",
+     "7.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Forge Microblocks",
+     "1.2.0.345",
+     "links",
+     ""
+    ],
+    [
+     "Forgelin",
+     "2.0.3-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Forgelin 2",
+     "2.4.3-2.4.10",
+     "links",
+     ""
+    ],
+    [
+     "Forgotten Relics",
+     "1.7.4",
+     "links",
+     ""
     ],
     [
      "Fossils and Archeology Revival",
@@ -185,16 +1859,388 @@
      ""
     ],
     [
+     "FreeCam by Zergatul",
+     "2.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Freedom",
+     "1779",
+     "links",
+     ""
+    ],
+    [
+     "Freef's Bible",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
      "Friendly Fire",
      "1.0.0",
      "links",
      ""
     ],
     [
+     "Frustrator",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Futurepack",
+     "18.7 pre",
+     "unresolved",
+     "sun.reflect.ReflectionFactory.newConstructorAccessor(Ljava.lang.reflect.Constructor;)Lsun.reflect.ConstructorAccessor;"
+    ],
+    [
+     "Gadomancy",
+     "1.4.8",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApi.internalMethods:Lthaumcraft.api.internal.IInternalMethodHandler;"
+    ],
+    [
+     "Galacticraft Core",
+     "3.3.13-GTNH",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "GalaxySpace",
+     "1.1.121-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Game of Thrones",
+     "24.08.29",
+     "links",
+     ""
+    ],
+    [
+     "Gear Swap",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "GeckoLib",
+     "3.0.30",
+     "links",
+     ""
+    ],
+    [
+     "Gendustry",
+     "1.9.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Get Ya' Tanks Here",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Goblins Legacy",
+     "1.06",
+     "links",
+     ""
+    ],
+    [
+     "Golden Glitter",
+     "1.7.10-1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Graduated Cylinders",
+     "3.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Graviation Suite",
+     "1.7.10-2.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Gravitation Suite Neo",
+     "1.3.6",
+     "links",
+     ""
+    ],
+    [
+     "Gravity Torch",
+     "v1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Greg Caves",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Gregory Tweaks For Crafting",
+     "1.2.68-GTNH",
+     "unresolved",
+     "codechicken.nei.NEIClientConfig.isMouseScrollTransferEnabled()Z"
+    ],
+    [
+     "Gregtech: New Horizons Customizer",
+     "v0.17.0",
+     "unresolved",
+     "xonin.backhand.api.core.BackhandUtils.getOffhandSlot(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)I"
+    ],
+    [
+     "Grimoire of Gaia 3",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "GT NEI Ore Plugin GT:NH Mod",
+     "5.09.51.482",
+     "unresolved",
+     "alexiil.mods.load.MinecraftDisplayer.isRegisteringBartWorks:Z"
+    ],
+    [
+     "GT: New Horizons",
+     "2.7.268",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.server.MinecraftServer.<init>(Ljava.io.File;Ljava.net.Proxy;)V"
+    ],
+    [
      "GTNH Lib",
      "0.11.56",
      "unresolved",
-     "com.gtnewhorizon.gtnhlib.util.ItemUtil.getDSUIO(Ljava.lang.Object;)Lcom.gtnewhorizon.gtnhlib.capability.item.ItemIO;"
+     "com.gtnewhorizon.gtnhlib.integration.mui2.ClientTextField.widgetTheme(Lcom.cleanroommc.modularui.theme.WidgetThemeKey;)Lcom.cleanroommc.modularui.widget.Widget;"
+    ],
+    [
+     "GTNH Lib",
+     "0.7.10",
+     "unresolved",
+     "com.google.common.util.concurrent.Futures.immediateFailedCheckedFuture(Ljava.lang.Exception;)Lcom.google.common.util.concurrent.CheckedFuture;"
+    ],
+    [
+     "GTNH-TC-Wands",
+     "1.4.6",
+     "links",
+     ""
+    ],
+    [
+     "GTNN",
+     "v1.5.0",
+     "unresolved",
+     "gtPlusPlus.xmod.gregtech.api.enums.GregtechItemList.Industrial_MultiMachine:LgtPlusPlus.xmod.gregtech.api.enums.GregtechItemList;"
+    ],
+    [
+     "GTTweaker",
+     "2.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Guide-API",
+     "1.7.10-1.0.1-29",
+     "links",
+     ""
+    ],
+    [
+     "Hadite Coal",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "HandMadeGunsOverdrive",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Hardcore Ender Expansion",
+     "1.8.6",
+     "unresolved",
+     "chylex.hee.gui.helpers.AnimatedFloat.startAnimation(FFFZ)V"
+    ],
+    [
+     "Hardcore Ender Expansion",
+     "1.12.16-GTNH",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Hardcore Wither",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "HavenCore Custom Transformations Public Distribution",
+     "NO-GIT-TAG-SET",
+     "unresolved",
+     "JinRyuu.DragonBC.common.Npcs.EntityAura.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.World;Ljava.lang.String;IFFIZF)V"
+    ],
+    [
+     "HBM Panic Injector Mod",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Hbm's Nuclear Tech",
+     "1.0.27 BETA (5687)",
+     "links",
+     ""
+    ],
+    [
+     "HBM-NTM-1-of-90-Edition",
+     "1.0.27 BETA (5687)",
+     "links",
+     ""
+    ],
+    [
+     "HelpFixer",
+     "1.3.0",
+     "obsolete",
+     "1.7.10 /help fix; not needed on 1.21.1"
+    ],
+    [
+     "HexText",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Hodgepodge",
+     "2.6.112",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "Hodgepodge",
+     "2.7.222",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "Holo Inventory",
+     "2.5.5-GTNH",
+     "unresolved",
+     "codechicken.nei.SearchField.getFilter(Ljava.lang.String;)Lcodechicken.nei.api.ItemFilter;"
+    ],
+    [
+     "Hotbar Auto Fill",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "HQM Keybind",
+     "1.7.10-A2",
+     "links",
+     ""
+    ],
+    [
+     "Hunger Overhaul",
+     "1.7.10-1.0.0.jenkins104",
+     "links",
+     ""
+    ],
+    [
+     "Hunger Strike",
+     "1.7.10.4",
+     "links",
+     ""
+    ],
+    [
+     "HydroEnergy",
+     "1.4.10",
+     "links",
+     ""
+    ],
+    [
+     "I Will Find You",
+     "1.11.2",
+     "links",
+     ""
+    ],
+    [
+     "IC2 Additions",
+     "0.9.0",
+     "unresolved",
+     "ic2.core.ExplosionIC2.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFFLic2.core.ExplosionIC2$Type;)V"
+    ],
+    [
+     "IC2 Crop Plugin",
+     "1.2.1",
+     "links",
+     ""
+    ],
+    [
+     "IC2C UU-Matter",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "ID Conflicts Viewer",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Iguana Tinker Tweaks",
+     "2.6.6",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Cavegen",
+     "1.2g-hotfix5",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Engineering Blueprint Tweaker",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Railroading",
+     "1.11.0",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Snow",
+     "1.0b",
+     "links",
+     ""
+    ],
+    [
+     "Immibis Core",
+     "59.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Immibis's Peripherals",
+     "59.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Improving Minecraft",
+     "1.12.3-MC1.7.10",
+     "links",
+     ""
     ],
     [
      "In-Game Account Switcher",
@@ -203,8 +2249,128 @@
      "com.mojang.util.UUIDTypeAdapter.fromUUID(Ljava.util.UUID;)Ljava.lang.String;"
     ],
     [
+     "IndustrialCraft 2",
+     "2.2.828-experimental",
+     "links",
+     ""
+    ],
+    [
+     "IndustrialCraft 2 Classic",
+     "2.2.999",
+     "unresolved",
+     "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
+    ],
+    [
+     "Infernal Mobs",
+     "1.10.3-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "InfiniStack",
+     "1.1.0-beta2",
+     "unresolved",
+     "ic2.core.network.DataEncoder.readVarInt(Ljava.io.DataInputStream;)I"
+    ],
+    [
+     "InfiniTubes",
+     "59.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Infinity Water Bucket",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "InfiView",
+     "alpha1",
+     "unresolved",
+     "org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB(Lorg.lwjgl.opengl.ARBDebugOutputCallback;)V"
+    ],
+    [
+     "InGame Info XML",
+     "2.8.30",
+     "links",
+     ""
+    ],
+    [
+     "IngameIME",
+     "1.7.10-1.0.0-RC3",
+     "unresolved",
+     "com.dhj.ingameime.control.AbstractControl.writeCurrentScreenTextNEI(Ljava.lang.String;)Z"
+    ],
+    [
+     "InputMethodBlocker",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Instant Blocks",
+     "1.5.5",
+     "links",
+     ""
+    ],
+    [
+     "Invasion Mod",
+     "1.2.1",
+     "links",
+     ""
+    ],
+    [
      "Inventory Pets",
      "1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Iron Chest Minecarts",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Iron Chests",
+     "6.1.13",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "Iron Chests",
+     "6.1.6",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "Iron Tank Minecarts",
+     "1.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Iron Tanks",
+     "1.2.0+mc1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Iron Tanks",
+     "1.4.2",
+     "links",
+     ""
+    ],
+    [
+     "IronMan",
+     "1.7.10-1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Item Frame Remover",
+     "0.1",
      "links",
      ""
     ],
@@ -215,10 +2381,292 @@
      ""
     ],
     [
+     "ItemInformationDisplay Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "ItemPhysic",
+     "1.3.1 kotmatross edition",
+     "links",
+     ""
+    ],
+    [
+     "JABBA",
+     "1.5.10",
+     "links",
+     ""
+    ],
+    [
+     "JAOPCA",
+     "1.7.10-W.0.8.32",
+     "links",
+     ""
+    ],
+    [
+     "JAOPCAGT5",
+     "1.7.10-1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "JAOPCASingularities",
+     "1.7.10-W.0.1.3",
+     "links",
+     ""
+    ],
+    [
+     "JarJar",
+     "0.3.7-beta",
+     "links",
+     ""
+    ],
+    [
+     "Jerry's Mod",
+     "1.7.10.2",
+     "links",
+     ""
+    ],
+    [
+     "JFMUY",
+     "26.10.31.0",
+     "unresolved",
+     "codechicken.nei.VisiblityData.showBookmarkPanel:Z"
+    ],
+    [
+     "JourneyMap",
+     "5.2.10",
+     "links",
+     ""
+    ],
+    [
      "JourneyMap",
      "1.7.10-6.0.8",
      "unresolved",
      "com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;"
+    ],
+    [
+     "JourneyMap WebMap",
+     "1.0.11",
+     "unresolved",
+     "journeymap.client.data.DataCache.INSTANCE:Ljourneymap.client.data.DataCache;"
+    ],
+    [
+     "Keyboard Wizard",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "kinetic anti-cheat",
+     "7.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Kingdom Keys",
+     "0.7.0.1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Kingdom | Regions",
+     "5.0",
+     "links",
+     ""
+    ],
+    [
+     "kTFRUAddon",
+     "test-MC1710",
+     "unresolved",
+     "cn.kuzuanpa.ktfruaddon.api.tile.structure.IMappedStructure.getTileEntity(Llegacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates;)Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;"
+    ],
+    [
+     "LagGoggles",
+     "4.17.0",
+     "obsolete",
+     "1.12.2 profiler; use Spark"
+    ],
+    [
+     "LandOfSignals",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Leaf Culling",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "Legendary Item",
+     "24.10.09",
+     "links",
+     ""
+    ],
+    [
+     "Legends Mod",
+     "8.6.2",
+     "unresolved",
+     "com.mojang.authlib.GameProfileRepository.findProfilesByNames([Ljava.lang.String;Lcom.mojang.authlib.Agent;Lcom.mojang.authlib.ProfileLookupCallback;)V"
+    ],
+    [
+     "Let's Encrypt Craft",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "LinearXP",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "59.0.2",
+     "links",
+     ""
+    ],
+    [
+     "LittleTiles",
+     "1.5.14-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Loading Progress Bar",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Logistics Pipes",
+     "1.4.24-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Lomka",
+     "0.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Loot Beams backport",
+     "1.0.1-clientside",
+     "links",
+     ""
+    ],
+    [
+     "LootGames",
+     "2.2.0.1",
+     "links",
+     ""
+    ],
+    [
+     "LoTAS",
+     "1.0.0",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Ljava.lang.String;Ljava.lang.String;Llegacyconnector.v1_7_10.net.minecraft.world.WorldSettings;)V"
+    ],
+    [
+     "LOTR Kings Addon",
+     "1.4.1W-serveronly",
+     "links",
+     ""
+    ],
+    [
+     "lsktp",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Lucraft: World",
+     "1.7.10-1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Lumi",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "LunatriusCore",
+     "1.2.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "lwjgl3ify",
+     "2.1.16",
+     "obsolete",
+     "runs 1.7.10 on LWJGL 3 / modern Java; 1.21.1 already does"
+    ],
+    [
+     "lwjgl3ify",
+     "3.0.42",
+     "obsolete",
+     "runs 1.7.10 on LWJGL 3 / modern Java; 1.21.1 already does"
+    ],
+    [
+     "Lycanites Mobs",
+     "1.13.0.5 - MC 1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "m2paxel",
+     "2.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Machines",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Magia Naturalis",
+     "0.5.0",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.addStickyWarpToPlayer(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;I)V"
+    ],
+    [
+     "Magic Bees",
+     "2.9.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Malisis Core",
+     "1.18.2-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Manaita",
+     "1.7.10-0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "ManaMetalMod",
+     "8.0.8",
+     "unresolved",
+     "tb.init.TBItems.herobrinesScythe:Llegacyconnector.v1_7_10.net.minecraft.item.Item;"
+    ],
+    [
+     "Mantle",
+     "0.5.1",
+     "links",
+     ""
     ],
     [
      "Mantle",
@@ -227,10 +2675,58 @@
      ""
     ],
     [
+     "MAtmos",
+     "1.7.10-36.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Matter Manipulator",
+     "0.0.51-GTNH",
+     "unresolved",
+     "com.gtnewhorizon.gtnhlib.client.renderer.vertex.VertexFormat.writeQuad(Lcom.gtnewhorizon.gtnhlib.client.renderer.quad.QuadView;Ljava.nio.ByteBuffer;)V"
+    ],
+    [
+     "MatterOverdrive: Community Edition",
+     "0.4.5",
+     "links",
+     ""
+    ],
+    [
+     "MC Helicopter Overdrive+",
+     "d4e3692",
+     "unresolved",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "MCFrames",
+     "0.3.4",
+     "links",
+     ""
+    ],
+    [
+     "MCInstance Loader",
+     "2.8",
+     "links",
+     ""
+    ],
+    [
+     "McMouser",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
      "Mekanism",
      "9.1.1",
-     "unresolved",
-     "mekanism.common.integration.MekanismHooks.hookIC2Recipes()V"
+     "links",
+     ""
+    ],
+    [
+     "Mekanism Community Edition",
+     "9.10.51",
+     "links",
+     ""
     ],
     [
      "MekanismGenerators",
@@ -245,8 +2741,68 @@
      ""
     ],
     [
+     "MiddleEarth Tweaks",
+     "1.6.21",
+     "links",
+     ""
+    ],
+    [
+     "Mine & Blade Battlegear 2",
+     "1.5.9-backhand",
+     "unresolved",
+     "xonin.backhand.api.core.BackhandUtils.getOffhandSlot(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)I"
+    ],
+    [
+     "Mine & Blade Battlegear 2",
+     "1.0.8.1",
+     "links",
+     ""
+    ],
+    [
+     "Mine Trading Cards",
+     "3.1.4",
+     "links",
+     ""
+    ],
+    [
+     "MineCamera",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Minecraft Multipart Plugin",
+     "1.7.2",
+     "links",
+     ""
+    ],
+    [
      "MinecraftCapes",
      "@MOD_VERSION",
+     "links",
+     ""
+    ],
+    [
+     "MineLights",
+     "2.3.8",
+     "links",
+     ""
+    ],
+    [
+     "MineMenu",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Minemoticon",
+     "51385c9-snapshot",
+     "links",
+     ""
+    ],
+    [
+     "Mineralogy",
+     "1.0",
      "links",
      ""
     ],
@@ -257,14 +2813,224 @@
      ""
     ],
     [
+     "MineTweaker 3",
+     "3.4.2",
+     "links",
+     ""
+    ],
+    [
+     "MixinBooterLegacy",
+     "1.1.2",
+     "obsolete",
+     "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "MixinConBooter-Legacy",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "MMMTweaks",
+     "0.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Mo' Creatures Legacy",
+     "1.2",
+     "unresolved",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Mo' Glowstone",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Mob Drop Ores",
+     "mc1.7.10-v1.1",
+     "links",
+     ""
+    ],
+    [
+     "Mob Health Bar",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Mob Stacker",
+     "1",
+     "links",
+     ""
+    ],
+    [
+     "Mobs no render",
+     "0.4",
+     "links",
+     ""
+    ],
+    [
+     "MobsInfo",
+     "0.5.6-GTNH",
+     "unresolved",
+     "codechicken.nei.recipe.TemplateRecipeHandler.mouseScrolled(Lcodechicken.nei.recipe.GuiRecipe;II)Z"
+    ],
+    [
+     "MobsInfo",
+     "0.6.2",
+     "unresolved",
+     "com.kuba6000.mobsinfo.nei.MobHandler$MobCachedRecipe.containsWithNBT(Ljava.util.Collection;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Mod Tweaker 2",
+     "0.12.0",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "Mod Tweaker 2",
+     "0.9.6",
+     "unresolved",
+     "mekanism.common.recipe.RecipeHandler$Recipe.SOLAR_EVAPORATION_PLANT:Lmekanism.common.recipe.RecipeHandler$Recipe;"
+    ],
+    [
      "ModernKeyBinding",
      "2.1.0",
      "links",
      ""
     ],
     [
+     "ModernMarkings",
+     "0.3.12-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "ModernMarkings",
+     "0.3.13-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "ModernSplash",
+     "1.3.1",
+     "unresolved",
+     "org.lwjgl.opengl.SharedDrawable.<init>(Lorg.lwjgl.opengl.Drawable;)V"
+    ],
+    [
+     "Modular UI 2",
+     "2.2.18-1.7.10",
+     "unresolved",
+     "codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;"
+    ],
+    [
+     "Modular UI 2",
+     "2.3.94-1.7.10",
+     "unresolved",
+     "codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;"
+    ],
+    [
+     "ModularUI",
+     "1.2.20",
+     "unresolved",
+     "codechicken.nei.guihook.GuiContainerManager.applyItemCountDetails(Ljava.util.List;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
      "More Bows Restrung",
      "1.0.10",
+     "links",
+     ""
+    ],
+    [
+     "More Planets",
+     "1.4.4",
+     "links",
+     ""
+    ],
+    [
+     "More Plates",
+     "1.2.0.2",
+     "links",
+     ""
+    ],
+    [
+     "More Swords 3",
+     "3.0.0d",
+     "links",
+     ""
+    ],
+    [
+     "more_avaritia Mod",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "MorePlayerModels+",
+     "4.2",
+     "unresolved",
+     "com.mojang.authlib.minecraft.MinecraftSessionService.getTextures(Lcom.mojang.authlib.GameProfile;Z)Ljava.util.Map;"
+    ],
+    [
+     "MrTJPCore",
+     "1.3.4",
+     "links",
+     ""
+    ],
+    [
+     "Multishot",
+     "3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "My Coordinates Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Mycelium",
+     "2.3",
+     "links",
+     ""
+    ],
+    [
+     "MyFriends",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Mystcraft",
+     "0.12.3.04",
+     "unresolved",
+     "com.xcompwiz.mystcraft.client.gui.GuiBook.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.InventoryPlayer;B)V"
+    ],
+    [
+     "MysteriumLib",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Naruto Destination Mod",
+     "1.36.1",
+     "links",
+     ""
+    ],
+    [
+     "Native Nicknames",
+     "1.1.0+1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Natura",
+     "2.8.9",
      "links",
      ""
     ],
@@ -275,8 +3041,266 @@
      ""
     ],
     [
+     "Nature's Compass",
+     "1.5.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Navigator",
+     "1.0.17",
+     "links",
+     ""
+    ],
+    [
+     "NBArmors Mod",
+     "3.1",
+     "links",
+     ""
+    ],
+    [
+     "NBTStructureLib",
+     "0.9.3",
+     "links",
+     ""
+    ],
+    [
      "Neat",
      "GRADLE:VERSION-GRADLE:BUILD",
+     "links",
+     ""
+    ],
+    [
+     "Neat",
+     "1.0.6 kotmatross edition",
+     "links",
+     ""
+    ],
+    [
+     "NEI Addons: Botany",
+     "1.17.0",
+     "links",
+     ""
+    ],
+    [
+     "NEI Custom Diagram",
+     "1.7.5",
+     "links",
+     ""
+    ],
+    [
+     "NEIIntegration",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Nekorelay",
+     "0.0.24",
+     "links",
+     ""
+    ],
+    [
+     "NemexLib",
+     "1.8",
+     "links",
+     ""
+    ],
+    [
+     "Neo ECO AE Extension",
+     "7.3.6",
+     "unresolved",
+     "appeng.core.localization.ButtonToolTips.MergeOnlyPlayerRequestedCrafts:Lappeng.core.localization.ButtonToolTips;"
+    ],
+    [
+     "Neodymium Unofficial",
+     "0.4.3-unofficial",
+     "links",
+     ""
+    ],
+    [
+     "Nether Portal Fix",
+     "1.4.0",
+     "obsolete",
+     "1.7.10 portal fix; use a modern equivalent if wanted"
+    ],
+    [
+     "Netherite 1.7.10",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "Netherrocks",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Never Enough Candy",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "NeverEnoughAnimations",
+     "1.0.8",
+     "links",
+     ""
+    ],
+    [
+     "Newposts",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "NGE",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Night Vision",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Nilcord",
+     "2.4.2.1+1.7.10+forge",
+     "links",
+     ""
+    ],
+    [
+     "Ninja's Cash",
+     "2.1",
+     "links",
+     ""
+    ],
+    [
+     "Ninjin Entities",
+     "1.2.7.4",
+     "links",
+     ""
+    ],
+    [
+     "Ninjin Entities Unofficial",
+     "0.0.0-legacy",
+     "unresolved",
+     "JinRyuu.DragonBC.common.DBCConfig.AaiDisabled:Z"
+    ],
+    [
+     "Ninjin Knockback mod for DBC",
+     "1.2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "No Leaf Decay",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "No Mob Latency",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "No Mob Spawning On Plants",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "NodalMechanics",
+     "1.3.1-GTNH",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "NoOpenToLAN",
+     "1.0.1-mixinless",
+     "links",
+     ""
+    ],
+    [
+     "NoSwim",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "Not Enough Pets",
+     "2.4.1",
+     "links",
+     ""
+    ],
+    [
+     "Not Enough Wands",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "NotEnoughEnergistics",
+     "1.7.14",
+     "unresolved",
+     "codechicken.nei.NEIClientConfig.getKeyName(Ljava.lang.String;II)Ljava.lang.String;"
+    ],
+    [
+     "NotEnoughIDs",
+     "2.1.10",
+     "obsolete",
+     "1.7.10 ID limit extender; 1.21.1 has no ID limits"
+    ],
+    [
+     "NotEnoughIDs",
+     "2.1.11",
+     "obsolete",
+     "1.7.10 ID limit extender; 1.21.1 has no ID limits"
+    ],
+    [
+     "Notes",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "NovaCraft",
+     "1.5.0",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "NTM Fluid Converters",
+     "Release-1.3.0-main.11+b686318233",
+     "links",
+     ""
+    ],
+    [
+     "NTM: Space",
+     "1.0.27 BETA (5852)",
+     "links",
+     ""
+    ],
+    [
+     "Nuclear Control 2",
+     "2.6.20",
+     "unresolved",
+     "shedar.mods.ic2.nuclearcontrol.crossmod.bigreactors.CrossBigReactors.activateOtherModStuff()V"
+    ],
+    [
+     "Numerical Tab Ping",
+     "1.0.0-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Nutrition",
+     "0.1.3",
      "links",
      ""
     ],
@@ -287,8 +3311,398 @@
      "1.7.10 Microsoft login helper; not needed"
     ],
     [
+     "OAuth",
+     "1.3.3-GTNH",
+     "obsolete",
+     "1.7.10 Microsoft login helper; not needed"
+    ],
+    [
+     "OC Glasses",
+     "1.6.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Offhand Lights",
+     "1.6",
+     "links",
+     ""
+    ],
+    [
+     "OK Progressions",
+     "26.10.31.0",
+     "unresolved",
+     "com.cleanroommc.modularui.drawable.GuiTextures.CHECK_BOX_EMPTY:Lcom.cleanroommc.modularui.drawable.UITexture;"
+    ],
+    [
+     "Omniconfig",
+     "1.0.1",
+     "unresolved",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Omniwand",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Open Modular Turrets",
+     "2.4.3",
+     "links",
+     ""
+    ],
+    [
+     "OpenBlocks",
+     "1.11.7-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "OpenComputers",
+     "1.11.20-GTNH",
+     "unresolved",
+     "li.cil.oc.common.EventHandler$.scheduleIC2Add(Lli.cil.oc.common.tileentity.traits.power.IndustrialCraft2Classic;)V"
+    ],
+    [
+     "OpenComputers",
+     "1.8.10",
+     "unresolved",
+     "li.cil.oc.common.EventHandler$.scheduleIC2Add(Lli.cil.oc.common.tileentity.traits.power.IndustrialCraft2Classic;)V"
+    ],
+    [
+     "OpenMods",
+     "0.10.11",
+     "links",
+     ""
+    ],
+    [
+     "OpenPrinter",
+     "0.3.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "OpenSecurity",
+     "1.2.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Opis",
+     "1.4.6-mapless",
+     "obsolete",
+     "1.7.10 profiler; use Spark"
+    ],
+    [
+     "Optimizations and Tweaks",
+     "0.8.7.4.2",
+     "unresolved",
+     "astrotibs.notenoughpets.util.SkinVariations.catSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;"
+    ],
+    [
+     "Options Enforcer",
+     "1.4",
+     "links",
+     ""
+    ],
+    [
+     "Ore Control",
+     "0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Ore Tweaker",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "OreDictDumper",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Overloaded Armor Bar",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "PacketWard",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "Painted Biomes",
+     "0.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Pam's Harvest the Nether",
+     "1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Pam's HarvestCraft",
+     "1.3.2-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Paradigm",
+     "2.5.3",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.<init>()V"
+    ],
+    [
+     "PassthroughSigns",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "PatPatPat",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "PC Compat",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Pebbles Begone",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "PersonalSpace",
+     "1.0.33",
+     "unresolved",
+     "me.eigenraven.personalspace.PersonalSpaceMod.removeAe2Meteors()V"
+    ],
+    [
+     "PersonalSpace",
+     "1.0.41",
+     "unresolved",
+     "me.eigenraven.personalspace.PersonalSpaceMod.removeAe2Meteors()V"
+    ],
+    [
+     "Pets Mod",
+     "0.7.9",
+     "unresolved",
+     "com.mojang.authlib.GameProfileRepository.findProfilesByNames([Ljava.lang.String;Lcom.mojang.authlib.Agent;Lcom.mojang.authlib.ProfileLookupCallback;)V"
+    ],
+    [
+     "PickleTweaks",
+     "1.5",
+     "links",
+     ""
+    ],
+    [
+     "Pineapple Psychic",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "pineapple_tags",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "Ping",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "PingDisplay",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "Planetoid",
+     "0.9.10",
+     "links",
+     ""
+    ],
+    [
+     "Plonk",
+     "10.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Pokecube Adventures",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Pokepatch",
+     "1.3.4b",
+     "links",
+     ""
+    ],
+    [
+     "ponysocks",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "Postea",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Power Drop",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Primal",
+     "0.20.0",
+     "unresolved",
+     "codechicken.nei.api.API.hideItem(Ljava.lang.String;)V"
+    ],
+    [
+     "Project Blue",
+     "1.2.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "ProjectE Team",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "ProjectRed Illumination",
+     "4.12.6-GTNH",
+     "unresolved",
+     "codechicken.nei.SearchField.getFilter(Ljava.lang.String;)Lcodechicken.nei.api.ItemFilter;"
+    ],
+    [
+     "PSWM-Fix (Deprecated, please remove)",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
      "PTRModelLib",
      "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Purescale",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "PvP Utilities",
+     "0.2.0",
+     "links",
+     ""
+    ],
+    [
+     "QueQiao",
+     "0.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Quit",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Ragex's Nuclear Tech",
+     "3.3_X1000",
+     "links",
+     ""
+    ],
+    [
+     "Railcraft",
+     "9.16.33",
+     "unresolved",
+     "mods.railcraft.common.plugins.rf.RedstoneFluxPlugin.canTileReceivePower(Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;Llegacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection;)Z"
+    ],
+    [
+     "RainbowWorld",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "RandomThings",
+     "2.6.6",
+     "links",
+     ""
+    ],
+    [
+     "Raw Input",
+     "1.4.2",
+     "links",
+     ""
+    ],
+    [
+     "RawInput",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Re: Translator 3",
+     "3",
+     "links",
+     ""
+    ],
+    [
+     "Re:Chests",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Realistic Torches",
+     "1.6.3",
+     "links",
+     ""
+    ],
+    [
+     "Realistic World Gen Alpha",
+     "alpha-1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "RealisticUlities",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "RealStars",
+     "1.0",
      "links",
      ""
     ],
@@ -299,10 +3713,166 @@
      ""
     ],
     [
+     "Recurrent Complex",
+     "0.9.7.1.2",
+     "links",
+     ""
+    ],
+    [
+     "RedLogic",
+     "59.1.13",
+     "links",
+     ""
+    ],
+    [
      "Reflex AntiLag",
      "1.1.3",
      "links",
      ""
+    ],
+    [
+     "RelocationFMP",
+     "0.2.0",
+     "links",
+     ""
+    ],
+    [
+     "RemoteIO",
+     "2.7.6",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "Render Hider",
+     "4",
+     "links",
+     ""
+    ],
+    [
+     "ReSiever",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "resistancex",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Resource Engineering",
+     "1.7.10-2.0.113",
+     "links",
+     ""
+    ],
+    [
+     "Resource Pack Organizer",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "RFDrills",
+     "1.7.3",
+     "links",
+     ""
+    ],
+    [
+     "RFTools",
+     "4.23",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.world.WorldSettings;ILlegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;Llegacyconnector.v1_7_10.net.minecraft.profiler.Profiler;)V"
+    ],
+    [
+     "Right Proper GUI Scale",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Right Proper Lighting Engine",
+     "2.2.4",
+     "links",
+     ""
+    ],
+    [
+     "Right Proper MCPatcher",
+     "0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Road Stuff",
+     "1.0.3-final",
+     "links",
+     ""
+    ],
+    [
+     "Roguelike Dungeons",
+     "1.6.6-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Ruins Mod Fastcraft",
+     "15.4",
+     "links",
+     ""
+    ],
+    [
+     "rulecraftcharacters",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Salis Arcana",
+     "1.1.33-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Salis Arcana",
+     "v2.10.0",
+     "unresolved",
+     "dev.rndmorris.salisarcana.client.handlers.SalisContainerInputHandler.register()V"
+    ],
+    [
+     "SaltyMod Expanded",
+     "2.0.0-master.150+9a0954aa6f",
+     "links",
+     ""
+    ],
+    [
+     "Salutation",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Santa's Decor",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Santa's Toys",
+     "0.4",
+     "links",
+     ""
+    ],
+    [
+     "Schematica",
+     "1.12.6-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Schematica Plus",
+     "1.0.0-beta.4",
+     "unresolved",
+     "codechicken.nei.NEIClientConfig.getWorldPath()Ljava.lang.String;"
     ],
     [
      "Search on MCMOD",
@@ -317,14 +3887,62 @@
      ""
     ],
     [
+     "SeedCopy",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "SEKWAH41's Naruto Mod",
+     "0.5.2",
+     "links",
+     ""
+    ],
+    [
      "Serene Seasons",
      "1.2.18",
      "unresolved",
      "org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V"
     ],
     [
+     "Server Tree Feller",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
      "ServerRedirect",
      "1.4.5",
+     "links",
+     ""
+    ],
+    [
+     "ServerUtilities",
+     "2.2.2",
+     "links",
+     ""
+    ],
+    [
+     "ServerUtilities",
+     "2.4.22",
+     "unresolved",
+     "serverutils.integration.navigator.ClaimsLayerManager.invalidateLocation(II)V"
+    ],
+    [
+     "SG Craft",
+     "1.4.5-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Shader Fixer",
+     "5.5-FINAL",
+     "links",
+     ""
+    ],
+    [
+     "Share Where I am",
+     "2.1.4",
      "links",
      ""
     ],
@@ -335,8 +3953,80 @@
      ""
     ],
     [
+     "Simple Arsenic and Old Lace",
+     "1.7.10-1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Simple Cobalt",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Simple Cthon",
+     "1.7.10-1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Simple Pings",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Simple Recycling",
+     "59.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Simple Storage",
+     "1.8.2",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "Simple Tungsten",
+     "1.7.10-1.5.5",
+     "links",
+     ""
+    ],
+    [
+     "SimpleOres 2",
+     "1.6.1.4",
+     "links",
+     ""
+    ],
+    [
      "Sit",
      "v1.1",
+     "links",
+     ""
+    ],
+    [
+     "Skin3DLayers",
+     "1.0.13",
+     "links",
+     ""
+    ],
+    [
+     "Sleeping Bag",
+     "0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Sleeping Server Stopper Mod",
+     "3.0.1-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Slimevoid Library",
+     "2.0.4.7",
      "links",
      ""
     ],
@@ -347,8 +4037,254 @@
      ""
     ],
     [
+     "Smooth Third Person Camera (STPC)",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Sodacan Swows",
+     "01.00.00",
+     "links",
+     ""
+    ],
+    [
+     "Soft Deepslate",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Special Mobs",
+     "3.6.3",
+     "links",
+     ""
+    ],
+    [
+     "SpongeMixins Loader",
+     "1.2.0",
+     "obsolete",
+     "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "SpongeMixins Loader",
+     "2.0.1",
+     "obsolete",
+     "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "SquidNoGlitch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Stack Fix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "StarBounded",
+     "0.0.5",
+     "links",
+     ""
+    ],
+    [
+     "starsource",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "StatTweaker",
+     "0.0.0-legacy",
+     "unresolved",
+     "alexsocol.asjlib.ExtensionsKt.setSize(Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DD)V"
+    ],
+    [
+     "Statues Mod",
+     "2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "StatuesMod Fix",
+     "1.0b",
+     "links",
+     ""
+    ],
+    [
+     "Steam Bridge",
+     "1.2+mc1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "StereoCraft: Stereoscopic 3D",
+     "0.3.0",
+     "unresolved",
+     "com.gtnewhorizons.angelica.glsm.GLStateManager.glScissor(IIII)V"
+    ],
+    [
+     "Sterling and Black",
+     "1.7.10-1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Steve's Addons",
+     "0.14.2",
+     "links",
+     ""
+    ],
+    [
+     "Steve's Carts 2",
+     "2.3.12",
+     "links",
+     ""
+    ],
+    [
+     "Steve's Factory Manager",
+     "1.3.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Stop Minimizing on Focus Loss",
+     "0.1.0+1.7.10-forge",
+     "links",
+     ""
+    ],
+    [
      "Storage Drawers",
      "1.7.10-1.10.9",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.hasDiscoveredAspect(Ljava.lang.String;Lthaumcraft.api.aspects.Aspect;)Z"
+    ],
+    [
+     "Storage Drawers",
+     "2.1.10-GTNH",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.hasDiscoveredAspect(Ljava.lang.String;Lthaumcraft.api.aspects.Aspect;)Z"
+    ],
+    [
+     "Storage Drawers",
+     "2.2.31-GTNH",
+     "unresolved",
+     "gregtech.api.util.GTRecipeBuilder.circuit(I)Lgregtech.api.util.GTRecipeBuilder;"
+    ],
+    [
+     "Structure Finder",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Structure Memory",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "StructureCompat",
+     "0.7.4",
+     "links",
+     ""
+    ],
+    [
+     "StructureLib",
+     "1.4.23",
+     "links",
+     ""
+    ],
+    [
+     "Super Solar Panel",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Super Sound Muffler: Legacy",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "SuperTic",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "SwanSong",
+     "1.3.7",
+     "unresolved",
+     "com.hbm.render.shader.Shader.stop()V"
+    ],
+    [
+     "TabbyChat",
+     "1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "TabFaces",
+     "1.0.16",
+     "links",
+     ""
+    ],
+    [
+     "Tails Legacy",
+     "4.0.3+1.7.10-forge",
+     "links",
+     ""
+    ],
+    [
+     "Tainted Magic",
+     "r7.6",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "TC Node Tracker",
+     "1.4.0",
+     "links",
+     ""
+    ],
+    [
+     "TC4 Tweak",
+     "1.5.39",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "TC4 Tweak",
+     "1.5.43",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "TechReborn",
+     "0.7.21.1131",
+     "links",
+     ""
+    ],
+    [
+     "Teletubbies",
+     "0.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Tell Me",
+     "0.2.6a",
+     "links",
+     ""
+    ],
+    [
+     "Telomerase Addon",
+     "1.1.2",
      "links",
      ""
     ],
@@ -359,16 +4295,436 @@
      ""
     ],
     [
+     "TerraFirmaCraft_TFRU",
+     "0.80.10",
+     "links",
+     ""
+    ],
+    [
+     "TFC Aged Booze",
+     "0.3",
+     "links",
+     ""
+    ],
+    [
+     "TFC+ Aesthetics",
+     "1.8.2",
+     "links",
+     ""
+    ],
+    [
+     "TFC+ Tweaker",
+     "@MOD_VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "TFCPlus Bids",
+     "0.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft",
+     "4.2.3.5",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft 4 : Patched",
+     "1.6.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft Integration",
+     "0.5",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "Thaumcraft Mob Aspects",
+     "1.2.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft NEI Additions",
+     "1.5.4",
+     "unresolved",
+     "ru.timeconqueror.tcneiadditions.nei.arcaneworkbench.ArcaneCraftingShapedHandler$ArcaneShapedCachedRecipe.containsWithNBT(Ljava.util.Collection;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Thaumcraft NEI Plugin",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft NEI Plugin : Patched",
+     "1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft Research Tweaks",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "ThaumcraftAltarCull",
+     "77d2309",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Additions",
+     "0.41",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "Thaumic Bases",
+     "1.8.13",
+     "unresolved",
+     "thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;"
+    ],
+    [
+     "Thaumic Boots",
+     "1.3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Boots",
+     "1.4.14",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Concilium",
+     "1.1.1",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApi.addLootBagItem(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;I[I)V"
+    ],
+    [
+     "Thaumic Energistics",
+     "1.7.14-GTNH",
+     "unresolved",
+     "thaumicenergistics.common.integration.ModuleEC2.init()V"
+    ],
+    [
+     "Thaumic Exploration",
+     "1.4.8-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Industries 2 : Core",
+     "1.6.1",
+     "unresolved",
+     "witchinggadgets.common.WGResearch.recipeList:Ljava.util.HashMap;"
+    ],
+    [
+     "Thaumic Insurgence",
+     "0.0.2.6",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Thaumic Insurgence",
+     "0.2.6",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Thaumic Insurgence",
+     "0.4.0",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Thaumic Machina",
+     "0.2.1",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Thaumic Renaissance",
+     "1.5.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Tinkerer",
+     "2.11.27",
+     "links",
+     ""
+    ],
+    [
+     "ThaumicHorizons",
+     "1.7.9",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "ThaumicHorizons",
+     "1.8.28",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.areItemStackTagsEqualForCrafting(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "ThaumicThermae",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
      "The Aether",
      "v1.1.2.5",
      "links",
      ""
     ],
     [
+     "The Last Sword You Will Ever Need Mod",
+     "1.35",
+     "links",
+     ""
+    ],
+    [
+     "The Middle Torch",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "The Plugin Mod",
+     "5.3",
+     "links",
+     ""
+    ],
+    [
+     "The Rings of Power",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "The Spice of Life - Carrot Edition",
+     "2.2.12-carrot",
+     "unresolved",
+     "squeek.spiceoflife.compat.NEICompat.updateTooltipCache(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "The Spice of Life - Carrot Edition",
+     "2.2.3-carrot",
+     "links",
+     ""
+    ],
+    [
+     "The Titans Mod",
+     "0.425",
+     "links",
+     ""
+    ],
+    [
+     "The Twilight Forest",
+     "2.7.13",
+     "links",
+     ""
+    ],
+    [
+     "The Useful Tools Mod",
+     "2.3.1+mc.1.7.10.forge",
+     "links",
+     ""
+    ],
+    [
+     "The Vegan Option",
+     "0.2.2",
+     "links",
+     ""
+    ],
+    [
+     "TiC Tooltips",
+     "1.4.0",
+     "links",
+     ""
+    ],
+    [
+     "TileEntity Reset Fix",
+     "1.0.1-noreq",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers Defense",
+     "1.3.2",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers Mechworks",
+     "0.4.1",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Construct",
+     "1.13.57-GTNH",
+     "unresolved",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
      "Tinkers' Construct",
      "1.7.10-1.8.8.build988",
      "links",
      ""
+    ],
+    [
+     "Tinkers' Gregworks",
+     "1.7.10-GTNH-1.0.28",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Mechworks",
+     "0.2.15.106",
+     "links",
+     ""
+    ],
+    [
+     "TipTheScales",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Titanpower",
+     "1.6.7",
+     "links",
+     ""
+    ],
+    [
+     "TNTimer",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Toggle Sneak&Sprint",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Tooltip Creator",
+     "1.7.10-1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "TooMuchLoot",
+     "4.3.0-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Torch Key",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "ToroHealth Damage Indicators",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "ToroHealth Damage Indicators",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Totemic",
+     "1.7.10-0.7.1",
+     "links",
+     ""
+    ],
+    [
+     "TpSetHome",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Track API",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Translocator",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Translocator",
+     "1.1.2.16",
+     "links",
+     ""
+    ],
+    [
+     "True Window",
+     "1.0.1",
+     "unresolved",
+     "com.sun.jna.platform.WindowUtils$W32WindowUtils.getProcessFilePath(Lcom.sun.jna.platform.win32.WinDef$HWND;)Ljava.lang.String;"
+    ],
+    [
+     "TShirts",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Tubestuff",
+     "59.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Uncrafted Mod",
+     "2.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Underp Hangables",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Unicode Fix",
+     "1.3.2",
+     "links",
+     ""
+    ],
+    [
+     "UniDict",
+     "1.7.10-2.9.2",
+     "links",
+     ""
+    ],
+    [
+     "UniLib",
+     "1.1.1",
+     "unresolved",
+     "unilib.external.org.slf4j.helpers.MessageFormatter.trimmedCopy([Ljava.lang.Object;)[Ljava.lang.Object;"
     ],
     [
      "UniLib",
@@ -378,13 +4734,223 @@
     ],
     [
      "UniMixins",
+     "0.1.23",
+     "obsolete",
+     "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "UniMixins",
      "0.3.1",
      "obsolete",
      "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
     ],
     [
+     "Universal Config",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "UniversalModCore",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "UniversalSingularities",
+     "8.10.0",
+     "links",
+     ""
+    ],
+    [
+     "V-Tweaks",
+     "1.4",
+     "links",
+     ""
+    ],
+    [
+     "VeryLegacyZoomer",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Village Names",
+     "4.4.13",
+     "links",
+     ""
+    ],
+    [
+     "Vintage Damage Indicators",
+     "0.9.4",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "VisualProspecting",
+     "1.4.8",
+     "links",
+     ""
+    ],
+    [
+     "VOS",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Waila",
+     "1.8.15",
+     "links",
+     ""
+    ],
+    [
+     "Waila Events",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Waila Harvestability",
+     "1.3.4-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Waila Inhibitors",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "WAILA Plugins",
+     "0.6.0",
+     "links",
+     ""
+    ],
+    [
+     "WanionLib",
+     "1.10.0",
+     "links",
+     ""
+    ],
+    [
+     "WanionLib",
+     "1.7.10-1.8",
+     "links",
+     ""
+    ],
+    [
+     "WarpTheory",
+     "1.5.0-GTNH",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.addStickyWarpToPlayer(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;I)V"
+    ],
+    [
+     "WarTech Reforged Compatibility",
+     "1.3.0-dev-hbm5751",
+     "unresolved",
+     "com.hbm.explosion.ExplosionChaos.igniteAllBlocks(Llegacyconnector.v1_7_10.net.minecraft.world.World;IIIII)V"
+    ],
+    [
+     "watermod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Waystones-X",
+     "1.0.16",
+     "links",
+     ""
+    ],
+    [
+     "What Are We Looking At",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "What Are We Looking At",
+     "1.3.1-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Where Are The Ores?",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Windows Keyboard Fixes",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Witchery",
+     "0.24.1",
+     "links",
+     ""
+    ],
+    [
+     "Witchery++",
+     "1.3.8",
+     "links",
+     ""
+    ],
+    [
+     "WitcheryPatch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Witching Gadgets",
+     "1.7.25-GTNH",
+     "unresolved",
+     "thaumcraft.api.ThaumcraftApiHelper.hasDiscoveredAspect(Ljava.lang.String;Lthaumcraft.api.aspects.Aspect;)Z"
+    ],
+    [
+     "World Primer",
+     "0.5.0",
+     "links",
+     ""
+    ],
+    [
+     "World Stripper",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "World-Tooltips",
+     "1.2.3-87 kotmatross edition",
+     "links",
+     ""
+    ],
+    [
      "WorldEdit",
      "6.1.1",
+     "links",
+     ""
+    ],
+    [
+     "WorldEdit",
+     "6.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Worley's Caves",
+     "1.6",
+     "links",
+     ""
+    ],
+    [
+     "WR-CBE Logic",
+     "1.7.1",
      "links",
      ""
     ],
@@ -407,14 +4973,74 @@
      ""
     ],
     [
+     "xCraft",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Xenofactions",
+     "1.0.2.2",
+     "unresolved",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "YAMCore",
+     "0.7.1",
+     "links",
+     ""
+    ],
+    [
      "YDMs Weaponmaster",
      "4.2.4",
      "links",
      ""
     ],
     [
+     "Yeth's TPA",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Zelda Sword Skills",
+     "1.7.10-2.5.1",
+     "unresolved",
+     "mods.battlegear2.api.core.BattlegearUtils.setPlayerOffhandItem(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "Zombie Plague Mod 2",
+     "1.6.35_1",
+     "unresolved",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Ztones",
+     "1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Zulip Bridge",
+     "1.3.0+1.7.10",
+     "links",
+     ""
+    ],
+    [
      "�4Name Pain",
      "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "�6SimpleFps",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "�9Tool-Upgrades Mod",
+     "1.2.3",
      "links",
      ""
     ]
