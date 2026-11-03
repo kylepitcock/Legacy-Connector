@@ -41,6 +41,7 @@ dependencies {
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation "org.ow2.asm:asm-util:${asm_version}"
     testImplementation "com.google.code.gson:gson:2.10.1"
     testImplementation "org.slf4j:slf4j-api:2.0.9"
     testRuntimeOnly "org.slf4j:slf4j-simple:2.0.9"
