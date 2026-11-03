@@ -58,6 +58,8 @@ public class RenderManager {
                     () -> new RenderWolf(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelWolf(), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelWolf(), 0.5F)),
             java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityChicken.class,
                     () -> new RenderChicken(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelChicken(), 0.3F)),
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityHorse.class,
+                    () -> new RenderHorse(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelHorse(), 0.75F)),
             java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityOcelot.class,
                     () -> new RenderOcelot(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelOcelot(), 0.4F)),
             java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySilverfish.class, RenderSilverfish::new),
