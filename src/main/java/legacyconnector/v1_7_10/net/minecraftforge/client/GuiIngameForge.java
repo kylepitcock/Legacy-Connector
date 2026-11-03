@@ -17,4 +17,6 @@ public class GuiIngameForge extends GuiIngame {
     public static boolean renderAir = true;
     public static boolean renderExperiance = true;
     public static boolean renderObjective = true;
+    public static boolean renderHealthMount = true;
+    public static boolean renderJumpBar = true;
 }

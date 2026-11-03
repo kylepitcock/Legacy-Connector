@@ -13,8 +13,16 @@ public class ChatStyle {
     private legacyconnector.v1_7_10.net.minecraft.event.ClickEvent clickEvent;
     private legacyconnector.v1_7_10.net.minecraft.event.HoverEvent hoverEvent;
 
+    private ChatStyle parentStyle;
+
+    /** The style this one inherits unset attributes from (a component's style inherits from its parent component's). */
+    public ChatStyle setParentStyle(ChatStyle parent) {
+        this.parentStyle = parent == this ? null : parent;
+        return this;
+    }
+
     public legacyconnector.v1_7_10.net.minecraft.event.ClickEvent getChatClickEvent() {
-        return clickEvent;
+        return clickEvent != null ? clickEvent : parentStyle == null ? null : parentStyle.getChatClickEvent();
     }
 
     public ChatStyle setChatClickEvent(legacyconnector.v1_7_10.net.minecraft.event.ClickEvent event) {
@@ -23,7 +31,7 @@ public class ChatStyle {
     }
 
     public legacyconnector.v1_7_10.net.minecraft.event.HoverEvent getChatHoverEvent() {
-        return hoverEvent;
+        return hoverEvent != null ? hoverEvent : parentStyle == null ? null : parentStyle.getChatHoverEvent();
     }
 
     public ChatStyle setChatHoverEvent(legacyconnector.v1_7_10.net.minecraft.event.HoverEvent event) {
@@ -32,27 +40,27 @@ public class ChatStyle {
     }
 
     public EnumChatFormatting getColor() {
-        return color;
+        return color != null ? color : parentStyle == null ? null : parentStyle.getColor();
     }
 
     public boolean getBold() {
-        return Boolean.TRUE.equals(bold);
+        return bold != null ? bold : parentStyle != null && parentStyle.getBold();
     }
 
     public boolean getItalic() {
-        return Boolean.TRUE.equals(italic);
+        return italic != null ? italic : parentStyle != null && parentStyle.getItalic();
     }
 
     public boolean getUnderlined() {
-        return Boolean.TRUE.equals(underlined);
+        return underlined != null ? underlined : parentStyle != null && parentStyle.getUnderlined();
     }
 
     public boolean getStrikethrough() {
-        return Boolean.TRUE.equals(strikethrough);
+        return strikethrough != null ? strikethrough : parentStyle != null && parentStyle.getStrikethrough();
     }
 
     public boolean getObfuscated() {
-        return Boolean.TRUE.equals(obfuscated);
+        return obfuscated != null ? obfuscated : parentStyle != null && parentStyle.getObfuscated();
     }
 
     public ChatStyle setColor(EnumChatFormatting color) {
@@ -95,6 +103,7 @@ public class ChatStyle {
         s.obfuscated = obfuscated;
         s.clickEvent = clickEvent;
         s.hoverEvent = hoverEvent;
+        s.parentStyle = parentStyle;
         return s;
     }
 
@@ -166,7 +175,7 @@ public class ChatStyle {
     }
 
     public Style mcc$modern() {
-        Style s = Style.EMPTY;
+        Style s = parentStyle == null ? Style.EMPTY : parentStyle.mcc$modern();
         if (color != null && color.mcc$modern() != null) s = s.withColor(color.mcc$modern());
         if (bold != null) s = s.withBold(bold);
         if (italic != null) s = s.withItalic(italic);
