@@ -72,6 +72,13 @@ public final class LegacyConfig {
             # instead of on the server thread while the player joins.
             perf.asyncBiomeSample = true
 
+            # Pack maker switches, read by the loader at startup.
+            # Legacy mods to leave out entirely (their legacy ids, comma separated; the whole jar is skipped when all its mods are listed).
+            # mods.skip = examplemod, othermod
+            # Treat a dependency on one legacy id as satisfied by another (ordering and the generated mod metadata), e.g. when a mod was
+            # renamed or a library is provided under another id. One line per id.
+            # mods.alias.oldid = newid
+
             # Energy conversion for legacy tiles and items exposed as NeoForge energy (FE). RF is 1:1 with FE.
             # FE per IC2 EU (IC2 machines accept energy from modern cables at this rate).
             energy.fePerEu = 4
@@ -176,6 +183,12 @@ public final class LegacyConfig {
      */
     public static boolean perf(String name, boolean fallback) {
         return bool("perf." + name, fallback);
+    }
+
+    /** {@code mods.alias.<id> = <other id>}: a legacy dependency on the first id is satisfied by the second (the id itself when none). */
+    public static String modAlias(String legacyId) {
+        String other = string("mods.alias." + legacyId.toLowerCase(java.util.Locale.ROOT), null);
+        return other != null ? other : legacyId;
     }
 
     /** FE per IC2 EU for the energy capability of IC2 tiles and items. */

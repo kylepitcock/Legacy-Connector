@@ -96,6 +96,7 @@ public final class LegacyModDecl {
                 target = target.substring(0, at);
             }
             if (target.equals("*")) continue;
+            target = LibraryBridges.alias(target);
             boolean required = kind.startsWith("required-");
             String ordering = kind.endsWith("before") ? "BEFORE" : kind.endsWith("after") ? "AFTER" : "NONE";
             out.add(new Dependency(target, required, ordering, range));

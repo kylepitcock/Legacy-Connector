@@ -63,6 +63,7 @@ public final class LegacyMods {
             String target = part.substring(colon + 1).trim();
             int at = target.indexOf('@');
             if (at >= 0) target = target.substring(0, at);
+            target = LegacyConfig.modAlias(target);
             LegacyModRecord dep = byId.get(target.toLowerCase(Locale.ROOT));
             if (dep != null) visit(dep, byId, state, out);
         }

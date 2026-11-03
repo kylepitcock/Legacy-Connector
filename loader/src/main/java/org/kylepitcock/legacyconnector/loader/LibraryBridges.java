@@ -98,9 +98,40 @@ public final class LibraryBridges {
             java.util.Map.entry("reauth", "1.12.2 login helper; not needed"),
             java.util.Map.entry("laggoggles", "1.12.2 profiler; use Spark"));
 
-    /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list), or null. */
+    /** Legacy mod ids (lower case) the pack maker switched off with {@code mods.skip} in config/legacyconnector.properties. */
+    private static volatile Set<String> userSkips = Set.of();
+    /** {@code mods.alias.<id> = <other id>}: a dependency on the first id is treated as one on the second (lower case keys). */
+    private static volatile java.util.Map<String, String> userAliases = java.util.Map.of();
+
+    /** Reads {@code mods.skip = id, id} and {@code mods.alias.<id> = <id>} (called when the config is read at startup). */
+    static void applyUserConfig(Properties config) {
+        Set<String> skips = new HashSet<>();
+        for (String id : config.getProperty("mods.skip", "").split(",")) {
+            if (!id.isBlank()) skips.add(id.trim().toLowerCase(Locale.ROOT));
+        }
+        java.util.Map<String, String> aliases = new java.util.HashMap<>();
+        for (String key : config.stringPropertyNames()) {
+            if (key.startsWith("mods.alias.") && key.length() > "mods.alias.".length() && !config.getProperty(key).isBlank()) {
+                aliases.put(key.substring("mods.alias.".length()).trim().toLowerCase(Locale.ROOT), config.getProperty(key).trim());
+            }
+        }
+        userSkips = Set.copyOf(skips);
+        userAliases = java.util.Map.copyOf(aliases);
+    }
+
+    /** The id a dependency on {@code legacyId} is satisfied by, after the pack maker's {@code mods.alias.*} (the id itself when none). */
+    public static String alias(String legacyId) {
+        String other = userAliases.get(legacyId.toLowerCase(Locale.ROOT));
+        return other != null ? other : legacyId;
+    }
+
+    /** Why a legacy jar is obsolete on 1.21.1 (all its mods are on the list) or switched off by the pack maker, or null. */
     public static String obsoleteReason(LegacyJar jar) {
         if (!jar.hasMods()) return null;
+        Set<String> skips = userSkips;
+        if (!skips.isEmpty() && jar.mods.stream().allMatch(m -> skips.contains(m.legacyId.toLowerCase(Locale.ROOT)))) {
+            return "switched off with mods.skip in config/legacyconnector.properties";
+        }
         String reason = null;
         for (LegacyModDecl m : jar.mods) {
             reason = OBSOLETE.get(m.legacyId.toLowerCase(Locale.ROOT));
@@ -121,6 +152,7 @@ public final class LibraryBridges {
     public static List<Bridge> active(Path modsDir) {
         Set<String> modern = modernModIds(modsDir);
         Properties config = readConfig(modsDir);
+        applyUserConfig(config);
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
