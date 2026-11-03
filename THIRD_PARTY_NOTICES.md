@@ -13,3 +13,11 @@ Minecraft assets are never included.
 | `LegacyResourceConverter.MODEL_RENAMES` (glazed terracotta, redstone dust, fire and wall torch parents) | `model-parent-renames.tsv` | Targets re-checked against the 1.21.1 client jar |
 | `OreDictBridge.SPECIAL` (vanilla ore dictionary names such as `chest`, `fenceWood`, `dye`, `gravel`) | `forge-ore-dictionary.tsv` | Only names that map to a tag; every `c:` tag re-checked in NeoForge 21.1 and every `minecraft:` tag in vanilla 1.21.1 |
 | `loader/src/main/resources/legacyconnector/resource/vanilla-texture-paths.tsv` (read by `TextureLocations`) | `LegacyTexturePathMappings.java` and `texture-migrations.tsv` | Only rows that apply up to 1.21.1; every row re-checked against the 1.21.1 client jar |
+
+## Sinytra Connector
+
+[Sinytra Connector](https://github.com/Sinytra/Connector), MIT License, Copyright (c) Sinytra.
+
+| Our file | Taken from | Changes |
+|---|---|---|
+| `SideOnlyStripper` (removal of lambda bodies orphaned by side stripping) | `patch/EnvironmentStripperTransformer.java#getMethodLambdas` | Only the idea (collect `lambda$` handles of removed methods); the code is our own, with a fixed point over nested lambdas and a reachability check against the remaining methods |
