@@ -9,6 +9,17 @@ import legacyconnector.v1_7_10.net.minecraft.nbt.NBTTagList;
 
 /** Enchantment levels read from the stacks' {@code ench} lists (vanilla enchantments included). */
 public class EnchantmentHelper {
+    /** A random worn or held stack of the entity carrying the enchantment (null when none does). */
+    public static ItemStack func_92099_a(Enchantment enchantment, legacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase entity) {
+        if (enchantment == null || entity == null) return null;
+        java.util.ArrayList<ItemStack> found = new java.util.ArrayList<>();
+        for (int slot = 0; slot < 5; slot++) {
+            ItemStack stack = entity.getEquipmentInSlot(slot);
+            if (stack != null && getEnchantmentLevel(enchantment.effectId, stack) > 0) found.add(stack);
+        }
+        return found.isEmpty() ? null : found.get(entity.rand.nextInt(found.size()));
+    }
+
     public static int getEnchantmentLevel(int id, ItemStack stack) {
         if (stack == null) return 0;
         NBTTagList list = stack.getEnchantmentTagList();

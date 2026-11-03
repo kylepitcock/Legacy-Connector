@@ -623,6 +623,12 @@ public class Item {
             return this;
         }
 
+        /** The stack that repairs tools of this tier. */
+        public ItemStack getRepairItemStack() {
+            Item item = getBaseItemForRepair();
+            return item == null ? null : new ItemStack(item, 1, 0);
+        }
+
         public Item getBaseItemForRepair() {
             // No switch: EnumHelper appends constants after javac's switch map was built.
             if (this == WOOD) return Item.getItemFromBlock(legacyconnector.v1_7_10.net.minecraft.init.Blocks.planks);
@@ -632,6 +638,13 @@ public class Item {
             if (this == GOLD) return legacyconnector.v1_7_10.net.minecraft.init.Items.gold_ingot;
             return customCraftingMaterial;
         }
+    }
+
+    /** Forge: lets an item change the chest content that picks it when a structure chest is filled (default: unchanged). */
+    public legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent getChestGenBase(
+            legacyconnector.v1_7_10.net.minecraftforge.common.ChestGenHooks chest, Random rnd,
+            legacyconnector.v1_7_10.net.minecraft.util.WeightedRandomChestContent original) {
+        return original;
     }
 
     public IIcon getIcon(ItemStack stack, int renderPass, legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player, ItemStack usingItem, int useRemaining) {

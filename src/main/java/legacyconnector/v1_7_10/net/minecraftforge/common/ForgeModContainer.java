@@ -7,4 +7,6 @@ public class ForgeModContainer {
     public static boolean removeErroringEntities = false;
     public static boolean removeErroringTileEntities = false;
     public static boolean fullBoundingBoxLadders = false;
+    /** Forge config "sortRecipies": sort shaped recipes before shapeless ones in the recipe list. */
+    public static boolean shouldSortRecipies = true;
 }

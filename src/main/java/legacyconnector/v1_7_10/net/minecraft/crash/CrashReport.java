@@ -28,6 +28,12 @@ public class CrashReport {
         return category;
     }
 
+    /** The first category of the report (vanilla's own "System Details" category). */
+    public CrashReportCategory getCategory() {
+        if (categories.isEmpty()) makeCategory("System Details");
+        return categories.get(0);
+    }
+
     public String getDescription() {
         return description;
     }

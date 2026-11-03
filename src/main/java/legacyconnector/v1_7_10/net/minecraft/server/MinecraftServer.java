@@ -139,6 +139,15 @@ public class MinecraftServer implements ICommandSender, Runnable {
         return mcc$server.getPlayerCount();
     }
 
+    /** Radius (blocks) around the world spawn where only operators change blocks (spawn-protection). */
+    public int getSpawnProtectionSize() {
+        return mcc$server == null ? 16 : mcc$server.getSpawnProtectionRadius();
+    }
+
+    /** One server tick: the host game runs its own loop, so a mod calling it changes nothing. */
+    public void tick() {
+    }
+
     public int getMaxPlayers() {
         return mcc$server.getMaxPlayers();
     }

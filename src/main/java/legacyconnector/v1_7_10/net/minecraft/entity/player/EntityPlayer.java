@@ -347,6 +347,18 @@ public abstract class EntityPlayer extends EntityLivingBase {
         sp.openMenu(new net.minecraft.world.SimpleMenuProvider((windowId, inv, p) -> new net.minecraft.world.inventory.HopperMenu(windowId, inv, view), title));
     }
 
+    /** Spawns an item entity in this player's world (Forge: captured drops are joined to the world, as plain spawns). */
+    public void joinEntityItemWithWorld(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem item) {
+        if (item != null) mcc$world().spawnEntityInWorld(item);
+    }
+
+    /** Opens the written book in the main hand for reading (other items have no reading screen). */
+    public void displayGUIBook(ItemStack book) {
+        if (!(mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp) || book == null) return;
+        net.minecraft.world.item.ItemStack modern = ItemStack.mcc$toModern(book);
+        if (modern.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) sp.openItemGui(modern, net.minecraft.world.InteractionHand.MAIN_HAND);
+    }
+
     public void closeScreen() {
         mcc$player().closeContainer();
     }

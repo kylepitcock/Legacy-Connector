@@ -169,6 +169,18 @@ public class ForgeHooks {
      * Whether the player may keep the container open: {@code PlayerOpenContainerEvent} decides (ALLOW keeps it, DENY
      * closes it), by default the container's own {@code canInteractWith}.
      */
+    /** A note block was retuned: posts {@code NoteBlockEvent.Change}; false (and the old note restored) when cancelled. */
+    public static boolean onNoteChange(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityNote te, byte old) {
+        var event = new legacyconnector.v1_7_10.net.minecraftforge.event.world.NoteBlockEvent.Change(te.getWorldObj(), te.xCoord, te.yCoord,
+                te.zCoord, te.getBlockMetadata(), old, te.note);
+        if (MinecraftForge.EVENT_BUS.post(event)) {
+            te.note = old;
+            return false;
+        }
+        te.note = (byte) event.getVanillaNoteId();
+        return true;
+    }
+
     public static boolean canInteractWith(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player,
             legacyconnector.v1_7_10.net.minecraft.inventory.Container openContainer) {
         var event = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.PlayerOpenContainerEvent(player, openContainer);

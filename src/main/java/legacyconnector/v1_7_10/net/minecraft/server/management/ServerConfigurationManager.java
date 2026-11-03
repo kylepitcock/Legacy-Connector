@@ -81,6 +81,16 @@ public class ServerConfigurationManager {
         entity.travelToDimension(legacyconnector.v1_7_10.net.minecraft.world.World.mcc$get$provider(to).dimensionId);
     }
 
+    public int getMaxPlayers() {
+        return mcc$server.getMaxPlayers();
+    }
+
+    /** The statistics file of a player (a server player's own; any other gets a fresh one). */
+    public legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile getPlayerStatsFile(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player) {
+        if (player instanceof EntityPlayerMP mp) return mp.getStatFile();
+        return new legacyconnector.v1_7_10.net.minecraft.stats.StatisticsFile(player == null ? null : player.mcc$player().getUUID());
+    }
+
     public int getCurrentPlayerCount() {
         return mcc$server.getCurrentPlayerCount();
     }
