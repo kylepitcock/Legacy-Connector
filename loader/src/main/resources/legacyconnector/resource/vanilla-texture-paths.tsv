@@ -1,0 +1,45 @@
+# Vanilla textures outside block/ and item/ that a 1.12 mod binds by path in code (renderers, GUIs), 1.12.2 to 1.21.1.
+#
+# Format: OLD_PATH<TAB>NEW_PATH, both relative to assets/minecraft/textures/ and with the .png extension.
+# Read by TextureLocations (the loader's resource converter does not use it: mods ship their own assets).
+#
+# Taken from Retromod (https://github.com/Bownlux/Retromod, MIT License, (c) 2026 Bownlux): the pre-1.13 moves of
+# LegacyTexturePathMappings.java and the post-flattening rows of texture-migrations.tsv that apply up to 1.21.1. Every row was
+# re-checked against the 1.21.1 client jar: the new file exists and the old one is gone.
+entity/bed/silver.png	entity/bed/light_gray.png
+entity/boat/boat_acacia.png	entity/boat/acacia.png
+entity/boat/boat_birch.png	entity/boat/birch.png
+entity/boat/boat_darkoak.png	entity/boat/dark_oak.png
+entity/boat/boat_jungle.png	entity/boat/jungle.png
+entity/boat/boat_oak.png	entity/boat/oak.png
+entity/boat/boat_spruce.png	entity/boat/spruce.png
+entity/endercrystal/endercrystal.png	entity/end_crystal/end_crystal.png
+entity/endercrystal/endercrystal_beam.png	entity/end_crystal/end_crystal_beam.png
+entity/illager/fangs.png	entity/illager/evoker_fangs.png
+entity/illager/illusionist.png	entity/illager/illusioner.png
+entity/llama/llama_brown.png	entity/llama/brown.png
+entity/llama/llama_creamy.png	entity/llama/creamy.png
+entity/llama/llama_gray.png	entity/llama/gray.png
+entity/llama/llama_white.png	entity/llama/white.png
+entity/llama/decor/decor_black.png	entity/llama/decor/black.png
+entity/llama/decor/decor_blue.png	entity/llama/decor/blue.png
+entity/llama/decor/decor_brown.png	entity/llama/decor/brown.png
+entity/llama/decor/decor_cyan.png	entity/llama/decor/cyan.png
+entity/llama/decor/decor_gray.png	entity/llama/decor/gray.png
+entity/llama/decor/decor_green.png	entity/llama/decor/green.png
+entity/llama/decor/decor_light_blue.png	entity/llama/decor/light_blue.png
+entity/llama/decor/decor_lime.png	entity/llama/decor/lime.png
+entity/llama/decor/decor_magenta.png	entity/llama/decor/magenta.png
+entity/llama/decor/decor_orange.png	entity/llama/decor/orange.png
+entity/llama/decor/decor_pink.png	entity/llama/decor/pink.png
+entity/llama/decor/decor_purple.png	entity/llama/decor/purple.png
+entity/llama/decor/decor_red.png	entity/llama/decor/red.png
+entity/llama/decor/decor_silver.png	entity/llama/decor/light_gray.png
+entity/llama/decor/decor_white.png	entity/llama/decor/white.png
+entity/llama/decor/decor_yellow.png	entity/llama/decor/yellow.png
+entity/shulker/shulker_silver.png	entity/shulker/shulker_light_gray.png
+entity/snowman.png	entity/snow_golem.png
+entity/iron_golem.png	entity/iron_golem/iron_golem.png
+entity/sign.png	entity/signs/oak.png
+entity/squid.png	entity/squid/squid.png
+misc/enchanted_item_glint.png	misc/enchanted_glint_item.png

@@ -9,7 +9,7 @@ import org.kylepitcock.legacyconnector.core.Ids;
  * them under the same names.
  */
 public final class TextureLocations {
-    private static final Map<String, String> RENAMES = Map.ofEntries(
+    private static final Map<String, String> RENAMES = new java.util.HashMap<>(Map.ofEntries(
             Map.entry("textures/atlas/items.png", "textures/atlas/blocks.png"),
             // the dirt tile behind 1.7.10's menus and lists (Gui.optionsBackground) is the dirt block texture
             Map.entry("textures/gui/options_background.png", "textures/block/dirt.png"),
@@ -23,7 +23,24 @@ public final class TextureLocations {
             // the enchantment glint (ChromatiCraft's item renderers draw it themselves)
             Map.entry("textures/misc/enchanted_item_glint.png", "textures/misc/enchanted_glint_item.png"),
             Map.entry("textures/entity/zombie_villager/zombie_villager.png", "textures/entity/zombie_villager/zombie_villager.png"),
-            Map.entry("textures/entity/villager/villager.png", "textures/entity/villager/villager.png"));
+            Map.entry("textures/entity/villager/villager.png", "textures/entity/villager/villager.png")));
+
+    static {
+        // vanilla textures a 1.12 mod binds by path in code (boats, llamas, shulkers, ...), from legacyconnector/resource/vanilla-texture-paths.tsv:
+        // taken from Retromod (MIT, see THIRD_PARTY_NOTICES.md), each row checked against the 1.21.1 client jar; the entries above win
+        try (java.io.InputStream in = TextureLocations.class.getResourceAsStream("/legacyconnector/resource/vanilla-texture-paths.tsv")) {
+            if (in != null) {
+                java.io.BufferedReader r = new java.io.BufferedReader(new java.io.InputStreamReader(in, java.nio.charset.StandardCharsets.UTF_8));
+                for (String line; (line = r.readLine()) != null; ) {
+                    if (line.isEmpty() || line.charAt(0) == '#') continue;
+                    String[] f = line.split("\t");
+                    if (f.length >= 2) RENAMES.putIfAbsent("textures/" + f[0], "textures/" + f[1]);
+                }
+            }
+        } catch (java.io.IOException ignored) {
+            // a missing table only leaves the hand-written renames
+        }
+    }
 
     private TextureLocations() {}
 

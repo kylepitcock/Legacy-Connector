@@ -117,19 +117,18 @@ public final class CheckJar {
             r.addProperty("synthesizedClasses", links.synthesizedClasses.size());
             r.addProperty("synthesizedMembers", links.stubbedMembers.size());
             r.add("missing", members(links.missingClasses, links.missingShimMembers, links.missingLibraryMembers));
+            // legacy API the layer generated as empty stubs: it links but does nothing, so it is a gap in behaviour (tools/compat/missing_report.py)
+            r.add("stubbed", members(links.stubbedMembers));
         }
         return r;
     }
 
-    /** Up to 25 unresolved references with the first class that makes them, for the report's notes. */
+    /** Every reference of the groups (the site's notes only show the first few; tools/compat/missing_report.py ranks all of them). */
     @SafeVarargs
     private static JsonArray members(Map<String, TreeSet<String>>... groups) {
         JsonArray a = new JsonArray();
         for (var g : groups) {
-            for (var e : g.entrySet()) {
-                if (a.size() >= 25) return a;
-                a.add(e.getKey().replace('/', '.'));
-            }
+            for (var e : g.entrySet()) a.add(e.getKey().replace('/', '.'));
         }
         return a;
     }

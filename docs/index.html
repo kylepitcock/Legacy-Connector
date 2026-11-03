@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Legacy Connector compatibility</title>
-<meta name="description" content="Which legacy Minecraft mods (1.7.10, 1.12.2) work under Legacy Connector on NeoForge 1.21.1, automated link-probe results, and how to report yours.">
+<meta name="description" content="Which legacy Minecraft mods (1.7.10, 1.12.2) work under Legacy Connector on NeoForge 1.21.1, automated check results, and how to report yours.">
 <meta name="color-scheme" content="light dark">
 <script>
   // theme before first paint: ?theme=dark|light, then the saved choice, then the OS setting
@@ -46,7 +46,7 @@
   <div class="wrap">
     <p class="kicker">Forge 1.7.10 + 1.12.2 &rarr; NeoForge 1.21.1</p>
     <h1 id="hero-title">Old Forge mods, <em>unmodified</em>, in a modern game.</h1>
-    <p class="pitch">Legacy Connector translates legacy Forge mods at load time. See which ones work, check the automated link results, or tell us how yours went.</p>
+    <p class="pitch">Legacy Connector translates legacy Forge mods at load time. See which ones work, check the automated results, or tell us how yours went.</p>
     <div class="cta">
       <a class="btn" id="report-top" href="#" target="_blank" rel="noopener">Report a mod</a>
       <a class="btn alt" href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a>
@@ -83,8 +83,8 @@
 
   <!-- AUTOMATED -->
   <section class="view" id="view-automated" data-view="automated" aria-label="Automated results" hidden>
-    <h2 class="sec" style="margin-top:26px">Automated link results</h2>
-    <p class="lead">Every mod jar is translated offline, outside the game, and checked: does every class, method and field it uses link? This is the share of popular legacy Forge mods that pass.</p>
+    <h2 class="sec" style="margin-top:26px">Automated results</h2>
+    <p class="lead">Every mod jar is translated offline, outside the game, and checked: is everything it uses there? This sorts popular legacy Forge mods by what, if anything, is still missing. It is a quick first check, not a test of play.</p>
     <div class="compare" id="compare"></div>
 
     <div class="tabs" id="ptabs" role="tablist" aria-label="Minecraft version of the probe run"></div>
@@ -115,9 +115,9 @@
     </div>
     <div class="card">
       <h3>How it works</h3>
-      <p class="small" style="margin-top:0">Compatibility is determined by running Legacy Connector's translation on the mod jar and validating the result. This runs outside of the game with the <code>checkLegacyMod</code> tool (<code>tools/compat/probe.py</code>); all jars of a run are translated as one mod set, so mods that extend each other link.</p>
-      <p class="small"><b>Links</b>: every class, method and field the mod uses resolves against the shim, the synthesized legacy API or the libraries. <b>Unresolved</b>: at least one reference cannot be linked and would throw when used. <b>Not applicable</b>: 1.7.10 / 1.12.2 engine patches (performance, bug fixes, ID extenders, mixin loaders) that have nothing to do on 1.21.1.</p>
-      <p class="small"><b>This only proves a jar translates and links, it does not prove that the mod works in game.</b> Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/mods">mod list</a>, where player reports and in-game tests outrank this probe.</p>
+      <p class="small" style="margin-top:0">Compatibility is determined by running Legacy Connector's translation on the mod jar and validating the result. This runs outside of the game with the <code>checkLegacyMod</code> tool (<code>tools/compat/probe.py</code>); all jars of a run are translated as one mod set, so a mod and the library or parent mod it builds on can find each other.</p>
+      <p class="small"><b>The categories.</b> <b>Ready to test</b>: the mod translates and everything it uses exists, so it is worth trying in game. <b>Partly placeholder</b>: it translates, but 10 or more features it uses are empty placeholders, so large parts probably do nothing. <b>Missing game features</b>: it needs old Minecraft or Forge functionality (or an API the layer provides itself, such as NEI) that we have not built yet; this is our work to do. <b>Needs another mod</b>: it depends on code from another mod, such as Thaumcraft, IC2 or AE2, that is not available or does not match the version it expects. <b>Needs removed code</b>: it uses old Java or library code that no longer exists. <b>Not needed</b>: 1.7.10 and 1.12.2 engine patches (performance, bug fixes, ID extenders) with nothing to do on 1.21.1.</p>
+      <p class="small"><b>"Ready to test" does not mean "works".</b> The game is never started: this only shows the jar translates and nothing it uses is missing. Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/mods">mod list</a>, where player reports and in-game tests outrank this probe.</p>
       <p class="small">The jars come from Modrinth's most downloaded Forge mods and are discarded after the run. If a result is wrong, <a class="report-link" href="#" target="_blank" rel="noopener">open a compatibility report</a>.</p>
     </div>
   </section>
@@ -141,7 +141,7 @@
     <h2 class="sec">The pieces</h2>
     <div class="twocol">
       <div class="card"><h3>Mod list</h3><p class="small" style="margin:0">Per Minecraft version, one row per mod with every result behind it: <a href="#/mods">open the list</a>.</p></div>
-      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline link probe of popular mods, 1.7.10 and 1.12.2 side by side: <a href="#/automated">see the numbers</a>.</p></div>
+      <div class="card"><h3>Automated results</h3><p class="small" style="margin:0">Weekly offline check of popular mods, 1.7.10 and 1.12.2 side by side: <a href="#/automated">see the numbers</a>.</p></div>
       <div class="card"><h3>Documentation</h3><p class="small" style="margin:0">Architecture, bridges and the addon API are in the <a href="https://github.com/kylepitcock/Legacy-Connector/tree/master/docs/wiki" target="_blank" rel="noopener">wiki folder</a>.</p></div>
     </div>
   </section>

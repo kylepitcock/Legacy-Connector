@@ -4,7 +4,7 @@
   --bg: #f4f2ee; --surface: #ffffff; --surface2: #f0eee9; --text: #1a1d23; --muted: #5a6270; --line: #ddd9d0; --line2: #e9e6df;
   --accent: #2354d4; --accent-ink: #ffffff; --accent-soft: #e3eaff; --ring: #2354d4;
   --perfect: #6d28d9; --playable: #0a7586; --works: #167a3c; --partial: #94600a; --loads: #1f629b; --fails: #b8400a; --crashes: #b42318; --untested: #596270;
-  --links: #167a3c; --unresolved: #c2410c; --obsolete: #7b8494;
+  --links: #167a3c; --stubs: #a16207; --gap-shim: #c2410c; --gap-mod: #6d28d9; --gap-lib: #0e7490; --unresolved: #c2410c; --obsolete: #7b8494;
   --hero-a: #ffe9c2; --hero-b: #dfe8ff; --shadow: 0 1px 2px rgba(30,25,10,.06), 0 6px 20px rgba(30,25,10,.06);
   --display: "Avenir Next", "Segoe UI Variable Display", "Trebuchet MS", system-ui, sans-serif;
   --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -14,7 +14,7 @@
   --bg: #0d1016; --surface: #151a22; --surface2: #1b212b; --text: #e9ecf1; --muted: #9ba5b4; --line: #2a3140; --line2: #212836;
   --accent: #86a6ff; --accent-ink: #0b1020; --accent-soft: #1e2a4a; --ring: #9bb5ff;
   --perfect: #b99bf7; --playable: #4cc9d9; --works: #55c98e; --partial: #e9b84a; --loads: #6cb3e8; --fails: #ff9060; --crashes: #ff7a7a; --untested: #9aa4b3;
-  --links: #55c98e; --unresolved: #ff9060; --obsolete: #8b95a5;
+  --links: #55c98e; --stubs: #e5b13a; --gap-shim: #ff9060; --gap-mod: #b794f6; --gap-lib: #3cc7d6; --unresolved: #ff9060; --obsolete: #8b95a5;
   --hero-a: #2a2112; --hero-b: #15213f; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 6px 22px rgba(0,0,0,.35);
 }
 * { box-sizing: border-box; }
@@ -124,7 +124,7 @@ select { cursor: pointer; }
   background: color-mix(in srgb, var(--c) 13%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 38%, transparent); }
 .badge.perfect { --c: var(--perfect); } .badge.playable { --c: var(--playable); } .badge.works { --c: var(--works); } .badge.partial { --c: var(--partial); }
 .badge.loads { --c: var(--loads); } .badge.fails { --c: var(--fails); } .badge.crashes { --c: var(--crashes); } .badge.untested { --c: var(--untested); }
-.res.links { --c: var(--links); } .res.unresolved { --c: var(--unresolved); } .res.obsolete { --c: var(--obsolete); }
+.res.links { --c: var(--links); } .res.stubs { --c: var(--stubs); } .res.gap_shim { --c: var(--gap-shim); } .res.gap_mod { --c: var(--gap-mod); } .res.gap_lib { --c: var(--gap-lib); } .res.unresolved { --c: var(--unresolved); } .res.obsolete { --c: var(--obsolete); }
 .res { min-width: 82px; }
 
 /* mod list */

@@ -9,12 +9,19 @@
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
   var PLANNED = ["1.16.5", "1.2.5"];
+  // Plain-language result categories of the automated check (probe.py "kind"). "unresolved" is the older, unsplit cause of runs made before the split.
   var KINDS = [
-    { key: "links", label: "Links", color: "var(--links)", hint: "all references resolve" },
-    { key: "unresolved", label: "Unresolved references", color: "var(--unresolved)", hint: "would fail when used" },
-    { key: "obsolete", label: "Not applicable", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1" }
+    { key: "links", label: "Ready to test", color: "var(--links)", hint: "translates, and nothing it needs is missing" },
+    { key: "stubs", label: "Partly placeholder", color: "var(--stubs)", hint: "translates, but 10+ of its features are empty placeholders" },
+    { key: "gap_shim", label: "Missing game features", color: "var(--gap-shim)", hint: "needs old Minecraft/Forge features we have not built yet" },
+    { key: "gap_mod", label: "Needs another mod", color: "var(--gap-mod)", hint: "depends on another mod's code that is not available or does not match" },
+    { key: "gap_lib", label: "Needs removed code", color: "var(--gap-lib)", hint: "uses old Java/library code that no longer exists" },
+    { key: "unresolved", label: "Has missing pieces", color: "var(--unresolved)", hint: "something it needs is missing (older runs, cause not split)" },
+    { key: "obsolete", label: "Not needed", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1" }
   ];
-  var RESLABEL = { links: "Links", unresolved: "Unresolved", obsolete: "N/A" };
+  var RESLABEL = { links: "Ready", stubs: "Placeholder", gap_shim: "Game features", gap_mod: "Other mod", gap_lib: "Old code", unresolved: "Missing", obsolete: "Not needed" };
+  // everything except "not needed" is a mod the layer has to handle; only "links" counts as ready
+  function missingCount(c) { return (c.gap_shim || 0) + (c.gap_mod || 0) + (c.gap_lib || 0) + (c.unresolved || 0); }
   var PAGE_MODS = 80, PAGE_PROBE = 100, HISTORY_SHOWN = 8;
 
   var state = { route: "mods", q: "", status: "all", sort: "name", tab: "", all: [], modsShown: PAGE_MODS,
@@ -45,8 +52,8 @@
     for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (+x[i] || 0) - (+y[i] || 0); if (d) return d; }
     return 0;
   }
-  function total(c) { return (c.links || 0) + (c.unresolved || 0) + (c.obsolete || 0); }
-  function applicable(c) { return (c.links || 0) + (c.unresolved || 0); }
+  function total(c) { return (c.links || 0) + (c.stubs || 0) + missingCount(c) + (c.obsolete || 0); }
+  function applicable(c) { return (c.links || 0) + (c.stubs || 0) + missingCount(c); }
   function rate(c) { var a = applicable(c); return a ? 100 * (c.links || 0) / a : 0; }
   function pct(n, t) { return t ? (100 * n / t).toFixed(1) + "%" : "0%"; }
 
@@ -256,11 +263,11 @@
       var runs = runsOf(mc), r = runs[0], c = r.counts;
       var a = el("a", "sumcard");
       a.href = "#/automated/" + mc;
-      a.setAttribute("aria-label", "Minecraft " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods link. Open automated results.");
-      a.appendChild(donut(c, { size: 84, R: 40, r: 26, big: 17, label: "Link rate " + Math.round(rate(c)) + " percent" }));
+      a.setAttribute("aria-label", "Minecraft " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods are ready to test. Open automated results.");
+      a.appendChild(donut(c, { size: 84, R: 40, r: 26, big: 17, label: "Ready to test: " + Math.round(rate(c)) + " percent" }));
       a.appendChild(el("div", "mc", "MC " + mc + " · automated"));
       var big = el("div", "big", pct(c.links || 0, applicable(c)));
-      big.appendChild(el("small", null, "of mods link"));
+      big.appendChild(el("small", null, "ready to test"));
       a.appendChild(big);
       var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods tested " + r.date + (c.obsolete ? " (" + c.obsolete + " engine patches skipped)" : ""));
       a.appendChild(sub);
@@ -318,8 +325,8 @@
     b("player reports"); t(" (issues labelled "); p.appendChild(el("code", null, "compatibility")); t(") outrank ");
     b("maintainer"); t(" results, which outrank the "); b("in-game test");
     t(" (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated ");
-    b("startup test"); t(", which outranks the offline "); b("link probe");
-    t(" (translates the jar without starting the game and checks that every reference links). The startup test only checks that a mod loads, so any player report replaces it.");
+    b("startup test"); t(", which outranks the offline "); b("automated check");
+    t(" (translates the jar without starting the game and checks that everything it uses exists). The startup test only checks that a mod loads, so any player report replaces it.");
     det.appendChild(p);
     d.appendChild(det);
     return d;
@@ -406,7 +413,7 @@
         var row = el("div", "entry");
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status] || en.status));
-        var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : en.source === "probe" ? "Link probe" : "Player report";
+        var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : en.source === "probe" ? "Automated check" : "Player report";
         top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "")));
         if (en.issue) top.appendChild(ext(el("a", null, "#" + en.issue), "https://github.com/" + REPO + "/issues/" + en.issue));
         if (en.date) top.appendChild(el("span", "meta", en.date));
@@ -459,11 +466,11 @@
     mcs.forEach(function (mc) {
       var runs = runsOf(mc), r = runs[0], c = r.counts, t = total(c);
       var card = el("div", "cmp");
-      card.appendChild(donut(c, { size: 120, R: 56, r: 36, big: 24, label: "MC " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods link" }));
+      card.appendChild(donut(c, { size: 120, R: 56, r: 36, big: 24, label: "MC " + mc + ": " + Math.round(rate(c)) + " percent of applicable mods are ready to test" }));
       card.appendChild(el("h3", null, "Minecraft " + mc));
       var big = el("div", "big", pct(c.links || 0, applicable(c)));
       card.appendChild(big);
-      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods link · " + t + " tested");
+      var sub = el("div", "sub", (c.links || 0) + " of " + applicable(c) + " applicable mods ready to test · " + t + " checked");
       card.appendChild(sub);
       var foot = el("div", "foot");
       foot.appendChild(stackBar(c));
@@ -513,10 +520,11 @@
     var run = state.run;
     if (!run) { host.appendChild(el("p", "empty", "No probe run for this version yet.")); return; }
     var c = run.counts, t = total(c);
-    host.appendChild(donut(c, { cls: "pie", size: 250, R: 116, r: 68, big: 34, sub: "link rate", interactive: setKind, active: state.kind }));
+    host.appendChild(donut(c, { cls: "pie", size: 250, R: 116, r: 68, big: 34, sub: "ready to test", interactive: setKind, active: state.kind }));
     var box = el("div", "legendbox");
     KINDS.forEach(function (k) {
       var n = c[k.key] || 0;
+      if (!n && k.key === "unresolved") return; // only older runs have this unsplit category
       var row = el("button", "row");
       row.type = "button";
       row.setAttribute("aria-pressed", String(state.kind === k.key));
@@ -533,7 +541,7 @@
 
   function sparkline(runsAsc) {
     var W = 600, H = 130, L = 34, Rr = 14, T = 12, B = 26;
-    var root = svg("svg", { "class": "spark", viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Link rate per run, " + runsAsc.length + " runs" });
+    var root = svg("svg", { "class": "spark", viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "Share ready to test per run, " + runsAsc.length + " runs" });
     [0, 50, 100].forEach(function (g) {
       var y = T + (H - T - B) * (1 - g / 100);
       root.appendChild(svg("line", { x1: L, x2: W - Rr, y1: y, y2: y, "class": "grid" }));
@@ -546,7 +554,7 @@
     pts.forEach(function (p, i) {
       if (pts.length <= 40 || i === pts.length - 1) {
         var c = svg("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: pts.length > 20 ? 2.5 : 4 });
-        var ti = svg("title", {}); ti.textContent = p[2].date + ": " + rate(p[2].counts).toFixed(1) + "% link"; c.appendChild(ti);
+        var ti = svg("title", {}); ti.textContent = p[2].date + ": " + rate(p[2].counts).toFixed(1) + "% ready"; c.appendChild(ti);
         root.appendChild(c);
       }
     });
@@ -566,12 +574,12 @@
     if (runs.length > 1) host.appendChild(sparkline(runs.slice().reverse()));
     var table = el("table");
     var thead = el("thead"), head = el("tr");
-    ["Date", "Connector", "Mods", "Links", "Unresolved", "N/A", "Link rate", ""].forEach(function (h, i) { head.appendChild(el("th", i >= 2 && i <= 6 ? "num" : "", h)); });
+    ["Date", "Connector", "Mods", "Ready", "Placeholder", "Missing", "Not needed", "Ready share", ""].forEach(function (h, i) { head.appendChild(el("th", i >= 2 && i <= 7 ? "num" : "", h)); });
     thead.appendChild(head); table.appendChild(thead);
     var tb = el("tbody");
     (state.histAll ? runs : runs.slice(0, HISTORY_SHOWN)).forEach(function (r) {
       var c = r.counts, t = total(c), tr = el("tr");
-      [r.date, r.version || "-", t, c.links || 0, c.unresolved || 0, c.obsolete || 0, rate(c).toFixed(1) + "%"].forEach(function (v, i) {
+      [r.date, r.version || "-", t, c.links || 0, c.stubs || 0, missingCount(c), c.obsolete || 0, rate(c).toFixed(1) + "%"].forEach(function (v, i) {
         tr.appendChild(el("td", i >= 2 ? "num" : "", String(v)));
       });
       var td = el("td"); td.appendChild(stackBar(c)); tr.appendChild(td);
@@ -605,8 +613,8 @@
       return (state.kind === "all" || m[2] === state.kind) && (!q || String(m[0]).toLowerCase().indexOf(q) >= 0);
     });
     if (state.psort === "result") {
-      var order = { unresolved: 0, links: 1, obsolete: 2 };
-      rows = rows.slice().sort(function (a, b) { return (order[a[2]] != null ? order[a[2]] : 3) - (order[b[2]] != null ? order[b[2]] : 3) || String(a[0]).localeCompare(String(b[0])); });
+      var order = { gap_shim: 0, gap_mod: 1, gap_lib: 2, unresolved: 3, stubs: 4, links: 5, obsolete: 6 };
+      rows = rows.slice().sort(function (a, b) { return (order[a[2]] != null ? order[a[2]] : 7) - (order[b[2]] != null ? order[b[2]] : 7) || String(a[0]).localeCompare(String(b[0])); });
     } else {
       rows = rows.slice().sort(function (a, b) { return String(a[0]).localeCompare(String(b[0])); });
     }
