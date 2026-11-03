@@ -239,6 +239,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/ars-magica-2",
    "date": "2026-11-03",
    "open": true
+  },
+  {
+   "issue": 144,
+   "mod": "Thaumcraft 4.2.3.5",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "The thaumometer for scanning does not seem to be able to scan non physical objects like it used, specifically things like water or lava or fire and the aura nodes For some reason takes a really long time to create a world and then load/generate chunks Understandably new doors, wood blocks etc are not scannable since they have no assigned aspects trying to create a greatwood wand core in the arcan…",
+   "lc": "0.3.10",
+   "neoforge": "21.1.264",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/2227552",
+   "date": "2026-11-03",
+   "open": true
   }
  ]
 }
