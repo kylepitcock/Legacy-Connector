@@ -239,7 +239,11 @@ def generateShimIndex = tasks.register('generateShimIndex', JavaExec) {
     argumentProviders.add({ [shimIndexFile.get().asFile.absolutePath] + classDirs.files.collect { it.absolutePath } } as CommandLineArgumentProvider)
 }
 sourceSets.main.resources.srcDir(layout.buildDirectory.dir('generated/shimIndex'))
-tasks.named('processResources') { dependsOn generateShimIndex }
+tasks.named('processResources') {
+    dependsOn generateShimIndex
+    // single source of truth for the 1.12 -> 1.21.1 vanilla texture renames: the loader owns the table, the runtime reads a copy
+    from(project(':loader').layout.projectDirectory.dir('src/main/resources/legacyconnector/resource')) { into 'legacyconnector/resource' }
+}
 
 // Compile-only "legacy API" jars that look like the original Forge/Minecraft API to a Java 8 compiler.
 ['1_7_10', '1_12_2'].each { ver ->

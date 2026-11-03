@@ -273,6 +273,12 @@ public final class LegacyResourceConverter {
             Map.entry("block/normal_torch", "block/template_torch"),
             Map.entry("block/normal_torch_wall", "block/template_torch_wall"),
             Map.entry("block/tall_grass", "block/short_grass"),
+            // from Retromod's model-parent-renames.tsv (MIT), each target checked against the 1.21.1 client jar
+            Map.entry("block/glazed_terracotta", "block/template_glazed_terracotta"),
+            Map.entry("block/redstone_side", "block/redstone_dust_side"), Map.entry("block/redstone_side_alt", "block/redstone_dust_side_alt"),
+            Map.entry("block/fire_floor", "block/template_fire_floor"), Map.entry("block/fire_side", "block/template_fire_side"),
+            Map.entry("block/fire_side_alt", "block/template_fire_side_alt"), Map.entry("block/fire_up", "block/template_fire_up"),
+            Map.entry("block/fire_up_alt", "block/template_fire_up_alt"), Map.entry("block/torch_wall", "block/template_torch_wall"),
             // iron doors (EnderIO's dark steel door) and the plain rail (Tinkers' wooden rail); the slots are the same
             Map.entry("block/iron_door_bottom", "block/iron_door_bottom_left"), Map.entry("block/iron_door_top", "block/iron_door_top_left"),
             Map.entry("block/iron_door_bottom_rh", "block/iron_door_bottom_right"), Map.entry("block/iron_door_top_rh", "block/iron_door_top_right"),
@@ -323,66 +329,13 @@ public final class LegacyResourceConverter {
         return renamed == null ? ref : "minecraft:" + renamed;
     }
 
-    /** Vanilla block and item textures: the folders became block/ and item/, and many files were renamed in 1.13. */
-    private static final Map<String, String> TEXTURE_RENAMES = new LinkedHashMap<>();
-
-    static {
-        String[] woods = {"oak", "spruce", "birch", "jungle", "acacia", "big_oak:dark_oak"};
-        for (String w : woods) {
-            String from = w.contains(":") ? w.substring(0, w.indexOf(':')) : w;
-            String to = w.contains(":") ? w.substring(w.indexOf(':') + 1) : w;
-            TEXTURE_RENAMES.put("block/planks_" + from, "block/" + to + "_planks");
-            TEXTURE_RENAMES.put("block/log_" + from, "block/" + to + "_log");
-            TEXTURE_RENAMES.put("block/log_" + from + "_top", "block/" + to + "_log_top");
-            TEXTURE_RENAMES.put("block/leaves_" + from, "block/" + to + "_leaves");
-            TEXTURE_RENAMES.put("block/sapling_" + from, "block/" + to + "_sapling");
-            TEXTURE_RENAMES.put("block/door_" + from + "_lower", "block/" + to + "_door_bottom");
-            TEXTURE_RENAMES.put("block/door_" + from + "_upper", "block/" + to + "_door_top");
-        }
-        String[] colors = {"white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "silver:light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"};
-        for (String c : colors) {
-            String from = c.contains(":") ? c.substring(0, c.indexOf(':')) : c;
-            String to = c.contains(":") ? c.substring(c.indexOf(':') + 1) : c;
-            TEXTURE_RENAMES.put("block/wool_colored_" + from, "block/" + to + "_wool");
-            TEXTURE_RENAMES.put("block/glass_" + from, "block/" + to + "_stained_glass");
-            TEXTURE_RENAMES.put("block/hardened_clay_stained_" + from, "block/" + to + "_terracotta");
-            TEXTURE_RENAMES.put("block/concrete_" + from, "block/" + to + "_concrete");
-        }
-        String[][] pairs = {
-                {"grass_top", "grass_block_top"}, {"grass_side", "grass_block_side"}, {"grass_side_overlay", "grass_block_side_overlay"},
-                {"stonebrick", "stone_bricks"}, {"brick", "bricks"}, {"cobblestone_mossy", "mossy_cobblestone"}, {"hardened_clay", "terracotta"},
-                {"mob_spawner", "spawner"}, {"reeds", "sugar_cane"}, {"waterlily", "lily_pad"}, {"web", "cobweb"},
-                {"flower_dandelion", "dandelion"}, {"flower_rose", "poppy"}, {"tallgrass", "short_grass"}, {"deadbush", "dead_bush"},
-                {"stone_andesite", "andesite"}, {"stone_diorite", "diorite"}, {"stone_granite", "granite"},
-                {"stone_andesite_smooth", "polished_andesite"}, {"stone_diorite_smooth", "polished_diorite"}, {"stone_granite_smooth", "polished_granite"},
-                {"stonebrick_mossy", "mossy_stone_bricks"}, {"stonebrick_cracked", "cracked_stone_bricks"}, {"stonebrick_carved", "chiseled_stone_bricks"},
-                {"sandstone_normal", "sandstone"}, {"sandstone_top", "sandstone_top"}, {"redstone_lamp_off", "redstone_lamp"}, {"redstone_lamp_on", "redstone_lamp_on"},
-                {"quartz_block_side", "quartz_block_side"}, {"netherrack", "netherrack"}, {"nether_brick", "nether_bricks"}, {"red_nether_brick", "red_nether_bricks"},
-                {"end_bricks", "end_stone_bricks"}, {"glass_pane_top", "glass_pane_top"}, {"piston_top_normal", "piston_top"}, {"piston_top_sticky", "piston_top_sticky"},
-                {"furnace_front_off", "furnace_front"}, {"furnace_front_on", "furnace_front_on"}, {"melon_side", "melon_side"}, {"pumpkin_face_off", "carved_pumpkin"},
-                {"pumpkin_face_on", "jack_o_lantern"}, {"noteblock", "note_block"}, {"portal", "nether_portal"}, {"wheat_stage_7", "wheat_stage7"},
-                {"command_block_front", "command_block_front"}, {"gold_ore", "gold_ore"}, {"lapis_ore", "lapis_ore"}, {"cauldron_inner", "cauldron_inner"},
-                {"snow", "snow"}, {"ice_packed", "packed_ice"}, {"slime", "slime_block"}, {"stone_slab_side", "smooth_stone_slab_side"},
-                {"stone_slab_top", "smooth_stone"}, {"farmland_wet", "farmland_moist"}, {"farmland_dry", "farmland"}, {"grass_path_top", "dirt_path_top"},
-                {"grass_path_side", "dirt_path_side"}, {"quartz_block_lines", "quartz_pillar"}, {"quartz_block_chiseled", "chiseled_quartz_block"},
-                {"red_sandstone_normal", "red_sandstone"}, {"dirt_podzol_top", "podzol_top"}, {"dirt_podzol_side", "podzol_side"},
-                {"coarse_dirt", "coarse_dirt"}, {"red_sand", "red_sand"}, {"sponge_wet", "wet_sponge"}, {"rail_golden", "powered_rail"},
-                {"rail_golden_powered", "powered_rail_on"}, {"rail_detector", "detector_rail"}, {"rail_activator", "activator_rail"},
-                {"rail_normal", "rail"}, {"rail_normal_turned", "rail_corner"}, {"torch_on", "torch"}, {"redstone_torch_on", "redstone_torch"},
-                {"redstone_torch_off", "redstone_torch_off"}, {"ladder", "ladder"}, {"cactus_side", "cactus_side"}, {"clay", "clay"}};
-        for (String[] p : pairs) if (!p[0].equals(p[1])) TEXTURE_RENAMES.put("block/" + p[0], "block/" + p[1]);
-    }
-
     private static String vanillaTexture(String ref) {
         if (ref.startsWith("#")) return ref;
         int colon = ref.indexOf(':');
         String ns = colon < 0 ? "minecraft" : ref.substring(0, colon);
         if (!ns.equals("minecraft")) return ref;
         String path = colon < 0 ? ref : ref.substring(colon + 1);
-        if (path.startsWith("blocks/")) path = "block/" + path.substring("blocks/".length());
-        else if (path.startsWith("items/")) path = "item/" + path.substring("items/".length());
-        String renamed = TEXTURE_RENAMES.get(path);
-        if (renamed != null) path = renamed;
+        path = VanillaTextureRenames.modern(path);
         return colon < 0 ? path : "minecraft:" + path;
     }
 

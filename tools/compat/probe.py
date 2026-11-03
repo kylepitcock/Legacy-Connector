@@ -87,12 +87,16 @@ def merge(records, mc, date, layer):
 
 def history(records, mc, date, layer):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
-    rows, counts = [], {"links": 0, "unresolved": 0, "obsolete": 0}
+    rows, counts, seen = [], {"links": 0, "unresolved": 0, "obsolete": 0}, set()
     for r in records:
         if r.get("mc") != mc or r["result"] not in counts or not r.get("mods"):
             continue   # other versions, non-mod jars and libraries without a mod are not part of the statistics
-        counts[r["result"]] += 1
         m = r["mods"][0]
+        key = ((m.get("name") or m["id"]).strip().lower(), (m.get("version") or "").strip())
+        if key in seen:
+            continue   # the same mod from two sources (a corpus and Modrinth) counts once
+        seen.add(key)
+        counts[r["result"]] += 1
         rows.append([(m.get("name") or m["id"]).strip(), (m.get("version") or "").strip(), r["result"],
                      r.get("reason") or (r.get("missing") or [""])[0]])
     rows.sort(key=lambda x: x[0].lower())

@@ -179,3 +179,14 @@ layer serves each source:
   ChromatiCraft's 147): their hums and pulses played at full volume however far away. Legacy positioned sounds (client sounds, and world
   sounds of a legacy mod's namespace) therefore play without OpenAL attenuation and with the 1.7.10 gain recomputed every tick from the
   camera distance; loops out of range start silent and fade in.
+
+## Vanilla texture and model renames (1.12.2)
+
+Mod models and blockstates name vanilla textures the 1.12 way (`blocks/planks_oak`, `items/dye_powder_blue`). The loader's
+`resource/VanillaTextureRenames` maps them to 1.21.1 (`block/oak_planks`, `item/lapis_lazuli`) from
+`loader/src/main/resources/legacyconnector/resource/vanilla-texture-renames.tsv` (about 420 rows, block and item names kept apart); the runtime
+`VanillaTextures1122` reads a copy that `build.gradle` puts into the mod jar. The table comes from the MIT-licensed Retromod project (see
+`THIRD_PARTY_NOTICES.md`) and every row is checked against the 1.21.1 client jar: the new texture exists and the old one is gone. Vanilla model
+parents that were renamed live in `LegacyResourceConverter.MODEL_RENAMES`. Ore dictionary names map to common tags in `OreDictBridge` (`SPECIAL`
+for exact names, prefixes such as `ingot` for the rest).
+

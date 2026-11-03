@@ -67,6 +67,26 @@ public final class OreDictBridge {
         SPECIAL.put("glowstone", "c:storage_blocks/glowstone");
         SPECIAL.put("record", "minecraft:music_discs");
         SPECIAL.put("craftingTableWood", "c:player_workstations/crafting_tables");
+        // vanilla names the prefix rule cannot reach; from Retromod's forge-ore-dictionary.tsv (MIT), every tag checked in NeoForge 21.1 / vanilla 1.21.1
+        SPECIAL.put("doorWood", "minecraft:wooden_doors");
+        SPECIAL.put("fenceWood", "c:fences/wooden");
+        SPECIAL.put("fenceGateWood", "c:fence_gates/wooden");
+        SPECIAL.put("wool", "minecraft:wool");
+        SPECIAL.put("ingotBrick", "c:bricks/normal");
+        SPECIAL.put("ingotBrickNether", "c:bricks/nether");
+        SPECIAL.put("sugarcane", "c:crops/sugar_cane");
+        SPECIAL.put("blockCactus", "c:crops/cactus");
+        SPECIAL.put("dye", "c:dyes");
+        SPECIAL.put("netherStar", "c:nether_stars");
+        SPECIAL.put("gravel", "c:gravels");
+        SPECIAL.put("netherrack", "c:netherracks");
+        SPECIAL.put("endstone", "c:end_stones");
+        SPECIAL.put("workbench", "c:player_workstations/crafting_tables");
+        SPECIAL.put("blockGlassColorless", "c:glass_blocks/colorless");
+        SPECIAL.put("paneGlassColorless", "c:glass_panes/colorless");
+        SPECIAL.put("chest", "c:chests");
+        SPECIAL.put("chestEnder", "c:chests/ender");
+        SPECIAL.put("chestTrapped", "c:chests/trapped");
     }
 
     private OreDictBridge() {}
