@@ -319,6 +319,42 @@ public class EntityHorse extends EntityAnimal {
         return field_110280_bW;
     }
 
+    // ------------------------------------------------------------------ animation state read by the renderer and model
+
+    /** Whether the horse is grown up. */
+    public boolean isAdultHorse() {
+        return !isChild();
+    }
+
+    /** Render scale: 1 for adults, 0.5 growing to 1 over a foal's 24000 ticks (1.7.10's formula). */
+    public float getHorseSize() {
+        int age = getGrowingAge();
+        return age >= 0 ? 1.0F : 0.5F + (float) (-24000 - age) / -24000.0F * 0.5F;
+    }
+
+    /** How far the head is lowered to the grass (0-1). */
+    public float getGrassEatingAmount(float partialTicks) {
+        var h = mcc$horse();
+        return h != null ? h.getEatAnim(partialTicks) : isEatingHaystack() ? 1.0F : 0.0F;
+    }
+
+    /** How far the horse is up on its hind legs (0-1). */
+    public float getRearingAmount(float partialTicks) {
+        var h = mcc$horse();
+        return h != null ? h.getStandAnim(partialTicks) : isRearing() ? 1.0F : 0.0F;
+    }
+
+    /** How far the mouth is open (0-1). */
+    public float getMouthOpennessAngle(float partialTicks) {
+        var h = mcc$horse();
+        return h != null ? h.getMouthAnim(partialTicks) : 0.0F;
+    }
+
+    /** Whether the skin is composed of layers (coat, markings, armor) rather than one fixed texture. */
+    public boolean func_110239_cn() {
+        return getHorseType() == 0 || func_110241_cb() > 0;
+    }
+
     /** 1.7.10: the task AI (mods' subclasses inherit it: their walking speed follows the move helper). */
     @Override
     public boolean isAIEnabled() {
