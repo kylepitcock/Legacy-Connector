@@ -25,7 +25,7 @@
   var PAGE_MODS = 80, PAGE_PROBE = 100, HISTORY_SHOWN = 8;
 
   var state = { route: "mods", q: "", status: "all", sort: "name", tab: "", all: [], modsShown: PAGE_MODS,
-                runs: [], pmc: "", run: null, kind: "all", pq: "", psort: "name", pShown: PAGE_PROBE, histAll: false, loaded: false };
+                runs: [], res: {}, rmc: "", rq: "", rfilter: "layer", rShown: 40, pmc: "", run: null, kind: "all", pq: "", psort: "name", pShown: PAGE_PROBE, histAll: false, loaded: false };
 
   // ---------- utils ----------
   function $(id) { return document.getElementById(id); }
@@ -170,7 +170,7 @@
     var parts = h.split("/").filter(Boolean);
     if (!parts.length) return { route: "mods", mc: "" };
     if (/^\d/.test(parts[0])) return { route: "mods", mc: parts[0] }; // legacy links: #1.12.2
-    var route = ["mods", "automated", "about"].indexOf(parts[0]) >= 0 ? parts[0] : "mods";
+    var route = ["mods", "automated", "resources", "about"].indexOf(parts[0]) >= 0 ? parts[0] : "mods";
     return { route: route, mc: parts[1] || "" };
   }
   function setHash(route, mc) {
@@ -184,6 +184,8 @@
       if (p.route === "mods") {
         var seen = versionsWithData();
         if (seen[p.mc] && p.mc !== state.tab) { state.tab = p.mc; state.status = "all"; state.modsShown = PAGE_MODS; }
+      } else if (p.route === "resources") {
+        if (p.mc && state.res[p.mc] && p.mc !== state.rmc) { state.rmc = p.mc; state.rShown = 40; }
       } else if (p.route === "automated") {
         if (p.mc && probeVersions().indexOf(p.mc) >= 0 && p.mc !== state.pmc) { state.pmc = p.mc; state.run = runsOf(p.mc)[0]; state.kind = "all"; state.pShown = PAGE_PROBE; }
       }
@@ -192,9 +194,9 @@
     Array.prototype.forEach.call(document.querySelectorAll("#mainnav a"), function (a) {
       if (a.dataset.route === state.route) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    $("glance").hidden = state.route === "automated";
-    document.querySelector(".hero").classList.toggle("compact", state.route === "automated");
-    var titles = { mods: "Mod compatibility", automated: "Automated results", about: "Report a mod and how it works" };
+    $("glance").hidden = state.route === "automated" || state.route === "resources";
+    document.querySelector(".hero").classList.toggle("compact", state.route === "automated" || state.route === "resources");
+    var titles = { mods: "Mod compatibility", automated: "Automated results", resources: "Missing resources", about: "Report a mod and how it works" };
     document.title = titles[state.route] + " | Legacy Connector";
     if (state.loaded) renderRoute();
   }
@@ -203,6 +205,7 @@
     renderGlance();
     if (state.route === "mods") { renderTabs(); renderStats(); renderChips(); renderList(); }
     else if (state.route === "automated") renderAutomated();
+    else if (state.route === "resources") renderResources();
   }
 
   // ---------- donut ----------
@@ -698,6 +701,133 @@
     renderRunSelect(); renderChart(); renderTrend(); renderPList();
   }
 
+  // ---------- missing resources ----------
+  // data/resources.json: {runs: {<mc>: {version, date, checked, mods: [{name, version, layer, mod, layerItems, modItems}]}}}; an item is
+  // [kind (texture|model), where, what, missing reference]. "layer" = lost in translation, "mod" = missing in the mod's own jar too.
+  function resVersions() { return Object.keys(state.res).sort(byVersion); }
+  function isVanillaRef(ref) { return ref.indexOf(":") < 0 || /^minecraft:/i.test(ref); }
+
+  function renderResources() {
+    var versions = resVersions();
+    var summary = $("rsummary");
+    summary.textContent = "";
+    if (!versions.length) {
+      $("rtabs").textContent = "";
+      summary.appendChild(el("p", "empty", "No resource check results published yet."));
+      $("rvanilla").textContent = ""; $("rlist").textContent = ""; $("rinfo").textContent = "";
+      return;
+    }
+    if (!state.res[state.rmc]) state.rmc = versions[0];
+    makeTabs($("rtabs"), versions.map(function (mc) { return { id: mc, label: "MC " + mc, count: state.res[mc].mods.length + " mods" }; }), state.rmc,
+      function (mc) { state.rmc = mc; state.rShown = 40; setHash("resources", mc); renderResources(); }, "rsummary");
+    var run = state.res[state.rmc];
+    var lostMods = run.mods.filter(function (m) { return m.layer > 0; });
+    var lost = lostMods.reduce(function (a, m) { return a + m.layer; }, 0);
+    var own = run.mods.reduce(function (a, m) { return a + m.mod; }, 0);
+    var head = el("div", "chart");
+    var big = el("div");
+    big.appendChild(el("div", "bignum", String(lostMods.length)));
+    big.appendChild(el("div", "small", "of " + run.checked + " mods lose " + lost + " model/texture reference" + (lost === 1 ? "" : "s") + " in translation"));
+    head.appendChild(big);
+    var rest = el("div");
+    rest.appendChild(el("p", null, (run.mods.length - lostMods.length) + " more mods have " + own + " reference" + (own === 1 ? "" : "s") + " that are missing in their own jars too (not the layer's doing)."));
+    rest.appendChild(el("p", "small", "Checked with Connector " + (run.version || "?") + " on " + (run.date || "?") + ". Up to " + 300 + " lost and 40 own references are listed per mod."));
+    head.appendChild(rest);
+    summary.appendChild(head);
+    renderVanillaGaps(run);
+    renderResList(run);
+  }
+
+  function renderVanillaGaps(run) {
+    var host = $("rvanilla");
+    host.textContent = "";
+    var byRef = {};
+    run.mods.forEach(function (m) {
+      (m.layerItems || []).forEach(function (it) {
+        if (!isVanillaRef(it[3])) return;
+        var key = it[0] + "|" + it[3].replace(/^minecraft:/i, "");
+        var e = byRef[key] || (byRef[key] = { kind: it[0], ref: it[3].replace(/^minecraft:/i, ""), mods: {} });
+        e.mods[m.name] = true;
+      });
+    });
+    var list = Object.keys(byRef).map(function (k) { return byRef[k]; });
+    list.forEach(function (e) { e.n = Object.keys(e.mods).length; });
+    list.sort(function (a, b) { return b.n - a.n || a.ref.localeCompare(b.ref); });
+    if (!list.length) { host.appendChild(el("p", "empty", "None found in this run.")); return; }
+    var table = el("table"), thead = el("thead"), hr = el("tr");
+    ["Vanilla file", "Kind", "Mods", "Needed by"].forEach(function (h, i) { hr.appendChild(el("th", i === 2 ? "num" : "", h)); });
+    thead.appendChild(hr); table.appendChild(thead);
+    var tb = el("tbody");
+    list.slice(0, 60).forEach(function (e) {
+      var tr = el("tr");
+      var c = el("td"); c.appendChild(el("code", null, e.ref)); tr.appendChild(c);
+      tr.appendChild(el("td", "", e.kind));
+      tr.appendChild(el("td", "num", String(e.n)));
+      var names = Object.keys(e.mods).sort();
+      tr.appendChild(el("td", "why", names.slice(0, 4).join(", ") + (names.length > 4 ? " +" + (names.length - 4) + " more" : "")));
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    host.appendChild(table);
+    if (list.length > 60) host.appendChild(el("p", "small", "Showing the 60 most needed of " + list.length + "."));
+  }
+
+  function renderResList(run) {
+    var host = $("rlist");
+    host.textContent = "";
+    var q = state.rq.toLowerCase();
+    var onlyLost = state.rfilter === "layer";
+    var rows = run.mods.filter(function (m) {
+      if (onlyLost && !m.layer) return false;
+      if (!q) return true;
+      if (m.name.toLowerCase().indexOf(q) >= 0) return true;
+      return (m.layerItems || []).concat(onlyLost ? [] : (m.modItems || [])).some(function (it) { return (it[1] + " " + it[2]).toLowerCase().indexOf(q) >= 0; });
+    });
+    $("rinfo").textContent = rows.length + " of " + run.mods.length + " mods";
+    if (!rows.length) { host.appendChild(el("p", "empty", "No mods match.")); return; }
+    rows.slice(0, state.rShown).forEach(function (m) {
+      var d = el("details", "mod");
+      var s = el("summary");
+      s.appendChild(el("span", "name", m.name));
+      s.appendChild(el("span", "meta", m.version || ""));
+      if (m.layer) s.appendChild(el("span", "res layer", m.layer + " lost"));
+      if (m.mod && !onlyLost) s.appendChild(el("span", "res own", m.mod + " own"));
+      d.appendChild(s);
+      var built = false;
+      d.addEventListener("toggle", function () {
+        if (!d.open || built) return;
+        built = true;
+        var body = el("div", "body");
+        var items = (m.layerItems || []).map(function (it) { return it.concat(["layer"]); });
+        if (!onlyLost) items = items.concat((m.modItems || []).map(function (it) { return it.concat(["own"]); }));
+        var table = el("table"), thead = el("thead"), hr = el("tr");
+        ["", "Kind", "Where", "What is missing"].forEach(function (h) { hr.appendChild(el("th", "", h)); });
+        thead.appendChild(hr); table.appendChild(thead);
+        var tb = el("tbody");
+        items.forEach(function (it) {
+          var tr = el("tr");
+          var v = el("td"); v.appendChild(el("span", "res " + it[4], it[4] === "layer" ? "Lost" : "Mod's own")); tr.appendChild(v);
+          tr.appendChild(el("td", "", it[0]));
+          tr.appendChild(el("td", "why", it[1]));
+          var w = el("td", "why"); w.appendChild(document.createTextNode(it[2].replace(/ ?[^ ]*$/, "") + " ")); w.appendChild(el("code", null, it[3])); tr.appendChild(w);
+          tb.appendChild(tr);
+        });
+        table.appendChild(tb);
+        body.appendChild(table);
+        if (m.layer > (m.layerItems || []).length) body.appendChild(el("p", "small", "Showing " + (m.layerItems || []).length + " of " + m.layer + " lost references."));
+        d.appendChild(body);
+      });
+      host.appendChild(d);
+    });
+    if (rows.length > state.rShown) {
+      var more = el("div", "more");
+      var b = el("button", "btn alt", "Show more (" + (rows.length - state.rShown) + " left of " + rows.length + ")");
+      b.type = "button";
+      b.onclick = function () { state.rShown += 40; renderResList(run); };
+      more.appendChild(b); host.appendChild(more);
+    }
+  }
+
   // ---------- boot ----------
   function load(path) {
     return fetch(path, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; });
@@ -714,18 +844,24 @@
     $("sort").addEventListener("change", function (e) { state.sort = e.target.value; renderList(); });
     $("pq").addEventListener("input", function (e) { state.pq = e.target.value; state.pShown = PAGE_PROBE; renderPList(); });
     $("psort").addEventListener("change", function (e) { state.psort = e.target.value; renderPList(); });
+    $("rq").addEventListener("input", function (e) { state.rq = e.target.value; state.rShown = 40; if (state.res[state.rmc]) renderResList(state.res[state.rmc]); });
+    $("rfilter").addEventListener("change", function (e) { state.rfilter = e.target.value; state.rShown = 40; if (state.res[state.rmc]) renderResList(state.res[state.rmc]); });
     window.addEventListener("hashchange", applyRoute);
     $("list").textContent = "Loading…";
     applyRoute();
 
     var P = window.LC_PRELOAD;
-    if (P) boot([P.mods || {}, P.reports || {}, P.probe || {}]);
-    else Promise.all([load("data/mods.json"), load("data/reports.json"), load("data/probe.json")]).then(boot);
+    if (P) boot([P.mods || {}, P.reports || {}, P.probe || {}, P.resources || {}]);
+    else Promise.all([load("data/mods.json"), load("data/reports.json"), load("data/probe.json"), load("data/resources.json")]).then(boot);
   }
 
   function boot(res) {
     state.all = merge(res[0].mods || [], res[1].reports || []);
     state.runs = res[2].runs || [];
+    state.res = (res[3] && res[3].runs) || {};
+    var rwant = parseHash();
+    var rv = resVersions();
+    state.rmc = rwant.route === "resources" && state.res[rwant.mc] ? rwant.mc : rv[0] || "";
     var want = parseHash();
     var seen = versionsWithData();
     state.tab = seen[want.mc] && want.route === "mods" ? want.mc : SUPPORTED[0];

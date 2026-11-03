@@ -31,6 +31,7 @@
     <nav class="mainnav" id="mainnav" aria-label="Sections">
       <a href="#/mods" data-route="mods">Mods</a>
       <a href="#/automated" data-route="automated">Automated results</a>
+      <a href="#/resources" data-route="resources">Missing resources</a>
       <a href="#/about" data-route="about">Report &amp; how it works</a>
     </nav>
     <div class="toolbar">
@@ -120,6 +121,34 @@
       <p class="small"><b>Resource check.</b> The same run also checks every translated mod's models, blockstates and textures for references that point at nothing (the usual start of a purple-and-black texture or an invisible block), without starting the game. It separates references the translation lost from ones the mod never shipped itself. It cannot judge what anything looks like.</p>
       <p class="small"><b>"Ready to test" does not mean "works".</b> The game is never started: this only shows the jar translates and nothing it uses is missing. Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="#/mods">mod list</a>, where player reports and in-game tests outrank this probe.</p>
       <p class="small">The jars come from Modrinth's most downloaded Forge mods and are discarded after the run. If a result is wrong, <a class="report-link" href="#" target="_blank" rel="noopener">open a compatibility report</a>.</p>
+    </div>
+  </section>
+
+  <!-- MISSING RESOURCES -->
+  <section class="view" id="view-resources" data-view="resources" aria-label="Missing resources" hidden>
+    <h2 class="sec" style="margin-top:26px">Missing resources</h2>
+    <p class="lead">The automated check also looks inside every translated mod for models, blockstates and textures that point at a file that does not exist: the usual start of a purple-and-black texture or an invisible block. This page lists exactly which files are missing, and for whom. The game is never started, so it cannot judge how anything looks.</p>
+    <div class="tabs" id="rtabs" role="tablist" aria-label="Minecraft version of the resource check"></div>
+    <div class="card" id="rsummary" role="tabpanel" aria-label="Resource check summary"></div>
+    <div class="card">
+      <h3>Vanilla files mods expect that 1.21.1 does not have</h3>
+      <p class="small" style="margin-top:0">Files of the original game that 1.12 and 1.7 mods name directly (a model template, a texture) and that Minecraft renamed or removed. They are the layer's to supply or rename, and each one fixes every mod in its row at once. Sorted by how many mods need it.</p>
+      <div id="rvanilla"></div>
+    </div>
+    <div class="card">
+      <h3>Mods</h3>
+      <div class="controls">
+        <input type="search" id="rq" placeholder="Search mods or files…" aria-label="Search mods or missing files" autocomplete="off">
+        <label class="sortlab">Show
+          <select id="rfilter" aria-label="Which missing resources to show">
+            <option value="layer">Lost in translation</option>
+            <option value="all">Everything missing</option>
+          </select>
+        </label>
+        <span class="small" id="rinfo" aria-live="polite"></span>
+      </div>
+      <div id="rlist"></div>
+      <p class="small"><b>Lost in translation</b>: the mod's own jar ships the file (or it is a vanilla file), but it is not there after translation, so the layer should fix it. <b>Mod's own</b>: no jar of the mod ships it, so 1.12 showed it missing too; nothing for the layer to do, but it explains purple textures that are not our fault. References into the namespace of a mod that is not in the test set are ignored.</p>
     </div>
   </section>
 

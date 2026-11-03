@@ -124,7 +124,7 @@ select { cursor: pointer; }
   background: color-mix(in srgb, var(--c) 13%, var(--surface)); border: 1px solid color-mix(in srgb, var(--c) 38%, transparent); }
 .badge.perfect { --c: var(--perfect); } .badge.playable { --c: var(--playable); } .badge.works { --c: var(--works); } .badge.partial { --c: var(--partial); }
 .badge.loads { --c: var(--loads); } .badge.fails { --c: var(--fails); } .badge.crashes { --c: var(--crashes); } .badge.untested { --c: var(--untested); }
-.res.links { --c: var(--links); } .res.stubs { --c: var(--stubs); } .res.gap_shim { --c: var(--gap-shim); } .res.gap_mod { --c: var(--gap-mod); } .res.gap_lib { --c: var(--gap-lib); } .res.unresolved { --c: var(--unresolved); } .res.obsolete { --c: var(--obsolete); }
+.res.links { --c: var(--links); } .res.layer { --c: var(--gap-shim); } .res.own { --c: var(--obsolete); } .res.stubs { --c: var(--stubs); } .res.gap_shim { --c: var(--gap-shim); } .res.gap_mod { --c: var(--gap-mod); } .res.gap_lib { --c: var(--gap-lib); } .res.unresolved { --c: var(--unresolved); } .res.obsolete { --c: var(--obsolete); }
 .res { min-width: 82px; }
 
 /* mod list */
@@ -223,3 +223,6 @@ footer .wrap { display: flex; gap: 8px 18px; flex-wrap: wrap; justify-content: s
 .hero.compact .wrap { padding-top: 18px; padding-bottom: 16px; }
 .hero.compact h1 { font-size: clamp(1.3rem, 3.4vw, 1.8rem); max-width: none; }
 .hero.compact .pitch, .hero.compact .cta, .hero.compact .kicker { display: none; }
+
+.bignum { font-family: var(--display); font-size: 3rem; font-weight: 800; line-height: 1; }
+.rbody td code, #rvanilla td code, #rlist td code { font-size: .85em; overflow-wrap: anywhere; }

@@ -34,6 +34,8 @@ import java.util.zip.ZipFile;
  */
 public final class ResourceCheck {
     private static final int MAX_EXAMPLES = 10;
+    private static final int MAX_LAYER_ITEMS = 300;
+    private static final int MAX_MOD_ITEMS = 40;
     private static final int MAX_CHAIN = 16;
 
     private ResourceCheck() {}
@@ -151,17 +153,28 @@ public final class ResourceCheck {
         int textures, models, layer, mod, badJson, badPng;
         final Set<String> seen = new HashSet<>();
         final List<String> examples = new ArrayList<>();
+        /** Every unresolved reference: [kind (texture|model), where, what, missing reference]; the layer's first-class list is long, the mod's own is capped. */
+        final JsonArray layerItems = new JsonArray();
+        final JsonArray modItems = new JsonArray();
 
-        void problem(Index index, boolean texture, String file, String key, String text) {
+        void problem(Index index, boolean texture, String file, String key, String where, String what, String ref) {
             String verdict = index.verdict(file);
             if (verdict.equals("SKIP") || !seen.add(key)) return;
             if (texture) textures++;
             else models++;
-            if (verdict.equals("LAYER")) layer++;
+            boolean layerProblem = verdict.equals("LAYER");
+            if (layerProblem) layer++;
             else mod++;
+            JsonArray item = new JsonArray();
+            item.add(texture ? "texture" : "model");
+            item.add(where);
+            item.add(what);
+            item.add(ref);
+            if (layerProblem && layerItems.size() < MAX_LAYER_ITEMS) layerItems.add(item);
+            else if (!layerProblem && modItems.size() < MAX_MOD_ITEMS) modItems.add(item);
             // the layer's problems first: they are the ones that can be fixed here
-            String tagged = (verdict.equals("LAYER") ? "[layer] " : "[mod] ") + text;
-            if (verdict.equals("LAYER")) examples.add(Math.min(examples.size(), 0), tagged);
+            String tagged = (layerProblem ? "[layer] " : "[mod] ") + where + " " + what;
+            if (layerProblem) examples.add(0, tagged);
             else if (examples.size() < MAX_EXAMPLES) examples.add(tagged);
             while (examples.size() > MAX_EXAMPLES) examples.remove(examples.size() - 1);
         }
@@ -199,7 +212,7 @@ public final class ResourceCheck {
                     if (m.has("parent") && m.get("parent").isJsonPrimitive()) {
                         String parent = m.get("parent").getAsString();
                         if (!isBuiltin(parent) && !index.has(modelFile(parent, ns))) {
-                            t.problem(index, false, modelFile(parent, ns), "parent " + name + parent, "model " + shortName(name) + " has missing parent " + parent);
+                            t.problem(index, false, modelFile(parent, ns), "parent " + name + parent, "model " + shortName(name), "has missing parent " + parent, parent);
                         }
                     }
                     if (m.has("overrides") && m.get("overrides").isJsonArray()) {
@@ -207,7 +220,7 @@ public final class ResourceCheck {
                             if (!o.isJsonObject() || !o.getAsJsonObject().has("model") || !o.getAsJsonObject().get("model").isJsonPrimitive()) continue;
                             String ref = o.getAsJsonObject().get("model").getAsString();
                             if (!index.has(modelFile(ref, ns)) && !index.has(blockModelFile(ref, ns))) {
-                                t.problem(index, false, modelFile(ref, ns), "override " + name + ref, "model " + shortName(name) + " has an override to missing model " + ref);
+                                t.problem(index, false, modelFile(ref, ns), "override " + name + ref, "model " + shortName(name), "has an override to missing model " + ref, ref);
                             }
                         }
                     }
@@ -217,7 +230,7 @@ public final class ResourceCheck {
                             String ref = tex.getValue().getAsString();
                             if (ref.startsWith("#")) continue;
                             if (!index.has(textureFile(ref, ns))) {
-                                t.problem(index, true, textureFile(ref, ns), "tex " + name + ref, "model " + shortName(name) + " names missing texture " + ref);
+                                t.problem(index, true, textureFile(ref, ns), "tex " + name + ref, "model " + shortName(name), "names missing texture " + ref, ref);
                             }
                         }
                     }
@@ -238,14 +251,14 @@ public final class ResourceCheck {
                         String block = blockModelFile(ref, ns); // 1.12 named block models relative to models/block/ of the blockstate's namespace
                         if (index.has(file)) usedModels.add(file);
                         else if (index.has(block)) usedModels.add(block);
-                        else t.problem(index, false, block, "state " + name + ref, "blockstate " + shortName(name) + " names missing model " + ref);
+                        else t.problem(index, false, block, "state " + name + ref, "blockstate " + shortName(name), "names missing model " + ref, ref);
                     }
                 }
             }
         }
         for (String used : usedModels) {
             String[] problem = unresolvedVariable(used, index);
-            if (problem != null) t.problem(index, true, problem[1], "var " + used, "model " + shortName(used) + " uses " + problem[0]);
+            if (problem != null) t.problem(index, true, problem[1], "var " + used, "model " + shortName(used), "uses " + problem[0], problem[2]);
         }
         JsonObject r = new JsonObject();
         r.addProperty("models", modelCount);
@@ -260,6 +273,8 @@ public final class ResourceCheck {
         JsonArray ex = new JsonArray();
         t.examples.forEach(ex::add);
         r.add("examples", ex);
+        r.add("layerItems", t.layerItems);
+        r.add("modItems", t.modItems);
         return r;
     }
 
@@ -378,11 +393,11 @@ public final class ResourceCheck {
                 String resolved = ref;
                 for (int i = 0; i < 12 && resolved.startsWith("#"); i++) {
                     String next = textures.get(resolved.substring(1));
-                    if (next == null) return new String[] {"undefined texture variable " + resolved, "assets/" + ns + "/textures/undefined-variable"};
+                    if (next == null) return new String[] {"undefined texture variable " + resolved, "assets/" + ns + "/textures/undefined-variable", resolved};
                     resolved = next;
                 }
-                if (resolved.startsWith("#")) return new String[] {"circular texture variable " + ref, "assets/" + ns + "/textures/undefined-variable"};
-                if (!index.has(textureFile(resolved, ns))) return new String[] {"missing texture " + resolved + " (via " + ref + ")", textureFile(resolved, ns)};
+                if (resolved.startsWith("#")) return new String[] {"circular texture variable " + ref, "assets/" + ns + "/textures/undefined-variable", ref};
+                if (!index.has(textureFile(resolved, ns))) return new String[] {"missing texture " + resolved + " (via " + ref + ")", textureFile(resolved, ns), resolved};
             }
         }
         return null;

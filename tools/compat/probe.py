@@ -21,6 +21,7 @@ import argparse, datetime, json, pathlib, re, subprocess, sys, tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
 DATA = ROOT / "docs" / "data" / "mods.json"
+RESOURCES = ROOT / "docs" / "data" / "resources.json"   # the missing-resources tab: every unresolved model/texture reference of the latest run per Minecraft version
 HISTORY = ROOT / "docs" / "data" / "probe.json"   # one entry per run: the pie chart page (docs/probe.html) reads it
 STUB_LIMIT = 10   # a mod that links but uses this many synthesized (empty) legacy API members is "stubs", not "links"
 KEEP_MODS = 10   # runs per Minecraft version that keep their per-mod list; older ones keep only the counts
@@ -192,6 +193,28 @@ def compare(previous, rows):
     return out
 
 
+def resources(records, mc, date, layer):
+    """The latest resource-check findings of one Minecraft version: per mod, the references that point at nothing (layer = the translation lost
+    them, mod = the mod's own jar lacks them too), ready for docs/index.html's "Missing resources" tab. None when no record has a check."""
+    best = {}
+    for r in records:
+        a = r.get("assets")
+        if not a or r.get("mc") != mc or not r.get("mods") or not (a.get("layer") or a.get("mod")):
+            continue
+        m = r["mods"][0]
+        name = (m.get("name") or m["id"]).strip()
+        entry = {"name": name, "version": (m.get("version") or "").strip(), "layer": a.get("layer", 0), "mod": a.get("mod", 0),
+                 "layerItems": a.get("layerItems", []), "modItems": a.get("modItems", [])}
+        old = best.get(name.lower())
+        if old is None or (entry["layer"], entry["mod"]) > (old["layer"], old["mod"]):   # the same mod from two jars: the worse one
+            best[name.lower()] = entry
+    checked = sum(1 for r in records if r.get("assets") and r.get("mc") == mc and r.get("mods"))
+    if not checked:
+        return None
+    mods = sorted(best.values(), key=lambda e: (-e["layer"], -e["mod"], e["name"].lower()))
+    return {"version": layer, "date": date, "checked": checked, "mods": mods}
+
+
 def history(records, mc, date, layer):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
@@ -275,6 +298,12 @@ def main():
         print(f"run {a.mc} {a.version or '-'} {a.date}: " + ", ".join(f"{v} {k}" for k, v in c.items()))
         if not a.dry_run:
             HISTORY.write_text(json.dumps(h, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        res = resources(records, a.mc, a.date, a.version)
+        if res and not a.dry_run:
+            data = json.loads(RESOURCES.read_text(encoding="utf-8")) if RESOURCES.exists() else {"runs": {}}
+            data["runs"][a.mc] = res
+            RESOURCES.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
+            print(f"missing resources: {len(res['mods'])} mods, {sum(m['layer'] for m in res['mods'])} lost in translation, {sum(m['mod'] for m in res['mods'])} the mods' own")
         if vs:
             print(f"since {vs['date']} {vs['version'] or ''}: {vs['fixedCount']} fixed, {vs['regressedCount']} regressed")
             for name, was, now in vs["regressed"]:
