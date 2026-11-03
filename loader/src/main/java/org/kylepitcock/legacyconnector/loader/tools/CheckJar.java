@@ -139,7 +139,13 @@ public final class CheckJar {
         String configured = System.getProperty("legacyconnector.check.vanillaJar");
         if (configured != null && !configured.isBlank()) return Files.isRegularFile(Path.of(configured)) ? Path.of(configured) : null;
         Path cached = Path.of(System.getProperty("user.home"), ".gradle", "caches", "neoformruntime", "artifacts", "minecraft_1.21.1_client.jar");
-        return Files.isRegularFile(cached) ? cached : null;
+        if (Files.isRegularFile(cached)) return cached;
+        // a fresh checkout (CI): the dev environment's own copy of the client resources, created by the build
+        try (var jars = Files.list(Path.of("build", "moddev", "artifacts"))) {
+            return jars.filter(j -> j.getFileName().toString().contains("minecraft-resources") && j.toString().endsWith(".jar")).findFirst().orElse(null);
+        } catch (IOException | RuntimeException e) {
+            return null;
+        }
     }
 
     private static JsonObject record(LegacyJar jar, String result, String reason, LinkReport links, int classes) {

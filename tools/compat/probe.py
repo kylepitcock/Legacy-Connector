@@ -47,6 +47,9 @@ def run_probe(jar_dir, out):
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if r.returncode != 0 or not pathlib.Path(out).exists():
         sys.exit(r.stdout[-3000:] + "\nprobe failed")
+    for line in r.stdout.splitlines():   # the resource check says here whether it ran (it is skipped without the vanilla client jar)
+        if line.startswith("Asset check"):
+            print(line, flush=True)
 
 
 # what a missing symbol belongs to: our shim (old Minecraft/Forge not built yet), old Java/library code, or another mod's API
@@ -215,7 +218,7 @@ def resources(records, mc, date, layer):
     return {"version": layer, "date": date, "checked": checked, "mods": mods}
 
 
-def history(records, mc, date, layer):
+def history(records, mc, date, layer, source=""):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
     assets = {"checked": 0, "modsWithLayerProblems": 0, "layerRefs": 0, "modsWithOwnProblems": 0, "ownRefs": 0}
@@ -246,17 +249,21 @@ def history(records, mc, date, layer):
         rows.append(row)
     rows.sort(key=lambda x: x[0].lower())
     h = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else {"runs": []}
-    h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer)]
-    prior = [x for x in h["runs"] if x["mc"] == mc and x.get("mods")]
+    # a run is identified by version, date and source: results of different populations (the local corpus plus Modrinth, or Modrinth only in CI)
+    # never replace or get compared with each other
+    h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer and x.get("source", "") == source)]
+    prior = [x for x in h["runs"] if x["mc"] == mc and x.get("mods") and x.get("source", "") == source]
     prior.sort(key=lambda x: (x["date"], x["version"]))
     vs = compare(prior[-1], rows) if prior else None
     run = {"mc": mc, "date": date, "version": layer, "counts": counts, "env": environment(layer, len(records)), "mods": rows}
     if assets["checked"]:
         run["assets"] = assets
+    if source:
+        run["source"] = source
     if vs:
         run["vs"] = vs
     h["runs"].append(run)
-    h["runs"].sort(key=lambda x: (x["mc"], x["date"], x["version"]))
+    h["runs"].sort(key=lambda x: (x["mc"], x["date"], x["version"], x.get("source", "")))
     seen = {}
     for x in reversed(h["runs"]):
         seen[x["mc"]] = seen.get(x["mc"], 0) + 1
@@ -273,6 +280,7 @@ def main():
     ap.add_argument("--version", default="", help="layer version shown in the notes")
     ap.add_argument("--json", help="keep the raw probe records here")
     ap.add_argument("--from-json", help="skip translation, convert this probe file")
+    ap.add_argument("--source", default="", help="label of the jar population (e.g. modrinth for CI); runs of different sources are kept and compared separately")
     ap.add_argument("--no-history", action="store_true", help="do not add the run to docs/data/probe.json")
     ap.add_argument("--fail-on-regression", action="store_true", help="exit 2 when a mod got worse than in the previous run (after writing the results)")
     ap.add_argument("--dry-run", action="store_true")
@@ -294,12 +302,12 @@ def main():
     if not a.dry_run and (added or refreshed):
         DATA.write_text(json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     if not a.no_history:
-        h, c, vs = history(records, a.mc, a.date, a.version)
+        h, c, vs = history(records, a.mc, a.date, a.version, a.source)
         print(f"run {a.mc} {a.version or '-'} {a.date}: " + ", ".join(f"{v} {k}" for k, v in c.items()))
         if not a.dry_run:
             HISTORY.write_text(json.dumps(h, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
         res = resources(records, a.mc, a.date, a.version)
-        if res and not a.dry_run:
+        if res and not a.dry_run and not a.source:   # the site's Missing resources tab shows the main corpus; labelled sources (CI) keep to the history
             data = json.loads(RESOURCES.read_text(encoding="utf-8")) if RESOURCES.exists() else {"runs": {}}
             data["runs"][a.mc] = res
             RESOURCES.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")

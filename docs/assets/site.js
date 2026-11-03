@@ -160,7 +160,8 @@
   function tabMods() { return state.all.filter(function (m) { return m.mc === state.tab; }); }
   function runsOf(mc) {
     return state.runs.filter(function (r) { return r.mc === mc; })
-      .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || byVersion(b.version || "0", a.version || "0"); });
+      // newest first; on the same day and version the larger population (the main corpus) leads, a smaller labelled one (CI) follows
+      .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || byVersion(b.version || "0", a.version || "0") || total(b.counts) - total(a.counts); });
   }
   function probeVersions() { return Array.from(new Set(state.runs.map(function (r) { return r.mc; }))).sort(byVersion); }
 
@@ -505,7 +506,7 @@
     sel.textContent = "";
     var runs = runsOf(state.pmc);
     runs.forEach(function (r, i) {
-      var o = el("option", null, (r.version ? "Connector " + r.version + ", " : "") + r.date + (i === 0 ? " (latest)" : ""));
+      var o = el("option", null, (r.version ? "Connector " + r.version + ", " : "") + r.date + (r.source ? ", " + r.source + " only" : ", " + total(r.counts) + " mods") + (i === 0 ? " (latest)" : ""));
       o.value = String(i);
       sel.appendChild(o);
     });
