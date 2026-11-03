@@ -233,7 +233,7 @@
    "mod": "Ars Magica 2 1.4.0.009",
    "mc": "1.7.10",
    "status": "partial",
-   "details": "- Arcane compendium creation animation is broken - Unlocking the secrets of the arcane fails - Ender boots gravity inversion fails - Liquid etherium pools and witchwood trees generate",
+   "details": "- Arcane compendium creation animation is broken - Unlocking the secrets of the arcane fails - Ender boots gravity inversion fails - Liquid etherium pools and witchwood trees generate - The compendium contains its chapters, but they have no text",
    "lc": "0.3.16",
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/ars-magica-2",
