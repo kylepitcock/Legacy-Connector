@@ -81,7 +81,20 @@ GAP_TEXT = {
 }
 
 
+def asset_note(rec):
+    """One sentence about references that point at nothing after translation (rendering smoke test), or ''."""
+    a = rec.get("assets") or {}
+    if not a.get("layer"):
+        return ""
+    ex = [e[len("[layer] "):] for e in a.get("examples", []) if e.startswith("[layer] ")][:2]
+    return f" Resource check: {a['layer']} model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. " + "; ".join(ex) + "."
+
+
 def note(rec, layer):
+    return note_links(rec, layer) + asset_note(rec)
+
+
+def note_links(rec, layer):
     base = f"Automated check {layer}: " if layer else "Automated check: "
     k = kind(rec)
     if k in ("links", "stubs"):
@@ -153,17 +166,27 @@ def environment(layer, jars):
 
 
 def compare(previous, rows):
-    """Per-mod status changes against the previous run of the same Minecraft version: {"regressed": [[name, from, to]], "fixed": [...]}."""
-    old = {r[0].lower(): r[2] for r in previous["mods"]}
+    """Per-mod status changes against the previous run of the same Minecraft version: {"regressed": [[name, from, to]], "fixed": [...]}.
+
+    A mod can appear twice with different jar versions (a corpus plus Modrinth), so each name is compared by its BEST result in each run:
+    only when the best one got worse (or better) does it count, which keeps a second, older jar from looking like a regression."""
+    def best(entries):
+        out = {}
+        for name, k in entries:
+            if k in RANK and (name.lower() not in out or RANK[k] < RANK[out[name.lower()][1]]):
+                out[name.lower()] = (name, k)
+        return out
+    old = best((r[0], r[2]) for r in previous["mods"])
+    new = best((r[0], r[2]) for r in rows)
     out = {"date": previous["date"], "version": previous.get("version", ""), "regressed": [], "fixed": []}
-    for name, version, k, _ in rows:
-        was = old.get(name.lower())
-        if was is None or was not in RANK or k not in RANK or was == k:
+    for key, (name, k) in new.items():
+        was = old.get(key)
+        if was is None or was[1] == k:
             continue
-        if RANK[k] > RANK[was]:
-            out["regressed"].append([name, was, k])
-        elif RANK[k] < RANK[was]:
-            out["fixed"].append([name, was, k])
+        if RANK[k] > RANK[was[1]]:
+            out["regressed"].append([name, was[1], k])
+        else:
+            out["fixed"].append([name, was[1], k])
     out["regressedCount"], out["fixedCount"] = len(out["regressed"]), len(out["fixed"])
     out["regressed"], out["fixed"] = out["regressed"][:MAX_CHANGES], out["fixed"][:MAX_CHANGES]
     return out
@@ -172,6 +195,7 @@ def compare(previous, rows):
 def history(records, mc, date, layer):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
     rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
+    assets = {"checked": 0, "modsWithLayerProblems": 0, "layerRefs": 0, "modsWithOwnProblems": 0, "ownRefs": 0}
     for r in records:
         k = kind(r) if r.get("result") else ""
         if r.get("mc") != mc or k not in counts or not r.get("mods"):
@@ -184,7 +208,19 @@ def history(records, mc, date, layer):
         counts[k] += 1
         stubs = r.get("synthesizedMembers", 0)
         detail = r.get("reason") or (r.get("missing") or [""])[0] if r["result"] != "links" else (f"{stubs} synthesized stub(s)" if stubs else "")
-        rows.append([(m.get("name") or m["id"]).strip(), (m.get("version") or "").strip(), k, detail])
+        row = [(m.get("name") or m["id"]).strip(), (m.get("version") or "").strip(), k, detail]
+        a = r.get("assets")
+        if a:
+            assets["checked"] += 1
+            if a.get("layer"):
+                assets["modsWithLayerProblems"] += 1
+                assets["layerRefs"] += a["layer"]
+            if a.get("mod"):
+                assets["modsWithOwnProblems"] += 1
+                assets["ownRefs"] += a["mod"]
+            if a.get("layer") or a.get("mod"):
+                row += [a.get("layer", 0), a.get("mod", 0), [e for e in a.get("examples", []) if e.startswith("[layer]")][:2]]
+        rows.append(row)
     rows.sort(key=lambda x: x[0].lower())
     h = json.loads(HISTORY.read_text(encoding="utf-8")) if HISTORY.exists() else {"runs": []}
     h["runs"] = [x for x in h["runs"] if not (x["mc"] == mc and x["date"] == date and x["version"] == layer)]
@@ -192,6 +228,8 @@ def history(records, mc, date, layer):
     prior.sort(key=lambda x: (x["date"], x["version"]))
     vs = compare(prior[-1], rows) if prior else None
     run = {"mc": mc, "date": date, "version": layer, "counts": counts, "env": environment(layer, len(records)), "mods": rows}
+    if assets["checked"]:
+        run["assets"] = assets
     if vs:
         run["vs"] = vs
     h["runs"].append(run)

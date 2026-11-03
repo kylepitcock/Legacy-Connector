@@ -526,6 +526,14 @@
       host.appendChild(up); host.appendChild(document.createTextNode(","));
       host.appendChild(down);
     }
+    // rendering smoke test: references that point at nothing (probe.py "assets")
+    if (r.assets && r.assets.checked) {
+      var ar = el("div", "small");
+      ar.style.marginTop = "4px";
+      ar.textContent = "Resource check: " + r.assets.modsWithLayerProblems + " of " + r.assets.checked + " mods lose " + r.assets.layerRefs +
+        " model/texture references in translation (possible missing textures); " + r.assets.modsWithOwnProblems + " more have " + r.assets.ownRefs + " that are missing in the mod's own jar too.";
+      host.appendChild(ar);
+    }
     // the environment the run used, for telling a change of status from a change of tooling
     if (r.env) {
       var bits = [];
@@ -654,7 +662,19 @@
       tr.appendChild(el("td", "", m[0]));
       tr.appendChild(el("td", "col-ver", m[1]));
       var td = el("td"); td.appendChild(el("span", "res " + m[2], RESLABEL[m[2]] || m[2])); tr.appendChild(td);
-      tr.appendChild(el("td", "why", m[3] || ""));
+      var why = el("td", "why", m[3] || "");
+      // rendering smoke test (m[4] lost in translation, m[5] missing in the mod's own jar too, m[6] examples)
+      if (m[4]) {
+        var lost = el("div", "small");
+        lost.style.color = "var(--unresolved)";
+        lost.textContent = m[4] + " model/texture reference(s) missing after translation" + (m[5] ? " (+" + m[5] + " missing in the mod itself)" : "") + (m[6] && m[6][0] ? ": " + String(m[6][0]).replace("[layer] ", "") : "");
+        why.appendChild(lost);
+      } else if (m[5]) {
+        var own = el("div", "small");
+        own.textContent = m[5] + " model/texture reference(s) are missing in the mod's own jar too";
+        why.appendChild(own);
+      }
+      tr.appendChild(why);
       tb.appendChild(tr);
     });
     table.appendChild(tb);

@@ -1,5 +1,6 @@
 package org.kylepitcock.legacyconnector.loader.tools;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -66,6 +67,8 @@ public final class CheckJar {
             for (ClassInfo c : transformer.scan(jar)) p.putIfAbsent(c.name, c);
         }
         Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
+        Map<Path, JsonObject> recordsByOutJar = new java.util.LinkedHashMap<>();
+        List<Path> originals = new ArrayList<>();
         int n = 0;
         for (LegacyJar jar : jars) {
             String obsolete = LibraryBridges.obsoleteReason(jar);
@@ -74,8 +77,12 @@ public final class CheckJar {
                 System.out.println(jar.fileName() + ": obsolete on 1.21.1 (" + obsolete + ")");
                 continue;
             }
-            var result = transformer.transform(jar, out.resolve("out-" + (n++) + ".jar"), peers.get(jar.version));
-            records.add(record(jar, result.links.errorCount() == 0 ? "links" : "unresolved", null, result.links, result.classes));
+            Path outJar = out.resolve("out-" + (n++) + ".jar");
+            var result = transformer.transform(jar, outJar, peers.get(jar.version));
+            JsonObject rec = record(jar, result.links.errorCount() == 0 ? "links" : "unresolved", null, result.links, result.classes);
+            records.add(rec);
+            recordsByOutJar.put(outJar, rec);
+            originals.add(jar.existing());
             demand.computeIfAbsent(jar.version, v -> new SynthDemand()).merge(result.demand);
             System.out.println(jar.fileName() + " [" + jar.version.id() + ", " + jar.versionEvidence + "]: " + result.classes + " classes, "
                     + result.links.errorCount() + " unresolved, " + result.links.synthesizedClasses.size() + " synthesized classes, "
@@ -84,6 +91,7 @@ public final class CheckJar {
             for (String note : result.notes) System.out.println("  note: " + note);
             if (!"-q".equals(System.getProperty("legacyconnector.check.quiet", ""))) System.out.print(result.links.render());
         }
+        checkAssets(recordsByOutJar, originals);
         if (jsonPath != null) {
             Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
             Files.writeString(Path.of(jsonPath), gson.toJson(records) + "\n");
@@ -93,6 +101,45 @@ public final class CheckJar {
             System.out.println("Synthesized " + classes.size() + " " + e.getKey().id() + " classes (" + e.getValue().helperCount() + " helpers)");
             verify(classes);
         }
+    }
+
+    /**
+     * Rendering smoke test of every translated jar ({@link ResourceCheck}): missing textures, models and blockstate models, added to each record
+     * as "assets". Needs the vanilla 1.21.1 client jar ({@code -Dlegacyconnector.check.vanillaJar=...}, found in the Gradle cache otherwise);
+     * without it the check is skipped. {@code -Dlegacyconnector.check.assets=false} switches it off.
+     */
+    private static void checkAssets(Map<Path, JsonObject> records, List<Path> originals) {
+        if ("false".equalsIgnoreCase(System.getProperty("legacyconnector.check.assets")) || records.isEmpty()) return;
+        Path vanilla = vanillaJar();
+        if (vanilla == null) {
+            System.out.println("Asset check skipped: the vanilla 1.21.1 client jar was not found (set -Dlegacyconnector.check.vanillaJar)");
+            return;
+        }
+        try (ResourceCheck.Index index = new ResourceCheck.Index()) {
+            index.add(vanilla);
+            for (Path jar : records.keySet()) index.add(jar);
+            for (Path jar : originals) index.addOriginal(jar);
+            int withProblems = 0, layer = 0, mod = 0;
+            for (var e : records.entrySet()) {
+                JsonObject assets = ResourceCheck.check(e.getKey(), index);
+                e.getValue().add("assets", assets);
+                int l = assets.get("layer").getAsInt();
+                if (l > 0) withProblems++;
+                layer += l;
+                mod += assets.get("mod").getAsInt();
+            }
+            System.out.println("Asset check: " + withProblems + " of " + records.size() + " jars have asset references the translation lost ("
+                    + layer + " in total); " + mod + " more are missing from the mods' own jars too");
+        } catch (IOException | RuntimeException e) {
+            System.out.println("Asset check failed: " + e);
+        }
+    }
+
+    private static Path vanillaJar() {
+        String configured = System.getProperty("legacyconnector.check.vanillaJar");
+        if (configured != null && !configured.isBlank()) return Files.isRegularFile(Path.of(configured)) ? Path.of(configured) : null;
+        Path cached = Path.of(System.getProperty("user.home"), ".gradle", "caches", "neoformruntime", "artifacts", "minecraft_1.21.1_client.jar");
+        return Files.isRegularFile(cached) ? cached : null;
     }
 
     private static JsonObject record(LegacyJar jar, String result, String reason, LinkReport links, int classes) {

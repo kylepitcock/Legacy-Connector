@@ -90,6 +90,15 @@ def main():
     top_classes = {c for c, _ in sorted(by_cls.items(), key=lambda kv: -len(kv[1][0]))[:10]}
     flips = sum(1 for _, r in mods if r["result"] == "unresolved" and r.get("missing") and
                 all(owner(s) in top_classes or any(s.startswith(x) for x in a.exclude) for s in r["missing"]))
+    # resource references (rendering smoke test) that point at nothing after translation: the layer's, not the mod's own
+    lost = sorted(((r["assets"]["layer"], name, r["assets"]) for name, r in mods if r.get("assets", {}).get("layer")), key=lambda x: (-x[0], x[1]))
+    if lost:
+        parts.append("## Resource references lost in translation (possible missing textures/models)\n")
+        parts.append("| Mod | Lost | Missing in the mod's own jar too | Example |\n|---|---:|---:|---|")
+        for n, name, assets in lost[:a.top]:
+            ex = next((e[len("[layer] "):] for e in assets.get("examples", []) if e.startswith("[layer] ")), "")
+            parts.append(f"| {name} | {n} | {assets.get('mod', 0)} | {ex[:110]} |")
+        parts.append("")
     parts.append(f"Closing just the top 10 classes above would flip {flips} of {len(failing)} failing mods to \"links\".\n")
     text = "\n".join(parts)
     if a.out:

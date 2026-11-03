@@ -147,3 +147,21 @@ in `tools/dev/mod-specific-baseline.txt` per file and can only go down: `python3
 remove some. A new mod-specific fix goes under a `compat/` package, labelled and keyed by mod id, so it stays easy to remove. If outside contributors
 start sending per-mod fixes, the next step is a plugin interface plus a separate optional jar for them (how Sinytra Connector does it with ConnectorExtras).
 
+## Resource check (rendering smoke test without the game)
+
+`./gradlew checkLegacyMod` (and so `tools/compat/probe.py`) also runs `loader/.../tools/ResourceCheck` on the converted assets of every jar, against the
+jars of the same set and the vanilla 1.21.1 client jar (found in the Gradle cache, or `-Dlegacyconnector.check.vanillaJar=...`; switch off with
+`-Dlegacyconnector.check.assets=false`). It finds the references that point at nothing, which is how nearly every purple-and-black texture and invisible
+block starts: a model's `parent`, a literal texture, an item model override, a blockstate variant's model, and an element face's `#variable` that the parent
+chain never defines (checked only for models a blockstate or the item folder uses directly, since templates are completed by their children); plus JSON that
+does not parse and PNGs without a readable header.
+
+Every problem gets a verdict so the layer is not blamed for the mods' own defects: **layer** (the original jar ships the file, or it is a vanilla file the
+rename tables miss, but it is not there after translation) and **mod** (no original jar ships it, so the game showed it missing in 1.12 too). References into
+the namespace of a mod that is not in the set are ignored (optional integrations). The probe record keeps both counts and the first examples (`[layer]` ones
+first); the site shows them in the run summary and in each mod's detail, and `tools/compat/missing_report.py` lists the mods that lose the most.
+
+What it cannot see: what a texture looks like, animations, lighting, translucency order, shaders, anything drawn by code, and 1.12 Forge-format blockstates
+(translated at runtime, so they are skipped; blockstate models in the vanilla namespace that the runtime generates can show up as possible layer problems).
+For those use the headless client tests (`tools/dev/survey.sh`, `quick-shots.sh`).
+
