@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Legacy Connector automated compatibility results</title>
+<meta name="description" content="Automated link-probe results of Legacy Connector: how many legacy Forge mods translate and link on NeoForge 1.21.1.">
+<style>
+  :root {
+    --bg: #f6f7f9; --card: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dfe3e8; --accent: #2f6fed; --chip: #eef1f5;
+    --links: #1f9d55; --unresolved: #d9480f; --obsolete: #6b7280;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1216; --card: #171b21; --text: #e8ebef; --muted: #9aa4b2; --line: #2a303a; --accent: #6b9bff; --chip: #1f252d;
+      --links: #4cc38a; --unresolved: #ff8a54; --obsolete: #8b94a3;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+  header { padding: 40px 0 16px; }
+  h1 { margin: 0 0 6px; font-size: 1.9rem; letter-spacing: -0.01em; }
+  header p { margin: 0; color: var(--muted); max-width: 66ch; }
+  nav { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px; font-size: 0.95rem; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px; margin: 16px 0; }
+  .card h2 { margin: 0 0 10px; font-size: 1.1rem; }
+  .tabs { display: flex; gap: 4px; flex-wrap: wrap; margin: 18px 0 0; border-bottom: 1px solid var(--line); }
+  .tab { background: transparent; color: var(--muted); border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; padding: 8px 16px; cursor: pointer; font-size: 0.98rem; font-weight: 600; margin-bottom: -1px; }
+  .tab:hover { color: var(--text); }
+  .tab[aria-selected=true] { background: var(--card); color: var(--accent); border-color: var(--line); }
+  select, input[type=search] { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); font-size: 0.92rem; }
+  input[type=search] { flex: 1 1 200px; min-width: 0; font-size: 1rem; }
+  .runbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 0.92rem; }
+  .chart { display: flex; gap: 32px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .pie { width: 260px; height: 260px; flex: none; }
+  .pie path { cursor: pointer; transition: opacity .15s; stroke: var(--card); stroke-width: 2; }
+  .pie path.dim { opacity: .35; }
+  .pie text { fill: var(--text); font-weight: 700; }
+  .pie text.sub { fill: var(--muted); font-weight: 400; }
+  .legendbox { display: grid; gap: 8px; min-width: 240px; }
+  .row { display: flex; align-items: center; gap: 10px; background: var(--chip); border: 1px solid transparent; border-radius: 8px; padding: 8px 12px; cursor: pointer; font: inherit; color: inherit; text-align: left; }
+  .row[aria-pressed=true] { border-color: var(--accent); }
+  .dot { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+  .row b { margin-left: auto; }
+  .row small { color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 600; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: var(--chip); min-width: 120px; }
+  .bar span { display: block; height: 100%; }
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 4px 0 12px; }
+  .res { display: inline-block; min-width: 78px; text-align: center; padding: 2px 8px; border-radius: 6px; font-size: 0.78rem; font-weight: 700; color: #fff; }
+  .res.links { background: var(--links); } .res.unresolved { background: var(--unresolved); } .res.obsolete { background: var(--obsolete); }
+  td.why { color: var(--muted); overflow-wrap: anywhere; font-size: 0.86rem; }
+  .empty { text-align: center; color: var(--muted); padding: 28px 0; }
+  .small { color: var(--muted); font-size: 0.88rem; }
+  details summary { cursor: pointer; color: var(--accent); }
+  footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Automated compatibility results</h1>
+    <p>Legacy Connector translates every mod jar offline, outside the game, and checks that all of its references link. This is the share of popular legacy Forge mods that pass.</p>
+    <nav>
+      <a href="index.html">&larr; Compatibility list</a>
+      <a href="https://github.com/kylepitcock/Legacy-Connector" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a>
+    </nav>
+  </header>
+
+  <div class="tabs" id="tabs" role="tablist" aria-label="Legacy Minecraft version"></div>
+
+  <div class="card">
+    <div class="runbar">
+      <label>Run <select id="run" aria-label="Test run"></select></label>
+      <span id="runinfo"></span>
+    </div>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div class="card">
+    <h2>History</h2>
+    <div id="trend"></div>
+  </div>
+
+  <div class="card">
+    <h2>Mods in this run</h2>
+    <div class="controls">
+      <input type="search" id="q" placeholder="Search mods…" aria-label="Search mods">
+      <span class="small" id="filterinfo"></span>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <div class="card">
+    <h2>How it works</h2>
+    <p class="small" style="margin-top:0">Compatibility is determined by running Legacy Connector's translation on the mod jar and validating the result. This runs outside of the game with the <code>checkLegacyMod</code> tool (<code>tools/compat/probe.py</code>); all jars of a run are translated as one mod set, so mods that extend each other link.</p>
+    <p class="small"><b>Links</b>: every class, method and field the mod uses resolves against the shim, the synthesized legacy API or the libraries. <b>Unresolved</b>: at least one reference cannot be linked and would throw when used. <b>Not applicable</b>: 1.7.10 / 1.12.2 engine patches (performance, bug fixes, ID extenders, mixin loaders) that have nothing to do on 1.21.1.</p>
+    <p class="small"><b>This only proves a jar translates and links, it does not prove that the mod works in game.</b> Startup problems, bad assumptions about world generation, rendering, or runtime-only failures only show when the game runs, and some unresolved references sit in code paths a mod never reaches. For in-game results see the <a href="index.html">compatibility list</a>, where player reports and in-game tests outrank this probe.</p>
+    <p class="small">The jars come from Modrinth's most downloaded Forge mods and are discarded after the run. If a result is wrong, <a href="https://github.com/kylepitcock/Legacy-Connector/issues/new?template=compatibility_report.yml" target="_blank" rel="noopener">open a compatibility report</a>.</p>
+  </div>
+
+  <footer><span id="updated"></span></footer>
+</div>
+
+<script>
+(function () {
+  var KINDS = [
+    { key: "links", label: "Links", color: "var(--links)", hint: "all references resolve" },
+    { key: "unresolved", label: "Unresolved references", color: "var(--unresolved)", hint: "would fail when used" },
+    { key: "obsolete", label: "Not applicable", color: "var(--obsolete)", hint: "engine patches with nothing to do on 1.21.1" }
+  ];
+  var RESLABEL = { links: "Links", unresolved: "Unresolved", obsolete: "N/A" };
+  var state = { runs: [], mc: "", run: null, kind: "all", q: "" };
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function total(c) { return (c.links || 0) + (c.unresolved || 0) + (c.obsolete || 0); }
+  function pct(n, t) { return t ? (100 * n / t).toFixed(1) + "%" : "0%"; }
+  function svg(tag, attrs) {
+    var e = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) e.setAttribute(k, attrs[k]);
+    return e;
+  }
+  function byVersion(a, b) {
+    var x = a.split("."), y = b.split(".");
+    for (var i = 0; i < Math.max(x.length, y.length); i++) { var d = (+x[i] || 0) - (+y[i] || 0); if (d) return d; }
+    return 0;
+  }
+
+  function runsOf(mc) {
+    return state.runs.filter(function (r) { return r.mc === mc; })
+      .sort(function (a, b) { return (b.date || "").localeCompare(a.date || "") || byVersion(b.version || "0", a.version || "0"); });
+  }
+
+  function renderTabs() {
+    var tabs = document.getElementById("tabs");
+    tabs.textContent = "";
+    var mcs = Array.from(new Set(state.runs.map(function (r) { return r.mc; }))).sort(byVersion);
+    mcs.forEach(function (mc) {
+      var b = el("button", "tab", mc);
+      b.setAttribute("role", "tab");
+      b.setAttribute("aria-selected", String(mc === state.mc));
+      b.onclick = function () { state.mc = mc; state.run = runsOf(mc)[0]; state.kind = "all"; renderAll(); };
+      tabs.appendChild(b);
+    });
+  }
+
+  function renderRunSelect() {
+    var sel = document.getElementById("run");
+    sel.textContent = "";
+    var runs = runsOf(state.mc);
+    runs.forEach(function (r, i) {
+      var o = el("option", null, (r.version ? "Connector " + r.version + ", " : "") + r.date + (i === 0 ? " (latest)" : ""));
+      o.value = String(i);
+      sel.appendChild(o);
+    });
+    sel.value = String(Math.max(0, runs.indexOf(state.run)));
+    sel.onchange = function () { state.run = runs[+sel.value]; state.kind = "all"; renderAll(); };
+    var info = document.getElementById("runinfo");
+    info.textContent = state.run ? total(state.run.counts) + " mods tested" : "";
+  }
+
+  function renderChart() {
+    var host = document.getElementById("chart");
+    host.textContent = "";
+    var run = state.run;
+    if (!run) { host.appendChild(el("p", "empty", "No probe run for this version yet.")); return; }
+    var c = run.counts, t = total(c);
+    var S = 260, R = 120, r = 70, cx = S / 2, cy = S / 2;
+    var root = svg("svg", { "class": "pie", viewBox: "0 0 " + S + " " + S, role: "img", "aria-label": "Share of mods per result" });
+    var angle = -Math.PI / 2;
+    var paths = {};
+    KINDS.forEach(function (k) {
+      var n = c[k.key] || 0;
+      if (!n) return;
+      var frac = n / t, a1 = angle, a2 = angle + frac * 2 * Math.PI - (frac === 1 ? 0.0001 : 0);
+      var large = a2 - a1 > Math.PI ? 1 : 0;
+      var p = function (rad, a) { return (cx + rad * Math.cos(a)).toFixed(2) + " " + (cy + rad * Math.sin(a)).toFixed(2); };
+      var d = "M" + p(R, a1) + " A" + R + " " + R + " 0 " + large + " 1 " + p(R, a2) + " L" + p(r, a2) + " A" + r + " " + r + " 0 " + large + " 0 " + p(r, a1) + " Z";
+      var path = svg("path", { d: d, fill: k.color });
+      var title = svg("title", {}); title.textContent = k.label + ": " + n + " (" + pct(n, t) + ")";
+      path.appendChild(title);
+      path.onclick = function () { state.kind = state.kind === k.key ? "all" : k.key; renderChart(); renderList(); };
+      root.appendChild(path);
+      paths[k.key] = path;
+      angle += frac * 2 * Math.PI;
+    });
+    var big = svg("text", { x: cx, y: cy + 4, "text-anchor": "middle", "font-size": "30" });
+    big.textContent = pct(c.links || 0, t - (c.obsolete || 0));
+    var sub = svg("text", { x: cx, y: cy + 24, "text-anchor": "middle", "font-size": "12", "class": "sub" });
+    sub.textContent = "of applicable mods link";
+    root.appendChild(big); root.appendChild(sub);
+    Object.keys(paths).forEach(function (k) { if (state.kind !== "all" && state.kind !== k) paths[k].setAttribute("class", "dim"); });
+    host.appendChild(root);
+
+    var box = el("div", "legendbox");
+    KINDS.forEach(function (k) {
+      var n = c[k.key] || 0;
+      var row = el("button", "row");
+      row.setAttribute("aria-pressed", String(state.kind === k.key));
+      var dot = el("span", "dot"); dot.style.background = k.color;
+      var label = el("span"); label.appendChild(document.createTextNode(k.label));
+      label.appendChild(document.createElement("br"));
+      label.appendChild(el("small", null, k.hint));
+      var num = el("b", null, n + " · " + pct(n, t));
+      row.appendChild(dot); row.appendChild(label); row.appendChild(num);
+      row.onclick = function () { state.kind = state.kind === k.key ? "all" : k.key; renderChart(); renderList(); };
+      box.appendChild(row);
+    });
+    host.appendChild(box);
+  }
+
+  function renderTrend() {
+    var host = document.getElementById("trend");
+    host.textContent = "";
+    var runs = runsOf(state.mc);
+    if (!runs.length) return;
+    var table = el("table");
+    var head = el("tr");
+    ["Date", "Connector", "Mods", "Links", "Unresolved", "N/A", ""].forEach(function (h, i) { var th = el("th", i >= 2 && i <= 5 ? "num" : "", h); head.appendChild(th); });
+    table.appendChild(head);
+    runs.forEach(function (r) {
+      var c = r.counts, t = total(c), tr = el("tr");
+      [r.date, r.version || "-", t, c.links || 0, c.unresolved || 0, c.obsolete || 0].forEach(function (v, i) {
+        tr.appendChild(el("td", i >= 2 ? "num" : "", String(v)));
+      });
+      var td = el("td"), bar = el("div", "bar");
+      KINDS.forEach(function (k) {
+        var s = el("span"); s.style.width = (t ? 100 * (c[k.key] || 0) / t : 0) + "%"; s.style.background = k.color; bar.appendChild(s);
+      });
+      td.appendChild(bar); tr.appendChild(td);
+      table.appendChild(tr);
+    });
+    host.appendChild(table);
+  }
+
+  function renderList() {
+    var host = document.getElementById("list");
+    host.textContent = "";
+    var run = state.run;
+    var info = document.getElementById("filterinfo");
+    if (!run) { info.textContent = ""; return; }
+    if (!run.mods || !run.mods.length) {
+      host.appendChild(el("p", "empty", "The per-mod list of this run was dropped to keep the data small; only the counts are kept."));
+      info.textContent = "";
+      return;
+    }
+    var q = state.q.toLowerCase();
+    var rows = run.mods.filter(function (m) {
+      return (state.kind === "all" || m[2] === state.kind) && (!q || m[0].toLowerCase().indexOf(q) >= 0);
+    });
+    info.textContent = rows.length + " of " + run.mods.length + (state.kind !== "all" ? " (" + RESLABEL[state.kind] + ")" : "");
+    if (!rows.length) { host.appendChild(el("p", "empty", "No mods match.")); return; }
+    var table = el("table");
+    var head = el("tr");
+    ["Mod", "Version", "Result", "Detail"].forEach(function (h) { head.appendChild(el("th", "", h)); });
+    table.appendChild(head);
+    rows.slice(0, 500).forEach(function (m) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "", m[0]));
+      tr.appendChild(el("td", "", m[1]));
+      var td = el("td"); td.appendChild(el("span", "res " + m[2], RESLABEL[m[2]] || m[2])); tr.appendChild(td);
+      tr.appendChild(el("td", "why", m[3] || ""));
+      table.appendChild(tr);
+    });
+    host.appendChild(table);
+    if (rows.length > 500) host.appendChild(el("p", "small", "Showing the first 500, narrow the search."));
+  }
+
+  function renderAll() { renderTabs(); renderRunSelect(); renderChart(); renderTrend(); renderList(); }
+
+  fetch("data/probe.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { runs: [] }; }).catch(function () { return { runs: [] }; })
+    .then(function (d) {
+      state.runs = d.runs || [];
+      if (!state.runs.length) {
+        document.getElementById("chart").appendChild(el("p", "empty", "No probe results published yet."));
+        return;
+      }
+      var mcs = Array.from(new Set(state.runs.map(function (r) { return r.mc; }))).sort(byVersion);
+      state.mc = mcs[0];
+      state.run = runsOf(state.mc)[0];
+      var newest = state.runs.reduce(function (a, r) { return r.date > a ? r.date : a; }, "");
+      document.getElementById("updated").textContent = "Last probe run: " + newest;
+      renderAll();
+    });
+  document.getElementById("q").oninput = function (e) { state.q = e.target.value; renderList(); };
+})();
+</script>
+</body>
+</html>

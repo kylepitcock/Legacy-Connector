@@ -1,0 +1,424 @@
+{
+ "runs": [
+  {
+   "mc": "1.7.10",
+   "date": "2026-11-03",
+   "version": "0.3.17",
+   "counts": {
+    "links": 54,
+    "unresolved": 11,
+    "obsolete": 3
+   },
+   "mods": [
+    [
+     "AI Improvements",
+     "0.0.1.8",
+     "links",
+     ""
+    ],
+    [
+     "Auto Third Person",
+     "2.0.3",
+     "links",
+     ""
+    ],
+    [
+     "AzureLib",
+     "1.1.5",
+     "links",
+     ""
+    ],
+    [
+     "Bad Mobs",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Better Ping",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Title Screen",
+     "1.7.10-1.1",
+     "links",
+     ""
+    ],
+    [
+     "BHMenu",
+     "2.4.7",
+     "links",
+     ""
+    ],
+    [
+     "Biomes O' Plenty",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Blood Magic: Alchemical Wizardry",
+     "v1.3.3",
+     "unresolved",
+     "WayofTime.alchemicalWizardry.AlchemicalWizardry.registerBMBook()V"
+    ],
+    [
+     "Bookshelf",
+     "1.0.4.187",
+     "links",
+     ""
+    ],
+    [
+     "Botania",
+     "r1.8-249",
+     "links",
+     ""
+    ],
+    [
+     "Brandon's Core",
+     "1.0.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Carbon Config Library",
+     "1.1.3",
+     "unresolved",
+     "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
+    ],
+    [
+     "ChickenChunks",
+     "1.3.4.19",
+     "links",
+     ""
+    ],
+    [
+     "Controlling",
+     "1.7.10-1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "CraftPresence",
+     "2.7.1",
+     "links",
+     ""
+    ],
+    [
+     "Crash Assistant",
+     "1.11.12",
+     "unresolved",
+     "java.awt.Window.getPeer()Ljava.awt.peer.ComponentPeer;"
+    ],
+    [
+     "Customizable Player Models",
+     "0.6.27a",
+     "links",
+     ""
+    ],
+    [
+     "DivineRPG",
+     "1.4.2",
+     "links",
+     ""
+    ],
+    [
+     "Draconic Evolution",
+     "1.0.2h",
+     "unresolved",
+     "com.brandon3055.draconicevolution.integration.computers.CCOCIntegration.initCC()V"
+    ],
+    [
+     "Ears",
+     "1.4.7",
+     "links",
+     ""
+    ],
+    [
+     "EasyLAN",
+     "1.5",
+     "links",
+     ""
+    ],
+    [
+     "EnderStorage",
+     "1.4.7.37",
+     "links",
+     ""
+    ],
+    [
+     "EntityCulling",
+     "@VER@",
+     "links",
+     ""
+    ],
+    [
+     "Euphoria Patcher",
+     "_1.10.5",
+     "links",
+     ""
+    ],
+    [
+     "FiskTag",
+     "3.0",
+     "unresolved",
+     "mods.battlegear2.client.utils.BattlegearRenderHelper.moveOffHandArm(Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;Llegacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped;F)V"
+    ],
+    [
+     "FoamFix",
+     "@VERSION@",
+     "obsolete",
+     "1.12.2 performance/memory patches; not applicable to 1.21.1"
+    ],
+    [
+     "Fossils and Archeology Revival",
+     "7.3.2",
+     "links",
+     ""
+    ],
+    [
+     "FPS Reducer",
+     "mc1.7.10-1.10.3",
+     "links",
+     ""
+    ],
+    [
+     "Friendly Fire",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "GTNH Lib",
+     "0.11.56",
+     "unresolved",
+     "com.gtnewhorizon.gtnhlib.util.ItemUtil.getDSUIO(Ljava.lang.Object;)Lcom.gtnewhorizon.gtnhlib.capability.item.ItemIO;"
+    ],
+    [
+     "In-Game Account Switcher",
+     "D7.29 :P",
+     "unresolved",
+     "com.mojang.util.UUIDTypeAdapter.fromUUID(Ljava.util.UUID;)Ljava.lang.String;"
+    ],
+    [
+     "Inventory Pets",
+     "1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Item Scroller",
+     "0.12.0-alpha.1",
+     "links",
+     ""
+    ],
+    [
+     "JourneyMap",
+     "1.7.10-6.0.8",
+     "unresolved",
+     "com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;"
+    ],
+    [
+     "Mantle",
+     "1.7.10-0.3.2.jenkins191",
+     "links",
+     ""
+    ],
+    [
+     "Mekanism",
+     "9.1.1",
+     "unresolved",
+     "mekanism.common.integration.MekanismHooks.hookIC2Recipes()V"
+    ],
+    [
+     "MekanismGenerators",
+     "9.1.1",
+     "links",
+     ""
+    ],
+    [
+     "MekanismTools",
+     "9.1.1",
+     "links",
+     ""
+    ],
+    [
+     "MinecraftCapes",
+     "@MOD_VERSION",
+     "links",
+     ""
+    ],
+    [
+     "MineTweaker 3",
+     "3.1.0",
+     "links",
+     ""
+    ],
+    [
+     "ModernKeyBinding",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "More Bows Restrung",
+     "1.0.10",
+     "links",
+     ""
+    ],
+    [
+     "Nature's Compass",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Neat",
+     "GRADLE:VERSION-GRADLE:BUILD",
+     "links",
+     ""
+    ],
+    [
+     "OAuth",
+     "1.1.13",
+     "obsolete",
+     "1.7.10 Microsoft login helper; not needed"
+    ],
+    [
+     "PTRModelLib",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "RebornCore",
+     "1.1.0.15",
+     "links",
+     ""
+    ],
+    [
+     "Reflex AntiLag",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Search on MCMOD",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "SecurityCraft",
+     "v1.8.13",
+     "links",
+     ""
+    ],
+    [
+     "Serene Seasons",
+     "1.2.18",
+     "unresolved",
+     "org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V"
+    ],
+    [
+     "ServerRedirect",
+     "1.4.5",
+     "links",
+     ""
+    ],
+    [
+     "Shoulder Surfing",
+     "2.3.2",
+     "links",
+     ""
+    ],
+    [
+     "Sit",
+     "v1.1",
+     "links",
+     ""
+    ],
+    [
+     "Smart Particles",
+     "1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Storage Drawers",
+     "1.7.10-1.10.9",
+     "links",
+     ""
+    ],
+    [
+     "TerraFirmaCraft",
+     "0.79.29",
+     "links",
+     ""
+    ],
+    [
+     "The Aether",
+     "v1.1.2.5",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Construct",
+     "1.7.10-1.8.8.build988",
+     "links",
+     ""
+    ],
+    [
+     "UniLib",
+     "1.2.1",
+     "unresolved",
+     "unilib.external.org.slf4j.helpers.MessageFormatter.trimmedCopy([Ljava.lang.Object;)[Ljava.lang.Object;"
+    ],
+    [
+     "UniMixins",
+     "0.3.1",
+     "obsolete",
+     "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "WorldEdit",
+     "6.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Xaero's Minimap",
+     "21.10.44",
+     "links",
+     ""
+    ],
+    [
+     "Xaero's Minimap",
+     "21.10.40",
+     "links",
+     ""
+    ],
+    [
+     "Xaero's World Map",
+     "1.14.1.33",
+     "links",
+     ""
+    ],
+    [
+     "YDMs Weaponmaster",
+     "4.2.4",
+     "links",
+     ""
+    ],
+    [
+     "�4Name Pain",
+     "1.5.1",
+     "links",
+     ""
+    ]
+   ]
+  }
+ ]
+}

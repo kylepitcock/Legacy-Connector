@@ -100,3 +100,28 @@ python3 tools/extract_legacy_hierarchy.py 1.7.10
   real engines, gearboxes, clutches and machines, powers them and asserts power, fluids, items, GUIs (containers and shift-click), capabilities
   (items, fluids, RF), persistence across a restart (`persist`, run twice) and the handbook data. Jars go in `run-subtest/mods/1.7.10`.
 - Legacy mod jars are supplied by the developer and never committed (`test-mods/` is gitignored).
+
+## Link probe (automated compatibility results)
+
+Like the Sinytra Connector checker, `tools/compat/probe.py` translates mod jars offline, without starting the game, and records whether every
+reference links:
+
+```
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+python3 tools/compat/probe.py test-mods2 --mc 1.7.10 --version 0.3.18      # --dry-run to preview, --json out.json keeps the raw records
+python3 tools/compat/probe.py --from-json out.json --mc 1.7.10             # convert an earlier run
+```
+
+- It runs `./gradlew checkLegacyMod -PlegacyJar=... -PcheckJson=<file>` on all jars as ONE mod set (mods that extend each other link), then
+  merges the per-jar records into `docs/data/mods.json` with source `probe`.
+- `links` (every reference resolves; missing legacy API is synthesized) becomes status `loads`, `unresolved` becomes `fails` with the first
+  unresolved references in the note. Engine patches (`obsolete`) and library jars without a mod are not listed.
+- A probe proves only that a jar translates and links, never that it works in game. The site ranks it below player reports, maintainer, client
+  and startup-test results, and the script never overwrites those. Re-running refreshes earlier probe entries.
+- Every run is also appended to `docs/data/probe.json` (counts per result plus the per-mod list of the last 10 runs per version), which the
+  pie chart page `docs/probe.html` ("Automated results" on the compatibility site) shows with a run selector and a history table.
+- **Jar sources.** `tools/compat/fetch_probe_mods.py <mc> <dir> [--limit N]` downloads the most downloaded Forge mods of a version from Modrinth's
+  public API (SHA-1 checked). The jars are only for the probe: keep them in a gitignored or temporary folder, never commit or redistribute them.
+- **CI.** `.github/workflows/probe.yml` runs fetch + probe for 1.7.10 and 1.12.2 on every published release, weekly and on demand
+  (`workflow_dispatch`, input `limit`), then commits `docs/data/mods.json` and `docs/data/probe.json`. The jars exist only on the runner.
+  Local runs against your own corpus (`test-mods2`) work the same way, only the committed results matter.

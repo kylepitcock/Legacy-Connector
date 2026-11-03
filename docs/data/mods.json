@@ -197,6 +197,15 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 63 items, 33 blocks, 2 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "AI Improvements",
+   "version": "0.0.1.8",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 17 classes link. 1 legacy API class(es) and 5 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Akashic Tome",
    "version": "1.2.6",
    "mc": "1.7.10",
@@ -483,6 +492,15 @@
    "notes": "Survival-ready (tested 2026-11-01): the sand/limestone portal (Scarab thrown into a water pool) takes a survival player into the Atum dimension with its biomes, pyramids, sky and sandstorms; 18 mob kinds spawn, fight and drop their loot tables; 342 blocks break and drop; 208 code and 175 JSON recipes load; 51 chest and fishing loot tables fill. Distant Horizons draws the dimension's far terrain flat."
   },
   {
+   "name": "Auto Third Person",
+   "version": "2.0.3",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 35 classes link. 2 legacy API class(es) and 0 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Automagy",
    "version": "0.28.2",
    "mc": "1.7.10",
@@ -563,6 +581,15 @@
    "notes": "Self-tested in the GT New Horizons server test: 3 items, 3 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "AzureLib",
+   "version": "1.1.5",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 634 classes link. 0 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Backhand",
    "version": "1.7.7",
    "mc": "1.7.10",
@@ -597,6 +624,15 @@
    "date": "2026-10-28",
    "status": "partial",
    "notes": "Self-tested in the GT New Horizons server test: 4 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (50%)."
+  },
+  {
+   "name": "Bad Mobs",
+   "version": "1.0.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 9 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "BartWorks",
@@ -860,6 +896,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Better Ping",
+   "version": "1.0",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 2 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Better Than Mending",
    "version": "1.1.2",
    "mc": "1.12.2",
@@ -867,6 +912,15 @@
    "date": "2026-10-30",
    "status": "loads",
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Better Title Screen",
+   "version": "1.7.10-1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 10 classes link. 0 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "BetterBuildersWands",
@@ -939,6 +993,15 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 12 items, 4 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "BHMenu",
+   "version": "2.4.7",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 85 classes link. 4 legacy API class(es) and 7 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "BiblioCraft",
@@ -1225,6 +1288,15 @@
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Bookshelf",
+   "version": "1.0.4.187",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 107 classes link. 1 legacy API class(es) and 0 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Botania",
    "version": "1.12.28-GTNH",
    "mc": "1.7.10",
@@ -1492,6 +1564,15 @@
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Carbon Config Library",
+   "version": "1.1.3",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "fails",
+   "notes": "Probe 0.3.17: 1 reference(s) cannot be linked: com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;."
+  },
+  {
    "name": "Carpenter's Blocks",
    "version": "3.3.8.1",
    "mc": "1.7.10",
@@ -1570,6 +1651,15 @@
    "date": "2026-10-27",
    "status": "loads",
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
+  },
+  {
+   "name": "ChickenChunks",
+   "version": "1.3.4.19",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 48 classes link. 0 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "Chisel",
@@ -1884,6 +1974,15 @@
    "notes": "Loads at startup without errors (blocks, items and recipes register). 1.12.2 support is in alpha; gameplay not verified yet."
   },
   {
+   "name": "Crash Assistant",
+   "version": "1.11.12",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "fails",
+   "notes": "Probe 0.3.17: 1 reference(s) cannot be linked: java.awt.Window.getPeer()Ljava.awt.peer.ComponentPeer;."
+  },
+  {
    "name": "CreativeCore",
    "version": "1.5.14-GTNH",
    "mc": "1.7.10",
@@ -1989,6 +2088,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in 64-mod 1.7.10 test pack (0.3.10 overnight) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Customizable Player Models",
+   "version": "0.6.27a",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 1107 classes link. 2 legacy API class(es) and 6 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "Cyclic",
@@ -2099,6 +2207,15 @@
    "notes": "Fails during init: java.lang.NullPointerException: Cannot invoke \"org.dimdev.dimdoors.shared.tileentities.TileEntityEntranceRift.setPos(legacyconnector.v1_12_2.net.minecraft.util."
   },
   {
+   "name": "DivineRPG",
+   "version": "1.4.2",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 964 classes link. 3 legacy API class(es) and 8 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Doggy Talents",
    "version": "1.15.1.6",
    "mc": "1.12.2",
@@ -2177,6 +2294,24 @@
    "date": "2026-10-30",
    "status": "loads",
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Ears",
+   "version": "1.4.7",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 220 classes link. 4 legacy API class(es) and 0 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "EasyLAN",
+   "version": "1.5",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 46 classes link. 11 legacy API class(es) and 19 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "ElectriCraft",
@@ -2573,6 +2708,15 @@
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "EntityCulling",
+   "version": "@VER@",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 18 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Epic Fight Mod",
    "version": "1.12.2-2.2.8",
    "mc": "1.12.2",
@@ -2625,6 +2769,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Euphoria Patcher",
+   "version": "_1.10.5",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 1152 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "Extra Bees",
@@ -2948,6 +3101,33 @@
    "notes": "Self-tested in the GT New Horizons server test: 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
   },
   {
+   "name": "Fossils and Archeology Revival",
+   "version": "7.3.2",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 534 classes link. 6 legacy API class(es) and 7 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "FPS Reducer",
+   "version": "mc1.7.10-1.10.3",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 27 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "Friendly Fire",
+   "version": "1.0.0",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 2 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "FTB Tweaks",
    "version": "1.0.2",
    "mc": "1.7.10",
@@ -3082,6 +3262,14 @@
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 147 items, 48 blocks, 14 entity types; every block placed and used, every item used, every entity spawned without errors. 19 blocks did not stay placed."
   },
   {
+   "name": "Galacticraft Core",
+   "version": "4.0.6",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Server-tested with Galacticraft Planets, GalaxySpace and AsmodeusCore (1.12.2): loads without errors; 177 recipes; 72 of 80 blocks drop items; evolved mobs drop loot; oxygen collector and compressor tick and use energy; a tier 1 rocket fuels, ignites, flies to 1200 and uses fuel; the Moon level generates (gravity 0.062). Planets are registered at server start and get their level on first use (fixed). Not working: moving a player to another planet through Galacticraft's own teleport (it removes the player, then re-adds it; the modern player stays in the overworld). Oxygen sealer, distributor and the GUIs are untested."
+  },
+  {
    "name": "Galacticraft Planets",
    "version": "3.0.12",
    "mc": "1.7.10",
@@ -3097,6 +3285,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 94 items, 23 blocks, 12 entity types; every block placed and used, every item used, every entity spawned; 1 threw errors (1%). 1 blocks did not stay placed."
+  },
+  {
+   "name": "Galacticraft Planets",
+   "version": "4.0.6",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "works",
+   "notes": "Loads with Core: 67 recipes, 27 of 33 blocks drop, spider queen and slimeling drop loot, dimensions for Mars, Asteroids and Venus register. Planet travel, Mars/Venus terrain and the boss rooms are untested."
   },
   {
    "name": "GalaxySpace",
@@ -3115,6 +3311,14 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 308 items, 69 blocks, 13 entity types; every block placed and used, every item used, every entity spawned without errors. 7 blocks did not stay placed."
+  },
+  {
+   "name": "GalaxySpace",
+   "version": "2.2.0",
+   "mc": "1.12.2",
+   "date": "2026-11-01",
+   "status": "loads",
+   "notes": "Loads (136 items, 90 blocks) and its 119 recipes register (they were all lost before the recipe registry fix). Its mixins into Galacticraft (thermal status, alien villager trades, launch controller, asteroid and Venus providers) are not applied, so those features are missing. Planet travel and machines untested."
   },
   {
    "name": "Gendustry",
@@ -3816,6 +4020,15 @@
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "In-Game Account Switcher",
+   "version": "D7.29 :P",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "fails",
+   "notes": "Probe 0.3.17: 1 reference(s) cannot be linked: com.mojang.util.UUIDTypeAdapter.fromUUID(Ljava.util.UUID;)Ljava.lang.String;."
+  },
+  {
    "name": "InControl",
    "version": "3.9.18",
    "mc": "1.12.2",
@@ -3950,6 +4163,15 @@
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 109 items, 8 blocks, 10 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Inventory Pets",
+   "version": "1.5.2",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 214 classes link. 5 legacy API class(es) and 9 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Inventory Tweaks",
    "version": "1.59-dev-152-cf6e263",
    "mc": "1.7.10",
@@ -4073,6 +4295,15 @@
    "date": "2026-10-30",
    "status": "loads",
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Item Scroller",
+   "version": "0.12.0-alpha.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 27 classes link. 4 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "JABBA",
@@ -4433,6 +4664,15 @@
    "notes": "Loads next to Iris since the legacy-class mixin guard (0.3.14, #127): Mekanism, Generators and Tools 9.8.3 (448 + 21 + 65 recipes, 20 blocks drop). Machines and multiblocks were not driven in survival."
   },
   {
+   "name": "Mekanism",
+   "version": "9.1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "fails",
+   "notes": "Probe 0.3.17: 5 reference(s) cannot be linked: mekanism.common.integration.MekanismHooks.hookIC2Recipes()V, mekanism.common.integration.MekanismHooks.loadCCPeripheralProviders()V, mekanism.common.integration.MekanismHooks.loadOCDrivers()V, mekanism.common.integration.MekanismHooks.registerAE2P2P()V, mekanism.common.integration.OreDictManager.addIC2BronzeRecipe()V."
+  },
+  {
    "name": "Mekanism: Generators",
    "version": "1.12.2-9.8.3.390",
    "mc": "1.12.2",
@@ -4467,6 +4707,24 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 65 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "MekanismGenerators",
+   "version": "9.1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 124 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "MekanismTools",
+   "version": "9.1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 17 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "MFR Compat: Vanilla",
@@ -4540,6 +4798,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "MinecraftCapes",
+   "version": "@MOD_VERSION",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 18 classes link. 0 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "MineFactory Reloaded",
    "version": "1.7.10R2.8.1",
    "mc": "1.7.10",
@@ -4585,6 +4852,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "MineTweaker 3",
+   "version": "3.1.0",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 778 classes link. 1 legacy API class(es) and 0 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "MobsInfo",
    "version": "0.5.6-GTNH",
    "mc": "1.7.10",
@@ -4619,6 +4895,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "ModernKeyBinding",
+   "version": "2.1.0",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 30 classes link. 2 legacy API class(es) and 0 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "ModernMarkings",
@@ -4673,6 +4958,15 @@
    "date": "2026-10-30",
    "status": "loads",
    "notes": "Loads in the 1.12.2 server self test (116 mods) without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "More Bows Restrung",
+   "version": "1.0.10",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 8 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "More Planets",
@@ -4860,6 +5154,15 @@
    "date": "2026-10-28",
    "status": "loads",
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
+  },
+  {
+   "name": "Neat",
+   "version": "GRADLE:VERSION-GRADLE:BUILD",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 4 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "NEI Addons",
@@ -5794,6 +6097,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "RebornCore",
+   "version": "1.1.0.15",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 99 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Rechiseled",
    "version": "1.2.6a",
    "mc": "1.12.2",
@@ -5855,6 +6167,15 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Reflex AntiLag",
+   "version": "1.1.3",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 13 classes link. 0 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "RelocationFMP",
@@ -6042,6 +6363,24 @@
    "notes": "Loads in a GT New Horizons client session without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Search on MCMOD",
+   "version": "0.1.0",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 6 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "SecurityCraft",
+   "version": "v1.8.13",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 348 classes link. 4 legacy API class(es) and 4 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "SecurityCraft v1.10.1",
    "version": "",
    "mc": "1.12.2",
@@ -6058,6 +6397,24 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 7 items, 5 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Serene Seasons",
+   "version": "1.2.18",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "fails",
+   "notes": "Probe 0.3.17: 1 reference(s) cannot be linked: org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V."
+  },
+  {
+   "name": "ServerRedirect",
+   "version": "1.4.5",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 15 classes link. 1 legacy API class(es) and 2 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "ServerUtilities",
@@ -6132,6 +6489,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "Shoulder Surfing",
+   "version": "2.3.2",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 42 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Silent Gear",
    "version": "0.6.5",
    "mc": "1.12.2",
@@ -6186,6 +6552,15 @@
    "notes": "Self-tested in a 130-jar server self test: 11 items, 0 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
   },
   {
+   "name": "Sit",
+   "version": "v1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 4 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Sit v1.3",
    "version": "",
    "mc": "1.12.2",
@@ -6220,6 +6595,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 2 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Smart Particles",
+   "version": "1.7.10",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 4 classes link. Not started in game: this only proves the jar translates."
   },
   {
    "name": "Solar Expansion",
@@ -6717,6 +7101,15 @@
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 2878 items, 2149 blocks, 44 entity types; every block placed and used, every item used, every entity spawned without errors. 407 blocks did not stay placed."
   },
   {
+   "name": "TerraFirmaCraft",
+   "version": "0.79.29",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 922 classes link. 14 legacy API class(es) and 37 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Thaumcraft",
    "version": "6.1.BETA26",
    "mc": "1.12.2",
@@ -6975,6 +7368,15 @@
    "date": "2026-10-30",
    "status": "works",
    "notes": "Self-tested in the 1.12.2 server self test (116 mods): 200 items, 76 blocks, 34 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+  },
+  {
+   "name": "The Aether",
+   "version": "v1.1.2.5",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 417 classes link. 5 legacy API class(es) and 4 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "The Hordes",
@@ -7557,6 +7959,15 @@
    "notes": "In the GT New Horizons server test 104 items, 7 blocks, 1 entity types register, but loading failed during postInit: java.lang.RuntimeException: Invalid SpinningWheel recipe for: item.barley.plant.name input should be ItemStack, Item, Block or String"
   },
   {
+   "name": "WorldEdit",
+   "version": "6.1.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 976 classes link. 4 legacy API class(es) and 1 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "WR-CBE Addons",
    "version": "1.4.1.9",
    "mc": "1.7.10",
@@ -7609,6 +8020,24 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during construction: java.lang.NoClassDefFoundError: codechicken/multipart/TMultiPart (the Legacy Connector layer does not implement this legacy API yet - see lo"
+  },
+  {
+   "name": "Xaero's Minimap",
+   "version": "21.10.40",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 231 classes link. 3 legacy API class(es) and 11 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
+  },
+  {
+   "name": "Xaero's World Map",
+   "version": "1.14.1.33",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 189 classes link. 8 legacy API class(es) and 23 member(s) are synthesized (they link, behaviour is default). Not started in game: this only proves the jar translates."
   },
   {
    "name": "XNet",
@@ -7647,6 +8076,15 @@
    "notes": "Loads in the GT New Horizons server test without errors (no blocks, items or entities of its own)."
   },
   {
+   "name": "YDMs Weaponmaster",
+   "version": "4.2.4",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Probe 0.3.17: translates offline and all 102 classes link. Not started in game: this only proves the jar translates."
+  },
+  {
    "name": "Zero CORE",
    "version": "1.12.2-0.1.2.9",
    "mc": "1.12.2",
@@ -7674,28 +8112,13 @@
    "notes": "Self-tested in the GT New Horizons server test: 49 items, 41 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 1 blocks did not stay placed."
   },
   {
-   "name": "Galacticraft Core",
-   "version": "4.0.6",
-   "mc": "1.12.2",
-   "date": "2026-11-01",
-   "status": "works",
-   "notes": "Server-tested with Galacticraft Planets, GalaxySpace and AsmodeusCore (1.12.2): loads without errors; 177 recipes; 72 of 80 blocks drop items; evolved mobs drop loot; oxygen collector and compressor tick and use energy; a tier 1 rocket fuels, ignites, flies to 1200 and uses fuel; the Moon level generates (gravity 0.062). Planets are registered at server start and get their level on first use (fixed). Not working: moving a player to another planet through Galacticraft's own teleport (it removes the player, then re-adds it; the modern player stays in the overworld). Oxygen sealer, distributor and the GUIs are untested."
-  },
-  {
-   "name": "Galacticraft Planets",
-   "version": "4.0.6",
-   "mc": "1.12.2",
-   "date": "2026-11-01",
-   "status": "works",
-   "notes": "Loads with Core: 67 recipes, 27 of 33 blocks drop, spider queen and slimeling drop loot, dimensions for Mars, Asteroids and Venus register. Planet travel, Mars/Venus terrain and the boss rooms are untested."
-  },
-  {
-   "name": "GalaxySpace",
-   "version": "2.2.0",
-   "mc": "1.12.2",
-   "date": "2026-11-01",
+   "name": "�4Name Pain",
+   "version": "1.5.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
    "status": "loads",
-   "notes": "Loads (136 items, 90 blocks) and its 119 recipes register (they were all lost before the recipe registry fix). Its mixins into Galacticraft (thermal status, alien villager trades, launch controller, asteroid and Venus providers) are not applied, so those features are missing. Planet travel and machines untested."
+   "notes": "Probe 0.3.17: translates offline and all 6 classes link. Not started in game: this only proves the jar translates."
   }
  ],
  "hidden": [

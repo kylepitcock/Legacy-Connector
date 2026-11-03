@@ -93,6 +93,7 @@
       <a href="https://github.com/kylepitcock/Legacy-Connector" target="_blank" rel="noopener">GitHub</a>
       <a href="https://github.com/kylepitcock/Legacy-Connector/releases" target="_blank" rel="noopener">Download</a>
       <a href="https://github.com/kylepitcock/Legacy-Connector/issues?q=label%3Acompatibility" target="_blank" rel="noopener">All reports</a>
+      <a href="probe.html">Automated results</a>
     </nav>
   </header>
 
@@ -109,7 +110,7 @@
     <p class="note"><b>Most “Works” entries are simply not tested thoroughly yet</b>, they are not known to be broken.</p>
     <details>
       <summary>Where a badge comes from</summary>
-      <p>Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>. The startup test only checks that a mod loads, so any player report replaces it.</p>
+      <p>Results are per legacy Minecraft version (tab): the same mod can differ on 1.7.10 and 1.12.2. A mod's badge comes from the highest-ranked source: <b>player reports</b> (issues labelled <code>compatibility</code>) outrank <b>maintainer</b> results, which outrank the <b>in-game test</b> (a real modpack session or the self test that places every block, uses every item and spawns every mob), which outranks the automated <b>startup test</b>, which outranks the offline <b>link probe</b> (translates the jar without starting the game and checks that every reference links). The startup test only checks that a mod loads, so any player report replaces it.</p>
     </details>
   </section>
 
@@ -153,7 +154,7 @@
 (function () {
   var REPO = "kylepitcock/Legacy-Connector";
   var LABEL = { perfect: "Near-perfect", playable: "Playable", works: "Works", partial: "Partial", loads: "Loads", fails: "Fails to load", crashes: "Crashes", untested: "Untested" };
-  var TIER = ["community", "maintainer", "client", "corpus"];
+  var TIER = ["community", "maintainer", "client", "corpus", "probe"];
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
@@ -351,7 +352,7 @@
         var row = el("div", "entry");
         var top = el("div", "top");
         top.appendChild(el("span", "badge " + en.status, LABEL[en.status]));
-        var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : "Player report";
+        var who = en.source === "maintainer" ? "Maintainer" : en.source === "client" ? "In-game test" : en.source === "corpus" ? "Startup test" : en.source === "probe" ? "Link probe" : "Player report";
         top.appendChild(el("span", null, who + (en.version ? " · " + en.version : "")));
         if (en.issue) {
           var a = el("a", null, "#" + en.issue);

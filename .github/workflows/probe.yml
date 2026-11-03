@@ -1,0 +1,58 @@
+name: Compatibility probe
+
+# Automated compatibility results (like Sinytra's checker): downloads the most downloaded Forge mods of each legacy
+# Minecraft version from Modrinth, translates them offline with `checkLegacyMod` (no game), and commits the results to
+# docs/data/mods.json (source "probe", lowest tier) and docs/data/probe.json (pie chart page docs/probe.html).
+# The jars live only on the runner and are discarded; nothing but the results is committed.
+on:
+  release:
+    types: [published]
+  schedule:
+    - cron: "23 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Mods per Minecraft version"
+        default: "150"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: compat-probe
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Probe
+        env:
+          LIMIT: ${{ inputs.limit || '150' }}
+        run: |
+          chmod +x gradlew
+          VERSION=$(grep '^mod_version=' gradle.properties | cut -d= -f2)
+          for MC in 1.7.10 1.12.2; do
+            python3 tools/compat/fetch_probe_mods.py "$MC" "$RUNNER_TEMP/jars-$MC" --limit "$LIMIT"
+            python3 tools/compat/probe.py "$RUNNER_TEMP/jars-$MC" --mc "$MC" --version "$VERSION"
+          done
+
+      - name: Commit results
+        run: |
+          if git diff --quiet -- docs/data; then echo "no change"; exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/data/mods.json docs/data/probe.json
+          git commit -m "Update automated compatibility results"
+          git pull --rebase
+          git push
