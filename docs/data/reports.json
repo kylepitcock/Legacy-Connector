@@ -263,6 +263,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/tf2-stuff-reloaded",
    "date": "2026-11-03",
    "open": true
+  },
+  {
+   "issue": 146,
+   "mod": "Witchery",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Witchery crops do not drop from vanilla grasses. Crops grow as normal and drop their seeds when harvested, but are unobtainable from grass in survival mode.",
+   "lc": "0.3.15",
+   "neoforge": "21.1.265",
+   "link": "",
+   "date": "2026-11-03",
+   "open": true
   }
  ]
 }
