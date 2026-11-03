@@ -145,6 +145,89 @@ public abstract class EntityMinecart extends Entity {
         if (c != null && pos != null) c.moveMinecartOnRail(pos.mcc$modern());
     }
 
+    private int mcc$rollingDirection = 1;
+
+    public void setRollingDirection(int direction) {
+        mcc$rollingDirection = direction;
+    }
+
+    /** The side the cart rocks to when hit (1 or -1). */
+    public int getRollingDirection() {
+        var c = mcc$cart();
+        return c != null ? c.getHurtDir() : mcc$rollingDirection;
+    }
+
+    /** The rail shapes' end points ({@code MATRIX} of 1.12's minecart: two block offsets per shape, by metadata). */
+    private static final int[][][] RAIL_MATRIX = {{{0, 0, -1}, {0, 0, 1}}, {{-1, 0, 0}, {1, 0, 0}}, {{-1, -1, 0}, {1, 0, 0}},
+            {{-1, 0, 0}, {1, -1, 0}}, {{0, 0, -1}, {0, -1, 1}}, {{0, -1, -1}, {0, 0, 1}}, {{0, 0, 1}, {1, 0, 0}}, {{0, 0, 1}, {-1, 0, 0}},
+            {{0, 0, -1}, {-1, 0, 0}}, {{0, 0, -1}, {1, 0, 0}}};
+
+    /** The point of the rail under (x, y, z) the cart's lengthwise line passes through, or null off the rails. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getPos(double x, double y, double z) {
+        int i = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(x);
+        int j = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(y);
+        int k = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(z);
+        World w = getEntityWorld();
+        if (w == null) return null;
+        if (legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase.isRailBlock(w, new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(i, j - 1, k))) --j;
+        var pos = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(i, j, k);
+        var state = w.getBlockState(pos);
+        if (!legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase.isRailBlock(state)) return null;
+        var dir = ((legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase) state.getBlock()).getRailDirection(w, pos, state, this);
+        int[][] m = RAIL_MATRIX[dir.getMetadata()];
+        double d0 = i + 0.5D + m[0][0] * 0.5D;
+        double d1 = j + 0.0625D + m[0][1] * 0.5D;
+        double d2 = k + 0.5D + m[0][2] * 0.5D;
+        double d3 = i + 0.5D + m[1][0] * 0.5D;
+        double d4 = j + 0.0625D + m[1][1] * 0.5D;
+        double d5 = k + 0.5D + m[1][2] * 0.5D;
+        double d6 = d3 - d0;
+        double d7 = (d4 - d1) * 2.0D;
+        double d8 = d5 - d2;
+        double d9;
+        if (d6 == 0.0D) d9 = z - k;
+        else if (d8 == 0.0D) d9 = x - i;
+        else d9 = ((x - d0) * d6 + (z - d2) * d8) * 2.0D;
+        double ox = d0 + d6 * d9;
+        double oy = d1 + d7 * d9;
+        double oz = d2 + d8 * d9;
+        if (d7 < 0.0D) ++oy;
+        if (d7 > 0.0D) oy += 0.5D;
+        return new legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d(ox, oy, oz);
+    }
+
+    /** {@link #getPos} moved {@code offset} blocks along the rail. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d getPosOffset(double x, double y, double z, double offset) {
+        int i = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(x);
+        int j = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(y);
+        int k = legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(z);
+        World w = getEntityWorld();
+        if (w == null) return null;
+        if (legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase.isRailBlock(w, new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(i, j - 1, k))) --j;
+        var pos = new legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos(i, j, k);
+        var state = w.getBlockState(pos);
+        if (!legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase.isRailBlock(state)) return null;
+        var dir = ((legacyconnector.v1_12_2.net.minecraft.block.BlockRailBase) state.getBlock()).getRailDirection(w, pos, state, this);
+        int[][] m = RAIL_MATRIX[dir.getMetadata()];
+        y = j;
+        if (dir.isAscending()) y = j + 1;
+        double d0 = m[1][0] - m[0][0];
+        double d1 = m[1][2] - m[0][2];
+        double d2 = Math.sqrt(d0 * d0 + d1 * d1);
+        d0 /= d2;
+        d1 /= d2;
+        x += d0 * offset;
+        z += d1 * offset;
+        if (m[0][1] != 0 && legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(x) - i == m[0][0]
+                && legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(z) - k == m[0][2]) {
+            y += m[0][1];
+        } else if (m[1][1] != 0 && legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(x) - i == m[1][0]
+                && legacyconnector.v1_12_2.net.minecraft.util.math.MathHelper.floor(z) - k == m[1][2]) {
+            y += m[1][1];
+        }
+        return getPos(x, y, z);
+    }
+
     @Override
     protected void writeEntityToNBT(NBTTagCompound tag) {
     }

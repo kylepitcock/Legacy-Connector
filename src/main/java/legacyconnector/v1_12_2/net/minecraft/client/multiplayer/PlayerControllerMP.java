@@ -152,6 +152,40 @@ public class PlayerControllerMP {
         return result.consumesAction() ? EnumActionResult.SUCCESS : result == net.minecraft.world.InteractionResult.FAIL ? EnumActionResult.FAIL : EnumActionResult.PASS;
     }
 
+    /** Attacks an entity with the held item (the game's attack, sent to the server). */
+    public void attackEntity(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, legacyconnector.v1_12_2.net.minecraft.entity.Entity target) {
+        var m = mode();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (m == null || mc.player == null || target == null || target.mcc$entity == null) return;
+        m.attack(mc.player, target.mcc$entity);
+    }
+
+    /** Uses the held item on an entity. */
+    public EnumActionResult interactWithEntity(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity target, EnumHand hand) {
+        var m = mode();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (m == null || mc.player == null || target == null || target.mcc$entity == null) return EnumActionResult.PASS;
+        var result = m.interact(mc.player, target.mcc$entity, hand == EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND
+                : net.minecraft.world.InteractionHand.MAIN_HAND);
+        return result.consumesAction() ? EnumActionResult.SUCCESS : result == net.minecraft.world.InteractionResult.FAIL ? EnumActionResult.FAIL : EnumActionResult.PASS;
+    }
+
+    /** Uses the held item on an entity at the point the ray hit it. */
+    public EnumActionResult interactWithEntity(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.entity.Entity target, legacyconnector.v1_12_2.net.minecraft.util.math.RayTraceResult ray, EnumHand hand) {
+        var m = mode();
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (m == null || mc.player == null || target == null || target.mcc$entity == null) return EnumActionResult.PASS;
+        var h = hand == EnumHand.OFF_HAND ? net.minecraft.world.InteractionHand.OFF_HAND : net.minecraft.world.InteractionHand.MAIN_HAND;
+        if (ray == null || ray.hitVec == null) return interactWithEntity(player, target, hand);
+        var hit = new net.minecraft.world.phys.EntityHitResult(target.mcc$entity,
+                new net.minecraft.world.phys.Vec3(ray.hitVec.x, ray.hitVec.y, ray.hitVec.z));
+        var result = m.interactAt(mc.player, target.mcc$entity, hit, h);
+        if (!result.consumesAction()) result = m.interact(mc.player, target.mcc$entity, h);
+        return result.consumesAction() ? EnumActionResult.SUCCESS : result == net.minecraft.world.InteractionResult.FAIL ? EnumActionResult.FAIL : EnumActionResult.PASS;
+    }
+
     public void updateController() {
         var m = mode();
         if (m != null) m.tick();

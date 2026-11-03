@@ -16,6 +16,12 @@ public class ClientRegistry {
         TileEntityRendererDispatcher.instance.mcc$register(tileEntityClass, (TileEntitySpecialRenderer) specialRenderer);
     }
 
+    /** Gives spectating an entity of this class a post-processing shader (like the creeper's green view). */
+    public static void registerEntityShader(Class<? extends legacyconnector.v1_12_2.net.minecraft.entity.Entity> entityClass,
+            legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation shader) {
+        legacyconnector.v1_12_2.net.minecraft.client.renderer.EntityRenderer.mcc$registerEntityShader(entityClass, shader);
+    }
+
     public static void registerKeyBinding(legacyconnector.v1_12_2.net.minecraft.client.settings.KeyBinding key) {
         if (key != null) legacyconnector.v1_12_2.net.minecraft.client.settings.KeyBinding.mcc$register(key);
     }

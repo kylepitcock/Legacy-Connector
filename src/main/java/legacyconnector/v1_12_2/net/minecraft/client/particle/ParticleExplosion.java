@@ -19,6 +19,14 @@ public class ParticleExplosion extends Particle {
         particleMaxAge = (int) (16.0D / ((double) rand.nextFloat() * 0.8D + 0.2D)) + 2;
     }
 
+    public static class Factory implements IParticleFactory {
+        @Override
+        public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,
+                double zSpeedIn, int... p_178902_15_) {
+            return new ParticleExplosion(worldIn, xCoordIn, yCoordIn, zCoordIn, xSpeedIn, ySpeedIn, zSpeedIn);
+        }
+    }
+
     @Override
     public void onUpdate() {
         prevPosX = posX;

@@ -3,6 +3,8 @@ package legacyconnector.v1_12_2.net.minecraft.block.material;
 /** The colours blocks have on maps. */
 public class MapColor {
     public static final MapColor[] COLORS = new MapColor[64];
+    /** The same table under the name the 1.12 release's later mappings gave it. */
+    public static final MapColor[] BLOCK_COLORS = COLORS;
     public static final MapColor AIR = new MapColor(0, 0);
     public static final MapColor GRASS = new MapColor(1, 8368696);
     public static final MapColor SAND = new MapColor(2, 16247203);

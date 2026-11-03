@@ -58,6 +58,48 @@ public class ParticleFirework {
         }
     }
 
+    /**
+     * The rocket burst: the explosions of a firework (an NBT list of Type, Flicker, Trail, Colors, FadeColors) start as the modern firework
+     * burst at the same place (the starter itself draws nothing).
+     */
+    public static class Starter extends Particle {
+        public Starter(World worldIn, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed, ParticleManager manager,
+                legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList explosions) {
+            super(worldIn, x, y, z, 0.0D, 0.0D, 0.0D);
+            this.motionX = xSpeed;
+            this.motionY = ySpeed;
+            this.motionZ = zSpeed;
+            this.particleMaxAge = 8;
+            var level = net.minecraft.client.Minecraft.getInstance().level;
+            if (level == null || explosions == null || explosions.tagCount() == 0) {
+                setExpired();
+                return;
+            }
+            java.util.List<net.minecraft.world.item.component.FireworkExplosion> list = new java.util.ArrayList<>();
+            for (int i = 0; i < explosions.tagCount(); i++) {
+                var tag = explosions.getCompoundTagAt(i);
+                var shapes = net.minecraft.world.item.component.FireworkExplosion.Shape.values();
+                int type = tag.getByte("Type");
+                list.add(new net.minecraft.world.item.component.FireworkExplosion(shapes[type < 0 || type >= shapes.length ? 0 : type],
+                        new it.unimi.dsi.fastutil.ints.IntArrayList(tag.getIntArray("Colors")),
+                        new it.unimi.dsi.fastutil.ints.IntArrayList(tag.getIntArray("FadeColors")), tag.getBoolean("Trail"), tag.getBoolean("Flicker")));
+            }
+            net.minecraft.client.Minecraft.getInstance().particleEngine.add(new net.minecraft.client.particle.FireworkParticles.Starter(level, x, y, z, xSpeed,
+                    ySpeed, zSpeed, net.minecraft.client.Minecraft.getInstance().particleEngine, list));
+            setExpired();
+        }
+
+        @Override
+        public int getFXLayer() {
+            return 0;
+        }
+
+        @Override
+        public void renderParticle(legacyconnector.v1_12_2.net.minecraft.client.renderer.BufferBuilder buffer, Entity entityIn, float partialTicks,
+                float rotationX, float rotationZ, float rotationYZ, float rotationXY, float rotationXZ) {
+        }
+    }
+
     public static class Factory implements IParticleFactory {
         @Override
         public Particle createParticle(int particleID, World worldIn, double xCoordIn, double yCoordIn, double zCoordIn, double xSpeedIn, double ySpeedIn,

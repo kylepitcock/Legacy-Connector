@@ -69,6 +69,29 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
         }
     }
 
+    /** Forge's registry of the post shaders spectating an entity class applies (vanilla's creeper, spider and enderman ones are the game's own). */
+    private static final java.util.Map<Class<?>, ResourceLocation> ENTITY_SHADERS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    public static void mcc$registerEntityShader(Class<?> entityClass, ResourceLocation shader) {
+        if (entityClass != null && shader != null) ENTITY_SHADERS.put(entityClass, shader);
+    }
+
+    /** Applies the post shader of the entity being spectated (a registered one, else the game's own for creepers, spiders, endermen); none stops it. */
+    public void loadEntityShader(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn) {
+        var game = net.minecraft.client.Minecraft.getInstance().gameRenderer;
+        if (entityIn == null) {
+            stopUseShader();
+            return;
+        }
+        for (var e : ENTITY_SHADERS.entrySet()) {
+            if (e.getKey().isInstance(entityIn)) {
+                loadShader(e.getValue());
+                return;
+            }
+        }
+        if (entityIn.mcc$entity != null) game.checkEntityPostEffect(entityIn.mcc$entity);
+    }
+
     public void switchUseShader() {
         if (isShaderActive()) stopUseShader();
     }

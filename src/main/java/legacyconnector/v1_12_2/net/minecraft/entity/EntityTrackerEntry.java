@@ -33,6 +33,8 @@ public class EntityTrackerEntry {
 
     /** Ticks since the entry was made (1.12 counted them; mods reset it to force a position resend). */
     public int updateCounter;
+    /** The yaw last sent to the clients, in 256ths of a turn (the modern tracker sends rotation itself; kept for mods that read it). */
+    public int encodedRotationYaw;
     private int mcc$maxRange;
 
     /** Sends the packet to the players that see the entity. */

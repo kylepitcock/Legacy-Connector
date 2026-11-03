@@ -42,6 +42,8 @@ public abstract class EntityPlayer extends EntityLivingBase {
     public float prevCameraYaw;
     @Deprecated
     public int xpCooldown;
+    /** The distance walked until the next footstep sound (1.12 kept it in the entity; the modern game plays steps itself). */
+    public int nextStepDistance = 1;
     @Deprecated
     public double chasingPosX;
     @Deprecated
@@ -235,6 +237,13 @@ public abstract class EntityPlayer extends EntityLivingBase {
     @Override
     public String getName() {
         return mcc$player().getGameProfile().getName();
+    }
+
+    /** Whether the held item opens a locked container (an item renamed to the lock's code). */
+    public boolean canOpen(legacyconnector.v1_12_2.net.minecraft.world.LockCode code) {
+        if (code == null || code.isEmpty()) return true;
+        legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack = getHeldItemMainhand();
+        return !stack.isEmpty() && stack.hasDisplayName() && stack.getDisplayName().equals(code.getLock());
     }
 
     public String getDisplayNameString() {

@@ -61,6 +61,17 @@ public class ExtendedBlockStorage {
         return blockRefCount == 0;
     }
 
+    /** Phantom: the number of blocks of the section that tick randomly (the modern chunk section counts them itself). */
+    @Deprecated
+    public int tickRefCount;
+
+    public static int mcc$get$tickRefCount(ExtendedBlockStorage s) {
+        return s.needsRandomTick() ? 1 : 0;
+    }
+
+    public static void mcc$set$tickRefCount(ExtendedBlockStorage s, int value) {
+    }
+
     public boolean needsRandomTick() {
         return !isEmpty();
     }

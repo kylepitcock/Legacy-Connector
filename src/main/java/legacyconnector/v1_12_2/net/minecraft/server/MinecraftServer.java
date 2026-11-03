@@ -381,6 +381,11 @@ public class MinecraftServer implements legacyconnector.v1_12_2.net.minecraft.co
         return server != null && server.isCommandBlockEnabled();
     }
 
+    public int getServerPort() {
+        var server = mcc$modern();
+        return server == null ? 25565 : server.getPort();
+    }
+
     public String getServerHostname() {
         var server = mcc$modern();
         return server == null ? "" : server.getLocalIp();

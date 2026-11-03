@@ -714,6 +714,24 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         }
     }
 
+    /** Phantom: ticks until the next left click may attack again (the modern client's miss time). */
+    @Deprecated
+    public int leftClickCounter;
+
+    public static int mcc$get$leftClickCounter(Minecraft m) {
+        if (!client()) return 0;
+        return org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.getInt(net.minecraft.client.Minecraft.class, mc(), "missTime");
+    }
+
+    public static void mcc$set$leftClickCounter(Minecraft m, int value) {
+        if (!client()) return;
+        org.kylepitcock.legacyconnector.v1_12_2.client.Fields1122.set(net.minecraft.client.Minecraft.class, mc(), "missTime", value);
+    }
+
+    /** The debug overlay renderer (hitboxes, chunk borders): none of its overlays is shown. */
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.debug.DebugRenderer debugRenderer =
+            new legacyconnector.v1_12_2.net.minecraft.client.renderer.debug.DebugRenderer();
+
     /** Phantom: ticks until the next right click may use an item again (the modern client's delay). */
     @Deprecated
     public int rightClickDelayTimer;

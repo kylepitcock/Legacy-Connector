@@ -864,6 +864,18 @@ public class World implements IBlockAccess {
         return mcc$state(p).getLightBlock(acc(), p);
     }
 
+    /** Phantom: how much the sky is darkened (0 by day, up to 11 at night); the modern level owns it. */
+    @Deprecated
+    public int skylightSubtracted;
+
+    public static int mcc$get$skylightSubtracted(World w) {
+        return w.getSkylightSubtracted();
+    }
+
+    public static void mcc$set$skylightSubtracted(World w, int value) {
+        w.setSkylightSubtracted(value);
+    }
+
     public int getSkylightSubtracted() {
         return level == null ? 0 : level.getSkyDarken();
     }

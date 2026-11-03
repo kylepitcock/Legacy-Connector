@@ -14,6 +14,16 @@ public class ActiveRenderInfo {
     /** Phantom-like: kept in step by {@link #getCameraPosition()}. */
     public static Vec3d position = new Vec3d(0.0D, 0.0D, 0.0D);
 
+    /** The model-view and projection matrices of the last frame (column-major; identity until a mod fills them from the GL state). */
+    public static final java.nio.FloatBuffer MODELVIEW = identity();
+    public static final java.nio.FloatBuffer PROJECTION = identity();
+
+    private static java.nio.FloatBuffer identity() {
+        java.nio.FloatBuffer b = java.nio.ByteBuffer.allocateDirect(64).order(java.nio.ByteOrder.nativeOrder()).asFloatBuffer();
+        for (int i = 0; i < 4; i++) b.put(i * 5, 1.0F);
+        return b;
+    }
+
     private static net.minecraft.client.Camera camera() {
         return net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();
     }

@@ -173,6 +173,20 @@ public class RenderItem {
         }
     }
 
+    /** 1.12's quad loop: each quad into the buffer, tinted by the stack's item colours (or the given colour where the quad has no tint). */
+    public void renderQuads(BufferBuilder renderer, java.util.List<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.BakedQuad> quads, int color,
+            ItemStack stack) {
+        boolean flag = color == -1 && stack != null && !stack.isEmpty();
+        for (var quad : quads) {
+            int i = color;
+            if (flag && quad.hasTintIndex()) {
+                i = legacyconnector.v1_12_2.net.minecraft.client.renderer.color.ItemColors.mcc$instance().colorMultiplier(stack, quad.getTintIndex());
+                i = i | -16777216;
+            }
+            legacyconnector.v1_12_2.net.minecraftforge.client.model.pipeline.LightUtil.renderQuadColor(renderer, quad, i);
+        }
+    }
+
     /** A model's quads in one ARGB colour. */
     public void renderModel(IBakedModel model, int color) {
         mcc$quads(model, net.minecraft.client.renderer.Sheets.translucentItemSheet(), color);

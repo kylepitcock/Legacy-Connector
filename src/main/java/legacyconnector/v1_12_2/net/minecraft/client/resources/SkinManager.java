@@ -15,8 +15,12 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public class SkinManager {
     private static SkinManager instance;
 
+    /** The folder downloaded skins are cached in (the game's own skin cache). */
+    public final java.io.File skinCacheDir;
+
     public SkinManager(legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.TextureManager textureManager, java.io.File skinCacheDirectory,
             com.mojang.authlib.minecraft.MinecraftSessionService sessionService) {
+        this.skinCacheDir = skinCacheDirectory != null ? skinCacheDirectory : new java.io.File("assets/skins");
     }
 
     public static synchronized SkinManager mcc$instance() {

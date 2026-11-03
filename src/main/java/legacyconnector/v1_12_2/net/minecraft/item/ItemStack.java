@@ -312,6 +312,12 @@ public final class ItemStack {
         return getItem().onItemRightClick(world, player, hand);
     }
 
+    /** The player let go of the use key (bow release): the item's own handler runs. */
+    public void onPlayerStoppedUsing(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity,
+            int timeLeft) {
+        getItem().onPlayerStoppedUsing(this, world, entity, timeLeft);
+    }
+
     public ItemStack onItemUseFinish(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
         return getItem().onItemUseFinish(this, world, entity);
     }

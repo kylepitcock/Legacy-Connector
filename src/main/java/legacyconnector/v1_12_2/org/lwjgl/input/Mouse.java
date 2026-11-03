@@ -29,6 +29,10 @@ public class Mouse extends legacyconnector.v1_7_10.org.lwjgl.input.Mouse {
         }
     }
 
+    /** LWJGL 2 sampled the device into its event queue here; the modern window delivers its input by callbacks. */
+    public static void poll() {
+    }
+
     /** The cursor is the modern window's. */
     public static void updateCursor() {
     }

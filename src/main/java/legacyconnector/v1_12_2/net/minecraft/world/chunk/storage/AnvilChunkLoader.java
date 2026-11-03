@@ -30,6 +30,11 @@ public class AnvilChunkLoader implements IChunkLoader {
         return c == null ? null : new Object[] {c, new NBTTagCompound()};
     }
 
+    /** Whether the chunk is saved in the world's region files. */
+    public boolean chunkExists(World world, int x, int z) {
+        return isChunkGeneratedAt(x, z);
+    }
+
     @Override
     public boolean isChunkGeneratedAt(int x, int z) {
         return RegionFileCache.chunkExists(chunkSaveLocation, x, z);

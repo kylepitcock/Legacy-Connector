@@ -126,6 +126,14 @@ public class ParticleManager {
         if (options != null) net.minecraft.client.Minecraft.getInstance().particleEngine.createTrackingEmitter(entityIn.mcc$entity, options);
     }
 
+    /** The modern particle engine draws the particles with the world; a mod's own render pass has nothing to add. */
+    public void renderParticles(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn, float partialTick) {
+    }
+
+    /** Likewise for the light-emitting particles. */
+    public void renderLitParticles(legacyconnector.v1_12_2.net.minecraft.entity.Entity entityIn, float partialTick) {
+    }
+
     public void registerParticle(int id, IParticleFactory particleFactory) {
         if (particleFactory != null) particleTypes.put(id, particleFactory);
     }
