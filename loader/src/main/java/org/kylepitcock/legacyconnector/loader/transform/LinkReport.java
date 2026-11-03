@@ -54,6 +54,7 @@ public final class LinkReport {
         StringBuilder sb = new StringBuilder();
         if (!synthesizedClasses.isEmpty()) {
             sb.append("  Synthesized ").append(synthesizedClasses.size()).append(" legacy API class(es) the shim lacks (they link, behaviour is default)\n");
+            for (String c : synthesizedClasses) sb.append("    - ").append(c.replace('/', '.')).append('\n');
         }
         section(sb, "Missing shim classes (legacy API not implemented yet)", missingClasses);
         section(sb, "Missing shim members", missingShimMembers);
