@@ -16,6 +16,24 @@ The client log shows `io.netty.handler.codec.CorruptedFrameException: length wid
    `blocks.flattenSubtypes` in the Legacy Connector config reduces item, block, tag and recipe counts (it changes which legacy content
    exists, so it is not a drop-in). A mod that lifts the packet limit would have to be installed on both sides; none was tested here.
 
+## "N translated mod(s) may not work fully" at startup
+
+After translating, the layer shows ONE consolidated loading warning for the risky mods:
+
+- **unresolved**: the link report found references that do not link (the mod throws when it uses that API);
+- **stubs**: 10 or more synthesized members (legacy API that links but does nothing; same limit as `STUB_LIMIT` in `tools/compat/probe.py`).
+
+Each line gives the mod, the count and the first two symbols; the 12 worst are listed, then "and N more". The full list is in
+`logs/legacyconnector-report.txt`. Mods with only a few stubs are never listed, and nothing is shown when no mod is risky.
+
+- **Client**: NeoForge's loading screen lists the warning with a Continue button (unless `showLoadWarnings` is off in NeoForge's client config, then it is only logged).
+  **Dedicated server**: logged as a warning ("Mods loaded with 1 issues"); startup is never blocked.
+- **Shown once**: a hash of the sorted (mod id, version, kind) set is stored in `.legacyconnector/acknowledged-risks.txt` when the warning
+  is shown. The same set is silent on later starts (the log says "already acknowledged"); adding, removing or updating a risky mod, or a mod
+  becoming risky, shows it again. Delete that file to see it again.
+- **Switch**: `warnings.riskyMods = false` in `config/legacyconnector.properties` turns it off (default true).
+- The per-jar numbers are stored next to the translation cache entry (`*.risk.txt`), so cache hits keep working.
+
 ## Measuring what a join sends
 
 Start the server with `-Dlegacyconnector.joinSizeTest=true` (also enabled by `-Dlegacyconnector.entitySelfTest=true`). Once the server is up

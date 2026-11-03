@@ -103,6 +103,8 @@ public final class LegacyConfig {
             perf.weakStackViews1122 = false
             # The loader drops its translation tables after mod discovery (read by the loader at startup).
             perf.releaseLoaderData = true
+            # One loading warning listing translated mods with unresolved references or heavy stub use, shown once per set of mods.
+            warnings.riskyMods = true
             # Tick performance of the legacy layer. Each switch turns one optimization off (false) if it ever misbehaves;
             # all of them are on by default because they keep 1.7.10/1.12.2 behaviour. See the Performance wiki page.
             # Legacy tile entities that never tick (1.7.10 canUpdate() false or no updateEntity, 1.12.2 not ITickable) get no ticker.

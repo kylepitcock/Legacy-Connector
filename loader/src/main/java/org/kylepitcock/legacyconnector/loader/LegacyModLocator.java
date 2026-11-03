@@ -223,6 +223,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             Map<LegacyVersion, byte[]> modSet = modSetDigests(legacy, bridges, crossVersion);
             Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
             Map<LegacyVersion, SynthDemand> demand = new EnumMap<>(LegacyVersion.class);
+            List<RiskyMods.Entry> risky = new ArrayList<>();
             int uncached = 0;
             for (LegacyJar jar : legacy) {
                 if (skipReason(jar) != null || LibraryBridges.replacing(jar, bridges) != null || LibraryBridges.obsoleteReason(jar) != null) continue;
@@ -262,6 +263,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     Path out = cacheDir.resolve(cacheName(jar, modSet.get(jar.version)));
                     Path linkReport = out.resolveSibling(out.getFileName() + ".links.txt");
                     Path demandFile = out.resolveSibling(out.getFileName() + ".synth.txt");
+                    Path riskFile = out.resolveSibling(out.getFileName() + ".risk.txt");
                     if (!Files.exists(out) || !Files.exists(demandFile)) {
                         translating = true;
                         if (!peers.containsKey(jar.version)) progress.step("reading all legacy jars");
@@ -279,6 +281,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                                 .append(result.links.errorCount() == 0 ? " - every legacy API reference links\n" : ":\n");
                         text.append(result.links.render());
                         Files.writeString(linkReport, text);
+                        try {
+                            RiskyMods.write(riskFile, RiskyMods.summarize(result.links));
+                        } catch (IOException | RuntimeException e) {
+                            LOG.debug("Legacy Connector: could not write the risk summary of {}", jar.fileName(), e);
+                        }
                         if (result.links.errorCount() > 0) {
                             LOG.warn("Legacy Connector: {} has {} reference(s) that cannot be linked; see logs/legacyconnector-report.txt",
                                     jar.fileName(), result.links.errorCount());
@@ -288,6 +295,9 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     keep.add(out);
                     keep.add(linkReport);
                     keep.add(demandFile);
+                    keep.add(riskFile);
+                    RiskyMods.Summary risk = RiskyMods.read(riskFile);
+                    if (risk != null) risky.add(RiskyMods.entry(jar, risk));
                     outcomes.put(jar, Files.exists(linkReport) ? Files.readString(linkReport) : "  (cached, no link report)\n");
                     translated.add(out);
                 } catch (Exception e) {
@@ -322,11 +332,36 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 pipeline.addPath(p, ModFileDiscoveryAttributes.DEFAULT, IncompatibleFileReporting.ERROR);
             }
             writeReport(gameDir, outcomes, split);
+            warnRiskyMods(pipeline, gameDir, modsDir, risky);
             pruneCache(cacheDir, keep);
         } catch (IOException e) {
             LOG.error("Legacy Connector: legacy mod discovery failed", e);
         } finally {
             releaseLoaderData(modsDir);
+        }
+    }
+
+    /**
+     * One consolidated loading warning for the risky mods (unresolved references, heavy stub use), shown once per distinct set:
+     * the hash of the set is recorded when the warning is emitted (client: the loading screen with a Continue button; server: the log).
+     * {@code warnings.riskyMods = false} turns it off. Never fails startup.
+     */
+    private static void warnRiskyMods(IDiscoveryPipeline pipeline, Path gameDir, Path modsDir, List<RiskyMods.Entry> risky) {
+        try {
+            if (risky.isEmpty()) return;
+            if ("false".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("warnings.riskyMods", "true").trim())) return;
+            Path state = gameDir.resolve(".legacyconnector");
+            String hash = RiskyMods.hash(risky);
+            if (RiskyMods.acknowledged(state, hash)) {
+                LOG.info("Legacy Connector: {} risky mod(s) already acknowledged (warning not shown again until the set changes)", risky.size());
+                return;
+            }
+            String text = RiskyMods.message(risky);
+            if (text == null) return;
+            pipeline.addIssue(ModLoadingIssue.warning(text));
+            RiskyMods.acknowledge(state, hash);
+        } catch (RuntimeException e) {
+            LOG.debug("Legacy Connector: risky mods summary failed", e);
         }
     }
 
