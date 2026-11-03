@@ -18,6 +18,7 @@ MODRINTH = ("Modrinth", "https://modrinth.com/mod/legacyconnector", "00AF5C", "m
 CURSEFORGE = ("CurseForge", "https://www.curseforge.com/minecraft/mc-mods/legacy-connector", "F16436", "curseforge")
 GITHUB = ("GitHub", "https://github.com/kylepitcock/Legacy-Connector", "181717", "github")
 # Same account as .github/FUNDING.yml (ko_fi). Button only, not in {{links}}.
+DISCORD = ("Discord", "https://discord.gg/vC6x4Kwwdq", "5865F2", "discord")
 KOFI = ("Ko-fi", "https://ko-fi.com/kylepitcock", "FF5E5B", "kofi")
 
 
@@ -31,7 +32,7 @@ def render(platform):
     targets = {"modrinth": [CURSEFORGE, GITHUB], "curseforge": [MODRINTH, GITHUB]}[platform]
     text = SOURCE.read_text(encoding="utf-8")
     text = re.sub(r"\A\s*<!--.*?-->\s*", "", text, flags=re.S)
-    text = text.replace("{{buttons}}", " ".join(button(*t) for t in targets + [KOFI]))
+    text = text.replace("{{buttons}}", " ".join(button(*t) for t in [DISCORD] + targets + [KOFI]))
     labels = {"GitHub": "Source & issue tracker (GitHub)"}
     text = text.replace("{{links}}", " · ".join(f"[{labels.get(n, n)}]({u})" for n, u, _, _ in targets))
     return text
