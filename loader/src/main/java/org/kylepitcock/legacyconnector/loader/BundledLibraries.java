@@ -91,7 +91,7 @@ final class BundledLibraries {
     private static byte[] read(String file) throws IOException {
         String dir = System.getProperty(DIR_PROPERTY);
         if (dir != null) return Files.readAllBytes(Path.of(dir).resolve(file));
-        try (InputStream in = BundledLibraries.class.getResourceAsStream(RESOURCE_DIR + file + ".bin")) {
+        try (InputStream in = BundledLibraries.class.getResourceAsStream(RESOURCE_DIR + file)) {
             if (in == null) throw new IOException("missing embedded library " + file);
             return in.readAllBytes();
         }
