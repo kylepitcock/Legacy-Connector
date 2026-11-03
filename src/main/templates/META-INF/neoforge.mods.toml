@@ -39,3 +39,11 @@ type = "optional"
 versionRange = "[4.0,)"
 ordering = "NONE"
 side = "BOTH"
+
+# Optional: entity size changes (Entity.setSize, eye height) of legacy mods are done through Pehkui when it is installed.
+[[dependencies."${mod_id}"]]
+modId = "pehkui"
+type = "optional"
+versionRange = "[3.8.3,)"
+ordering = "NONE"
+side = "BOTH"
