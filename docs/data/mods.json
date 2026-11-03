@@ -232,7 +232,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.ItemPanel.historyPanel:Lcodechicken.nei.ItemHistoryPanel;, appeng.api.networking.crafting.ICraftingGrid.getCraftingMultiPatterns()Lcom.google.common.collect.ImmutableMap;, appeng.api.networking.crafting.ICraftingPatternDetails.getAEInputs()[Lappeng.api.storage.data.IAEStack;, appeng.api.networking.crafting.ICraftingPatternDetails.getAEOutputs()[Lappeng.api.storage.data.IAEStack;, appeng.api.util.IInterfaceViewable.getNameSuffix()Llegacyconnector.v1_7_10.net.minecraft.util.IChatComponent; (+6 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.ItemPanel.historyPanel:Lcodechicken.nei.ItemHistoryPanel;, codechicken.nei.ItemPanel.containsWithSubpanels(II)Z, codechicken.nei.ItemQuantityField.prepareStackWithQuantity(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;J)Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;, codechicken.nei.recipe.IRecipeHandler.getOverlayIdentifier()Ljava.lang.String;, codechicken.nei.recipe.IRecipeHandler.getRecipeTabName()Ljava.lang.String;."
   },
   {
    "name": "AE2 Fluid Crafting",
@@ -286,7 +286,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.getDisplayName()Ljava.lang.String;, appeng.api.networking.crafting.ICraftingGrid.beginCraftingJob(Llegacyconnector.v1_7_10.net.minecraft.world.World;Lappeng.api.networking.IGrid;Lappeng.api.networking.security.BaseActionSource;Lappeng.api.storage.data.IAEStack;Lappeng.api.networking.crafting.ICraftingCallback;)Ljava.util.concurrent.Future;, appeng.api.networking.crafting.ICraftingPatternDetails.getCondensedAEOutputs()[Lappeng.api.storage.data.IAEStack;, appeng.api.storage.IStorageHelper.createAEStackList()Lappeng.api.storage.data.IItemList;, appeng.me.cache.CraftingGridCache.beginCraftingJob(Llegacyconnector.v1_7_10.net.minecraft.world.World;Lappeng.api.networking.IGrid;Lappeng.api.networking.security.BaseActionSource;Lappeng.api.storage.data.IAEStack;Lappeng.api.config.CraftingMode;ZLappeng.api.networking.crafting.ICraftingCallback;)Ljava.util.concurrent.Future; (+6 more)."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.getDisplayName()Ljava.lang.String;, pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.getStackSize()J, pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.isCraftable()Z."
   },
   {
    "name": "AE2 Wireless Crafting Terminal",
@@ -554,7 +554,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ckathode.weaponmod.PhysHelper.createAdvancedExplosion(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFZZ)Lckathode.weaponmod.AdvancedExplosion;, thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ckathode.weaponmod.PhysHelper.createAdvancedExplosion(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFZZ)Lckathode.weaponmod.AdvancedExplosion;."
   },
   {
    "name": "Amazing Trophies",
@@ -743,7 +743,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.cleanroommc.modularui.api.widget.IWidget.getName()Ljava.lang.String;, org.lwjgl.openal.AL10.alIsExtensionPresent(Ljava.lang.String;)Z."
+   "notes": "Automated check 0.3.18: uses old Java or library code that no longer exists: org.lwjgl.openal.AL10.alIsExtensionPresent(Ljava.lang.String;)Z."
   },
   {
    "name": "AngerMod. Makes your Mobs angry!",
@@ -2923,12 +2923,12 @@
   },
   {
    "name": "CatFrame",
-   "version": "0.10.11",
+   "version": "0.9.0",
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
    "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (660 classes). 3 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 63 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model minecraft:block/piston_extended.json uses undefined texture variable #side; model minecraft:block/redstone_dust_up_west.json uses missing texture minecraft:block/redstone_dust_line (via #line)."
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (588 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works. Resource check: 74 model/texture reference(s) are missing after translation (rendering may show missing textures or models), e.g. model minecraft:block/redstone_dust_up_west.json uses missing texture minecraft:block/redstone_dust_line (via #line); model minecraft:block/redstone_dust_up_south.json uses missing texture minecraft:block/redstone_dust_line (via #line)."
   },
   {
    "name": "Catwalks Mod",
@@ -3447,8 +3447,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.cleanroommc.modularui.api.drawable.IRichTextBuilder.moveCursorToEnd()Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.api.drawable.IRichTextBuilder.moveCursorToStart()Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.api.drawable.IRichTextBuilder.replace(Ljava.util.regex.Pattern;Ljava.util.function.UnaryOperator;)Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.drawable.UITexture$Builder.xy(IIII)Lcom.cleanroommc.modularui.drawable.UITexture$Builder;, com.cleanroommc.modularui.widgets.ButtonWidget.draw(Lcom.cleanroommc.modularui.screen.viewport.ModularGuiContext;Lcom.cleanroommc.modularui.theme.WidgetThemeEntry;)V (+2 more)."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (1108 classes). But 14 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Compact F3 Plus",
@@ -3852,7 +3852,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: decok.dfcdvadstf.createworldui.api.DifficultyLocker.applyToWorldData(Llegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;)V, decok.dfcdvadstf.createworldui.ui.tab.GameTab.mc:Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;, decok.dfcdvadstf.createworldui.ui.tab.GameTab.verticalAlignment:F, decok.dfcdvadstf.createworldui.ui.tab.GameTab.visible:Z, decok.dfcdvadstf.createworldui.ui.tab.MoreTab.mc:Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft; (+14 more)."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: decok.dfcdvadstf.createworldui.api.DifficultyLocker.applyToWorldData(Llegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;)V, decok.dfcdvadstf.createworldui.ui.tab.GameTab.mc:Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;, decok.dfcdvadstf.createworldui.ui.tab.GameTab.verticalAlignment:F, decok.dfcdvadstf.createworldui.ui.tab.GameTab.visible:Z, decok.dfcdvadstf.createworldui.ui.tab.MoreTab.mc:Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft; (+15 more)."
   },
   {
    "name": "CreativeCore",
@@ -3942,7 +3942,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: net.coderbot.iris.Iris.enabled:Z, org.lwjglx.input.Keyboard.sdlKeyPressedArray:Ljava.nio.ByteBuffer;, net.coderbot.iris.block_rendering.BlockMaterialMapping.resolveId(Lit.unimi.dsi.fastutil.ints.Int2IntMap;I)I, net.coderbot.iris.block_rendering.BlockRenderingSettings.getBlockMetaMatches()Lit.unimi.dsi.fastutil.objects.Reference2ObjectMap;, net.coderbot.iris.block_rendering.BlockRenderingSettings.getItemIds()Lit.unimi.dsi.fastutil.objects.Object2IntFunction; (+2 more)."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.gtnewhorizons.angelica.glsm.GLStateManager.glDisable(I)V, com.gtnewhorizons.angelica.glsm.GLStateManager.glEnable(I)V."
   },
   {
    "name": "CT-GUI",
@@ -4183,8 +4183,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (222 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Cyclic",
@@ -4265,7 +4265,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (213 classes). 5 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (213 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Decocraft",
@@ -4524,8 +4524,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.gtnewhorizons.angelica.config.AngelicaConfig.enableAmpersandConversion:Z, me.jellysquid.mods.sodium.client.gui.SodiumGameOptions$AdvancedSettings.enableDeferredBatching:Z, me.jellysquid.mods.sodium.client.gui.SodiumGameOptions$PerformanceSettings.useFogOcclusion:Z."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (340 classes). But 66 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Dragon Mounts",
@@ -4722,8 +4722,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (69 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: net.mellow.effortless.blocks.IConsumableStack.getAE2Stack(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lnet.mellow.effortless.blocks.PlaceableStack;I)Lnet.mellow.effortless.blocks.IConsumableStack;."
   },
   {
    "name": "Electrical Age - jrddunbr's build",
@@ -7178,8 +7178,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: gtPlusPlus.xmod.gregtech.api.enums.GregtechItemList.Industrial_MultiMachine:LgtPlusPlus.xmod.gregtech.api.enums.GregtechItemList;, gtPlusPlus.xmod.gregtech.common.blocks.textures.TexturesGtBlock.oMCAIndustrialMultiMachine:LgtPlusPlus.xmod.gregtech.common.blocks.textures.TexturesGtBlock$CustomIcon;, gtPlusPlus.xmod.gregtech.common.blocks.textures.TexturesGtBlock.oMCAIndustrialMultiMachineActive:LgtPlusPlus.xmod.gregtech.common.blocks.textures.TexturesGtBlock$CustomIcon;, gregtech.api.metatileentity.implementations.MTEBasicMachineWithRecipe.<init>(ILjava.lang.String;Ljava.lang.String;ILjava.lang.String;Lgregtech.api.recipe.RecipeMap;IIZLgregtech.api.enums.SoundResource;Lgregtech.api.metatileentity.implementations.MTEBasicMachineWithRecipe$SpecialEffects;Ljava.lang.String;[Ljava.lang.Object;)V, gregtech.api.recipe.RecipeMapBuilder.disableOptimize()Lgregtech.api.recipe.RecipeMapBuilder;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (37 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "GTTweaker",
@@ -7437,8 +7437,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (4666 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: api.ntm1of90.compat.ae2.AE2CompatTest.testAE2Integration()V, api.ntm1of90.compat.ae2.AE2CorePatcher.directlyPatchAE2()V, api.ntm1of90.compat.ae2.AE2DirectColorFixer.initializeAE2()V, api.ntm1of90.compat.ae2.AE2DirectColorFixer.registerAllFluidColors()V, api.ntm1of90.compat.ae2.AE2FluidCellInventoryFixer.initializeAE2()V (+18 more)."
   },
   {
    "name": "Headcrumbs",
@@ -7672,7 +7672,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ic2.core.ExplosionIC2.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFFLic2.core.ExplosionIC2$Type;)V, ic2.core.IHasGui.getGui(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Z)Llegacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen;, ic2.core.block.generator.container.ContainerBaseGenerator.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lic2.core.block.generator.tileentity.TileEntityBaseGenerator;III)V, ic2.core.block.machine.tileentity.TileEntityElectricMachine.<init>(III)V, ic2.core.block.wiring.ContainerElectricBlock.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lic2.core.block.wiring.TileEntityElectricBlock;)V (+3 more)."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ic2.core.IHasGui.getGui(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Z)Llegacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen;, ic2.core.block.generator.container.ContainerBaseGenerator.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lic2.core.block.generator.tileentity.TileEntityBaseGenerator;III)V, ic2.core.block.machine.tileentity.TileEntityElectricMachine.<init>(III)V, ic2.core.block.wiring.ContainerElectricBlock.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lic2.core.block.wiring.TileEntityElectricBlock;)V, ic2.core.block.wiring.TileEntityTransformer.<init>(I)V (+2 more)."
   },
   {
    "name": "IC2 Classic Detection Helper",
@@ -7681,7 +7681,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: uses old Java or library code that no longer exists: com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ic2.core.util.AddonModifier.modifyForestry()V, com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;."
   },
   {
    "name": "IC2 Classic Detection Helper",
@@ -7801,6 +7801,15 @@
    "notes": "Automated check 0.3.18: translates offline and everything it uses exists (115 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
+   "name": "Immersive Convergence",
+   "version": "1.0.182",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (501 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
    "name": "Immersive Engineering",
    "version": "0.12-98",
    "mc": "1.12.2",
@@ -7852,6 +7861,15 @@
    "date": "2026-11-03",
    "status": "loads",
    "notes": "Automated check 0.3.18: translates offline and everything it uses exists (8 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Immersive Fixes 1.12.2",
+   "version": "1.3.0",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (22 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Immersive Integration",
@@ -8048,7 +8066,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: uses old Java or library code that no longer exists: com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: ic2.core.util.AddonModifier.modifyForestry()V, com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;."
   },
   {
    "name": "IndustrialCraft 2 Classic",
@@ -8326,8 +8344,8 @@
    "mc": "1.12.2",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (8 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.fluffymoment.ironcore.config.IronApplesConfig.diamondAppleEffects:[Ljava.lang.String;, com.fluffymoment.ironcore.config.IronApplesConfig.emeraldAppleEffects:[Ljava.lang.String;, com.fluffymoment.ironcore.config.IronApplesConfig.ironAppleEffects:[Ljava.lang.String;, com.fluffymoment.ironcore.config.IronApplesConfig.lapisAppleEffects:[Ljava.lang.String;, com.fluffymoment.ironcore.config.IronApplesConfig.netheriteAppleEffects:[Ljava.lang.String; (+1 more)."
   },
   {
    "name": "Iron Barrels",
@@ -8390,6 +8408,15 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 14 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+  },
+  {
+   "name": "Iron Core",
+   "version": "1.0.0",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (4 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Iron Jetpacks",
@@ -8596,7 +8623,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.VisiblityData.showBookmarkPanel:Z, codechicken.nei.VisiblityData.showSubsetDropdown:Z, codechicken.nei.NEIClientConfig.bootNEI()V, codechicken.nei.PositionedStack.getFilteredPermutations()Ljava.util.List;, codechicken.nei.recipe.TemplateRecipeHandler.getRecipeHeight(I)I (+2 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.VisiblityData.showBookmarkPanel:Z, codechicken.nei.VisiblityData.showSubsetDropdown:Z, codechicken.nei.NEIClientConfig.bootNEI()V, codechicken.nei.PositionedStack.getFilteredPermutations()Ljava.util.List;, codechicken.nei.recipe.TemplateRecipeHandler.getRecipeHeight(I)I."
   },
   {
    "name": "JourneyMap",
@@ -8639,8 +8666,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: journeymap.client.data.DataCache.INSTANCE:Ljourneymap.client.data.DataCache;, journeymap.client.properties.FullMapProperties.showGrid:Ljourneymap.common.properties.config.BooleanField;, journeymap.client.properties.WebMapProperties.port:Ljourneymap.common.properties.config.CustomField;, journeymap.client.data.DataCache.getAmbientCreatures(Z)Ljava.util.Map;, journeymap.client.io.FileHandler.copyResources(Ljava.io.File;Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;Ljava.lang.String;Z)Z (+3 more)."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (2958 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "JourneyMap WebMap",
@@ -9404,8 +9431,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: thaumcraft.api.ThaumcraftApiHelper.addStickyWarpToPlayer(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;I)V."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (124 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Magic Bees",
@@ -9504,7 +9531,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: tb.init.TBItems.herobrinesScythe:Llegacyconnector.v1_7_10.net.minecraft.item.Item;, codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V, codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;I)V, thaumcraft.api.ThaumcraftApi.addLootBagItem(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;I[I)V, thaumcraft.api.aspects.AspectList.merge(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V, codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;I)V."
   },
   {
    "name": "Mantle",
@@ -9727,8 +9754,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (1094 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: mekanism.common.integration.MekanismHooks.registerAE2P2P()V."
   },
   {
    "name": "Mekanism Community Edition",
@@ -9736,8 +9763,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (1106 classes). 7 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: mekanism.common.integration.MekanismHooks.registerAE2P2P()V."
   },
   {
    "name": "Mekanism Community Edition",
@@ -10064,12 +10091,12 @@
   },
   {
    "name": "MineTweaker 3",
-   "version": "3.4.2",
+   "version": "3.1.0",
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
    "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (723 classes). The game was not started: this only shows the jar translates, not that it works."
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (778 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Mini Effects",
@@ -10106,6 +10133,15 @@
    "date": "2026-11-03",
    "status": "loads",
    "notes": "Automated check 0.3.18: translates offline and everything it uses exists (8 classes). 4 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "MJRLegendsLib",
+   "version": "1.12.2-1.2.1",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (62 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MMMTweaks",
@@ -10240,7 +10276,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: mekanism.common.recipe.RecipeHandler$Recipe.SOLAR_EVAPORATION_PLANT:Lmekanism.common.recipe.RecipeHandler$Recipe;, tconstruct.library.crafting.PatternBuilder$ItemKey.<init>(Ltconstruct.library.crafting.PatternBuilder;Llegacyconnector.v1_7_10.net.minecraft.item.Item;IILjava.lang.String;)V, thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: mekanism.common.recipe.RecipeHandler$Recipe.SOLAR_EVAPORATION_PLANT:Lmekanism.common.recipe.RecipeHandler$Recipe;."
   },
   {
    "name": "Modern Warfare Cubed",
@@ -10321,7 +10357,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;, me.eigenraven.lwjgl3ify.api.InputEvents$KeyEvent.sdlKeyCode:I, codechicken.nei.api.IOverlayHandler.canCraft(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Z, codechicken.nei.api.IOverlayHandler.canFillCraftingGrid(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Z, codechicken.nei.api.IOverlayHandler.craft(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;II)Z (+6 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;, codechicken.nei.api.IOverlayHandler.canCraft(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Z, codechicken.nei.api.IOverlayHandler.canFillCraftingGrid(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Z, codechicken.nei.api.IOverlayHandler.craft(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;II)Z, codechicken.nei.api.IOverlayHandler.presenceOverlay(Llegacyconnector.v1_7_10.net.minecraft.client.gui.inventory.GuiContainer;Lcodechicken.nei.recipe.IRecipeHandler;I)Ljava.util.List; (+3 more)."
   },
   {
    "name": "modularmovements",
@@ -10566,6 +10602,15 @@
    "date": "2026-11-03",
    "status": "loads",
    "notes": "Automated check 0.3.18: translates offline and everything it uses exists (33 classes). The game was not started: this only shows the jar translates, not that it works."
+  },
+  {
+   "name": "Muya Mod",
+   "version": "1.11.1",
+   "mc": "1.7.10",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (170 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "My Coordinates Mod",
@@ -11057,7 +11102,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: appeng.core.localization.ButtonToolTips.MergeOnlyPlayerRequestedCrafts:Lappeng.core.localization.ButtonToolTips;, appeng.core.localization.PlayerMessages.MachineHighlightedNamed:Lappeng.core.localization.PlayerMessages;, appeng.core.localization.PlayerMessages.MachineInOtherDimNamed:Lappeng.core.localization.PlayerMessages;, appeng.util.ScheduledReason.UNSUPPORTED_STACK:Lappeng.util.ScheduledReason;, cn.dancingsnow.neoecoae.platform.ae2.crafting.nativecpu.NativeECOCpu.postChange(Lappeng.api.storage.data.IAEStack;Lappeng.api.networking.security.BaseActionSource;)V (+64 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: cn.dancingsnow.neoecoae.platform.ae2.multiblock.IAECluster.destroy()V, cn.dancingsnow.neoecoae.platform.ae2.multiblock.IAECluster.updateStatus(Z)V, cn.dancingsnow.neoecoae.platform.ae2.multiblock.IAEMultiBlock.disconnect(Z)V, cn.dancingsnow.neoecoae.platform.ae2.multiblock.IAEMultiBlock.isValid()Z, codechicken.nei.NEIClientUtils.gl2DRenderContext(Ljava.lang.Runnable;)V (+2 more)."
   },
   {
    "name": "Neodymium Unofficial",
@@ -11497,8 +11542,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (5386 classes). But 12 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.hbm.handler.ae2.AE2CompatHandler.registerHandler()V."
   },
   {
    "name": "Nuclear Control",
@@ -11614,8 +11659,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "loads",
-   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (2 classes). The game was not started: this only shows the jar translates, not that it works."
+   "status": "fails",
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.gtnewhorizons.angelica.dynamiclights.DynamicLights.getLuminanceFromItemStack(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Z)I."
   },
   {
    "name": "OK Core",
@@ -11623,8 +11668,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.cleanroommc.modularui.api.drawable.IRichTextBuilder.moveCursorToEnd()Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.api.drawable.IRichTextBuilder.moveCursorToStart()Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.api.drawable.IRichTextBuilder.replace(Ljava.util.regex.Pattern;Ljava.util.function.UnaryOperator;)Lcom.cleanroommc.modularui.api.drawable.IRichTextBuilder;, com.cleanroommc.modularui.drawable.UITexture$Builder.xy(IIII)Lcom.cleanroommc.modularui.drawable.UITexture$Builder;, com.cleanroommc.modularui.widgets.ButtonWidget.draw(Lcom.cleanroommc.modularui.screen.viewport.ModularGuiContext;Lcom.cleanroommc.modularui.theme.WidgetThemeEntry;)V (+2 more)."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (1108 classes). But 14 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "OK Progressions",
@@ -11633,7 +11678,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: com.cleanroommc.modularui.drawable.GuiTextures.CHECK_BOX_EMPTY:Lcom.cleanroommc.modularui.drawable.UITexture;, com.cleanroommc.modularui.drawable.GuiTextures.CHECK_BOX_FULL:Lcom.cleanroommc.modularui.drawable.UITexture;, codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V, com.cleanroommc.modularui.value.sync.BooleanSyncValue.allowC2S()Lcom.cleanroommc.modularui.value.sync.SyncHandler;, com.cleanroommc.modularui.value.sync.EnumSyncValue.allowC2S()Lcom.cleanroommc.modularui.value.sync.SyncHandler; (+1 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V."
   },
   {
    "name": "Omni",
@@ -11848,7 +11893,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: astrotibs.notenoughpets.util.SkinVariations.catSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;, astrotibs.notenoughpets.util.SkinVariations.dogSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;, legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.WorldServer;)V, thaumcraft.api.ThaumcraftApi.groupedObjectTags:Ljava.util.concurrent.ConcurrentHashMap;, codechicken.nei.recipe.IRecipeHandler.getOverlayIdentifier()Ljava.lang.String; (+5 more)."
+   "notes": "Automated check 0.3.18: needs Minecraft or Forge features the layer does not have yet: astrotibs.notenoughpets.util.SkinVariations.catSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;, astrotibs.notenoughpets.util.SkinVariations.dogSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;, legacyconnector.v1_7_10.net.minecraft.server.management.PlayerManager.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.WorldServer;)V, tconstruct.util.config.PHConstruct.removeGoldCastRecipes:Z, codechicken.nei.recipe.IRecipeHandler.getOverlayIdentifier()Ljava.lang.String; (+2 more)."
   },
   {
    "name": "Options Enforcer",
@@ -14730,7 +14775,7 @@
    "source": "probe",
    "date": "2026-11-03",
    "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.gtnewhorizons.angelica.glsm.GLStateManager.glScissor(IIII)V, net.coderbot.iris.Iris.getCurrentDimensionName()Ljava.lang.String;, net.coderbot.iris.gl.texture.InternalTextureFormat.getColorRenderableFallback()Lnet.coderbot.iris.gl.texture.InternalTextureFormat;, net.coderbot.iris.pipeline.PipelineManager.preparePipeline(Ljava.lang.String;)Lnet.coderbot.iris.pipeline.WorldRenderingPipeline;, org.lwjgl.opengl.GL30.glClearBuffer(IILjava.nio.FloatBuffer;)V (+1 more)."
+   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: com.gtnewhorizons.angelica.glsm.GLStateManager.glMatrixMode(I)V, com.gtnewhorizons.angelica.glsm.GLStateManager.glScissor(IIII)V, com.gtnewhorizons.angelica.glsm.GLStateManager.glTranslatef(FFF)V, com.gtnewhorizons.angelica.glsm.GLStateManager.glViewport(IIII)V, net.coderbot.iris.rendertarget.DepthTexture.<init>(IILnet.coderbot.iris.gl.texture.DepthBufferFormat;)V (+2 more)."
   },
   {
    "name": "Sterling and Black",
@@ -15466,8 +15511,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (7 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumcraft Mob Aspects",
@@ -15574,8 +15619,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: thaumcraft.api.aspects.AspectList.add(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (348 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumic Bases",
@@ -15619,8 +15664,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: thaumcraft.api.ThaumcraftApi.addLootBagItem(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;I[I)V, thaumcraft.api.aspects.AspectList.merge(Lthaumcraft.api.aspects.AspectList;)Lthaumcraft.api.aspects.AspectList;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (337 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumic Energistics",
@@ -15664,8 +15709,8 @@
    "mc": "1.7.10",
    "source": "probe",
    "date": "2026-11-03",
-   "status": "fails",
-   "notes": "Automated check 0.3.18: needs code from another mod or API that is not available or does not match: witchinggadgets.common.WGResearch.recipeList:Ljava.util.HashMap;."
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (13 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Thaumic Insurgence",
@@ -17353,6 +17398,15 @@
    "date": "2026-10-28",
    "status": "fails",
    "notes": "Fails during construction: java.lang.NoClassDefFoundError: codechicken/multipart/TMultiPart (the Legacy Connector layer does not implement this legacy API yet - see lo"
+  },
+  {
+   "name": "WrapUp",
+   "version": "1.12-1.1.3",
+   "mc": "1.12.2",
+   "source": "probe",
+   "date": "2026-11-03",
+   "status": "loads",
+   "notes": "Automated check 0.3.18: translates offline and everything it uses exists (43 classes). The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Wynntils",
