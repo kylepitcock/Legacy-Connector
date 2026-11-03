@@ -74,6 +74,19 @@ public final class ForgeEvents1710 {
             else if (legacy.getResult() == Event.Result.DENY) e.setBurnTime(0);
         });
 
+        game.addListener((net.neoforged.neoforge.event.brewing.PotionBrewEvent.Post e) -> {
+            if (!wants(legacyconnector.v1_7_10.net.minecraftforge.event.brewing.PotionBrewedEvent.class)) return;
+            ItemStack[] stacks = new ItemStack[e.getLength()];
+            for (int i = 0; i < stacks.length; i++) stacks[i] = e.getItem(i).isEmpty() ? null : ItemStack.mcc$wrap(e.getItem(i));
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.brewing.PotionBrewedEvent(stacks);
+            forge().post(legacy);
+            for (int i = 0; i < stacks.length && legacy.brewingStacks != null && i < legacy.brewingStacks.length; i++) {
+                if (legacy.brewingStacks[i] == stacks[i]) continue; // untouched slots keep their modern stack (and its components)
+                var back = ItemStack.mcc$toModern(legacy.brewingStacks[i]);
+                e.setItem(i, back == null ? net.minecraft.world.item.ItemStack.EMPTY : back);
+            }
+        });
+
         game.addListener((net.neoforged.neoforge.event.PlayLevelSoundEvent.AtEntity e) -> {
             if (!wants(legacyconnector.v1_7_10.net.minecraftforge.event.entity.PlaySoundAtEntityEvent.class) || e.getSound() == null) return;
             var entity = EntityBridge.wrap(e.getEntity());

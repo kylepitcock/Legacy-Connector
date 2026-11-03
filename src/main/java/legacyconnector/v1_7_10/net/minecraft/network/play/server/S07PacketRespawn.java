@@ -10,10 +10,14 @@ import legacyconnector.v1_7_10.net.minecraft.world.WorldType;
  * modern teleport already switches the client's level, so the packet carries data only.
  */
 public class S07PacketRespawn extends Packet {
-    private final int dimension;
-    private final EnumDifficulty difficulty;
-    private final WorldType worldType;
-    private final WorldSettings.GameType gameType;
+    private int dimension;
+    private EnumDifficulty difficulty = EnumDifficulty.NORMAL;
+    private WorldType worldType = WorldType.DEFAULT;
+    private WorldSettings.GameType gameType = WorldSettings.GameType.SURVIVAL;
+
+    /** An empty packet (a mod's client handler fills in or reads it by hand). */
+    public S07PacketRespawn() {
+    }
 
     public S07PacketRespawn(int dimension, EnumDifficulty difficulty, WorldType worldType, WorldSettings.GameType gameType) {
         this.dimension = dimension;

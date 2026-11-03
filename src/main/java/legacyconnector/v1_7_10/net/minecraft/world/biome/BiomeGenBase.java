@@ -193,6 +193,12 @@ public class BiomeGenBase {
         return this;
     }
 
+    /** Sets the colour the biome has on maps (field_150609_ah) without touching its main colour. */
+    public BiomeGenBase func_150563_c(int color) {
+        this.field_150609_ah = color;
+        return this;
+    }
+
     public BiomeGenBase func_76733_a(int color) {
         this.field_76754_C = color;
         return this;

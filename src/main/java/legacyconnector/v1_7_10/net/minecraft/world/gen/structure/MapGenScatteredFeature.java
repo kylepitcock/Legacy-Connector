@@ -5,6 +5,10 @@ public class MapGenScatteredFeature extends MapGenStructure {
     public MapGenScatteredFeature() {
     }
 
+    /** With the generator's options (the modern structure has none: they are ignored). */
+    public MapGenScatteredFeature(java.util.Map options) {
+    }
+
     /** Witches spawn in swamp huts. */
     private final java.util.List<legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.SpawnListEntry> scatteredFeatureSpawnList = new java.util.ArrayList<>();
 

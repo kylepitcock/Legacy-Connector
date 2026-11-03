@@ -63,6 +63,19 @@ public abstract class CreativeTabs {
         return relevantEnchantmentTypes;
     }
 
+    /** Adds one max-level enchanted book per enchantment whose type is one of the given types (the creative screen's tab fill). */
+    public void addEnchantmentBooksToList(List list, legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType... types) {
+        if (types == null) return;
+        for (legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment e : legacyconnector.v1_7_10.net.minecraft.enchantment.Enchantment.enchantmentsList) {
+            if (e == null || e.type == null) continue;
+            boolean relevant = false;
+            for (legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType t : types) if (t == e.type) relevant = true;
+            if (!relevant) continue;
+            list.add(legacyconnector.v1_7_10.net.minecraft.init.Items.enchanted_book.getEnchantedItemStack(
+                    new legacyconnector.v1_7_10.net.minecraft.enchantment.EnchantmentData(e, e.getMaxLevel())));
+        }
+    }
+
     public static int getNextID() {
         return creativeTabArray.length;
     }

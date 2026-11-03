@@ -77,6 +77,22 @@ public class BlockEvent extends Event {
         }
     }
 
+    /** Several blocks placed by one action (a bed, a door, a mod's multi-block): cancelling undoes all of them. */
+    @Cancelable
+    public static class MultiPlaceEvent extends PlaceEvent {
+        private final java.util.List<legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot> blockSnapshots;
+
+        public MultiPlaceEvent(java.util.List<legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot> snapshots, Block placedAgainst, EntityPlayer player) {
+            super(snapshots.get(0), placedAgainst, player);
+            this.blockSnapshots = java.util.Collections.unmodifiableList(snapshots);
+        }
+
+        /** The snapshots of every block the action replaced. */
+        public java.util.List<legacyconnector.v1_7_10.net.minecraftforge.common.util.BlockSnapshot> getReplacedBlockSnapshots() {
+            return blockSnapshots;
+        }
+    }
+
     /** A block is about to drop its items: handlers add, remove or replace them. */
     public static class HarvestDropsEvent extends BlockEvent {
         public final int fortuneLevel;

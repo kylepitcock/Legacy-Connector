@@ -1212,6 +1212,11 @@ public abstract class Entity implements ICommandSender {
         return mcc$entity != null ? mcc$entity.fireImmune() : isImmuneToFire;
     }
 
+    /** Deals fire damage unless the entity is fire immune (1.7.10's Entity.dealFireDamage). */
+    public void dealFireDamage(int amount) {
+        if (!isImmuneToFire()) attackEntityFrom(DamageSource.inFire, (float) amount);
+    }
+
     /** Whether this is the same entity as {@code other} (multi-part bosses compare their parts to the whole). */
     public boolean isEntityEqual(Entity other) {
         return this == other;

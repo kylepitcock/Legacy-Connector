@@ -33,6 +33,16 @@ public class ForgeEventFactory {
         return event;
     }
 
+    /** Posts {@code MultiPlaceEvent} for blocks a mod placed over {@code snapshots} in one action, against the side {@code direction} names. */
+    public static BlockEvent.MultiPlaceEvent onPlayerMultiBlockPlace(EntityPlayer player, List<BlockSnapshot> snapshots, ForgeDirection direction) {
+        BlockSnapshot first = snapshots.get(0);
+        ForgeDirection against = direction.getOpposite();
+        Block placedAgainst = first.world.getBlock(first.x + against.offsetX, first.y + against.offsetY, first.z + against.offsetZ);
+        BlockEvent.MultiPlaceEvent event = new BlockEvent.MultiPlaceEvent(snapshots, placedAgainst, player);
+        MinecraftForge.EVENT_BUS.post(event);
+        return event;
+    }
+
     /** Posts {@code ExplosionEvent.Start}; true if a listener cancelled the explosion. */
     public static boolean onExplosionStart(World world, Explosion explosion) {
         return MinecraftForge.EVENT_BUS.post(new ExplosionEvent.Start(world, explosion));

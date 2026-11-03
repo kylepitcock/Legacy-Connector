@@ -157,6 +157,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
         return mcc$player().getDisplayName().getString();
     }
 
+    /** Forge: recomputes the name shown above the head and in chat (the modern player's display name is built on demand, so it is always current). */
+    public void refreshDisplayName() {
+        if (mcc$player() instanceof net.minecraft.world.entity.player.Player p) p.refreshDisplayName();
+    }
+
     public void addChatComponentMessage(IChatComponent message) {
         mcc$player().sendSystemMessage(message.mcc$toModern());
     }

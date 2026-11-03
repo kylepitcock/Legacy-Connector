@@ -45,6 +45,34 @@ public class EntityRenderer {
     }
 
     public void updateCameraAndRender(float partialTicks) {
+        if (theShaderGroup != null) theShaderGroup.loadShaderGroup(partialTicks);
+    }
+
+    private legacyconnector.v1_7_10.net.minecraft.client.shader.ShaderGroup theShaderGroup;
+
+    /** The post-processing chain the legacy code switched on (null when none). */
+    public legacyconnector.v1_7_10.net.minecraft.client.shader.ShaderGroup getShaderGroup() {
+        return theShaderGroup;
+    }
+
+    /** Whether a post-processing chain is on. */
+    public boolean isShaderActive() {
+        return theShaderGroup != null;
+    }
+
+    /** Switches the post-processing chain off and frees it. */
+    public void deactivateShader() {
+        if (theShaderGroup != null) {
+            theShaderGroup.deleteShaderGroup();
+            theShaderGroup = null;
+        }
+    }
+
+    /** Switches a post-processing chain ({@code shaders/post/<name>.json}) on, replacing the current one. */
+    public void func_147705_c(legacyconnector.v1_7_10.net.minecraft.util.ResourceLocation location) {
+        deactivateShader();
+        theShaderGroup = new legacyconnector.v1_7_10.net.minecraft.client.shader.ShaderGroup(
+                legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureManager.INSTANCE, null, null, location);
     }
 
     public void disableLightmap(double partialTicks) {

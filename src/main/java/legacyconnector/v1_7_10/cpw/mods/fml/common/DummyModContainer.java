@@ -64,6 +64,17 @@ public class DummyModContainer implements ModContainer {
         return new HashMap<>();
     }
 
+    private boolean enabled = true;
+
+    /** Whether this container's mod is switched on (FML's dummy containers could be turned off by their coremod). */
+    public void setEnabledState(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     @Override
     public String toString() {
         return md.modId + (label == null ? "" : ":" + label);

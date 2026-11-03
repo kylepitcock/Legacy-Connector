@@ -2408,6 +2408,11 @@ public class World implements IBlockAccess {
         return net.minecraft.world.level.dimension.DimensionType.MOON_BRIGHTNESS_PER_PHASE[Math.floorMod(getMoonPhase(), 8)];
     }
 
+    /** Forge's overridable body of {@link #getCurrentMoonPhaseFactor} (dimensions' providers can change the moon). */
+    public float getCurrentMoonPhaseFactorBody() {
+        return getCurrentMoonPhaseFactor();
+    }
+
     public float getBlockDensity(legacyconnector.v1_7_10.net.minecraft.util.Vec3 origin, AxisAlignedBB box) {
         return 1.0F;
     }

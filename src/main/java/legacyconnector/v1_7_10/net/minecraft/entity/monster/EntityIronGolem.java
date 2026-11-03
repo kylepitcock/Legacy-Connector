@@ -57,6 +57,20 @@ public class EntityIronGolem extends EntityGolem {
         dataWatcher.updateObject(16, (byte) (created ? flags | 1 : flags & -2));
     }
 
+    private int mcc$holdRoseTick;
+
+    /** Ticks left that the golem holds out a poppy to a villager child (0 when it does not). */
+    public int getHoldRoseTick() {
+        var g = mcc$golem();
+        return g != null ? g.getOfferFlowerTick() : mcc$holdRoseTick;
+    }
+
+    public void setHoldingRose(boolean holding) {
+        var g = mcc$golem();
+        if (g != null) g.offerFlower(holding);
+        else mcc$holdRoseTick = holding ? 400 : 0;
+    }
+
     @Override
     public boolean canAttackClass(Class<?> cls) {
         if (isPlayerCreated() && legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class.isAssignableFrom(cls)) return false;
