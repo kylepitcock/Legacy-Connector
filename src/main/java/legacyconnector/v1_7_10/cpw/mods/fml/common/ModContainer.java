@@ -70,6 +70,16 @@ public interface ModContainer {
         return new java.util.ArrayList<>();
     }
 
+    /** What the mods menu may do with the mod. */
+    default Disableable canBeDisabled() {
+        return Disableable.RELOAD;
+    }
+
+    /** FML's answer to whether a mod can be switched off. */
+    enum Disableable {
+        YES, RESTART, RELOAD, NEVER, DEPENDENCIES
+    }
+
     default boolean shouldLoadInEnvironment() {
         return true;
     }

@@ -171,6 +171,23 @@ public class EntityHorse extends EntityAnimal {
         return true;
     }
 
+    /** The horse's temper (how far it is from being tamed by riding; 0 for a hosted or untamed one). */
+    public int getTemper() {
+        var h = mcc$horse();
+        return h != null ? h.getTemper() : 0;
+    }
+
+    /** Whether the horse has bred already: modern horses do not track it. */
+    public boolean getHasReproduced() {
+        return false;
+    }
+
+    /** Whether the horse is eating (lowering its head to the grass). */
+    public boolean isEatingHaystack() {
+        var h = mcc$horse();
+        return h != null && h.isEating();
+    }
+
     /** Whether the horse is rearing (up on its hind legs). */
     public boolean isRearing() {
         var h = mcc$horse();

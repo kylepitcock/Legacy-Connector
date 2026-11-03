@@ -137,6 +137,11 @@ public class EntityVillager extends EntityAgeable implements legacyconnector.v1_
     public boolean isMating;
     public boolean isLookingForHome;
 
+    /** Whether the villager (a child) is playing with other children: modern villagers have no such state. */
+    public boolean isPlaying() {
+        return false;
+    }
+
     public boolean isMating() {
         return isMating;
     }

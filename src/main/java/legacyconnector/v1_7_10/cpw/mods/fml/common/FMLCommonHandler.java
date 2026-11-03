@@ -65,6 +65,13 @@ public class FMLCommonHandler {
     }
 
     /** Adds a mod's source to the client's resources (mods that make containers at runtime: INpure's scripted mods). */
+    /** Adds the mod loader to a crash report, as FML does for its details section. */
+    public void enhanceCrashReport(legacyconnector.v1_7_10.net.minecraft.crash.CrashReport report,
+            legacyconnector.v1_7_10.net.minecraft.crash.CrashReportCategory category) {
+        if (category == null) return;
+        category.addCrashSection("Mod loader", "Legacy Connector (Forge 10.13.4.1614 emulation)");
+    }
+
     public void addModToResourcePack(ModContainer container) {
         if (FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks.mcc$addContainer(container);
     }

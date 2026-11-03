@@ -76,6 +76,12 @@ public class EntityWolf extends EntityTameable {
         return 0.0F;
     }
 
+    /** Whether the wolf is shaking itself dry. */
+    public boolean getWolfShaking() {
+        if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getBodyRollAngle(1.0F, 0.0F) != 0.0F;
+        return false;
+    }
+
     /** How dark the wet fur is drawn (1 dry). */
     public float getShadingWhileShaking(float partialTicks) {
         if (mcc$entity instanceof net.minecraft.world.entity.animal.Wolf w && !mcc$hosted()) return w.getWetShade(partialTicks);

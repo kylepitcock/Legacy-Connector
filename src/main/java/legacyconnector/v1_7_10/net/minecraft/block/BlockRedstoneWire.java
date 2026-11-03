@@ -46,6 +46,11 @@ public class BlockRedstoneWire extends legacyconnector.v1_7_10.net.minecraft.blo
         };
     }
 
+    /** MCP name of {@link #isPowerProviderOrWire}. */
+    public static boolean func_150176_g(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int direction) {
+        return isPowerProviderOrWire(world, x, y, z, direction);
+    }
+
     /** Whether the wire at a neighbour position connects to it: wire, a diode facing the wire, or any power source. */
     public static boolean isPowerProviderOrWire(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z, int direction) {
         Block block = world.getBlock(x, y, z);

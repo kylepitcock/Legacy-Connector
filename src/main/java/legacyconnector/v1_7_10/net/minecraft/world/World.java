@@ -407,6 +407,25 @@ public class World implements IBlockAccess {
         return out;
     }
 
+    /** Phantom: redirected to {@link #mcc$get$activeChunkSet}. The loaded chunks around players (the ones that tick). */
+    @Deprecated
+    public java.util.Set activeChunkSet;
+
+    /** The loaded chunks within 7 chunks of a player, as vanilla 1.7.10 ticked them (empty on the client and without players). */
+    public static java.util.Set mcc$get$activeChunkSet(World w) {
+        java.util.Set<ChunkCoordIntPair> out = new java.util.HashSet<>();
+        if (!(w.mcc$fullLevel() instanceof ServerLevel s)) return out;
+        for (var p : s.players()) {
+            int cx = p.chunkPosition().x, cz = p.chunkPosition().z;
+            for (int dx = -7; dx <= 7; dx++) {
+                for (int dz = -7; dz <= 7; dz++) {
+                    if (s.getChunkSource().hasChunk(cx + dx, cz + dz)) out.add(new ChunkCoordIntPair(cx + dx, cz + dz));
+                }
+            }
+        }
+        return out;
+    }
+
     /** The entity list of this server tick (see {@link #mcc$get$loadedEntityList}). */
     private List<Entity> mcc$entityList;
     private int mcc$entityListTick = -1;
