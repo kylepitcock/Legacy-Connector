@@ -84,6 +84,13 @@ public final class LegacyConfig {
             energy.fePerEu = 4
             # FE per BuildCraft MJ (BuildCraft's own rule: 1 MJ = 10 RF).
             energy.fePerMj = 10
+            # Per direction (each defaults to the single key above; 0 turns that direction off). "in" = FE received by a legacy tile
+            # or item (modern cables/generators powering legacy machines), "out" = FE extracted from one (legacy generators feeding
+            # modern cables). Stored/capacity readouts keep using the single key.
+            # energy.fePerEu.in = 4
+            # energy.fePerEu.out = 4
+            # energy.fePerMj.in = 10
+            # energy.fePerMj.out = 10
 
             # Memory optimizations (see the Performance page of the wiki). Each can be switched off on its own.
             # Release the legacy views of unloaded levels and stopped servers (old client levels after a dimension change).
@@ -199,6 +206,39 @@ public final class LegacyConfig {
     /** FE per BuildCraft MJ for the energy capability of BuildCraft power receptors. */
     public static int fePerMj() {
         return positiveInt("energy.fePerMj", 10);
+    }
+
+    /** FE per EU for FE received by a legacy IC2 tile or item (modern -> legacy); 0 = off. Defaults to {@link #fePerEu()}. */
+    public static int fePerEuIn() {
+        return nonNegativeInt("energy.fePerEu.in", fePerEu());
+    }
+
+    /** FE per EU for FE extracted from a legacy IC2 tile or item (legacy -> modern); 0 = off. Defaults to {@link #fePerEu()}. */
+    public static int fePerEuOut() {
+        return nonNegativeInt("energy.fePerEu.out", fePerEu());
+    }
+
+    /** FE per MJ for FE received by a BuildCraft power receptor; 0 = off. Defaults to {@link #fePerMj()}. */
+    public static int fePerMjIn() {
+        return nonNegativeInt("energy.fePerMj.in", fePerMj());
+    }
+
+    /** FE per MJ for FE extracted from a BuildCraft tile; 0 = off. Defaults to {@link #fePerMj()}. */
+    public static int fePerMjOut() {
+        return nonNegativeInt("energy.fePerMj.out", fePerMj());
+    }
+
+    private static int nonNegativeInt(String key, int fallback) {
+        String v = string(key, null);
+        if (v == null) return fallback;
+        try {
+            int n = Integer.parseInt(v.trim());
+            if (n >= 0) return n;
+        } catch (NumberFormatException e) {
+            // reported below
+        }
+        LOG.warn("{}: '{}' is not a whole number of 0 or more; using {}", key, v, fallback);
+        return fallback;
     }
 
     public static boolean modernizeTexturesEnabled() {

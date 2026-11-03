@@ -10,7 +10,7 @@ import org.kylepitcock.legacyconnector.core.LegacyConfig;
 
 /**
  * Energy systems that are not part of the shim (their API classes ship inside the mods) as NeoForge energy: IC2 EU
- * ({@code IEnergySink}/{@code IEnergySource}, {@code energy.fePerEu} FE per EU, default 4) and BuildCraft MJ
+ * ({@code IEnergySink}/{@code IEnergySource}, {@code energy.fePerEu} FE per EU, default 4; {@code .in}/{@code .out} per direction, 0 = off) and BuildCraft MJ
  * ({@code IPowerReceptor}/{@code PowerHandler}, {@code energy.fePerMj}, default 10). The interfaces are found by name
  * on the tile's class and called by reflection. IC2's cables and BuildCraft's pipes are legacy blocks that never
  * ask for the capability, so a tile registered in IC2's EnergyNet is not handled twice.
@@ -127,12 +127,13 @@ public final class ForeignEnergy1710 {
         public int receiveEnergy(int amount, boolean simulate) {
             var s = view();
             Object manager = api.manager(s);
-            long eu = EnergyRates.unitsFromFe(amount, LegacyConfig.fePerEu());
+            int rate = LegacyConfig.fePerEuIn();
+            long eu = EnergyRates.unitsFromFe(amount, rate);
             if (manager == null || eu <= 0) return 0;
             try {
                 // charge(stack, amount, tier, ignoreTransferLimit, simulate) returns the EU accepted
                 double charged = api.call(manager, "charge", s, (double) eu, tier(s), false, simulate);
-                return EnergyRates.feFromUnits(charged, LegacyConfig.fePerEu());
+                return EnergyRates.feFromUnits(charged, rate);
             } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
                 return 0;
             }
@@ -142,12 +143,13 @@ public final class ForeignEnergy1710 {
         public int extractEnergy(int amount, boolean simulate) {
             var s = view();
             Object manager = api.manager(s);
-            long eu = EnergyRates.unitsFromFe(amount, LegacyConfig.fePerEu());
+            int rate = LegacyConfig.fePerEuOut();
+            long eu = EnergyRates.unitsFromFe(amount, rate);
             if (manager == null || eu <= 0 || !canExtract()) return 0;
             try {
                 // discharge(stack, amount, tier, ignoreTransferLimit, externally, simulate) returns the EU taken
                 double taken = api.call(manager, "discharge", s, (double) eu, tier(s), false, true, simulate);
-                return EnergyRates.feFromUnits(taken, LegacyConfig.fePerEu());
+                return EnergyRates.feFromUnits(taken, rate);
             } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
                 return 0;
             }
@@ -176,6 +178,7 @@ public final class ForeignEnergy1710 {
 
         @Override
         public boolean canExtract() {
+            if (LegacyConfig.fePerEuOut() <= 0) return false;
             try {
                 return api.canProvide != null && (boolean) api.canProvide.invoke(api.item, view());
             } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
@@ -185,7 +188,7 @@ public final class ForeignEnergy1710 {
 
         @Override
         public boolean canReceive() {
-            return true;
+            return LegacyConfig.fePerEuIn() > 0;
         }
     }
 
@@ -292,8 +295,8 @@ public final class ForeignEnergy1710 {
     private record EuStorage(TileEntity tile, ForgeDirection from, Eu eu) implements IEnergyStorage {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
-            if (!eu.accepts(tile, from)) return 0;
-            int rate = LegacyConfig.fePerEu();
+            int rate = LegacyConfig.fePerEuIn();
+            if (rate <= 0 || !eu.accepts(tile, from)) return 0;
             double offer = EnergyRates.euToInject(amount, rate, eu.demand(tile), eu.tier(eu.sinkTier, tile, 1));
             if (offer <= 0) return 0;
             if (simulate) return EnergyRates.feFromUnits(offer, rate);
@@ -307,8 +310,8 @@ public final class ForeignEnergy1710 {
 
         @Override
         public int extractEnergy(int amount, boolean simulate) {
-            if (!eu.emits(tile, from)) return 0;
-            int rate = LegacyConfig.fePerEu();
+            int rate = LegacyConfig.fePerEuOut();
+            if (rate <= 0 || !eu.emits(tile, from)) return 0;
             try {
                 double offered = ((Number) eu.offered.invoke(tile)).doubleValue();
                 double take = Math.min(Math.min((double) EnergyRates.unitsFromFe(amount, rate), Math.floor(offered)), EnergyRates.packetLimit(eu.tier(eu.sourceTier, tile, 1)));
@@ -332,12 +335,12 @@ public final class ForeignEnergy1710 {
 
         @Override
         public boolean canExtract() {
-            return eu.emits(tile, from);
+            return LegacyConfig.fePerEuOut() > 0 && eu.emits(tile, from);
         }
 
         @Override
         public boolean canReceive() {
-            return eu.accepts(tile, from);
+            return LegacyConfig.fePerEuIn() > 0 && eu.accepts(tile, from);
         }
     }
 
@@ -397,9 +400,10 @@ public final class ForeignEnergy1710 {
     private record MjStorage(TileEntity tile, ForgeDirection from, Mj mj) implements IEnergyStorage {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
+            int rate = LegacyConfig.fePerMjIn();
+            if (rate <= 0) return 0;
             Object r = mj.receiver(tile, from);
             if (r == null) return 0;
-            int rate = LegacyConfig.fePerMj();
             double want = Math.min(mj.number(mj.request, r, 0), mj.number(mj.max, r, Double.MAX_VALUE));
             double offer = Math.min((double) EnergyRates.unitsFromFe(amount, rate), want);
             if (offer <= 0 || offer < mj.number(mj.min, r, 0)) return 0;
@@ -436,7 +440,7 @@ public final class ForeignEnergy1710 {
 
         @Override
         public boolean canReceive() {
-            return mj.receiver(tile, from) != null;
+            return LegacyConfig.fePerMjIn() > 0 && mj.receiver(tile, from) != null;
         }
     }
 }

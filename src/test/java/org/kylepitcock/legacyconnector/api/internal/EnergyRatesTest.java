@@ -16,6 +16,13 @@ class EnergyRatesTest {
     }
 
     @Test
+    void zeroRateDisablesADirection() {
+        assertEquals(0, EnergyRates.unitsFromFe(1000, 0));
+        assertEquals(0, EnergyRates.feFromUnits(1000, 0));
+        assertEquals(0, EnergyRates.euToInject(1000, 0, 100, 3));
+    }
+
+    @Test
     void packetLimitFollowsTier() {
         assertEquals(8, EnergyRates.packetLimit(0));
         assertEquals(32, EnergyRates.packetLimit(1));

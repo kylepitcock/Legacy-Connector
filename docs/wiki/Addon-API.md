@@ -157,8 +157,8 @@ handle that reads the legacy tile on each call instead of copying its state.
 | 1.12.2 tile answering Forge `CapabilityEnergy.ENERGY` | `EnergyStorage.BLOCK` | `LegacyCapabilities.FORGE_ENERGY_1122` |
 | 1.12.2 tile answering Forge `FLUID_HANDLER_CAPABILITY` | `FluidHandler.BLOCK` | `LegacyCapabilities.FORGE_FLUIDS_1122` |
 | 1.7.10 Forge `IFluidTank` tile (not an `IFluidHandler`) | `FluidHandler.BLOCK` (one tank) | built in |
-| IC2 `IEnergySink` / `IEnergySource` tiles (`energy.fePerEu`, default 4 FE = 1 EU) | `EnergyStorage.BLOCK` | built in (reflection) |
-| BuildCraft `IPowerReceptor` tiles (`energy.fePerMj`, default 10 FE = 1 MJ; receive only) | `EnergyStorage.BLOCK` | built in (reflection) |
+| IC2 `IEnergySink` / `IEnergySource` tiles (`energy.fePerEu`, default 4 FE = 1 EU; `energy.fePerEu.in`/`.out` set one direction, 0 = off) | `EnergyStorage.BLOCK` | built in (reflection) |
+| BuildCraft `IPowerReceptor` tiles (`energy.fePerMj`, default 10 FE = 1 MJ; `energy.fePerMj.in` = 0 turns it off; receive only) | `EnergyStorage.BLOCK` | built in (reflection) |
 
 Legacy tile entities are exposed as capabilities **by default**, so modern hoppers, Create belts/funnels/arms/vaults, modern pipes and energy
 cables work with them without an addon; addons only add what is missing. Side handling: NeoForge's `Direction` maps to `ForgeDirection`
