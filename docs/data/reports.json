@@ -251,6 +251,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/files/2227552",
    "date": "2026-11-03",
    "open": true
+  },
+  {
+   "issue": 145,
+   "mod": "tf2 stuff reloaded",
+   "mc": "1.8 - 1.12.2",
+   "status": "works",
+   "details": "-not all models loaded -not all textures loaded -in short, not everything loaded -it works, but only for one model, a couple of items, and a custom workbench from the mod",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/tf2-stuff-reloaded",
+   "date": "2026-11-03",
+   "open": true
   }
  ]
 }
