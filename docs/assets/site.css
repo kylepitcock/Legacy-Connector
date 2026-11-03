@@ -35,6 +35,8 @@ code { font-family: var(--mono); font-size: .88em; background: var(--surface2); 
 .brand { display: flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; font-size: 1.05rem; letter-spacing: -.01em; color: var(--text); text-decoration: none; white-space: nowrap; }
 .brand:hover { text-decoration: none; }
 .brand svg { width: 28px; height: 28px; flex: none; }
+/* the logo has dark strokes on a transparent background: a light tile keeps it visible in the dark theme */
+.brand img { width: 32px; height: 32px; flex: none; background: #fff; border-radius: 8px; padding: 2px; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line); }
 .mainnav { display: flex; gap: 4px; margin-left: 12px; flex: 1 1 auto; flex-wrap: wrap; }
 .mainnav a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: .95rem; padding: 7px 13px; border-radius: 999px; transition: background .15s, color .15s; white-space: nowrap; }
 .mainnav a:hover { color: var(--text); background: var(--surface2); }
