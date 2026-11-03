@@ -160,11 +160,12 @@ dependencies {
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
     compileOnly("com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}") { transitive = false }
 
-    // Pehkui (MIT, Modrinth): entity size scaling (hitbox, eye height, model). Legacy Entity.setSize / eyeHeight go through its ScaleTypes API
-    // (EntitySizesPehkui1710). An OPTIONAL dependency, not bundled (a distributed jar that contains another project's mod sends CurseForge
-    // to manual review); without it entities keep their type's own size.
-    compileOnly("maven.modrinth:pehkui:${pehkui_version}")
-    if (project.hasProperty('withPehkui')) additionalRuntimeClasspath("maven.modrinth:pehkui:${pehkui_version}")
+    // Pehkui (MIT, Modrinth): entity size scaling (hitbox, eye height, model). Legacy Entity.setSize / eyeHeight and Fisk's Heroes' size
+    // manipulation go through its ScaleTypes API instead of our own dimension mixin. Embedded (jar-in-jar); a separately installed newer Pehkui wins.
+    jarJar(implementation("maven.modrinth:pehkui:${pehkui_version}")) {
+        // an exact version: Modrinth's maven answers 404 to the HEAD request Gradle makes to list versions for a range
+        version { strictly pehkui_version }
+    }
 
     // Libraries Minecraft 1.7.10 / 1.12.2 shipped and legacy mods use directly, absent from 1.21.1. NOT jar-in-jar: a jar-in-jar library
     // always enters the game module layer, and a modern mod that bundles the same packages (ScalableCatsForce ships Scala 2.13) then stops

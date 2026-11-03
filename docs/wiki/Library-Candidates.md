@@ -3,7 +3,7 @@
 Policy: where a maintained NeoForge 1.21.1 library already solves something the layer re-implements, depend on the library (like
 Baubles -> Curios, Waila -> Jade, NEI -> JEI; see [Bridges](Bridges.md)). This page is a survey (Modrinth API, filter `versions:1.21.1` +
 `categories:neoforge`, 2026-10-31) of the layer's use cases and what could replace the hand-rolled code. Downloads and dates come from Modrinth.
-Check a licence and the nesting rules before bundling anything; "bundle" means shipping inside the jar like the Scala libraries (Pehkui is an optional dependency, not bundled: another project's mod inside the jar sends CurseForge to manual review) in `build.gradle`.
+Check a licence and the nesting rules before bundling anything; "bundle" means jar-in-jar like Pehkui and the Scala libraries in `build.gradle`.
 
 ## Adopted
 
@@ -37,7 +37,7 @@ Check a licence and the nesting rules before bundling anything; "bundle" means s
 ## How to add one
 
 1. Gradle: Modrinth maven is already declared with the `maven.modrinth` content filter; add the version to `gradle.properties`.
-2. Required and tiny (MIT/Apache, a few hundred KB): bundle it as a library (never another project's mod).
+2. Required and tiny (MIT/Apache, a few hundred KB): bundle with `jarJar(implementation(...))`, as for Pehkui.
 3. Optional and big: `compileOnly`, soft-load through the bridge pattern in `LibraryBridges.java` (class presence check, no direct references in
    always-loaded classes) and say so in the README config table.
 4. Never commit jars; list the licence in the PR.
