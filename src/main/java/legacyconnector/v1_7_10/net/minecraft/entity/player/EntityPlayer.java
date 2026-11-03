@@ -359,6 +359,14 @@ public abstract class EntityPlayer extends EntityLivingBase {
         if (modern.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) sp.openItemGui(modern, net.minecraft.world.InteractionHand.MAIN_HAND);
     }
 
+    /** Shows the beacon window of a vanilla beacon. */
+    public void func_146104_a(legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBeacon beacon) {
+        if (mcc$player() instanceof net.minecraft.server.level.ServerPlayer sp && beacon != null
+                && beacon.mcc$host instanceof net.minecraft.world.level.block.entity.BeaconBlockEntity modern) {
+            sp.openMenu(modern);
+        }
+    }
+
     public void closeScreen() {
         mcc$player().closeContainer();
     }

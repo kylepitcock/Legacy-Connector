@@ -39,6 +39,41 @@ public class BlockJukebox extends BlockContainer {
         }
     }
 
+    /** The jukebox's record. A view of a vanilla jukebox reads and writes the modern jukebox. */
+    public static class TileEntityJukebox extends legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity {
+        private ItemStack record;
+        private final net.minecraft.world.level.block.entity.JukeboxBlockEntity mcc$jukebox;
+
+        public TileEntityJukebox() {
+            this.mcc$jukebox = null;
+        }
+
+        /** View of a vanilla jukebox. */
+        public TileEntityJukebox(net.minecraft.world.level.block.entity.JukeboxBlockEntity jukebox) {
+            this.mcc$jukebox = jukebox;
+        }
+
+        /** The record in the jukebox (null when empty). */
+        public ItemStack func_145856_a() {
+            if (mcc$jukebox != null) {
+                var stack = mcc$jukebox.getTheItem();
+                return stack.isEmpty() ? null : ItemStack.mcc$wrap(stack);
+            }
+            return record;
+        }
+
+        /** Puts a record in (null empties it). */
+        public void func_145857_a(ItemStack stack) {
+            if (mcc$jukebox != null) {
+                mcc$jukebox.setTheItem(stack == null ? net.minecraft.world.item.ItemStack.EMPTY : ItemStack.mcc$toModern(stack));
+                mcc$jukebox.setChanged();
+            } else {
+                record = stack;
+                markDirty();
+            }
+        }
+    }
+
     @Override
     public boolean hasComparatorInputOverride() {
         return true;

@@ -239,6 +239,12 @@ public final class TileEntityBridge {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntitySign(sign);
         } else if (be instanceof net.minecraft.world.level.block.entity.CommandBlockEntity command) {
             view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityCommandBlock(command);
+        } else if (be instanceof net.minecraft.world.level.block.entity.BrewingStandBlockEntity stand) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand(stand);
+        } else if (be instanceof net.minecraft.world.level.block.entity.JukeboxBlockEntity jukebox) {
+            view = new legacyconnector.v1_7_10.net.minecraft.block.BlockJukebox.TileEntityJukebox(jukebox);
+        } else if (be instanceof net.minecraft.world.level.block.entity.ComparatorBlockEntity comparator) {
+            view = new legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityComparator(comparator);
         } else if (be instanceof net.minecraft.world.Container c) {
             view = new VanillaInventoryTile(c);
         } else if (ModernCapabilityTile.offers(be)) {

@@ -33,9 +33,12 @@ public class ChunkProviderFlat implements IChunkProvider {
     public WorldGenLakes waterLakeGenerator;
     public WorldGenLakes lavaLakeGenerator;
     private int mcc$biomeId = 1;
+    /** The parsed preset (layers, biome, features) the generator was made from. */
+    public FlatGeneratorInfo flatWorldGenInfo;
 
     public ChunkProviderFlat(World world, long seed, boolean mapFeatures, String preset) {
         this.worldObj = world;
+        this.flatWorldGenInfo = FlatGeneratorInfo.createFlatGeneratorFromString(preset);
         this.random = new Random(seed);
         Set<String> features = new HashSet<>();
         if (!mcc$parse(preset, features)) {
