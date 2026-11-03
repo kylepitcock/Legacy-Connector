@@ -11,6 +11,7 @@
 - [Recipes](Recipes.md)
 - [Configuration](Configuration.md)
 - [Performance](Performance.md)
+- [Troubleshooting](Troubleshooting.md)
 - [Compatibility and status](Compatibility-and-Status.md)
 - [Development](Development.md)
 - [Gameplay test log](Gameplay-Test-Log.md)

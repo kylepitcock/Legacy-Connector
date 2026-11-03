@@ -20,6 +20,7 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Recipes](Recipes.md) | Changing legacy recipes with data packs, KubeJS and MineTweaker |
 | [Configuration](Configuration.md) | `config/legacyconnector.properties` |
 | [Performance](Performance.md) | Measured memory, frame rate and startup cost |
+| [Troubleshooting](Troubleshooting.md) | Join failures such as "length wider than 21-bit", measuring join payload sizes |
 | [Compatibility and status](Compatibility-and-Status.md) | Status per legacy version, known issues, reading the report |
 | [Development](Development.md) | Building, testing, project layout |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
