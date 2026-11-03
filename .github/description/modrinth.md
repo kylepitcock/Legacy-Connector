@@ -212,6 +212,8 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ---
 
+**Modpacks:** anyone may include Legacy Connector in a modpack, on any platform, without asking for permission. This covers Legacy Connector only; the legacy mods you put next to it keep their own licenses.
+
 **Legal:** Legacy Connector is released under the MIT License. It contains no Minecraft, Forge or third-party mod code. You supply your own mod jars; please don't redistribute them.
 
 [CurseForge](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) · [Source & issue tracker (GitHub)](https://github.com/kylepitcock/Legacy-Connector) · [Compatibility list](https://kylepitcock.github.io/Legacy-Connector/)
