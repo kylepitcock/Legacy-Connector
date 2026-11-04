@@ -34,6 +34,14 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
             "music.game.end.dragon", "music.dragon", "music.game.end.credits", "music.credits", "music.game.nether", "music.nether.nether_wastes",
             "minecart.base", "entity.minecart.riding", "minecart.inside", "entity.minecart.inside");
 
+    /** {@code -Dlegacyconnector.soundDebug=true}: logs every legacy sound handed to the engine (name, legacy class, looping, tickable) and when a tickable one ends. */
+    private static final boolean mcc$DEBUG = Boolean.getBoolean("legacyconnector.soundDebug");
+
+    private static void mcc$debug(String what, ISound sound, String name) {
+        org.slf4j.LoggerFactory.getLogger("LegacyConnector/Sounds").info("{} {} ({}) loop={} tickable={} vol={} pitch={}", what, name,
+                sound.getClass().getName(), sound.canRepeat(), sound instanceof ITickableSound, sound.getVolume(), sound.getPitch());
+    }
+
     public void playSound(ISound sound) {
         SoundInstance instance = mcc$instance(sound);
         if (instance != null) net.minecraft.client.Minecraft.getInstance().getSoundManager().play(instance);
@@ -61,7 +69,11 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
             name = location.getResourceDomain().equals("minecraft") ? location.getResourcePath() : location.getResourceDomain() + ":" + location.getResourcePath();
             event = SoundBridge.sound(MUSIC_RENAMES.getOrDefault(name, name));
         }
-        if (event == null) return null;
+        if (event == null) {
+            if (mcc$DEBUG) mcc$debug("unknown sound", sound, String.valueOf(location));
+            return null;
+        }
+        if (mcc$DEBUG) mcc$debug("play", sound, String.valueOf(event.getLocation()));
         // 1.7.10 took the slider from the event's sounds.json category (a mod's own ISound naming one of its events)
         SoundSource source = sound instanceof PositionedSoundRecord r && r.mcc$category != null ? r.mcc$category.mcc$source()
                 : SoundBridge.legacySource(name, SoundSource.MASTER);
@@ -197,7 +209,10 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
         public void tick() {
             legacy.update();
             copy();
-            if (legacy.isDonePlaying()) stop();
+            if (legacy.isDonePlaying()) {
+                if (mcc$DEBUG) mcc$debug("done", legacy, String.valueOf(getLocation()));
+                stop();
+            }
         }
     }
 }
