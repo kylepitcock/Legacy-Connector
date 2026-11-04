@@ -115,6 +115,7 @@ public abstract class GenLayer {
     }
 
     protected int nextInt(int bound) {
+        if (bound <= 0) return 0; // an empty weighted list (a mod whose biomes failed to register) must not fail every chunk with / by zero
         int i = (int) ((chunkSeed >> 24) % bound);
         if (i < 0) i += bound;
         chunkSeed *= chunkSeed * MUL + ADD;

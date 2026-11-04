@@ -131,7 +131,10 @@ public abstract class BlockFluidBase extends Block implements IFluidBlock {
 
     @Override
     protected legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer createBlockState() {
-        return new legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer(this, LEVEL);
+        // Forge's container carries the fluid's render properties as unlisted ones (Betweenlands' water casts it)
+        return new legacyconnector.v1_12_2.net.minecraftforge.common.property.ExtendedBlockState(this,
+                new legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty[] {LEVEL},
+                FLUID_RENDER_PROPS.toArray(new legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>[0]));
     }
 
     @Override
