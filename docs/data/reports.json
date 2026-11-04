@@ -275,6 +275,18 @@
    "link": "",
    "date": "2026-11-03",
    "open": true
+  },
+  {
+   "issue": 147,
+   "mod": "HuajiAge-Infinite Galaxy",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "- The mod doesn't work because it contains its own version of Nashorn; removing it causes models to display incorrectly—that’s the bug. Instead of the intended models, you get horses.",
+   "lc": "0.3.18",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/huajiage-infinite-galaxy",
+   "date": "2026-11-04",
+   "open": true
   }
  ]
 }
