@@ -51,6 +51,41 @@ public class EffectRenderer {
         List<EntityFX> list = fxLayers[layer];
         if (list.size() >= MAX_PER_LAYER) list.remove(0);
         list.add(fx);
+        if (mcc$DEBUG) mcc$debug(fx, layer);
+    }
+
+    /** {@code -Dlegacyconnector.particleDebug=true}: logs which legacy particle classes spawn within 8 blocks of the camera (class, layer, icon, count). */
+    private static final boolean mcc$DEBUG = Boolean.getBoolean("legacyconnector.particleDebug");
+    private static final java.util.Map<String, int[]> mcc$debugCounts = new java.util.HashMap<>();
+    private static long mcc$debugFlush;
+
+    private static void mcc$debug(EntityFX fx, int layer) {
+        try {
+            var cam = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera();
+            if (!cam.isInitialized()) return;
+            var pos = cam.getPosition();
+            double dx = Entity.mcc$get$posX(fx) - pos.x, dy = Entity.mcc$get$posY(fx) - pos.y, dz = Entity.mcc$get$posZ(fx) - pos.z;
+            if (dx * dx + dy * dy + dz * dz > 64.0D) return;
+            String icon = fx.particleIcon == null ? "sheet " + fx.particleTextureIndexX + "," + fx.particleTextureIndexY : fx.particleIcon.getIconName();
+            String key = fx.getClass().getName() + " layer " + layer + " icon " + icon;
+            var log = org.slf4j.LoggerFactory.getLogger("LegacyConnector/Particles");
+            int[] n = mcc$debugCounts.get(key);
+            if (n == null) {
+                mcc$debugCounts.put(key, n = new int[1]);
+                log.info("New legacy particle near the camera: {} (at {}, {}, {} from the camera)", key, Math.round(dx), Math.round(dy), Math.round(dz));
+            }
+            n[0]++;
+            long now = System.currentTimeMillis();
+            if (now - mcc$debugFlush > 10000L) {
+                mcc$debugFlush = now;
+                mcc$debugCounts.forEach((k, v) -> {
+                    if (v[0] > 0) log.info("legacy particles near the camera in the last 10 s: {} x{}", k, v[0]);
+                    v[0] = 0;
+                });
+            }
+        } catch (RuntimeException | LinkageError e) {
+            // a diagnostic must never break rendering
+        }
     }
 
     public void updateEffects() {
