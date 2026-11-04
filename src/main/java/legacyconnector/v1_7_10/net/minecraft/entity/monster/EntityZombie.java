@@ -11,6 +11,25 @@ public class EntityZombie extends EntityMob {
 
     public EntityZombie(World world) {
         super(world);
+        // 1.7.10's constructor: a mod's zombie (Thaumcraft's brainy zombies) adds to this task list instead of building it
+        getNavigator().setBreakDoors(true);
+        tasks.addTask(0, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAISwimming(this));
+        tasks.addTask(1, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIBreakDoor(this));
+        tasks.addTask(2, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIAttackOnCollide(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, 1.0D, false));
+        tasks.addTask(3, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIAttackOnCollide(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager.class, 1.0D, true));
+        tasks.addTask(4, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIMoveTowardsRestriction(this, 1.0D));
+        tasks.addTask(5, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIMoveThroughVillage(this, 1.0D, false));
+        tasks.addTask(6, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIWander(this, 1.0D));
+        tasks.addTask(7, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIWatchClosest(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, 8.0F));
+        tasks.addTask(7, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAILookIdle(this));
+        targetTasks.addTask(1, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAIHurtByTarget(this, true));
+        targetTasks.addTask(2, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAINearestAttackableTarget(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class, 0, true));
+        targetTasks.addTask(2, new legacyconnector.v1_7_10.net.minecraft.entity.ai.EntityAINearestAttackableTarget(this,
+                legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityVillager.class, 0, false));
         setSize(0.6F, 1.8F);
     }
 

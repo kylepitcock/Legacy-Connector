@@ -31,8 +31,15 @@ public class RenderZombie extends RenderBiped {
         field_82432_p = new ModelZombie();
     }
 
+    private static final ResourceLocation ZOMBIE_VILLAGER = new ResourceLocation("textures/entity/zombie/zombie_villager.png");
+
+    /** 1.7.10's typed overload: mods' zombie renderers (Thaumcraft's brainy zombies) override this one, not the EntityLiving bridge. */
+    protected ResourceLocation getEntityTexture(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityZombie zombie) {
+        return zombie.isVillager() ? ZOMBIE_VILLAGER : ZOMBIE;
+    }
+
     @Override
     protected ResourceLocation getEntityTexture(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving entity) {
-        return ZOMBIE;
+        return entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.monster.EntityZombie z ? getEntityTexture(z) : ZOMBIE;
     }
 }
