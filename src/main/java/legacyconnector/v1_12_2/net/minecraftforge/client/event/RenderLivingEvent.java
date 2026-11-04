@@ -35,8 +35,27 @@ public abstract class RenderLivingEvent<T extends EntityLivingBase> extends Even
         return entity;
     }
 
+    private RenderLivingBase<T> resolved;
+
+    /** The renderer drawing the entity; the modern pipeline has no legacy one, so it is looked up (or a stand-in built) on first use. */
+    @SuppressWarnings("unchecked")
     public RenderLivingBase<T> getRenderer() {
-        return renderer;
+        if (renderer != null) return renderer;
+        if (resolved != null) return resolved;
+        var manager = legacyconnector.v1_12_2.net.minecraft.client.renderer.entity.RenderManager.mcc$instance();
+        try {
+            var found = manager.getEntityRenderObject(entity);
+            if (found instanceof RenderLivingBase<?> living) return resolved = (RenderLivingBase<T>) living;
+        } catch (RuntimeException | LinkageError ignored) {
+            // falls through to the stand-in
+        }
+        return resolved = (RenderLivingBase<T>) new RenderLivingBase<EntityLivingBase>(manager, new legacyconnector.v1_12_2.net.minecraft.client.model.ModelBase() {
+        }, 0.0F) {
+            @Override
+            protected legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation getEntityTexture(EntityLivingBase e) {
+                return null;
+            }
+        };
     }
 
     public float getPartialRenderTick() {

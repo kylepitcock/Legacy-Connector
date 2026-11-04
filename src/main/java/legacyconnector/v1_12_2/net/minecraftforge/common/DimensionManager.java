@@ -154,8 +154,8 @@ public class DimensionManager {
         synchronized (DimensionManager.class) {
             type = DIMENSIONS.get(dim);
         }
-        if (type == null) throw new RuntimeException("No WorldProvider bound for dimension " + dim);
-        Class<?> cls = type.mcc$providerClass();
+        // a dimension no legacy mod registered (a modern mod's level): a plain surface provider, as Forge's overworld default
+        Class<?> cls = type == null ? null : type.mcc$providerClass();
         legacyconnector.v1_12_2.net.minecraft.world.WorldProvider provider;
         try {
             provider = cls == null ? (dim == -1 ? new legacyconnector.v1_12_2.net.minecraft.world.WorldProviderHell()

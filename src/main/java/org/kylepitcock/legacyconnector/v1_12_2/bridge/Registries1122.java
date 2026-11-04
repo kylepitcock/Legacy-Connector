@@ -302,6 +302,18 @@ public final class Registries1122 {
                 Object made = type == Block.class ? Vanilla1122.blockByName(key.getPath()) : Vanilla1122.itemByName(key.getPath());
                 v = (V) made;
             }
+            if (v == null && key != null && "minecraft".equals(key.getNamespace()) && type == legacyconnector.v1_12_2.net.minecraft.util.SoundEvent.class) {
+                // a vanilla sound nobody asked for through SoundEvents yet (a packet names it): wrap the modern event
+                var id = net.minecraft.resources.ResourceLocation.tryBuild("minecraft", key.getPath());
+                var modern = id == null ? null : net.minecraft.core.registries.BuiltInRegistries.SOUND_EVENT.get(id);
+                if (modern != null) {
+                    var legacy = new legacyconnector.v1_12_2.net.minecraft.util.SoundEvent(key);
+                    legacy.mcc$modern = modern;
+                    legacy.setRegistryName(key);
+                    v = (V) legacy;
+                    registerVanilla(v);
+                }
+            }
             return v;
         }
 
