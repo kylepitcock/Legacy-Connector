@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """Downloads the most downloaded Forge mods of one Minecraft version from Modrinth, as input for tools/compat/probe.py.
 
-usage: fetch_probe_mods.py <mc-version> <dest-dir> [--limit 200] [--no-deps]
+usage: fetch_probe_mods.py <mc-version> <dest-dir> [--limit 200] [--no-deps] [--content] [--client-extra N]
+
+--content keeps content mods only: no performance/optimization or library mods, and nothing client-only (a realistic corpus for
+the layer, whose job is content mods); --client-extra N then adds the N most downloaded client-side mods (UI/utility), minus optimization.
 
 Uses Modrinth's public API (search by downloads, newest Forge file of each project, SHA-1 checked). By default every
 required dependency a download declares is fetched too (recursively, up to 3 levels; the version the mod pins, else the newest
@@ -39,6 +42,8 @@ def main():
     ap.add_argument("dest")
     ap.add_argument("--limit", type=int, default=200)
     ap.add_argument("--no-deps", action="store_true", help="do not download required dependencies")
+    ap.add_argument("--content", action="store_true", help="content mods only: exclude optimization and library categories and client-only mods")
+    ap.add_argument("--client-extra", type=int, default=0, help="with --content: also fetch this many client-side mods (never optimization)")
     a = ap.parse_args()
     dest = pathlib.Path(a.dest)
     dest.mkdir(parents=True, exist_ok=True)
@@ -81,15 +86,27 @@ def main():
                 print(f"dependency {dep['project_id']}: {e}", file=sys.stderr)
                 stats["failed"] += 1
 
-    facets = json.dumps([[f"versions:{a.mc}"], ["categories:forge"], ["project_type:mod"]])
-    hits, offset = [], 0
-    while len(hits) < a.limit:
-        q = urllib.parse.urlencode({"facets": facets, "index": "downloads", "limit": min(100, a.limit - len(hits)), "offset": offset})
-        page = json.loads(get(f"{API}/search?{q}"))["hits"]
-        if not page:
-            break
-        hits += page
-        offset += len(page)
+    base = [[f"versions:{a.mc}"], ["categories:forge"], ["project_type:mod"]]
+
+    def search(extra, limit):
+        facets = json.dumps(base + extra)
+        found, offset = [], 0
+        while len(found) < limit:
+            q = urllib.parse.urlencode({"facets": facets, "index": "downloads", "limit": min(100, limit - len(found)), "offset": offset})
+            page = json.loads(get(f"{API}/search?{q}"))["hits"]
+            if not page:
+                break
+            found += page
+            offset += len(page)
+        return found
+
+    if a.content:
+        # "!=" facets: not optimization/library, and the mod does something on a server (content, not client-only UI)
+        hits = search([["categories!=optimization"], ["categories!=library"], ["server_side!=unsupported"]], a.limit)
+        if a.client_extra:
+            hits += search([["categories!=optimization"], ["categories!=library"], ["server_side=unsupported"], ["client_side=required"]], a.client_extra)
+    else:
+        hits = search([], a.limit)
     for h in hits:
         try:
             seen_projects.add(h["project_id"])

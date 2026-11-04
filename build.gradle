@@ -259,6 +259,19 @@ tasks.named('processResources') {
     }
 }
 
+// 1.20.1 gap report (milestone 0): ./gradlew gap1201 -PsrgTable=srg.tsv -PtargetJars=a.jar,b.jar -PgapJars=dir [-PgapReport=file]
+// SRG table: tools/dev/gen_srg_mojang.py; targets: Minecraft 1.21.1 (Mojang names) + NeoForge, e.g. build/moddev/artifacts/neoforge-*-merged.jar
+tasks.register('gap1201', JavaExec) {
+    classpath = project(':loader').sourceSets.main.runtimeClasspath
+    mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
+    argumentProviders.add({
+        def renames = fileTree(dir: 'loader/src/main/resources/legacyconnector/forward/1.20.1', include: '*.tsv').files.join(',')
+        def jars = fileTree(dir: project.findProperty('gapJars') ?: 'test-mods4', include: '*.jar').files.collect { it.absolutePath }.sort()
+        [project.findProperty('srgTable').toString(), renames, project.findProperty('targetJars').toString(),
+         (project.findProperty('gapReport') ?: layout.buildDirectory.file('reports/gap1201.txt').get().asFile.absolutePath).toString()] + jars
+    } as CommandLineArgumentProvider)
+}
+
 // Offline compatibility check: ./gradlew checkLegacyMod -PlegacyJar=/path/to/mod.jar
 tasks.register('checkLegacyMod', JavaExec) {
     dependsOn generateShimIndex
