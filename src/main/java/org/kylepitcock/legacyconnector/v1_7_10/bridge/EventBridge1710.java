@@ -601,6 +601,13 @@ public final class EventBridge1710 {
             else e.setDistance(legacy.distance);
         });
 
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingHealEvent e) -> {
+            if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHealEvent.class)) return;
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHealEvent((EntityLivingBase) EntityBridge.wrap(e.getEntity()), e.getAmount());
+            if (forge().post(legacy)) e.setCanceled(true);
+            else e.setAmount(legacy.amount);
+        });
+
         // ---- server lifecycle -> @Mod.EventHandler methods
         gameBus.addListener((ServerAboutToStartEvent e) -> Platform1710.dispatchAll(m -> new FMLServerAboutToStartEvent(MinecraftServer.mcc$wrap(e.getServer()))));
         gameBus.addListener((ServerStartingEvent e) -> Platform1710.dispatchAll(m -> new FMLServerStartingEvent(MinecraftServer.mcc$wrap(e.getServer()))));

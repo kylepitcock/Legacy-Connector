@@ -17,7 +17,7 @@ public class MapGenCaves extends MapGenBase {
             double z = cz * 16 + rand.nextInt(16);
             int tunnels = 1;
             if (rand.nextInt(4) == 0) {
-                carve(rand.nextLong(), chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.nextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+                func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.nextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
                 tunnels += rand.nextInt(4);
             }
             for (int t = 0; t < tunnels; t++) {
@@ -25,12 +25,17 @@ public class MapGenCaves extends MapGenBase {
                 float pitch = (rand.nextFloat() - 0.5F) * 2.0F / 8.0F;
                 float width = rand.nextFloat() * 2.0F + rand.nextFloat();
                 if (rand.nextInt(10) == 0) width *= rand.nextFloat() * rand.nextFloat() * 3.0F + 1.0F;
-                carve(rand.nextLong(), chunkX, chunkZ, blocks, x, y, z, width, yaw, pitch, 0, 0, 1.0D);
+                func_151541_a(rand.nextLong(), chunkX, chunkZ, blocks, x, y, z, width, yaw, pitch, 0, 0, 1.0D);
             }
         }
     }
 
-    protected void carve(long seed, int chunkX, int chunkZ, Block[] blocks, double x, double y, double z, float width, float yaw, float pitch,
+    /** MCP {@code func_151542_a} (generateLargeCaveNode): a big chamber with tunnels leaving it. */
+    protected void func_151542_a(long seed, int chunkX, int chunkZ, Block[] blocks, double x, double y, double z) {
+        func_151541_a(seed, chunkX, chunkZ, blocks, x, y, z, 1.0F + rand.nextFloat() * 6.0F, 0.0F, 0.0F, -1, -1, 0.5D);
+    }
+
+    protected void func_151541_a(long seed, int chunkX, int chunkZ, Block[] blocks, double x, double y, double z, float width, float yaw, float pitch,
             int step, int maxStep, double scale) {
         double centerX = chunkX * 16 + 8;
         double centerZ = chunkZ * 16 + 8;
@@ -63,8 +68,8 @@ public class MapGenCaves extends MapGenBase {
             pitchDrift += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 2.0F;
             yawDrift += (random.nextFloat() - random.nextFloat()) * random.nextFloat() * 4.0F;
             if (!chamber && step == branchAt && width > 1.0F && maxStep > 0) {
-                carve(random.nextLong(), chunkX, chunkZ, blocks, x, y, z, random.nextFloat() * 0.5F + 0.5F, yaw - (float) Math.PI / 2.0F, pitch / 3.0F, step, maxStep, 1.0D);
-                carve(random.nextLong(), chunkX, chunkZ, blocks, x, y, z, random.nextFloat() * 0.5F + 0.5F, yaw + (float) Math.PI / 2.0F, pitch / 3.0F, step, maxStep, 1.0D);
+                func_151541_a(random.nextLong(), chunkX, chunkZ, blocks, x, y, z, random.nextFloat() * 0.5F + 0.5F, yaw - (float) Math.PI / 2.0F, pitch / 3.0F, step, maxStep, 1.0D);
+                func_151541_a(random.nextLong(), chunkX, chunkZ, blocks, x, y, z, random.nextFloat() * 0.5F + 0.5F, yaw + (float) Math.PI / 2.0F, pitch / 3.0F, step, maxStep, 1.0D);
                 return;
             }
             if (!chamber && random.nextInt(4) == 0) continue;

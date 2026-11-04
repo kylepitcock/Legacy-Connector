@@ -13,6 +13,11 @@ public class ChunkCoordIntPair {
         return (long) x & 4294967295L | ((long) z & 4294967295L) << 32;
     }
 
+    /** MCP {@code func_151349_a}: the block position at height y inside this chunk (its center column). */
+    public ChunkPosition func_151349_a(int y) {
+        return new ChunkPosition(chunkXPos << 4, y, chunkZPos << 4);
+    }
+
     public int getCenterXPos() {
         return (chunkXPos << 4) + 8;
     }

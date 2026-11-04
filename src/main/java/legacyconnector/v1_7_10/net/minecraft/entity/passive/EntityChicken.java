@@ -11,6 +11,16 @@ public class EntityChicken extends EntityAnimal {
     public float field_70888_h;
     public float field_70889_i = 1.0F;
     public int timeUntilNextEgg;
+    private boolean mcc$jockey;
+
+    /** MCP {@code func_152117_i}: sets the chicken-jockey flag. */
+    public void func_152117_i(boolean jockey) {
+        this.mcc$jockey = jockey;
+    }
+
+    public boolean func_152116_bZ() {
+        return mcc$jockey;
+    }
 
     /** View of a modern vanilla mob (mods test and cast vanilla mobs against this class). */
     public EntityChicken(net.minecraft.world.entity.LivingEntity modern) {
