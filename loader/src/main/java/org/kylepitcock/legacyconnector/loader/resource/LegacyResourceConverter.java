@@ -43,6 +43,7 @@ public final class LegacyResourceConverter {
     private final Map<String, byte[]> output = new LinkedHashMap<>();
     private final Map<String, Map<String, String>> langs = new LinkedHashMap<>();
     private boolean sawTextures;
+    private final CtmBridge ctm = new CtmBridge();
 
     /**
      * @return true if the entry was consumed (written to the output, possibly renamed, or dropped on purpose).
@@ -75,6 +76,7 @@ public final class LegacyResourceConverter {
             data = lowercaseResourceRefs(data);
             if (modern.contains("/models/")) addVineModels(data);
         }
+        ctm.offer(modern, data);
         output.putIfAbsent(modern, data);
         return true;
     }
@@ -97,6 +99,7 @@ public final class LegacyResourceConverter {
             lang.getValue().forEach(obj::addProperty);
             output.put(lang.getKey(), GSON.toJson(obj).getBytes(StandardCharsets.UTF_8));
         }
+        ctm.apply(output);
         if (sawTextures) {
             output.putIfAbsent("assets/minecraft/atlases/blocks.json", BLOCK_ATLAS.getBytes(StandardCharsets.UTF_8));
         }

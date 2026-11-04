@@ -66,6 +66,15 @@ Back to [Home](Home.md); see also [Entities](Entities.md).
   To find out whether a legacy handler draws something, skip it with `events.skip` (see [Configuration](Configuration.md)).
 - Not yet: per-vertex colour of handler-drawn blocks, `IIcon`s of non-block atlases.
 
+## Connected textures (Chisel, CTM)
+
+The 1.12 Connected Textures Mod keeps its settings in `<texture>.png.mcmeta` (`"ctm": {"type": ..., "extra": {"size": N}}`) and its own model
+loader picks the tile. The loader's `CtmBridge` converts the two sheet types that would otherwise be stitched as one squeezed sprite: a
+`random` sheet (N x N variants) or `pattern` sheet (N x N tiles) becomes its first tile as the sprite, and every tile is written as a numbered
+image beside an OptiFine-format `ctm.properties` (`method=random` / `method=repeat`) under `assets/minecraft/optifine/ctm/legacyconnector/`, which
+the modern connected textures mod Continuity (NeoForge build) reads. Without Continuity the first tile shows. Connected-edge types (`ctm`,
+`CTMH`, `pillar`, `sctm`) keep their plain sprite; mapping them to Continuity's `ctm`/`horizontal`/`vertical` methods is not done yet.
+
 ## Iris and Sodium
 
 Checked against Iris 1.8.14 and Sodium 0.8.13 (NeoForge 1.21.1) by reading their bytecode. The emulation registers no shader program of its
