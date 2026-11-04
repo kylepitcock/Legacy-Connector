@@ -176,3 +176,20 @@ These are rough, plus or minus 40%. Compare: 1.12.2 server-side alone is the out
    shim code stay untouched.
 4. Postpone Fabric 1.20.1 via Connector until Forge 1.20.1 reaches milestone 3.
 5. Mods with a 1.21.1 NeoForge version get the project's `lowpriority` treatment: prefer pointing users at the port.
+
+## 9. Milestone 0 measurements (2026-11-04)
+
+`./gradlew gap1201` (`loader/.../tools/Gap1201`) renames every reference of a jar (SRG ids to Mojang names with a table from `tools/dev/gen_srg_mojang.py`,
+Forge classes with `loader/src/main/resources/legacyconnector/forward/1.20.1/*.tsv`) and checks it against the Minecraft 1.21.1 + NeoForge jar, the JDK and the
+other jars of the set. First run on 44 Forge 1.20.1 jars from Modrinth (`test-mods4/`, filled with `fetch_probe_mods.py 1.20.1 test-mods4 --content`):
+
+- Plain content and data packs are cheap: Terralith, Dungeons and Taverns and Vein Miner have no (or 3) code references. Small mods miss 0 to 10 members.
+- After the renames the misses cluster. Forge API that needs an adapter (jars affected of 44): `FMLJavaModLoadingContext` and mod event bus injection 30,
+  `ForgeRegistries`/`IForgeRegistry` 17, `SimpleChannel`/`NetworkEvent`/`NetworkDirection` about 16, `TickEvent` 15, `LazyOptional`/`Capability`/`ForgeCapabilities`
+  13, `DistExecutor` and the `NonNull*` function types 11 (trivial to provide), `ConfigScreenFactory`/`ForgeGui`/`IModInfo` 9.
+- Minecraft 1.20.1 to 1.21.1 changes: `new ResourceLocation(String)` (32 jars), `ItemStack` NBT (`getTag`, `setTag`, `save`, `of`, `isSameItemSameTags`; 11 to 17),
+  the vertex builder (`endVertex`, `uv`, `Tesselator.getBuilder`, `BufferBuilder.begin/end`; 9 to 17), `FriendlyByteBuf.writeNbt/readItem/writeItem`,
+  `MobEffectInstance.getEffect`, `BlockEntity.load`, `Component.Serializer`, `Level.gameEvent`; fields: `MobEffects.*`, `Attributes.*`, `Enchantments.*` (now holders/data driven), `Blocks.GRASS`.
+- The heavy mods (Create 490 classes, Quark 368, Sophisticated Backpacks 410, Supplementaries 353) are dominated by the other mods they link against and by rendering.
+- Design consequence: relocate only the Forge API that no longer exists into a small facade package (`FMLJavaModLoadingContext`, `SimpleChannel`, `LazyOptional`,
+  `RegistryObject`, `NonNull*`, `DistExecutor`, ...), pass everything else through to the real classes.
