@@ -71,7 +71,7 @@ above); *engine bridges* map a legacy system onto the 1.21 one it corresponds to
 | Coremods that patch Minecraft itself | cannot run on the shim; the common cases (DragonAPI's recipe list and smelting hook) are handled one by one |
 | Mods built for a different version of another mod | only return-type drift is relinked (Binnie's mods against Forestry 4.2.16 still fail) |
 | 1.12.2 | alpha: most of the API mods use is implemented on both sides; see the status table and issue #64 |
-| 1.16.5, 1.2.5 bridges | planned, in that order |
+| 1.20.1, 1.16.5, 1.2.5 bridges | planned, in that order |
 
 ## NEI → JEI recipe categories
 

@@ -8,7 +8,7 @@
   var ORDER = ["perfect", "playable", "works", "partial", "loads", "fails", "crashes"];
   // legacy Minecraft versions with a tab: supported ones first, planned ones greyed out until they have data
   var SUPPORTED = ["1.7.10", "1.12.2"];
-  var PLANNED = ["1.16.5", "1.2.5"];
+  var PLANNED = ["1.20.1", "1.16.5", "1.2.5"];
   // Plain-language result categories of the automated check (probe.py "kind"). "unresolved" is the older, unsplit cause of runs made before the split.
   var KINDS = [
     { key: "links", label: "Ready to test", color: "var(--links)", hint: "translates, and nothing it needs is missing" },

@@ -34,7 +34,8 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 |---|---|
 | 1.7.10 | **Beta.** Content mods, large tech packs, mod biomes, dimensions and entities work; Galacticraft with its addons runs; Thaumcraft, Witchery and the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) load inside All the Mods 10. In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
 | 1.12.2 | **Alpha (issue #64).** Big content mods (Botania, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct, Quark, ...) load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (the Aether) can be entered. OpenComputers, Mekanism and RFTools machines are being brought up. |
-| 1.16.5 | Planned. |
+| 1.20.1 | Planned (next after 1.12.2): Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
+| 1.16.5 | Planned (after 1.20.1). |
 | 1.2.5 | Planned (after 1.16.5). |
 
 Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
