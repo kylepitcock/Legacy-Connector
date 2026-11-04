@@ -384,6 +384,16 @@ public class Minecraft implements legacyconnector.v1_12_2.net.minecraft.util.ITh
         if (client()) org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.setObjectMouseOver(value);
     }
 
+    private final legacyconnector.v1_12_2.net.minecraft.client.util.SearchTreeManager searchTreeManager = new legacyconnector.v1_12_2.net.minecraft.client.util.SearchTreeManager();
+
+    public legacyconnector.v1_12_2.net.minecraft.client.util.SearchTreeManager getSearchTreeManager() {
+        return searchTreeManager;
+    }
+
+    /** 1.12 rebuilt the search trees from the item registry; the modern game keeps its own. */
+    public void populateSearchTreeManager() {
+    }
+
     /** The connection to the server (null when not in a world). */
     public legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient getConnection() {
         return client() && org.kylepitcock.legacyconnector.v1_12_2.client.Minecraft1122.connected()
