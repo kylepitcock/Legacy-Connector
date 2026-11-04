@@ -335,6 +335,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/fiskheroes",
    "date": "2026-11-04",
    "open": true
+  },
+  {
+   "issue": 152,
+   "mod": "Thaumcraft-1.7.10-4.2.3.5",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Aura Nodes: - They do not have hitboxes and can not be drained via wands - They can be drained with Wand Recharge Pedestals - Can not be put in a jar with Node In a Jar ritual - Shaders are broken - Jade mod does not show the name of it Portable Hole: - Shaders are broken Angry Zombie: - Textures are the same as vanilla zombies - Spawn egg doesn't work - Can be summoned via commands - They do not…",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/download/2629023",
+   "date": "2026-11-04",
+   "open": true
   }
  ]
 }
