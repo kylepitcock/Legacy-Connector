@@ -323,6 +323,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/novacraft",
    "date": "2026-11-04",
    "open": true
+  },
+  {
+   "issue": 151,
+   "mod": "FiskHeroes-1.7.10-2.4.0",
+   "mc": "1.7.10",
+   "status": "works",
+   "details": "1. The models, animations, and abilities don’t work well; they’re not always correct.correctly 2. I installed the HeroPack Soul Industries, and all the textures from it don’t have them. 3. The GUI from the quiver doesn’t work. 4. Things don’t work in the second hand — for example, Captain America’s shield.",
+   "lc": "0.",
+   "neoforge": "0.3.18",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/fiskheroes",
+   "date": "2026-11-04",
+   "open": true
   }
  ]
 }

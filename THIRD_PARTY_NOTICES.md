@@ -22,17 +22,10 @@ Minecraft assets are never included.
 |---|---|---|
 | `SideOnlyStripper` (removal of lambda bodies orphaned by side stripping) | `patch/EnvironmentStripperTransformer.java#getMethodLambdas` | Only the idea (collect `lambda$` handles of removed methods); the code is our own, with a fixed point over nested lambdas and a reachability check against the remaining methods |
 
-## PortKit
 
-[PortKit](https://github.com/portkit) (Forge/NeoForge/Fabric porting tool for 1.20.1 and newer), released under a free license by its author, who agreed to this use.
+## RetroMod
 
-| Our file | Taken from | Changes |
-|---|---|---|
-| `loader/.../tools/BytecodeCheck` | `linkcheck/scan/BytecodeVerifier` | Only the idea (verify translated classes with ASM's `Analyzer` and a `SimpleVerifier` whose type relations come from the project's own class index, skipping methods that touch unknown types; interface-typed values are assignable as in the JVM verifier). The code is our own, written against `Hierarchy` |
-
-## RetroMod (via PortKit)
-
-[RetroMod](https://github.com/Bownlux/RetroMod) 1.3.1, MIT License, Copyright (c) 2026 Bownlux (the license text is in PortKit's `THIRD-PARTY-NOTICES.txt`).
+[RetroMod](https://github.com/Bownlux/RetroMod) 1.3.1, MIT License, Copyright (c) 2026 Bownlux 
 
 | Our file | Taken from | Changes |
 |---|---|---|
