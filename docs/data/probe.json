@@ -8251,6 +8251,4340 @@
    }
   },
   {
+   "mc": "1.12.2",
+   "date": "2026-11-03",
+   "version": "0.3.18",
+   "counts": {
+    "links": 514,
+    "stubs": 32,
+    "gap_shim": 35,
+    "gap_mod": 39,
+    "gap_lib": 27,
+    "obsolete": 5
+   },
+   "env": {
+    "layer": "0.3.18",
+    "jars": 708,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "00cdabdc8e0f"
+   },
+   "mods": [
+    [
+     "3dSkinLayers",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "absentbydesign Mod",
+     "1.12.2-1.0.4",
+     "links",
+     "",
+     16,
+     0,
+     [
+      "[layer] model absentbydesign:item/fence_.json uses missing texture block/ (via #texture)",
+      "[layer] model absentbydesign:block/fence__side.json uses missing texture block/ (via #texture)"
+     ]
+    ],
+    [
+     "Actually Additions",
+     "1.12.2-r152",
+     "links",
+     "1 synthesized stub(s)",
+     0,
+     1,
+     []
+    ],
+    [
+     "Actually Unbreaking",
+     "1.12.2-0.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Additional Banners",
+     "1.1.77",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Additional Lanterns",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Backups",
+     "3.7.1",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Rocketry",
+     "2.1.9-2",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V",
+     1,
+     6,
+     [
+      "[layer] model minecraft:block/normal_torch_wall.json uses missing texture block/rebellion/torch/tempered_iron (via #0)"
+     ]
+    ],
+    [
+     "Advanced Wall Climber API",
+     "1.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Advent Of Ascension",
+     "3.3.6",
+     "links",
+     "3 synthesized stub(s)",
+     0,
+     172,
+     []
+    ],
+    [
+     "AE Additions",
+     "1.3.8",
+     "gap_mod",
+     "com.the9grounds.aeadditions.AEAdditionsApi.checkGas(Llegacyconnector.v1_12_2.net.minecraftforge.fluids.Fluid;)Z",
+     0,
+     2,
+     []
+    ],
+    [
+     "Age of Weapons",
+     "0.13.5",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "Ageing Spawners",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "AGS ModernMarkings Mod",
+     "0.2",
+     "links",
+     "",
+     2,
+     0,
+     [
+      "[layer] model ags_modernmarkings:block/floor_marking_model.json names missing texture testium_block",
+      "[layer] model ags_modernmarkings:block/floor_marking_model.json names missing texture marking_nostep"
+     ]
+    ],
+    [
+     "AI Improvements",
+     "0.0.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Akashic Tome",
+     "1.2-12",
+     "links",
+     ""
+    ],
+    [
+     "Alfheim",
+     "1.6",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Allow Offline Players (LAN)",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Ambient Environment",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "AmbientSounds",
+     "3.0",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Ancient Warfare Automation",
+     "1.12.2-2.10.2",
+     "stubs",
+     "11 synthesized stub(s)",
+     0,
+     18,
+     []
+    ],
+    [
+     "AppleSkin",
+     "1.0.14",
+     "links",
+     ""
+    ],
+    [
+     "ArmorHUD",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "ArmorPoints++",
+     "3.1.4",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Artifacts Crafting",
+     "1.0.0-1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "AsmodeusCore",
+     "1.0.5",
+     "gap_mod",
+     "asmodeuscore.core.utils.UtilsGC.hasUnlocks(Llegacyconnector.v1_12_2.net.minecraft.client.entity.EntityPlayerSP;Lmicdoodle8.mods.galacticraft.api.galaxies.SolarSystem;)Z"
+    ],
+    [
+     "AstikorCarts",
+     "1.12.2-0.1.2.8",
+     "links",
+     ""
+    ],
+    [
+     "Async Logger",
+     "2.2.3",
+     "links",
+     ""
+    ],
+    [
+     "Atlas Lib",
+     "1.1.11",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Attribute Fix",
+     "1.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Auto Fast XP",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Auto Third Person",
+     "2.3",
+     "links",
+     ""
+    ],
+    [
+     "AutoPickup",
+     "1.4.20+1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "AutoRegLib",
+     "1.3-32",
+     "links",
+     ""
+    ],
+    [
+     "AzureLib",
+     "1.1.5",
+     "links",
+     ""
+    ],
+    [
+     "B.A.S.E",
+     "3.14.0",
+     "links",
+     "3 synthesized stub(s)",
+     0,
+     2,
+     []
+    ],
+    [
+     "Bad Mobs",
+     "1.1.40",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Bad Wither No Cookie! Reloaded",
+     "1.12.2-3.4.18",
+     "links",
+     ""
+    ],
+    [
+     "Balkon's WeaponMod: Legacy",
+     "1.25.2",
+     "links",
+     ""
+    ],
+    [
+     "Baubley Heart Canisters",
+     "2.0.3",
+     "links",
+     ""
+    ],
+    [
+     "BBS 2",
+     "2.4-1.12.2",
+     "gap_lib",
+     "org.lwjgl.openal.ALC10.alcGetInteger(Lorg.lwjgl.openal.ALCdevice;ILjava.nio.IntBuffer;)V"
+    ],
+    [
+     "BBS FS",
+     "2.8-1.12.2-alpha.1",
+     "gap_lib",
+     "org.lwjgl.openal.AL10.alGetListener(ILjava.nio.FloatBuffer;)V"
+    ],
+    [
+     "BedBreakBegone",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "BehindYouV3",
+     "3.2.2",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Benched",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Better Advancements",
+     "0.1.0.77",
+     "links",
+     ""
+    ],
+    [
+     "Better Biome Blend",
+     "1.12.2-1.2.1-forge",
+     "links",
+     ""
+    ],
+    [
+     "Better Builder's Wands",
+     "0.11.1",
+     "links",
+     ""
+    ],
+    [
+     "Better Chat",
+     "1.5",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Better F3",
+     "1.12.2-1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better F3 Plus",
+     "1.12.2-1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Fusion Reactor for Mekanism",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Better Invisibility",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Better Ping Display",
+     "1.0",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Better Search",
+     "1.6.2",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "Better Sprint",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Better Sprinting",
+     "3.0.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Better Than Mending",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Better Title Screen",
+     "1.4b",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Betterer Biomer Blender",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "BetterFurnaces Reforged",
+     "1.5.5",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "BetterHurtCam",
+     "2.2.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "BetterNightVision",
+     "1.0.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "BetterTabs",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Beyond Dimensions",
+     "0.1.6",
+     "links",
+     ""
+    ],
+    [
+     "BHMenu",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "BiomeInfo",
+     "v1.2.5",
+     "links",
+     ""
+    ],
+    [
+     "Biomes O' Plenty",
+     "7.0.1.2445",
+     "links",
+     "1 synthesized stub(s)",
+     0,
+     9,
+     []
+    ],
+    [
+     "Blood Magic: Alchemical Wizardry",
+     "1.12.2-2.4.3-105",
+     "links",
+     "1 synthesized stub(s)",
+     3,
+     5,
+     [
+      "[layer] model bloodmagic:block/pillar_mid.json names missing texture models/pillar_mid_d",
+      "[layer] model bloodmagic:block/pillar_top.json names missing texture models/pillar_base_d"
+     ]
+    ],
+    [
+     "Bonfires",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Bookshelf",
+     "2.3.590",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Botania",
+     "r1.10-364",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     173,
+     []
+    ],
+    [
+     "Botanic Additions",
+     "12.2.6",
+     "links",
+     ""
+    ],
+    [
+     "BQ Multiblock and Structure Expansion",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "BQTweaker",
+     "1.3.5",
+     "links",
+     ""
+    ],
+    [
+     "Brandon's Core",
+     "2.4.20",
+     "gap_mod",
+     "com.brandon3055.brandonscore.integration.PIHelper.getETGuiKey()Llegacyconnector.v1_12_2.net.minecraft.client.settings.KeyBinding;"
+    ],
+    [
+     "Brigo",
+     "1.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BuildCraft",
+     "8.0.0",
+     "gap_lib",
+     "com.google.common.util.concurrent.Futures.immediateCheckedFuture(Ljava.lang.Object;)Lcom.google.common.util.concurrent.CheckedFuture;",
+     2,
+     9,
+     [
+      "[layer] model buildcraftlib:block/engine_base.json names missing texture _abstract_engine_base_side",
+      "[layer] model buildcraftlib:block/engine_base.json names missing texture _abstract_engine_base_back"
+     ]
+    ],
+    [
+     "BuildCraft Compat",
+     "8.0.0",
+     "gap_lib",
+     "com.google.common.util.concurrent.Futures.immediateCheckedFuture(Ljava.lang.Object;)Lcom.google.common.util.concurrent.CheckedFuture;",
+     2,
+     27,
+     [
+      "[layer] model buildcraftlib:block/engine_base.json names missing texture _abstract_engine_base_side",
+      "[layer] model buildcraftlib:block/engine_base.json names missing texture _abstract_engine_base_back"
+     ]
+    ],
+    [
+     "Cake Chomps",
+     "1.12.2-1.0",
+     "links",
+     ""
+    ],
+    [
+     "CalcMod",
+     "1.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Call to Battle 2",
+     "3.10",
+     "stubs",
+     "12 synthesized stub(s)",
+     0,
+     75,
+     []
+    ],
+    [
+     "Call to Battle Vehicles",
+     "3.10",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "CapeMod",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Capsule",
+     "1.12.2-3.4.76",
+     "links",
+     ""
+    ],
+    [
+     "Carbon Config Library",
+     "1.2.1",
+     "gap_lib",
+     "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
+    ],
+    [
+     "Carry On",
+     "1.12.3",
+     "gap_lib",
+     "com.google.common.base.CharMatcher.JAVA_UPPER_CASE:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Ceiling Torch",
+     "v1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Chain Mining",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Chameleon",
+     "1.12.2-4.1.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Champions",
+     "1.12.2-1.0.11.10",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Chance Cubes",
+     "1.12.2-5.0.2.385",
+     "links",
+     ""
+    ],
+    [
+     "Cherished Worlds",
+     "1.12.2-1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Cherry_on_1.12.2",
+     "1.3.35",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.advancements.Advancement.<init>(Llegacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;Llegacyconnector.v1_12_2.net.minecraft.advancements.Advancement;Llegacyconnector.v1_12_2.net.minecraft.advancements.DisplayInfo;Llegacyconnector.v1_12_2.net.minecraft.advancements.AdvancementRewards;Ljava.util.Map;[[Ljava.lang.String;)V"
+    ],
+    [
+     "ChickenChunks",
+     "2.4.2.74",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Chococraft 3",
+     "0.9.1.52",
+     "links",
+     ""
+    ],
+    [
+     "Chunk Loaders",
+     "1.2.9a",
+     "links",
+     ""
+    ],
+    [
+     "Cinematic Respawn",
+     "1.4.3",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Clear Water",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "Client Tweaks",
+     "3.1.11",
+     "links",
+     ""
+    ],
+    [
+     "Cloudflared",
+     "12.2.3",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Clumps",
+     "3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "CNPC-Gecko-Addon",
+     "1.0",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Coal Explosion",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "CodeChicken Lib",
+     "3.2.3.358",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.getVariantNames(Llegacyconnector.v1_12_2.net.minecraft.item.Item;)Ljava.util.List; (static.instance mismatch)"
+    ],
+    [
+     "CollisionDamage",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Colytra",
+     "1.2.0.4",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Comforts",
+     "1.4.1.3",
+     "gap_mod",
+     "c4.comforts.proxy.CommonProxy.morpheusInit()V"
+    ],
+    [
+     "Comics Bubbles Chat Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "ConfigAnytime",
+     "3.0",
+     "links",
+     ""
+    ],
+    [
+     "Configurable Falls",
+     "0.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Connected Glass",
+     "1.1.14",
+     "gap_mod",
+     "com.supermartijn642.core.generator.ModelGenerator$ElementBuilder.shape(FFIFFF)Lcom.supermartijn642.core.generator.ModelGenerator$ElementBuilder;"
+    ],
+    [
+     "Conquest Reforged",
+     "3.0.2",
+     "links",
+     "3 synthesized stub(s)",
+     842,
+     953,
+     [
+      "[layer] model minecraft:item/chiseled_stonebrick.json uses missing texture block/stonebrick_carved_top (via #down)",
+      "[layer] model minecraft:block/waterlily_4.json uses missing texture block/waterlily_extra (via #west)"
+     ]
+    ],
+    [
+     "Consecration",
+     "1.0.6.1",
+     "gap_mod",
+     "c4.consecration.integrations.ModuleToolbox.isHolyToolbox(Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;)Z",
+     6,
+     0,
+     [
+      "[layer] blockstate consecration:blessed_trail.json names missing model redstone_up",
+      "[layer] blockstate consecration:blessed_trail.json names missing model redstone_side1"
+     ]
+    ],
+    [
+     "Construct's Armory",
+     "1.2.5.10",
+     "links",
+     "1 synthesized stub(s)",
+     21,
+     0,
+     [
+      "[layer] model conarm:model_modifiers.json names missing texture models/modifiers/mod_telekinetic_armor",
+      "[layer] model conarm:model_modifiers.json names missing texture models/modifiers/mod_dexterous_armor"
+     ]
+    ],
+    [
+     "ContentTweaker",
+     "1.12.2-4.10.0",
+     "links",
+     ""
+    ],
+    [
+     "Controlling",
+     "3.0.10",
+     "links",
+     ""
+    ],
+    [
+     "Corail Tombstone",
+     "4.8.0",
+     "gap_shim",
+     "baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Coralreef",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "Corpse Complex",
+     "1.0.12.0",
+     "links",
+     ""
+    ],
+    [
+     "Cosmetic Beds",
+     "1.12.2-1.0.2.2",
+     "links",
+     "1 synthesized stub(s)",
+     1,
+     0,
+     [
+      "[layer] model cosmeticbeds:item/cosmetic_bed.json has missing parent item/bed"
+     ]
+    ],
+    [
+     "Cotesia Glomerata",
+     "1.3.4h1",
+     "gap_mod",
+     "com.dhanantry.scapeandrunparasites.init.SRPBlocks.Gore:Lcom.dhanantry.scapeandrunparasites.block.BlockGore;",
+     0,
+     4,
+     []
+    ],
+    [
+     "CPSDisplay",
+     "2.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Craftify",
+     "1.16.0",
+     "gap_mod",
+     "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
+    ],
+    [
+     "Crafting Tweaks",
+     "8.1.9",
+     "links",
+     ""
+    ],
+    [
+     "CraftPresence",
+     "2.7.1",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Crash Assistant",
+     "1.11.12",
+     "gap_lib",
+     "com.sun.jna.platform.win32.Kernel32.Process32First(Lcom.sun.jna.platform.win32.WinNT$HANDLE;Lcom.sun.jna.platform.win32.Tlhelp32$PROCESSENTRY32$ByReference;)Z"
+    ],
+    [
+     "CreativeCore",
+     "1.10.0",
+     "gap_mod",
+     "com.creativemd.creativecore.client.rendering.model.CreativeBakedQuad.<init>(Llegacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.BakedQuad;Lcom.creativemd.creativecore.client.rendering.RenderCubeObject;IZLlegacyconnector.v1_12_2.net.minecraft.util.EnumFacing;)V"
+    ],
+    [
+     "CT-GUI",
+     "1.0.0",
+     "stubs",
+     "60 synthesized stub(s)"
+    ],
+    [
+     "Ctrl-Q Forge",
+     "1.8",
+     "links",
+     ""
+    ],
+    [
+     "CubicChunks",
+     "1.12.2-0.0.1301.0-SNAPSHOT",
+     "gap_mod",
+     "it.unimi.dsi.fastutil.objects.ObjectArrayList.rem(Ljava.lang.Object;)Z"
+    ],
+    [
+     "Cucumber Library",
+     "1.1.3",
+     "gap_mod",
+     "com.blakebr0.cucumber.guide.GuideEntry.getComponents()Ljava.util.ArrayList;"
+    ],
+    [
+     "Culinary Construct",
+     "1.3.4",
+     "links",
+     ""
+    ],
+    [
+     "Curvy Pipes",
+     "1.15.8",
+     "links",
+     ""
+    ],
+    [
+     "Custom Cursor Mod",
+     "1.2.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Custom FoV",
+     "1.12.2-1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Custom FPS Display",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "Custom Window Title",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Customizable Player Models",
+     "0.6.27a",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Cyclic",
+     "1.20.12",
+     "gap_mod",
+     "com.lothrazar.cyclicmagic.event.EventKeyInput.tryCloseFastbench(Llegacyconnector.v1_12_2.net.minecraftforge.client.event.GuiScreenEvent$KeyboardInputEvent$Pre;Llegacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;)V",
+     0,
+     34,
+     []
+    ],
+    [
+     "Damage Engine",
+     "1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Dark Utilities",
+     "1.8.230",
+     "gap_shim",
+     "baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;",
+     0,
+     34,
+     []
+    ],
+    [
+     "Dawn Of Time : Builder Edition",
+     "1.0.7",
+     "links",
+     "",
+     0,
+     7,
+     []
+    ],
+    [
+     "Decocraft",
+     "2.6.3.7",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "DeepResonance",
+     "1.8.0",
+     "links",
+     ""
+    ],
+    [
+     "Defiled Lands",
+     "1.4.3",
+     "links",
+     "4 synthesized stub(s)",
+     0,
+     5,
+     []
+    ],
+    [
+     "Desired Servers`",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "Devices Mod",
+     "0.4.4",
+     "links",
+     ""
+    ],
+    [
+     "Dimensional Doors",
+     "3.2.2",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraftforge.fml.common.event.FMLPreInitializationEvent.<init>([Ljava.lang.Object;)V",
+     1,
+     4,
+     [
+      "[layer] model dimdoors:item/dimensional_portal.json has missing parent item/missing"
+     ]
+    ],
+    [
+     "Discord Integration",
+     "2.4.7",
+     "links",
+     ""
+    ],
+    [
+     "Distant Horizons",
+     "3.3.3",
+     "gap_lib",
+     "org.lwjgl.PointerBuffer.<init>(Ljava.nio.ByteBuffer;)V"
+    ],
+    [
+     "Doomlike Dungeons",
+     "1.14.17",
+     "links",
+     ""
+    ],
+    [
+     "DoubleSlabs",
+     "0.12.2",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V"
+    ],
+    [
+     "Draconic Evolution",
+     "2.3.28",
+     "gap_mod",
+     "com.brandon3055.draconicevolution.integration.BaublesHelper.getBaubles(Llegacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer;)Ljava.util.List;"
+    ],
+    [
+     "Dramatic Trees",
+     "1.12.2-0.13.6",
+     "stubs",
+     "11 synthesized stub(s)",
+     4,
+     16,
+     [
+      "[layer] model dynamictrees:item/dendropotion.json has missing parent item/bottle_drinkable",
+      "[layer] blockstate dynamictrees:fruitcocoa.json names missing model cocoa_age2_s"
+     ]
+    ],
+    [
+     "Durability Notifier",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Durability Tooltip",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Durability101",
+     "0.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Dynmap",
+     "3.7-beta-4-851",
+     "gap_lib",
+     "com.sun.jna.platform.win32.Sspi$SecBufferDesc.<init>(I[B)V"
+    ],
+    [
+     "e4mc Retro",
+     "1.1.0",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Ears",
+     "2.2.1-c",
+     "links",
+     ""
+    ],
+    [
+     "EasyLAN",
+     "1.5",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "Elevator Mod",
+     "1.4.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Emojiful",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Enchanting Plus",
+     "5.0.179",
+     "links",
+     ""
+    ],
+    [
+     "Enchantment Descriptions",
+     "1.1.20",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "End-Parasitize and Convert All",
+     "0.147",
+     "links",
+     "2 synthesized stub(s)",
+     0,
+     1,
+     []
+    ],
+    [
+     "Ender IO",
+     "5.3.72",
+     "links",
+     "9 synthesized stub(s)",
+     0,
+     6,
+     []
+    ],
+    [
+     "Ender Mail",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "EnderCore",
+     "1.12.2-0.5.78",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "2.4.6.137",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Engineered Schematics",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "Entangled",
+     "1.3.21",
+     "links",
+     ""
+    ],
+    [
+     "EntityDistance",
+     "1.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Environmental Creepers",
+     "1.6.0",
+     "links",
+     ""
+    ],
+    [
+     "Epic Death Screen",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Epic Fight Mod",
+     "1.12.2-2.2.8",
+     "links",
+     ""
+    ],
+    [
+     "Epic Knights: Armor and Weapons",
+     "4.13",
+     "links",
+     "5 synthesized stub(s)",
+     18,
+     2,
+     [
+      "[layer] model magistuarmory:item/wood_chivalrylance_raised.json names missing texture item/wood_chivalrylance",
+      "[layer] model magistuarmory:item/wood_chivalrylance.json names missing texture item/wood_chivalrylance"
+     ]
+    ],
+    [
+     "Equipment Compare",
+     "1.3.3",
+     "gap_shim",
+     "baubles.api.BaubleType.getValidSlots()[I"
+    ],
+    [
+     "Eternal Winter",
+     "1.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "EuphoriaPatcher",
+     "1.10.5-r5.9.3-forgeLegacy",
+     "links",
+     ""
+    ],
+    [
+     "EvergreenHUD",
+     "2.1.7",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "Expanded Equivalence",
+     "12.3.17",
+     "links",
+     ""
+    ],
+    [
+     "experiencebugfix",
+     "1.0.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Extended Crafting",
+     "1.5.6",
+     "links",
+     "",
+     0,
+     2,
+     []
+    ],
+    [
+     "Extra Planets",
+     "1.12.2-0.8.0",
+     "gap_mod",
+     "com.mjr.extraplanets.compatibility.PlanetProgressionCompatibility.isResearched(Llegacyconnector.v1_12_2.net.minecraft.client.entity.EntityPlayerSP;Lmicdoodle8.mods.galacticraft.api.galaxies.CelestialBody;)Z",
+     0,
+     7,
+     []
+    ],
+    [
+     "ExtraLib",
+     "3.0.6",
+     "gap_lib",
+     "com.sun.jna.platform.win32.Sspi$SecBufferDesc.<init>(I[B)V"
+    ],
+    [
+     "ExtraQuests [FTB Quests]",
+     "1.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Extreme Reactors",
+     "1.12.2-0.4.5.68",
+     "links",
+     ""
+    ],
+    [
+     "FancyMenu",
+     "2.14.9",
+     "links",
+     ""
+    ],
+    [
+     "Fantasy Armor",
+     "1.3.2-1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "Fantasy Weapons",
+     "1.0-1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "Faster Ladder Climbing",
+     "0.1-146",
+     "links",
+     ""
+    ],
+    [
+     "FastQuit",
+     "3.0.1+1.12.2forge",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "FeederHelmet",
+     "0.0.0-legacy",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "FermiumASM",
+     "5.31",
+     "stubs",
+     "20 synthesized stub(s)"
+    ],
+    [
+     "FermiumBooter",
+     "1.6.3",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Fex's Vehicle and Transportation Mod",
+     "4.12.xx",
+     "links",
+     "6 synthesized stub(s)",
+     0,
+     18,
+     []
+    ],
+    [
+     "Fexcraft Common Library",
+     "12.xxx",
+     "links",
+     ""
+    ],
+    [
+     "FGSM 1.12.2",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "FindMe",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Finite Water",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "FirmaLife",
+     "0.5.1",
+     "links",
+     "2 synthesized stub(s)",
+     4,
+     2,
+     [
+      "[layer] blockstate firmalife:dead_crop/pumpkin.json names missing model pumpkin_stem_growth6",
+      "[layer] blockstate firmalife:dead_crop/pumpkin.json names missing model pumpkin_stem_growth2"
+     ]
+    ],
+    [
+     "First Aid",
+     "1.6.22",
+     "links",
+     ""
+    ],
+    [
+     "Fluidlogged API",
+     "3.3.3",
+     "stubs",
+     "25 synthesized stub(s)"
+    ],
+    [
+     "FluidTank",
+     "12.5.3",
+     "links",
+     "2 synthesized stub(s)",
+     0,
+     1,
+     []
+    ],
+    [
+     "FluxLoading",
+     "1.4.1",
+     "gap_lib",
+     "org.lwjgl.opengl.GL20.glGetVertexAttrib(IILjava.nio.IntBuffer;)V"
+    ],
+    [
+     "FoamFix",
+     "@VERSION@",
+     "obsolete",
+     "1.12.2 performance/memory patches; not applicable to 1.21.1"
+    ],
+    [
+     "Forestry",
+     "5.8.2.424",
+     "gap_mod",
+     "forestry.core.utils.InventoryUtil.internal_moveOneItemToPipe(Llegacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler;Lforestry.core.tiles.AdjacentTileCache;[Llegacyconnector.v1_12_2.net.minecraft.util.EnumFacing;)Z",
+     12,
+     34,
+     [
+      "[layer] model forestry:item/slabs.json has missing parent block/acacia_slabs",
+      "[layer] model forestry:block/pods/papaya_2.json has missing parent block/cocoa_age2_s"
+     ]
+    ],
+    [
+     "Forestry",
+     "5.8.2.427",
+     "gap_mod",
+     "forestry.core.utils.InventoryUtil.internal_moveOneItemToPipe(Llegacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler;Lforestry.core.tiles.AdjacentTileCache;[Llegacyconnector.v1_12_2.net.minecraft.util.EnumFacing;)Z",
+     12,
+     34,
+     [
+      "[layer] model forestry:item/slabs.json has missing parent block/acacia_slabs",
+      "[layer] model forestry:block/pods/papaya_2.json has missing parent block/cocoa_age2_s"
+     ]
+    ],
+    [
+     "ForeverLoveSword",
+     "0.0.1",
+     "gap_lib",
+     "org.objectweb.asm.AnnotationWriter.<init>(Lorg.objectweb.asm.ClassWriter;ZLorg.objectweb.asm.ByteVector;Lorg.objectweb.asm.ByteVector;I)V",
+     0,
+     1,
+     []
+    ],
+    [
+     "Forge Microblocks",
+     "2.6.2.83",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Forgelin-Continuous",
+     "2.4.20.0",
+     "links",
+     ""
+    ],
+    [
+     "Fossils and Archeology Revival",
+     "8.0.5",
+     "links",
+     "4 synthesized stub(s)",
+     0,
+     25,
+     []
+    ],
+    [
+     "FPS Reducer",
+     "mc1.12.2-1.20",
+     "links",
+     ""
+    ],
+    [
+     "FPSMaster Mod",
+     "v3.2.9",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "Frame Void Patch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Freelook",
+     "0.1.6",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Friendly Fire",
+     "1.5.12",
+     "links",
+     ""
+    ],
+    [
+     "Frikinzi's Fauna",
+     "1.0",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Fugue",
+     "0.25.5",
+     "gap_lib",
+     "org.apache.commons.lang3.JavaVersion.JAVA_22:Lorg.apache.commons.lang3.JavaVersion;"
+    ],
+    [
+     "Fullbright",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Fullscreen Windowed",
+     "1.6.0",
+     "links",
+     ""
+    ],
+    [
+     "Fusion",
+     "1.3.16",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Future MC",
+     "0.2.6",
+     "links",
+     "5 synthesized stub(s)",
+     14,
+     37,
+     [
+      "[layer] model futuremc:item/spruce_wood.json has missing parent block/spruce_bark",
+      "[layer] model futuremc:item/oak_wood.json has missing parent block/oak_bark"
+     ]
+    ],
+    [
+     "FxControl",
+     "0.1.14",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Galactic Research",
+     "1.0.0",
+     "gap_mod",
+     "igentuman.galacticresearch.util.GRHooks.loadCCPeripheralProviders()V"
+    ],
+    [
+     "Galacticraft",
+     "4.0.6",
+     "stubs",
+     "30 synthesized stub(s)",
+     0,
+     26,
+     []
+    ],
+    [
+     "GalaxySpace",
+     "2.2.0",
+     "gap_mod",
+     "micdoodle8.mods.galacticraft.core.fluid.OxygenPressureProtocol.nonPermeableBlocks:Ljava.util.Map;",
+     1,
+     15,
+     [
+      "[layer] model galaxyspace:mattermanipulator.json names missing texture desktop/matter_manipulator"
+     ]
+    ],
+    [
+     "Game Stages",
+     "2.0.123",
+     "links",
+     ""
+    ],
+    [
+     "Get It Together, Drops!",
+     "1.0.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Glassential",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "GlintColorizer",
+     "1.0.2",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Global XP",
+     "v1.4.10",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Glowing Eyes",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "Gnetum",
+     "1.4.3",
+     "gap_lib",
+     "org.lwjgl.opengl.GL30.glClearBuffer(IILjava.nio.FloatBuffer;)V"
+    ],
+    [
+     "GPUTape",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Graphene",
+     "0.2.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Grappling hook mod",
+     "1.12.2-v13",
+     "links",
+     ""
+    ],
+    [
+     "Great Scrollable Tooltips",
+     "4.3.0+forge",
+     "links",
+     ""
+    ],
+    [
+     "Grimoire of Gaia 3",
+     "1.7.2",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     5,
+     []
+    ],
+    [
+     "Growable Ores",
+     "3.0.0-1.12.2-Forge",
+     "links",
+     "",
+     0,
+     9,
+     []
+    ],
+    [
+     "Guide-API",
+     "1.12-2.1.8-63",
+     "links",
+     ""
+    ],
+    [
+     "Had Enough Items",
+     "4.37.3",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "HammerAnimations",
+     "12.2.57.1",
+     "links",
+     ""
+    ],
+    [
+     "HammerLib",
+     "12.2.66",
+     "gap_lib",
+     "org.lwjgl.opengl.GL20.glGetActiveUniform(III)Ljava.lang.String;"
+    ],
+    [
+     "Hammers 3x3!",
+     "2.2",
+     "links",
+     ""
+    ],
+    [
+     "HBM's Nuclear Tech - Community Edition",
+     "2.6.1.0",
+     "gap_shim",
+     "baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;",
+     2,
+     154,
+     [
+      "[layer] model hbm:item/sword_template.json names missing texture minecraft:missingno",
+      "[layer] blockstate hbm:pink_log.json names missing model oak_bark"
+     ]
+    ],
+    [
+     "HBM's Nuclear Tech - Extended Edition",
+     "NTM-Extended-1.12.2-3.0.3",
+     "gap_shim",
+     "baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;",
+     1,
+     133,
+     [
+      "[layer] blockstate hbm:pink_log.json names missing model oak_bark"
+     ]
+    ],
+    [
+     "HBM's Nuclear Tech Mod",
+     "hbm-1.8.4a-G",
+     "stubs",
+     "19 synthesized stub(s)",
+     1,
+     99,
+     [
+      "[layer] blockstate hbm:pink_log.json names missing model oak_bark"
+     ]
+    ],
+    [
+     "healingbed",
+     "1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "HeroesExpansion",
+     "1.12.2-1.3.5",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "Hide Key Binding",
+     "1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "HideArmour",
+     "1.12.1",
+     "links",
+     ""
+    ],
+    [
+     "Highlighter",
+     "1.1.7",
+     "links",
+     ""
+    ],
+    [
+     "Hit Indication",
+     "2.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Homing Ender Eye",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "HT's TreeChop",
+     "0.14.6",
+     "links",
+     ""
+    ],
+    [
+     "Hunger Strike",
+     "1.12-1.0.8",
+     "links",
+     ""
+    ],
+    [
+     "I18nUpdateMod-NLTS Legacy",
+     "0.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Ice and Fire",
+     "1.9.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "IdleTweaks",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "IFPatcher",
+     "2.5.0",
+     "obsolete",
+     "1.12.2 class patcher; not applicable to 1.21.1"
+    ],
+    [
+     "IguanaTweaks Reborn",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Convergence",
+     "1.0.182",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Engineering",
+     "0.12-98",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     1,
+     []
+    ],
+    [
+     "Immersive Fixes 1.12.2",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Railroading",
+     "1.11.0",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Technology",
+     "1.11.215",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Immersive Vehicles (formerly MTS)",
+     "24.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Vehicles Sound Overrides",
+     "1.2",
+     "links",
+     "",
+     0,
+     2,
+     []
+    ],
+    [
+     "Improvable Skills",
+     "12.4.68",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "In-Game Account Switcher",
+     "D7.29 :P",
+     "gap_lib",
+     "com.mojang.util.UUIDTypeAdapter.fromUUID(Ljava.util.UUID;)Ljava.lang.String;"
+    ],
+    [
+     "InControl",
+     "3.9.18",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Industrial Foregoing",
+     "1.12.2-1.12.2",
+     "gap_shim",
+     "baubles.api.BaubleType.HEAD:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Industrial Upgrade",
+     "3.3.0.43",
+     "stubs",
+     "12 synthesized stub(s)",
+     2,
+     1068,
+     [
+      "[layer] model industrialupgrade:item/energy_tools/nano_shield_blocking.json names missing texture item/shield_blocking",
+      "[layer] model industrialupgrade:item/energy_tools/nano_shield_blocking.json names missing texture item/shield_overlay"
+     ]
+    ],
+    [
+     "IndustrialCraft 2",
+     "2.8.222-ex112",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V",
+     0,
+     20,
+     []
+    ],
+    [
+     "IndustrialCraft 2 Classic",
+     "2.8.1001",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "infinitenightvision",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Infinity Water Bucket",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Infinity with Mending",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "IngameIME",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "IngotCraft",
+     "1.12.2-2.1.3-forge",
+     "links",
+     ""
+    ],
+    [
+     "InitialInventory",
+     "2.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Inspirations",
+     "1.12.2-0.2.9",
+     "links",
+     "4 synthesized stub(s)",
+     1,
+     0,
+     [
+      "[layer] model inspirations:block/extended_flower_pot.json has missing parent block/flower_pot_fern"
+     ]
+    ],
+    [
+     "Inventory HUD+",
+     "3.4.4",
+     "links",
+     ""
+    ],
+    [
+     "Inventory Pets",
+     "2.0.15",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "InvHUD_Configurable",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Iron Apples",
+     "1.0.0",
+     "gap_mod",
+     "com.fluffymoment.ironcore.config.IronApplesConfig.diamondAppleEffects:[Ljava.lang.String;"
+    ],
+    [
+     "Iron Barrels",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Iron Core",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Iron Jetpacks",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Item Borders",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Item Collectors",
+     "1.1.12",
+     "links",
+     ""
+    ],
+    [
+     "Item Scroller",
+     "0.15.0-dev.20200918.182509",
+     "links",
+     ""
+    ],
+    [
+     "Item Stages",
+     "2.0.51",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "JAOPCA",
+     "1.12.2-2.3.14.38",
+     "links",
+     ""
+    ],
+    [
+     "JourneyMap",
+     "1.12.2-6.0.10",
+     "gap_lib",
+     "com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;"
+    ],
+    [
+     "JourneyMap WebMap",
+     "1.0.11",
+     "links",
+     ""
+    ],
+    [
+     "Joy of Painting",
+     "1.12.2-1.3",
+     "links",
+     ""
+    ],
+    [
+     "JSON Paintings",
+     "1.5.0",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "Jump Over Fences",
+     "1.12.2-1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Jurassic Reborn",
+     "1.3.4",
+     "stubs",
+     "29 synthesized stub(s)",
+     12,
+     191,
+     [
+      "[layer] model rebornmod:block/psaronius_log_side.json has missing parent block/column_side",
+      "[layer] model rebornmod:block/psaronius_log_petrified_side.json has missing parent block/column_side"
+     ]
+    ],
+    [
+     "Just Enough Botania",
+     "v0.2",
+     "links",
+     ""
+    ],
+    [
+     "Just Enough Items",
+     "4.24.0.1042",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Key Binding Patch",
+     "1.3.3.3",
+     "links",
+     ""
+    ],
+    [
+     "Keystrokes Hippo",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "kinetic anti-cheat",
+     "12.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Konkrete",
+     "1.6.1",
+     "links",
+     ""
+    ],
+    [
+     "Lag'B'Gon Revived",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "LAN Properties",
+     "1.0.0",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "Landmines",
+     "1.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Legendary Item",
+     "24.10.09",
+     "links",
+     ""
+    ],
+    [
+     "Legendary Tooltips",
+     "1.1.9",
+     "links",
+     ""
+    ],
+    [
+     "LemonSkin",
+     "4.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Let Your Friend Eating!",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "letmedespawn",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "LevelHearts",
+     "2.4.0",
+     "links",
+     ""
+    ],
+    [
+     "libnine",
+     "1.2.2",
+     "links",
+     ""
+    ],
+    [
+     "LibrarianLib Stage 2",
+     "4.22",
+     "gap_lib",
+     "org.lwjgl.opengl.GL20.glGetActiveUniform(III)Ljava.lang.String;"
+    ],
+    [
+     "LightAura",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Litematica",
+     "0.0.0-dev.20191217.195055",
+     "stubs",
+     "37 synthesized stub(s)"
+    ],
+    [
+     "Load My Resources",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Loading Progress Bar",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Localized Chat",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "Lomka",
+     "0.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Lootr",
+     "0.6.2",
+     "links",
+     ""
+    ],
+    [
+     "Lost Aether Content",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Lost Souls",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "LoTAS",
+     "2.1.3",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "lsktp",
+     "0.7",
+     "links",
+     ""
+    ],
+    [
+     "Lucraft: Core",
+     "1.12.2-2.4.16",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Macaw's Lights and Lamps",
+     "1.0.6",
+     "links",
+     ""
+    ],
+    [
+     "Macaw's Paintings",
+     "1.0.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Magic Mirror",
+     "1.12.2-0.1.1.427",
+     "links",
+     ""
+    ],
+    [
+     "Mahou Tsukai",
+     "1.12.2-v1.19.54",
+     "links",
+     "2 synthesized stub(s)",
+     0,
+     2,
+     []
+    ],
+    [
+     "MaLiLib",
+     "0.10.0-dev.23.nomixin",
+     "links",
+     ""
+    ],
+    [
+     "Mantle",
+     "0.11.0",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Mantle",
+     "1.12-1.3.3.55",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MapTooltip",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "MAtmos",
+     "1.12.2-36.0.1",
+     "stubs",
+     "13 synthesized stub(s)"
+    ],
+    [
+     "MCglTF",
+     "1.12.2-Forge-2.0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "McJtyLib",
+     "3.5.4",
+     "links",
+     ""
+    ],
+    [
+     "McmodSplashpp",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "McMouser",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Medieval craft",
+     "1.14.4",
+     "links",
+     "",
+     0,
+     4,
+     []
+    ],
+    [
+     "Mekanism",
+     "1.12.2-9.8.3.390",
+     "gap_mod",
+     "mekanism.common.integration.MekanismHooks.loadCCPeripheralProviders()V"
+    ],
+    [
+     "Mekanism Community Edition",
+     "9.12.16",
+     "gap_mod",
+     "mekanism.common.integration.MekanismHooks.loadCCPeripheralProviders()V"
+    ],
+    [
+     "Mekanism: Generators",
+     "1.12.2-9.8.3.390",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mekanism: Tools",
+     "1.12.2-9.8.3.390",
+     "links",
+     ""
+    ],
+    [
+     "MenuFPSUnlocker",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Merge Enchantments",
+     "4.2",
+     "links",
+     ""
+    ],
+    [
+     "Midnight",
+     "0.3.5",
+     "gap_lib",
+     "org.lwjgl.openal.ALC10.alcIsExtensionPresent(Lorg.lwjgl.openal.ALCdevice;Ljava.lang.String;)Z"
+    ],
+    [
+     "MinecraftCapes",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "MineMenu",
+     "1.6.11",
+     "links",
+     ""
+    ],
+    [
+     "MineTogetherServer",
+     "2.4.7",
+     "gap_lib",
+     "com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService.<init>(Ljava.net.Proxy;Ljava.lang.String;)V"
+    ],
+    [
+     "MineTraps",
+     "1.0.4",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "Mini Effects",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "MiniHUD",
+     "0.19.0-dev.20210503.192331",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Mixmetica",
+     "2.1.1",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "MJRLegendsLib",
+     "1.12.2-1.2.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mo' Bends",
+     "1.2.2",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "mobsunscreen",
+     "@version@",
+     "links",
+     ""
+    ],
+    [
+     "Mod Tweaker",
+     "4.0.19",
+     "links",
+     ""
+    ],
+    [
+     "Modern Warfare Cubed",
+     "0.1.9",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.client.shader.Shader.<init>(Llegacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager;Ljava.lang.String;Llegacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer;Llegacyconnector.v1_12_2.net.minecraft.client.shader.Framebuffer;)V",
+     0,
+     5,
+     []
+    ],
+    [
+     "ModernSplash",
+     "1.5.3",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Modification Of Critical Hit",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "ModularUI",
+     "2.4.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ModularUI",
+     "3.1.6",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "ModularWarfare",
+     "2.4.2f",
+     "stubs",
+     "13 synthesized stub(s)"
+    ],
+    [
+     "ModularWarfare",
+     "2024.2.4.6f",
+     "stubs",
+     "22 synthesized stub(s)"
+    ],
+    [
+     "More Bows Restrung",
+     "1.0.10",
+     "links",
+     ""
+    ],
+    [
+     "More Crafting Tables for Forge",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "More Swords Legacy",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "more_avaritia",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "MorePlanets",
+     "2.4.1",
+     "stubs",
+     "18 synthesized stub(s)",
+     9,
+     3,
+     [
+      "[layer] blockstate moreplanets:infected_melon_stem.json names missing model melon_stem_fruit",
+      "[layer] blockstate moreplanets:infected_melon_stem.json names missing model melon_stem_growth7"
+     ]
+    ],
+    [
+     "Morph-o-Tool",
+     "1.2-21",
+     "links",
+     ""
+    ],
+    [
+     "Moving Elevators",
+     "1.4.12",
+     "gap_mod",
+     "com.supermartijn642.core.generator.ModelGenerator$ElementBuilder.shape(FFIFFF)Lcom.supermartijn642.core.generator.ModelGenerator$ElementBuilder;"
+    ],
+    [
+     "MTLib",
+     "3.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Murasame",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Music Player",
+     "2.1.4.375",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "MusicLayer",
+     "12.2.22",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Mutants and Zombies",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "MyServerIsCompatible",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Mysterious Mountain Lib",
+     "2.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mysterium Lib",
+     "1.5.7",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mystical Adaptations",
+     "1.8.8",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Mystical Agradditions",
+     "1.3.2",
+     "links",
+     ""
+    ],
+    [
+     "Mystical Agriculture",
+     "1.7.5",
+     "links",
+     ""
+    ],
+    [
+     "Mystical Agriculture Tiered Crystals",
+     "1.0.1-hotfix",
+     "links",
+     ""
+    ],
+    [
+     "Name Pain",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Narrus Yeetus No Error",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Naruto Chakra Addon",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "NarutoMod",
+     "0.3.1-beta",
+     "stubs",
+     "15 synthesized stub(s)",
+     2,
+     12,
+     [
+      "[layer] model narutomod:custom/mech_nebes2.json has missing parent mech_nebes2",
+      "[layer] model narutomod:custom/mech_nebes1.json has missing parent mech_nebes1"
+     ]
+    ],
+    [
+     "NarutoMod Sharingan Add-on by bybyzyanka",
+     "1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Nature's Compass",
+     "1.8.5",
+     "links",
+     ""
+    ],
+    [
+     "Neat",
+     "1.4-17",
+     "links",
+     ""
+    ],
+    [
+     "Net Music Mod",
+     "1.0.1",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Nether API",
+     "1.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Nether Update",
+     "1.0",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "NetherPortalFix",
+     "5.3.17",
+     "obsolete",
+     "1.7.10 portal fix; use a modern equivalent if wanted"
+    ],
+    [
+     "NeverEnoughAnimations",
+     "1.0.7",
+     "links",
+     ""
+    ],
+    [
+     "No AI Spawn Eggs",
+     "1.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "No LAN Cheating",
+     "v1.2",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "No Poison with Regeneration",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "NoCubes",
+     "1.12.2-0.4.0-pre-2dca66a0",
+     "stubs",
+     "22 synthesized stub(s)"
+    ],
+    [
+     "NoMoreRecipeConflict",
+     "0.15-b2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "NonConflictKeys",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Not Enough Items",
+     "2.4.3",
+     "gap_mod",
+     "mezz.jei.runtime.JeiRuntime.getActiveAdvancedGuiHandlers(Llegacyconnector.v1_12_2.net.minecraft.client.gui.inventory.GuiContainer;)Ljava.util.List;"
+    ],
+    [
+     "Not Enough Pets",
+     "2.4.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Not Enough Wands",
+     "1.8.1",
+     "links",
+     ""
+    ],
+    [
+     "Not So Essential",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "NotEnoughPots",
+     "1.5",
+     "links",
+     "",
+     4,
+     0,
+     [
+      "[layer] model notenoughpots:block/potted_pumpkin_stem.json uses missing texture block/pumpkin_stem_disconnected (via #plant)",
+      "[layer] model notenoughpots:block/potted_melon_stem.json uses missing texture block/melon_stem_disconnected (via #plant)"
+     ]
+    ],
+    [
+     "Notes",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Nothirium",
+     "0.4.9-beta",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "NuclearCraft",
+     "2.19a",
+     "gap_shim",
+     "baubles.api.BaubleType.TRINKET:Lbaubles.api.BaubleType;",
+     0,
+     1,
+     []
+    ],
+    [
+     "Nyf's Spiders",
+     "3.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Obscure Tooltips",
+     "3.10.2",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository$Entry.<init>(Llegacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository;Llegacyconnector.v1_12_2.net.minecraft.client.resources.IResourcePack;)V"
+    ],
+    [
+     "Oceanic Expanse",
+     "1.2.2",
+     "stubs",
+     "12 synthesized stub(s)",
+     0,
+     5,
+     []
+    ],
+    [
+     "Omni",
+     "1.2-OVERHAUL",
+     "links",
+     ""
+    ],
+    [
+     "onekeyminer",
+     "1.5.8",
+     "links",
+     ""
+    ],
+    [
+     "OpenComputers",
+     "1.8.10",
+     "gap_mod",
+     "li.cil.oc.common.EventHandler$.scheduleAE2Add(Lli.cil.oc.common.tileentity.traits.power.AppliedEnergistics2;)V",
+     1,
+     1,
+     [
+      "[layer] model opencomputers:item/flat.json names missing texture missingno"
+     ]
+    ],
+    [
+     "Options Enforcer",
+     "1.4.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Ore Tweaker",
+     "1.0.2-1.12.0",
+     "links",
+     ""
+    ],
+    [
+     "Overworld Quartz",
+     "1.12-1.0.0.1",
+     "links",
+     ""
+    ],
+    [
+     "PackagedAuto",
+     "1.12.2-1.0.24.73",
+     "links",
+     ""
+    ],
+    [
+     "PackagedAvaritia",
+     "1.12.2-1.0.3.25",
+     "links",
+     ""
+    ],
+    [
+     "PackagedDraconic",
+     "1.12.2-1.0.4.24",
+     "links",
+     ""
+    ],
+    [
+     "PackagedExCrafting",
+     "1.12.2-1.0.3.33",
+     "links",
+     ""
+    ],
+    [
+     "Packed Up",
+     "1.1.2",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Packet Fixer",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Pam's HarvestCraft",
+     "1.12.2zb",
+     "links",
+     "1 synthesized stub(s)",
+     0,
+     2,
+     []
+    ],
+    [
+     "Particle Culling",
+     "v1.4.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Patcher",
+     "1.10.4",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository$Entry.<init>(Llegacyconnector.v1_12_2.net.minecraft.client.resources.ResourcePackRepository;Ljava.io.File;)V"
+    ],
+    [
+     "Patchouli",
+     "1.0-23.6",
+     "links",
+     ""
+    ],
+    [
+     "PatPatPat",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Phosphor Crash Fix",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Pickle Tweaks",
+     "2.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Ping!",
+     "3.0.9",
+     "links",
+     ""
+    ],
+    [
+     "PingFix",
+     "3.2.0",
+     "links",
+     ""
+    ],
+    [
+     "PipeBlocker",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Pixelmon TCG",
+     "1.12.2-8.4.3-universal",
+     "links",
+     "6 synthesized stub(s)",
+     4,
+     58,
+     [
+      "[layer] model pixelmon:block/tile.seaweed.json has missing parent block/tallgrass",
+      "[layer] model pixelmon:block/long_grass_bottom.json has missing parent block/tallgrass"
+     ]
+    ],
+    [
+     "Player Plates",
+     "1.12.2-1.3.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Plonk",
+     "10.0.4",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "PMR",
+     "0.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Pokelucky",
+     "6.14.9",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "PolyBlur",
+     "1.0.2",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Polymorph+",
+     "1.4.2+1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "PolySprint",
+     "1.0.2",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "PolyTime",
+     "1.0.2",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "PolyWeather",
+     "1.0.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "PortalDupeBegone",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Potion Descriptions",
+     "1.2.4",
+     "links",
+     ""
+    ],
+    [
+     "Prefab",
+     "1.3.1.7",
+     "links",
+     "",
+     3,
+     0,
+     [
+      "[layer] blockstate prefab:block_granite_slab.json names missing model granite_smooth",
+      "[layer] blockstate prefab:block_diorite_slab.json names missing model diorite_smooth"
+     ]
+    ],
+    [
+     "Prehistoric Nature",
+     "63.02",
+     "stubs",
+     "15 synthesized stub(s)",
+     2,
+     359,
+     [
+      "[layer] model lepidodendron:block/glass_sponge_reef_2.json names missing texture false",
+      "[layer] model lepidodendron:block/glass_sponge_reef_1.json names missing texture false"
+     ]
+    ],
+    [
+     "Project: Vibrant Journeys",
+     "1.6.4",
+     "links",
+     "4 synthesized stub(s)",
+     1,
+     29,
+     [
+      "[layer] blockstate pvj:pvj_cobweb.json names missing model web"
+     ]
+    ],
+    [
+     "Psi",
+     "r1.1-78",
+     "links",
+     "",
+     0,
+     3,
+     []
+    ],
+    [
+     "ptrmodellib",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Purescale",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "PymTech",
+     "1.12.2-1.0.2",
+     "gap_lib",
+     "org.lwjgl.openal.ALC10.alcIsExtensionPresent(Lorg.lwjgl.openal.ALCdevice;Ljava.lang.String;)Z"
+    ],
+    [
+     "Quark",
+     "r1.6-179",
+     "links",
+     "4 synthesized stub(s)",
+     20,
+     8,
+     [
+      "[layer] model quark:block/overrides/observer_powered.json names missing texture block/observer_back_lit",
+      "[layer] model quark:block/custom_flower_pot.json has missing parent block/flower_pot_fern"
+     ]
+    ],
+    [
+     "Quark Oddities",
+     "1",
+     "links",
+     ""
+    ],
+    [
+     "QuarryPlus",
+     "12.5.7",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Random Teleport Mod",
+     "MC1.12.2-1.3.4",
+     "links",
+     ""
+    ],
+    [
+     "Randomizer",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Rare Ice",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "Rats",
+     "3.2.13",
+     "links",
+     "4 synthesized stub(s)",
+     0,
+     2,
+     []
+    ],
+    [
+     "Raw Input - Blessed Edition",
+     "1.8.0",
+     "links",
+     ""
+    ],
+    [
+     "rawOre_on_1.12.2",
+     "1.5.4",
+     "gap_mod",
+     "crazypants.enderio.base.recipe.Recipe.<init>(Lcrazypants.enderio.base.recipe.IRecipeInput;ILcrazypants.enderio.base.recipe.RecipeBonusType;[Lcrazypants.enderio.base.recipe.RecipeOutput;)V",
+     0,
+     1,
+     []
+    ],
+    [
+     "Reach Fix",
+     "1.1.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Realistic Block Physics",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Realistic Explosion Physics",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Realistic Horse Genetics",
+     "1.12.2-1.2.6",
+     "stubs",
+     "13 synthesized stub(s)"
+    ],
+    [
+     "Realistic Physics",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Realistic Torches",
+     "2.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Reborn Core",
+     "3.19.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Rechiseled",
+     "1.2.6a",
+     "links",
+     ""
+    ],
+    [
+     "RecipeStages",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Red Core",
+     "0.7.1",
+     "links",
+     ""
+    ],
+    [
+     "Refined Storage",
+     "1.6.16",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Refined Storage Addons",
+     "0.4.5",
+     "links",
+     ""
+    ],
+    [
+     "Refined Storage Mixin",
+     "1.0.25",
+     "links",
+     ""
+    ],
+    [
+     "RefinedStorageRequestify",
+     "1.12.2-1.0.2-3",
+     "links",
+     ""
+    ],
+    [
+     "Reflex AntiLag",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Regrowth",
+     "0.0.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Relictium",
+     "1.2.0",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "Reliquary",
+     "1.12.2-1.3.4.796",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "RenderLib",
+     "1.4.5",
+     "gap_lib",
+     "org.lwjgl.opengl.GL43.glDebugMessageCallback(Lorg.lwjgl.opengl.KHRDebugCallback;)V"
+    ],
+    [
+     "Replay Mod",
+     "1.12.2-2.6.24",
+     "gap_lib",
+     "java.lang.StringBuilder.append(B)Ljava.lang.StringBuilder;"
+    ],
+    [
+     "Resource Pack Organizer",
+     "1.0.4",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Resourcify",
+     "1.6.2",
+     "links",
+     ""
+    ],
+    [
+     "Responsive Shields",
+     "2.3",
+     "links",
+     ""
+    ],
+    [
+     "Rex's Additional Structures",
+     "2.5.0",
+     "links",
+     ""
+    ],
+    [
+     "RFTools",
+     "7.73",
+     "links",
+     ""
+    ],
+    [
+     "RFTools Control",
+     "2.0.2",
+     "links",
+     ""
+    ],
+    [
+     "RFTools Dimensions",
+     "5.71",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V"
+    ],
+    [
+     "RFToolsPower",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "RLArtifacts",
+     "1.1.2",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "RLFoliage",
+     "2.5.4",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Room For Two",
+     "0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "RoughlyEnoughIDs",
+     "2.3.1",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "RPMTW Update Mod",
+     "1.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "RTS building Build From Above",
+     "1.1.6-1.12.2-port",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Rustic",
+     "1.2.0",
+     "gap_mod",
+     "rustic.common.crafting.CondenserRecipe.matches(Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;[Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;)Z",
+     0,
+     63,
+     []
+    ],
+    [
+     "Sakura",
+     "1.0.7-1.12.2",
+     "gap_mod",
+     "cn.mcmod.sakura.api.recipes.PotRecipes.registerPotmanRecipe(Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;[Ljava.lang.Object;Ljava.util.List;)V",
+     0,
+     11,
+     []
+    ],
+    [
+     "Saplanting",
+     "0.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Saro´s Money Mod",
+     "3.5.1",
+     "links",
+     "",
+     0,
+     2,
+     []
+    ],
+    [
+     "Saro´s Ragdoll",
+     "1.0.0",
+     "links",
+     "",
+     0,
+     1,
+     []
+    ],
+    [
+     "Scaling Health",
+     "1.3.37",
+     "links",
+     ""
+    ],
+    [
+     "Scape and Run Parasites",
+     "1.10.9",
+     "links",
+     "6 synthesized stub(s)",
+     8,
+     24,
+     [
+      "[layer] model srparasites:block/shrouded_glass_pane_post_ends.json has missing parent block/glass_pane_post_ends",
+      "[layer] model srparasites:block/sepia_glass_pane_post_ends.json has missing parent block/glass_pane_post_ends"
+     ]
+    ],
+    [
+     "Scape and Run: Meshi",
+     "2.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Scape and Run: Parasites Extra",
+     "1.9.8",
+     "gap_mod",
+     "com.dhanantry.scapeandrunparasites.init.SRPBlocks.Gore:Lcom.dhanantry.scapeandrunparasites.block.BlockGore;"
+    ],
+    [
+     "Scape and Run: Parasites Meteor",
+     "1.10.7",
+     "links",
+     ""
+    ],
+    [
+     "Scape and Run: Parasites Quark",
+     "1.10.4.2",
+     "links",
+     ""
+    ],
+    [
+     "Scarecrows' Territory",
+     "1.1.12a",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "SCP: Foundation Requisites",
+     "1.22",
+     "links",
+     "",
+     0,
+     7,
+     []
+    ],
+    [
+     "SCP: Lockdown",
+     "2.4.2",
+     "stubs",
+     "61 synthesized stub(s)",
+     0,
+     36,
+     []
+    ],
+    [
+     "Screenshot to Clipboard",
+     "1.12.2-1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Screenshot Viewer",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Scrollable Tooltips",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Search on MCMOD",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "SecurityCraft",
+     "v1.10.1",
+     "stubs",
+     "16 synthesized stub(s)",
+     3,
+     10,
+     [
+      "[layer] model securitycraft:block/reinforced_observer_powered.json uses missing texture block/observer_back_lit (via #south)",
+      "[layer] model securitycraft:block/reinforced_observer_powered.json names missing texture block/observer_back_lit"
+     ]
+    ],
+    [
+     "Serene Seasons",
+     "1.2.18",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ServerRedirect",
+     "1.4.5",
+     "links",
+     ""
+    ],
+    [
+     "ShieldBreak",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "Shoulder Surfing",
+     "2.9.6",
+     "links",
+     ""
+    ],
+    [
+     "ShowMeMyDPS",
+     "1.6-SNAPSHOT",
+     "links",
+     ""
+    ],
+    [
+     "Silent Gear",
+     "0.6.5",
+     "links",
+     ""
+    ],
+    [
+     "Silent Lib",
+     "3.0.13",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Simple Magnets",
+     "1.1.12",
+     "gap_shim",
+     "baubles.api.BaubleType.CHARM:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Simple RPC",
+     "0.0.0-legacy",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Simple Storage Network",
+     "2.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Simple Voice Chat API",
+     "2.6.27",
+     "links",
+     ""
+    ],
+    [
+     "SimpleCore API",
+     "1.7.3.4",
+     "links",
+     ""
+    ],
+    [
+     "SimpleHats",
+     "0.4.1",
+     "gap_shim",
+     "baubles.api.BaubleType.HEAD:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "SimpleOres 2",
+     "1.11.2.2",
+     "links",
+     ""
+    ],
+    [
+     "Simply Tea",
+     "1.6",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Sit",
+     "v1.3",
+     "links",
+     ""
+    ],
+    [
+     "SlashBlade Japanese Addon Pack",
+     "1.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Sledgehammer",
+     "1.12.2-2.0.26",
+     "gap_mod",
+     "io.github.lxgaming.sledgehammer.mixin.armorunder.item.GooPakMixin.onUpdateTickBonusTemperature(Llegacyconnector.v1_12_2.net.minecraft.item.ItemStack;Llegacyconnector.v1_12_2.net.minecraft.world.World;Llegacyconnector.v1_12_2.net.minecraft.entity.Entity;IZ)Z"
+    ],
+    [
+     "SlimyBoyos",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Smart Particles",
+     "12.02.9-Forge",
+     "links",
+     ""
+    ],
+    [
+     "Smooth Third Person Camera (STPC)",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Snad",
+     "1.12.1-1.7.09.16a",
+     "links",
+     ""
+    ],
+    [
+     "Solar Flux Reborn",
+     "12.4.11",
+     "links",
+     "3 synthesized stub(s)",
+     0,
+     1,
+     []
+    ],
+    [
+     "Sound Physics",
+     "7.0",
+     "gap_lib",
+     "org.lwjgl.openal.ALC10.alcGetContextsDevice(Lorg.lwjgl.openal.ALCcontext;)Lorg.lwjgl.openal.ALCdevice;"
+    ],
+    [
+     "Spark Unforged",
+     "1.11.140",
+     "links",
+     ""
+    ],
+    [
+     "Spartan Fire: RLCraft",
+     "1.4.0",
+     "gap_mod",
+     "com.github.alexthe666.iceandfire.item.IafItemRegistry.dragonbone_arrow_fire:Llegacyconnector.v1_12_2.net.minecraft.item.Item;"
+    ],
+    [
+     "Spartan Weaponry",
+     "1.6.1",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     2,
+     []
+    ],
+    [
+     "Spartan Weaponry: Twilight Forest",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "SpeedsterHeroes",
+     "1.12.2-2.2.1",
+     "gap_mod",
+     "lucraft.mods.speedsterheroes.SpeedsterHeroes$Items.earliestTony:Llegacyconnector.v1_12_2.net.minecraft.item.Item;"
+    ],
+    [
+     "SquidNoGlitch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "SRP Addon Immalleable Generator",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "StarSource",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Storage Drawers",
+     "5.5.2",
+     "links",
+     ""
+    ],
+    [
+     "SuperMartijn642's Config Library",
+     "1.1.6",
+     "links",
+     ""
+    ],
+    [
+     "SuperMartijn642's Core Lib",
+     "1.1.26a",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "Surge",
+     "2.0.79",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Sword Blocking Combat",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "Syal's delight",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "tctcore",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "TeamLapen Library",
+     "1.6.2",
+     "links",
+     "6 synthesized stub(s)",
+     0,
+     3,
+     []
+    ],
+    [
+     "Tech Reborn",
+     "2.27.3.1084",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     3,
+     []
+    ],
+    [
+     "Techguns Community Edition",
+     "2.2.0.1",
+     "links",
+     "9 synthesized stub(s)",
+     0,
+     41,
+     []
+    ],
+    [
+     "Tell Me",
+     "0.7.0-dev.20200919.184303",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "TerraCart Reloaded",
+     "1.12.2-1.2.3",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "TerraFirmaCraft",
+     "1.7.23.181",
+     "links",
+     "",
+     0,
+     25,
+     []
+    ],
+    [
+     "TerrariaCraft",
+     "12.6.2",
+     "gap_mod",
+     "com.zeitheron.hammercore.utils.XYZMap.VALUES:Lit.unimi.dsi.fastutil.longs.Long2ObjectMap;"
+    ],
+    [
+     "Tesseract",
+     "1.0.39",
+     "links",
+     ""
+    ],
+    [
+     "TextureFix",
+     "4.0",
+     "links",
+     ""
+    ],
+    [
+     "ThaumicJEI",
+     "1.6.0",
+     "links",
+     ""
+    ],
+    [
+     "The Aether",
+     "1.5.4.1",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "The Aurorian",
+     "1.12.2-Release",
+     "stubs",
+     "17 synthesized stub(s)",
+     0,
+     4,
+     []
+    ],
+    [
+     "The Hordes",
+     "1.6.3e",
+     "links",
+     ""
+    ],
+    [
+     "The Last Smith",
+     "2.3.2-1.12.2",
+     "gap_mod",
+     "cn.mmf.lastsmith.blades.compat.BladeFortressSlashBlade.recipe()V",
+     0,
+     1,
+     []
+    ],
+    [
+     "The Lost Cities",
+     "2.0.22",
+     "links",
+     ""
+    ],
+    [
+     "The One Probe",
+     "1.4.28",
+     "gap_shim",
+     "baubles.api.BaubleType.HEAD:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "Throwable Explosives",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "TimberReplant",
+     "5.0.0",
+     "links",
+     ""
+    ],
+    [
+     "TimeControl",
+     "1.12.2-1.0.0.0-beta",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Complement",
+     "1.12.2-0.4.3",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Construct",
+     "1.12.2-2.13.0.183",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Tinkers' Reforged",
+     "1.5.4",
+     "links",
+     "",
+     0,
+     10,
+     []
+    ],
+    [
+     "Tiny Inv",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Tips",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "TipTheScales",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "TNTUtils",
+     "1.2.4",
+     "links",
+     ""
+    ],
+    [
+     "Toggle Sprint",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Totemic",
+     "1.12.2-0.11.7",
+     "links",
+     "1 synthesized stub(s)",
+     1,
+     0,
+     [
+      "[layer] blockstate totemic:wind_chime.json names missing model hardened_clay_white"
+     ]
+    ],
+    [
+     "TouchController",
+     "0.2.1-beta15",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Tough As Nails",
+     "3.1.0.141",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Track API",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Translocators",
+     "2.5.2.81",
+     "links",
+     ""
+    ],
+    [
+     "Trash Cans",
+     "1.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Trash Compactor",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Traveler's Backpack",
+     "1.0.35",
+     "links",
+     ""
+    ],
+    [
+     "Traverse",
+     "1.6.0",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Trinkets and Baubles",
+     "0.33.4",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;",
+     0,
+     1,
+     []
+    ],
+    [
+     "Tropicraft",
+     "7.1.9.115",
+     "links",
+     "9 synthesized stub(s)",
+     0,
+     10,
+     []
+    ],
+    [
+     "TuffBlocks",
+     "1.1-1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "Tweakeroo",
+     "0.10.0-dev.20201007.231650+optionalmixins.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "TwoPlayersOneHorse",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "U Team Core",
+     "2.2.5.375",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Underground Biomes",
+     "1.3.14",
+     "links",
+     ""
+    ],
+    [
+     "Underlay",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "UniLib",
+     "1.2.1",
+     "gap_mod",
+     "unilib.external.org.slf4j.helpers.MessageFormatter.trimmedCopy([Ljava.lang.Object;)[Ljava.lang.Object;"
+    ],
+    [
+     "Universal Tweaks",
+     "1.21.0",
+     "stubs",
+     "27 synthesized stub(s)"
+    ],
+    [
+     "UniversalModCore",
+     "1.3.1",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "UNU Civilian Vehicles",
+     "6.7.1",
+     "links",
+     ""
+    ],
+    [
+     "UNU Military Vehicles",
+     "6.0.3",
+     "links",
+     ""
+    ],
+    [
+     "UNU Parts Pack",
+     "6.7.3",
+     "links",
+     ""
+    ],
+    [
+     "Useful Slime",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "Valkyrie Lib",
+     "1.12.2-2.1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Valkyrien Skies Core",
+     "1.12.2-1.1.6",
+     "gap_lib",
+     "sun.misc.Unsafe.defineClass(Ljava.lang.String;[BIILjava.lang.ClassLoader;Ljava.security.ProtectionDomain;)Ljava.lang.Class;"
+    ],
+    [
+     "Vampires Need Umbrellas",
+     "1.4",
+     "gap_shim",
+     "baubles.api.BaubleType.HEAD:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "VampirismIntegrations",
+     "vampirism_integrations",
+     "links",
+     ""
+    ],
+    [
+     "VanillaFix",
+     "1.0.10-150",
+     "obsolete",
+     "1.12.2 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "VanillaIcecreamFix",
+     "1.0.5",
+     "obsolete",
+     "1.12.2 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "ViaForge",
+     "4.4.0+4",
+     "gap_lib",
+     "com.mojang.authlib.GameProfileRepository.findProfilesByNames([Ljava.lang.String;Lcom.mojang.authlib.Agent;Lcom.mojang.authlib.ProfileLookupCallback;)V"
+    ],
+    [
+     "Video Player",
+     "2.6",
+     "links",
+     "2 synthesized stub(s)",
+     0,
+     1,
+     []
+    ],
+    [
+     "Village Names",
+     "4.4.13",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "VintageFix",
+     "0.7.2",
+     "gap_lib",
+     "org.spongepowered.asm.mixin.injection.modify.LocalVariableDiscriminator$Context.<init>(Lorg.objectweb.asm.Type;ZLorg.spongepowered.asm.mixin.injection.struct.Target;Lorg.objectweb.asm.tree.AbstractInsnNode;)V"
+    ],
+    [
+     "VM Translation Utility",
+     "5.2.0+mc1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "Void Fog",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Waddles",
+     "0.6.0",
+     "links",
+     ""
+    ],
+    [
+     "Waila",
+     "1.8.26",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Wakes",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Wall-Jump!",
+     "1.3.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "WanionLib",
+     "1.12.2-2.91",
+     "links",
+     ""
+    ],
+    [
+     "Waterflasks",
+     "1.9",
+     "links",
+     ""
+    ],
+    [
+     "WaveyCapes",
+     "@VER@",
+     "links",
+     ""
+    ],
+    [
+     "Wearable Backpacks RLCraft Edition",
+     "3.2.8",
+     "gap_shim",
+     "baubles.api.BaubleType.BODY:Lbaubles.api.BaubleType;"
+    ],
+    [
+     "What Are We Looking At",
+     "2.6.275",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Wireless Chargers",
+     "1.0.10",
+     "links",
+     ""
+    ],
+    [
+     "Wireless Redstone",
+     "1.12.2-1.1.6",
+     "links",
+     ""
+    ],
+    [
+     "WorldEdit",
+     "6.1.10",
+     "gap_shim",
+     "legacyconnector.v1_12_2.net.minecraft.world.WorldServer.<init>(Llegacyconnector.v1_12_2.net.minecraft.server.MinecraftServer;Llegacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler;Llegacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo;ILlegacyconnector.v1_12_2.net.minecraft.profiler.Profiler;)V"
+    ],
+    [
+     "WorldEdit Items",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Wormhole (Portals)",
+     "1.1.17",
+     "gap_mod",
+     "com.supermartijn642.core.generator.ModelGenerator$ElementBuilder.shape(FFIFFF)Lcom.supermartijn642.core.generator.ModelGenerator$ElementBuilder;"
+    ],
+    [
+     "WrapUp",
+     "1.12-1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Wynntils",
+     "1.15.1",
+     "gap_mod",
+     "javazoom.jl.player.advanced.AdvancedPlayer.<init>(Ljava.io.InputStream;)V"
+    ],
+    [
+     "Xaero's Minimap",
+     "24.2.0",
+     "gap_mod",
+     "xaero.map.settings.ModSettings.adjustHeightForCarpetLikeBlocks:Z"
+    ],
+    [
+     "Xaero's Minimap",
+     "26.6.0",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Xaero's World Map",
+     "1.47.0",
+     "gap_mod",
+     "xaero.common.HudMod.getHudConfigs()Lxaero.lib.common.config.channel.ConfigChannel;"
+    ],
+    [
+     "XaeroLib",
+     "1.7.3",
+     "links",
+     ""
+    ],
+    [
+     "XaeroPlus",
+     "200",
+     "gap_mod",
+     "com.google.common.util.concurrent.Futures$FutureCombiner.call(Ljava.util.concurrent.Callable;)Lcom.google.common.util.concurrent.ListenableFuture;"
+    ],
+    [
+     "Xijunmod",
+     "2.2",
+     "links",
+     ""
+    ],
+    [
+     "XNet",
+     "1.8.2",
+     "links",
+     "",
+     0,
+     2,
+     []
+    ],
+    [
+     "XP From Harvest",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "XP Tome",
+     "v2.0.1",
+     "links",
+     ""
+    ],
+    [
+     "YDMs Weaponmaster",
+     "4.2.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Zero CORE",
+     "1.12.2-0.1.2.9",
+     "links",
+     ""
+    ],
+    [
+     "ZMusic",
+     "3.8.2",
+     "links",
+     ""
+    ]
+   ],
+   "assets": {
+    "checked": 647,
+    "modsWithLayerProblems": 36,
+    "layerRefs": 1039,
+    "modsWithOwnProblems": 89,
+    "ownRefs": 4209
+   },
+   "source": "modrinth"
+  },
+  {
    "mc": "1.7.10",
    "date": "2026-11-03",
    "version": "0.3.17",
@@ -18424,6 +22758,3802 @@
     "regressedCount": 0,
     "fixedCount": 0
    }
+  },
+  {
+   "mc": "1.7.10",
+   "date": "2026-11-03",
+   "version": "0.3.18",
+   "counts": {
+    "links": 476,
+    "stubs": 31,
+    "gap_shim": 27,
+    "gap_mod": 51,
+    "gap_lib": 21,
+    "obsolete": 14
+   },
+   "env": {
+    "layer": "0.3.18",
+    "jars": 696,
+    "minecraft": "1.21.1",
+    "neoforge": "21.1.258",
+    "shim": "00cdabdc8e0f"
+   },
+   "mods": [
+    [
+     "Achievement Detection Fix",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Actually Additions",
+     "1.7.10-r21",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Additions to the Outer Rim",
+     "1.0.0",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Advanced Backups",
+     "3.7.1",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Advanced Machines",
+     "59.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Advanced Memory Card",
+     "1.2.0-1.7.10-GTNH",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Advanced Repulsion Systems",
+     "59.0.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Advanced Technology",
+     "0.3.2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Adventure Backpack",
+     "1.7.10-0.8d",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "AE2 Auto Pattern Upload Fork",
+     "ef5af28",
+     "gap_shim",
+     "codechicken.nei.ItemPanel.historyPanel:Lcodechicken.nei.ItemHistoryPanel;"
+    ],
+    [
+     "AE2 Fluid Crafting",
+     "g92699c9",
+     "gap_mod",
+     "com.glodblock.github.common.storage.IStorageFluidCell.getConfigInventory(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Llegacyconnector.v1_7_10.net.minecraft.inventory.IInventory;"
+    ],
+    [
+     "AE2 Probability Pattern",
+     "@version@",
+     "gap_shim",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "AE2 Web Integration",
+     "2.0.0-forge-1.7.10",
+     "gap_mod",
+     "pl.kuba6000.ae2webintegration.ae2interface.mixins.AE2.implementations.AEStackMixin.getDisplayName()Ljava.lang.String;"
+    ],
+    [
+     "Aesthetics",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "AI Improvements",
+     "0.0.1.8",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "akkamaddi's Addenda to Netherrocks",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "akkamaddi's Core API",
+     "1.7.10-2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Alfheim",
+     "67",
+     "gap_mod",
+     "alfheim.common.integration.travellersgear.ITravellersGearSynced.onTravelGearEquip(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "All Stone To Tools",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Alternate Current",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Alternative Chunkloading",
+     "1.4.6",
+     "links",
+     ""
+    ],
+    [
+     "Alternative Stained Glass",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "AlwaysSprint",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "AM2 Playground",
+     "0.12.1",
+     "gap_mod",
+     "ckathode.weaponmod.PhysHelper.createAdvancedExplosion(Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DDDFZZ)Lckathode.weaponmod.AdvancedExplosion;"
+    ],
+    [
+     "An Extra Touch",
+     "0.0.12",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Ancient Warfare Core",
+     "3.0.1-beta-MC1.7.10",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Angelica",
+     "2.2.44",
+     "gap_mod",
+     "com.gtnewhorizons.angelica.compat.bettercrashes.BetterCrashesCompat.register()V",
+     0,
+     2,
+     []
+    ],
+    [
+     "AngelLib",
+     "1.0.0",
+     "gap_lib",
+     "org.lwjgl.openal.AL10.alIsExtensionPresent(Ljava.lang.String;)Z"
+    ],
+    [
+     "AnimFix",
+     "2.2.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Antiquities",
+     "0.2.53",
+     "links",
+     ""
+    ],
+    [
+     "AntMan",
+     "Beta-1.7.10-1.5.4",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "AppleCore",
+     "3.3.13",
+     "links",
+     ""
+    ],
+    [
+     "Aqua Acrobatics",
+     "0.0.6-1-7-10.44+6fc0f073fd-dirty",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "ArchaicFix",
+     "0.8.2",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "ArchaicFix",
+     "V0.7.0fork9-main.1+d07555210c-dirty",
+     "obsolete",
+     "1.7.10 bug-fix/performance patches; not applicable to 1.21.1"
+    ],
+    [
+     "Arda's Uncrafting Table",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Armored Arms",
+     "v1.3.9-1.7.10-release",
+     "gap_mod",
+     "xonin.backhand.api.core.BackhandUtils.isUsingOffhand(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)Z"
+    ],
+    [
+     "Aroma1997DimensionFix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Ars Magica 2",
+     "1.6.7",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Ashenwheat",
+     "1.7.10-1.2.4",
+     "gap_mod",
+     "akkamaddi.ashenwheat.code.agricraft.AgriAkkamaddiCrop.getBlock()Llegacyconnector.v1_7_10.net.minecraft.block.Block;"
+    ],
+    [
+     "asielib",
+     "0.5.2",
+     "gap_mod",
+     "pl.asie.lib.chat.ChatHandlerEiraIRC.eiraircRelay(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP;Ljava.lang.String;Ljava.lang.String;)V"
+    ],
+    [
+     "ASJCore",
+     "1.7.0.3",
+     "gap_lib",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "ASMC",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Astraeus' Mercy",
+     "1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Audino",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Auto Third Person",
+     "2.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Auto Torch",
+     "1.10.0",
+     "links",
+     ""
+    ],
+    [
+     "AutoFood",
+     "59.0.0",
+     "links",
+     ""
+    ],
+    [
+     "AzureLib",
+     "1.1.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "B0bGary's Growable Ores",
+     "2.5.4",
+     "links",
+     ""
+    ],
+    [
+     "Back To New",
+     "r1.0.0",
+     "links",
+     "2 synthesized stub(s)",
+     1,
+     40,
+     [
+      "[layer] model backtonew:block/sculk_vein.json has missing parent effect"
+     ]
+    ],
+    [
+     "Backhand",
+     "1.7.10",
+     "gap_mod",
+     "xonin.backhand.client.ClientTickHandler.invTweaksSwapPatch()V"
+    ],
+    [
+     "Bad Mobs",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Baka Danmaku",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Balkon's WeaponMod: Legacy",
+     "1.25.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BareRuins Mod",
+     "1",
+     "links",
+     ""
+    ],
+    [
+     "Baubles Expanded",
+     "2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "BC Builders",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Energy",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Factory",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Robotics",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Silicon",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BC Transport",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "Beddium",
+     "1.2.5-j8",
+     "gap_lib",
+     "org.lwjgl.PointerBuffer.getPointerSize()I"
+    ],
+    [
+     "Better Builder's Wands",
+     "0.8.1",
+     "links",
+     ""
+    ],
+    [
+     "Better Caves",
+     "1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Better Command",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Foliage - Legacy Edition",
+     "1.2.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Better Gamemode",
+     "1.4.0",
+     "links",
+     ""
+    ],
+    [
+     "Better HeroPack Reloading",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Line Break",
+     "1.0.1",
+     "gap_mod",
+     "kpan.b_line_break.asm.core.MyTextifier.buf:Ljava.lang.StringBuffer;"
+    ],
+    [
+     "Better Loading Screen",
+     "1.3.10",
+     "obsolete",
+     "1.7.10 loading screen; NeoForge has its own"
+    ],
+    [
+     "Better Ping",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Search",
+     "1.6.2",
+     "gap_shim",
+     "codechicken.nei.api.API.addSearchProvider(Lcodechicken.nei.SearchTokenParser$ISearchParserProvider;)V"
+    ],
+    [
+     "Better Sprinting",
+     "2.3.0",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Better Thunder",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Better Title Screen",
+     "1.7.10-1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BetterWithPatches",
+     "0.6.16",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "BHMenu",
+     "2.4.7",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Bigger Crafting Tables",
+     "1.7.10-1.7",
+     "links",
+     ""
+    ],
+    [
+     "Binnie Core",
+     "2.0.22.7",
+     "gap_mod",
+     "binnie.botany.api.IAlleleFlowerSpecies.getName()Ljava.lang.String;"
+    ],
+    [
+     "Biome ID Extender",
+     "1.0a",
+     "links",
+     ""
+    ],
+    [
+     "Biome Stats",
+     "v1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Biomes O' Plenty",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Blahaj",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Block Blocker",
+     "1.4.3",
+     "links",
+     ""
+    ],
+    [
+     "Block Replacer",
+     "v1.3",
+     "links",
+     ""
+    ],
+    [
+     "Blood Magic: Alchemical Wizardry",
+     "v1.3.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Blood Particles",
+     "1.8.0",
+     "links",
+     ""
+    ],
+    [
+     "Bob Fluid Translator",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "boihm",
+     "a58",
+     "links",
+     ""
+    ],
+    [
+     "Bookshelf",
+     "1.0.4.187",
+     "links",
+     ""
+    ],
+    [
+     "BOP Integrations",
+     "1.7.3",
+     "links",
+     ""
+    ],
+    [
+     "Botania",
+     "r1.8-249",
+     "links",
+     ""
+    ],
+    [
+     "Bouncing Balls",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Brandon's Core",
+     "1.0.0.12",
+     "links",
+     ""
+    ],
+    [
+     "Budding Polar",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "BugTorch",
+     "1.3.1",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "BuildCraft",
+     "7.1.27",
+     "links",
+     ""
+    ],
+    [
+     "BuildCraft Compat",
+     "7.1.9",
+     "gap_mod",
+     "buildcraft.compat.CompatHooksImpl.getInjectableBluePower(Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;)Lbuildcraft.api.transport.IInjectable;"
+    ],
+    [
+     "Campfire Backport",
+     "1.7.10-1.11.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Carbon Config Library",
+     "1.1.3",
+     "gap_lib",
+     "com.mojang.util.UUIDTypeAdapter.fromString(Ljava.lang.String;)Ljava.util.UUID;"
+    ],
+    [
+     "CartLoad",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Cat Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CatFrame",
+     "0.10.11",
+     "links",
+     "3 synthesized stub(s)",
+     63,
+     0,
+     [
+      "[layer] model minecraft:block/piston_extended.json uses undefined texture variable #side",
+      "[layer] model minecraft:block/redstone_dust_up_west.json uses missing texture minecraft:block/redstone_dust_line (via #line)"
+     ]
+    ],
+    [
+     "CatFrame",
+     "0.9.0",
+     "links",
+     "1 synthesized stub(s)",
+     74,
+     0,
+     [
+      "[layer] model minecraft:block/redstone_dust_up_west.json uses missing texture minecraft:block/redstone_dust_line (via #line)",
+      "[layer] model minecraft:block/redstone_dust_up_south.json uses missing texture minecraft:block/redstone_dust_line (via #line)"
+     ]
+    ],
+    [
+     "Cauldron++",
+     "1.1.0-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "ChaoticKarma",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Chest DNA",
+     "1.03q",
+     "links",
+     ""
+    ],
+    [
+     "ChickenChunks",
+     "1.3.4.19",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ChocoCraft Plus",
+     "4.5.10",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Chronos Backups",
+     "@VERSION@",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ChunkAPI",
+     "0.8.4",
+     "stubs",
+     "21 synthesized stub(s)"
+    ],
+    [
+     "Cinematic Respawn",
+     "1.4.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Classic Oceans",
+     "1.7.10-1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Classical Alchemy",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Clienthax's ChocoCraft",
+     "4.1.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Cloud Storage",
+     "59.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Cloudflared",
+     "1.0.0",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "CobaltMod",
+     "1.5.7.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Colorful Health Bar",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Colorful Mobs",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Command Modification",
+     "2.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Common Capabilities",
+     "26.10.31.1",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Compact F3 Plus",
+     "1.1.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CompatLib",
+     "1.7.10",
+     "gap_lib",
+     "org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V"
+    ],
+    [
+     "ComputerCraft",
+     "1.75",
+     "links",
+     ""
+    ],
+    [
+     "Config Backuper",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "ContentTweaker",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Controlling",
+     "1.7.10-1.0.0.4",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Cosmetic Armor",
+     "1.0.5",
+     "links",
+     ""
+    ],
+    [
+     "CPM OSC Compat",
+     "1.6.1",
+     "gap_mod",
+     "com.tom.cpm.shared.animation.AnimationState.localState:Lcom.tom.cpm.shared.animation.ServerAnimationState;"
+    ],
+    [
+     "Craftable Bedrock v3.1",
+     "3.1",
+     "links",
+     ""
+    ],
+    [
+     "Craftable Creatures",
+     "1.1.7",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Craftable Horse Armour [CHA&S]",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Craftable Saddles",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "CraftPresence",
+     "2.7.1",
+     "stubs",
+     "16 synthesized stub(s)"
+    ],
+    [
+     "Crampedness",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Crash Assistant",
+     "1.11.12",
+     "gap_lib",
+     "java.awt.Window.getPeer()Ljava.awt.peer.ComponentPeer;"
+    ],
+    [
+     "CreateWorldUI",
+     "7.1.1",
+     "gap_mod",
+     "decok.dfcdvadstf.createworldui.api.DifficultyLocker.applyToWorldData(Llegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;)V"
+    ],
+    [
+     "CreeperConfetti",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "CrNOBr",
+     "0.0.2",
+     "links",
+     ""
+    ],
+    [
+     "CrossTie",
+     "1.0.0-SNAPSHOT",
+     "gap_mod",
+     "com.gtnewhorizons.angelica.glsm.GLStateManager.glDisable(I)V"
+    ],
+    [
+     "Ctyrka4 Addon for Traincraft",
+     "1.6",
+     "links",
+     ""
+    ],
+    [
+     "Curvy Pipes",
+     "1.15.12",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Custom Cursor Mod",
+     "1.2.2",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Customizable Player Models",
+     "0.6.27a",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "CustomizedLore",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPC+",
+     "1.11.1",
+     "stubs",
+     "28 synthesized stub(s)"
+    ],
+    [
+     "CustomNPC+ DBC Addon",
+     "1.2.1",
+     "gap_mod",
+     "JinRyuu.DragonBC.common.DBCConfig.MysticKaiokenOn:Z"
+    ],
+    [
+     "CustomNPC-Plus-AW-Addon",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "CustomNPC-Plus-Gecko-Addon",
+     "1.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "CustomNPCs Crafting View",
+     "b79a52f-1-7-10+b79a52f239-dirty",
+     "links",
+     ""
+    ],
+    [
+     "CustomSaveDirs",
+     "0.0.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Cute Mob Models",
+     "1.0.9",
+     "stubs",
+     "10 synthesized stub(s)"
+    ],
+    [
+     "CutePuppyMod",
+     "0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Cybersus",
+     "1.0",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "DangerRPG",
+     "1.1.4",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Darkerer",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "DCS Recipes",
+     "1.7.9.5",
+     "gap_mod",
+     "JinRyuu.JRMCore.JRMCoreCliTicH.lockOn:Llegacyconnector.v1_7_10.net.minecraft.entity.EntityLivingBase;"
+    ],
+    [
+     "Deathly Hallows",
+     "1.1.5",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "DeeperCaves",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "DeepResonance",
+     "1.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Dimensional Anchors",
+     "59.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Dirt Tools and Armor",
+     "24.07.19",
+     "links",
+     ""
+    ],
+    [
+     "Divine Intervention",
+     "NO-GIT-TAG-SET",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "DivineRPG",
+     "1.4.2",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "DonutAntiESP",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Draconic Evolution",
+     "1.0.2h",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Block Apollo Bridge",
+     "ver. 1.3.1 build #20",
+     "links",
+     ""
+    ],
+    [
+     "Dragon Block Apollo Client",
+     "ver. 1.3.1 build #20",
+     "stubs",
+     "66 synthesized stub(s)"
+    ],
+    [
+     "Dragon Mounts",
+     "r41-1.7.10",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Drama Generator: Ruby Edition Splash",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Dynamic Surroundings",
+     "1.0.9.0",
+     "gap_lib",
+     "org.lwjgl.openal.ALC10.alcGetInteger(Lorg.lwjgl.openal.ALCdevice;ILjava.nio.IntBuffer;)V"
+    ],
+    [
+     "DynamicLights Patch",
+     "0.0.1",
+     "links",
+     ""
+    ],
+    [
+     "e4mc Retro",
+     "1.0.2",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "Ears",
+     "1.4.7",
+     "links",
+     ""
+    ],
+    [
+     "EasyLAN",
+     "1.5",
+     "stubs",
+     "19 synthesized stub(s)"
+    ],
+    [
+     "Edit Mob Drops",
+     "1.4.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Effortless Building Gadgets",
+     "0.10.1",
+     "gap_mod",
+     "net.mellow.effortless.blocks.IConsumableStack.getAE2Stack(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Lnet.mellow.effortless.blocks.PlaceableStack;I)Lnet.mellow.effortless.blocks.IConsumableStack;"
+    ],
+    [
+     "Electrical Age - jrddunbr's build",
+     "1.24.6",
+     "links",
+     "8 synthesized stub(s)"
+    ],
+    [
+     "Elytra Mining",
+     "1.2.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "EMI",
+     "1.1.24-beta1",
+     "gap_shim",
+     "codechicken.nei.LayoutManager.bookmarksButton:Lcodechicken.nei.ButtonCycled;",
+     7,
+     3,
+     [
+      "[layer] model c:tag/item/record.json names missing texture minecraft:record_stal",
+      "[layer] model c:tag/item/record.json names missing texture minecraft:record_13"
+     ]
+    ],
+    [
+     "Enchanting Plus",
+     "3.0.2-d",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Enchantment ID Extender",
+     "1.0a",
+     "links",
+     ""
+    ],
+    [
+     "Ender Utilities",
+     "0.5.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Ender Zoo : Patched",
+     "1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "EnderStorage",
+     "1.4.7.37",
+     "links",
+     ""
+    ],
+    [
+     "EndlessIDs",
+     "1.7.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Entity Culling Unofficial",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Entity Render Extender",
+     "1.0c",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "EntityCulling",
+     "@VER@",
+     "links",
+     ""
+    ],
+    [
+     "EnviroMine",
+     "1.3.132",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "EnviroMine",
+     "1.3.148-FINAL kotmatross edition",
+     "gap_mod",
+     "com.hbm.handler.radiation.ChunkRadiationHandlerSimple$SimpleRadiationPerWorld.radiation:Ljava.util.HashMap;"
+    ],
+    [
+     "Environmental Creepers",
+     "174ef7d",
+     "links",
+     ""
+    ],
+    [
+     "Essentia Pipes",
+     "1.7.10-v1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Et Futurum Requiem",
+     "2.6.2",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Euphoria Companion",
+     "2.0.2",
+     "gap_mod",
+     "eclipse.euphoriacompanion.integration.NEIIntegration.getVisibleItems()Ljava.util.List;"
+    ],
+    [
+     "Euphoria Patcher",
+     "_1.10.5",
+     "links",
+     ""
+    ],
+    [
+     "Expanded Armory: Legacy",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Extra Planets",
+     "1.7.10-2.1.4",
+     "links",
+     "1 synthesized stub(s)",
+     0,
+     9,
+     []
+    ],
+    [
+     "Extra Player Renderer",
+     "1.0.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ExtraButtons",
+     "1.7.10.1",
+     "links",
+     ""
+    ],
+    [
+     "Extreme Sound Muffler Legacy",
+     "1.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Eyes in the Shadows",
+     "0.0.3",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "F3 + F4 Gamemode Switcher for Older Versions",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Factorization Miscellaneous Nonsense",
+     "0.8.109",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "FalsePatternLib",
+     "1.12.2",
+     "links",
+     ""
+    ],
+    [
+     "FalseTweaks",
+     "4.4.5",
+     "gap_mod",
+     "it.unimi.dsi.fastutil.objects.Object2IntMap.forEach(Lit.unimi.dsi.fastutil.objects.ObjectIntBiConsumer;)V"
+    ],
+    [
+     "FarLands",
+     "1.0.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "farlands",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "FiskTag",
+     "3.0",
+     "gap_mod",
+     "mods.battlegear2.client.utils.BattlegearRenderHelper.moveOffHandArm(Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;Llegacyconnector.v1_7_10.net.minecraft.client.model.ModelBiped;F)V",
+     0,
+     121,
+     []
+    ],
+    [
+     "Flaxbeard's Steam Power",
+     "0.29.3",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "FlenixRoads",
+     "0.10.0",
+     "links",
+     ""
+    ],
+    [
+     "Floocraft",
+     "1.7.10-1.7",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Fluxed-Core",
+     "1.0.9",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Flying Cullers",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "FoamFix",
+     "@VERSION@",
+     "obsolete",
+     "1.12.2 performance/memory patches; not applicable to 1.21.1"
+    ],
+    [
+     "Food Addition",
+     "2.4",
+     "links",
+     ""
+    ],
+    [
+     "ForeverLoveSword",
+     "0.0.0-legacy",
+     "gap_lib",
+     "org.objectweb.asm.AnnotationWriter.next:Lorg.objectweb.asm.AnnotationWriter;"
+    ],
+    [
+     "Forge Essentials",
+     "7.5.3",
+     "gap_lib",
+     "com.google.common.base.CharMatcher.WHITESPACE:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Forge Essentials Client Addon",
+     "7.5.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Forge Microblocks",
+     "1.2.0.345",
+     "links",
+     ""
+    ],
+    [
+     "Forgelin",
+     "2.0.3-GTNH",
+     "links",
+     ""
+    ],
+    [
+     "Forgelin 2",
+     "2.4.3-2.4.10",
+     "links",
+     ""
+    ],
+    [
+     "Forgotten Relics",
+     "1.7.4",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Fossils and Archeology Revival",
+     "7.3.2",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "FPS Reducer",
+     "mc1.7.10-1.10.3",
+     "links",
+     ""
+    ],
+    [
+     "FreeCam by Zergatul",
+     "2.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Freedom",
+     "1779",
+     "links",
+     ""
+    ],
+    [
+     "Freef's Bible",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Friendly Fire",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Frustrator",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Futurepack",
+     "18.7 pre",
+     "gap_lib",
+     "sun.reflect.ReflectionFactory.newConstructorAccessor(Ljava.lang.reflect.Constructor;)Lsun.reflect.ConstructorAccessor;"
+    ],
+    [
+     "Game of Thrones",
+     "24.08.29",
+     "stubs",
+     "67 synthesized stub(s)"
+    ],
+    [
+     "Gear Swap",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "GeckoLib",
+     "3.0.30",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Get Ya' Tanks Here",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Goblins Legacy",
+     "1.06",
+     "links",
+     ""
+    ],
+    [
+     "Golden Glitter",
+     "1.7.10-1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Graduated Cylinders",
+     "3.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Gravity Torch",
+     "v1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Greg Caves",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Gregtech: New Horizons Customizer",
+     "v0.17.0",
+     "gap_mod",
+     "xonin.backhand.api.core.BackhandUtils.getOffhandSlot(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;)I"
+    ],
+    [
+     "Grimoire of Gaia 3",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "GTNH Lib",
+     "0.11.56",
+     "gap_mod",
+     "com.gtnewhorizon.gtnhlib.util.ItemUtil.getDSUIO(Ljava.lang.Object;)Lcom.gtnewhorizon.gtnhlib.capability.item.ItemIO;"
+    ],
+    [
+     "GTNN",
+     "v1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Guide-API",
+     "1.7.10-1.0.1-29",
+     "links",
+     ""
+    ],
+    [
+     "Hadite Coal",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "HandMadeGunsOverdrive",
+     "1.0.0",
+     "stubs",
+     "12 synthesized stub(s)"
+    ],
+    [
+     "Hardcore Ender Expansion",
+     "1.8.6",
+     "gap_shim",
+     "chylex.hee.gui.helpers.AnimatedFloat.startAnimation(FFFZ)V"
+    ],
+    [
+     "Hardcore Wither",
+     "1.1.3",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "HavenCore Custom Transformations Public Distribution",
+     "NO-GIT-TAG-SET",
+     "gap_mod",
+     "JinRyuu.DragonBC.common.Npcs.EntityAura.<init>(Llegacyconnector.v1_7_10.net.minecraft.world.World;Ljava.lang.String;IFFIZF)V"
+    ],
+    [
+     "HBM Panic Injector Mod",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Hbm's Nuclear Tech",
+     "1.0.27 BETA (5687)",
+     "gap_mod",
+     "com.hbm.handler.ae2.AE2CompatHandler.registerHandler()V"
+    ],
+    [
+     "HBM-NTM-1-of-90-Edition",
+     "1.0.27 BETA (5687)",
+     "gap_mod",
+     "api.ntm1of90.compat.ae2.AE2CompatTest.testAE2Integration()V"
+    ],
+    [
+     "HexText",
+     "1.3",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Hodgepodge",
+     "2.7.222",
+     "obsolete",
+     "1.7.10 bug-fix patches; not applicable to 1.21.1"
+    ],
+    [
+     "Hotbar Auto Fill",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "HQM Keybind",
+     "1.7.10-A2",
+     "links",
+     ""
+    ],
+    [
+     "Hunger Strike",
+     "1.7.10.4",
+     "links",
+     ""
+    ],
+    [
+     "IC2 Additions",
+     "0.9.0",
+     "gap_mod",
+     "ic2.core.IHasGui.getGui(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Z)Llegacyconnector.v1_7_10.net.minecraft.client.gui.GuiScreen;"
+    ],
+    [
+     "IC2C UU-Matter",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "ID Conflicts Viewer",
+     "1.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Immersive Cavegen",
+     "1.2g-hotfix5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Immersive Engineering Blueprint Tweaker",
+     "1.1.3",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Railroading",
+     "1.11.0",
+     "links",
+     ""
+    ],
+    [
+     "Immersive Snow",
+     "1.0b",
+     "links",
+     ""
+    ],
+    [
+     "Immibis Core",
+     "59.1.4",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Immibis's Peripherals",
+     "59.0.3",
+     "links",
+     ""
+    ],
+    [
+     "Improving Minecraft",
+     "1.12.3-MC1.7.10",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "In-Game Account Switcher",
+     "D7.29 :P",
+     "gap_lib",
+     "com.mojang.util.UUIDTypeAdapter.fromUUID(Ljava.util.UUID;)Ljava.lang.String;"
+    ],
+    [
+     "IndustrialCraft 2 Classic",
+     "2.2.999",
+     "gap_mod",
+     "ic2.core.util.AddonModifier.modifyForestry()V"
+    ],
+    [
+     "InfiniStack",
+     "1.1.0-beta2",
+     "gap_mod",
+     "ic2.core.network.DataEncoder.readVarInt(Ljava.io.DataInputStream;)I"
+    ],
+    [
+     "InfiniTubes",
+     "59.0.5",
+     "links",
+     ""
+    ],
+    [
+     "Infinity Water Bucket",
+     "2.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "InfiView",
+     "alpha1",
+     "gap_lib",
+     "org.lwjgl.opengl.ARBDebugOutput.glDebugMessageCallbackARB(Lorg.lwjgl.opengl.ARBDebugOutputCallback;)V"
+    ],
+    [
+     "IngameIME",
+     "1.7.10-1.0.0-RC3",
+     "gap_mod",
+     "com.dhj.ingameime.control.AbstractControl.writeCurrentScreenTextNEI(Ljava.lang.String;)Z"
+    ],
+    [
+     "InputMethodBlocker",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Instant Blocks",
+     "1.5.5",
+     "links",
+     ""
+    ],
+    [
+     "Invasion Mod",
+     "1.2.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Inventory Pets",
+     "1.5.2",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "Iron Chests",
+     "6.1.13",
+     "gap_shim",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "Iron Tanks",
+     "1.2.0+mc1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "IronMan",
+     "1.7.10-1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Item Frame Remover",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "Item Scroller",
+     "0.12.0-alpha.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ItemInformationDisplay Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "ItemPhysic",
+     "1.3.1 kotmatross edition",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "JAOPCA",
+     "1.7.10-W.0.8.32",
+     "links",
+     ""
+    ],
+    [
+     "JAOPCAGT5",
+     "1.7.10-1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "JAOPCASingularities",
+     "1.7.10-W.0.1.3",
+     "links",
+     ""
+    ],
+    [
+     "JarJar",
+     "0.3.7-beta",
+     "stubs",
+     "71 synthesized stub(s)"
+    ],
+    [
+     "Jerry's Mod",
+     "1.7.10.2",
+     "links",
+     "",
+     0,
+     18,
+     []
+    ],
+    [
+     "JFMUY",
+     "26.10.31.0",
+     "gap_shim",
+     "codechicken.nei.VisiblityData.showBookmarkPanel:Z"
+    ],
+    [
+     "JourneyMap",
+     "1.7.10-6.0.8",
+     "gap_lib",
+     "com.google.common.io.Files.fileTreeTraverser()Lcom.google.common.collect.TreeTraverser;"
+    ],
+    [
+     "JourneyMap WebMap",
+     "1.0.11",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Keyboard Wizard",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "kinetic anti-cheat",
+     "7.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Kingdom Keys",
+     "0.7.0.1.7.10",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Kingdom | Regions",
+     "5.0",
+     "links",
+     ""
+    ],
+    [
+     "kTFRUAddon",
+     "test-MC1710",
+     "gap_mod",
+     "cn.kuzuanpa.ktfruaddon.api.tile.structure.IMappedStructure.getTileEntity(Llegacyconnector.v1_7_10.net.minecraft.util.ChunkCoordinates;)Llegacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity;"
+    ],
+    [
+     "LagGoggles",
+     "4.17.0",
+     "obsolete",
+     "1.12.2 profiler; use Spark"
+    ],
+    [
+     "LandOfSignals",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Leaf Culling",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "Legendary Item",
+     "24.10.09",
+     "links",
+     ""
+    ],
+    [
+     "Legends Mod",
+     "8.6.2",
+     "gap_lib",
+     "com.mojang.authlib.GameProfileRepository.findProfilesByNames([Ljava.lang.String;Lcom.mojang.authlib.Agent;Lcom.mojang.authlib.ProfileLookupCallback;)V"
+    ],
+    [
+     "Let's Encrypt Craft",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "LinearXP",
+     "1.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Liquid XP",
+     "59.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Loading Progress Bar",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Lomka",
+     "0.7.0",
+     "links",
+     ""
+    ],
+    [
+     "Loot Beams backport",
+     "1.0.1-clientside",
+     "links",
+     ""
+    ],
+    [
+     "LoTAS",
+     "1.0.0",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.server.integrated.IntegratedServer.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Ljava.lang.String;Ljava.lang.String;Llegacyconnector.v1_7_10.net.minecraft.world.WorldSettings;)V"
+    ],
+    [
+     "LOTR Kings Addon",
+     "1.4.1W-serveronly",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "lsktp",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Lucraft: World",
+     "1.7.10-1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Lumi",
+     "1.2.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "lwjgl3ify",
+     "3.0.42",
+     "obsolete",
+     "runs 1.7.10 on LWJGL 3 / modern Java; 1.21.1 already does"
+    ],
+    [
+     "Lycanites Mobs",
+     "1.13.0.5 - MC 1.7.10",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "m2paxel",
+     "2.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Machines",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Magia Naturalis",
+     "0.5.0",
+     "links",
+     "6 synthesized stub(s)"
+    ],
+    [
+     "Manaita",
+     "1.7.10-0.1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ManaMetalMod",
+     "8.0.8",
+     "gap_shim",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "Mantle",
+     "1.7.10-0.3.2.jenkins191",
+     "links",
+     ""
+    ],
+    [
+     "MAtmos",
+     "1.7.10-36.0.1",
+     "stubs",
+     "28 synthesized stub(s)"
+    ],
+    [
+     "MatterOverdrive: Community Edition",
+     "0.4.5",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "MC Helicopter Overdrive+",
+     "d4e3692",
+     "gap_shim",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "MCInstance Loader",
+     "2.8",
+     "links",
+     ""
+    ],
+    [
+     "McMouser",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Mekanism",
+     "9.1.1",
+     "gap_mod",
+     "mekanism.common.integration.MekanismHooks.registerAE2P2P()V"
+    ],
+    [
+     "Mekanism Community Edition",
+     "9.10.51",
+     "gap_mod",
+     "mekanism.common.integration.MekanismHooks.registerAE2P2P()V"
+    ],
+    [
+     "MekanismGenerators",
+     "9.1.1",
+     "links",
+     ""
+    ],
+    [
+     "MekanismTools",
+     "9.1.1",
+     "links",
+     ""
+    ],
+    [
+     "MiddleEarth Tweaks",
+     "1.6.21",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "Mine & Blade Battlegear 2",
+     "1.0.8.1",
+     "stubs",
+     "17 synthesized stub(s)"
+    ],
+    [
+     "Mine Trading Cards",
+     "3.1.4",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "MineCamera",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "MinecraftCapes",
+     "@MOD_VERSION",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MineLights",
+     "2.3.8",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "MineMenu",
+     "1.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Minemoticon",
+     "51385c9-snapshot",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Mineralogy",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "MineTweaker 3",
+     "3.1.0",
+     "links",
+     ""
+    ],
+    [
+     "MixinBooterLegacy",
+     "1.1.2",
+     "obsolete",
+     "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "MixinConBooter-Legacy",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "MMMTweaks",
+     "0.0.7",
+     "links",
+     ""
+    ],
+    [
+     "Mo' Creatures Legacy",
+     "1.2",
+     "gap_lib",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Mo' Glowstone",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Mob Drop Ores",
+     "mc1.7.10-v1.1",
+     "links",
+     ""
+    ],
+    [
+     "Mob Health Bar",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Mob Stacker",
+     "1",
+     "links",
+     ""
+    ],
+    [
+     "Mobs no render",
+     "0.4",
+     "links",
+     ""
+    ],
+    [
+     "MobsInfo",
+     "0.6.2",
+     "gap_shim",
+     "com.kuba6000.mobsinfo.nei.MobHandler$MobCachedRecipe.containsWithNBT(Ljava.util.Collection;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)Z"
+    ],
+    [
+     "Mod Tweaker 2",
+     "0.9.6",
+     "gap_mod",
+     "mekanism.common.recipe.RecipeHandler$Recipe.SOLAR_EVAPORATION_PLANT:Lmekanism.common.recipe.RecipeHandler$Recipe;"
+    ],
+    [
+     "ModernKeyBinding",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "ModernMarkings",
+     "0.3.13-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "ModernSplash",
+     "1.3.1",
+     "gap_lib",
+     "org.lwjgl.opengl.SharedDrawable.<init>(Lorg.lwjgl.opengl.Drawable;)V"
+    ],
+    [
+     "Modular UI 2",
+     "2.3.94-1.7.10",
+     "gap_shim",
+     "codechicken.nei.LayoutManager.searchField:Lcodechicken.nei.SearchField;"
+    ],
+    [
+     "More Bows Restrung",
+     "1.0.10",
+     "links",
+     ""
+    ],
+    [
+     "More Planets",
+     "1.4.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "More Plates",
+     "1.2.0.2",
+     "links",
+     ""
+    ],
+    [
+     "More Swords 3",
+     "3.0.0d",
+     "links",
+     ""
+    ],
+    [
+     "more_avaritia Mod",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "MorePlayerModels+",
+     "4.2",
+     "gap_lib",
+     "com.mojang.authlib.minecraft.MinecraftSessionService.getTextures(Lcom.mojang.authlib.GameProfile;Z)Ljava.util.Map;"
+    ],
+    [
+     "Multishot",
+     "3.1.2",
+     "links",
+     ""
+    ],
+    [
+     "Muya Mod",
+     "1.11.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "My Coordinates Mod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Mycelium",
+     "2.3",
+     "links",
+     ""
+    ],
+    [
+     "MyFriends",
+     "1.1.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Mystcraft",
+     "0.12.3.04",
+     "gap_mod",
+     "com.xcompwiz.mystcraft.client.gui.GuiBook.<init>(Llegacyconnector.v1_7_10.net.minecraft.entity.player.InventoryPlayer;B)V"
+    ],
+    [
+     "MysteriumLib",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Naruto Destination Mod",
+     "1.36.1",
+     "links",
+     "9 synthesized stub(s)"
+    ],
+    [
+     "Native Nicknames",
+     "1.1.0+1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Nature's Compass",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "NBArmors Mod",
+     "3.1",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "NBTStructureLib",
+     "0.9.3",
+     "links",
+     ""
+    ],
+    [
+     "Neat",
+     "GRADLE:VERSION-GRADLE:BUILD",
+     "links",
+     ""
+    ],
+    [
+     "Neat",
+     "1.0.6 kotmatross edition",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Nekorelay",
+     "0.0.24",
+     "links",
+     ""
+    ],
+    [
+     "NemexLib",
+     "1.8",
+     "links",
+     ""
+    ],
+    [
+     "Neo ECO AE Extension",
+     "7.3.6",
+     "gap_shim",
+     "cn.dancingsnow.neoecoae.platform.ae2.multiblock.IAECluster.destroy()V",
+     0,
+     19,
+     []
+    ],
+    [
+     "Neodymium Unofficial",
+     "0.4.3-unofficial",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Netherite 1.7.10",
+     "1.2",
+     "links",
+     ""
+    ],
+    [
+     "Netherrocks",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Never Enough Candy",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "NeverEnoughAnimations",
+     "1.0.8",
+     "links",
+     ""
+    ],
+    [
+     "Newposts",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "NGE",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Night Vision",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Nilcord",
+     "2.4.2.1+1.7.10+forge",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Ninja's Cash",
+     "2.1",
+     "links",
+     ""
+    ],
+    [
+     "Ninjin Entities",
+     "1.2.7.4",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Ninjin Entities Unofficial",
+     "0.0.0-legacy",
+     "gap_mod",
+     "JinRyuu.DragonBC.common.DBCConfig.AaiDisabled:Z"
+    ],
+    [
+     "Ninjin Knockback mod for DBC",
+     "1.2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "No Leaf Decay",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "No Mob Latency",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "No Mob Spawning On Plants",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "NoOpenToLAN",
+     "1.0.1-mixinless",
+     "links",
+     ""
+    ],
+    [
+     "NoSwim",
+     "0.1",
+     "links",
+     ""
+    ],
+    [
+     "Not Enough Pets",
+     "2.4.1",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Not Enough Wands",
+     "1.2.3",
+     "links",
+     ""
+    ],
+    [
+     "NotEnoughIDs",
+     "2.1.11",
+     "obsolete",
+     "1.7.10 ID limit extender; 1.21.1 has no ID limits"
+    ],
+    [
+     "Notes",
+     "1.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "NovaCraft",
+     "1.5.0",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "NTM Fluid Converters",
+     "Release-1.3.0-main.11+b686318233",
+     "links",
+     ""
+    ],
+    [
+     "NTM: Space",
+     "1.0.27 BETA (5852)",
+     "gap_mod",
+     "com.hbm.handler.ae2.AE2CompatHandler.registerHandler()V"
+    ],
+    [
+     "Numerical Tab Ping",
+     "1.0.0-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "OAuth",
+     "1.1.13",
+     "obsolete",
+     "1.7.10 Microsoft login helper; not needed"
+    ],
+    [
+     "Offhand Lights",
+     "1.6",
+     "gap_mod",
+     "com.gtnewhorizons.angelica.dynamiclights.DynamicLights.getLuminanceFromItemStack(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Z)I"
+    ],
+    [
+     "OK Progressions",
+     "26.10.31.0",
+     "gap_shim",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "Omniconfig",
+     "1.0.1",
+     "gap_lib",
+     "com.google.common.base.CharMatcher.JAVA_LETTER_OR_DIGIT:Lcom.google.common.base.CharMatcher;"
+    ],
+    [
+     "Omniwand",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "OpenComputers",
+     "1.8.10",
+     "gap_mod",
+     "li.cil.oc.common.EventHandler$.scheduleAE2Add(Lli.cil.oc.common.tileentity.traits.power.AppliedEnergistics2;)V"
+    ],
+    [
+     "Optimizations and Tweaks",
+     "0.8.7.4.2",
+     "gap_shim",
+     "astrotibs.notenoughpets.util.SkinVariations.catSkinArray:[[Llegacyconnector.v1_7_10.net.minecraft.util.ResourceLocation;"
+    ],
+    [
+     "Options Enforcer",
+     "1.4",
+     "links",
+     ""
+    ],
+    [
+     "Ore Control",
+     "0.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Ore Tweaker",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "OreDictDumper",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "PacketWard",
+     "@VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "Painted Biomes",
+     "0.5.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Paradigm",
+     "2.5.3",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.scoreboard.Scoreboard.<init>()V"
+    ],
+    [
+     "PassthroughSigns",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "PatPatPat",
+     "1.0.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "PC Compat",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Pebbles Begone",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "PersonalSpace",
+     "1.0.41",
+     "gap_mod",
+     "me.eigenraven.personalspace.PersonalSpaceMod.removeAe2Meteors()V"
+    ],
+    [
+     "Pets Mod",
+     "0.7.9",
+     "gap_lib",
+     "com.mojang.authlib.GameProfileRepository.findProfilesByNames([Ljava.lang.String;Lcom.mojang.authlib.Agent;Lcom.mojang.authlib.ProfileLookupCallback;)V"
+    ],
+    [
+     "PickleTweaks",
+     "1.5",
+     "links",
+     ""
+    ],
+    [
+     "Pineapple Psychic",
+     "@VERSION@",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "pineapple_tags",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "Ping",
+     "1.0.3",
+     "links",
+     ""
+    ],
+    [
+     "PingDisplay",
+     "0.1",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "Planetoid",
+     "0.9.10",
+     "links",
+     ""
+    ],
+    [
+     "Plonk",
+     "10.0.4",
+     "links",
+     ""
+    ],
+    [
+     "Pokecube Adventures",
+     "0.1.0",
+     "stubs",
+     "19 synthesized stub(s)"
+    ],
+    [
+     "Pokepatch",
+     "1.3.4b",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ponysocks",
+     "2.0",
+     "links",
+     ""
+    ],
+    [
+     "Power Drop",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Primal",
+     "0.20.0",
+     "gap_shim",
+     "codechicken.nei.api.API.hideItem(Ljava.lang.String;)V"
+    ],
+    [
+     "ProjectE Team",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "PSWM-Fix (Deprecated, please remove)",
+     "1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "PTRModelLib",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Purescale",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "PvP Utilities",
+     "0.2.0",
+     "links",
+     ""
+    ],
+    [
+     "QueQiao",
+     "0.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Quit",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Ragex's Nuclear Tech",
+     "3.3_X1000",
+     "stubs",
+     "12 synthesized stub(s)"
+    ],
+    [
+     "RainbowWorld",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Raw Input",
+     "1.4.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "RawInput",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Re: Translator 3",
+     "3",
+     "links",
+     ""
+    ],
+    [
+     "Re:Chests",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Realistic Torches",
+     "1.6.3",
+     "links",
+     ""
+    ],
+    [
+     "RealisticUlities",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "RealStars",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "RebornCore",
+     "1.1.0.15",
+     "links",
+     ""
+    ],
+    [
+     "Recurrent Complex",
+     "0.9.7.1.2",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "RedLogic",
+     "59.1.13",
+     "links",
+     ""
+    ],
+    [
+     "Reflex AntiLag",
+     "1.1.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Render Hider",
+     "4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "ReSiever",
+     "1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "resistancex",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Resource Engineering",
+     "1.7.10-2.0.113",
+     "links",
+     ""
+    ],
+    [
+     "Resource Pack Organizer",
+     "1.0.2",
+     "stubs",
+     "12 synthesized stub(s)"
+    ],
+    [
+     "RFDrills",
+     "1.7.3",
+     "links",
+     ""
+    ],
+    [
+     "RFTools",
+     "4.23",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.client.multiplayer.WorldClient.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.world.WorldSettings;ILlegacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty;Llegacyconnector.v1_7_10.net.minecraft.profiler.Profiler;)V"
+    ],
+    [
+     "Right Proper GUI Scale",
+     "2.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Right Proper Lighting Engine",
+     "2.2.4",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Right Proper MCPatcher",
+     "0.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Road Stuff",
+     "1.0.3-final",
+     "links",
+     ""
+    ],
+    [
+     "Ruins Mod Fastcraft",
+     "15.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "rulecraftcharacters",
+     "1.0.2",
+     "links",
+     ""
+    ],
+    [
+     "Salis Arcana",
+     "v2.10.0",
+     "gap_mod",
+     "dev.rndmorris.salisarcana.client.handlers.SalisContainerInputHandler.register()V"
+    ],
+    [
+     "SaltyMod Expanded",
+     "2.0.0-master.150+9a0954aa6f",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Salutation",
+     "1.0.0",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Santa's Decor",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Santa's Toys",
+     "0.4",
+     "links",
+     ""
+    ],
+    [
+     "Schematica Plus",
+     "1.0.0-beta.4",
+     "gap_shim",
+     "codechicken.nei.NEIClientConfig.getWorldPath()Ljava.lang.String;"
+    ],
+    [
+     "Search on MCMOD",
+     "0.1.0",
+     "links",
+     ""
+    ],
+    [
+     "SecurityCraft",
+     "v1.8.13",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "SeedCopy",
+     "1.1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "SEKWAH41's Naruto Mod",
+     "0.5.2",
+     "stubs",
+     "14 synthesized stub(s)"
+    ],
+    [
+     "Serene Seasons",
+     "1.2.18",
+     "gap_lib",
+     "org.objectweb.asm.commons.MethodRemapper.<init>(ILjava.lang.String;Lorg.objectweb.asm.MethodVisitor;Lorg.objectweb.asm.commons.Remapper;)V"
+    ],
+    [
+     "Server Tree Feller",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "ServerRedirect",
+     "1.4.5",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "ServerUtilities",
+     "2.4.22",
+     "gap_mod",
+     "serverutils.integration.navigator.ClaimsLocation.getChunkX()I"
+    ],
+    [
+     "Shader Fixer",
+     "5.5-FINAL",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Shoulder Surfing",
+     "2.3.2",
+     "links",
+     ""
+    ],
+    [
+     "Simple Arsenic and Old Lace",
+     "1.7.10-1.5.0",
+     "links",
+     ""
+    ],
+    [
+     "Simple Cobalt",
+     "1.7.10-1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "Simple Cthon",
+     "1.7.10-1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Simple Pings",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Simple Recycling",
+     "59.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Simple Storage",
+     "1.8.2",
+     "gap_shim",
+     "codechicken.nei.api.API.registerBookmarkContainerHandler(Ljava.lang.Class;Lcodechicken.nei.api.IBookmarkContainerHandler;)V"
+    ],
+    [
+     "Simple Tungsten",
+     "1.7.10-1.5.5",
+     "links",
+     ""
+    ],
+    [
+     "SimpleOres 2",
+     "1.6.1.4",
+     "links",
+     ""
+    ],
+    [
+     "Sit",
+     "v1.1",
+     "links",
+     ""
+    ],
+    [
+     "Skin3DLayers",
+     "1.0.13",
+     "links",
+     ""
+    ],
+    [
+     "Sleeping Server Stopper Mod",
+     "3.0.1-1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Slimevoid Library",
+     "2.0.4.7",
+     "links",
+     ""
+    ],
+    [
+     "Smart Particles",
+     "1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "Smooth Third Person Camera (STPC)",
+     "2.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Sodacan Swows",
+     "01.00.00",
+     "links",
+     ""
+    ],
+    [
+     "Soft Deepslate",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "SpongeMixins Loader",
+     "1.2.0",
+     "obsolete",
+     "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "SpongeMixins Loader",
+     "2.0.1",
+     "obsolete",
+     "1.7.10 mixin loader; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "SquidNoGlitch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Stack Fix",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "StarBounded",
+     "0.0.5",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "starsource",
+     "0.0.0-legacy",
+     "links",
+     ""
+    ],
+    [
+     "StatTweaker",
+     "0.0.0-legacy",
+     "gap_mod",
+     "alexsocol.asjlib.ExtensionsKt.setSize(Llegacyconnector.v1_7_10.net.minecraft.entity.Entity;DD)V"
+    ],
+    [
+     "Statues Mod",
+     "2.2.1",
+     "links",
+     ""
+    ],
+    [
+     "StatuesMod Fix",
+     "1.0b",
+     "links",
+     ""
+    ],
+    [
+     "Steam Bridge",
+     "1.2+mc1.7.10",
+     "stubs",
+     "16 synthesized stub(s)"
+    ],
+    [
+     "StereoCraft: Stereoscopic 3D",
+     "0.3.0",
+     "gap_mod",
+     "com.gtnewhorizons.angelica.glsm.GLStateManager.glMatrixMode(I)V"
+    ],
+    [
+     "Sterling and Black",
+     "1.7.10-1.5.2",
+     "links",
+     ""
+    ],
+    [
+     "Stop Minimizing on Focus Loss",
+     "0.1.0+1.7.10-forge",
+     "links",
+     ""
+    ],
+    [
+     "Storage Drawers",
+     "1.7.10-1.10.9",
+     "links",
+     ""
+    ],
+    [
+     "Storage Drawers",
+     "2.2.31-GTNH",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Structure Finder",
+     "1.3.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Structure Memory",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Super Sound Muffler: Legacy",
+     "1.2.3",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "SwanSong",
+     "1.3.7",
+     "gap_mod",
+     "com.hbm.render.shader.Shader.stop()V"
+    ],
+    [
+     "TabbyChat",
+     "1.12.2",
+     "stubs",
+     "15 synthesized stub(s)"
+    ],
+    [
+     "TabFaces",
+     "1.0.16",
+     "stubs",
+     "19 synthesized stub(s)"
+    ],
+    [
+     "Tails Legacy",
+     "4.0.3+1.7.10-forge",
+     "links",
+     "3 synthesized stub(s)"
+    ],
+    [
+     "TC4 Tweak",
+     "1.5.43",
+     "links",
+     ""
+    ],
+    [
+     "TechReborn",
+     "0.7.21.1131",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "Teletubbies",
+     "0.5.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Tell Me",
+     "0.2.6a",
+     "links",
+     ""
+    ],
+    [
+     "Telomerase Addon",
+     "1.1.2",
+     "links",
+     "1 synthesized stub(s)",
+     1,
+     0,
+     [
+      "[layer] model teloaddon:items/tools/chainsaw.json names missing texture block/chainsaw"
+     ]
+    ],
+    [
+     "TerraFirmaCraft",
+     "0.79.29",
+     "stubs",
+     "37 synthesized stub(s)"
+    ],
+    [
+     "TerraFirmaCraft_TFRU",
+     "0.80.10",
+     "stubs",
+     "35 synthesized stub(s)"
+    ],
+    [
+     "TFC Aged Booze",
+     "0.3",
+     "links",
+     ""
+    ],
+    [
+     "TFC+ Aesthetics",
+     "1.8.2",
+     "links",
+     ""
+    ],
+    [
+     "TFC+ Tweaker",
+     "@MOD_VERSION@",
+     "links",
+     ""
+    ],
+    [
+     "TFCPlus Bids",
+     "0.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft 4 : Patched",
+     "1.6.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft Integration",
+     "0.5",
+     "links",
+     ""
+    ],
+    [
+     "Thaumcraft NEI Plugin : Patched",
+     "1.0.0.4",
+     "links",
+     ""
+    ],
+    [
+     "ThaumcraftAltarCull",
+     "77d2309",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Additions",
+     "0.41",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Thaumic Boots",
+     "1.3.1.2",
+     "gap_mod",
+     "thaumicboots.main.utils.compat.EMTHelper.getItems()V"
+    ],
+    [
+     "Thaumic Concilium",
+     "1.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Thaumic Industries 2 : Core",
+     "1.6.1",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Insurgence",
+     "0.0.2.6",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Insurgence",
+     "0.2.6",
+     "links",
+     ""
+    ],
+    [
+     "Thaumic Renaissance",
+     "1.5.2.2",
+     "links",
+     ""
+    ],
+    [
+     "ThaumicHorizons",
+     "1.8.28",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "ThaumicThermae",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "The Aether",
+     "v1.1.2.5",
+     "links",
+     "4 synthesized stub(s)",
+     0,
+     50,
+     []
+    ],
+    [
+     "The Last Sword You Will Ever Need Mod",
+     "1.35",
+     "links",
+     ""
+    ],
+    [
+     "The Middle Torch",
+     "1.0.9",
+     "links",
+     ""
+    ],
+    [
+     "The Plugin Mod",
+     "5.3",
+     "links",
+     ""
+    ],
+    [
+     "The Rings of Power",
+     "24.07.19",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "The Spice of Life - Carrot Edition",
+     "2.2.12-carrot",
+     "gap_mod",
+     "squeek.spiceoflife.compat.NEICompat.updateTooltipCache(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "The Titans Mod",
+     "0.425",
+     "stubs",
+     "22 synthesized stub(s)"
+    ],
+    [
+     "The Useful Tools Mod",
+     "2.3.1+mc.1.7.10.forge",
+     "links",
+     ""
+    ],
+    [
+     "The Vegan Option",
+     "0.2.2",
+     "links",
+     "5 synthesized stub(s)"
+    ],
+    [
+     "TileEntity Reset Fix",
+     "1.0.1-noreq",
+     "links",
+     ""
+    ],
+    [
+     "Tinkers' Construct",
+     "1.7.10-1.8.8.build988",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Tinkers' Mechworks",
+     "0.2.15.106",
+     "links",
+     ""
+    ],
+    [
+     "TipTheScales",
+     "1.0.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "Titanpower",
+     "1.6.7",
+     "links",
+     ""
+    ],
+    [
+     "TNTimer",
+     "3.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Toggle Sneak&Sprint",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Tooltip Creator",
+     "1.7.10-1.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Torch Key",
+     "1.0.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "ToroHealth Damage Indicators",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Totemic",
+     "1.7.10-0.7.1",
+     "links",
+     "2 synthesized stub(s)"
+    ],
+    [
+     "TpSetHome",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Track API",
+     "1.3",
+     "links",
+     ""
+    ],
+    [
+     "Translocator",
+     "1.1.2.16",
+     "links",
+     ""
+    ],
+    [
+     "True Window",
+     "1.0.1",
+     "gap_lib",
+     "com.sun.jna.platform.WindowUtils$W32WindowUtils.getProcessFilePath(Lcom.sun.jna.platform.win32.WinDef$HWND;)Ljava.lang.String;"
+    ],
+    [
+     "TShirts",
+     "1.1",
+     "links",
+     ""
+    ],
+    [
+     "Tubestuff",
+     "59.0.4",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Uncrafted Mod",
+     "2.2.0",
+     "links",
+     ""
+    ],
+    [
+     "Underp Hangables",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "Unicode Fix",
+     "1.3.2",
+     "links",
+     ""
+    ],
+    [
+     "UniDict",
+     "1.7.10-2.9.2",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "UniLib",
+     "1.2.1",
+     "gap_mod",
+     "unilib.external.org.slf4j.helpers.MessageFormatter.trimmedCopy([Ljava.lang.Object;)[Ljava.lang.Object;"
+    ],
+    [
+     "UniMixins",
+     "0.3.1",
+     "obsolete",
+     "1.7.10 mixin loader component; NeoForge 1.21.1 ships its own Mixin"
+    ],
+    [
+     "Universal Config",
+     "1.1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "UniversalModCore",
+     "1.3.1",
+     "stubs",
+     "33 synthesized stub(s)"
+    ],
+    [
+     "V-Tweaks",
+     "1.4",
+     "links",
+     ""
+    ],
+    [
+     "VeryLegacyZoomer",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Village Names",
+     "4.4.13",
+     "links",
+     "7 synthesized stub(s)"
+    ],
+    [
+     "Vintage Damage Indicators",
+     "0.9.4",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.client.entity.EntityClientPlayerMP.<init>(Llegacyconnector.v1_7_10.net.minecraft.client.Minecraft;Llegacyconnector.v1_7_10.net.minecraft.world.World;Llegacyconnector.v1_7_10.net.minecraft.util.Session;Llegacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient;Llegacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter;)V"
+    ],
+    [
+     "VOS",
+     "1.0",
+     "stubs",
+     "16 synthesized stub(s)"
+    ],
+    [
+     "Waila Events",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "Waila Inhibitors",
+     "1.1.0",
+     "links",
+     ""
+    ],
+    [
+     "WanionLib",
+     "1.7.10-1.8",
+     "links",
+     ""
+    ],
+    [
+     "WarTech Reforged Compatibility",
+     "1.3.0-dev-hbm5751",
+     "gap_mod",
+     "com.hbm.explosion.ExplosionChaos.igniteAllBlocks(Llegacyconnector.v1_7_10.net.minecraft.world.World;IIIII)V"
+    ],
+    [
+     "watermod",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "Waystones-X",
+     "1.0.16",
+     "links",
+     "4 synthesized stub(s)"
+    ],
+    [
+     "What Are We Looking At",
+     "1.3.1",
+     "links",
+     ""
+    ],
+    [
+     "Where Are The Ores?",
+     "1.1.1",
+     "links",
+     ""
+    ],
+    [
+     "Windows Keyboard Fixes",
+     "1.0.1",
+     "links",
+     ""
+    ],
+    [
+     "WitcheryPatch",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "World Primer",
+     "0.5.0",
+     "links",
+     ""
+    ],
+    [
+     "World Stripper",
+     "1.0.0",
+     "links",
+     ""
+    ],
+    [
+     "World-Tooltips",
+     "1.2.3-87 kotmatross edition",
+     "links",
+     ""
+    ],
+    [
+     "WorldEdit",
+     "6.1.1",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "WorldEdit",
+     "6.3.0",
+     "links",
+     ""
+    ],
+    [
+     "Worley's Caves",
+     "1.6",
+     "links",
+     ""
+    ],
+    [
+     "Xaero's Minimap",
+     "21.10.44",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "Xaero's Minimap",
+     "21.10.40",
+     "stubs",
+     "11 synthesized stub(s)"
+    ],
+    [
+     "Xaero's World Map",
+     "1.14.1.33",
+     "stubs",
+     "23 synthesized stub(s)"
+    ],
+    [
+     "xCraft",
+     "2.1.0",
+     "links",
+     ""
+    ],
+    [
+     "Xenofactions",
+     "1.0.2.2",
+     "gap_shim",
+     "codechicken.nei.api.API.addRecipeCatalyst(Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;Ljava.lang.String;)V"
+    ],
+    [
+     "YDMs Weaponmaster",
+     "4.2.4",
+     "links",
+     ""
+    ],
+    [
+     "Yeth's TPA",
+     "1.1.0",
+     "links",
+     "1 synthesized stub(s)"
+    ],
+    [
+     "Zelda Sword Skills",
+     "1.7.10-2.5.1",
+     "gap_mod",
+     "mods.battlegear2.api.core.BattlegearUtils.setPlayerOffhandItem(Llegacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer;Llegacyconnector.v1_7_10.net.minecraft.item.ItemStack;)V"
+    ],
+    [
+     "Zombie Plague Mod 2",
+     "1.6.35_1",
+     "gap_shim",
+     "legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntityBrewingStand.<init>()V"
+    ],
+    [
+     "Zulip Bridge",
+     "1.3.0+1.7.10",
+     "links",
+     ""
+    ],
+    [
+     "�4Name Pain",
+     "1.5.1",
+     "links",
+     ""
+    ],
+    [
+     "�6SimpleFps",
+     "1.0",
+     "links",
+     ""
+    ],
+    [
+     "�9Tool-Upgrades Mod",
+     "1.2.3",
+     "links",
+     "1 synthesized stub(s)"
+    ]
+   ],
+   "assets": {
+    "checked": 606,
+    "modsWithLayerProblems": 5,
+    "layerRefs": 146,
+    "modsWithOwnProblems": 8,
+    "ownRefs": 262
+   },
+   "source": "modrinth"
   }
  ]
 }

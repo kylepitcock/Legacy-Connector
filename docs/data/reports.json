@@ -275,6 +275,54 @@
    "link": "",
    "date": "2026-11-03",
    "open": true
+  },
+  {
+   "issue": 147,
+   "mod": "HuajiAge-Infinite Galaxy",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "- The mod doesn't work because it contains its own version of Nashorn; removing it causes models to display incorrectly—that’s the bug. Instead of the intended models, you get horses.",
+   "lc": "0.3.18",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/huajiage-infinite-galaxy",
+   "date": "2026-11-04",
+   "open": true
+  },
+  {
+   "issue": 148,
+   "mod": "Electroblob's Wizardry",
+   "mc": "1.8 - 1.12.2",
+   "status": "partial",
+   "details": "- IDs instead of regular names - All spells have disappeared - GUIs are not working",
+   "lc": "0.3.18",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/electroblobs-wizardry",
+   "date": "2026-11-04",
+   "open": true
+  },
+  {
+   "issue": 149,
+   "mod": "RecurrentComplex-1.4.8.7.jar",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "It entirely fails to load. game opens. world loads. but it says the mod failed to load.",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/recurrent-complex/files/8562927",
+   "date": "2026-11-04",
+   "open": true
+  },
+  {
+   "issue": 150,
+   "mod": "NovaCraft",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "The entire graphical interface and structure are not working.",
+   "lc": "0.3.18",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/novacraft",
+   "date": "2026-11-04",
+   "open": true
   }
  ]
 }
