@@ -1,0 +1,22 @@
+# Forge 1.20.1 -> NeoForge 1.21.1 class renames (old<TAB>new); targets checked against NeoForge 21.1.235 and FML 4.0.45
+net/minecraftforge/client/event/RegisterClientReloadListenersEvent	net/neoforged/neoforge/client/event/RegisterClientReloadListenersEvent
+net/minecraftforge/fml/IExtensionPoint	net/neoforged/fml/IExtensionPoint
+net/minecraftforge/fml/InterModComms	net/neoforged/fml/InterModComms
+net/minecraftforge/fml/InterModComms$IMCMessage	net/neoforged/fml/InterModComms$IMCMessage
+net/minecraftforge/fml/InterModComms$QueueFilteringSpliterator	net/neoforged/fml/InterModComms$QueueFilteringSpliterator
+net/minecraftforge/fml/ModContainer	net/neoforged/fml/ModContainer
+net/minecraftforge/fml/ModList	net/neoforged/fml/ModList
+net/minecraftforge/fml/event/IModBusEvent	net/neoforged/fml/event/IModBusEvent
+net/minecraftforge/fml/event/config/ModConfigEvent	net/neoforged/fml/event/config/ModConfigEvent
+net/minecraftforge/fml/event/config/ModConfigEvent$Loading	net/neoforged/fml/event/config/ModConfigEvent$Loading
+net/minecraftforge/fml/event/config/ModConfigEvent$Reloading	net/neoforged/fml/event/config/ModConfigEvent$Reloading
+net/minecraftforge/fml/event/config/ModConfigEvent$Unloading	net/neoforged/fml/event/config/ModConfigEvent$Unloading
+net/minecraftforge/fml/event/lifecycle/FMLClientSetupEvent	net/neoforged/fml/event/lifecycle/FMLClientSetupEvent
+net/minecraftforge/fml/event/lifecycle/FMLCommonSetupEvent	net/neoforged/fml/event/lifecycle/FMLCommonSetupEvent
+net/minecraftforge/fml/event/lifecycle/FMLConstructModEvent	net/neoforged/fml/event/lifecycle/FMLConstructModEvent
+net/minecraftforge/fml/event/lifecycle/FMLDedicatedServerSetupEvent	net/neoforged/fml/event/lifecycle/FMLDedicatedServerSetupEvent
+net/minecraftforge/fml/event/lifecycle/FMLLoadCompleteEvent	net/neoforged/fml/event/lifecycle/FMLLoadCompleteEvent
+net/minecraftforge/fml/event/lifecycle/InterModEnqueueEvent	net/neoforged/fml/event/lifecycle/InterModEnqueueEvent
+net/minecraftforge/fml/event/lifecycle/InterModProcessEvent	net/neoforged/fml/event/lifecycle/InterModProcessEvent
+net/minecraftforge/fml/event/lifecycle/ModLifecycleEvent	net/neoforged/fml/event/lifecycle/ModLifecycleEvent
+net/minecraftforge/fml/event/lifecycle/ParallelDispatchEvent	net/neoforged/fml/event/lifecycle/ParallelDispatchEvent

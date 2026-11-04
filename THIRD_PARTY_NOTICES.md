@@ -29,3 +29,11 @@ Minecraft assets are never included.
 | Our file | Taken from | Changes |
 |---|---|---|
 | `loader/.../tools/BytecodeCheck` | `linkcheck/scan/BytecodeVerifier` | Only the idea (verify translated classes with ASM's `Analyzer` and a `SimpleVerifier` whose type relations come from the project's own class index, skipping methods that touch unknown types; interface-typed values are assignable as in the JVM verifier). The code is our own, written against `Hierarchy` |
+
+## RetroMod (via PortKit)
+
+[RetroMod](https://github.com/Bownlux/RetroMod) 1.3.1, MIT License, Copyright (c) 2026 Bownlux (the license text is in PortKit's `THIRD-PARTY-NOTICES.txt`).
+
+| Our file | Taken from | Changes |
+|---|---|---|
+| `loader/src/main/resources/legacyconnector/forward/1.20.1/forge-event-renames.tsv`, `forge-fml-renames.tsv` | `retromod/forge-event-renames.json`, `forge-fml-renames.json` | Converted to TSV; every target re-checked against NeoForge 21.1.235 and FML 4.0.45; `RegisterClientReloadListenersEvent` corrected (21.1 has not renamed it yet) |
