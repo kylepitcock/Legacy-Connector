@@ -82,6 +82,7 @@ public final class CheckJar {
             JsonObject rec = record(jar, result.links.errorCount() == 0 ? "links" : "unresolved", null, result.links, result.classes);
             records.add(rec);
             recordsByOutJar.put(outJar, rec);
+            verifyBytecode(index, jar, outJar, peers.get(jar.version), rec);
             originals.add(jar.existing());
             demand.computeIfAbsent(jar.version, v -> new SynthDemand()).merge(result.demand);
             System.out.println(jar.fileName() + " [" + jar.version.id() + ", " + jar.versionEvidence + "]: " + result.classes + " classes, "
@@ -184,6 +185,26 @@ public final class CheckJar {
             for (var e : g.entrySet()) a.add(e.getKey().replace('/', '.'));
         }
         return a;
+    }
+
+    /** Data-flow verification of the translated classes ({@link BytecodeCheck}); failures are listed in the record as {@code verifyErrors}. */
+    private static void verifyBytecode(ShimIndex index, LegacyJar jar, Path outJar, Map<String, ClassInfo> peers, JsonObject rec) {
+        try {
+            var hierarchy = new org.kylepitcock.legacyconnector.loader.transform.Hierarchy(index, CheckJar.class.getClassLoader(),
+                    peers == null ? Map.of() : peers, jar.version);
+            BytecodeCheck check = BytecodeCheck.run(outJar, hierarchy);
+            rec.addProperty("verifyFailures", check.failureCount);
+            System.out.println("  bytecode verification: " + check.methodsChecked + " method(s) analysed, " + check.failureCount + " failing");
+            if (check.failureCount > 0) {
+                JsonArray list = new JsonArray();
+                check.failures.forEach(list::add);
+                rec.add("verifyErrors", list);
+                System.out.println("  " + check.failureCount + " of " + check.methodsChecked + " method(s) fail bytecode verification:");
+                for (String f : check.failures) System.out.println("    " + f);
+            }
+        } catch (Exception | LinkageError e) {
+            System.out.println("  bytecode verification skipped: " + e);
+        }
     }
 
     /** Defines and links every generated class; VerifyError / IncompatibleClassChangeError mean a generator bug. */

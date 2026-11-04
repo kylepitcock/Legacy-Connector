@@ -31,6 +31,7 @@ dependencies {
     api "org.ow2.asm:asm:${asm_version}"
     api "org.ow2.asm:asm-commons:${asm_version}"
     api "org.ow2.asm:asm-tree:${asm_version}"
+    api "org.ow2.asm:asm-analysis:${asm_version}"
 
     // 1.7.10: the names Forge itself shipped (setBlockName, registerBlockIcons, ...) are what mod authors
     // actually wrote against; MCP stable_12 fills ids Forge's table lacks.

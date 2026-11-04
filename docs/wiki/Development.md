@@ -147,6 +147,13 @@ in `tools/dev/mod-specific-baseline.txt` per file and can only go down: `python3
 remove some. A new mod-specific fix goes under a `compat/` package, labelled and keyed by mod id, so it stays easy to remove. If outside contributors
 start sending per-mod fixes, the next step is a plugin interface plus a separate optional jar for them (how Sinytra Connector does it with ConnectorExtras).
 
+## Bytecode check (VerifyError smoke test without the game)
+
+`checkLegacyMod` also runs `loader/.../tools/BytecodeCheck` on every translated jar: ASM's data-flow analyzer over each method, with type relations answered by
+`Hierarchy` (translated mod, shim, synthesized API, libraries). It finds what the JVM rejects as a `VerifyError` when the class first loads (a retyped value
+used as the wrong type); methods touching a type nobody knows (a mod that is not installed) are skipped. The line `bytecode verification: N method(s)
+analysed, M failing` is printed per jar, and failures go into the JSON record as `verifyFailures` / `verifyErrors`.
+
 ## Resource check (rendering smoke test without the game)
 
 `./gradlew checkLegacyMod` (and so `tools/compat/probe.py`) also runs `loader/.../tools/ResourceCheck` on the converted assets of every jar, against the
