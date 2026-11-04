@@ -84,6 +84,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         }
     }
 
+    private static boolean forge1201NoticeLogged;
+
+    /** Forge 1.20.1 support is unfinished: {@code experimental.forge1201=true} (config) or {@code -Dlegacyconnector.forge1201=true} turns it on. */
+    private static boolean forge1201Enabled(Path modsDir) {
+        if (Boolean.getBoolean("legacyconnector.forge1201")) return true;
+        return "true".equalsIgnoreCase(LibraryBridges.readConfig(modsDir).getProperty("experimental.forge1201", "false").trim());
+    }
+
     @Override
     public int getPriority() {
         return 100; // before ModsFolderLocator (0)
@@ -124,6 +132,14 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                                 context.addLocated(p);
                                 LOG.warn("Legacy Connector: {} is a translated copy of another mod made by Legacy Connector (not an original). "
                                         + "It is not loaded; put the original mod in mods/ instead and Legacy Connector translates it here.", p.getFileName());
+                                continue;
+                            }
+                            if (jar != null && jar.version == LegacyVersion.V1_20_1 && !forge1201Enabled(modsDir)) {
+                                if (!forge1201NoticeLogged) {
+                                    forge1201NoticeLogged = true;
+                                    LOG.info("Legacy Connector: Forge 1.20.1 mods (such as {}) are left alone: that support is experimental and off. "
+                                            + "Set experimental.forge1201=true in config/legacyconnector.properties to try it.", p.getFileName());
+                                }
                                 continue;
                             }
                             if (jar != null) legacy.add(jar);

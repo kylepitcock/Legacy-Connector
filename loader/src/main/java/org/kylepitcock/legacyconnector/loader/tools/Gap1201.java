@@ -199,10 +199,18 @@ public final class Gap1201 {
                 }
             }
             String jar = mod.getFileName().toString();
+            try (ZipFile z = new ZipFile(mod.toFile())) {
+                var manifestEntry = z.getEntry("META-INF/MANIFEST.MF");
+                if (manifestEntry != null) {
+                    String src = new java.util.jar.Manifest(z.getInputStream(manifestEntry)).getMainAttributes().getValue("LegacyConnector-Source");
+                    if (src != null) jar = src; // a translated jar is named after the original
+                }
+            }
             out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields%n", jar, refs, mc.size(), mm.size(), mf.size());
-            mc.forEach(s -> missingClasses.computeIfAbsent(s, k -> new TreeSet<>()).add(jar));
-            mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jar));
-            mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jar));
+            final String jarName = jar;
+            mc.forEach(s -> missingClasses.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
+            mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
+            mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
         }
         ranked(out, "Missing classes (by number of jars)", missingClasses);
         ranked(out, "Missing methods", missingMethods);

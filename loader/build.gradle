@@ -19,6 +19,7 @@ configurations {
     forge1710
     mcp1710
     mcp1122
+    mcpconfig1201
 }
 
 dependencies {
@@ -38,6 +39,8 @@ dependencies {
     forge1710 "net.minecraftforge:forge:${forge_1_7_10}:userdev@jar"
     mcp1710 "de.oceanlabs.mcp:mcp_stable:${mcp_1_7_10}@zip"
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
+    // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
+    mcpconfig1201 "de.oceanlabs.mcp:mcp_config:1.20.1-20230612.114412@zip"
 
     testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
@@ -78,6 +81,36 @@ def extractMappings = tasks.register('extractMappings', Sync) {
     }
 }
 sourceSets.main.resources.srcDir extractMappings
+
+// SRG -> Mojang table for 1.20.1 (SrgMojangTable): joined.tsrg from MCPConfig + Mojang's client.txt (downloaded once into build/mojang-mappings)
+def mojang1201 = layout.buildDirectory.file('mojang-mappings/1.20.1-client.txt')
+def fetchMojang1201 = tasks.register('fetchMojangMappings1201') {
+    outputs.file(mojang1201)
+    doLast {
+        def out = mojang1201.get().asFile
+        out.parentFile.mkdirs()
+        new URL('https://piston-data.mojang.com/v1/objects/6c48521eed01fe2e8ecdadbd5ae348415f3c47da/client.txt').withInputStream { i -> out.withOutputStream { it << i } }
+    }
+}
+def srgMojangDir = layout.buildDirectory.dir('generated/srg-mojang')
+def genSrgMojang = tasks.register('genSrgMojang1201', JavaExec) {
+    dependsOn fetchMojang1201, tasks.named('classes')
+    inputs.files(configurations.mcpconfig1201)
+    inputs.file(mojang1201)
+    outputs.dir(srgMojangDir)
+    classpath = sourceSets.main.output
+    mainClass = 'org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable'
+    argumentProviders.add({
+        def tsrg = layout.buildDirectory.file('tmp/mcpconfig1201/joined.tsrg').get().asFile
+        tsrg.parentFile.mkdirs()
+        zipTree(configurations.mcpconfig1201.singleFile).matching { include 'config/joined.tsrg' }.singleFile.withInputStream { i -> tsrg.withOutputStream { it << i } }
+        [tsrg.absolutePath, mojang1201.get().asFile.absolutePath, srgMojangDir.get().file('legacyconnector/mappings/1.20.1/srg-mojang.tsv').asFile.absolutePath]
+    } as CommandLineArgumentProvider)
+}
+tasks.named('jar') { dependsOn genSrgMojang; from(srgMojangDir) }
+// offline tools (checkLegacyMod, gap1201) run from the class directories: give them the generated table too
+sourceSets.main.runtimeClasspath += files(srgMojangDir).builtBy(genSrgMojang)
+
 
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'

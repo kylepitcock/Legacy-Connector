@@ -18,7 +18,13 @@ public enum LegacyVersion {
     /** Forge 1.6.4 - 1.7.10: {@code cpw.mods.fml}, numeric block ids + metadata, IIcon rendering. */
     V1_7_10("1.7.10", "legacyconnector/v1_7_10/", "legacyconnector_synth/v1_7_10/"),
     /** Forge 1.8 - 1.12.2: {@code net.minecraftforge.fml}, IBlockState, JSON models, registry events. */
-    V1_12_2("1.12.2", "legacyconnector/v1_12_2/", "legacyconnector_synth/v1_12_2/");
+    V1_12_2("1.12.2", "legacyconnector/v1_12_2/", "legacyconnector_synth/v1_12_2/"),
+    /**
+     * Forge 1.20.1: the same class model as 1.21.1, so nothing is relocated. The jar is remapped in place (SRG to Mojang names, Forge to NeoForge
+     * packages) and runs as a native NeoForge mod; {@link #shimPrefix()} only holds the small facade of Forge API that 1.21.1 no longer has
+     * ({@code FMLJavaModLoadingContext}, {@code DistExecutor}, ...). See {@code Forge1201Transformer}.
+     */
+    V1_20_1("1.20.1", "legacyconnector/v1_20_1/", "legacyconnector_synth/v1_20_1/");
 
     /**
      * Package roots (internal names) that are owned by Minecraft/Forge in legacy versions and must be

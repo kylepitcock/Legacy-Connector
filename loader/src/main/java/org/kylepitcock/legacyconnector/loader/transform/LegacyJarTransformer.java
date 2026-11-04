@@ -246,6 +246,7 @@ public final class LegacyJarTransformer {
 
     /** @param peers classes of the other legacy jars of the same version (see {@link #scan}), by name */
     public Result transform(LegacyJar jar, Path output, Map<String, ClassInfo> peers) throws IOException {
+        if (jar.version == LegacyVersion.V1_20_1) return new Forge1201Transformer(shim).transform(jar, output);
         Result result = new Result();
         LegacyVersion version = jar.version;
         LegacyRemapper remapper = remapperFor(version, result.demand);
@@ -470,7 +471,7 @@ public final class LegacyJarTransformer {
         return out;
     }
 
-    private static Manifest cleanManifest(Manifest in, LegacyJar jar) {
+    static Manifest cleanManifest(Manifest in, LegacyJar jar) {
         Manifest out = new Manifest();
         Attributes attrs = out.getMainAttributes();
         attrs.put(Attributes.Name.MANIFEST_VERSION, "1.0");
@@ -493,7 +494,7 @@ public final class LegacyJarTransformer {
         return out;
     }
 
-    private static void write(Path output, Manifest manifest, Map<String, byte[]> classes, Map<String, byte[]> resources) throws IOException {
+    static void write(Path output, Manifest manifest, Map<String, byte[]> classes, Map<String, byte[]> resources) throws IOException {
         Files.createDirectories(output.getParent());
         Path tmp = output.resolveSibling(output.getFileName() + ".tmp");
         try (OutputStream os = Files.newOutputStream(tmp); JarOutputStream jos = new JarOutputStream(os, manifest)) {
