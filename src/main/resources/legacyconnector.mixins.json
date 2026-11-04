@@ -5,6 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "plugin": "org.kylepitcock.legacyconnector.mixinplugin.LegacyMixinPlugin",
   "mixins": [
+    "Varint21FrameDecoderMixin",
+    "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
