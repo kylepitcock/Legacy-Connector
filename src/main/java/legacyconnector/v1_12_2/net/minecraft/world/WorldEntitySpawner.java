@@ -17,6 +17,29 @@ public final class WorldEntitySpawner {
         return 0;
     }
 
+    /** 1.12's placement test: on solid ground with room above, in water, or in open air. */
+    public static boolean canCreatureTypeSpawnAtLocation(legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType spawnPlacementTypeIn, World worldIn, BlockPos pos) {
+        if (spawnPlacementTypeIn == null || worldIn == null || pos == null) return false;
+        var access = worldIn.mcc$access();
+        if (access == null || !access.getWorldBorder().isWithinBounds(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()))) return false;
+        var here = new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ());
+        var state = access.getBlockState(here);
+        switch (spawnPlacementTypeIn) {
+            case IN_WATER:
+                return state.getFluidState().is(net.minecraft.tags.FluidTags.WATER) && access.getBlockState(here.below()).getFluidState().is(net.minecraft.tags.FluidTags.WATER)
+                        && !access.getBlockState(here.above()).isCollisionShapeFullBlock(access, here.above());
+            case IN_AIR:
+                return !state.isCollisionShapeFullBlock(access, here) && state.getFluidState().isEmpty();
+            default:
+                var below = here.below();
+                if (!access.getBlockState(below).isFaceSturdy(access, below, net.minecraft.core.Direction.UP)) return false;
+                var belowBlock = access.getBlockState(below).getBlock();
+                return belowBlock != net.minecraft.world.level.block.Blocks.BEDROCK && belowBlock != net.minecraft.world.level.block.Blocks.BARRIER
+                        && !state.isCollisionShapeFullBlock(access, here) && state.getFluidState().isEmpty()
+                        && !access.getBlockState(here.above()).isCollisionShapeFullBlock(access, here.above());
+        }
+    }
+
     public static boolean isValidEmptySpawnBlock(IBlockState state) {
         if (state == null) return true;
         var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(state);

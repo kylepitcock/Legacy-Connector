@@ -177,6 +177,10 @@ public class RenderGlobal implements legacyconnector.v1_12_2.net.minecraft.clien
         }
     }
 
+    public static void renderFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float red, float green, float blue, float alpha) {
+        renderFilledBox(new AxisAlignedBB(minX, minY, minZ, maxX, maxY, maxZ), red, green, blue, alpha);
+    }
+
     /** A solid box (six quads) in one colour. */
     public static void renderFilledBox(AxisAlignedBB box, float red, float green, float blue, float alpha) {
         Tessellator tessellator = Tessellator.getInstance();

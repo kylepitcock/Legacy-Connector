@@ -10,9 +10,16 @@ import org.kylepitcock.legacyconnector.v1_12_2.LegacyModContainer1122;
 
 public class FMLPreInitializationEvent extends FMLStateEvent {
     private final LegacyModRecord mcc$mod;
+    private File mcc$configDir;
 
     public FMLPreInitializationEvent(LegacyModRecord mod) {
         this.mcc$mod = mod;
+    }
+
+    /** Forge's own constructor ({@code data[0]} the ASM data, {@code data[1]} the config directory): mods build the event to run their initializer by hand (Dimensional Doors). */
+    public FMLPreInitializationEvent(Object... data) {
+        this.mcc$mod = null;
+        if (data != null && data.length > 1 && data[1] instanceof File dir) this.mcc$configDir = dir;
     }
 
     @Override
@@ -25,24 +32,24 @@ public class FMLPreInitializationEvent extends FMLStateEvent {
     }
 
     public File getModConfigurationDirectory() {
-        return Loader.instance().getConfigDir();
+        return mcc$configDir != null ? mcc$configDir : Loader.instance().getConfigDir();
     }
 
     /** Legacy convention: config/&lt;modid&gt;.cfg (the legacy id, case preserved). */
     public File getSuggestedConfigurationFile() {
-        return new File(getModConfigurationDirectory(), mcc$mod.legacyId + ".cfg");
+        return new File(getModConfigurationDirectory(), (mcc$mod == null ? "suggested" : mcc$mod.legacyId) + ".cfg");
     }
 
     public ModMetadata getModMetadata() {
-        return ((LegacyModContainer1122) mcc$mod.platformData).getMetadata();
+        return mcc$mod == null ? new ModMetadata() : ((LegacyModContainer1122) mcc$mod.platformData).getMetadata();
     }
 
     public Logger getModLog() {
-        return mcc$mod.logger;
+        return mcc$mod == null ? org.apache.logging.log4j.LogManager.getLogger("FML") : mcc$mod.logger;
     }
 
     public File getSourceFile() {
-        return mcc$mod.sourceFile().toFile();
+        return mcc$mod == null ? null : mcc$mod.sourceFile().toFile();
     }
 
     public Properties getVersionProperties() {

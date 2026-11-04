@@ -24,6 +24,11 @@ public class MessageContext {
         return (NetHandlerPlayServer) netHandler;
     }
 
+    public legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient getClientHandler() {
+        if (side != Side.CLIENT) throw new UnsupportedOperationException("Attempt to get client handler on the server side");
+        return legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient.mcc$INSTANCE;
+    }
+
     /** The client's handler of a message from the server. */
     public static final INetHandler CLIENT_HANDLER = new legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayClient() {
         @Override

@@ -9,6 +9,13 @@ public class WorldClient extends World {
         super(level);
     }
 
+    /** A client world a mod builds itself (FunkyLocomotion's and RFTools' fake worlds for block rendering): no level behind it, every query sees empty space. */
+    public WorldClient(legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler,
+            legacyconnector.v1_7_10.net.minecraft.world.WorldSettings settings, int dimension,
+            legacyconnector.v1_7_10.net.minecraft.world.EnumDifficulty difficulty, legacyconnector.v1_7_10.net.minecraft.profiler.Profiler profiler) {
+        super((LevelAccessor) null);
+    }
+
     /**
      * The modern sky colour where the dimension's provider keeps the default (1.7.10's client asked the provider first:
      * Galacticraft's planets colour their own sky; this override had skipped them and Mars had the overworld's blue).

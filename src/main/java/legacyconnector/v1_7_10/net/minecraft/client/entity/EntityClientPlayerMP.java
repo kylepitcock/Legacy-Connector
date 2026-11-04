@@ -11,6 +11,13 @@ public class EntityClientPlayerMP extends EntityPlayerSP {
         super(modern);
     }
 
+    /** 1.7.10's constructor (Galacticraft's player subclass calls it): a view player, as {@link EntityPlayerSP}'s. */
+    public EntityClientPlayerMP(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc, legacyconnector.v1_7_10.net.minecraft.world.World world,
+            legacyconnector.v1_7_10.net.minecraft.util.Session session, legacyconnector.v1_7_10.net.minecraft.client.network.NetHandlerPlayClient handler,
+            legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter stats) {
+        super(mc, world, session, 0);
+    }
+
     public void sendChatMessage(String message) {
         var connection = net.minecraft.client.Minecraft.getInstance().getConnection();
         if (connection == null) return;

@@ -91,6 +91,27 @@ public class FluidUtil {
         return new FluidActionResult(containerHandler.getContainer());
     }
 
+    /**
+     * Places the fluid of a container as its block at the position (a full 1000 mB, into air or a replaceable block): the container
+     * is drained when {@code resource} is what it holds; the result is the emptied container.
+     */
+    public static FluidActionResult tryPlaceFluid(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            ItemStack container, FluidStack resource) {
+        IFluidHandlerItem handler = getFluidHandler(container);
+        if (handler == null || resource == null || resource.getFluid() == null || world == null || pos == null) return FluidActionResult.FAILURE;
+        var fluidBlock = resource.getFluid().getBlock();
+        if (fluidBlock == null || resource.amount < 1000) return FluidActionResult.FAILURE;
+        var existing = world.getBlockState(pos);
+        if (!world.isAirBlock(pos) && !existing.getBlock().isReplaceable(world, pos)) return FluidActionResult.FAILURE;
+        FluidStack toDrain = new FluidStack(resource, 1000);
+        FluidStack drained = handler.drain(toDrain, false);
+        if (drained == null || drained.amount < 1000) return FluidActionResult.FAILURE;
+        if (!world.setBlockState(pos, fluidBlock.getDefaultState(), 11)) return FluidActionResult.FAILURE;
+        handler.drain(toDrain, true);
+        return new FluidActionResult(handler.getContainer());
+    }
+
     /** Fills or empties the container and puts the result into the inventory (or the player's), one item at a time. */
     public static FluidActionResult tryFillContainerAndStow(ItemStack container, IFluidHandler fluidSource,
             legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler inventory, int maxAmount,
