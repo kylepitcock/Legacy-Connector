@@ -11,6 +11,20 @@ public class NetworkRegistry {
             io.netty.util.AttributeKey.valueOf("fml:netHandler");
     public static final io.netty.util.AttributeKey<Boolean> FML_MARKER = io.netty.util.AttributeKey.valueOf("fml:hasMarker");
 
+    /** FML's private mod -> network holder map (mods read it reflectively); a mod never registered still gets a holder. */
+    private final java.util.Map<Object, legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.internal.NetworkModHolder> registry =
+            new java.util.concurrent.ConcurrentHashMap<>() {
+                @Override
+                public legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.internal.NetworkModHolder get(Object key) {
+                    var h = super.get(key);
+                    if (h == null && key != null) {
+                        h = new legacyconnector.v1_12_2.net.minecraftforge.fml.common.network.internal.NetworkModHolder();
+                        put(key, h);
+                    }
+                    return h;
+                }
+            };
+
     public SimpleNetworkWrapper newSimpleChannel(String name) {
         return new SimpleNetworkWrapper(name);
     }

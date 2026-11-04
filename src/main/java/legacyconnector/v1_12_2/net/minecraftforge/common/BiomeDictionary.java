@@ -14,7 +14,7 @@ public class BiomeDictionary {
 
     /** A biome type (HOT, FOREST, ...); mods can create their own. */
     public static final class Type {
-        private static final Map<String, Type> BY_NAME = new java.util.LinkedHashMap<>();
+        private static final Map<String, Type> byName = new java.util.LinkedHashMap<>();
         private final String name;
 
         public static final Type HOT = getType("HOT");
@@ -58,7 +58,7 @@ public class BiomeDictionary {
         }
 
         public static synchronized Type getType(String name, Type... subTypes) {
-            return BY_NAME.computeIfAbsent(name, Type::new);
+            return byName.computeIfAbsent(name, Type::new);
         }
 
         public static Type fromVanilla(String name) {
@@ -67,7 +67,7 @@ public class BiomeDictionary {
 
         /** Every type, vanilla's and the ones mods added, in the order they were made. */
         public static synchronized java.util.Collection<Type> getAll() {
-            return Collections.unmodifiableCollection(new java.util.ArrayList<>(BY_NAME.values()));
+            return Collections.unmodifiableCollection(new java.util.ArrayList<>(byName.values()));
         }
 
         @Override
