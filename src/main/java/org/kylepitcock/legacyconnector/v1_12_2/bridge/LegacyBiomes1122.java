@@ -39,7 +39,15 @@ public final class LegacyBiomes1122 {
         List<Biome> out = new ArrayList<>();
         try {
             for (Biome b : Registries1122.BIOMES.getValues()) {
-                if (b != null && BiomeBridge1122.isModBiome(b) && validId(BiomeBridge1122.modernId(b))) out.add(b);
+                if (b != null && BiomeBridge1122.isModBiome(b) && validId(BiomeBridge1122.modernId(b))) {
+                    out.add(b);
+                    // the name maps and JourneyMap show: Biome.getName() is the translation key biome.<namespace>.<path>
+                    String name = b.getBiomeName();
+                    var id = BiomeBridge1122.modernId(b);
+                    if (name != null && !name.isBlank()) {
+                        org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", "biome." + id.getNamespace() + "." + id.getPath(), name);
+                    }
+                }
             }
         } catch (RuntimeException | LinkageError e) {
             LOG.warn("Could not list the mod biomes: {}", e.toString());

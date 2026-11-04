@@ -55,7 +55,14 @@ public final class LegacyBiomes {
         Map<ResourceLocation, BiomeGenBase> map = new HashMap<>();
         for (BiomeGenBase b : BiomeGenBase.getBiomeGenArray()) {
             if (b == null || !b.mcc$isModBiome()) continue;
-            if (map.putIfAbsent(b.mcc$modernId(), b) == null) out.add(b);
+            if (map.putIfAbsent(b.mcc$modernId(), b) == null) {
+                out.add(b);
+                // the name maps and JourneyMap show: Biome.getName() is the translation key biome.<namespace>.<path>
+                if (b.biomeName != null && !b.biomeName.isBlank()) {
+                    var id = b.mcc$modernId();
+                    org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.put("en_us", "biome." + id.getNamespace() + "." + id.getPath(), b.biomeName);
+                }
+            }
         }
         byId = map;
         if (!hooked) {
