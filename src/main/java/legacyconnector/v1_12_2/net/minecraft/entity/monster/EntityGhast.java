@@ -15,7 +15,7 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
 import net.minecraft.sounds.SoundEvents;
 
 /** 1.12.2 ghast: a huge Nether flyer that shoots fireballs. */
-public class EntityGhast extends legacyconnector.v1_12_2.net.minecraft.entity.EntityFlying implements IMob {
+public class EntityGhast extends legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityFlying implements IMob {
     public EntityGhast(World world) {
         super(world);
         setSize(4.0F, 4.0F);

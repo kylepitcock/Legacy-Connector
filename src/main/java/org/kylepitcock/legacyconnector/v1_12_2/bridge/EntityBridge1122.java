@@ -357,7 +357,7 @@ public final class EntityBridge1122 {
         }
     }
 
-    public static final class FlyingView extends legacyconnector.v1_12_2.net.minecraft.entity.EntityFlying {
+    public static final class FlyingView extends legacyconnector.v1_12_2.net.minecraft.entity.passive.EntityFlying {
         FlyingView(net.minecraft.world.entity.FlyingMob modern) {
             super(modern);
         }

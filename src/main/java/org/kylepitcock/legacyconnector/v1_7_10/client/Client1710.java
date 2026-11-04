@@ -139,7 +139,13 @@ public final class Client1710 {
                     }
                     return 0xFF000000 | block.getRenderColor(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state));
                 } catch (RuntimeException | LinkageError e) {
-                    return 0xFFFFFFFF;
+                    // a tint getter that cannot answer block queries (Distant Horizons' LOD colours throw from getBlockState): the block's
+                    // own colour for this state, not white, which would leave the grey leaf texture untinted
+                    try {
+                        return 0xFF000000 | block.getRenderColor(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state));
+                    } catch (RuntimeException | LinkageError e2) {
+                        return 0xFFFFFFFF;
+                    }
                 }
             }, familyBlocks(block.mcc$modern));
         }

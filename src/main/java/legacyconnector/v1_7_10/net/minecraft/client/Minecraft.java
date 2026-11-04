@@ -107,6 +107,10 @@ public class Minecraft {
     }
 
     /** Whether this is the demo version of the game (it never is). */
+    /** Resizes the window: the modern client does it itself, so a legacy call only needs to link. */
+    public void resize(int width, int height) {
+    }
+
     public boolean isDemo() {
         return false;
     }

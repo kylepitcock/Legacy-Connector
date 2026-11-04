@@ -1,5 +1,7 @@
-package legacyconnector.v1_12_2.net.minecraft.entity;
+package legacyconnector.v1_12_2.net.minecraft.entity.passive;
 
+import legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving;
+import legacyconnector.v1_12_2.net.minecraft.entity.MoverType;
 import legacyconnector.v1_12_2.net.minecraft.world.World;
 
 /** 1.12.2 EntityFlying: no fall damage, flies in the direction it faces (ghasts). */

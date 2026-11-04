@@ -36,6 +36,12 @@ public class EnumHelper {
     }
 
     /** A new use animation (mods' own item actions; the modern game shows it as no animation unless the mod renders one itself). */
+    /** A new creature attribute (undead, arthropod, ...): only its identity matters, enchantments compare against vanilla's. */
+    public static legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute addCreatureAttribute(String name) {
+        return org.kylepitcock.legacyconnector.core.LegacyEnums.add(legacyconnector.v1_12_2.net.minecraft.entity.EnumCreatureAttribute.class, name,
+                new Class<?>[0], new Object[0]);
+    }
+
     public static legacyconnector.v1_12_2.net.minecraft.item.EnumAction addAction(String name) {
         return org.kylepitcock.legacyconnector.core.LegacyEnums.add(legacyconnector.v1_12_2.net.minecraft.item.EnumAction.class, name, new Class<?>[0], new Object[0]);
     }

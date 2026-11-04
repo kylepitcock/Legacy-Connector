@@ -23,6 +23,12 @@ public class Framebuffer {
         this.useDepth = useDepth;
     }
 
+    public float[] framebufferColor = {1.0F, 1.0F, 1.0F, 0.0F};
+
+    public void setFramebufferColor(float r, float g, float b, float a) {
+        this.framebufferColor = new float[] {r, g, b, a};
+    }
+
     public void bindFramebuffer(boolean setViewport) {
     }
 
