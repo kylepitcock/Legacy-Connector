@@ -41,6 +41,9 @@ public final class Platform1710 implements LegacyPlatform {
     public void construct(LegacyModRecord mod) throws Exception {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.CONSTRUCTING);
         injectBundledLanguages();
+        // the untracked host types of entities no mod registered (client-only effect entities: Morph's acquisition, iChunUtil's trails)
+        // exist from the start; they could not be registered once the registries are frozen, so a pack without a registering mod had none
+        org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.registerFallbacks();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins.runAll(loader);
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$loadApiPackages(loader);

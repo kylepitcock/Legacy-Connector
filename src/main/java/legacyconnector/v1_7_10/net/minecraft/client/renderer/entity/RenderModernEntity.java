@@ -12,6 +12,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
  */
 public class RenderModernEntity extends Render {
     public static final RenderModernEntity INSTANCE = new RenderModernEntity();
+    private static final java.util.Set<net.minecraft.world.entity.EntityType<?>> FAILED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     @Override
     public void doRender(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
@@ -22,7 +23,10 @@ public class RenderModernEntity extends Render {
         try {
             Minecraft.getInstance().getEntityRenderDispatcher().render(modern, x, y, z, yaw, partialTicks, pose, RenderContext.buffers(), RenderContext.light());
         } catch (RuntimeException e) {
-            // an entity a mod built only for drawing may lack what its modern renderer reads; draw nothing, as before
+            // an entity a mod built only for drawing may lack what its modern renderer reads; draw nothing, as before (logged once per type)
+            if (FAILED.add(modern.getType())) {
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Render").warn("The modern renderer of {} failed for a legacy-drawn entity; it is not drawn: {}", modern.getType(), e.toString());
+            }
         }
     }
 

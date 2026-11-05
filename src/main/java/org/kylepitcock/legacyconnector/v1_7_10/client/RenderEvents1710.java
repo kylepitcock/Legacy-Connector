@@ -44,6 +44,7 @@ public final class RenderEvents1710 {
             RenderManager.renderPosX = cam.x;
             RenderManager.renderPosY = cam.y;
             RenderManager.renderPosZ = cam.z;
+            LegacyEntityRenderer.updateRenderManager(cam, null);
             legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerX = cam.x;
             legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerY = cam.y;
             legacyconnector.v1_7_10.net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher.staticPlayerZ = cam.z;

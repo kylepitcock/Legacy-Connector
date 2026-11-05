@@ -100,19 +100,30 @@ public final class ClientEvents1122 {
     }
 
     /**
-     * 1.12's {@code EntityPlayerSP.onLivingUpdate} pushes the player out of blocks every tick through {@code pushOutOfBlocks}, which posts
-     * {@link legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent}. The modern client has no such hook, so it is
-     * posted once per tick here (the event is informational: the modern player already handles its own push-out). Mods use it as a
-     * per-tick hook of the local player (The Betweenlands recomputes its view-obstruction distance there; unposted, the distance stays 0 and
-     * the screen is covered by its full-screen black overlay).
+     * The local player's per-tick legacy hooks, which the modern client does not have. 1.12's {@code EntityPlayerSP.onLivingUpdate} posts
+     * {@code PlayerSPPushOutOfBlocksEvent}, and {@code Entity.move} asks {@code World.getCollisionBoxes} for the movement box, which posts
+     * {@code GetCollisionBoxesEvent} (mods add custom collision boxes and measure the player's surroundings there; The Betweenlands recomputes
+     * its view-obstruction distance in that event: never asked, the distance stayed 0 and its full-screen black overlay covered the game).
      */
     private static void postPushOut() {
         var mc = Minecraft.getInstance();
         if (mc.player == null || mc.level == null || mc.isPaused()) return;
-        if (!wants(legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent.class)) return;
+        boolean pushOut = wants(legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent.class);
+        boolean boxes = wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.GetCollisionBoxesEvent.class);
+        if (!pushOut && !boxes) return;
         if (!(EntityBridge1122.wrap(mc.player) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player)) return;
-        post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent(player,
-                legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(mc.player.getBoundingBox())), "player push-out");
+        var box = mc.player.getBoundingBox();
+        if (pushOut) {
+            post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent(player,
+                    legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(box)), "player push-out");
+        }
+        if (boxes) {
+            var world = org.kylepitcock.legacyconnector.v1_12_2.bridge.WorldBridge1122.wrap(mc.level);
+            if (world != null) {
+                world.getCollisionBoxes(player, legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(
+                        box.expandTowards(mc.player.getDeltaMovement())));
+            }
+        }
     }
 
     static boolean wants(Class<? extends Event> type) {

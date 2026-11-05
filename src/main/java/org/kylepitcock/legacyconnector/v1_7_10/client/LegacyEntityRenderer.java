@@ -95,7 +95,12 @@ public class LegacyEntityRenderer extends EntityRenderer<Entity> {
         super.render(entity, yaw, partialTicks, pose, buffers, light);
     }
 
-    private static void updateRenderManager(Vec3 cam, Entity entity) {
+    /**
+     * The renderer manager's view of the frame, as 1.7.10 cached it every frame (RenderEvents1710 calls it at the start of each level
+     * render): code drawing entities itself reads {@code livingPlayer}/{@code renderEngine} before it does (Morph's ModelInfo.forceRender
+     * draws nothing while {@code livingPlayer} is null, which it stayed in a pack without a legacy entity renderer).
+     */
+    public static void updateRenderManager(Vec3 cam, Entity entity) {
         RenderManager rm = RenderManager.instance;
         var mc = Minecraft.getInstance();
         var camera = mc.gameRenderer.getMainCamera();

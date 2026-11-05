@@ -36,7 +36,7 @@ public final class EntityBridge {
         org.kylepitcock.legacyconnector.core.ViewSweeper.register("1.7.10 entity", VIEWS,
                 org.kylepitcock.legacyconnector.core.ViewLiveness::entityGone);
     }
-    private static boolean warnedCustom;
+    private static final java.util.Set<Class<?>> WARNED_HOSTLESS = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** Where extended properties of vanilla entities (players) are kept in the modern persistent data. */
     public static final String EXTENDED_KEY = "LegacyConnectorExtended";
@@ -147,8 +147,7 @@ public final class EntityBridge {
             // Constructed without a world (or before the world was known): give it a host now.
             var host = org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.adopt(entity, world);
             if (host == null) {
-                if (!warnedCustom) {
-                    warnedCustom = true;
+                if (WARNED_HOSTLESS.add(entity.getClass())) {
                     LOG.warn("Legacy entity {} could not be given a modern host", entity.getClass().getName());
                 }
                 return false;
