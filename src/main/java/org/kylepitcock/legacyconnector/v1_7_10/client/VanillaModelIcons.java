@@ -51,7 +51,9 @@ public final class VanillaModelIcons {
         String cached = ITEM_CACHE.get(key);
         if (cached != null) return cached.isEmpty() ? null : cached;
         var models = Minecraft.getInstance().getModelManager();
-        var model = Minecraft.getInstance().getItemRenderer().getItemModelShaper().getItemModel(item);
+        // The item renderer does not exist yet while mods stitch their icons (CoFH's registerIcons asks for vanilla item icons then).
+        var renderer = Minecraft.getInstance().getItemRenderer();
+        var model = renderer == null ? null : renderer.getItemModelShaper().getItemModel(item);
         if (model == null || model == models.getMissingModel()) {
             // Not baked yet: the legacy item models are generated before the first bake, and mods name vanilla icons in them
             // (Witchery's brews draw Items.potionitem's render pass 1, the glass bottle, over their liquid). Read the layer

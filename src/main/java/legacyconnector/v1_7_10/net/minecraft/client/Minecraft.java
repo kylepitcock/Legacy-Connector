@@ -102,6 +102,42 @@ public class Minecraft {
         return legacyconnector.v1_7_10.net.minecraft.client.resources.ResourcePackRepository.INSTANCE;
     }
 
+    /** 1.7.10 {@code clickMouse} (obf {@code al}, srg {@code func_147116_af}): a left click attacks or starts breaking the block under the crosshair. */
+    public void clickMouse() {
+        mcc$invokeInput("startAttack");
+    }
+
+    /** 1.7.10 {@code rightClickMouse} (obf {@code ak}, srg {@code func_147121_ag}): uses the held item / interacts. */
+    public void rightClickMouse() {
+        mcc$invokeInput("startUseItem");
+    }
+
+    /** 1.7.10 {@code func_147112_ai}: middle click picks the block. */
+    public void middleClickMouse() {
+        mcc$invokeInput("pickBlock");
+    }
+
+    /** 1.7.10 {@code sendClickBlockToController} (obf {@code a}, srg {@code func_147115_a}): holding left click keeps breaking the block. */
+    public void sendClickBlockToController(boolean leftClick) {
+        try {
+            var m = net.minecraft.client.Minecraft.class.getDeclaredMethod("continueAttack", boolean.class);
+            m.setAccessible(true);
+            m.invoke(mc(), leftClick);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // nothing this tick
+        }
+    }
+
+    private static void mcc$invokeInput(String modernName) {
+        try {
+            var m = net.minecraft.client.Minecraft.class.getDeclaredMethod(modernName);
+            m.setAccessible(true);
+            m.invoke(mc());
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // no click this time
+        }
+    }
+
     public static Minecraft getMinecraft() {
         return INSTANCE;
     }
