@@ -93,9 +93,26 @@ public final class ClientEvents1122 {
         bus.addListener(ClientEvents1122::onSoundSource);
         bus.addListener(ClientEvents1122::onStreamingSource);
         bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> tickMusic());
+        bus.addListener((net.neoforged.neoforge.client.event.ClientTickEvent.Post e) -> postPushOut());
         bus.addListener((net.neoforged.neoforge.client.event.SelectMusicEvent e) -> {
             if (replacedMusic() != null) e.setMusic(null);
         });
+    }
+
+    /**
+     * 1.12's {@code EntityPlayerSP.onLivingUpdate} pushes the player out of blocks every tick through {@code pushOutOfBlocks}, which posts
+     * {@link legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent}. The modern client has no such hook, so it is
+     * posted once per tick here (the event is informational: the modern player already handles its own push-out). Mods use it as a
+     * per-tick hook of the local player (The Betweenlands recomputes its view-obstruction distance there; unposted, the distance stays 0 and
+     * the screen is covered by its full-screen black overlay).
+     */
+    private static void postPushOut() {
+        var mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || mc.isPaused()) return;
+        if (!wants(legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent.class)) return;
+        if (!(EntityBridge1122.wrap(mc.player) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player)) return;
+        post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.PlayerSPPushOutOfBlocksEvent(player,
+                legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB.mcc$of(mc.player.getBoundingBox())), "player push-out");
     }
 
     static boolean wants(Class<? extends Event> type) {
