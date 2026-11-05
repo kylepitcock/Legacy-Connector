@@ -383,6 +383,18 @@
    "link": "",
    "date": "2026-11-05",
    "open": true
+  },
+  {
+   "issue": 159,
+   "mod": "Engender - The Age of Minecraft 0.7 - Pre Release 1",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "The mod is disabled on launch.",
+   "lc": "0.3.21",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/engender-mod",
+   "date": "2026-11-05",
+   "open": true
   }
  ]
 }
