@@ -219,6 +219,11 @@ public final class JavaCompatRedirects {
         virtualToStatic("com/mojang/authlib/properties/Property", "getSignature", "()Ljava/lang/String;", COMPAT + "LibraryCompat");
         // text2speech: say(String) became say(String, boolean).
         virtualToStatic("com/mojang/text2speech/Narrator", "say", "(Ljava/lang/String;)V", COMPAT + "LibraryCompat");
+        // authlib 6 dropped Agent (the "minecraft" agent argument), the (Proxy, clientToken) service constructor and the old
+        // lookup callback's onProfileLookupFailed(GameProfile, Exception); iChunUtil's profile lookups (Morph, ...) use all three.
+        INVOKES.put("com/mojang/authlib/GameProfileRepository.findProfilesByNames([Ljava/lang/String;Lcom/mojang/authlib/Agent;Lcom/mojang/authlib/ProfileLookupCallback;)V",
+                new MethodInsnNode(Opcodes.INVOKESTATIC, COMPAT + "LibraryCompat", "findProfilesByNames",
+                        "(Lcom/mojang/authlib/GameProfileRepository;[Ljava/lang/String;Ljava/lang/Object;Lcom/mojang/authlib/ProfileLookupCallback;)V", false));
         virtualToStatic("com/mojang/authlib/minecraft/MinecraftSessionService", "fillProfileProperties",
                 "(Lcom/mojang/authlib/GameProfile;Z)Lcom/mojang/authlib/GameProfile;", COMPAT + "LibraryCompat");
     }
@@ -276,6 +281,15 @@ public final class JavaCompatRedirects {
                         method.maxStack += 2;
                         count++;
                     } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
+                            && call.owner.equals("com/mojang/authlib/yggdrasil/YggdrasilAuthenticationService")
+                            && call.desc.equals("(Ljava/net/Proxy;Ljava/lang/String;)V")) {
+                        // new YggdrasilAuthenticationService(proxy, clientToken) -> new YggdrasilAuthenticationService(proxy)
+                        AbstractInsnNode replaced = rewriteConstructor(insns, call, "yggdrasilService", COMPAT + "LibraryCompat");
+                        if (replaced != null) {
+                            insn = replaced;
+                            count++;
+                        }
+                    } else if (call.getOpcode() == Opcodes.INVOKESPECIAL && call.name.equals("<init>")
                             && CONSTRUCTOR_FACTORIES.containsKey(call.owner) && !node.name.equals(call.owner)) {
                         // new Stopwatch(...) -> Stopwatch.createUnstarted(...), new AttributeKey(n) -> AttributeKey.valueOf(n)
                         AbstractInsnNode replaced = rewriteConstructor(insns, call, CONSTRUCTOR_FACTORIES.get(call.owner));
@@ -284,6 +298,13 @@ public final class JavaCompatRedirects {
                             count++;
                         }
                     }
+                } else if (insn instanceof org.objectweb.asm.tree.FieldInsnNode field && field.getOpcode() == Opcodes.GETSTATIC
+                        && field.owner.equals("com/mojang/authlib/Agent")) {
+                    // authlib 6 has no Agent; the value is only passed to the (redirected) lookup calls, which ignore it.
+                    InsnNode replacement = new InsnNode(Opcodes.ACONST_NULL);
+                    insns.set(field, replacement);
+                    insn = replacement;
+                    count++;
                 } else if (insn instanceof TypeInsnNode type && type.getOpcode() == Opcodes.CHECKCAST
                         && type.desc.endsWith("/net/minecraft/launchwrapper/LaunchClassLoader") && type.desc.startsWith("legacyconnector/")) {
                     // (LaunchClassLoader) getClass().getClassLoader(): modlauncher's loader is no LaunchClassLoader.
@@ -347,6 +368,11 @@ public final class JavaCompatRedirects {
      * when NEW/DUP directly precede the argument code, which is what javac emits.
      */
     private static AbstractInsnNode rewriteConstructor(InsnList insns, MethodInsnNode init, String factory) {
+        return rewriteConstructor(insns, init, factory, init.owner);
+    }
+
+    /** As above, with the factory method on another class (its static descriptor is the constructor's, returning the constructed type). */
+    private static AbstractInsnNode rewriteConstructor(InsnList insns, MethodInsnNode init, String factory, String factoryOwner) {
         AbstractInsnNode cursor = init.getPrevious();
         int depth = 0;
         // Walk back to the matching NEW; skip nested NEW/<init> pairs within the arguments.
@@ -364,7 +390,7 @@ public final class JavaCompatRedirects {
         insns.remove(newInsn);
         insns.remove(dup);
         String desc = init.desc.substring(0, init.desc.length() - 1) + "L" + init.owner + ";";
-        MethodInsnNode replacement = new MethodInsnNode(Opcodes.INVOKESTATIC, init.owner, factory, desc, false);
+        MethodInsnNode replacement = new MethodInsnNode(Opcodes.INVOKESTATIC, factoryOwner, factory, desc, false);
         insns.set(init, replacement);
         return replacement;
     }

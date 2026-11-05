@@ -67,6 +67,45 @@ public final class LibraryCompat {
         return property.signature();
     }
 
+    /** authlib 1.5's {@code new YggdrasilAuthenticationService(proxy, clientToken)}: the client token is gone. */
+    public static com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService yggdrasilService(java.net.Proxy proxy, String clientToken) {
+        return new com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService(proxy);
+    }
+
+    /** authlib 1.5's {@code findProfilesByNames(names, Agent.MINECRAFT, callback)}: no agent argument any more (it is always null here). */
+    public static void findProfilesByNames(com.mojang.authlib.GameProfileRepository repo, String[] names, Object agent,
+            com.mojang.authlib.ProfileLookupCallback callback) {
+        repo.findProfilesByNames(names, new LegacyLookupCallback(callback));
+    }
+
+    /**
+     * Callbacks written against authlib 1.5 implement {@code onProfileLookupFailed(GameProfile, Exception)}; authlib 6 calls
+     * {@code onProfileLookupFailed(String, Exception)}, which such a class does not have (AbstractMethodError).
+     */
+    private record LegacyLookupCallback(com.mojang.authlib.ProfileLookupCallback delegate) implements com.mojang.authlib.ProfileLookupCallback {
+        @Override
+        public void onProfileLookupSucceeded(GameProfile profile) {
+            delegate.onProfileLookupSucceeded(profile);
+        }
+
+        @Override
+        public void onProfileLookupFailed(String name, Exception exception) {
+            try {
+                delegate.onProfileLookupFailed(name, exception);
+                return;
+            } catch (AbstractMethodError missing) {
+                // a legacy callback: fall through to the old signature
+            }
+            try {
+                java.lang.reflect.Method old = delegate.getClass().getMethod("onProfileLookupFailed", GameProfile.class, Exception.class);
+                old.setAccessible(true);
+                old.invoke(delegate, new GameProfile(GameProfileCompat.id(null, name), GameProfileCompat.name(name)), exception);
+            } catch (ReflectiveOperationException | RuntimeException e) {
+                // the lookup simply failed
+            }
+        }
+    }
+
     /** text2speech: say(String) gained an interrupt flag; the old call queued the message. */
     public static void say(com.mojang.text2speech.Narrator narrator, String message) {
         narrator.say(message, false);

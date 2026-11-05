@@ -130,9 +130,27 @@ public class EntityList {
     }
 
     public static Entity createEntityFromNBT(NBTTagCompound tag, World world) {
-        Entity e = createEntityByName(tag.getString("id"), world);
+        String id = tag.getString("id");
+        // Entity.writeToNBTOptional/writeMountToNBT store the modern type id ("minecraft:zombie"), which is not a 1.7.10 name:
+        // recreate the modern entity from the tag and hand out its legacy view (Morph copies mobs this way and got null).
+        if (id.indexOf(':') >= 0) {
+            Entity modern = mcc$createModern(tag, world);
+            if (modern != null) return modern;
+        }
+        Entity e = createEntityByName(id, world);
         if (e != null) e.readFromNBT(tag);
         return e;
+    }
+
+    private static Entity mcc$createModern(NBTTagCompound tag, World world) {
+        try {
+            net.minecraft.world.level.Level level = world == null ? null : world.mcc$fullLevel();
+            if (level == null) return null;
+            return net.minecraft.world.entity.EntityType.create(tag.mcc$modern(), level)
+                    .map(org.kylepitcock.legacyconnector.v1_7_10.bridge.EntityBridge::wrap).orElse(null);
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     private static Entity mcc$create(Class<?> cls, World world) {
@@ -155,7 +173,14 @@ public class EntityList {
     }
 
     public static String getEntityString(Entity entity) {
-        return entity == null ? null : classToStringMapping.get(entity.getClass());
+        if (entity == null) return null;
+        String name = classToStringMapping.get(entity.getClass());
+        if (name == null && entity.mcc$entity != null && !(entity instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer)) {
+            // views of modern entities 1.7.10 had no class for: the modern type's path stands in for the name
+            var key = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(entity.mcc$entity.getType());
+            name = key == null ? null : key.getPath();
+        }
+        return name;
     }
 
     /** Names of every registered entity (the live key set, as in 1.7.10). */
