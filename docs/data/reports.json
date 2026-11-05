@@ -359,6 +359,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/morph/download/2338151",
    "date": "2026-11-05",
    "open": false
+  },
+  {
+   "issue": 157,
+   "mod": "Vehicle Mod 0.44.1",
+   "mc": "1.8 - 1.12.2",
+   "status": "fails",
+   "details": "Says it fails to load, but loads atleast some assets from the mod, but many are missing textures and most notably the vehicle crates are missing. <img width=\"680\" height=\"727\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/f39d60f4-80eb-4fb9-83f8-56d1d342d026\" />",
+   "lc": "0.3.21",
+   "neoforge": "21.2.257",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/mrcrayfishs-vehicle-mod/files/all?page=1&pageSize=20&version=1.12.2&showAlphaFiles=show",
+   "date": "2026-11-05",
+   "open": true
   }
  ]
 }
