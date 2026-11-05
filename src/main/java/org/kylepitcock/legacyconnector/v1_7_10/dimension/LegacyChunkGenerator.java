@@ -67,6 +67,11 @@ public class LegacyChunkGenerator extends ChunkGenerator {
                     if (legacy == null) {
                         LOG.warn("The world provider of dimension {} has no chunk generator", dimension);
                         failed = true;
+                    } else if (provider.worldObj != null && provider.worldObj.getChunkProvider()
+                            instanceof legacyconnector.v1_7_10.net.minecraft.world.gen.ChunkProviderServer server && server.currentChunkProvider == null) {
+                        // 1.7.10's ChunkProviderServer holds the generator: mods read WorldServer.theChunkProviderServer.currentChunkProvider
+                        // and cast it to theirs (The Betweenlands' DecorationHelper: null here, every chunk's decoration threw).
+                        server.currentChunkProvider = legacy;
                     }
                 } catch (RuntimeException | LinkageError e) {
                     LOG.error("The chunk generator of dimension {} could not be created", dimension, e);

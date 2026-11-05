@@ -117,6 +117,10 @@ public final class LegacySprites {
                     };
                 }
             }
+            // A name a mod derived from getIconName() carries the atlas folder twice here ("items/weedwoodsword" + the loader's own
+            // "textures/items/"): 1.7.10 returned the registered name without it. Retry with the folder once.
+            String once = rawPath.replaceFirst("^textures/(items|blocks)/\\1/", "textures/$1/");
+            if (!once.equals(rawPath)) return getResource(new ResourceLocation(location.getResourceDomain(), once));
             byte[] fallback = modernResource(ns, path);
             if (fallback != null) {
                 byte[] bytes = legacyFontPixels(ns, path, fallback);

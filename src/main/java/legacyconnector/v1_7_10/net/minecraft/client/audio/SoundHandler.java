@@ -28,6 +28,12 @@ public class SoundHandler implements legacyconnector.v1_7_10.net.minecraft.clien
 
     /** The sound manager behind this handler (set by the manager; mods read it by reflection). */
     SoundManager sndManager;
+    /**
+     * 1.7.10's sound registry. The modern engine keeps its own, so nothing here reads it; mods replace it by reflection ({@code sndRegistry} /
+     * {@code field_147697_e}: The Betweenlands swaps in its own registry in init and fails to load without the field). Typed Object because
+     * the registry class is a synthesized one.
+     */
+    private Object sndRegistry;
     private final Map<ISound, SoundInstance> playing = new WeakHashMap<>();
     /** 1.7.10's music events under their modern names. */
     private static final Map<String, String> MUSIC_RENAMES = Map.of("music.game.creative", "music.creative", "music.game.end", "music.end",
