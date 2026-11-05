@@ -30,6 +30,8 @@ final class RiskyMods {
     static final int STUB_LIMIT = 10;
     static final int LISTED = 12;
     private static final String STATE_FILE = "acknowledged-risks.txt";
+    /** The pending warning text in {@code .legacyconnector}; the runtime shows it in chat once and deletes it. */
+    static final String NOTICE_FILE = "pending-risk-notice.txt";
 
     /** One mod's (or jar's) risk. {@code kind} is {@code unresolved} or {@code stubs}. */
     record Entry(String id, String version, String kind, int count, List<String> symbols) {}

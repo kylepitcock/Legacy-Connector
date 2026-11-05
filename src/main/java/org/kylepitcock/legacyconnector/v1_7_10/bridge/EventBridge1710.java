@@ -1002,11 +1002,25 @@ public final class EventBridge1710 {
     }
 
     private static void notifyFailures(net.minecraft.world.entity.player.Player player) {
+        if (player.hasPermissions(2)) showRiskNotice(player);
         var failures = org.kylepitcock.legacyconnector.core.LegacyLifecycle.failures();
         if (failures.isEmpty() || !player.hasPermissions(2)) return;
         player.sendSystemMessage(Component.literal("§c[MC Compatibility] " + failures.size()
                 + " legacy mod(s) failed to load: " + String.join(", ", failures.keySet().stream().map(m -> m.legacyId).toList())
                 + ". See logs/latest.log and logs/legacyconnector-report.txt."));
+    }
+
+    /** The loader's once-per-mod-set summary of risky translated mods ({@code RiskyMods}), shown in chat instead of FML's loading screen. */
+    private static void showRiskNotice(net.minecraft.world.entity.player.Player player) {
+        try {
+            java.nio.file.Path f = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().resolve(".legacyconnector").resolve("pending-risk-notice.txt");
+            if (!java.nio.file.Files.isRegularFile(f)) return;
+            String text = java.nio.file.Files.readString(f, java.nio.charset.StandardCharsets.UTF_8);
+            java.nio.file.Files.deleteIfExists(f);
+            player.sendSystemMessage(Component.literal("§e" + text));
+        } catch (java.io.IOException | RuntimeException ignored) {
+            // only a courtesy message
+        }
     }
 
     private static final ThreadLocal<Boolean> START_BREAK = ThreadLocal.withInitial(() -> false);

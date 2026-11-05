@@ -269,9 +269,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                         + " API bridged)" : obsolete != null ? "not loaded: " + obsolete : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);
-                    // Unknown translation keys are displayed verbatim by FML's error screen. Bridged libraries are expected.
-                    if (replacedBy == null && obsolete == null) pipeline.addIssue(ModLoadingIssue.warning("Legacy Connector skipped " + jar.fileName() + ": " + skip.replace("'", ""))
-                            .withAffectedPath(jar.path));
+                    // Only logged: a ModLoadingIssue opens FML's warning screen (Crash Assistant reads it as a crash). Bridged libraries are expected.
+                    if (replacedBy == null && obsolete == null) LOG.warn("Legacy Connector skipped {}: {}", jar.fileName(), skip);
                     continue;
                 }
                 boolean translating = false;
@@ -374,9 +373,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             }
             String text = RiskyMods.message(risky);
             if (text == null) return;
-            pipeline.addIssue(ModLoadingIssue.warning(text));
+            // Not a ModLoadingIssue: any loading issue opens FML's warning/error screen, which tools such as Crash Assistant
+            // take for a crash on every start. The runtime shows the text once in chat when the player joins a world.
+            LOG.warn("Legacy Connector: {}", text.replace('\n', ' '));
+            Files.createDirectories(state);
+            Files.writeString(state.resolve(RiskyMods.NOTICE_FILE), text, java.nio.charset.StandardCharsets.UTF_8);
             RiskyMods.acknowledge(state, hash);
-        } catch (RuntimeException e) {
+        } catch (IOException | RuntimeException e) {
             LOG.debug("Legacy Connector: risky mods summary failed", e);
         }
     }
