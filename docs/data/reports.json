@@ -371,6 +371,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/mrcrayfishs-vehicle-mod/files/all?page=1&pageSize=20&version=1.12.2&showAlphaFiles=show",
    "date": "2026-11-05",
    "open": true
+  },
+  {
+   "issue": 158,
+   "mod": "Scape and Run Parasites",
+   "mc": "1.8 - 1.12.2",
+   "status": "partial",
+   "details": "Several issues with the relay scanner, including these weird blocks rendering when they are supposed to be invisible, the scanner report not showing anything other than being a normal paper, i've provided some images of comparison, top image being on 1.21.1 and bottom being on 1.12.2 <img width=\"1920\" height=\"1171\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/6782b934-3fae-4ada-861…",
+   "lc": "0.3.21",
+   "neoforge": "21.1.257",
+   "link": "",
+   "date": "2026-11-05",
+   "open": true
   }
  ]
 }
