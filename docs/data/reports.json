@@ -347,6 +347,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft/download/2629023",
    "date": "2026-11-04",
    "open": true
+  },
+  {
+   "issue": 153,
+   "mod": "Morph 0.9.3",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "(works) - Morph GUI opens with bracket keys (doesn't work) - Any of the actual morphing. Killing mobs only gives vanilla behavior.",
+   "lc": "0.3.20",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/morph/download/2338151",
+   "date": "2026-11-05",
+   "open": true
   }
  ]
 }
