@@ -11,11 +11,12 @@ runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars ca
 NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
 "Module ... contains package org.spongepowered...".
 
-> **Status: beta (0.3.x).** 1.7.10 is in beta: content mods (Iron Chest, AgriCraft, BiblioCraft, Botania, Biomes O' Plenty, HBM,
-> Thaumcraft, Witchery and many more) run with their blocks, items, entities, recipes, GUIs, world generation and dimensions, large
-> tech packs load most of their mods, and Galacticraft with its addons runs with per-planet gravity and silent space. 1.12.2 is in
-> alpha: big content mods (Botania, Blood Magic, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct, Quark, Biomes O' Plenty,
-> Scape and Run: Parasites and more) load and play in a real client with their own models, GUIs, mobs and world generation. Some
+> **Status: beta (0.3.x).** The point is mods that **only exist on these old versions** and never got a 1.21.1 port.
+> 1.7.10 is in beta: Thaumcraft 4, Witchery, HBM's Nuclear Tech, the Reika mods (RotaryCraft, ReactorCraft, ChromatiCraft),
+> OreSpawn, Fisk's Superheroes, Morph and Galacticraft with its addons (per-planet gravity, silent space) run with their blocks, items,
+> entities, recipes, GUIs, world generation and dimensions, and large tech packs like GT New Horizons load most of their mods.
+> 1.12.2 is in alpha: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real
+> client with their own models, GUIs, mobs, dimensions and world generation. Some
 > features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
 > mod set.
 
@@ -32,8 +33,8 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 
 | Legacy version | Status |
 |---|---|
-| 1.7.10 | **Beta.** Content mods, large tech packs, mod biomes, dimensions and entities work; Galacticraft with its addons runs; Thaumcraft, Witchery and the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) load inside All the Mods 10. In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
-| 1.12.2 | **Alpha (issue #64).** Big content mods (Botania, Mekanism, EnderIO, Immersive Engineering, Tinkers' Construct, Quark, ...) load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (the Aether) can be entered. OpenComputers, Mekanism and RFTools machines are being brought up. |
+| 1.7.10 | **Beta.** Mods with no modern version are the focus: Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons run, with their mod biomes, dimensions and entities. The Betweenlands 1.0.6 loads and its dimension generates (its mob spawns are still being worked on). In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
+| 1.12.2 | **Alpha (issue #64).** Old-only mods are the focus: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (Atum, the Midnight, the Betweenlands) can be entered. OpenComputers, Mekanism and RFTools machines are being brought up. |
 | 1.20.1 | **Started (experimental, off by default; `experimental.forge1201`).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge). So far: jar detection, the renames, `mods.toml` conversion and the first compatibility layer; no 1.20.1 mod has been run in game yet (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
 | 1.16.5 | Planned (after 1.20.1). |
 | 1.2.5 | Planned (after 1.16.5). |
