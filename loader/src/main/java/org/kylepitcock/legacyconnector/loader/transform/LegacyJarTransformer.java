@@ -215,6 +215,12 @@ public final class LegacyJarTransformer {
                 remapper.override(name, privateRoot + name);
             }
         }
+        // A mod whose own classes live under a relocated root (Engender: net.minecraft.AgeOfMinecraft.*) moved with them.
+        for (LegacyModDecl mod : jar.mods) {
+            if (mod.mainClass != null && classes.containsKey(mod.mainClass) && LegacyVersion.isRelocatedRoot(mod.mainClass)) {
+                mod.mainClass = privateRoot + mod.mainClass;
+            }
+        }
         return dropped;
     }
 
