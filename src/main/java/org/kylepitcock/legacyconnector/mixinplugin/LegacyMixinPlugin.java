@@ -26,6 +26,7 @@ import org.spongepowered.asm.mixin.transformer.ext.ITargetClassContext;
  * translator's provenance resource.
  */
 public final class LegacyMixinPlugin implements IMixinConfigPlugin {
+    private static final String LEGACY_PREFIX = "legacyconnector.legacy.";
     private static final String PROVENANCE = "META-INF/legacyconnector/provenance.json";
     private static volatile boolean installed;
 
@@ -102,7 +103,7 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
         public void preApply(ITargetClassContext context) {
             try {
                 String name = context.getClassNode().name;
-                if (!isLegacy(name)) return;
+                boolean legacy = isLegacy(name);
                 if (mixinsField == null) {
                     // TargetClassContext keeps the mixins to apply in its `mixins` set (no getter in this Mixin version)
                     for (Class<?> c = context.getClass(); c != null && mixinsField == null; c = c.getSuperclass()) {
@@ -117,9 +118,15 @@ public final class LegacyMixinPlugin implements IMixinConfigPlugin {
                 }
                 Collection<?> mixins = (Collection<?>) mixinsField.get(context);
                 int before = mixins.size();
-                mixins.removeIf(m -> !((IMixinInfo) m).getConfig().getName().startsWith("legacyconnector"));
+                // On a legacy class only this mod's configs and the translated legacy mods' own (LEGACY_PREFIX) apply; a translated
+                // mod's mixins (written for 1.12 Minecraft) never apply to anything outside the translated jars.
+                mixins.removeIf(m -> {
+                    String config = ((IMixinInfo) m).getConfig().getName();
+                    if (config.startsWith(LEGACY_PREFIX)) return !legacy;
+                    return legacy && !config.startsWith("legacyconnector");
+                });
                 if (mixins.size() != before) {
-                    System.out.println("[LegacyConnector] skipped " + (before - mixins.size()) + " mixin(s) of other mods on legacy class " + name.replace('/', '.'));
+                    System.out.println("[LegacyConnector] skipped " + (before - mixins.size()) + " mixin(s) on " + (legacy ? "legacy" : "non-legacy") + " class " + name.replace('/', '.'));
                 }
             } catch (Throwable t) {
                 System.err.println("[LegacyConnector] legacy-class mixin guard failed: " + t);

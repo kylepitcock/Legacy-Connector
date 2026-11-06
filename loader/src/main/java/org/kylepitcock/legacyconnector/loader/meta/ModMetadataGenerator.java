@@ -72,6 +72,9 @@ public final class ModMetadataGenerator {
                 dependency(sb, mod.fmlId(), target, required, dep.ordering());
             }
         }
+        for (String config : jar.mixinConfigResources) {
+            sb.append("[[mixins]]\nconfig=").append(q(config)).append("\n\n");
+        }
         return sb.toString().getBytes(StandardCharsets.UTF_8);
     }
 

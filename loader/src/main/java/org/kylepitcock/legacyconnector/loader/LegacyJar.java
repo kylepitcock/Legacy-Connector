@@ -20,6 +20,8 @@ public final class LegacyJar {
     public boolean coreModContainsMod;
     public String tweakClass;
     public String mixinConfigs;
+    /** Resource names of the mixin configs of the translated jar that NeoForge should register ({@code [[mixins]]}); set by the transformer. */
+    public final List<String> mixinConfigResources = new ArrayList<>();
     public String accessTransformer;
     public final List<String> notes = new ArrayList<>();
     /**

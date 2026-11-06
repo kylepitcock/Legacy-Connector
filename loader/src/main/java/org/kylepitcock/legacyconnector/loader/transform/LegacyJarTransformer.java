@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 7;
+    public static final int TRANSFORMER_VERSION = 8;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -343,6 +343,10 @@ public final class LegacyJarTransformer {
             outResources.put(name, e.getValue());
         }
         outResources.putAll(resources.finish());
+        if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {
+            jar.mixinConfigResources.clear();
+            result.notes.addAll(LegacyMixinConfigs.apply(jar, outResources, nodes, hierarchy));
+        }
 
         if (jar.coreModClass != null) {
             // The runtime constructs the coremod's plugin (without applying its transformers), as FML did.
