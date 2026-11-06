@@ -37,6 +37,28 @@ public enum EnumDyeColor implements IStringSerializable {
     private final int color;
     /** The 1.12 field mods read by reflection (field_193351_w). */
     private final int colorValue;
+    /** The chat colour nearest the dye (used for sign and banner text). */
+    public final legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting chatColor;
+
+    private static legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting mcc$chat(String dye) {
+        String f = switch (dye) {
+            case "orange", "brown" -> "GOLD";
+            case "magenta", "pink" -> "LIGHT_PURPLE";
+            case "light_blue" -> "BLUE";
+            case "lime" -> "GREEN";
+            case "gray" -> "DARK_GRAY";
+            case "silver" -> "GRAY";
+            case "cyan" -> "DARK_AQUA";
+            case "purple" -> "DARK_PURPLE";
+            case "blue" -> "DARK_BLUE";
+            case "green" -> "DARK_GREEN";
+            case "red" -> "DARK_RED";
+            case "black" -> "BLACK";
+            case "yellow" -> "YELLOW";
+            default -> "WHITE";
+        };
+        return legacyconnector.v1_12_2.net.minecraft.util.text.TextFormatting.valueOf(f);
+    }
 
     EnumDyeColor(int meta, int dyeDamage, String name, String unlocalizedName, int color) {
         this.meta = meta;
@@ -45,6 +67,7 @@ public enum EnumDyeColor implements IStringSerializable {
         this.unlocalizedName = unlocalizedName;
         this.color = color;
         this.colorValue = color;
+        this.chatColor = mcc$chat(name);
     }
 
     public int getMetadata() {

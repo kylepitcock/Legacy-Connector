@@ -33,6 +33,10 @@ public class FMLInterModComms {
         enqueue(modId, new IMCMessage(key, value));
     }
 
+    public static void sendRuntimeMessage(Object sourceMod, String modId, String key, ItemStack value) {
+        enqueue(modId, new IMCMessage(key, value));
+    }
+
     public static void sendRuntimeMessage(Object sourceMod, String modId, String key, NBTTagCompound value) {
         enqueue(modId, new IMCMessage(key, value));
     }

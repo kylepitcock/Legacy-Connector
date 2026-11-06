@@ -33,6 +33,16 @@ public class LanguageMap {
         return table;
     }
 
+    /** Adds the key/value pairs of a 1.12 .lang file to the language table (Forge's language injection). */
+    public static synchronized void inject(java.io.InputStream inputstream) {
+        inject(instance, inputstream);
+    }
+
+    public static synchronized void inject(LanguageMap inst, java.io.InputStream inputstream) {
+        inst.languageList.putAll(parseLangFile(inputstream));
+        inst.lastUpdateTimeInMilliseconds = System.currentTimeMillis();
+    }
+
     static LanguageMap getInstance() {
         return instance;
     }

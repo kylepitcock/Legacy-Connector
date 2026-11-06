@@ -347,7 +347,40 @@ public final class ItemStack {
 
     public com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> getAttributeModifiers(
             legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot slot) {
+        mcc$refreshTag();
+        if (stackTagCompound != null && stackTagCompound.hasKey("AttributeModifiers", 9)) {
+            // modifiers written to the stack replace the item's own (1.12)
+            com.google.common.collect.Multimap<String, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier> map =
+                    com.google.common.collect.HashMultimap.create();
+            var list = stackTagCompound.getTagList("AttributeModifiers", 10);
+            for (int i = 0; i < list.tagCount(); i++) {
+                NBTTagCompound e = list.getCompoundTagAt(i);
+                if (e.hasKey("Slot", 8) && !e.getString("Slot").equals(slot.getName())) continue;
+                java.util.UUID id = e.getUniqueId("UUID");
+                if (id == null || id.getLeastSignificantBits() == 0L || id.getMostSignificantBits() == 0L) continue;
+                map.put(e.getString("AttributeName"), new legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier(id,
+                        e.getString("Name"), e.getDouble("Amount"), e.getInteger("Operation")));
+            }
+            return map;
+        }
         return getItem().getAttributeModifiers(slot, this);
+    }
+
+    /** Writes an attribute modifier on the stack (its {@code AttributeModifiers} list), for one equipment slot or any when null. */
+    public void addAttributeModifier(String attributeName, legacyconnector.v1_12_2.net.minecraft.entity.ai.attributes.AttributeModifier modifier,
+            legacyconnector.v1_12_2.net.minecraft.inventory.EntityEquipmentSlot equipmentSlot) {
+        mcc$refreshTag();
+        if (stackTagCompound == null) stackTagCompound = new NBTTagCompound();
+        if (!stackTagCompound.hasKey("AttributeModifiers", 9)) stackTagCompound.setTag("AttributeModifiers", new legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList());
+        legacyconnector.v1_12_2.net.minecraft.nbt.NBTTagList list = stackTagCompound.getTagList("AttributeModifiers", 10);
+        NBTTagCompound e = new NBTTagCompound();
+        e.setString("Name", modifier.getName());
+        e.setDouble("Amount", modifier.getAmount());
+        e.setInteger("Operation", modifier.getOperation());
+        e.setUniqueId("UUID", modifier.getID());
+        e.setString("AttributeName", attributeName);
+        if (equipmentSlot != null) e.setString("Slot", equipmentSlot.getName());
+        list.appendTag(e);
     }
 
     public boolean isItemEqualIgnoreDurability(ItemStack other) {
