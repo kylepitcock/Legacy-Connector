@@ -426,7 +426,46 @@ public class Block {
     }
 
     public TileEntity createTileEntity(World world, int metadata) {
-        return this instanceof ITileEntityProvider provider ? provider.createNewTileEntity(world, metadata) : null;
+        if (!(this instanceof ITileEntityProvider provider)) return null;
+        try {
+            return provider.createNewTileEntity(world, metadata);
+        } catch (AbstractMethodError e) {
+            // a 1.6.4 provider implements createNewTileEntity(World), which has no meta argument
+            TileEntity legacy = mcc$createNewTileEntity1(this, world);
+            if (legacy == null) throw e;
+            return legacy;
+        }
+    }
+
+    private static final ClassValue<java.lang.reflect.Method> CREATE_NEW_TILE_ENTITY_1 = new ClassValue<>() {
+        @Override
+        protected java.lang.reflect.Method computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Method m = c.getDeclaredMethod("createNewTileEntity", World.class);
+                    m.setAccessible(true);
+                    return m;
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // next superclass
+                }
+            }
+            return null;
+        }
+    };
+
+    /** The 1.6.4 {@code createNewTileEntity(World)} of a block that declares it, or null when it has none (or returns none). */
+    public static TileEntity mcc$createNewTileEntity1(Block block, World world) {
+        java.lang.reflect.Method m = CREATE_NEW_TILE_ENTITY_1.get(block.getClass());
+        if (m == null) return null;
+        try {
+            return (TileEntity) m.invoke(block, world);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() instanceof RuntimeException r) throw r;
+            if (e.getCause() instanceof Error r) throw r;
+            throw new IllegalStateException(e.getCause());
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public int getRenderType() {

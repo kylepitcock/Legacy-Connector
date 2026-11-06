@@ -38,7 +38,10 @@ final class SplitPackageResolver {
      * Packages the game itself provides as modules (NeoForge ships {@code jakarta.activation}, which exports {@code javax.activation}): a legacy jar
      * bundling a copy is stripped of it and the copy is not shared, or the module layer fails to resolve.
      */
-    private static final Set<String> DROP = Set.of("javax/activation");
+    private static final Set<String> DROP = Set.of("javax/activation",
+            // packages of the JDK's own java.xml module (Mo' Creatures 1.6.4 bundles javax.xml.namespace.QName): a second exporter fails module resolution
+            "javax/xml/namespace", "javax/xml/parsers", "javax/xml/stream", "javax/xml/transform", "javax/xml/xpath", "javax/xml/datatype",
+            "org/w3c/dom", "org/xml/sax");
 
     private static final java.util.regex.Pattern JDK_XML = java.util.regex.Pattern.compile("javax/xml/(catalog|crypto|datatype|namespace|parsers|stream|transform|validation|xpath)(/.*)?");
 

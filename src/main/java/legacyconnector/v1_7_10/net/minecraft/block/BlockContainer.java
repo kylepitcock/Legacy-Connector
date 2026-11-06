@@ -17,7 +17,8 @@ public abstract class BlockContainer extends Block implements ITileEntityProvide
     /** Concrete in the shim only so generated vanilla shells compile; mod subclasses override it as before. */
     @Override
     public legacyconnector.v1_7_10.net.minecraft.tileentity.TileEntity createNewTileEntity(World world, int meta) {
-        return null;
+        // a 1.6.4 subclass overrides createNewTileEntity(World), which has no meta argument
+        return mcc$createNewTileEntity1(this, world);
     }
 
     @Override

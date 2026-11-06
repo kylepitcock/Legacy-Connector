@@ -3,3 +3,5 @@
 virtual	*	sendChatToPlayer	(L{O}net/minecraft/util/ChatMessageComponent;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	sendChatToPlayer
 virtual	*	sendPacketToPlayer	(L{S}net/minecraft/network/Packet;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	sendPacketToPlayer
 static	cpw/mods/fml/common/registry/GameRegistry	registerPlayerTracker	(L{O}cpw/mods/fml/common/IPlayerTracker;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Players164	registerPlayerTracker
+virtual	*	getWorldVec3Pool	()L{O}net/minecraft/util/Vec3Pool;	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	getWorldVec3Pool
+static	net/minecraft/util/AxisAlignedBB	getAABBPool	()L{O}net/minecraft/util/AABBPool;	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	getAABBPool
