@@ -633,7 +633,7 @@ public final class EventBridge1710 {
     public static void renderTick(TickEvent.Phase phase, float partial, net.minecraft.client.gui.GuiGraphics graphics) {
         if (!wants(fml(), TickEvent.RenderTickEvent.class)) return;
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginGui(graphics);
-        var local = net.minecraft.client.Minecraft.getInstance().player;
+        net.minecraft.world.entity.Entity local = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.localPlayer(); // via a client class: the verifier would load LocalPlayer on a server
         double before = 0;
         legacyconnector.v1_7_10.net.minecraft.entity.Entity legacyLocal = null;
         if (phase == TickEvent.Phase.START && local != null && EntityBridge.wrap(local) instanceof legacyconnector.v1_7_10.net.minecraft.entity.Entity le) {

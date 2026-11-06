@@ -164,14 +164,17 @@ public final class Spawns1122 {
             ResourceLocation typeId = net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(k.type());
             JsonObject json = new JsonObject();
             json.addProperty("type", "neoforge:add_spawns");
-            json.add("biomes", array(entry.getValue()));
+            // a tag (the biomes plus the common tags of the vanilla ones) so the pack's modded biomes get the mob too (#155)
+            json.addProperty("biomes", org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyEntitySpawns.biomeTag(out,
+                    "legacy_spawn1122_" + typeId.getNamespace() + "_" + typeId.getPath() + "_" + n, entry.getValue()));
             JsonObject spawner = new JsonObject();
             spawner.addProperty("type", typeId.toString());
             spawner.addProperty("weight", k.weight());
             spawner.addProperty("minCount", k.min());
             spawner.addProperty("maxCount", k.max());
             json.add("spawners", spawner);
-            put(out, "add_" + typeId.getNamespace() + "_" + typeId.getPath() + "_" + (n++), json);
+            put(out, "add_" + typeId.getNamespace() + "_" + typeId.getPath() + "_" + n, json);
+            n++;
         }
         int r = 0;
         for (var entry : removes.entrySet()) {

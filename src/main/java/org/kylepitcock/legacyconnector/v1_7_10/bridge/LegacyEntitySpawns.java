@@ -98,6 +98,31 @@ public final class LegacyEntitySpawns {
         return v == null ? null : ResourceLocation.withDefaultNamespace(v);
     }
 
+    /**
+     * Writes a biome tag holding the given biome ids plus, as optional entries, the common (c:) tag of each vanilla biome among them,
+     * and returns the {@code #legacyconnector:name} reference for a biome modifier. Shared with the 1.12.2 spawns bridge.
+     */
+    public static String biomeTag(Map<String, Supplier<byte[]>> out, String tag, Iterable<String> biomes) {
+        JsonObject tagJson = new JsonObject();
+        JsonArray values = new JsonArray();
+        Set<String> seen = new LinkedHashSet<>();
+        for (String b : biomes) {
+            if (seen.add(b)) values.add(b);
+            ResourceLocation rl = ResourceLocation.parse(b);
+            String common = rl.getNamespace().equals("minecraft") ? COMMON_TAGS.get(rl.getPath()) : null;
+            if (common != null && seen.add("#" + common)) {
+                JsonObject opt = new JsonObject();
+                opt.addProperty("id", "#" + common);
+                opt.addProperty("required", false);
+                values.add(opt);
+            }
+        }
+        tagJson.add("values", values);
+        byte[] tagBytes = tagJson.toString().getBytes(StandardCharsets.UTF_8);
+        out.put("data/legacyconnector/tags/worldgen/biome/" + tag + ".json", () -> tagBytes);
+        return "#legacyconnector:" + tag;
+    }
+
     public static void contribute(Map<String, Supplier<byte[]>> out) {
         Set<ResourceLocation> generated = new java.util.HashSet<>();
         for (BiomeGenBase b : LegacyBiomes.modBiomes()) generated.add(b.mcc$modernId());
@@ -114,29 +139,9 @@ public final class LegacyEntitySpawns {
             if (biomes.isEmpty()) continue;
             JsonObject json = new JsonObject();
             json.addProperty("type", "neoforge:add_spawns");
-            JsonArray list = new JsonArray();
-            biomes.forEach(list::add);
             // a tag instead of the bare vanilla ids: the pack's own biomes (Biomes O' Plenty, Terralith...) replace the vanilla ones
             // in the overworld, and a mob listed for "forest" must also spawn in the forests those mods add
-            String tag = "legacy_spawn_" + info.id().getNamespace() + "_" + info.id().getPath() + "_" + n;
-            JsonObject tagJson = new JsonObject();
-            JsonArray values = new JsonArray();
-            Set<String> seen = new LinkedHashSet<>();
-            for (String b : biomes) {
-                if (seen.add(b)) values.add(b);
-                ResourceLocation rl = ResourceLocation.parse(b);
-                String common = rl.getNamespace().equals("minecraft") ? COMMON_TAGS.get(rl.getPath()) : null;
-                if (common != null && seen.add("#" + common)) {
-                    JsonObject opt = new JsonObject();
-                    opt.addProperty("id", "#" + common);
-                    opt.addProperty("required", false);
-                    values.add(opt);
-                }
-            }
-            tagJson.add("values", values);
-            byte[] tagBytes = tagJson.toString().getBytes(StandardCharsets.UTF_8);
-            out.put("data/legacyconnector/tags/worldgen/biome/" + tag + ".json", () -> tagBytes);
-            json.addProperty("biomes", "#legacyconnector:" + tag);
+            json.addProperty("biomes", biomeTag(out, "legacy_spawn_" + info.id().getNamespace() + "_" + info.id().getPath() + "_" + n, biomes));
             JsonObject spawner = new JsonObject();
             spawner.addProperty("type", info.id().toString());
             spawner.addProperty("weight", s.weight());

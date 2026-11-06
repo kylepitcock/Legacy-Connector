@@ -32,6 +32,11 @@ import org.joml.Quaternionf;
  * another renderer).</p>
  */
 public final class RenderContext {
+    /** The local player (client only; kept here so the common event bridge never links the LocalPlayer class). */
+    public static net.minecraft.world.entity.Entity localPlayer() {
+        return net.minecraft.client.Minecraft.getInstance().player;
+    }
+
     /** {@code open}: the matrices this frame's legacy code pushed and has not popped yet (what the frame may still pop at its end). */
     private record Frame(GuiGraphics gui, PoseStack pose, MultiBufferSource buffers, int light, int overlay, PoseStack.Pose base, boolean locked,
             int kind, int[] open) {
