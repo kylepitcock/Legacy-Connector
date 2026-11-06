@@ -72,4 +72,17 @@ class ForwardRedirectsTest {
         assertEquals(0, ForwardRedirects.apply(node, LegacyVersion.V1_7_10));
         assertTrue(ForwardRedirects.rules(LegacyVersion.V1_6_4).size() >= 3);
     }
+
+    @Test
+    void vec3AndAabbPoolAccessorsReachTheStatelessPools() {
+        ClassNode world = withCall(Opcodes.INVOKEVIRTUAL, "legacyconnector/v1_7_10/net/minecraft/world/World", "getWorldVec3Pool",
+                "()Llegacyconnector/v1_6_4/net/minecraft/util/Vec3Pool;");
+        assertEquals(1, ForwardRedirects.apply(world, LegacyVersion.V1_6_4));
+        assertEquals("(Ljava/lang/Object;)Llegacyconnector/v1_6_4/net/minecraft/util/Vec3Pool;", call(world).desc);
+        ClassNode box = withCall(Opcodes.INVOKESTATIC, "legacyconnector/v1_7_10/net/minecraft/util/AxisAlignedBB", "getAABBPool",
+                "()Llegacyconnector/v1_6_4/net/minecraft/util/AABBPool;");
+        assertEquals(1, ForwardRedirects.apply(box, LegacyVersion.V1_6_4));
+        assertEquals("getAABBPool", call(box).name);
+        assertEquals("org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164", call(box).owner);
+    }
 }
