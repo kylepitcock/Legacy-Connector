@@ -37,6 +37,8 @@ public abstract class BlockRotatedPillar extends Block {
 
     @Override
     public IIcon getIcon(int side, int meta) {
+        // Vanilla pillars never register icons here (mods ask Blocks.log for them: Twilight Forest's giant logs).
+        if (mcc$vanilla != null && blockIcon == null && field_150164_N == null) return mcc$vanillaBlockIcon(side, meta);
         int axis = meta & 12;
         int variant = meta & 3;
         boolean top = axis == 0 && (side == 0 || side == 1) || axis == 4 && (side == 4 || side == 5) || axis == 8 && (side == 2 || side == 3);

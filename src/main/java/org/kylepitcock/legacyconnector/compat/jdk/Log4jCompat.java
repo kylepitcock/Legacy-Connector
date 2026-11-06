@@ -17,6 +17,16 @@ import org.apache.logging.log4j.core.pattern.RegexReplacement;
 public final class Log4jCompat {
     private Log4jCompat() {}
 
+    /** log4j's {@code Loader.getResource}: the given loader, else the context loader, else the one all legacy mods share. */
+    public static java.net.URL getResource(String resource, ClassLoader defaultLoader) {
+        java.net.URL url = null;
+        ClassLoader context = Thread.currentThread().getContextClassLoader();
+        if (context != null) url = ResourceCompat.getResource(context, resource);
+        if (url == null && defaultLoader != null) url = ResourceCompat.getResource(defaultLoader, resource);
+        if (url == null) url = ResourceCompat.getResource(Log4jCompat.class.getClassLoader(), resource);
+        return url;
+    }
+
     public static PatternLayout createLayout(String pattern, Configuration config, RegexReplacement replace, String charsetName,
             String always) {
         PatternLayout.Builder b = PatternLayout.newBuilder().withConfiguration(config).withRegexReplacement(replace)

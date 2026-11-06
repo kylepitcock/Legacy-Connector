@@ -150,6 +150,7 @@ public final class EventBridge1710 {
                     fml().post(new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerConnectionFromClientEvent(handler, manager));
                 }
             }
+            legacyconnector.v1_7_10.net.minecraftforge.common.UsernameCache.setUsername(e.getEntity().getUUID(), e.getEntity().getGameProfile().getName());
             if (wants(fml(), PlayerEvent.PlayerLoggedInEvent.class)) fml().post(new PlayerEvent.PlayerLoggedInEvent(player(e.getEntity())));
             notifyFailures(e.getEntity());
         });

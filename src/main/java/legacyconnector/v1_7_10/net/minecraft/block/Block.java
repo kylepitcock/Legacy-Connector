@@ -119,7 +119,8 @@ public class Block {
         this.blockParticleGravity = 1.0F;
         this.slipperiness = 0.6F;
         this.unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(true, info.legacyName());
-        this.textureName = info.legacyName();
+        // 1.7.10 named a few textures differently from the block (the brick block's is "brick"); mods read the field reflectively.
+        this.textureName = "brick_block".equals(info.legacyName()) || "minecraft:brick_block".equals(info.legacyName()) ? "brick" : info.legacyName();
         BlockBridge.initVanilla(this, info);
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         this.opaque = this.isOpaqueCube();

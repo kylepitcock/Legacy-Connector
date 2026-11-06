@@ -1,11 +1,16 @@
 package legacyconnector.v1_7_10.net.minecraftforge.common;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Forge's UUID -> last known username cache, kept in memory (the modern game has its own profile cache). */
+/**
+ * Forge's UUID -> last known username cache. Forge 1.7.10 filled it when a player joined, before the login event (Ender IO's
+ * hypercubes resolve a player name through it): the bridge fills it the same way, and the modern game's own cache (which the
+ * game fills on join) is read too.
+ */
 public class UsernameCache {
     private static final Map<UUID, String> MAP = new ConcurrentHashMap<>();
 
@@ -21,14 +26,18 @@ public class UsernameCache {
     }
 
     public static String getLastKnownUsername(UUID uuid) {
-        return uuid == null ? null : MAP.get(uuid);
+        if (uuid == null) return null;
+        String name = MAP.get(uuid);
+        return name != null ? name : net.neoforged.neoforge.common.UsernameCache.getLastKnownUsername(uuid);
     }
 
     public static boolean containsUUID(UUID uuid) {
-        return uuid != null && MAP.containsKey(uuid);
+        return uuid != null && (MAP.containsKey(uuid) || net.neoforged.neoforge.common.UsernameCache.containsUUID(uuid));
     }
 
     public static Map<UUID, String> getMap() {
-        return Collections.unmodifiableMap(MAP);
+        Map<UUID, String> all = new HashMap<>(net.neoforged.neoforge.common.UsernameCache.getMap());
+        all.putAll(MAP);
+        return Collections.unmodifiableMap(all);
     }
 }
