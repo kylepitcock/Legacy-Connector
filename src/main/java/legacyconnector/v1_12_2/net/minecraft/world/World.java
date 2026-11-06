@@ -1195,12 +1195,15 @@ public class World implements IBlockAccess {
 
     public void removeEntity(Entity entity) {
         var modern = modernOf(entity);
+        // a player is never discarded: legacy code removes it from one world to put it into another (Galacticraft planet travel), see mcc$moveToWorld
+        if (modern instanceof net.minecraft.server.level.ServerPlayer) return;
         if (modern != null) modern.discard();
         if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
 
     public void removeEntityDangerously(Entity entity) {
         var modern = modernOf(entity);
+        if (modern instanceof net.minecraft.server.level.ServerPlayer) return;
         if (modern != null) modern.discard();
         if (entity != null) legacyconnector.v1_12_2.net.minecraft.entity.Entity.mcc$set$isDead(entity, true);
     }
