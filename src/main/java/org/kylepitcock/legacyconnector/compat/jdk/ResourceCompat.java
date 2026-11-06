@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarFile;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -116,6 +120,35 @@ public final class ResourceCompat {
         } catch (MalformedURLException | IllegalArgumentException e) {
             return url;
         }
+    }
+
+    /** Spell icon indices are saved in AM2's items, so keep its case-insensitive filename order. */
+    public static List<String> listAm2SpellIcons(Class<?> anchor) throws IOException, URISyntaxException {
+        String directory = "assets/arsmagica2/textures/items/spells/icons/";
+        List<String> icons = new ArrayList<>();
+        CodeSource source = anchor.getProtectionDomain().getCodeSource();
+        URL location = source == null ? null : getLocation(source);
+        if (location == null || !location.getProtocol().equals("file")) return icons;
+
+        Path path = Path.of(location.toURI());
+        if (Files.isDirectory(path)) {
+            Path iconDirectory = path.resolve(directory);
+            if (!Files.isDirectory(iconDirectory)) return icons;
+            try (var files = Files.list(iconDirectory)) {
+                files.filter(Files::isRegularFile)
+                        .map(file -> file.getFileName().toString())
+                        .filter(name -> name.endsWith(".png"))
+                        .forEach(name -> icons.add("spells/icons/" + name.substring(0, name.length() - 4)));
+            }
+        } else {
+            try (JarFile jar = new JarFile(path.toFile())) {
+                jar.stream().map(java.util.zip.ZipEntry::getName)
+                        .filter(name -> name.startsWith(directory) && name.endsWith(".png"))
+                        .forEach(name -> icons.add("spells/icons/" + name.substring(directory.length(), name.length() - 4)));
+            }
+        }
+        icons.sort(String.CASE_INSENSITIVE_ORDER);
+        return icons;
     }
 
     static URL legacy(URL url) {
