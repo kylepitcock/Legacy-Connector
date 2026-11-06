@@ -633,14 +633,32 @@ public final class EventBridge1710 {
     public static void renderTick(TickEvent.Phase phase, float partial, net.minecraft.client.gui.GuiGraphics graphics) {
         if (!wants(fml(), TickEvent.RenderTickEvent.class)) return;
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginGui(graphics);
+        var local = net.minecraft.client.Minecraft.getInstance().player;
+        double before = 0;
+        legacyconnector.v1_7_10.net.minecraft.entity.Entity legacyLocal = null;
+        if (phase == TickEvent.Phase.START && local != null && EntityBridge.wrap(local) instanceof legacyconnector.v1_7_10.net.minecraft.entity.Entity le) {
+            legacyLocal = le;
+            before = le.mcc$y();
+        }
         try {
             fml().post(new TickEvent.RenderTickEvent(phase, partial));
+            if (legacyLocal != null) frameShiftY = legacyLocal.mcc$y() - before;
         } catch (RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/Hud").warn("A render tick handler failed: {}", e.toString());
         } finally {
             org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
         }
     }
+
+    /**
+     * How far RenderTickEvent START handlers moved the local player's legacy posY (they undo it at END). 1.7.10 posted START before the
+     * world was drawn, so the shift held while the player was drawn: the camera, the player and RenderManager.renderPosY all moved with
+     * it (Morph lowers the eye to the mob's eye height this way, and draws the morph at ySize above posY - renderPosY). Here START comes
+     * at the HUD, where moving the real entity would be seen by nothing; the shift is kept and applied to renderPosY while the local
+     * player's render events are posted, so those handlers get the same difference between posY and renderPosY as they had.
+     */
+    private static double frameShiftY;
+    private static double viewerShiftY;
 
     private static legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderPlayer legacyRenderPlayer;
 
@@ -714,10 +732,19 @@ public final class EventBridge1710 {
      * pose is the camera-relative translation alone (the view rotation is elsewhere); in a GUI (the inventory's player) it is scaled,
      * and 1.7.10 drew such entities at 0, 0, 0.
      */
-    private static double[] legacyRenderPos(com.mojang.blaze3d.vertex.PoseStack pose) {
+    /**
+     * Where a level render puts the entity: its offset from the camera and a flag (index 3) set when the pose is the entity's world pose,
+     * or {0, 0, 0, 0} for any other render (the inventory's player, a model preview). The pose may carry a scale (other mods scale the
+     * entity before the event) so the diagonal is no test; the translation either is the entity's offset from the camera or it is not.
+     */
+    private static double[] legacyRenderPos(com.mojang.blaze3d.vertex.PoseStack pose, net.minecraft.world.entity.Entity entity, float partial) {
         var m = pose.last().pose();
-        boolean world = Math.abs(m.m00() - 1) < 1e-3F && Math.abs(m.m11() - 1) < 1e-3F && Math.abs(m.m22() - 1) < 1e-3F;
-        return world ? new double[] {m.m30(), m.m31(), m.m32()} : new double[] {0, 0, 0};
+        var cam = net.minecraft.client.Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        double x = net.minecraft.util.Mth.lerp(partial, entity.xOld, entity.getX()) - cam.x;
+        double y = net.minecraft.util.Mth.lerp(partial, entity.yOld, entity.getY()) - cam.y;
+        double z = net.minecraft.util.Mth.lerp(partial, entity.zOld, entity.getZ()) - cam.z;
+        boolean world = Math.abs(m.m30() - x) < 0.05 && Math.abs(m.m31() - y) < 0.05 && Math.abs(m.m32() - z) < 0.05;
+        return world ? new double[] {m.m30(), m.m31(), m.m32(), 1} : new double[] {0, 0, 0, 0};
     }
 
     /**
@@ -729,11 +756,20 @@ public final class EventBridge1710 {
     private static boolean postInWorld(legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event event, com.mojang.blaze3d.vertex.PoseStack pose,
             net.minecraft.client.renderer.MultiBufferSource buffers, int light, double[] at) {
         pose.pushPose();
-        pose.translate(-at[0], -at[1], -at[2]);
+        if (at.length > 3 && at[3] != 0) {
+            // back to the camera, unscaled and unrotated: 1.7.10 events were posted with the GL matrix at the camera
+            pose.last().pose().identity();
+            pose.last().normal().identity();
+        } else {
+            pose.translate(-at[0], -at[1], -at[2]);
+        }
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
+        double renderPosY = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY;
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - viewerShiftY;
         try {
             return forge().post(event);
         } finally {
+            legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY;
             org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.end();
             pose.popPose();
         }
@@ -819,39 +855,49 @@ public final class EventBridge1710 {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre.class)
                     && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
-            double[] at = legacyRenderPos(e.getPoseStack());
-            double x = at[0], y = at[1], z = at[2];
             float partial = e.getPartialTick();
-            var pre = new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre(player, legacyRenderPlayer(), partial, x, y, z);
-            if (postInWorld(pre, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) {
-                e.setCanceled(true);
-                return;
+            double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), partial);
+            double x = at[0], y = at[1], z = at[2];
+            viewerShiftY = e.getEntity() == net.minecraft.client.Minecraft.getInstance().player ? frameShiftY : 0;
+            try {
+                var pre = new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Pre(player, legacyRenderPlayer(), partial, x, y, z);
+                if (postInWorld(pre, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) {
+                    e.setCanceled(true);
+                    return;
+                }
+                postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z),
+                        e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+            } finally {
+                viewerShiftY = 0;
             }
-            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Pre(player, legacyRenderPlayer(), partial, x, y, z),
-                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderPlayerEvent.Post e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post.class)
                     && !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post.class)) return;
             if (!(EntityBridge.wrap(e.getEntity()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer player)) return;
-            double[] at = legacyRenderPos(e.getPoseStack());
-            double x = at[0], y = at[1], z = at[2];
             float partial = e.getPartialTick();
-            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z),
-                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
-            postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z),
-                    e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+            double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), partial);
+            double x = at[0], y = at[1], z = at[2];
+            viewerShiftY = e.getEntity() == net.minecraft.client.Minecraft.getInstance().player ? frameShiftY : 0;
+            try {
+                postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Specials.Post(player, legacyRenderPlayer(), partial, x, y, z),
+                        e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+                postInWorld(new legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderPlayerEvent.Post(player, legacyRenderPlayer(), partial, x, y, z),
+                        e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
+            } finally {
+                viewerShiftY = 0;
+            }
         });
         // (every living entity drawn, every frame: nothing is computed or wrapped unless a legacy listener wants the event)
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Pre<?, ?> e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Pre.class)) return;
-            double[] at = legacyRenderPos(e.getPoseStack());
+            double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), e.getPartialTick());
             var legacy = livingRenderEvent(e.getEntity(), true, at);
             if (legacy != null && postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at)) e.setCanceled(true);
         });
         gameBus.addListener((net.neoforged.neoforge.client.event.RenderLivingEvent.Post<?, ?> e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.client.event.RenderLivingEvent.Post.class)) return;
-            double[] at = legacyRenderPos(e.getPoseStack());
+            double[] at = legacyRenderPos(e.getPoseStack(), e.getEntity(), e.getPartialTick());
             var legacy = livingRenderEvent(e.getEntity(), false, at);
             if (legacy != null) postInWorld(legacy, e.getPoseStack(), e.getMultiBufferSource(), e.getPackedLight(), at);
         });

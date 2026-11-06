@@ -31,6 +31,9 @@ public class ModelRenderer {
     public float offsetX;
     public float offsetY;
     public float offsetZ;
+    /** 1.7.10 compiled a part into a display list the first time it was drawn; code that copies models (Morph) keeps only the parts that were. */
+    public boolean compiled;
+    public int displayList;
 
     public ModelRenderer(ModelBase model, String name) {
         this.textureWidth = 64.0F;
@@ -92,6 +95,10 @@ public class ModelRenderer {
 
     public void render(float scale) {
         if (isHidden || !showModel) return;
+        if (!compiled) {
+            displayList = org.kylepitcock.legacyconnector.v1_7_10.client.DisplayLists.generate(1);
+            compiled = true;
+        }
         PoseStack pose = RenderContext.pose();
         if (pose == null) return;
         pose.pushPose();
