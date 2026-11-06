@@ -66,6 +66,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         return legacy instanceof EntityLivingBase l ? l : null;
     }
 
+    private boolean isAm2AirSled() {
+        return legacy != null && legacy.getClass().getName().equals("am2.entities.EntityAirSled");
+    }
+
     private EntityPlayer wrap(Player player) {
         return (EntityPlayer) EntityBridge.wrap(player);
     }
@@ -313,6 +317,8 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     @Override
     public void travel(net.minecraft.world.phys.Vec3 input) {
+        // The server steers the Air Sled. Applying its velocity here would also move it past the interpolated position.
+        if (level().isClientSide() && isAm2AirSled()) return;
         EntityLivingBase l = living();
         if (l == null || inTravel) {
             super.travel(input);
@@ -628,6 +634,12 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         this.width = width;
         this.height = height;
         refreshDimensions();
+    }
+
+    @Override
+    public boolean fudgePositionAfterSizeChange(EntityDimensions previous) {
+        // AM2 temporarily expands the Air Sled's hitbox upward for movement clearance while keeping its base in place.
+        return !isAm2AirSled() && super.fudgePositionAfterSizeChange(previous);
     }
 
     @Override
