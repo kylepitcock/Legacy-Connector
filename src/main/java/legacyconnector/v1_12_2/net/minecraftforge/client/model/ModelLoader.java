@@ -175,10 +175,6 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
     @SuppressWarnings("unused")
     private final Map<ModelResourceLocation, IModel> stateModels = new java.util.LinkedHashMap<>();
 
-    /** Forge's private map of the exceptions model loading ran into; CodeChickenLib's blockstate loader reads it by reflection. */
-    @SuppressWarnings("unused")
-    private final Map<ResourceLocation, Exception> loadingExceptions = new java.util.HashMap<>();
-
     /**
      * Forge's loader of vanilla (json) models, and the way to the model loader instance: CodeChickenLib's blockstate loader reads
      * {@code VanillaLoader.INSTANCE} and calls {@code getLoader()} by reflection to reach the loader's block model shapes and resource
@@ -209,13 +205,61 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
         }
     }
 
+    /** Forge's records of what failed while baking (private; mods read them by reflection to report broken models: Blood Magic). They stay empty here. */
+    @SuppressWarnings("unused")
+    private final Map<ModelResourceLocation, Exception> loadingExceptions = new java.util.LinkedHashMap<>();
+    @SuppressWarnings("unused")
+    private final java.util.Set<ModelResourceLocation> missingVariants = new java.util.LinkedHashSet<>();
+    @SuppressWarnings("unused")
+    private final com.google.common.collect.SetMultimap<ModelResourceLocation, String> missingTextures = com.google.common.collect.HashMultimap.create();
+
     /** Forge's multipart model wrapper; mods read its private part list by reflection (CTM). */
     public static class MultipartModel {
         private Map<Object, Object> partModels = new java.util.HashMap<>();
     }
 
     /** Forge's wrapper of a vanilla model; mods read the wrapped model by reflection (CTM). */
-    public static class VanillaModelWrapper {
-        private Object model;
+    public class VanillaModelWrapper implements IModel {
+        private legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock model;
+        private final ResourceLocation location;
+        private final boolean uvlock;
+        private final legacyconnector.v1_12_2.net.minecraftforge.client.model.animation.ModelBlockAnimation animation;
+
+        /** Forge's (private, inner) constructor: mods reflect it to wrap their own json models (AE2's UVL models). */
+        public VanillaModelWrapper(ResourceLocation location, legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock model,
+                boolean uvlock, legacyconnector.v1_12_2.net.minecraftforge.client.model.animation.ModelBlockAnimation animation) {
+            this.location = location;
+            this.model = model;
+            this.uvlock = uvlock;
+            this.animation = animation;
+        }
+
+        @Override
+        public java.util.Optional<legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelBlock> asVanillaModel() {
+            return java.util.Optional.ofNullable(model);
+        }
+    }
+
+    /** Forge's loader of plain json models (a singleton with the owning ModelLoader in a private field; AE2's UVL models read it by reflection). */
+    public static final class VanillaLoader implements ICustomModelLoader {
+        public static final VanillaLoader INSTANCE = new VanillaLoader();
+        private ModelLoader loader;
+
+        private VanillaLoader() {
+        }
+
+        @Override
+        public boolean accepts(ResourceLocation modelLocation) {
+            return false;
+        }
+
+        @Override
+        public IModel loadModel(ResourceLocation modelLocation) {
+            return ModelLoaderRegistry.getMissingModel();
+        }
+
+        @Override
+        public void onResourceManagerReload(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager) {
+        }
     }
 }

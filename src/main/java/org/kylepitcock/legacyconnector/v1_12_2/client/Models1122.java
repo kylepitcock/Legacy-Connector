@@ -57,6 +57,7 @@ public final class Models1122 {
         return MODERN.computeIfAbsent(legacy, ModernView::new);
     }
 
+    private static final ThreadLocal<java.util.Set<Object>> BLOCK_ONLY_ACTIVE = ThreadLocal.withInitial(java.util.HashSet::new);
     private static final Map<IBakedModel, IBakedModel> BLOCK_ONLY = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
@@ -75,7 +76,15 @@ public final class Models1122 {
     private record BlockOnlyView(IBakedModel model) implements IBakedModel {
         @Override
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            return model.getQuads(state, side, rand);
+            // asked again for its own quads while it is collecting them (EnderIO's QuadCollector gathers the "friendly" states' models, which are
+            // all this one model here): the nested ask draws nothing instead of recursing until the stack is gone
+            var active = BLOCK_ONLY_ACTIVE.get();
+            if (!active.add(this)) return List.of();
+            try {
+                return model.getQuads(state, side, rand);
+            } finally {
+                active.remove(this);
+            }
         }
 
         @Override
@@ -360,8 +369,10 @@ public final class Models1122 {
                 List<net.minecraft.client.renderer.block.model.BakedQuad> out = new ArrayList<>(quads.size());
                 for (BakedQuad q : quads) if (q != null) out.add(Quads1122.toModern(q));
                 return out;
-            } catch (RuntimeException | LinkageError e) {
-                RenderErrors1122.report("asking a legacy model " + legacy.getClass().getName() + " for quads", e);
+            } catch (RuntimeException | LinkageError | StackOverflowError e) {
+                // a model that relays to "its" model of another state (EnderIO's RelayingBakedModel: its render= states are one meta state here) can
+                // ask itself forever; that must cost the block its drawing, not the client
+                RenderErrors1122.report("asking a legacy model " + legacy.getClass().getName() + " for quads", e instanceof StackOverflowError so ? new RuntimeException(so.toString()) : e);
                 return List.of();
             } finally {
                 legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.setRenderLayer(previous);
