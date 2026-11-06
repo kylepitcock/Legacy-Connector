@@ -13,7 +13,15 @@ import net.minecraft.util.RandomSource;
 
 /** 1.12.2 sounds as modern sound instances: the sound event id is the same, tickable sounds are updated by the modern sound manager. */
 public final class LegacySounds1122 {
-    private static final Map<ISound, SoundInstance> PLAYING = new WeakHashMap<>();
+    /**
+     * Legacy sound to its modern instance. The instance is held WEAKLY: a tickable instance references its legacy sound (the key), so a strong value in a
+     * WeakHashMap kept every key alive for good (SRParasites' Venkrol tornado creates a new looping sound whenever isSoundPlaying says no: 70 leaked per second).
+     * While a sound plays the sound manager holds the instance, which holds the key, so the entry stays exactly that long.
+     */
+    private static final Map<ISound, java.lang.ref.WeakReference<SoundInstance>> PLAYING = new WeakHashMap<>();
+    /** A freshly started sound is not active in the engine until its channel is acquired; legacy mods ask isSoundPlaying right after, and start another one. */
+    private static final long START_GRACE_NANOS = 750_000_000L;
+    private static final Map<SoundInstance, Long> STARTED = new WeakHashMap<>();
 
     private LegacySounds1122() {}
 
@@ -39,7 +47,7 @@ public final class LegacySounds1122 {
                     sound.getXPosF(), sound.getYPosF(), sound.getZPosF(), relative);
         }
         synchronized (PLAYING) {
-            PLAYING.put(sound, instance);
+            PLAYING.put(sound, new java.lang.ref.WeakReference<>(instance));
         }
         return instance;
     }
@@ -47,7 +55,7 @@ public final class LegacySounds1122 {
     /** The legacy sound a modern instance plays, or a record standing in for a modern sound (for PlaySoundEvent handlers). */
     public static ISound legacy(SoundInstance instance) {
         synchronized (PLAYING) {
-            for (var e : PLAYING.entrySet()) if (e.getValue() == instance) return e.getKey();
+            for (var e : PLAYING.entrySet()) if (e.getValue().get() == instance) return e.getKey();
         }
         var id = instance.getLocation();
         legacyconnector.v1_12_2.net.minecraft.util.SoundCategory category;
@@ -68,16 +76,24 @@ public final class LegacySounds1122 {
         SoundInstance instance = instance(sound);
         if (instance == null) return;
         var manager = Minecraft.getInstance().getSoundManager();
+        synchronized (PLAYING) {
+            STARTED.put(instance, System.nanoTime());
+        }
         if (delay > 0) manager.playDelayed(instance, delay);
         else manager.play(instance);
     }
 
     public static boolean isPlaying(ISound sound) {
         SoundInstance instance;
+        Long started;
         synchronized (PLAYING) {
-            instance = PLAYING.get(sound);
+            var ref = PLAYING.get(sound);
+            instance = ref == null ? null : ref.get();
+            started = instance == null ? null : STARTED.get(instance);
         }
-        return instance != null && Minecraft.getInstance().getSoundManager().isActive(instance);
+        if (instance == null) return false;
+        if (Minecraft.getInstance().getSoundManager().isActive(instance)) return true;
+        return started != null && System.nanoTime() - started < START_GRACE_NANOS && !(instance instanceof AbstractTickableSoundInstance t && t.isStopped());
     }
 
     /**
@@ -89,7 +105,8 @@ public final class LegacySounds1122 {
         var manager = Minecraft.getInstance().getSoundManager();
         synchronized (PLAYING) {
             for (var e : PLAYING.entrySet()) {
-                if (manager.isActive(e.getValue())) out.put(e.getKey(), Integer.toHexString(System.identityHashCode(e.getValue())));
+                var value = e.getValue().get();
+                if (value != null && manager.isActive(value)) out.put(e.getKey(), Integer.toHexString(System.identityHashCode(value)));
             }
         }
         return out;
@@ -98,7 +115,8 @@ public final class LegacySounds1122 {
     public static void stop(ISound sound) {
         SoundInstance instance;
         synchronized (PLAYING) {
-            instance = PLAYING.remove(sound);
+            var ref = PLAYING.remove(sound);
+            instance = ref == null ? null : ref.get();
         }
         if (instance != null) Minecraft.getInstance().getSoundManager().stop(instance);
     }
