@@ -88,6 +88,31 @@ public final class ItemBridge1122 {
         Dispensers1122.onItemRegistered(item);
     }
 
+    /**
+     * Items are registered (and their subtypes listed) when Forge posts the item registry event, before mods' own registries: an item
+     * whose {@code getSubItems} reads one (Electroblob's Wizardry spell books: one subtype per registered spell) listed nothing but meta 0
+     * then. After postInit (when mods have filled their registries) the subtypes are listed again and the missing variants registered.
+     */
+    public static synchronized void completeSubtypes() {
+        int added = 0;
+        for (Item item : new ArrayList<>(MOD_ITEMS)) {
+            if (item instanceof ItemBlock || !item.getHasSubtypes()) continue;
+            Map<Integer, net.minecraft.world.item.Item> variants = VARIANTS.get(item);
+            if (variants == null || item.getRegistryName() == null) continue;
+            ResourceLocation base = BlockBridge1122.modernId(item.getRegistryName());
+            var listed = metas(item);
+            for (int meta : listed) {
+                if (variants.containsKey(meta)) continue;
+                var modern = new Legacy1122Item(item, meta, properties(item));
+                ResourceLocation id = meta == 0 ? base : ResourceLocation.fromNamespaceAndPath(base.getNamespace(), base.getPath() + "_" + meta);
+                LegacyRegistrar.register(BuiltInRegistries.ITEM, id, modern);
+                variants.put(meta, modern);
+                added++;
+            }
+        }
+        if (added > 0) LOG.info("{} item subtype(s) that depend on mod registries registered after them", added);
+    }
+
     /** The metadata values the creative inventory lists for this item (at least 0). */
     private static List<Integer> metas(Item item) {
         List<Integer> out = new ArrayList<>();
@@ -95,6 +120,9 @@ public final class ItemBridge1122 {
             try {
                 NonNullList<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> list = NonNullList.create();
                 item.getSubItems(CreativeTabs.SEARCH, list);
+                // many items list their subtypes only for their own tab (Electroblob's Wizardry spell books: `if (tab == WizardryTabs.SPELLS)`)
+                var own = item.getCreativeTab();
+                if (own != null && own != CreativeTabs.SEARCH) item.getSubItems(own, list);
                 for (var s : list) if (!s.isEmpty() && s.getItem() == item && !out.contains(s.getMetadata())) out.add(s.getMetadata());
             } catch (RuntimeException | LinkageError e) {
                 LOG.warn("Could not list the subtypes of {}: {}", item.getRegistryName(), e.toString());

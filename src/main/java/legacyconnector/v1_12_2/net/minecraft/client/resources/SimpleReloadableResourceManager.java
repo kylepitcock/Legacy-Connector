@@ -58,7 +58,7 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
             try {
                 listener.onResourceManagerReload(this);
             } catch (RuntimeException | LinkageError e) {
-                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Client").warn("A resource reload listener failed: {}", e.toString());
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/Client").warn("A resource reload listener ({}) failed", listener.getClass().getName(), e);
             }
         };
         if (!net.neoforged.fml.loading.FMLEnvironment.dist.isClient() || com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) run.run();

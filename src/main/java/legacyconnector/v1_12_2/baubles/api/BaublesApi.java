@@ -9,13 +9,19 @@ import org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles1122;
 
 /** Baubles 1.12's API: a player's Baubles slots are a view over their Curios slots (the bridge is active only with Curios). */
 public class BaublesApi {
+    /** Without Curios the bridge class cannot link: no Baubles slots (callers get null, as with a Baubles-less player). */
+    private static boolean curios() {
+        return net.neoforged.fml.ModList.get().isLoaded("curios");
+    }
+
     public static IBaublesItemHandler getBaublesHandler(EntityPlayer player) {
-        return player == null ? null : CuriosBaubles1122.handler(player);
+        if (player == null) return null;
+        return curios() ? CuriosBaubles1122.handler(player) : legacyconnector.v1_12_2.baubles.api.cap.EmptyBaublesHandler.INSTANCE;
     }
 
     @Deprecated
     public static IInventory getBaubles(EntityPlayer player) {
-        return player == null ? null : CuriosBaubles1122.inventory(player);
+        return player == null || !curios() ? null : CuriosBaubles1122.inventory(player);
     }
 
     /** The first Baubles slot holding the item, or -1. */

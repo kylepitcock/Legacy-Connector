@@ -93,7 +93,13 @@ public final class NetworkBridge1122 {
         }
 
         public void sendToServer(IMessage message) {
-            PacketDistributor.sendToServer(encode(message));
+            try {
+                PacketDistributor.sendToServer(encode(message));
+            } catch (NullPointerException noConnection) {
+                // 1.12 silently dropped a client-to-server message sent while not connected (mods ask the server for data from a resource reload,
+                // which also runs at startup before any world); NeoForge requires a connection
+                LOG.debug("Dropped a message to the server on channel {}: not connected", name);
+            }
         }
 
         public void sendTo(IMessage message, ServerPlayer player) {

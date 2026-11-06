@@ -472,6 +472,7 @@ public final class Platform1122 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         Loader.mcc$setState(LoaderState.AVAILABLE);
+        org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.completeSubtypes(); // mods' own registries are filled by now
         PlacementSelfTest1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();

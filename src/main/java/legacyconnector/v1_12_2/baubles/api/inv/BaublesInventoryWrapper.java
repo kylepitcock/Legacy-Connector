@@ -12,7 +12,7 @@ public class BaublesInventoryWrapper implements IInventory {
     private final IInventory inner;
 
     public BaublesInventoryWrapper(IBaublesItemHandler handler, EntityPlayer player) {
-        this.inner = player == null ? null : CuriosBaubles1122.inventory(player);
+        this.inner = player == null || !net.neoforged.fml.ModList.get().isLoaded("curios") ? null : CuriosBaubles1122.inventory(player);
     }
 
     public int getSizeInventory() { return inner == null ? 0 : inner.getSizeInventory(); }

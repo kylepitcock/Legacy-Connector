@@ -487,7 +487,8 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     }
 
     public static void mcc$set$isDead(Entity e, boolean v) {
-        if (v) e.setDead();
+        // never the virtual setDead(): a mod's setDead() override ends with `isDead = true` (vanilla's own body), which would recurse forever
+        if (v) e.mcc$markDead();
         else e.mcc$local_isDead = false;
     }
 
@@ -1142,6 +1143,11 @@ public abstract class Entity implements legacyconnector.v1_12_2.net.minecraft.co
     }
 
     public void setDead() {
+        mcc$markDead();
+    }
+
+    /** What the base setDead() does, callable without dispatching to an override. */
+    public final void mcc$markDead() {
         mcc$local_isDead = true;
         var m = mcc$entity;
         if (m != null && !(m instanceof net.minecraft.world.entity.player.Player)) m.discard();

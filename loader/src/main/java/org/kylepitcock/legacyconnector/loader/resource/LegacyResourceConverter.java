@@ -150,7 +150,7 @@ public final class LegacyResourceConverter {
         boolean escapes = false;
         for (String line : text.split("\\r?\\n")) {
             if (line.startsWith("﻿")) line = line.substring(1);
-            if (line.trim().equals("#PARSE_ESCAPES")) {
+            if (line.replace(" ", "").equals("#PARSE_ESCAPES")) { // "#PARSE_ESCAPES" and "# PARSE_ESCAPES" both occur
                 escapes = true;
                 continue;
             }
@@ -158,12 +158,46 @@ public final class LegacyResourceConverter {
             int eq = line.indexOf('=');
             if (eq <= 0) continue;
             String value = line.substring(eq + 1);
-            if (escapes) value = value.replace("\\n", "\n").replace("\\t", "\t").replace("\\\\", "\\");
+            String key = line.substring(0, eq);
+            if (escapes) {
+                // Properties-style escapes; keys carry them too (Electroblob's Wizardry: "tile.ebwizardry\:arcane_workbench.name")
+                value = unescapeLang(value);
+                key = unescapeLang(key);
+            }
             // 1.7.10 used Java format specifiers verbatim (%s, %d); modern Component formatting accepts %s and
             // positional %1$s only. Numeric conversions are rewritten so translations do not render raw.
             value = value.replaceAll("%(\\d+\\$)?[dfx]", "%$1s").replaceAll("%(\\d+\\$)?\\.\\d+f", "%$1s");
-            out.put(line.substring(0, eq), value);
+            out.put(key, value);
         }
+    }
+
+    /** java.util.Properties escapes: \n \t \r and unicode escapes, and a backslash before any other character (\: \= \\ ...) stands for that character. */
+    static String unescapeLang(String s) {
+        if (s.indexOf('\\') < 0) return s;
+        StringBuilder b = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c != '\\' || i + 1 >= s.length()) {
+                b.append(c);
+                continue;
+            }
+            char n = s.charAt(++i);
+            switch (n) {
+                case 'n' -> b.append('\n');
+                case 't' -> b.append('\t');
+                case 'r' -> b.append('\r');
+                case 'u' -> {
+                    if (i + 4 < s.length() && s.substring(i + 1, i + 5).matches("[0-9a-fA-F]{4}")) {
+                        b.append((char) Integer.parseInt(s.substring(i + 1, i + 5), 16));
+                        i += 4;
+                    } else {
+                        b.append("\\u");
+                    }
+                }
+                default -> b.append(n);
+            }
+        }
+        return b.toString();
     }
 
     /**
