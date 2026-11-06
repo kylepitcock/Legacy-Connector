@@ -44,6 +44,18 @@ public class ModelResourceLocation extends ResourceLocation {
         return variant;
     }
 
+    /** Like Forge's: equal only with the same variant (mods key custom models by "block#normal" and ask for "block#base0"). */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        return o instanceof ModelResourceLocation m && super.equals(o) && variant.equals(m.variant);
+    }
+
+    @Override
+    public int hashCode() {
+        return 31 * super.hashCode() + variant.hashCode();
+    }
+
     @Override
     public String toString() {
         return super.toString() + "#" + variant;
