@@ -59,6 +59,9 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/lang/ClassLoader", "getResourceAsStream", "(Ljava/lang/String;)Ljava/io/InputStream;", COMPAT + "ResourceCompat");
         virtualToStatic("java/lang/ClassLoader", "getResources", "(Ljava/lang/String;)Ljava/util/Enumeration;", COMPAT + "ResourceCompat");
         virtualToStatic("java/security/CodeSource", "getLocation", "()Ljava/net/URL;", COMPAT + "ResourceCompat");
+        // Network calls without timeouts stall the loading thread as long as a dead host takes to give up (NetCompat).
+        virtualToStatic("java/net/URL", "openConnection", "()Ljava/net/URLConnection;", COMPAT + "NetCompat");
+        virtualToStatic("java/net/URL", "openStream", "()Ljava/io/InputStream;", COMPAT + "NetCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.
         virtualToStatic("java/lang/Thread", "stop", "()V", COMPAT + "JdkCompat");
         // Java 11: Thread.stop(Throwable) was removed.

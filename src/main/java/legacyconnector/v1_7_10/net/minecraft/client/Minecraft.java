@@ -32,6 +32,9 @@ public class Minecraft {
     /** Phantom: true while playing with the mouse captured (key handlers check it: Thaumcraft's wand focus key). */
     @Deprecated
     public boolean inGameHasFocus;
+    /** The version the launcher started (Ars Magica 2 reads it reflectively to pick its compendium update; null skipped them). */
+    private final String launchedVersion = "1.7.10";
+    private final String field_110447_Z = "1.7.10";
     /** 1.7.10's frames-per-second counter. */
     public static int debugFPS;
     public TextureManager renderEngine = TextureManager.INSTANCE;
