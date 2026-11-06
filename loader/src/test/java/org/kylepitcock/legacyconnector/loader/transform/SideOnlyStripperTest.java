@@ -135,4 +135,22 @@ class SideOnlyStripperTest implements Opcodes {
         assertEquals(0, SideOnlyStripper.apply(node, "", "CLIENT"));
         assertEquals(count, node.methods.size());
     }
+
+    @Test
+    void creativeListingMethodsStayOnTheServer() {
+        ClassWriter cw = new ClassWriter(0);
+        cw.visit(V21, ACC_PUBLIC, OWNER, null, "java/lang/Object", null);
+        for (String name : new String[] {"func_150895_a", "func_149666_a", "getSubItems", "other"}) {
+            MethodVisitor mv = method(cw, name, true);
+            mv.visitInsn(ACONST_NULL);
+            mv.visitInsn(ARETURN);
+            mv.visitMaxs(1, 0);
+            mv.visitEnd();
+        }
+        cw.visitEnd();
+        ClassNode node = new ClassNode();
+        new ClassReader(cw.toByteArray()).accept(node, 0);
+        assertEquals(1, SideOnlyStripper.apply(node, "", "SERVER"));
+        assertEquals(Set.of("func_150895_a", "func_149666_a", "getSubItems"), names(node));
+    }
 }

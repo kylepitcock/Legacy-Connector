@@ -29,6 +29,18 @@ import org.objectweb.asm.tree.MethodNode;
 public final class SideOnlyStripper {
     private SideOnlyStripper() {}
 
+    /**
+     * Creative-listing methods ({@code Block.getSubBlocks}, {@code Item.getSubItems}; srg and mapped names) are annotated client-only in
+     * Forge, but the layer asks them on both sides: they decide which subtypes (and so which registry keys) a legacy item has, and a
+     * dedicated server without them registers other keys than its clients (the join fails with "registries with unknown keys").
+     */
+    private static boolean listsSubtypes(MethodNode m) {
+        return switch (m.name) {
+            case "getSubBlocks", "getSubItems", "func_149666_a", "func_150895_a" -> true;
+            default -> false;
+        };
+    }
+
     /** Orphaned synthetic lambda bodies removed so far (statistics, read by diagnostics and tests). */
     public static final AtomicInteger LAMBDAS_REMOVED = new AtomicInteger();
 
@@ -39,7 +51,7 @@ public final class SideOnlyStripper {
         node.fields.removeIf(f -> otherSide(f.visibleAnnotations, desc, side) || otherSide(f.invisibleAnnotations, desc, side));
         List<MethodNode> removed = new ArrayList<>();
         node.methods.removeIf(m -> {
-            boolean r = otherSide(m.visibleAnnotations, desc, side) || otherSide(m.invisibleAnnotations, desc, side);
+            boolean r = !listsSubtypes(m) && (otherSide(m.visibleAnnotations, desc, side) || otherSide(m.invisibleAnnotations, desc, side));
             if (r) removed.add(m);
             return r;
         });
