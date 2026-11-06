@@ -71,6 +71,11 @@ public class FMLCommonHandler {
         return legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer.mcc$instance();
     }
 
+    /** FML's per-side handler; its server is the one the shim wraps (the modern server once it runs, the game directory before). */
+    public IFMLSidedHandler getSidedDelegate() {
+        return () -> getMinecraftServerInstance();
+    }
+
     /** The thread a message handler hands its work to: the server's for a player's connection, else the client's. */
     public legacyconnector.v1_12_2.net.minecraft.util.IThreadListener getWorldThread(legacyconnector.v1_12_2.net.minecraft.network.INetHandler net) {
         if (net instanceof legacyconnector.v1_12_2.net.minecraft.network.play.INetHandlerPlayServer || !FMLEnvironment.dist.isClient()) {

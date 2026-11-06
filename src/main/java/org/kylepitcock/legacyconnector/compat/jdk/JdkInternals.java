@@ -42,9 +42,34 @@ public final class JdkInternals {
                     count++;
                 }
             }
+            openJdkToGson(impl);
             LOG.info("Exported {} JDK-internal sun.* package(s) for legacy mods", count);
         } catch (Throwable t) {
             LOG.warn("Could not export JDK-internal packages; legacy mods using sun.* classes may fail", t);
+        }
+    }
+
+    /**
+     * Java 8's Gson read and wrote the fields of any class by reflection; on a modular JDK it fails on the private fields of
+     * {@code java.*} types ("Failed making field 'java.text.ParseException#errorOffset' accessible", Recurrent Complex's
+     * structure loader, which deserializes a class holding an exception). The exported {@code java.*} packages are opened to
+     * the Gson module only, so the legacy mods' Gson behaves as it did on Java 8.
+     */
+    private static void openJdkToGson(MethodHandles.Lookup impl) {
+        try {
+            Module gson = Class.forName("com.google.gson.Gson", false, JdkInternals.class.getClassLoader()).getModule();
+            if (!gson.isNamed()) return;
+            MethodHandle addOpens = impl.findVirtual(Module.class, "implAddOpens", MethodType.methodType(void.class, String.class, Module.class));
+            Module base = Object.class.getModule();
+            int count = 0;
+            for (String pkg : base.getPackages()) {
+                if (!pkg.startsWith("java.") || base.isOpen(pkg, gson) || !base.isExported(pkg)) continue;
+                addOpens.invoke(base, pkg, gson);
+                count++;
+            }
+            LOG.info("Opened {} java.* package(s) to Gson for legacy mods", count);
+        } catch (Throwable t) {
+            LOG.warn("Could not open JDK packages to Gson; legacy mods deserializing JDK types by reflection may fail", t);
         }
     }
 }
