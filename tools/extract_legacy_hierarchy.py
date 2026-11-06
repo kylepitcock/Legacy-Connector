@@ -14,7 +14,8 @@ import io, os, re, sys, zipfile
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DEV = os.path.join(ROOT, "build", "devtools")
 ver = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
-USERDEV = {"1.6.4": os.path.join(DEV, "mcp", "forge164-src.zip"),
+USERDEV = {"1.5.2": os.path.join(DEV, "mcp", "forge152-src.zip"),
+           "1.6.4": os.path.join(DEV, "mcp", "forge164-src.zip"),
            "1.7.10": os.path.join(DEV, "mcp", "forge1710-userdev.jar"),
            "1.12.2": os.path.join(DEV, "mcp", "forge1122-sources.jar")}[ver]
 # Forge 1.12.2 patches these vanilla types to be registry entries (binary patches only, so listed here).
@@ -30,7 +31,7 @@ EXTRA_1122 = {
 EXTRA_1122_IFACES = {
     "net/minecraft/item/crafting/IRecipe": ["net/minecraftforge/registries/IForgeRegistryEntry"],
 }
-SRC_PREFIX = "src/main/java/" if ver == "1.7.10" else ("forge/" if ver == "1.6.4" else "")
+SRC_PREFIX = "src/main/java/" if ver == "1.7.10" else ("forge/" if ver in ("1.5.2", "1.6.4") else "")
 
 ACC_PUBLIC, ACC_FINAL, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION, ACC_ENUM = 0x1, 0x10, 0x200, 0x400, 0x2000, 0x4000
 
@@ -127,7 +128,7 @@ with zipfile.ZipFile(USERDEV) as z:
             parsed += parse(n, z.read(n).decode("utf-8", "replace"))
     patch_sets = [z.read(n) for n in ("forgepatches.zip", "fmlpatches.zip") if n in z.namelist()]
     # Forge 1.6.4 keeps the vanilla patches as loose files (forge/patches/minecraft/<class>.java.patch, fml/patches/...)
-    loose_patches = [z.read(n) for n in z.namelist() if ver == "1.6.4" and n.endswith(".java.patch")]
+    loose_patches = [z.read(n) for n in z.namelist() if ver in ("1.5.2", "1.6.4") and n.endswith(".java.patch")]
 
 known = set(classes) | {p[0] for p in parsed}
 JAVA_LANG = {"Object", "Enum", "Exception", "RuntimeException", "Error", "Throwable", "Thread", "Runnable", "Comparable",

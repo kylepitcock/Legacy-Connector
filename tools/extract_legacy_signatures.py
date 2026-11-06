@@ -2,7 +2,7 @@
 """Builds build/devtools/legacy-<ver>.sig: every vanilla class/field/method of a legacy Minecraft version with
 deobfuscated (MCP) names and descriptors. Reference data for the shim audit; never shipped.
 
-usage: tools/extract_legacy_signatures.py <1.6.4|1.7.10|1.12.2>
+usage: tools/extract_legacy_signatures.py <1.5.2|1.6.4|1.7.10|1.12.2>
 Requires tools/fetch_devtools.sh data plus build/devtools/mojang/client-<ver>.jar.
 """
 import csv, io, os, re, struct, sys, zipfile
@@ -69,6 +69,27 @@ if ver == "1.7.10":
         if p[0] == "CL:": cmap[p[1]] = p[2]
         elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
         elif p[0] == "MD:": mmap[p[1] + p[2]] = p[3].rsplit("/", 1)[1]
+elif ver == "1.5.2":
+    # Forge 7.8.1.738 ships the 1.5.2 MCP names in its source zip (fml/conf, MCP 7.51). Its joined.srg names every class
+    # net/minecraft/src/<Name>; packages.csv (class,package) gives the packaged names mods were compiled against.
+    z152 = "forge152-src.zip"
+    load_csv(z152, "forge/fml/conf/methods.csv"); load_csv(z152, "forge/fml/conf/fields.csv")
+    pkg = {}
+    with zipfile.ZipFile(os.path.join(ROOT, "mcp", z152)) as z:
+        for row in csv.reader(io.TextIOWrapper(z.open("forge/fml/conf/packages.csv"), "utf-8")):
+            if row and row[0] != "class": pkg[row[0]] = row[1]
+        srg152 = z.read("forge/fml/conf/joined.srg").decode().splitlines()
+    def repack(name):
+        if not name.startswith("net/minecraft/src/"): return name
+        simple = name[len("net/minecraft/src/"):]
+        outer = simple.split("$")[0]
+        return (pkg[outer] + "/" + simple) if outer in pkg else name
+    repack_desc = lambda d: re.sub(r"L([^;]+);", lambda m: "L" + repack(m.group(1)) + ";", d)
+    for line in srg152:
+        p = line.split()
+        if p[0] == "CL:": cmap[p[1]] = repack(p[2])
+        elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
+        elif p[0] == "MD:": mmap[p[1] + p[2]] = p[3].rsplit("/", 1)[1]
 elif ver == "1.6.4":
     # Forge 9.11.1.1345 ships the 1.6.4 MCP names in its source zip (fml/conf); the SRG data is the MCP 1.6.4 joined.srg
     load_csv("forge164-src.zip", "forge/fml/conf/methods.csv"); load_csv("forge164-src.zip", "forge/fml/conf/fields.csv")
@@ -90,7 +111,7 @@ else:
 
 remap = lambda d: re.sub(r"L([^;]+);", lambda m: "L" + cmap.get(m.group(1), m.group(1)) + ";", d)
 out = []
-notch = []  # 1.6.4 only: the obfuscated jar's names, for mods that were never reobfuscated to SRG (loader/.../legacy/1.6.4/notch.txt)
+notch = []  # 1.5.2 and 1.6.4 only: the obfuscated jar's names, for mods that were never reobfuscated to SRG (loader/.../legacy/1.6.4/notch.txt)
 with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar:
     for entry in jar.namelist():
         if not entry.endswith(".class"): continue
@@ -110,7 +131,7 @@ with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar
             out.append("M %s %s %d %s" % (names.get(srg, srg), remap(md), ma, srg))
 dst = os.path.join(ROOT, "legacy-%s.sig" % ver)
 open(dst, "w").write("\n".join(out) + "\n")
-if ver == "1.6.4":
+if ver in ("1.5.2", "1.6.4"):
     nd = os.path.join(ROOT, "..", "..", "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
     open(os.path.join(nd, "notch.txt"), "w").write("\n".join(notch) + "\n")
 print("wrote", dst, sum(1 for l in out if l.startswith("C ")), "classes")
