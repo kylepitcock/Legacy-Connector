@@ -71,10 +71,10 @@ handling, and that long tail is open-ended like for every version (it is the iss
 Details and tables: [Legacy-1.6.4-Corpus](Legacy-1.6.4-Corpus.md); scanner `tools/compat/scan_164.py`. What changes in the estimate above:
 
 - **Confirmed, bigger than assumed: numeric ids** are used by 31 of 43 jars (72%): `blockID`/`itemID` fields 26-30 jars, `Block.blocksList`/`Item.itemsList` 22-27, `World.getBlockId` 25,
-  int `setBlock` 23, int constructors of Block/Item/ItemStack 18-26 jars, biome/potion/enchantment ids 7-17. Keep the 1 to 1.5 weeks, and add: the facade must also cover int-taking constructors of
+  int `setBlock` 23, int constructors of Block/Item/ItemStack 18-26 jars, biome/potion/enchantment ids 7-17. Keep the 1 to 2 days, and add: the facade must also cover int-taking constructors of
   about 40 vanilla block/item subclasses (`BlockContainer`, `ItemArmor`, `ItemFood`, `BlockFlower`, `ItemSword`...), `PotionEffect(int, ...)` (17 jars) and `Potion.potionTypes`.
 - **Networking is larger than the 4 to 6 days line:** 35 of 43 jars (81%) use `NetworkMod`/`IPacketHandler`/`Packet250CustomPayload`/`PacketDispatcher`, and 34 use `ITickHandler`/`TickRegistry`, 17 `IPlayerTracker`,
-  12 `IConnectionHandler`, 12 `KeyBindingRegistry`. The 1.7.10 shim has none of these; budget **1 to 1.5 weeks** for the network + tick + tracker + key binding adapters together (all are adapters onto 1.7.10 events/`FmlChannelBridge`).
+  12 `IConnectionHandler`, 12 `KeyBindingRegistry`. The 1.7.10 shim has none of these; budget **2 to 3 days** for the network + tick + tracker + key binding adapters together (all are adapters onto 1.7.10 events/`FmlChannelBridge`).
 - **Smaller than assumed: mod entry.** 40 of 40 `@Mod` jars already use `@Mod.EventHandler`; only 1 also has `@PreInit`/`@Init`/`@PostInit`. Cut "1 to 2 days" to a few hours.
 - **Smaller than assumed: the class long tail.** Of 1,020 distinct Minecraft/Forge classes referenced by the 40 non-obfuscated jars, 861 exist in the shim unchanged, 84 are renames/package moves (a table in the remapper),
   28 are removed APIs (the network/tick/player-tracker/key-binding families above, `AABBPool`, `Vec3Pool`, `SoundPool`) and only 47 are unaccounted for (61 class-file references, 2 used by more than one jar). The
@@ -85,4 +85,4 @@ Details and tables: [Legacy-1.6.4-Corpus](Legacy-1.6.4-Corpus.md); scanner `tool
   (HTTP 403 on the CDN); Biomes O' Plenty, Thaumcraft, Applied Energistics, Mekanism, Galacticraft, GregTech and Pam's have no 1.6.4 file on CurseForge. M0's "30 to 50 jars" is met (43), but a Tekkit/FTB-style
   pack cannot be assembled from it.
 
-Net effect: M0 and M1 stay at 1 and 1 to 1.5 weeks; M2 (network, entities, world generation) grows by about a week; the class-level part of M3 shrinks. Total range unchanged at **4 to 6 weeks**.
+Net effect: M0 and M1 stay at about 1 and 1 to 2 days; M2 (network, entities, world generation) grows to 2 to 3 days for the network, tick and tracker adapters; the class-level part of M3 shrinks. Total range: **about 5 to 9 days** wall-clock at the project's measured pace.
