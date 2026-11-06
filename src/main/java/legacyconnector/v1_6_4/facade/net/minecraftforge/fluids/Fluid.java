@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraftforge.fluids;
+package legacyconnector.v1_6_4.facade.net.minecraftforge.fluids;
 
 import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 

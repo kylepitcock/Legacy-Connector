@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraft.item;
+package legacyconnector.v1_6_4.facade.net.minecraft.item;
 
 import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 

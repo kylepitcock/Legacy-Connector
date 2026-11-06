@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraft.world.chunk;
+package legacyconnector.v1_6_4.facade.net.minecraft.world.chunk;
 
 import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 

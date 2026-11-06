@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.cpw.mods.fml.common.registry;
+package legacyconnector.v1_6_4.facade.cpw.mods.fml.common.registry;
 
 import legacyconnector.v1_7_10.net.minecraft.block.Block;
 import legacyconnector.v1_7_10.net.minecraft.item.Item;

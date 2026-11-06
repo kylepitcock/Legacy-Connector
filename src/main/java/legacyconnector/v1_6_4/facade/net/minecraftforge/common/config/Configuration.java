@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraftforge.common.config;
+package legacyconnector.v1_6_4.facade.net.minecraftforge.common.config;
 
 import java.util.BitSet;
 import java.util.HashMap;

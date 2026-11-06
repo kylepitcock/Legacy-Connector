@@ -24,7 +24,7 @@ import org.objectweb.asm.tree.MethodNode;
  */
 class IdFacadeLinkTest implements Opcodes {
     private static final String P7 = "legacyconnector/v1_7_10/net/minecraft/";
-    private static final String P6 = "legacyconnector/v1_6_4/net/minecraft/";
+    private static final String P6 = "legacyconnector/v1_6_4/facade/net/minecraft/";
     private static final String BLOCK = P7 + "block/Block";
     private static final String ITEM = P7 + "item/Item";
     private static final String STACK = P7 + "item/ItemStack";

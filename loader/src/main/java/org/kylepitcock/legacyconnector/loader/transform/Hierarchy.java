@@ -287,7 +287,7 @@ public final class Hierarchy {
      */
     public String facadeOf(String shimClass) {
         if (version == null || version.forward() == null || !shimClass.startsWith(version.linkPrefix())) return null;
-        String facade = version.shimPrefix() + shimClass.substring(version.linkPrefix().length());
+        String facade = version.shimPrefix() + "facade/" + shimClass.substring(version.linkPrefix().length());
         return shim.contains(facade) ? facade : null;
     }
 

@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraft.block;
+package legacyconnector.v1_6_4.facade.net.minecraft.block;
 
 import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 import legacyconnector.v1_7_10.net.minecraft.init.Blocks;

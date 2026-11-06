@@ -1,4 +1,4 @@
-package legacyconnector.v1_6_4.net.minecraft.world.gen.feature;
+package legacyconnector.v1_6_4.facade.net.minecraft.world.gen.feature;
 
 import legacyconnector.v1_6_4.net.minecraft.util.Ids;
 

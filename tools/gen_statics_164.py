@@ -18,7 +18,7 @@ FIELDS = os.path.join(ROOT, 'loader/src/main/resources/legacyconnector/legacy/1.
 RENAMES = os.path.join(ROOT, 'loader/src/main/resources/legacyconnector/forward/1.6.4/class-renames.tsv')
 DATA = os.path.join(ROOT, 'src/main/resources/legacyconnector/v1_6_4')
 SHIM = os.path.join(ROOT, 'src/main/java/legacyconnector/v1_7_10')
-FACADE = os.path.join(ROOT, 'src/main/java/legacyconnector/v1_6_4/net/minecraft')
+FACADE = os.path.join(ROOT, 'src/main/java/legacyconnector/v1_6_4/facade/net/minecraft')
 BEGIN = '    // BEGIN GENERATED'
 END = '    // END GENERATED'
 
