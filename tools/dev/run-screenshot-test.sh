@@ -16,7 +16,8 @@ for jar in run/mods/*.jar(N) run/mods/1.7.10/*.jar(N) ${=MODSRC:+${MODSRC}/*.jar
 done
 # HEADLESS=1 (software rendering, see docker-headless.sh): cheap graphics settings
 if [[ -n $HEADLESS ]]; then
-  printf 'menuBackgroundBlurriness:0\nrenderDistance:%s\ngraphicsMode:0\nparticles:2\nentityShadows:false\nenableVsync:false\nmaxFps:260\nsoundCategory_master:0.0\n' "${RENDER:-8}" > run-screenshots/options.txt
+  printf 'onboardAccessibility:false
+menuBackgroundBlurriness:0\nrenderDistance:%s\ngraphicsMode:0\nparticles:2\nentityShadows:false\nenableVsync:false\nmaxFps:260\nsoundCategory_master:0.0\n' "${RENDER:-8}" > run-screenshots/options.txt
 fi
 echo "mods: $(ls run-screenshots/mods | wc -l)"
 args=()

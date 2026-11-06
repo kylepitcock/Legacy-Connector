@@ -59,6 +59,12 @@ public final class WorldScreenshotTest {
     public static void register() {
         if (System.getProperty("legacyconnector.screenshotTest") == null) return;
         NeoForge.EVENT_BUS.addListener((ScreenEvent.Opening e) -> {
+            // A fresh game directory opens the narrator/accessibility onboarding first and waits for a click: skip it.
+            if (e.getNewScreen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+                Minecraft.getInstance().options.onboardAccessibility = false;
+                e.setNewScreen(new TitleScreen());
+                return;
+            }
             if (started || !(e.getNewScreen() instanceof TitleScreen)) return;
             started = true;
             Minecraft.getInstance().tell(WorldScreenshotTest::begin);
