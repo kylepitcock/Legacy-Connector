@@ -54,7 +54,6 @@ public final class LegacyBiomeClimate {
                 unplaced.add(b.mcc$modernId() + " (" + e + ")");
             }
         }
-        spreadAnalogs(out);
         String summary = describe(out) + "|" + unplaced;
         if (!summary.equals(lastLogged)) { // once per distinct result, not per server start or region query
             lastLogged = summary;
@@ -62,37 +61,6 @@ public final class LegacyBiomeClimate {
             if (!unplaced.isEmpty()) LOG.info("Legacy biomes in no BiomeManager list (left to their dimension or world type): {}", unplaced);
         }
         return out;
-    }
-
-    /** Vanilla biomes of the same family that can stand in for an analog already taken by another legacy biome. */
-    private static final java.util.Map<ResourceKey<Biome>, List<ResourceKey<Biome>>> SIBLINGS = java.util.Map.of(
-            Biomes.FOREST, List.of(Biomes.BIRCH_FOREST, Biomes.FLOWER_FOREST, Biomes.DARK_FOREST),
-            Biomes.PLAINS, List.of(Biomes.SUNFLOWER_PLAINS),
-            Biomes.TAIGA, List.of(Biomes.OLD_GROWTH_PINE_TAIGA),
-            Biomes.JUNGLE, List.of(Biomes.SPARSE_JUNGLE),
-            Biomes.SWAMP, List.of(Biomes.MANGROVE_SWAMP),
-            Biomes.SNOWY_PLAINS, List.of(Biomes.SNOWY_TAIGA));
-
-    /**
-     * Distinct-analog preference: legacy biomes of one mod share their analogs easily (Magical Forest and Tainted Land are both
-     * forests), which stacks them in the same climate patch. The heavier biome keeps the analog, the others move to an unused sibling
-     * of that vanilla biome when there is one, so legacy biomes spread across the climate map.
-     */
-    static void spreadAnalogs(List<BiomePlacement.Entry> entries) {
-        entries.sort(java.util.Comparator.comparingInt((BiomePlacement.Entry e) -> -e.weight()).thenComparing(e -> e.biome().location()));
-        java.util.Set<ResourceKey<Biome>> used = new java.util.HashSet<>();
-        for (int i = 0; i < entries.size(); i++) {
-            BiomePlacement.Entry e = entries.get(i);
-            ResourceKey<Biome> analog = e.analog();
-            if (!used.add(analog)) {
-                for (ResourceKey<Biome> alt : SIBLINGS.getOrDefault(analog, List.of())) {
-                    if (used.add(alt)) {
-                        entries.set(i, new BiomePlacement.Entry(e.biome(), alt, e.weight()));
-                        break;
-                    }
-                }
-            }
-        }
     }
 
     private static String describe(List<BiomePlacement.Entry> entries) {
