@@ -339,9 +339,11 @@ public final class LegacyJarTransformer {
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
         int buildHeightChecks = 0;
         int floorClamps = 0;
+        int forwardCalls = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
             InterfaceFlags.apply(node, hierarchy);
+            forwardCalls += ForwardCalls.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
@@ -351,6 +353,7 @@ public final class LegacyJarTransformer {
             result.classes++;
         }
 
+        if (forwardCalls > 0) result.notes.add(forwardCalls + " call(s) of " + version.id() + " API now call their " + version.forward().id() + " equivalent");
         if (buildHeightChecks > 0) result.notes.add(buildHeightChecks + " hard-coded 0..256 height check(s) on a y coordinate now use the world's build range");
         if (floorClamps > 0) result.notes.add(floorClamps + " tile entity height clamp(s) to 1.7.10's bedrock floor now count from the world's bottom");
 
