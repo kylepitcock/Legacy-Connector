@@ -59,12 +59,12 @@ public class BlockPortal extends BlockBreakable {
     public boolean trySpawnPortal(World worldIn, BlockPos pos) {
         Size x = new Size(worldIn, pos, EnumFacing.Axis.X);
         if (x.isValid() && x.portalBlockCount == 0) {
-            x.placePortalBlocks();
+            if (!legacyconnector.v1_12_2.net.minecraftforge.event.ForgeEventFactory.onTrySpawnPortal(worldIn, pos, x)) x.placePortalBlocks();
             return true;
         }
         Size z = new Size(worldIn, pos, EnumFacing.Axis.Z);
         if (z.isValid() && z.portalBlockCount == 0) {
-            z.placePortalBlocks();
+            if (!legacyconnector.v1_12_2.net.minecraftforge.event.ForgeEventFactory.onTrySpawnPortal(worldIn, pos, z)) z.placePortalBlocks();
             return true;
         }
         return false;

@@ -60,6 +60,10 @@ public class Ingredient implements Predicate<ItemStack> {
         return packed;
     }
 
+    /** Forge: drops cached match data after the ingredient's contents changed (this implementation caches none). */
+    protected void invalidate() {
+    }
+
     public boolean isSimple() {
         return true;
     }

@@ -52,6 +52,12 @@ public class EntityShulker extends EntityGolem implements IMob {
         return c == null ? legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.PURPLE : legacyconnector.v1_12_2.net.minecraft.item.EnumDyeColor.byMetadata(c.getId());
     }
 
+    /** How far the shell is open (0 closed, 1 fully open) at the partial tick: the modern shulker's own animation. */
+    public float getClientPeekAmount(float partialTicks) {
+        var m = mcc$self();
+        return m != null ? m.getClientPeekAmount(partialTicks) : 0.0F;
+    }
+
     @Override
     protected void applyEntityAttributes() {
         super.applyEntityAttributes();

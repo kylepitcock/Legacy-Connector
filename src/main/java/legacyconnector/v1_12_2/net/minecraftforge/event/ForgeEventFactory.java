@@ -23,6 +23,13 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
 public class ForgeEventFactory {
     private ForgeEventFactory() {}
 
+    /** Forge: a portal is about to be lit; true when a handler cancelled it. */
+    public static boolean onTrySpawnPortal(World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.BlockPortal.Size size) {
+        return legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+                new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.PortalSpawnEvent(world, pos, world.getBlockState(pos), size));
+    }
+
     /** Forge: posts AttachCapabilitiesEvent for a world and wraps what handlers attached (null when none attached anything). */
     public static legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityDispatcher gatherCapabilities(World world,
             legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider parent) {

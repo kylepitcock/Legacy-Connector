@@ -57,7 +57,8 @@ public class BlockFalling extends Block {
             if (p.getY() > level.getMinBuildHeight()) level.setBlockAndUpdate(p.above(), state);
             return;
         }
-        net.minecraft.world.entity.item.FallingBlockEntity.fall(server, mp, state);
+        var falling = net.minecraft.world.entity.item.FallingBlockEntity.fall(server, mp, state);
+        if (org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(falling) instanceof legacyconnector.v1_12_2.net.minecraft.entity.item.EntityFallingBlock legacy) onStartFalling(legacy);
     }
 
     @Override
@@ -69,6 +70,10 @@ public class BlockFalling extends Block {
     public static boolean canFallThrough(IBlockState state) {
         Material m = state.getMaterial();
         return m == Material.FIRE || m == Material.AIR || m == Material.WATER || m == Material.LAVA;
+    }
+
+    /** Called when the block turns into a falling block entity (mods override it to set the entity up). */
+    protected void onStartFalling(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityFallingBlock fallingEntity) {
     }
 
     public void onEndFalling(World world, BlockPos pos, IBlockState fallingState, IBlockState hitState) {

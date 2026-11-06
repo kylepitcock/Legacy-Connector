@@ -57,6 +57,12 @@ public class FarmlandWaterManager {
         return ticket;
     }
 
+    /** Whether a water ticket (a sprinkler's region) covers the block. */
+    public static boolean hasBlockWaterTicket(World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        var level = world == null ? null : world.mcc$level();
+        return level != null && pos != null && net.neoforged.neoforge.common.FarmlandWaterManager.hasBlockWaterTicket(level, pos.mcc$modern());
+    }
+
     /** A ticket for the box: farmland inside it counts as next to water. */
     public static AABBTicket addAABBTicket(World world, AxisAlignedBB aabb) {
         Set<ChunkPos> chunks = new LinkedHashSet<>();

@@ -228,6 +228,21 @@ public class BlockEvent extends Event {
         }
     }
 
+    /** A nether portal is about to be lit in a frame; cancelling it leaves the frame empty. */
+    @Cancelable
+    public static class PortalSpawnEvent extends BlockEvent {
+        private final legacyconnector.v1_12_2.net.minecraft.block.BlockPortal.Size size;
+
+        public PortalSpawnEvent(World world, BlockPos pos, IBlockState state, legacyconnector.v1_12_2.net.minecraft.block.BlockPortal.Size size) {
+            super(world, pos, state);
+            this.size = size;
+        }
+
+        public legacyconnector.v1_12_2.net.minecraft.block.BlockPortal.Size getPortalSize() {
+            return size;
+        }
+    }
+
     /** Crop growth (Forge's CropGrowEvent): Pre may deny or allow a growth step. */
     public static class CropGrowEvent extends BlockEvent {
         public CropGrowEvent(World world, BlockPos pos, IBlockState state) {

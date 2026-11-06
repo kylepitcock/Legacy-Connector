@@ -35,6 +35,11 @@ public class RegionFile {
         return mcc$modern != null && x >= 0 && x < 32 && z >= 0 && z < 32 && mcc$modern.hasChunk(new net.minecraft.world.level.ChunkPos(x, z));
     }
 
+    /** Whether the region holds data for the chunk (the 1.12 name of {@link #isChunkSaved}). */
+    public boolean chunkExists(int x, int z) {
+        return isChunkSaved(x, z);
+    }
+
     public void close() throws java.io.IOException {
         if (mcc$modern != null) mcc$modern.close();
     }
