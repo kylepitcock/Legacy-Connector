@@ -139,9 +139,16 @@ public final class CustomModels1122 {
 
     /** The loader model of a legacy location string ({@code domain:path#variant}), or null when no loader takes it. */
     private static IModel load(String key) {
-        ModelResourceLocation location;
+        ResourceLocation location;
         try {
-            location = new ModelResourceLocation(key);
+            ModelResourceLocation mrl = new ModelResourceLocation(key);
+            location = mrl;
+            if ("inventory".equals(mrl.getVariant())) {
+                // an item's model: Forge loaded the file models/item/<path> (ModelLoader.getItemLocation, then ModelLoaderRegistry's actual location)
+                // and gave that plain location to the custom loaders (Tinkers' Construct reads its .tmat/.tcon json from it)
+                String path = mrl.getPath();
+                location = new ResourceLocation(mrl.getNamespace(), path.startsWith("models/") ? path : "models/item/" + path);
+            }
         } catch (RuntimeException e) {
             return null;
         }

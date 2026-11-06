@@ -147,6 +147,11 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
         return true;
     }
 
+    /** The sprites mods registered (registerSprite, setTextureEntry), for generating those that make their own pixels. */
+    public synchronized List<TextureAtlasSprite> mcc$registeredSprites() {
+        return new java.util.ArrayList<>(mapRegisteredSprites.values());
+    }
+
     public String getBasePath() {
         return basePath;
     }

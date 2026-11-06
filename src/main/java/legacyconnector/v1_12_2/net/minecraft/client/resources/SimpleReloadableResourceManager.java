@@ -42,19 +42,46 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
         }
     }
 
+    /** Listeners told at the start of this reload (see {@link #mcc$reloading}); the notification queued when they registered must not repeat it. */
+    private final Set<IResourceManagerReloadListener> toldBeforeStitch = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
     @Override
     public void registerReloadListener(IResourceManagerReloadListener listener) {
         listeners.add(listener);
-        notify(listener);
+        notify(listener, true);
+    }
+
+    /**
+     * Forge 1.12 mods registered their listeners before the game's own, so each reload told them before the models were loaded and the block atlas
+     * stitched (their state is rebuilt by the stitch and model events that follow: Tinkers' Construct's texture generator clears itself here and
+     * is filled by TextureStitchEvent.Pre). The generated resources are built at the start of a reload, where this runs; the listeners are told again
+     * once the game has reloaded ({@link #mcc$reloaded}).
+     */
+    public void mcc$reloading() {
+        for (var l : listeners) {
+            synchronized (toldBeforeStitch) {
+                toldBeforeStitch.add(l);
+            }
+            notify(l, false);
+        }
     }
 
     /** Called after the game reloaded its resources. */
     public void mcc$reloaded() {
-        for (var l : listeners) notify(l);
+        synchronized (toldBeforeStitch) {
+            toldBeforeStitch.clear();
+        }
+        for (var l : listeners) notify(l, false);
     }
 
-    private void notify(IResourceManagerReloadListener listener) {
+    private void notify(IResourceManagerReloadListener listener, boolean registration) {
         Runnable run = () -> {
+            if (registration) {
+                synchronized (toldBeforeStitch) {
+                    // the reload already told it, after which the state it rebuilds was filled: this stale call must not clear it
+                    if (toldBeforeStitch.contains(listener)) return;
+                }
+            }
             try {
                 listener.onResourceManagerReload(this);
             } catch (RuntimeException | LinkageError e) {
