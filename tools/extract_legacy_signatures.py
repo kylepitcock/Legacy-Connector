@@ -90,6 +90,7 @@ else:
 
 remap = lambda d: re.sub(r"L([^;]+);", lambda m: "L" + cmap.get(m.group(1), m.group(1)) + ";", d)
 out = []
+notch = []  # 1.6.4 only: the obfuscated jar's names, for mods that were never reobfuscated to SRG (loader/.../legacy/1.6.4/notch.txt)
 with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar:
     for entry in jar.namelist():
         if not entry.endswith(".class"): continue
@@ -97,12 +98,19 @@ with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar
         if not (name in cmap or name.startswith("net/minecraft/")): continue
         out.append("C %s %s %s %d" % (cmap.get(name, name), cmap.get(sup, sup) if sup else "-",
                                        ",".join(cmap.get(i, i) for i in ifaces) or "-", acc))
+        if name in cmap:
+            notch.append("C %s %s %s %s" % (name, cmap[name], sup or "-", ",".join(ifaces) or "-"))
         for fn, fd, fa in fields:
             srg = fmap.get(name + "/" + fn, fn)
+            if name in cmap and (name + "/" + fn) in fmap: notch.append("F %s %s %s" % (name, fn, srg))
             out.append("F %s %s %d %s" % (names.get(srg, srg), remap(fd), fa, srg))
         for mn, md, ma in methods:
             srg = mmap.get(name + "/" + mn + md, mn)
+            if name in cmap and (name + "/" + mn + md) in mmap: notch.append("M %s %s %s %s" % (name, mn, md, srg))
             out.append("M %s %s %d %s" % (names.get(srg, srg), remap(md), ma, srg))
 dst = os.path.join(ROOT, "legacy-%s.sig" % ver)
 open(dst, "w").write("\n".join(out) + "\n")
+if ver == "1.6.4":
+    nd = os.path.join(ROOT, "..", "..", "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
+    open(os.path.join(nd, "notch.txt"), "w").write("\n".join(notch) + "\n")
 print("wrote", dst, sum(1 for l in out if l.startswith("C ")), "classes")

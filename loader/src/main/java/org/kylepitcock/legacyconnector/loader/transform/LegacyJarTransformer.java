@@ -231,6 +231,7 @@ public final class LegacyJarTransformer {
     public List<ClassInfo> scan(LegacyJar jar) throws IOException {
         Contents c = readPatched(jar);
         LegacyRemapper remapper = remapperFor(jar.version, null);
+        notchLocals(c.classes, remapper);
         relocateBundled(jar, c.classes, remapper);
         preventCollisions(c.classes, remapper);
         List<ClassInfo> out = new ArrayList<>();
@@ -244,6 +245,25 @@ public final class LegacyJarTransformer {
             }
         }
         return out;
+    }
+
+    /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
+    private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper) {
+        if (remapper.version() != LegacyVersion.V1_6_4) return;
+        Map<String, String[]> locals = new java.util.HashMap<>();
+        for (byte[] data : classes.values()) {
+            try {
+                ClassReader r = new ClassReader(data);
+                String[] ifaces = r.getInterfaces();
+                String[] all = new String[1 + ifaces.length];
+                all[0] = r.getSuperName();
+                System.arraycopy(ifaces, 0, all, 1, ifaces.length);
+                locals.put(r.getClassName(), all);
+            } catch (RuntimeException ignored) {
+                // reported when the class is translated
+            }
+        }
+        remapper.notchLocals(locals);
     }
 
     public Result transform(LegacyJar jar, Path output) throws IOException {
@@ -264,6 +284,7 @@ public final class LegacyJarTransformer {
 
         int platformCopies = dropPlatformLibraries(classes, other);
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
+        notchLocals(classes, remapper);
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {

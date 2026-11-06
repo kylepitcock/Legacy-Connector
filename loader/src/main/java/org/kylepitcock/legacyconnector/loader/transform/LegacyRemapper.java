@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
 import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
+import org.kylepitcock.legacyconnector.loader.mapping.NotchNames;
 import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.synth.SynthDemand;
@@ -70,6 +71,18 @@ public final class LegacyRemapper extends Remapper {
         this.mcp = mcp;
         this.shim = shim;
         this.demand = demand;
+        this.notch = version == LegacyVersion.V1_6_4 ? NotchNames.get() : null;
+    }
+
+    /**
+     * Supertypes ({@code [super, interfaces...]}) of the jar's own classes, so a notch-named member inherited through a mod class is found.
+     * Only 1.6.4 uses it (see {@link NotchNames}); a jar's own default-package class named like a notch class is not renamed.
+     */
+    private java.util.Map<String, String[]> notchLocals = java.util.Map.of();
+    private final NotchNames notch;
+
+    public void notchLocals(java.util.Map<String, String[]> locals) {
+        this.notchLocals = locals;
     }
 
     public void override(String from, String to) {
@@ -132,6 +145,10 @@ public final class LegacyRemapper extends Remapper {
     public String map(String internalName) {
         String o = overrides.get(internalName);
         if (o != null) return o;
+        if (notch != null && internalName.indexOf('/') < 0 && !notchLocals.containsKey(internalName)) {
+            String mcp = notch.mcpClass(internalName);
+            if (mcp != null) return map(mcp);
+        }
         String jdk = JDK_RELOCATIONS.get(internalName);
         if (jdk != null) return jdk;
         for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
@@ -189,6 +206,10 @@ public final class LegacyRemapper extends Remapper {
     @Override
     public String mapMethodName(String owner, String name, String descriptor) {
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
+        if (notch != null && !name.startsWith("func_")) {
+            String srg = notch.method(owner, name, descriptor, notchLocals);
+            if (srg != null) name = srg;
+        }
         if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
         return mcp.method(name);
     }
@@ -201,6 +222,10 @@ public final class LegacyRemapper extends Remapper {
     @Override
     public String mapFieldName(String owner, String name, String descriptor) {
         if (!keep.isEmpty() && keep.contains(owner + "." + name)) return name;
+        if (notch != null && !name.startsWith("field_")) {
+            String srg = notch.field(owner, name, notchLocals);
+            if (srg != null) name = srg;
+        }
         return mcp.field(name);
     }
 
