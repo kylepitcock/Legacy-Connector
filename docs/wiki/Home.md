@@ -25,3 +25,4 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Development](Development.md) | Building, testing, project layout |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
 | [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
+| [Legacy 1.6.4 estimate](Legacy-1.6.4-Estimate.md) | Effort and approach for a 1.6.4 layer on top of the 1.7.10 shim |
