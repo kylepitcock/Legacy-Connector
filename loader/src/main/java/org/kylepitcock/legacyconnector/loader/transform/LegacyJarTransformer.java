@@ -302,6 +302,7 @@ public final class LegacyJarTransformer {
         for (ClassNode node : nodes.values()) CofhWorldProxyFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellIconFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellEffectsFix.apply(node);
+        for (ClassNode node : nodes.values()) Am2CompendiumFix.apply(node);
         int absent = 0;
         for (ClassNode node : nodes.values()) absent += AbsentDependencyStubber.apply(node, hierarchy);
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
