@@ -39,6 +39,10 @@ public final class LegacyMods {
     }
 
     static synchronized void add(LegacyModRecord mod) {
+        if (mod.flag("clientSideOnly") && net.neoforged.fml.loading.FMLEnvironment.dist.isDedicatedServer()) {
+            org.apache.logging.log4j.LogManager.getLogger("LegacyConnector").info("Skipping the client-only legacy mod {} on a dedicated server", mod.legacyId);
+            return;
+        }
         MODS.add(mod);
         BY_LEGACY_ID.put(mod.legacyId.toLowerCase(Locale.ROOT), mod);
     }

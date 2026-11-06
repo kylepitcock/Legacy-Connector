@@ -51,7 +51,32 @@ public final class Network164 {
         FmlChannelBridge.registerRaw(TINY_CHANNEL, Network164::receiveTiny);
     }
 
+    private static final java.util.concurrent.atomic.AtomicLong RECEIVED = new java.util.concurrent.atomic.AtomicLong();
+
     private Network164() {}
+
+    /** Registered channels, handlers and the number of packets dispatched to mod handlers so far (see {@link SelfTest164}). */
+    public static String summary() {
+        int handlers = 0;
+        for (List<Registration> l : CHANNELS.values()) handlers += l.size();
+        return CHANNELS.size() + " channel(s), " + handlers + " packet handler(s), " + TINY.size() + " tiny handler(s), " + RECEIVED.get() + " packet(s) dispatched";
+    }
+
+    /**
+     * Loopback self test of the receive path: a packet delivered to a channel reaches the handler registered for it as a
+     * {@link Packet250CustomPayload} with its data, a handler of the other side does not see it.
+     */
+    static boolean loopback() {
+        String channel = "mcc|selftest164";
+        boolean[] got = new boolean[2];
+        // straight into the table: the wire registration of a channel is closed once the game runs
+        List<Registration> list = CHANNELS.computeIfAbsent(channel, c -> new CopyOnWriteArrayList<>());
+        list.add(new Registration((manager, packet, player) -> got[0] = packet.channel.equals(channel) && packet.data.length == 3 && packet.data[2] == 7, Side.SERVER));
+        list.add(new Registration((manager, packet, player) -> got[1] = true, Side.CLIENT));
+        receive(channel, new byte[] {1, 2, 7}, Side.SERVER, null);
+        CHANNELS.remove(channel);
+        return got[0] && !got[1];
+    }
 
     // ------------------------------------------------------------------ registration
 
@@ -78,6 +103,7 @@ public final class Network164 {
         INetHandler handler = netHandler instanceof INetHandler h ? h : null;
         for (Registration r : registrations) {
             if (r.side != null && r.side != side) continue;
+            RECEIVED.incrementAndGet();
             try {
                 Packet250CustomPayload packet = new Packet250CustomPayload(channel, data);
                 Player player = handler == null ? null : handler.getPlayer();

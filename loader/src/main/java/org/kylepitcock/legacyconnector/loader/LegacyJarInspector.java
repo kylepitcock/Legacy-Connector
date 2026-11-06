@@ -619,8 +619,24 @@ public final class LegacyJarInspector {
                 className = name;
             }
 
+            /** The main class carries {@code @SideOnly(Side.CLIENT)}: a client mod (JourneyMap) that must not be constructed on a dedicated server. */
+            boolean sideClient;
+
+            @Override
+            public void visitEnd() {
+                if (sideClient && result[0] != null) result[0].clientSideOnly = true;
+            }
+
             @Override
             public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                if (descriptor.equals("Lcpw/mods/fml/relauncher/SideOnly;") || descriptor.equals("Lnet/minecraftforge/fml/relauncher/SideOnly;")) {
+                    return new AnnotationVisitor(Opcodes.ASM9) {
+                        @Override
+                        public void visitEnum(String name, String enumDescriptor, String value) {
+                            if ("CLIENT".equals(value)) sideClient = true;
+                        }
+                    };
+                }
                 if (!descriptor.equals(MOD_1_7) && !descriptor.equals(MOD_1_12)) return null;
                 LegacyModDecl decl = new LegacyModDecl();
                 decl.mainClass = className;

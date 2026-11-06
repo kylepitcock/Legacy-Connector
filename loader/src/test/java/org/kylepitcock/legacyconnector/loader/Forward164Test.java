@@ -31,7 +31,8 @@ class Forward164Test {
         var table = ForwardRenames.forVersion(LegacyVersion.V1_6_4);
         assertTrue(table.size() > 50);
         table.forEach((from, to) -> {
-            assertNotNull(h16.get(from), "1.6.4 has no " + from);
+            // nested classes (Configuration$UnicodeInputStreamReader) are not in the hierarchy data, only their outer class is
+            assertNotNull(h16.get(from.contains("$") ? from.substring(0, from.indexOf('$')) : from), "1.6.4 has no " + from);
             assertNotNull(h17.get(to), "1.7.10 has no " + to);
         });
         assertEquals("net/minecraft/util/IIcon", ForwardRenames.map(LegacyVersion.V1_6_4, "net/minecraft/util/Icon"));

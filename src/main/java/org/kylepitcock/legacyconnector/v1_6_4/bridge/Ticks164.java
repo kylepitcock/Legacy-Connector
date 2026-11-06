@@ -26,6 +26,11 @@ public final class Ticks164 {
 
     private Ticks164() {}
 
+    /** The registered handlers and how often each fired (see {@link SelfTest164}). */
+    public static java.util.List<String> summary() {
+        return DISPATCH.summary();
+    }
+
     public static void register(ITickHandler handler, Side side) {
         if (handler == null || side == null) return;
         DISPATCH.add(handler, side);

@@ -122,7 +122,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             for (Path dir : List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
-                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar"))
+                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar") || f.getFileName().toString().toLowerCase().endsWith(".zip")) // FML also loaded mods packed as .zip
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
@@ -630,7 +630,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         if (indexDigest != null) md.update(indexDigest);
         if (modSet != null) md.update(modSet);
         String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
-        if (name.endsWith(".jar")) name = name.substring(0, name.length() - 4);
+        if (name.endsWith(".jar") || name.endsWith(".zip")) name = name.substring(0, name.length() - 4);
         return name + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar";
     }
 

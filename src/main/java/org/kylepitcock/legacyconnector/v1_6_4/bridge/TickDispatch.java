@@ -26,6 +26,7 @@ public final class TickDispatch {
         int countdown;
         boolean active = true;
         int errors;
+        long fired;
 
         Entry(ITickHandler handler, Side side) {
             this.handler = handler;
@@ -73,6 +74,7 @@ public final class TickDispatch {
         for (Entry e : entries) {
             if (e.side != side || !e.active || !listed(e.handler, type)) continue;
             EnumSet<TickType> set = EnumSet.of(type);
+            e.fired++;
             try {
                 if (end) e.handler.tickEnd(set, data);
                 else e.handler.tickStart(set, data);
@@ -99,6 +101,13 @@ public final class TickDispatch {
         } catch (RuntimeException | LinkageError ex) {
             return handler.getClass().getName();
         }
+    }
+
+    /** One line per handler: label, side and how often it was called (the self test report). */
+    public List<String> summary() {
+        List<String> out = new java.util.ArrayList<>();
+        for (Entry e : entries) out.add(label(e.handler) + " [" + e.side + "] fired " + e.fired + "x, " + e.errors + " error(s)");
+        return out;
     }
 
     public int size() {

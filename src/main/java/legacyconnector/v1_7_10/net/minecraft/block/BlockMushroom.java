@@ -8,16 +8,32 @@ import org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaOps;
  * A small mushroom: stays on mycelium, podzol, or in the dark on blocks that sustain it. Bone meal grows the vanilla mushrooms into
  * huge ones (through the modern mushroom); 1.7.10 had no huge form for mods' mushrooms.
  */
-public class BlockMushroom extends legacyconnector.v1_7_10.net.minecraft.block.BlockBush implements legacyconnector.v1_7_10.net.minecraft.block.IGrowable {
+public class BlockMushroom extends legacyconnector.v1_7_10.net.minecraft.block.BlockFlower implements legacyconnector.v1_7_10.net.minecraft.block.IGrowable {
     public BlockMushroom(org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaInfo info) {
         super(info);
     }
 
     protected BlockMushroom() {
-        super();
+        super(legacyconnector.v1_7_10.net.minecraft.block.material.Material.plants);
         float f = 0.2F;
         setBlockBounds(0.5F - f, 0.0F, 0.5F - f, 0.5F + f, f * 2.0F, 0.5F + f);
         setTickRandomly(true);
+    }
+
+    // 1.6.4's BlockMushroom extends BlockFlower (Block.mushroomBrown is typed BlockFlower there); the flower behaviour does not apply to it
+    @Override
+    public void registerBlockIcons(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.IIconRegister register) {
+        this.blockIcon = register.registerIcon(getTextureName());
+    }
+
+    @Override
+    public int damageDropped(int meta) {
+        return 0;
+    }
+
+    @Override
+    public void getSubBlocks(legacyconnector.v1_7_10.net.minecraft.item.Item item, legacyconnector.v1_7_10.net.minecraft.creativetab.CreativeTabs tab, java.util.List list) {
+        list.add(new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, 0));
     }
 
     @Override

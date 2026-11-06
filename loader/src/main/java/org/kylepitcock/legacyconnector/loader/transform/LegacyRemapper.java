@@ -271,7 +271,7 @@ public final class LegacyRemapper extends Remapper {
         }
         if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
         String readable = mcp.method(name);
-        if (members != null && !readable.startsWith("func_")) {
+        if (members != null) {
             return members.method(legacyClass(owner), readable, legacyDesc(descriptor), this::localSupers);
         }
         return readable;
@@ -290,7 +290,7 @@ public final class LegacyRemapper extends Remapper {
             if (srg != null) name = srg;
         }
         String readable = mcp.field(name);
-        if (members != null && !readable.startsWith("field_")) return members.field(legacyClass(owner), readable, this::localSupers);
+        if (members != null) return members.field(legacyClass(owner), readable, this::localSupers);
         return readable;
     }
 
