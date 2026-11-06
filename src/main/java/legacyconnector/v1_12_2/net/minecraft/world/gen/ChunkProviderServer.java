@@ -22,6 +22,14 @@ public class ChunkProviderServer implements IChunkProvider {
         this.chunkLoader = mcc$chunkLoader(world);
     }
 
+    /** 1.12's constructor: the chunk storage and generator a mod's own world brings (the loader is kept as given). */
+    public ChunkProviderServer(legacyconnector.v1_12_2.net.minecraft.world.WorldServer world,
+            legacyconnector.v1_12_2.net.minecraft.world.chunk.storage.IChunkLoader loader, IChunkGenerator generator) {
+        this.mcc$world = world;
+        this.chunkLoader = loader != null ? loader : mcc$chunkLoader(world);
+        this.chunkGenerator = generator;
+    }
+
     /** Phantom: redirected to {@link #mcc$get$world} (the server world of these chunks). */
     @Deprecated
     public legacyconnector.v1_12_2.net.minecraft.world.WorldServer world;

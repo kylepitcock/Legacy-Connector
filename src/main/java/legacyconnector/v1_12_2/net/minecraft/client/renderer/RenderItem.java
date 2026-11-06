@@ -17,7 +17,7 @@ import org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext;
  * 1.12.2's item renderer: items are drawn by the game's item renderer into the render context (a screen's GuiGraphics for the GUI
  * methods, the current matrix and buffers elsewhere), so models, overrides, tints and the enchantment glint are the game's.
  */
-public class RenderItem {
+public class RenderItem implements legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManagerReloadListener {
     private static RenderItem instance;
     public float zLevel;
     private final ItemModelMesher itemModelMesher;
@@ -29,6 +29,11 @@ public class RenderItem {
         textureManager = p_i46552_1_;
         itemModelMesher = new ItemModelMesher(p_i46552_2_);
         itemColors = p_i46552_3_;
+    }
+
+    /** Resource reload: the modern game reloads its own item models, so nothing to rebuild here. */
+    @Override
+    public void onResourceManagerReload(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager) {
     }
 
     /** The game's item renderer (Minecraft.getRenderItem()). */

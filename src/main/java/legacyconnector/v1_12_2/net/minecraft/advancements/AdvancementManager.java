@@ -6,6 +6,13 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public class AdvancementManager {
     public static final AdvancementManager INSTANCE = new AdvancementManager();
 
+    public AdvancementManager() {
+    }
+
+    /** 1.12's constructor (the advancements folder): the data pack ones of the server are used, not this folder. */
+    public AdvancementManager(java.io.File advancementsFolder) {
+    }
+
     private static net.minecraft.server.ServerAdvancementManager mcc$modern() {
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         return server == null ? null : server.getAdvancements();

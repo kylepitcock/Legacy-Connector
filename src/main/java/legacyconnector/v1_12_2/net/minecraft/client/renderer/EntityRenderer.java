@@ -22,6 +22,36 @@ public class EntityRenderer implements legacyconnector.v1_12_2.net.minecraft.cli
     public boolean renderHand = true;
     private final Minecraft mc;
 
+    /** Phantom: redirected to {@link #mcc$get$lightmapColors}: the lightmap's pixels (the modern game keeps its own lightmap; this is a copy to read). */
+    @Deprecated
+    public int[] lightmapColors;
+    /** Phantom: redirected to {@link #mcc$get$lightmapTexture}. */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture lightmapTexture;
+    private int[] mcc$lightmapColors;
+    private legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture mcc$lightmapTexture;
+
+    public static int[] mcc$get$lightmapColors(EntityRenderer r) {
+        if (r.mcc$lightmapColors == null) {
+            r.mcc$lightmapColors = new int[256];
+            java.util.Arrays.fill(r.mcc$lightmapColors, 0xFFFFFFFF);
+        }
+        return r.mcc$lightmapColors;
+    }
+
+    public static void mcc$set$lightmapColors(EntityRenderer r, int[] v) {
+        r.mcc$lightmapColors = v;
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture mcc$get$lightmapTexture(EntityRenderer r) {
+        if (r.mcc$lightmapTexture == null) r.mcc$lightmapTexture = new legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture(16, 16);
+        return r.mcc$lightmapTexture;
+    }
+
+    public static void mcc$set$lightmapTexture(EntityRenderer r, legacyconnector.v1_12_2.net.minecraft.client.renderer.texture.DynamicTexture v) {
+        r.mcc$lightmapTexture = v;
+    }
+
     public EntityRenderer(Minecraft mc, IResourceManager resourceManager) {
         this.mc = mc;
         this.itemRenderer = ItemRenderer.mcc$instance();

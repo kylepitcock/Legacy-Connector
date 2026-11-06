@@ -49,6 +49,11 @@ public enum KeyModifier {
         return false;
     }
 
+    /** Whether the modifier is held now, in any context. */
+    public boolean isActive() {
+        return isActive(null);
+    }
+
     public boolean isActive(IKeyConflictContext context) {
         return modern.isActive(context == null ? null : context.mcc$modern());
     }

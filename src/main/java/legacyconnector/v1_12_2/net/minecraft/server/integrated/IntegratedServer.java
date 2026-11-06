@@ -8,6 +8,13 @@ public class IntegratedServer extends legacyconnector.v1_12_2.net.minecraft.serv
     public IntegratedServer() {
     }
 
+    /** 1.12's constructor of the single player server; the game starts its own, so the arguments are not used. */
+    public IntegratedServer(legacyconnector.v1_12_2.net.minecraft.client.Minecraft client, String folderName, String worldName,
+            legacyconnector.v1_12_2.net.minecraft.world.WorldSettings settings, com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService auth,
+            com.mojang.authlib.minecraft.MinecraftSessionService sessionService, com.mojang.authlib.GameProfileRepository profileRepository,
+            legacyconnector.v1_12_2.net.minecraft.server.management.PlayerProfileCache profileCache) {
+    }
+
     private static net.minecraft.server.MinecraftServer mcc$server() {
         return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
     }

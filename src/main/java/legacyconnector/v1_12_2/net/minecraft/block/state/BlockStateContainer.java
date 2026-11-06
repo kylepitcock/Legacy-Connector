@@ -33,6 +33,12 @@ public class BlockStateContainer {
         this.validStates = ImmutableList.copyOf(states);
     }
 
+    /** Forge's {@code ExtendedBlockState} super call: listed properties plus unlisted ones (unlisted values live in the states' extended part). */
+    public BlockStateContainer(Block block, IProperty<?>[] properties,
+            ImmutableMap<legacyconnector.v1_12_2.net.minecraftforge.common.property.IUnlistedProperty<?>, com.google.common.base.Optional<?>> unlistedProperties) {
+        this(block, properties);
+    }
+
     /** Forge's builder: listed properties, plus unlisted ones (which make it an {@code ExtendedBlockState}). */
     public static class Builder {
         private final Block block;
@@ -123,6 +129,10 @@ public class BlockStateContainer {
 
         /** The state for each other value of each property (vanilla's neighbour table; mods' state classes read it). */
         protected com.google.common.collect.ImmutableTable<IProperty<?>, Comparable<?>, IBlockState> propertyValueTable;
+
+        public com.google.common.collect.ImmutableTable<IProperty<?>, Comparable<?>, IBlockState> getPropertyValueTable() {
+            return propertyValueTable;
+        }
 
         /** Builds {@link #propertyValueTable} from all states of the container by their property values. */
         public void buildPropertyValueTable(Map<Map<IProperty<?>, Comparable<?>>, StateImplementation> map) {

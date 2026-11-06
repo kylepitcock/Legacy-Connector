@@ -30,6 +30,23 @@ public class ParticleManager {
     public static volatile CustomRenderer mcc$customRenderer;
 
     protected World world;
+
+    /** Phantom: redirected to {@link #mcc$get$fxLayers}: 1.12's per-layer particle queues; the modern engine keeps its own, so a fresh empty set. */
+    @Deprecated
+    public ArrayDeque<Particle>[][] fxLayers;
+
+    @SuppressWarnings("unchecked")
+    public static ArrayDeque<Particle>[][] mcc$get$fxLayers(ParticleManager m) {
+        ArrayDeque<Particle>[][] layers = new ArrayDeque[4][];
+        for (int i = 0; i < layers.length; i++) {
+            layers[i] = new ArrayDeque[2];
+            for (int j = 0; j < 2; j++) layers[i][j] = new ArrayDeque<>();
+        }
+        return layers;
+    }
+
+    public static void mcc$set$fxLayers(ParticleManager m, ArrayDeque<Particle>[][] v) {
+    }
     private final ArrayDeque<Particle> particles = new ArrayDeque<>();
     private final ArrayDeque<Particle> queue = new ArrayDeque<>();
     private final Random rand = new Random();

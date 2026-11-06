@@ -13,6 +13,10 @@ public class PlayerProfileCache {
     public PlayerProfileCache() {
     }
 
+    /** 1.12's constructor (profile repository and cache file): the cache is the server's own, so both are ignored. */
+    public PlayerProfileCache(com.mojang.authlib.GameProfileRepository repository, java.io.File file) {
+    }
+
     private static net.minecraft.server.players.GameProfileCache modern() {
         var s = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         return s == null ? null : s.getProfileCache();

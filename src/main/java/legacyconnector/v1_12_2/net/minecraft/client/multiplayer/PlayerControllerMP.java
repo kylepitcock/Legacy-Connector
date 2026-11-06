@@ -14,6 +14,14 @@ import legacyconnector.v1_12_2.net.minecraft.util.math.Vec3d;
  */
 public class PlayerControllerMP {
     public static final PlayerControllerMP mcc$INSTANCE = new PlayerControllerMP();
+
+    public PlayerControllerMP() {
+    }
+
+    /** 1.12's constructor (the client and its connection): the view answers from the running game instead. */
+    public PlayerControllerMP(legacyconnector.v1_12_2.net.minecraft.client.Minecraft client,
+            legacyconnector.v1_12_2.net.minecraft.client.network.NetHandlerPlayClient netHandler) {
+    }
     /** Phantom: how far the block being broken is (0-1). */
     @Deprecated
     public float curBlockDamageMP;
@@ -127,6 +135,18 @@ public class PlayerControllerMP {
     public boolean onPlayerDestroyBlock(BlockPos pos) {
         var m = mode();
         return m != null && m.destroyBlock(new net.minecraft.core.BlockPos(pos.getX(), pos.getY(), pos.getZ()));
+    }
+
+    /** Keeps breaking a block while the attack key is held. */
+    public boolean onPlayerDamageBlock(BlockPos posBlock, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing directionFacing) {
+        var m = mode();
+        return m != null && m.continueDestroyBlock(new net.minecraft.core.BlockPos(posBlock.getX(), posBlock.getY(), posBlock.getZ()), directionFacing.mcc$modern());
+    }
+
+    /** Sets the player's game mode on the client side only. */
+    public void setGameType(legacyconnector.v1_12_2.net.minecraft.world.GameType type) {
+        var m = mode();
+        if (m != null && type != null) m.setLocalMode(type.mcc$modern());
     }
 
     public boolean clickBlock(BlockPos loc, EnumFacing face) {
