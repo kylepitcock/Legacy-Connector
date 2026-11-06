@@ -39,6 +39,23 @@ public class ItemStack {
         this.damage = damage;
     }
 
+    public ItemStack(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
+        readNbt(nbt);
+    }
+
+    public legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound writeNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
+        nbt.putShort("id", (short) itemId);
+        nbt.putByte("Count", (byte) count);
+        nbt.putShort("Damage", (short) damage);
+        return nbt;
+    }
+
+    public void readNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound nbt) {
+        itemId = nbt.getShort("id");
+        count = nbt.getByte("Count");
+        damage = nbt.getShort("Damage");
+    }
+
     public ItemStack split(int amount) {
         this.count -= amount;
         return new ItemStack(itemId, amount, damage);

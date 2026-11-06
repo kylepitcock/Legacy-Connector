@@ -5,7 +5,7 @@ Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Star
 **Status: started (blocks, items, recipes, textures, block behaviour).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
 detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
 their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
-click, redstone). Not yet: tile entities, entities, world generation, GUIs, the mods' tick hooks.
+click, redstone) with their tile entities (saved, loaded, ticked). Not yet: entities, world generation, GUIs, the mods' tick hooks.
 
 ## Putting the mods in
 
@@ -133,6 +133,27 @@ The server test runs `B1.7.3 BEHAVIOUR TEST`: every mod block placed, given a ne
 a fake player, asked for redstone power and removed. With the 11 mods: 10 callbacks fail, all of blocks whose tile entity is missing (NetherCraft's
 furnace and chest, Portal Gun's portals); 6 blocks use the right click. RedPower's lamp switches itself off without power.
 
+## Tile entities
+
+- **NBT** is b1.7.3's own (`net.minecraft.nbt` in the shim: compound, list and the eight value tags, with the binary format of the time);
+  `NbtB173` converts it to and from modern NBT (same tag types, nothing lost).
+- **Hosting.** A b1.7.3 `BlockContainer` (`BlockWithEntity`) becomes a `LegacyB173EntityBlock`; one modern block entity type
+  (`legacyconnector:legacy_tile_b1_7_3`, `TileEntitiesB173`) hosts every legacy tile entity (`LegacyB173BlockEntity`). The legacy one is
+  made by the block's `getBlockEntity()` the first time it is asked for (as b1.7.3's chunk did) or loaded from the save: its `writeNbt`
+  output (with the id `ModLoader.RegisterTileEntity` gave the class, also the overload with a renderer) is stored under `legacy`.
+- **Ticking.** The server ticks it when its class has its own `updateEntity`; one that throws stops ticking (logged once).
+- `World.getBlockTileEntity` / `setBlockTileEntity` / `removeBlockTileEntity` reach it; `markDirty` marks the modern block entity changed.
+  Clients get the same NBT in the block entity data packet (for GUIs and renderers later).
+
+`B1.7.3 TILE ENTITY TEST` (server test): with the 11 mods, 21 blocks have a tile entity; all 21 make one, save it and load it back. The
+behaviour test then fails 1 callback (RedPower marks a chunk dirty through `World.getChunkFromPos`, not bridged yet); 9 blocks use a right
+click (NetherCraft's furnaces and chest, Portal Gun, IndustrialCraft 2's machines among them).
+
+Java compatibility found on the way: `Arrays.asList(...).toArray()` returned the backing typed array up to Java 8 and code cast it
+(`(Integer[]) list.toArray()`, RedPower's power search); since Java 9 it is an `Object[]`. `JavaCompatRedirects` turns a `java.util`
+collection's `toArray()` followed by a cast to a typed array into `toArray(new T[0])` (for every legacy version). `Vec3d` and
+`EntityLiving.getLook` are hand-written (RedPower traces its click along the player's look).
+
 ## Reflection, Forge tables, fire
 
 - **Reflection on vanilla classes.** ModLoader's `getPrivateValue` / `setPrivateValue` take a declared-field index or an obfuscated
@@ -180,8 +201,8 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 
 ## Plan
 
-0. **Tile entities** (`RegisterTileEntity`) hosted by one modern block entity type, NBT through a legacy `NbtCompound`, ticking,
-   `World.getBlockEntity`; then the mods' GUIs on them (`ModLoader.OpenGUI` with the container as a modern menu).
+0. **GUIs**: `ModLoader.OpenGUI` and mods' containers (furnaces, chests, machines) as modern menus and screens over the tile entities;
+   tile entity special renderers (`RegisterTileEntity(class, id, renderer)`, kept); `World.getChunkFromPos`.
 1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
    sprites (`ModTextureAnimation`), colour multipliers, item subtypes as their own items (today one modern item per legacy item).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities

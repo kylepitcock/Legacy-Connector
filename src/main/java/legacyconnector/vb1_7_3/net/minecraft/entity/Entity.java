@@ -139,4 +139,9 @@ public abstract class Entity {
     public boolean isAlive() {
         return !dead;
     }
+
+    /** MCP {@code getLookVec}: none for a plain entity. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getLookVector() {
+        return null;
+    }
 }

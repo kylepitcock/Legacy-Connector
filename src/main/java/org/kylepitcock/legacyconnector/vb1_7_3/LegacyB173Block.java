@@ -99,9 +99,9 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
             action.run();
         } catch (RuntimeException | LinkageError e) {
             CALLBACK_FAILURES.incrementAndGet();
-            if (failures++ < 3) {
-                org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("{} of {} failed: {}", what, legacy, e.toString());
-            }
+            int n = failures++;
+            if (n == 0) org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("{} of {} failed", what, legacy, e);
+            else if (n < 3) org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("{} of {} failed: {}", what, legacy, e.toString());
         }
     }
 

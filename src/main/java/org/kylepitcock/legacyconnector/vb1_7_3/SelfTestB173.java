@@ -71,6 +71,43 @@ public final class SelfTestB173 {
         }
         LOG.info("B1.7.3 BEHAVIOUR TEST: {} blocks; {} legacy callbacks failed, {} escaped; {} used a right click; {} emit redstone",
                 blocks.size(), LegacyB173Block.CALLBACK_FAILURES.get() - before, thrown, used, powering);
+        tileEntities(level, blocks, base.above(4));
+    }
+
+    /** Every block with a tile entity: it has one once placed, and the same class comes back from its saved NBT. */
+    private static void tileEntities(ServerLevel level, List<LegacyB173Block> blocks, BlockPos base) {
+        int withEntity = 0, made = 0, reloaded = 0;
+        List<String> failed = new ArrayList<>();
+        var world = legacyconnector.vb1_7_3.net.minecraft.world.World.mcc$wrap(level);
+        int n = 0;
+        for (LegacyB173Block b : blocks) {
+            if (!(b instanceof LegacyB173EntityBlock)) continue;
+            withEntity++;
+            BlockPos pos = base.offset((n % 32) * 2, 0, (n / 32) * 2);
+            n++;
+            try {
+                level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+                level.setBlock(pos, b.defaultBlockState(), 3);
+                var te = world.getBlockEntity(pos.getX(), pos.getY(), pos.getZ());
+                if (te == null) {
+                    failed.add(BuiltInRegistries.BLOCK.getKey(b) + " (no tile entity)");
+                    continue;
+                }
+                made++;
+                var host = level.getBlockEntity(pos);
+                var tag = host.saveWithFullMetadata(level.registryAccess());
+                var copy = net.minecraft.world.level.block.entity.BlockEntity.loadStatic(pos, level.getBlockState(pos), tag, level.registryAccess());
+                if (copy instanceof LegacyB173BlockEntity h && h.legacy() != null && h.legacy().getClass() == te.getClass()) reloaded++;
+                else failed.add(BuiltInRegistries.BLOCK.getKey(b) + " (" + te.getClass().getSimpleName() + " not reloaded from " + tag.getCompound("legacy").getString("id") + ")");
+            } catch (RuntimeException | LinkageError e) {
+                failed.add(BuiltInRegistries.BLOCK.getKey(b) + " (" + e + ")");
+            } finally {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos.below(), Blocks.AIR.defaultBlockState(), 3);
+            }
+        }
+        LOG.info("B1.7.3 TILE ENTITY TEST: {} blocks with a tile entity, {} made one, {} saved and loaded back", withEntity, made, reloaded);
+        for (String f : failed.subList(0, Math.min(20, failed.size()))) LOG.info("  tile entity: {}", f);
     }
 
     private static void run(ServerLevel level) {

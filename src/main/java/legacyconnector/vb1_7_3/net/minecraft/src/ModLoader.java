@@ -154,6 +154,13 @@ public final class ModLoader {
         ContentB173.registerTileEntity(type, name);
     }
 
+    /** With a special renderer: the save id is registered the same way; the renderer is kept for the client. */
+    public static void RegisterTileEntity(Class<?> type, String name,
+            legacyconnector.vb1_7_3.net.minecraft.client.render.block.entity.BlockEntityRenderer renderer) {
+        ContentB173.registerTileEntity(type, name);
+        ContentB173.registerTileEntityRenderer(type, renderer);
+    }
+
     public static void RegisterEntityID(Class<?> type, String name, int id) {
         ContentB173.registerEntity(type, name, id);
     }

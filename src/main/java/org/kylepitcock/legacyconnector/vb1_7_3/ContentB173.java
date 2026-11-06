@@ -191,6 +191,21 @@ public final class ContentB173 {
 
     public static synchronized void registerTileEntity(Class<?> type, String name) {
         TILE_ENTITIES.add(new Registration(type, name, -1, current));
+        try {
+            legacyconnector.vb1_7_3.net.minecraft.block.entity.BlockEntity.create(type, name);
+        } catch (IllegalArgumentException e) {
+            // registered twice (a mod and its addon): the first id stays, as ModLoader's own exception was caught by the mod
+        }
+    }
+
+    private static final Map<Class<?>, Object> TILE_RENDERERS = new LinkedHashMap<>();
+
+    public static synchronized void registerTileEntityRenderer(Class<?> type, Object renderer) {
+        if (renderer != null) TILE_RENDERERS.put(type, renderer);
+    }
+
+    public static synchronized Map<Class<?>, Object> tileEntityRenderers() {
+        return new LinkedHashMap<>(TILE_RENDERERS);
     }
 
     public static synchronized void registerEntity(Class<?> type, String name, int id) {

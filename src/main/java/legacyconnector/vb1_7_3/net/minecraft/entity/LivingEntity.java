@@ -32,4 +32,18 @@ public abstract class LivingEntity extends Entity {
     public float getEyeHeight() {
         return height * 0.85F;
     }
+
+    /** MCP {@code getLook}: the unit vector the entity looks along. */
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getLookVector(float partialTicks) {
+        float yawRad = -yaw * 0.017453292F - (float) Math.PI;
+        float pitchRad = -pitch * 0.017453292F;
+        float cosYaw = (float) Math.cos(yawRad), sinYaw = (float) Math.sin(yawRad);
+        float cosPitch = (float) -Math.cos(pitchRad), sinPitch = (float) Math.sin(pitchRad);
+        return legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.createCached(sinYaw * cosPitch, sinPitch, cosYaw * cosPitch);
+    }
+
+    @Override
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d getLookVector() {
+        return getLookVector(1.0F);
+    }
 }

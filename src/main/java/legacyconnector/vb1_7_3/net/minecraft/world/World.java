@@ -72,9 +72,23 @@ public class World implements BlockView {
         return BlocksB173.legacyId(state(x, y, z));
     }
 
+    /** The legacy tile entity of a b1.7.3 block with one (made on first use, as b1.7.3's chunk did). */
     @Override
     public BlockEntity getBlockEntity(int x, int y, int z) {
-        return null;
+        if (mcc$level == null) return null;
+        return mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host ? host.legacy() : null;
+    }
+
+    /** MCP {@code setBlockTileEntity}: only a block with a tile entity can hold one. */
+    public void setBlockEntity(int x, int y, int z, BlockEntity te) {
+        if (mcc$level == null) return;
+        if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(te);
+    }
+
+    /** MCP {@code removeBlockTileEntity}. */
+    public void removeBlockEntity(int x, int y, int z) {
+        if (mcc$level == null) return;
+        if (mcc$level.getBlockEntity(pos(x, y, z)) instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockEntity host) host.setLegacy(null);
     }
 
     @Override

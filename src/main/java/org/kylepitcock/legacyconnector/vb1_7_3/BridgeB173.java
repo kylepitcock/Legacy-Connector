@@ -65,6 +65,7 @@ public final class BridgeB173 {
                 LOG.warn("Could not register b1.7.3 item {} of {}: {}", item, mod.legacyId, e.toString());
             }
         }
+        TileEntitiesB173.registerType();
         flammability();
         StringBuilder sb = new StringBuilder();
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));
@@ -122,7 +123,14 @@ public final class BridgeB173 {
             });
         }
         if (Block.BLOCKS_RANDOM_TICK[block.id]) p.randomTicks();
-        LegacyB173Block modern = new LegacyB173Block(block, p);
+        LegacyB173Block modern;
+        if (Block.BLOCKS_WITH_ENTITY[block.id] || block instanceof legacyconnector.vb1_7_3.net.minecraft.block.BlockWithEntity) {
+            var eb = new LegacyB173EntityBlock(block, p);
+            TileEntitiesB173.addBlock(eb);
+            modern = eb;
+        } else {
+            modern = new LegacyB173Block(block, p);
+        }
         LegacyRegistrar.register(BuiltInRegistries.BLOCK, id, modern);
         block.mcc$modern = modern;
         translation("block." + id.getNamespace() + "." + id.getPath(), block, block.getTranslationKey());
