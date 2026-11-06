@@ -14,7 +14,8 @@ import io, os, re, sys, zipfile
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 DEV = os.path.join(ROOT, "build", "devtools")
 ver = sys.argv[1] if len(sys.argv) > 1 else "1.7.10"
-USERDEV = {"1.7.10": os.path.join(DEV, "mcp", "forge1710-userdev.jar"),
+USERDEV = {"1.6.4": os.path.join(DEV, "mcp", "forge164-src.zip"),
+           "1.7.10": os.path.join(DEV, "mcp", "forge1710-userdev.jar"),
            "1.12.2": os.path.join(DEV, "mcp", "forge1122-sources.jar")}[ver]
 # Forge 1.12.2 patches these vanilla types to be registry entries (binary patches only, so listed here).
 EXTRA_1122 = {
@@ -29,7 +30,7 @@ EXTRA_1122 = {
 EXTRA_1122_IFACES = {
     "net/minecraft/item/crafting/IRecipe": ["net/minecraftforge/registries/IForgeRegistryEntry"],
 }
-SRC_PREFIX = "src/main/java/" if ver == "1.7.10" else ""
+SRC_PREFIX = "src/main/java/" if ver == "1.7.10" else ("forge/" if ver == "1.6.4" else "")
 
 ACC_PUBLIC, ACC_FINAL, ACC_INTERFACE, ACC_ABSTRACT, ACC_ANNOTATION, ACC_ENUM = 0x1, 0x10, 0x200, 0x400, 0x2000, 0x4000
 
@@ -122,9 +123,11 @@ def parse(path, src):
 parsed = []
 with zipfile.ZipFile(USERDEV) as z:
     for n in z.namelist():
-        if n.startswith(SRC_PREFIX) and n.endswith(".java") and not n.startswith("META-INF"):
+        if n.startswith(SRC_PREFIX) and n.endswith(".java") and not n.startswith("META-INF") and "/conf/" not in n:
             parsed += parse(n, z.read(n).decode("utf-8", "replace"))
     patch_sets = [z.read(n) for n in ("forgepatches.zip", "fmlpatches.zip") if n in z.namelist()]
+    # Forge 1.6.4 keeps the vanilla patches as loose files (forge/patches/minecraft/<class>.java.patch, fml/patches/...)
+    loose_patches = [z.read(n) for n in z.namelist() if ver == "1.6.4" and n.endswith(".java.patch")]
 
 known = set(classes) | {p[0] for p in parsed}
 JAVA_LANG = {"Object", "Enum", "Exception", "RuntimeException", "Error", "Throwable", "Thread", "Runnable", "Comparable",
@@ -183,24 +186,30 @@ for internal, sup, ifaces, acc, default_super, pkg, imports, outers in parsed:
 # ------------------------------------------------------------------ interfaces Forge patches onto vanilla classes
 DECL = re.compile(r"^\+\s*(?:public\s+|abstract\s+|final\s+)*(?:class|interface)\s+(\w+).*?\bimplements\s+([\w.,\s]+)")
 added = 0
-for blob in patch_sets:
-    with zipfile.ZipFile(io.BytesIO(blob)) as pz:
-        for n in pz.namelist():
-            text = pz.read(n).decode("utf-8", "replace")
-            m = re.search(r"\+\+\+ \S*?(net/minecraft/\S+?)\.java", text)
-            if not m: continue
-            owner = m.group(1)
-            imports = re.findall(r"^[+ ]import\s+([\w.]+);", text, flags=re.M)
-            for line in text.splitlines():
-                d = DECL.match(line)
-                if not d or owner not in classes: continue
-                target = owner if d.group(1) == owner.rsplit("/", 1)[1] else owner + "$" + d.group(1)
-                if target not in classes: continue
-                for f in re.split(r"[,\s]+", d.group(2).strip()):
-                    if not f: continue
-                    r = resolve(f, owner.rsplit("/", 1)[0], imports, [owner])
-                    if r and r not in classes[target][1]:
-                        classes[target][1].append(r); added += 1
+def patch_texts():
+    for blob in patch_sets:
+        with zipfile.ZipFile(io.BytesIO(blob)) as pz:
+            for n in pz.namelist():
+                yield pz.read(n).decode("utf-8", "replace")
+    for blob in loose_patches:
+        yield blob.decode("utf-8", "replace")
+
+
+for text in patch_texts():
+    m = re.search(r"\+\+\+ \S*?(net/minecraft/\S+?)\.java", text)
+    if not m: continue
+    owner = m.group(1)
+    imports = re.findall(r"^[+ ]import\s+([\w.]+);", text, flags=re.M)
+    for line in text.splitlines():
+        d = DECL.match(line)
+        if not d or owner not in classes: continue
+        target = owner if d.group(1) == owner.rsplit("/", 1)[1] else owner + "$" + d.group(1)
+        if target not in classes: continue
+        for f in re.split(r"[,\s]+", d.group(2).strip()):
+            if not f: continue
+            r = resolve(f, owner.rsplit("/", 1)[0], imports, [owner])
+            if r and r not in classes[target][1]:
+                classes[target][1].append(r); added += 1
 
 if ver == "1.12.2":
     for owner, (sup, ifs) in EXTRA_1122.items():

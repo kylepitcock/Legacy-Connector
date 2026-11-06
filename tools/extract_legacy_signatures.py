@@ -2,7 +2,7 @@
 """Builds build/devtools/legacy-<ver>.sig: every vanilla class/field/method of a legacy Minecraft version with
 deobfuscated (MCP) names and descriptors. Reference data for the shim audit; never shipped.
 
-usage: tools/extract_legacy_signatures.py <1.7.10|1.12.2>
+usage: tools/extract_legacy_signatures.py <1.6.4|1.7.10|1.12.2>
 Requires tools/fetch_devtools.sh data plus build/devtools/mojang/client-<ver>.jar.
 """
 import csv, io, os, re, struct, sys, zipfile
@@ -65,6 +65,14 @@ if ver == "1.7.10":
     load_csv("mcp_stable-12-1.7.10.zip", "methods.csv"); load_csv("mcp_stable-12-1.7.10.zip", "fields.csv")
     load_csv("forge1710-userdev.jar", "conf/methods.csv"); load_csv("forge1710-userdev.jar", "conf/fields.csv")
     for line in zipfile.ZipFile(os.path.join(ROOT, "mcp", "srg1710.zip")).read("joined.srg").decode().splitlines():
+        p = line.split()
+        if p[0] == "CL:": cmap[p[1]] = p[2]
+        elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
+        elif p[0] == "MD:": mmap[p[1] + p[2]] = p[3].rsplit("/", 1)[1]
+elif ver == "1.6.4":
+    # Forge 9.11.1.1345 ships the 1.6.4 MCP names in its source zip (fml/conf); the SRG data is the MCP 1.6.4 joined.srg
+    load_csv("forge164-src.zip", "forge/fml/conf/methods.csv"); load_csv("forge164-src.zip", "forge/fml/conf/fields.csv")
+    for line in zipfile.ZipFile(os.path.join(ROOT, "mcp", "srg164.zip")).read("joined.srg").decode().splitlines():
         p = line.split()
         if p[0] == "CL:": cmap[p[1]] = p[2]
         elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
