@@ -57,6 +57,15 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
         return shape;
     }
 
+    /** b1.7.3 glass ({@code BlockBreakable} built with {@code transparent} false) draws no faces against the same block. */
+    @Override
+    protected boolean skipRendering(BlockState state, BlockState adjacent, net.minecraft.core.Direction direction) {
+        if (adjacent.is(this) && legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.TranslucentBlock t && !t.mcc$drawsFacesBetweenSame()) {
+            return true;
+        }
+        return super.skipRendering(state, adjacent, direction);
+    }
+
     @Override
     protected List<ItemStack> getDrops(BlockState state, LootParams.Builder params) {
         int meta = state.getValue(META);

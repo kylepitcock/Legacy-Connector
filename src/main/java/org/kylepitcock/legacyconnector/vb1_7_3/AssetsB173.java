@@ -115,8 +115,18 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         for (int d = 0; d < 16; d++) VANILLA_ITEMS.put(78 + (d % 8) * 16 + d / 8, dyes[d]);
     }
 
+    /**
+     * Vanilla textures with transparent pixels, for mod blocks that reuse them. b1.7.3 drew all terrain with an alpha test, so a block
+     * whose sprites have holes showed them even as an "opaque" block: such models are cutout ({@link #hasAlpha}).
+     */
+    private static final java.util.Set<String> VANILLA_SEE_THROUGH = java.util.Set.of("glass", "oak_leaves", "cobweb", "poppy", "dandelion",
+            "oak_sapling", "red_mushroom", "brown_mushroom", "dead_bush", "torch", "ladder", "sugar_cane", "spawner", "rail", "rail_corner",
+            "lever", "redstone_torch", "redstone_torch_off", "cactus_side", "cactus_top", "cactus_bottom");
+
     /** sheet + "#" + index -> texture reference, for one pack build. */
     private final Map<String, String> sprites = new HashMap<>();
+    /** generated texture references with at least one pixel that is not fully opaque */
+    private final java.util.Set<String> withAlpha = new java.util.HashSet<>();
     private final Map<String, BufferedImage> sheets = new HashMap<>();
     private Map<String, ContentB173.TextureOverride> overrides;
     private Map<String, Supplier<byte[]>> out;
@@ -150,6 +160,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         this.out = out;
         sprites.clear();
         sheets.clear();
+        withAlpha.clear();
         missing = 0;
         overrides = new HashMap<>();
         for (var o : ContentB173.textureOverrides()) overrides.put(o.sheet() + "#" + o.index(), o);
@@ -195,7 +206,9 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 final int s = side;
                 tex[side] = texture(mod, sheet, safe(() -> block.getTexture(s, m), block.textureId), false);
             }
-            JsonObject model = blockModel(block, renderType, tex, opaque, layer);
+            boolean seeThrough = false;
+            for (String t : tex) seeThrough |= hasAlpha(t);
+            JsonObject model = blockModel(block, renderType, tex, opaque && !seeThrough, layer);
             String json = GSON.toJson(model);
             String name = modelByJson.get(json);
             if (name == null) {
@@ -360,9 +373,28 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         return write(mod, base + "_" + index, sprite);
     }
 
+    private boolean hasAlpha(String ref) {
+        if (ref.startsWith("minecraft:block/")) {
+            String n = ref.substring("minecraft:block/".length());
+            return VANILLA_SEE_THROUGH.contains(n) || n.startsWith("wheat_stage");
+        }
+        return withAlpha.contains(ref);
+    }
+
     private String write(LegacyModRecord mod, String name, BufferedImage img) {
         String ns = mod != null ? mod.modernId : "legacyconnector";
         String path = "b173/" + name;
+        if (img.getColorModel().hasAlpha()) {
+            scan:
+            for (int y = 0; y < img.getHeight(); y++) {
+                for (int x = 0; x < img.getWidth(); x++) {
+                    if ((img.getRGB(x, y) >>> 24) < 255) {
+                        withAlpha.add(ns + ":block/" + path);
+                        break scan;
+                    }
+                }
+            }
+        }
         try {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             ImageIO.write(img, "png", bytes);

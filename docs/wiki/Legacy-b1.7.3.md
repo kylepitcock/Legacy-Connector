@@ -84,7 +84,11 @@ mod block placed, read back and asked for drops).
   doors' negative indices (a mirrored face) count as their absolute value.
 - **Models.** One block model per metadata, deduplicated: faces down, up, north, south, west, east are b1.7.3's sides 0-5, the block's
   bounds are the element (slabs, plates), render types 1 (crossed plants), 2 (torches) and 6 (crops) use the vanilla shapes, other render
-  types (custom renderers) are a cube for now; non-opaque blocks are cutout, render layer 1 translucent. The blockstate maps `meta=0..15`.
+  types (custom renderers) are a cube for now; non-opaque blocks are cutout, render layer 1 translucent, and so is any block whose sprites
+  have transparent pixels (b1.7.3 drew all terrain with an alpha test). The blockstate maps `meta=0..15`.
+- **Vanilla base classes with their behaviour.** Mods extend vanilla block classes; synthesized ones have none (NetherCraft's glass,
+  a `BlockBreakable`, said it was an opaque cube and drew black). The shim has `TranslucentBlock` (glass base: not opaque, no faces
+  between two blocks of the same id), `GlassBlock`, `IceBlock`, `TransparentBlock` (leaves base), `PlantBlock` and `TorchBlock`.
   Block items use the block model (flat sprite for plants and torches), items a flat or handheld sprite.
 - **Names**: `ModLoader.AddName` / `AddLocalization`, else the translation key made readable.
 - **Creative tabs** (`CreativeTabsB173`): b1.7.3 had no creative inventory, so each mod gets one tab with its blocks then its items; a block
