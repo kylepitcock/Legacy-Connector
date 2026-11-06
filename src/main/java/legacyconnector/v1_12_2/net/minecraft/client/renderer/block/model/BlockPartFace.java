@@ -17,6 +17,14 @@ public class BlockPartFace {
         this.blockFaceUV = blockFaceUVIn;
     }
 
+    /** Gson adapter of a face; the texture coordinates go through the context's {@link BlockFaceUV} adapter. */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<BlockPartFace> {
+        @Override
+        public BlockPartFace deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            return ModelBlock.face(json.getAsJsonObject(), context);
+        }
+    }
+
     net.minecraft.client.renderer.block.model.BlockElementFace mcc$modern() {
         return new net.minecraft.client.renderer.block.model.BlockElementFace(cullFace == null ? null : cullFace.mcc$modern(), tintIndex, texture,
                 blockFaceUV.mcc$modern());

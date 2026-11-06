@@ -18,6 +18,14 @@ public class ItemOverride {
         mapResourceValues = propertyValues;
     }
 
+    /** Gson adapter of a model override entry. */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<ItemOverride> {
+        @Override
+        public ItemOverride deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            return ModelBlock.override(json.getAsJsonObject());
+        }
+    }
+
     public ResourceLocation getLocation() {
         return location;
     }

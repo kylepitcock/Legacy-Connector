@@ -43,6 +43,14 @@ public class ItemCameraTransforms {
         fixed = fixedIn;
     }
 
+    /** Gson adapter of a model's {@code display} object. */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<ItemCameraTransforms> {
+        @Override
+        public ItemCameraTransforms deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            return ModelBlock.transforms(json.getAsJsonObject());
+        }
+    }
+
     public void applyTransform(TransformType type) {
         applyTransformSide(getTransform(type), false);
     }

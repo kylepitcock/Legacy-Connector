@@ -46,11 +46,7 @@ public final class CustomModels1122 {
             if (model == null) continue;
             models++;
             try {
-                for (ResourceLocation texture : model.getTextures()) Sprites1122.register(texture.toString());
-                for (ResourceLocation dependency : model.getDependencies()) {
-                    IModel dep = ModelLoaderRegistry.getModelOrMissing(dependency);
-                    for (ResourceLocation texture : dep.getTextures()) Sprites1122.register(texture.toString());
-                }
+                registerTextures(model, new java.util.HashSet<>());
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("listing the textures of the model " + key, e);
             }
@@ -61,13 +57,20 @@ public final class CustomModels1122 {
             if (model == null) continue;
             variants++;
             try {
-                for (ResourceLocation texture : model.getTextures()) Sprites1122.register(texture.toString());
+                registerTextures(model, new java.util.HashSet<>());
             } catch (RuntimeException | LinkageError e) {
                 RenderErrors1122.report("listing the textures of the model " + variant.ns() + ":" + variant.path(), e);
             }
         }
         if (models > 0) LOG.info("{} 1.12.2 model location(s) come from custom model loaders", models);
         if (variants > 0) LOG.info("{} 1.12.2 block variant(s) are models of custom model loaders", variants);
+    }
+
+    /** The textures of a model and of all its dependencies (asked of the registry, so plain ones are baked as standalone models). */
+    private static void registerTextures(IModel model, java.util.Set<IModel> seen) {
+        if (!seen.add(model)) return;
+        for (ResourceLocation texture : model.getTextures()) Sprites1122.register(texture.toString());
+        for (ResourceLocation dependency : model.getDependencies()) registerTextures(ModelLoaderRegistry.getModelOrMissing(dependency), seen);
     }
 
     /**
@@ -114,7 +117,7 @@ public final class CustomModels1122 {
                 models.put(net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state), Models1122.modern(baked));
             } catch (RuntimeException | LinkageError ex) {
                 LOG.warn("Could not bake the loader model {}:{} of {} meta {} ({}): {}", variant.ns(), variant.path(), variant.block(), variant.meta(),
-                        variant.source(), ex.toString());
+                        variant.source(), ex.toString(), ex);
             }
         }
     }

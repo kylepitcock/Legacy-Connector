@@ -21,6 +21,14 @@ public class BlockPart {
         setDefaultUvs();
     }
 
+    /** Gson adapter of an element (mods build their own Gson from the game's adapters by reflection: AE2's UVL models). */
+    public static class Deserializer implements com.google.gson.JsonDeserializer<BlockPart> {
+        @Override
+        public BlockPart deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
+            return ModelBlock.part(json.getAsJsonObject(), context);
+        }
+    }
+
     private void setDefaultUvs() {
         for (Map.Entry<EnumFacing, BlockPartFace> e : mapFaces.entrySet()) e.getValue().blockFaceUV.setUvs(getFaceUvs(e.getKey()));
     }

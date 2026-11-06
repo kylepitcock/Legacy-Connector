@@ -38,7 +38,7 @@ public class ModelBlock {
 
     public static ModelBlock deserialize(Reader readerIn) {
         JsonObject json = JsonParser.parseReader(readerIn).getAsJsonObject();
-        return fromJson(json);
+        return fromJson(json, null);
     }
 
     public static ModelBlock deserialize(String jsonString) {
@@ -151,9 +151,11 @@ public class ModelBlock {
 
     // ------------------------------------------------------------------ JSON
 
-    private static ModelBlock fromJson(JsonObject json) {
+    static ModelBlock fromJson(JsonObject json, com.google.gson.JsonDeserializationContext ctx) {
         List<BlockPart> elements = Lists.newArrayList();
-        if (json.has("elements")) for (JsonElement e : json.getAsJsonArray("elements")) elements.add(part(e.getAsJsonObject()));
+        if (json.has("elements")) {
+            for (JsonElement e : json.getAsJsonArray("elements")) elements.add(ctx != null ? ctx.deserialize(e, BlockPart.class) : part(e.getAsJsonObject(), null));
+        }
         Map<String, String> textures = Maps.newHashMap();
         if (json.has("textures")) {
             for (var e : json.getAsJsonObject("textures").entrySet()) textures.put(e.getKey(), e.getValue().getAsString());
@@ -165,17 +167,14 @@ public class ModelBlock {
         List<ItemOverride> overrides = Lists.newArrayList();
         if (json.has("overrides")) {
             for (JsonElement e : json.getAsJsonArray("overrides")) {
-                JsonObject o = e.getAsJsonObject();
-                Map<ResourceLocation, Float> predicate = Maps.newLinkedHashMap();
-                if (o.has("predicate")) for (var p : o.getAsJsonObject("predicate").entrySet()) predicate.put(new ResourceLocation(p.getKey()), p.getValue().getAsFloat());
-                overrides.add(new ItemOverride(new ResourceLocation(o.get("model").getAsString()), predicate));
+                overrides.add(override(e.getAsJsonObject()));
             }
         }
         boolean gui3d = !json.has("gui3d") || json.get("gui3d").getAsBoolean();
         return new ModelBlock(parent, elements, textures, ao, gui3d, transforms, overrides);
     }
 
-    private static ItemCameraTransforms transforms(JsonObject display) {
+    static ItemCameraTransforms transforms(JsonObject display) {
         return new ItemCameraTransforms(transform(display, "thirdperson_lefthand", "thirdperson_righthand", true),
                 transform(display, "thirdperson_righthand", "thirdperson", false), transform(display, "firstperson_lefthand", "firstperson_righthand", true),
                 transform(display, "firstperson_righthand", "firstperson", false), transform(display, "head", null, false), transform(display, "gui", null, false),
@@ -203,7 +202,7 @@ public class ModelBlock {
         return new float[] {a.get(0).getAsFloat(), a.get(1).getAsFloat(), a.get(2).getAsFloat()};
     }
 
-    private static BlockPart part(JsonObject o) {
+    static BlockPart part(JsonObject o, com.google.gson.JsonDeserializationContext ctx) {
         float[] from = vec(o, "from", 0.0F), to = vec(o, "to", 16.0F);
         BlockPartRotation rotation = null;
         if (o.has("rotation")) {
@@ -218,21 +217,46 @@ public class ModelBlock {
             for (var e : o.getAsJsonObject("faces").entrySet()) {
                 EnumFacing facing = EnumFacing.byName(e.getKey());
                 if (facing == null) continue;
-                JsonObject f = e.getValue().getAsJsonObject();
-                EnumFacing cull = f.has("cullface") ? EnumFacing.byName(f.get("cullface").getAsString()) : null;
-                int tint = f.has("tintindex") ? f.get("tintindex").getAsInt() : -1;
-                String texture = f.get("texture").getAsString();
-                float[] uv = null;
-                if (f.has("uv")) {
-                    JsonArray a = f.getAsJsonArray("uv");
-                    uv = new float[] {a.get(0).getAsFloat(), a.get(1).getAsFloat(), a.get(2).getAsFloat(), a.get(3).getAsFloat()};
-                }
-                int rot = f.has("rotation") ? f.get("rotation").getAsInt() : 0;
-                faces.put(facing, new BlockPartFace(cull, tint, texture, new BlockFaceUV(uv, rot)));
+                // mods register their own face adapter (AE2 reads a light map per face): go through the context when there is one
+                faces.put(facing, ctx != null ? ctx.deserialize(e.getValue(), BlockPartFace.class) : face(e.getValue().getAsJsonObject(), null));
             }
         }
         boolean shade = !o.has("shade") || o.get("shade").getAsBoolean();
         return new BlockPart(new Vector3f(from[0], from[1], from[2]), new Vector3f(to[0], to[1], to[2]), faces, rotation, shade);
+    }
+
+    /** A face of an element; its texture coordinates go through the context's {@link BlockFaceUV} adapter when there is one. */
+    static BlockPartFace face(JsonObject f, com.google.gson.JsonDeserializationContext ctx) {
+        EnumFacing cull = f.has("cullface") && !f.get("cullface").getAsString().isEmpty() ? EnumFacing.byName(f.get("cullface").getAsString()) : null;
+        int tint = f.has("tintindex") ? f.get("tintindex").getAsInt() : -1;
+        String texture = f.get("texture").getAsString();
+        BlockFaceUV uv = ctx != null ? ctx.deserialize(f, BlockFaceUV.class) : faceUv(f);
+        return new BlockPartFace(cull, tint, texture, uv);
+    }
+
+    static BlockFaceUV faceUv(JsonObject f) {
+        float[] uv = null;
+        if (f.has("uv")) {
+            JsonArray a = f.getAsJsonArray("uv");
+            uv = new float[] {a.get(0).getAsFloat(), a.get(1).getAsFloat(), a.get(2).getAsFloat(), a.get(3).getAsFloat()};
+        }
+        return new BlockFaceUV(uv, f.has("rotation") ? f.get("rotation").getAsInt() : 0);
+    }
+
+    static ItemOverride override(JsonObject o) {
+        Map<ResourceLocation, Float> predicate = Maps.newLinkedHashMap();
+        if (o.has("predicate")) for (var p : o.getAsJsonObject("predicate").entrySet()) predicate.put(new ResourceLocation(p.getKey()), p.getValue().getAsFloat());
+        return new ItemOverride(new ResourceLocation(o.get("model").getAsString()), predicate);
+    }
+
+    /** A copy of this model with some texture variables replaced (Forge's IModel.retexture of a json model). */
+    public ModelBlock mcc$retextured(Map<String, String> replacements) {
+        Map<String, String> merged = Maps.newHashMap(textures);
+        merged.putAll(replacements);
+        ModelBlock copy = new ModelBlock(parentLocation, elements, merged, ambientOcclusion, gui3d, cameraTransforms, overrides);
+        copy.parent = parent;
+        copy.name = name;
+        return copy;
     }
 
     /** Gson adapter for model json (mods register it on their own Gson to read models). */
@@ -240,7 +264,7 @@ public class ModelBlock {
         @Override
         public ModelBlock deserialize(com.google.gson.JsonElement json, java.lang.reflect.Type type, com.google.gson.JsonDeserializationContext context) {
             if (!json.isJsonObject()) throw new com.google.gson.JsonParseException("Model is not a json object");
-            return fromJson(json.getAsJsonObject());
+            return fromJson(json.getAsJsonObject(), context);
         }
     }
 }
