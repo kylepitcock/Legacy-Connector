@@ -2,7 +2,7 @@
 """Builds build/devtools/legacy-<ver>.sig: every vanilla class/field/method of a legacy Minecraft version with
 deobfuscated (MCP) names and descriptors. Reference data for the shim audit; never shipped.
 
-usage: tools/extract_legacy_signatures.py <1.5.2|1.6.4|1.7.10|1.12.2>
+usage: tools/extract_legacy_signatures.py <1.4.7|1.5.2|1.6.4|1.7.10|1.12.2>
 Requires tools/fetch_devtools.sh data plus build/devtools/mojang/client-<ver>.jar.
 """
 import csv, io, os, re, struct, sys, zipfile
@@ -69,6 +69,18 @@ if ver == "1.7.10":
         if p[0] == "CL:": cmap[p[1]] = p[2]
         elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
         elif p[0] == "MD:": mmap[p[1] + p[2]] = p[3].rsplit("/", 1)[1]
+elif ver == "1.4.7":
+    # Forge 6.6.2.534 ships the 1.4.7 MCP names (MCP 6.x) in its source zip. Its joined.srg names every class net/minecraft/src/<Name> and
+    # 1.4.7 mods are compiled against exactly those flat names, so (unlike 1.5.2) the classes are NOT repackaged here; forward/1.4.7/class-renames.tsv
+    # (tools/gen_forward_147.py) relocates them into the 1.5.2 packages.
+    z147 = "forge147-src.zip"
+    load_csv(z147, "forge/fml/conf/methods.csv"); load_csv(z147, "forge/fml/conf/fields.csv")
+    with zipfile.ZipFile(os.path.join(ROOT, "mcp", z147)) as z:
+        for line in z.read("forge/fml/conf/joined.srg").decode().splitlines():
+            p = line.split()
+            if p[0] == "CL:": cmap[p[1]] = p[2]
+            elif p[0] == "FD:": fmap[p[1]] = p[2].rsplit("/", 1)[1]
+            elif p[0] == "MD:": mmap[p[1] + p[2]] = p[3].rsplit("/", 1)[1]
 elif ver == "1.5.2":
     # Forge 7.8.1.738 ships the 1.5.2 MCP names in its source zip (fml/conf, MCP 7.51). Its joined.srg names every class
     # net/minecraft/src/<Name>; packages.csv (class,package) gives the packaged names mods were compiled against.
@@ -131,7 +143,7 @@ with zipfile.ZipFile(os.path.join(ROOT, "mojang", "client-%s.jar" % ver)) as jar
             out.append("M %s %s %d %s" % (names.get(srg, srg), remap(md), ma, srg))
 dst = os.path.join(ROOT, "legacy-%s.sig" % ver)
 open(dst, "w").write("\n".join(out) + "\n")
-if ver in ("1.5.2", "1.6.4"):
+if ver in ("1.4.7", "1.5.2", "1.6.4"):
     nd = os.path.join(ROOT, "..", "..", "loader", "src", "main", "resources", "legacyconnector", "legacy", ver)
     open(os.path.join(nd, "notch.txt"), "w").write("\n".join(notch) + "\n")
 print("wrote", dst, sum(1 for l in out if l.startswith("C ")), "classes")
