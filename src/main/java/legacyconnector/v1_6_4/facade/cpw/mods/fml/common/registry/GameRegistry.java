@@ -19,6 +19,16 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name);
     }
 
+    /** {@code registerBlock(block, itemClass, name, modId)}: 1.6.4 returned nothing and took the owning mod id as the fourth argument. */
+    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass, String name, String modId) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, modId);
+    }
+
+    /** {@code registerWorldGenerator(generator)}: no weight argument in 1.6.4. */
+    public static void registerWorldGenerator(legacyconnector.v1_7_10.cpw.mods.fml.common.IWorldGenerator generator) {
+        legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerWorldGenerator(generator, 0);
+    }
+
     /** {@code registerBlock(block)}: the name is the unlocalized name without the {@code tile.} prefix. */
     public static void registerBlock(Block block) {
         String n = block.getUnlocalizedName();

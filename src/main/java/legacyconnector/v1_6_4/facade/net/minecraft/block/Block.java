@@ -21,6 +21,84 @@ public final class Block {
         return Ids.blocksList();
     }
 
+    // The step sounds of 1.6.4 ({@code Block.soundGrassFootstep}); 1.7.10 calls them soundTypeGrass and so on.
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundPowderFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeStone;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundWoodFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeWood;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundGravelFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeGravel;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundGrassFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeGrass;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundStoneFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeStone;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundMetalFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeMetal;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundGlassFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeGlass;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundClothFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeCloth;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundSandFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeSand;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundSnowFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeSnow;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundLadderFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeLadder;
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundAnvilFootstep() {
+        return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeAnvil;
+    }
+
+    /** 1.6.4 asked the ambient occlusion value per position; 1.7.10 per block. */
+    public static float getAmbientOcclusionLightValue(legacyconnector.v1_7_10.net.minecraft.block.Block self,
+            legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess world, int x, int y, int z) {
+        return self.getAmbientOcclusionLightValue();
+    }
+
+    /** Forge's {@code Block.isBlockSolidOnSide} (1.7.10: isSideSolid). */
+    public static boolean isBlockSolidOnSide(legacyconnector.v1_7_10.net.minecraft.block.Block self,
+            legacyconnector.v1_7_10.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection side) {
+        return self.isSideSolid(world, x, y, z, side);
+    }
+
+    /** Block.setUnlocalizedName (1.7.10: setBlockName). */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block setUnlocalizedName(legacyconnector.v1_7_10.net.minecraft.block.Block self, String name) {
+        return self.setBlockName(name);
+    }
+
+    /** Block.setTextureName (1.7.10: setBlockTextureName). */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block setTextureName(legacyconnector.v1_7_10.net.minecraft.block.Block self, String name) {
+        return self.setBlockTextureName(name);
+    }
+
+    /** Forge's static {@code Block.setBurnProperties(blockId, encouragement, flammability)}. */
+    public static void setBurnProperties(int blockId, int encouragement, int flammability) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block b = Ids.block(blockId);
+        if (b != null) legacyconnector.v1_7_10.net.minecraft.init.Blocks.fire.setFireInfo(b, encouragement, flammability);
+    }
+
     /** The id a Block constructor was given ({@code super(id, material)}). */
     public static void mcc$claimId(legacyconnector.v1_7_10.net.minecraft.block.Block self, int id) {
         Ids.claimBlock(self, id);

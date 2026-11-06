@@ -14,6 +14,12 @@ public final class IBlockAccess {
         return Ids.blockId(self.getBlock(x, y, z));
     }
 
+    /** Forge's {@code isBlockSolidOnSide} (1.7.10: isSideSolid). */
+    public static boolean isBlockSolidOnSide(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection side) {
+        return self.isSideSolid(x, y, z, side, false);
+    }
+
     /** The material of the block at a position. */
     public static legacyconnector.v1_7_10.net.minecraft.block.material.Material getBlockMaterial(
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {
