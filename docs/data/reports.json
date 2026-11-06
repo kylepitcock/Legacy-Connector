@@ -395,6 +395,18 @@
    "link": "https://www.curseforge.com/minecraft/mc-mods/engender-mod",
    "date": "2026-11-05",
    "open": true
+  },
+  {
+   "issue": 161,
+   "mod": "Scape and Run Parasites",
+   "mc": "1.8 - 1.12.2",
+   "status": "crashes",
+   "details": "Eats whole RAM no matter how much I allow minecraft to use. As more RAM them longer it eats, but always eats it whole, freeze the game, crashes it, and if I try to enter the world I've played and it crushed, crushes imediatly when I try to enter this world again. I allowed minecraft to use 8GB of RAM as GPT reccomended me to do, it took 23 minutes of active survival gameplay to get freezed and th…",
+   "lc": "0.3.10",
+   "neoforge": "21.1256",
+   "link": "",
+   "date": "2026-11-06",
+   "open": true
   }
  ]
 }
