@@ -141,6 +141,21 @@ public class LootTable {
         return null;
     }
 
+    /**
+     * 1.12's vanilla tables name their (first) pool "main"; 1.21 tables have unnamed pools, so mods adding to "main" get the first one.
+     */
+    @SuppressWarnings("unchecked")
+    private static net.minecraft.world.level.storage.loot.LootPool firstPool(net.minecraft.world.level.storage.loot.LootTable table) {
+        try {
+            var f = net.minecraft.world.level.storage.loot.LootTable.class.getDeclaredField("pools");
+            f.setAccessible(true);
+            var list = (List<net.minecraft.world.level.storage.loot.LootPool>) f.get(table);
+            return list.isEmpty() ? null : list.get(0);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
     public LootPool removePool(String name) {
         checkFrozen();
         if (mcc$modern != null) return LootPool.mcc$view(mcc$modern.removePool(name));

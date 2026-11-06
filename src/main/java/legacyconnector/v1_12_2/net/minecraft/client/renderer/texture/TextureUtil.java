@@ -43,8 +43,15 @@ public class TextureUtil extends legacyconnector.v1_7_10.net.minecraft.client.re
     public static InputStream open(ResourceLocation location) throws IOException {
         var rl = org.kylepitcock.legacyconnector.v1_7_10.client.TextureLocations.modern(location.getNamespace(), location.getPath());
         var resource = net.minecraft.client.Minecraft.getInstance().getResourceManager().getResource(rl);
-        if (resource.isEmpty()) throw new java.io.FileNotFoundException(location.toString());
-        return resource.get().open();
+        if (resource.isPresent()) return resource.get().open();
+        // Mods read their textures while loading (preInit/init), before the game's first resource load has put their packs in: read the mod jar directly.
+        String lower = org.kylepitcock.legacyconnector.core.Ids.normalizePath(location.getPath());
+        for (var file : net.neoforged.fml.ModList.get().getModFiles()) {
+            java.nio.file.Path p = file.getFile().findResource("assets", location.getNamespace(), location.getPath());
+            if (p == null || !java.nio.file.Files.isRegularFile(p)) p = file.getFile().findResource("assets", location.getNamespace(), lower);
+            if (p != null && java.nio.file.Files.isRegularFile(p)) return java.nio.file.Files.newInputStream(p);
+        }
+        throw new java.io.FileNotFoundException(location.toString());
     }
 
     public static BufferedImage readBufferedImage(InputStream imageStream) throws IOException {

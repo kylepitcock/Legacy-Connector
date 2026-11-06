@@ -13,6 +13,20 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public class SimpleTexture extends AbstractTexture {
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger("SimpleTexture");
     protected final ResourceLocation textureLocation;
+    private volatile boolean pendingLoad;
+
+    @Override
+    public int getGlTextureId() {
+        if (pendingLoad && com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+            try {
+                loadTexture(null);
+            } catch (IOException e) {
+                pendingLoad = false;
+                LOGGER.warn("Failed to load texture {}", textureLocation, e);
+            }
+        }
+        return super.getGlTextureId();
+    }
 
     public SimpleTexture(ResourceLocation textureResourceLocation) {
         textureLocation = textureResourceLocation;
@@ -20,6 +34,13 @@ public class SimpleTexture extends AbstractTexture {
 
     @Override
     public void loadTexture(IResourceManager resourceManager) throws IOException {
+        if (!com.mojang.blaze3d.systems.RenderSystem.isOnRenderThread()) {
+            // Mods create textures while loading (off the render thread, no GL context): upload on first use there.
+            deleteGlTexture();
+            pendingLoad = true;
+            return;
+        }
+        pendingLoad = false;
         deleteGlTexture();
         try (InputStream in = TextureUtil.open(textureLocation)) {
             BufferedImage image = TextureUtil.readBufferedImage(in);
