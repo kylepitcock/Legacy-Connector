@@ -66,6 +66,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         return legacy instanceof EntityLivingBase l ? l : null;
     }
 
+    private boolean isAm2AirSled() {
+        return legacy != null && legacy.getClass().getName().equals("am2.entities.EntityAirSled");
+    }
+
     private EntityPlayer wrap(Player player) {
         return (EntityPlayer) EntityBridge.wrap(player);
     }
@@ -100,6 +104,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     private void updateBossBar() {
         if (!(level() instanceof ServerLevel sl)) return;
+        if (isRemoved()) {
+            clearBossBar();
+            return;
+        }
         float health, max;
         if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.boss.IBossDisplayData boss) {
             health = boss.getHealth();
@@ -108,6 +116,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
             health = getHealth();
             max = getMaxHealth();
         } else {
+            return;
+        }
+        if (health <= 0) {
+            clearBossBar();
             return;
         }
         if (bossEvent == null) {
@@ -124,9 +136,15 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         }
     }
 
+    private void clearBossBar() {
+        if (bossEvent == null) return;
+        bossEvent.removeAllPlayers();
+        bossEvent = null;
+    }
+
     @Override
     public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
-        if (bossEvent != null) bossEvent.removeAllPlayers();
+        clearBossBar();
         super.remove(reason);
     }
 
@@ -261,6 +279,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         EntityLivingBase l = living();
         if (l == null) super.die(source);
         else l.onDeath(legacyconnector.v1_7_10.net.minecraft.util.DamageSource.mcc$wrap(source));
+        if (isDeadOrDying() || isRemoved()) clearBossBar();
     }
 
     @Override
@@ -298,6 +317,8 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     @Override
     public void travel(net.minecraft.world.phys.Vec3 input) {
+        // The server steers the Air Sled. Applying its velocity here would also move it past the interpolated position.
+        if (level().isClientSide() && isAm2AirSled()) return;
         EntityLivingBase l = living();
         if (l == null || inTravel) {
             super.travel(input);
@@ -613,6 +634,12 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         this.width = width;
         this.height = height;
         refreshDimensions();
+    }
+
+    @Override
+    public boolean fudgePositionAfterSizeChange(EntityDimensions previous) {
+        // AM2 temporarily expands the Air Sled's hitbox upward for movement clearance while keeping its base in place.
+        return !isAm2AirSled() && super.fudgePositionAfterSizeChange(previous);
     }
 
     @Override

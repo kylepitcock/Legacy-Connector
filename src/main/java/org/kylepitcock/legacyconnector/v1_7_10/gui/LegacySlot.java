@@ -19,6 +19,11 @@ public final class LegacySlot extends Slot {
         return legacy;
     }
 
+    boolean isAm2SpellBook() {
+        return legacy.getClass().getName().equals("am2.containers.slots.SlotInscriptionTable")
+                && getItem().is(net.minecraft.world.item.Items.WRITTEN_BOOK);
+    }
+
     private static EntityPlayer player(Player p) {
         return (EntityPlayer) EntityBridge.wrap(p);
     }
