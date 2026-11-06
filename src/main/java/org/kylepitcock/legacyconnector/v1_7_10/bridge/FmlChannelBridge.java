@@ -133,9 +133,10 @@ public final class FmlChannelBridge {
     }
 
     /** A received packet, as FML handed it on: carrying the connection's handler and dispatcher. */
-    private static FMLProxyPacket inbound(byte[] data, String channelName, Object netHandler,
+    private static FMLProxyPacket inbound(byte[] data, String channelName, Side side, Object netHandler,
             legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher) {
         FMLProxyPacket packet = new FMLProxyPacket(org.kylepitcock.legacyconnector.core.network.LegacyBuffers.wrap(data), channelName);
+        packet.setTarget(side);
         if (netHandler instanceof legacyconnector.v1_7_10.net.minecraft.network.INetHandler h) packet.mcc$setHandler(h);
         packet.setDispatcher(dispatcher);
         return packet;
@@ -145,7 +146,7 @@ public final class FmlChannelBridge {
             legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher) {
         var eventChannel = EVENT_CHANNELS.get(channelName);
         if (eventChannel != null) {
-            FMLProxyPacket packet = inbound(data, channelName, netHandler, dispatcher);
+            FMLProxyPacket packet = inbound(data, channelName, side, netHandler, dispatcher);
             var event = side == Side.SERVER
                     ? new legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLNetworkEvent.ServerCustomPacketEvent(null, packet,
                             (legacyconnector.v1_7_10.net.minecraft.network.INetHandler) netHandler)
@@ -178,7 +179,7 @@ public final class FmlChannelBridge {
         try {
             channel.attr(NetworkRegistry.NET_HANDLER).set(netHandler);
             channel.attr(legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher.FML_DISPATCHER).set(dispatcher);
-            channel.writeInbound(inbound(data, channelName, netHandler, dispatcher));
+            channel.writeInbound(inbound(data, channelName, side, netHandler, dispatcher));
             // Messages nobody consumed would accumulate in the embedded channel.
             while (channel.readInbound() != null) {
                 // drop
