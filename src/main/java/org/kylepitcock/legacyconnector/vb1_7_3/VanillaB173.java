@@ -131,10 +131,9 @@ public final class VanillaB173 {
     private static Block blockView(Row row, Class<?> minimum) {
         Object o = instantiate(row.type(), minimum);
         if (!(o instanceof Block b)) return null;
-        Material material = null;
         String key = "tile." + camel(row.field());
-        b.mcc$initVanilla(row.id(), 0, material, 0.0F, null, key);
         var modern = modernBlock(row.id());
+        b.mcc$initVanilla(row.id(), 0, materialOf(modern), 0.0F, null, key);
         b.mcc$modern = modern;
         if (modern != null) {
             b.hardness = modern.defaultDestroyTime();
@@ -194,6 +193,47 @@ public final class VanillaB173 {
             if (existing == null || existing.mcc$owner == null) Item.ITEMS[row.id()] = view;
             return view;
         }
+    }
+
+    /**
+     * The b1.7.3 material of a modern block, judged from what it is (fluid, plant, leaves, ...) and how it sounds. Mods ask the materials
+     * of their neighbours ({@code world.getBlockMaterial(x, y, z).isSolid()}), so vanilla blocks need one.
+     */
+    public static Material materialOf(net.minecraft.world.level.block.Block block) {
+        if (block == null) return Material.STONE;
+        var state = block.defaultBlockState();
+        if (state.isAir()) return Material.AIR;
+        var fluid = state.getFluidState();
+        if (!fluid.isEmpty()) return fluid.is(net.minecraft.tags.FluidTags.LAVA) ? Material.LAVA : Material.WATER;
+        if (block instanceof net.minecraft.world.level.block.BaseFireBlock) return Material.FIRE;
+        if (block instanceof net.minecraft.world.level.block.NetherPortalBlock) return Material.NETHER_PORTAL;
+        if (block instanceof net.minecraft.world.level.block.LeavesBlock) return Material.LEAVES;
+        if (block instanceof net.minecraft.world.level.block.CactusBlock) return Material.CACTUS;
+        if (block instanceof net.minecraft.world.level.block.TntBlock) return Material.TNT;
+        if (block instanceof net.minecraft.world.level.block.CakeBlock) return Material.CAKE;
+        if (block instanceof net.minecraft.world.level.block.WebBlock) return Material.COBWEB;
+        if (block instanceof net.minecraft.world.level.block.IceBlock) return Material.ICE;
+        if (block instanceof net.minecraft.world.level.block.SnowLayerBlock) return Material.SNOW_LAYER;
+        if (block instanceof net.minecraft.world.level.block.BushBlock || block instanceof net.minecraft.world.level.block.SugarCaneBlock) return Material.PLANT;
+        if (block instanceof net.minecraft.world.level.block.TorchBlock || block instanceof net.minecraft.world.level.block.RedStoneWireBlock
+                || block instanceof net.minecraft.world.level.block.LeverBlock || block instanceof net.minecraft.world.level.block.ButtonBlock
+                || block instanceof net.minecraft.world.level.block.BaseRailBlock || block instanceof net.minecraft.world.level.block.RepeaterBlock
+                || block instanceof net.minecraft.world.level.block.LadderBlock) {
+            return Material.PISTON_BREAKABLE;
+        }
+        if (block instanceof net.minecraft.world.level.block.TransparentBlock || block instanceof net.minecraft.world.level.block.StainedGlassBlock) return Material.GLASS;
+        if (block instanceof net.minecraft.world.level.block.piston.PistonBaseBlock) return Material.PISTON;
+        var sound = state.getSoundType();
+        if (sound == net.minecraft.world.level.block.SoundType.WOOD) return Material.WOOD;
+        if (sound == net.minecraft.world.level.block.SoundType.WOOL) return Material.WOOL;
+        if (sound == net.minecraft.world.level.block.SoundType.SAND) return Material.SAND;
+        if (sound == net.minecraft.world.level.block.SoundType.GRASS) return Material.SOLID_ORGANIC;
+        if (sound == net.minecraft.world.level.block.SoundType.GRAVEL) return block == net.minecraft.world.level.block.Blocks.CLAY ? Material.CLAY : Material.SOIL;
+        if (sound == net.minecraft.world.level.block.SoundType.SNOW) return Material.SNOW_BLOCK;
+        if (sound == net.minecraft.world.level.block.SoundType.METAL) return Material.METAL;
+        if (sound == net.minecraft.world.level.block.SoundType.GLASS) return Material.GLASS;
+        if (block == net.minecraft.world.level.block.Blocks.SPONGE) return Material.SPONGE;
+        return Material.STONE;
     }
 
     public static boolean isVanillaId(int id) {

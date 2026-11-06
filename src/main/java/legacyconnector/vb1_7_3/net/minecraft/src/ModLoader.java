@@ -49,6 +49,11 @@ public final class ModLoader {
         return new ArrayList<>(ContentB173.loadedMods());
     }
 
+    /** The one legacy client instance; its {@code world} is the level legacy code currently runs on. */
+    public static legacyconnector.vb1_7_3.net.minecraft.client.Minecraft getMinecraftInstance() {
+        return legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance();
+    }
+
     public static boolean isModLoaded(String name) {
         return ContentB173.isModLoaded(name);
     }

@@ -27,6 +27,52 @@ public final class SelfTestB173 {
         game.addListener((ServerStartedEvent e) -> run(e.getServer().overworld()));
     }
 
+    /**
+     * Every legacy callback of every block once, as play would call them: placed (onBlockAdded), a neighbour change, a scheduled and a
+     * random tick, a right click by a fake player, the redstone queries and removal (onBlockRemoval). Failures are counted by the blocks.
+     */
+    private static void behaviour(ServerLevel level, List<LegacyB173Block> blocks, BlockPos base) {
+        int before = LegacyB173Block.CALLBACK_FAILURES.get();
+        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
+        var random = level.getRandom();
+        int n = 0, used = 0, powering = 0, thrown = 0;
+        for (LegacyB173Block b : blocks) {
+            BlockPos pos = base.offset((n % 32) * 2, 0, (n / 32) * 2);
+            n++;
+            try {
+                level.setBlock(pos.below(), Blocks.STONE.defaultBlockState(), 3);
+                level.setBlock(pos, b.defaultBlockState(), 3);
+                BlockState state = level.getBlockState(pos);
+                if (state.getBlock() != b) continue;
+                state.handleNeighborChanged(level, pos, Blocks.STONE, pos.below(), false);
+                state = level.getBlockState(pos);
+                if (state.getBlock() == b) state.tick(level, pos, random);
+                state = level.getBlockState(pos);
+                if (state.getBlock() == b) state.randomTick(level, pos, random);
+                state = level.getBlockState(pos);
+                if (state.getBlock() == b) {
+                    player.setPos(pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5);
+                    var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
+                    if (state.useWithoutItem(level, player, hit).consumesAction()) used++;
+                }
+                state = level.getBlockState(pos);
+                for (var dir : net.minecraft.core.Direction.values()) {
+                    if (state.getSignal(level, pos, dir) > 0) {
+                        powering++;
+                        break;
+                    }
+                }
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
+                level.setBlock(pos.below(), Blocks.AIR.defaultBlockState(), 3);
+            } catch (RuntimeException | LinkageError e) {
+                thrown++;
+                LOG.info("  behaviour of {} threw {}", BuiltInRegistries.BLOCK.getKey(b), e.toString());
+            }
+        }
+        LOG.info("B1.7.3 BEHAVIOUR TEST: {} blocks; {} legacy callbacks failed, {} escaped; {} used a right click; {} emit redstone",
+                blocks.size(), LegacyB173Block.CALLBACK_FAILURES.get() - before, thrown, used, powering);
+    }
+
     private static void run(ServerLevel level) {
         List<LegacyB173Block> blocks = new ArrayList<>();
         for (var b : BuiltInRegistries.BLOCK) if (b instanceof LegacyB173Block l) blocks.add(l);
@@ -52,6 +98,7 @@ public final class SelfTestB173 {
                 failed.add(BuiltInRegistries.BLOCK.getKey(b) + " (" + e + ")");
             }
         }
+        behaviour(level, blocks, base.above(4));
         int[] recipes = RecipesB173.counts();
         LOG.info("B1.7.3 SELF TEST: {} of {} blocks placed, {} drop something; {} items; recipes {} translated, {} not; {} texture overrides; "
                         + "{} tile entities and {} entities registered (not bridged yet)",

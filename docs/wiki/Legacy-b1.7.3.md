@@ -2,9 +2,10 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: started (blocks, items, recipes and their textures).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are detected,
-deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with their
-own textures, one creative tab per mod. Not yet: block behaviour beyond drops, tile entities, entities, world generation, GUIs, tick hooks.
+**Status: started (blocks, items, recipes, textures, block behaviour).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are
+detected, deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with
+their own textures, one creative tab per mod, and the blocks' own code runs (placing, breaking, neighbour updates, ticks, right and left
+click, redstone). Not yet: tile entities, entities, world generation, GUIs, the mods' tick hooks.
 
 ## Putting the mods in
 
@@ -102,6 +103,36 @@ OpenAL: b1.7.3 mods call LWJGL's OpenAL directly (IndustrialCraft 2's audio). In
 engine made a context, the real AL classes fail for good and the client's first resource reload never finished (stuck loading screen).
 `org/lwjgl/openal/` of b1.7.3 jars goes to the synthesized API (silent) instead (`LegacyRemapper`).
 
+## Block behaviour
+
+The modern block (`LegacyB173Block`) calls the legacy block's own code with a legacy view of the level (`World`, shim):
+
+| Modern | b1.7.3 (MCP name) |
+|---|---|
+| `onPlace` / `onRemove` (another block) | `onBlockAdded` / `onBlockRemoval` |
+| `neighborChanged` | `onNeighborBlockChange` (the neighbour's legacy id) |
+| `tick` / `randomTick` | `updateTick` |
+| `animateTick` (client) | `randomDisplayTick` (particles: b1.7.3 names such as `smoke`, `reddust`, `portal`) |
+| `useWithoutItem` / `attack` | `blockActivated` / `onBlockClicked` |
+| `getStateForPlacement` / `setPlacedBy` | `canPlaceBlockOnSide`, then `onBlockPlaced(side)` and `onBlockPlacedBy(player)` |
+| `stepOn` / `entityInside` (players) | `onEntityWalking` / `onEntityCollidedWithBlock` |
+| `isSignalSource` / `getSignal` / `getDirectSignal` | `canProvidePower` / `isPoweringTo` / `isIndirectlyPoweringTo` (b1.7.3 sides are modern 3D direction values) |
+| `playerDestroy` | `onBlockDestroyedByPlayer`, and a mod's own `harvestBlock` instead of the modern drops |
+
+- **The world view** (`World.mcc$wrap(level)`): block ids and metadata of modern states (`BlocksB173`: mod blocks by their `meta`
+  property, vanilla blocks by their b1.7.3 id with wool/log/leaf/sapling/slab metadata and wheat's age; other modern blocks read as stone
+  when solid, else air), block changes with or without neighbour notification (flags 3 / 2), scheduled ticks, redstone power, light, time,
+  materials of vanilla blocks (judged from the modern block: fluid, plant, leaves, wood by its sound, ...), `dropBlockAsItem`.
+- **Players** are views of the modern player (`PlayerViewB173`): position (eye height as b1.7.3 had it), rotation, sneaking, health and the
+  36 main slots as legacy stacks; what the mod does to those slots (a used-up item) goes back to the modern inventory.
+- **`ModLoader.getMinecraftInstance()`** is one legacy client instance whose `world` (`theWorld`) is the level of the callback being run:
+  IndustrialCraft 2 decides by `mc.theWorld.isRemote` whether it runs the game logic.
+- Every callback is guarded: a failure is logged the first three times per block and counted.
+
+The server test runs `B1.7.3 BEHAVIOUR TEST`: every mod block placed, given a neighbour change, a scheduled and a random tick, a right click by
+a fake player, asked for redstone power and removed. With the 11 mods: 10 callbacks fail, all of blocks whose tile entity is missing (NetherCraft's
+furnace and chest, Portal Gun's portals); 6 blocks use the right click. RedPower's lamp switches itself off without power.
+
 ## Reflection, Forge tables, fire
 
 - **Reflection on vanilla classes.** ModLoader's `getPrivateValue` / `setPrivateValue` take a declared-field index or an obfuscated
@@ -149,6 +180,8 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 
 ## Plan
 
+0. **Tile entities** (`RegisterTileEntity`) hosted by one modern block entity type, NBT through a legacy `NbtCompound`, ticking,
+   `World.getBlockEntity`; then the mods' GUIs on them (`ModLoader.OpenGUI` with the container as a modern menu).
 1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
    sprites (`ModTextureAnimation`), colour multipliers, item subtypes as their own items (today one modern item per legacy item).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities

@@ -9,7 +9,7 @@ Per-mod results are on the [compatibility site](https://kylepitcock.github.io/Le
 | 1.20.1 | **Started (experimental, off by default; `experimental.forge1201`).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge). So far: jar detection, the renames, `mods.toml` conversion and the first compatibility layer; no 1.20.1 mod has been run in game yet (see the [estimate](Legacy-1.20.1-Estimate.md)). |
 | 1.16.5 | Planned (after 1.20.1). |
 | 1.2.5 | Planned (after 1.16.5). |
-| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures, one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no tile entities, entities, world generation or GUIs yet ([details](Legacy-b1.7.3.md)). |
+| b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures and the blocks' own behaviour (placing, ticks, clicks, redstone), one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no tile entities, entities, world generation or GUIs yet ([details](Legacy-b1.7.3.md)). |
 
 Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
 LaunchWrapper tweakers. They are reported, and the rest of the mod still loads. Where a coremod only exists to change

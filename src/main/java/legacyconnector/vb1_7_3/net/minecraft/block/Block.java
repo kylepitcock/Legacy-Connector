@@ -252,6 +252,119 @@ public class Block {
         return false;
     }
 
+    // ------------------------------------------------------------------------------------------------- world callbacks
+    // b1.7.3's defaults; the modern block (LegacyB173Block) calls them with a legacy view of the level.
+
+    /** MCP {@code onBlockAdded}. */
+    public void onPlaced(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {}
+
+    /** MCP {@code onBlockRemoval}. */
+    public void onBreak(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {}
+
+    /** MCP {@code onNeighborBlockChange}: {@code neighborId} is the neighbour's block id. */
+    public void neighborUpdate(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int neighborId) {}
+
+    /** MCP {@code updateTick}: scheduled and random ticks. */
+    public void onTick(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, Random random) {}
+
+    /** MCP {@code randomDisplayTick}: client particles. */
+    public void randomDisplayTick(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, Random random) {}
+
+    /** MCP {@code onBlockDestroyedByPlayer}. */
+    public void onMetadataChange(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int meta) {}
+
+    /** MCP {@code blockActivated}: right click; true if the block used the click. */
+    public boolean onUse(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {
+        return false;
+    }
+
+    /** MCP {@code onBlockClicked}: left click. */
+    public void onBlockBreakStart(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
+
+    /** MCP {@code onEntityWalking}. */
+    public void onSteppedOn(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {}
+
+    /** MCP {@code onEntityCollidedWithBlock}. */
+    public void onEntityCollision(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {}
+
+    /** MCP {@code onBlockPlaced}: {@code side} is the face of the block clicked to place it. */
+    public void onPlaced(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {}
+
+    /** MCP {@code onBlockPlacedBy}. */
+    public void onPlaced(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity placer) {}
+
+    /** MCP {@code playBlock}: note blocks, pistons. */
+    public void onBlockAction(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int a, int b) {}
+
+    /** MCP {@code harvestBlock}: the drops are the modern block's ({@code getDroppedItemId/Count/Meta}). */
+    public void afterBreak(legacyconnector.vb1_7_3.net.minecraft.world.World world, legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player,
+            int x, int y, int z, int meta) {}
+
+    /** MCP {@code canPlaceBlockAt}. */
+    public boolean canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z) {
+        int id = world.getBlockId(x, y, z);
+        return id == 0 || BLOCKS[id] == null || BLOCKS[id].material == null || BLOCKS[id].material.isReplaceable();
+    }
+
+    /** MCP {@code canPlaceBlockOnSide}. */
+    public boolean canPlaceAt(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
+        return canPlaceAt(world, x, y, z);
+    }
+
+    /** MCP {@code isPoweringTo}: weak power towards {@code side}. */
+    public boolean isEmittingRedstonePowerInDirection(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
+        return false;
+    }
+
+    /** MCP {@code isIndirectlyPoweringTo}: strong power towards {@code side}. */
+    public boolean canTransferPowerInDirection(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int side) {
+        return false;
+    }
+
+    /** MCP {@code setBlockBoundsBasedOnState}. */
+    public void updateBoundingBox(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z) {}
+
+    public int getColorMultiplier(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z) {
+        return 0xFFFFFF;
+    }
+
+    /** MCP {@code getBlockTexture}: the sprite of a side as placed in the world. */
+    public int getTextureId(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
+        return getTexture(side, view.getBlockMeta(x, y, z));
+    }
+
+    /** Forge's position-aware light. */
+    public int getLightValue(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z) {
+        return BLOCKS_LIGHT_LUMINANCE[id];
+    }
+
+    /** MCP {@code dropBlockAsItem}. */
+    public final void dropStacks(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int meta) {
+        dropStacks(world, x, y, z, meta, 1.0F);
+    }
+
+    /** MCP {@code dropBlockAsItemWithChance}. */
+    public void dropStacks(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z, int meta, float chance) {
+        if (world.isRemote) return;
+        int count = getDroppedItemCount(world.random);
+        for (int i = 0; i < count; i++) {
+            if (world.random.nextFloat() > chance) continue;
+            int dropped = getDroppedItemId(meta, world.random);
+            if (dropped > 0) dropStack(world, x, y, z, new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(dropped, 1, getDroppedItemMeta(meta)));
+        }
+    }
+
+    /** MCP {@code dropBlockAsItem_do}: an item entity at the block. */
+    protected void dropStack(legacyconnector.vb1_7_3.net.minecraft.world.World world, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.item.ItemStack stack) {
+        world.mcc$dropStack(x, y, z, stack);
+    }
+
     @Override
     public String toString() {
         return getClass().getName() + "[" + id + (translationKey != null ? ", " + translationKey : "") + "]";

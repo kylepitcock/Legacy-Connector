@@ -38,6 +38,60 @@ public final class StacksB173 {
         return stack;
     }
 
+    private static volatile java.util.Map<net.minecraft.world.item.Item, int[]> reverse;
+
+    /**
+     * The legacy stack of a modern one: a mod's item or block item (metadata from its {@code block_state}), or the b1.7.3 id of a vanilla
+     * item (metadata variants such as wool and dye colours). Null for an empty stack or an item b1.7.3 did not have.
+     */
+    public static legacyconnector.vb1_7_3.net.minecraft.item.ItemStack toLegacy(ItemStack modern) {
+        if (modern == null || modern.isEmpty()) return null;
+        int[] hit = reverse().get(modern.getItem());
+        if (hit == null) return null;
+        int damage = hit[1];
+        var state = modern.get(DataComponents.BLOCK_STATE);
+        if (state != null && modern.getItem() instanceof net.minecraft.world.item.BlockItem bi && bi.getBlock() instanceof LegacyB173Block) {
+            Integer meta = state.get(LegacyB173Block.META);
+            if (meta != null) damage = meta;
+        } else if (modern.isDamageableItem()) {
+            damage = modern.getDamageValue();
+        }
+        return new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(hit[0], modern.getCount(), damage);
+    }
+
+    private static java.util.Map<net.minecraft.world.item.Item, int[]> reverse() {
+        var r = reverse;
+        if (r != null) return r;
+        synchronized (StacksB173.class) {
+            if (reverse != null) return reverse;
+            r = new java.util.HashMap<>();
+            for (Item legacy : ContentB173.items()) {
+                if (legacy.mcc$owner != null && legacy.mcc$modern != null) r.putIfAbsent(legacy.mcc$modern, new int[] {legacy.id, 0});
+            }
+            for (Block block : ContentB173.blocks()) {
+                if (block.mcc$owner != null && block.mcc$modern != null) {
+                    var item = block.mcc$modern.asItem();
+                    if (item != net.minecraft.world.item.Items.AIR) r.putIfAbsent(item, new int[] {block.id, 0});
+                }
+            }
+            for (int id = 1; id < Item.ITEMS.length && id < 2300; id++) {
+                if (!VanillaB173.isVanillaId(id)) continue;
+                int variants = switch (id) {
+                    case 35, 351 -> 16;
+                    case 17, 18, 6, 31 -> 3;
+                    case 44 -> 4;
+                    case 263 -> 2;
+                    default -> 1;
+                };
+                for (int meta = 0; meta < variants; meta++) {
+                    var item = VanillaB173.modernItem(id, meta);
+                    if (item != null) r.putIfAbsent(item, new int[] {id, meta});
+                }
+            }
+            return reverse = r;
+        }
+    }
+
     /** The modern item of a legacy id with that damage/metadata, or null (unknown id, or a mod item not registered). */
     public static net.minecraft.world.item.Item modernItem(int id, int damage) {
         if (id < 0 || id >= Item.ITEMS.length) return null;
