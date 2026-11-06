@@ -892,6 +892,16 @@ public class OBJModel implements IModel {
             quads = null;
         }
 
+        /**
+         * Forge's private method of the same name, called by reflection (Mekanism's OBJBakedModelBase looks it up when its class is
+         * initialised): takes the group visibility of the given state and drops the baked quads.
+         */
+        @SuppressWarnings("unused")
+        private void updateStateVisibilityMap(OBJState visibility) {
+            if (visibility != null && this.state instanceof OBJState own) own.visibilityMap = new HashMap<>(visibility.visibilityMap);
+            quads = null;
+        }
+
         @Override
         public List<BakedQuad> getQuads(IBlockState blockState, EnumFacing side, long rand) {
             if (side != null) return Collections.emptyList();

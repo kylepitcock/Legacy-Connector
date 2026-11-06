@@ -192,6 +192,20 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, json);
                     continue;
                 }
+                // a model location with no file (a mesh definition naming a model a baked-model replacement stands behind: Botania's 3D lexicon):
+                // the item's model is another one it registered, if one has a file
+                if (!ObjAssets1122.isObj(mrl.getPath()) && !modelExists(Ids.namespace(mrl.getNamespace()), "item/" + Ids.normalizePath(mrl.getPath()))) {
+                    for (var variant : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$itemVariants(item)) {
+                        String vNs = Ids.namespace(variant.getNamespace());
+                        String vPath = Ids.normalizePath(variant.getPath());
+                        if (modelExists(vNs, "item/" + vPath)) {
+                            target = vNs + ":item/" + vPath;
+                            break;
+                        }
+                    }
+                }
+                // still no file, and the name is the item's own: a model that is its own parent (Botania's water bowl) loops; leave the item to the default one
+                if (target.equals(id.getNamespace() + ":item/" + id.getPath())) continue;
                 model = new JsonObject();
                 model.addProperty("parent", target);
                 String json = GSON.toJson(model);
