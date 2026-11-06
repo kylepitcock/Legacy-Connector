@@ -72,6 +72,9 @@ public final class LegacyConfig {
             # instead of on the server thread while the player joins.
             perf.asyncBiomeSample = true
 
+            # Scales the land legacy mod biomes take in the overworld (1.0 is about their 1.7.10 share, 0.5 half as much, 0 none).
+            legacyBiomeFrequency = 1.0
+
             # Pack maker switches, read by the loader at startup.
             # Legacy mods to leave out entirely (their legacy ids, comma separated; the whole jar is skipped when all its mods are listed).
             # mods.skip = examplemod, othermod
@@ -293,6 +296,18 @@ public final class LegacyConfig {
     /** {@code villages.legacyBuildings}: legacy mods' village buildings join the vanilla village house pools. */
     public static boolean villageLegacyBuildings() {
         return bool("villages.legacyBuildings", true);
+    }
+
+    /**
+     * {@code legacyBiomeFrequency}: scales how much land legacy mod biomes take in the overworld (their TerraBlender region's weight
+     * and their share of the vanilla biome they are modelled on). 1.0 is roughly their 1.7.10 share; 0 removes them from new chunks.
+     */
+    public static double legacyBiomeFrequency() {
+        try {
+            return Math.max(0.0, Math.min(10.0, Double.parseDouble(string("legacyBiomeFrequency", "1.0").trim())));
+        } catch (NumberFormatException e) {
+            return 1.0;
+        }
     }
 
     /** {@code compat.rocketnautics.plasmaEveryTicks}: how often Rocketnautics' star plasma texture is rebuilt (1 = every tick, as the mod does). */

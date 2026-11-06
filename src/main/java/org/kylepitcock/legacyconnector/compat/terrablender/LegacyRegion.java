@@ -39,7 +39,7 @@ public final class LegacyRegion extends Region {
             List<BiomePlacement.Entry> entries = BiomePlacement.entries().stream()
                     .filter(e -> registry.containsKey(e.biome()) && registry.containsKey(e.analog())).toList();
             List<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> points =
-                    BiomePlacement.blend(BiomePlacement.vanillaOverworld(), entries, k -> k, k -> k);
+                    BiomePlacement.blend(BiomePlacement.vanillaOverworld(), entries, k -> k, k -> k, org.kylepitcock.legacyconnector.core.LegacyConfig.legacyBiomeFrequency());
             points.forEach(mapper);
         } catch (RuntimeException | LinkageError e) {
             // Must never break world loading: fall back to the plain vanilla layout.

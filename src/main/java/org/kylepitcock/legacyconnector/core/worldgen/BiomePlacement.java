@@ -72,12 +72,12 @@ public final class BiomePlacement {
     public static synchronized void registerTerraBlender() {
         if (terraBlenderRegistered || !commonSetupDone) return;
         List<Entry> list = entries();
-        if (list.isEmpty()) return;
+        if (list.isEmpty() || org.kylepitcock.legacyconnector.core.LegacyConfig.legacyBiomeFrequency() <= 0) return;
         terraBlenderRegistered = true;
         int total = 0;
         for (Entry e : list) total += e.weight();
-        // TerraBlender's vanilla region has weight 10 by default: ten legacy biomes of weight 10 make a region as common as it.
-        int weight = Math.max(1, Math.min(15, Math.round(total / 10.0F)));
+        // TerraBlender's vanilla region has weight 10 by default: legacy biomes of total weight 30 make a region as common as it.
+        int weight = Math.max(1, Math.min(12, Math.round((float) (total / 3.0F * org.kylepitcock.legacyconnector.core.LegacyConfig.legacyBiomeFrequency()))));
         try {
             org.kylepitcock.legacyconnector.compat.terrablender.LegacyRegion.register(weight);
             LOG.info("Legacy biomes: TerraBlender overworld region registered (weight {}, {} biome(s))", weight, list.size());
@@ -92,12 +92,19 @@ public final class BiomePlacement {
     }
 
     /**
+     * Weight the vanilla analog keeps in each of its parameter points: a vanilla biome is in two of Forge 1.7.10's
+     * {@code BiomeManager} climate lists with weight 10 each, so a legacy biome of weight 10 takes a third of its analog's points.
+     */
+    public static final int ANALOG_WEIGHT = 20;
+
+    /**
      * {@code base} with the points of every analog shared among the legacy biomes modelled on it. The humidity interval of each
-     * such point is cut into consecutive pieces: the analog loses it completely, each legacy
-     * biome gets its weight in parts. Points of other biomes are kept as they are.
+     * such point is cut into consecutive pieces: the analog keeps {@code ANALOG_WEIGHT} parts, each legacy biome gets its weight
+     * (times {@code frequency}) in parts, and the pieces alternate analog / legacy / analog / legacy... so two legacy biomes of
+     * the same analog are never neighbours. Points of other biomes are kept as they are.
      */
     public static <T> List<Pair<Climate.ParameterPoint, T>> blend(List<Pair<Climate.ParameterPoint, T>> base, List<Entry> entries,
-            Function<T, ResourceKey<Biome>> keyOf, Function<ResourceKey<Biome>, T> valueOf) {
+            Function<T, ResourceKey<Biome>> keyOf, Function<ResourceKey<Biome>, T> valueOf, double frequency) {
         Map<ResourceKey<Biome>, List<Entry>> byAnalog = new LinkedHashMap<>();
         entries.stream().sorted(Comparator.comparing(e -> e.biome().location()))
                 .forEach(e -> byAnalog.computeIfAbsent(e.analog(), k -> new ArrayList<>()).add(e));
@@ -106,27 +113,36 @@ public final class BiomePlacement {
         for (Pair<Climate.ParameterPoint, T> pair : base) {
             ResourceKey<Biome> key = keyOf.apply(pair.getSecond());
             List<Entry> group = key == null ? null : byAnalog.get(key);
-            if (group == null) {
+            if (group == null || frequency <= 0) {
                 out.add(pair);
                 continue;
             }
             Climate.ParameterPoint p = pair.getFirst();
             long min = p.humidity().min();
             long max = p.humidity().max();
-            int total = 0;
-            for (Entry e : group) total += Math.max(1, e.weight());
-            int pieces = group.size();
-            if (max - min < pieces) { // too narrow to cut: the first legacy biome takes it
-                out.add(Pair.of(p, values.computeIfAbsent(group.get(0).biome(), valueOf)));
+            int n = group.size();
+            if (max - min < 2L * n + 1) { // too narrow to cut: the analog keeps it
+                out.add(pair);
                 continue;
             }
+            // the analog's weight is split into n+1 gaps around the legacy pieces
+            double legacyTotal = 0;
+            for (Entry e : group) legacyTotal += Math.max(1, e.weight()) * frequency;
+            double gap = ANALOG_WEIGHT / (double) (n + 1);
+            double total = legacyTotal + ANALOG_WEIGHT;
             long span = max - min;
-            int cumulative = 0;
+            double cumulative = 0;
             long lo = min;
-            for (int i = 0; i < group.size(); i++) {
+            for (int i = 0; i <= n; i++) {
+                cumulative += gap;
+                long hi = i == n ? max : Math.max(lo + 1, min + (long) (span * cumulative / total));
+                out.add(Pair.of(withHumidity(p, lo, hi), pair.getSecond()));
+                lo = hi;
+                if (i == n) break;
                 Entry e = group.get(i);
-                cumulative += Math.max(1, e.weight());
-                long hi = i == group.size() - 1 ? max : min + span * cumulative / total;
+                cumulative += Math.max(1, e.weight()) * frequency;
+                hi = Math.max(lo + 1, min + (long) (span * cumulative / total));
+                if (hi > max) hi = max;
                 out.add(Pair.of(withHumidity(p, lo, hi), values.computeIfAbsent(e.biome(), valueOf)));
                 lo = hi;
             }

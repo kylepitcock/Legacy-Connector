@@ -29,8 +29,8 @@ of the multi-noise biome source (`core/worldgen/BiomePlacement`, data from `v1_7
   (`compat/terrablender/LegacyRegion`). TerraBlender (LGPL-3.0, see `THIRD_PARTY_NOTICES.md`) is a required dependency, embedded as
   jar-in-jar with an open-ended version range, so nothing extra needs installing and a separately installed (newer) TerraBlender
   wins. The region holds the vanilla layout with each analog's points shared among the legacy biomes modelled on it. Its weight is
-  the total legacy weight / 10, clamped to 1-15 (TerraBlender's vanilla region has weight 10), and TerraBlender mixes it with the
-  vanilla region and other mods' regions (Terralith, Tectonic, Biomes O' Plenty...). There is no fallback that edits the
+  the total legacy weight / 3, clamped to 1-12 (TerraBlender's vanilla region has weight 10), and TerraBlender mixes it with the
+  vanilla region and other mods' regions (Terralith, Tectonic, Biomes O' Plenty...). Inside the region the analog keeps weight 20 of each point and the legacy biomes alternate with it (analog, legacy, analog, legacy...), so two legacy biomes never touch; legacy biomes whose analog is taken are moved to a sibling vanilla biome (Tainted Land: forest -> birch forest). `legacyBiomeFrequency` (config, default 1.0) scales both the region weight and the shares. Biomes in no `BiomeManager` list (Thaumcraft's Eerie and Eldritch) never generated in the 1.7.10 overworld and are not placed. There is no fallback that edits the
   `minecraft:overworld` parameter list: worldgen mods such as Tectonic and Terralith reshape that climate space, and points added
   there landed in thin river-shaped bands (issue #175).
 
