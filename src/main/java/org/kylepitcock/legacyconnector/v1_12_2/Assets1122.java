@@ -708,7 +708,11 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 : ResourceLocation.fromNamespaceAndPath(Ids.namespace(mapped.getNamespace()), Ids.normalizePath(mapped.getPath()));
         // a mapper naming another blockstate file than the block's own decides the model (Forge looked up only the mapper's location)
         boolean otherFile = mappedTo != null && !mappedTo.equals(id) && readOriginal(mappedTo) != null;
-        if ((!usable(acc) || otherFile) && mapped != null) {
+        // the mapper names a variant of the block's own file that the state's property keys do not reach (Chisel: files keyed by the variation's name,
+        // the defaults alone would draw a bare cube_all)
+        boolean mappedVariant = mapped != null && !otherFile && original != null && original.has("variants") && original.get("variants").isJsonObject()
+                && original.getAsJsonObject("variants").has(mapped.getVariant()) && !original.getAsJsonObject("variants").has(exact);
+        if ((!usable(acc) || otherFile || mappedVariant) && mapped != null) {
             // a block whose states are mapped in code (ModelLoader.setCustomStateMapper): the mapper names the blockstate file and variant
             ResourceLocation file = mappedTo;
             JsonObject mappedFile = readOriginal(file);

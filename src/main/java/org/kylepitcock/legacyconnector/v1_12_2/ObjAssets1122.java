@@ -44,7 +44,7 @@ public final class ObjAssets1122 {
         String base = "lc1122/obj/" + Ids.normalizePath(objPath.replace('.', '_')) + (key == null ? "" : "_" + Ids.normalizePath(key));
         JsonObject model = new JsonObject();
         model.addProperty("loader", "neoforge:obj");
-        model.addProperty("model", namespace + ":models/" + objPath);
+        model.addProperty("model", namespace + ":models/" + lowercaseMtllib(namespace, objPath, out));
         boolean flip = custom != null && custom.has("flip-v") && custom.get("flip-v").isJsonPrimitive() && custom.get("flip-v").getAsBoolean();
         model.addProperty("flip_v", flip);
         model.addProperty("automatic_culling", false);
@@ -69,6 +69,36 @@ public final class ObjAssets1122 {
         byte[] bytes = model.toString().getBytes(StandardCharsets.UTF_8);
         out.put("assets/" + namespace + "/models/" + base + ".json", () -> bytes);
         return namespace + ":" + base;
+    }
+
+    /**
+     * NeoForge's OBJ loader turns the "mtllib" name into a resource location, which cannot hold capitals ("mtllib BlockAltar.mtl" of Blood
+     * Magic's models failed the whole model). An .obj naming such a library is served as a copy beside it (x.obj.lc) whose line is lower-cased (the
+     * material file itself is read as {@code mtl_override}); the path to load is returned.
+     */
+    private static String lowercaseMtllib(String namespace, String objPath, Map<String, Supplier<byte[]>> out) {
+        String obj = read("assets/" + namespace + "/models/" + objPath);
+        if (obj == null) return objPath;
+        StringBuilder sb = new StringBuilder(obj.length());
+        boolean changed = false;
+        for (String line : obj.split("\n", -1)) {
+            String l = line.trim();
+            if (l.startsWith("mtllib ")) {
+                String lib = l.substring(7).trim();
+                String fixed = Ids.normalizePath(lib);
+                if (!fixed.equals(lib)) {
+                    line = "mtllib " + fixed;
+                    changed = true;
+                }
+            }
+            sb.append(line).append('\n');
+        }
+        if (!changed) return objPath;
+        // next to the original: the library name is resolved against the .obj's folder
+        String copy = Ids.normalizePath(objPath) + ".lc";
+        byte[] bytes = sb.toString().getBytes(StandardCharsets.UTF_8);
+        out.put("assets/" + namespace + "/models/" + copy, () -> bytes);
+        return copy;
     }
 
     /** A 1.12 OBJ texture reference as a modern sprite name ("mod:blocks/x", "x" is the model's domain, ".png" and "textures/" dropped). */
@@ -99,6 +129,8 @@ public final class ObjAssets1122 {
         String dir = slash < 0 ? "" : objPath.substring(0, slash + 1);
         String mtl = lib.contains(":") ? read("assets/" + Ids.namespace(lib.substring(0, lib.indexOf(':'))) + "/" + lib.substring(lib.indexOf(':') + 1))
                 : read("assets/" + namespace + "/models/" + dir + lib);
+        // the jar's files carry lower-case names, the .obj still names the library with its original capitals
+        if (mtl == null && !lib.contains(":")) mtl = read("assets/" + namespace + "/models/" + dir + Ids.normalizePath(lib));
         if (mtl == null) return null;
         StringBuilder sb = new StringBuilder();
         String material = null;
