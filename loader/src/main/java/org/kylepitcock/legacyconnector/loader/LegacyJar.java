@@ -55,7 +55,7 @@ public final class LegacyJar {
         if (dir == null) return p;
         String name = p.getFileName().toString();
         List<Path> candidates = new ArrayList<>();
-        for (String v : new String[] {"1.7.10", "1.12.2", "1.20.1", "1.16.5"}) candidates.add(dir.resolve(v).resolve(name));
+        for (String v : new String[] {"1.7.10", "1.12.2", "1.20.1", "1.16.5", "b1.7.3"}) candidates.add(dir.resolve(v).resolve(name));
         if (dir.getParent() != null) candidates.add(dir.getParent().resolve(name));
         for (Path c : candidates) {
             if (Files.exists(c)) {

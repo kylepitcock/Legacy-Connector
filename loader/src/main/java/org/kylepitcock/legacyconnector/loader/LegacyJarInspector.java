@@ -116,7 +116,8 @@ public final class LegacyJarInspector {
             }
 
             if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
-                return null;
+                // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod, or not a legacy mod
+                return BetaJars.inspect(zip, path, jar);
             }
 
             // Scala objects carry @Mod on both the mirror class Foo and the module class Foo$; one mod each.

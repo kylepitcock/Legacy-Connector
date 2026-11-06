@@ -90,6 +90,8 @@ public final class LegacyJarTransformer {
     private Contents readPatched(LegacyJar jar) throws IOException {
         Contents c = read(jar);
         if (patcher != null) c.classes.replaceAll((name, bytes) -> patcher.patch(jar, name, bytes));
+        // Beta 1.7.3 jars are obfuscated: named first, then relocated like the other families
+        if (jar.version == LegacyVersion.VB1_7_3) c.notes.addAll(BetaDeobfuscator.apply(jar, c.classes));
         return c;
     }
 
@@ -112,7 +114,7 @@ public final class LegacyJarTransformer {
     }
 
     /** Raw contents of a legacy jar. */
-    private record Contents(Map<String, byte[]> classes, Map<String, byte[]> other, Manifest manifest) {}
+    private record Contents(Map<String, byte[]> classes, Map<String, byte[]> other, Manifest manifest, List<String> notes) {}
 
     private static Contents read(LegacyJar jar) throws IOException {
         Map<String, byte[]> classes = new LinkedHashMap<>();
@@ -155,7 +157,7 @@ public final class LegacyJarTransformer {
                 }
             }
         }
-        return new Contents(classes, other, manifest);
+        return new Contents(classes, other, manifest, new ArrayList<>());
     }
 
     /**
@@ -262,6 +264,7 @@ public final class LegacyJarTransformer {
         Map<String, byte[]> other = contents.other;
         Manifest manifest = contents.manifest;
 
+        result.notes.addAll(contents.notes);
         int platformCopies = dropPlatformLibraries(classes, other);
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);

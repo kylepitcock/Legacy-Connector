@@ -119,10 +119,13 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // CodeChickenLib); a jar present in both places is taken from mods/. These folders are also where jars that ship
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))) {
+            // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods, which were distributed as zips as often as jars
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve(BetaJars.FOLDER))) {
                 if (!Files.isDirectory(dir)) continue;
+                boolean zips = dir.getFileName().toString().equals(BetaJars.FOLDER);
                 try (Stream<Path> files = Files.list(dir)) {
-                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar"))
+                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar")
+                                    || zips && f.getFileName().toString().toLowerCase().endsWith(".zip"))
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
@@ -172,6 +175,8 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     legacy.stream().filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList(),
                     List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")), LOADER_DIGEST, libraryKeep);
             LIBRARY_SKIPS.putAll(libraries.unsupported());
+            // b1.7.3 mods released as a client and a server build: the build for this side loads
+            LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
             libraryNotes = libraries.notes();
             LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
             List<String> present = new ArrayList<>(legacy.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());

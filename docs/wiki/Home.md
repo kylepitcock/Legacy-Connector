@@ -25,3 +25,4 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Development](Development.md) | Building, testing, project layout |
 | [Addon API](Addon-API.md) | Writing addons for legacy mods |
 | [Legacy 1.20.1 estimate](Legacy-1.20.1-Estimate.md) | Effort, approach options and risks for supporting 1.20.1 Forge (and Sinytra) mods |
+| [Legacy b1.7.3](Legacy-b1.7.3.md) | Beta 1.7.3 ModLoader / Forge 1.0 mods: status, how jars are deobfuscated and linked, plan |

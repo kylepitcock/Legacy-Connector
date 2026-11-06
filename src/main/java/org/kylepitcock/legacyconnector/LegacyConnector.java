@@ -101,6 +101,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.core.SilentFailureChecks.register();
         LegacyMods.registerPlatform(new Platform1710());
         LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.v1_12_2.Platform1122());
+        LegacyMods.registerPlatform(new org.kylepitcock.legacyconnector.vb1_7_3.PlatformB173());
 
         CompatComponents.REGISTER.register(modBus);
         org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyCraftingRecipe.REGISTER.register(modBus);
