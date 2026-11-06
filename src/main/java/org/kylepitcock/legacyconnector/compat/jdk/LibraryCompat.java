@@ -72,6 +72,21 @@ public final class LibraryCompat {
         return new com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService(proxy);
     }
 
+    /** authlib 1.5's {@code UUIDTypeAdapter.fromString}: a UUID with or without dashes. */
+    public static java.util.UUID uuidFromString(String input) {
+        if (input == null) return null;
+        String s = input.trim();
+        if (s.length() == 32) {
+            s = s.substring(0, 8) + "-" + s.substring(8, 12) + "-" + s.substring(12, 16) + "-" + s.substring(16, 20) + "-" + s.substring(20);
+        }
+        return java.util.UUID.fromString(s);
+    }
+
+    /** authlib 1.5's {@code UUIDTypeAdapter.fromUUID}: the UUID without dashes. */
+    public static String uuidToString(java.util.UUID uuid) {
+        return uuid.toString().replace("-", "");
+    }
+
     /** authlib 1.5's {@code findProfilesByNames(names, Agent.MINECRAFT, callback)}: no agent argument any more (it is always null here). */
     public static void findProfilesByNames(com.mojang.authlib.GameProfileRepository repo, String[] names, Object agent,
             com.mojang.authlib.ProfileLookupCallback callback) {

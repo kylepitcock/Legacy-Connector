@@ -103,6 +103,10 @@ public final class JavaCompatRedirects {
         virtualToStatic("com/google/common/base/Stopwatch", "elapsedTime", "(Ljava/util/concurrent/TimeUnit;)J", COMPAT + "GuavaCompat");
         // Guava scans only URLClassLoaders; mods run in module class loaders (Logistics Pipes finds its packets this way).
         staticToStatic("com/google/common/reflect/ClassPath", "from", "(Ljava/lang/ClassLoader;)Lcom/google/common/reflect/ClassPath;", COMPAT + "GuavaCompat", "classPathFrom");
+        // Guava 26 turned the CharMatcher constants (WHITESPACE, DIGIT, ...) into factory methods (see CHAR_MATCHER_CONSTANTS).
+        // authlib 6 has no com.mojang.util.UUIDTypeAdapter: its string conversions live in LibraryCompat.
+        staticToStatic("com/mojang/util/UUIDTypeAdapter", "fromString", "(Ljava/lang/String;)Ljava/util/UUID;", COMPAT + "LibraryCompat", "uuidFromString");
+        staticToStatic("com/mojang/util/UUIDTypeAdapter", "fromUUID", "(Ljava/util/UUID;)Ljava/lang/String;", COMPAT + "LibraryCompat", "uuidToString");
         // Guava 26: Futures.addCallback needs an executor.
         staticToStatic("com/google/common/util/concurrent/Futures", "addCallback",
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");
@@ -230,6 +234,14 @@ public final class JavaCompatRedirects {
 
     private JavaCompatRedirects() {}
 
+    /** Guava 17's {@code CharMatcher} constants and the factory methods that replaced them. */
+    private static final Map<String, String> CHAR_MATCHER_CONSTANTS = Map.ofEntries(
+            Map.entry("WHITESPACE", "whitespace"), Map.entry("BREAKING_WHITESPACE", "breakingWhitespace"), Map.entry("ASCII", "ascii"),
+            Map.entry("DIGIT", "digit"), Map.entry("JAVA_DIGIT", "javaDigit"), Map.entry("JAVA_LETTER", "javaLetter"),
+            Map.entry("JAVA_LETTER_OR_DIGIT", "javaLetterOrDigit"), Map.entry("JAVA_UPPER_CASE", "javaUpperCase"),
+            Map.entry("JAVA_LOWER_CASE", "javaLowerCase"), Map.entry("JAVA_ISO_CONTROL", "javaIsoControl"), Map.entry("INVISIBLE", "invisible"),
+            Map.entry("SINGLE_WIDTH", "singleWidth"), Map.entry("ANY", "any"), Map.entry("NONE", "none"));
+
     private static void virtualToStatic(String owner, String name, String desc, String target) {
         String staticDesc = "(L" + owner + ";" + desc.substring(1);
         INVOKES.put(owner + "." + name + desc, new MethodInsnNode(Opcodes.INVOKESTATIC, target, name, staticDesc, false));
@@ -302,6 +314,14 @@ public final class JavaCompatRedirects {
                         && field.owner.equals("com/mojang/authlib/Agent")) {
                     // authlib 6 has no Agent; the value is only passed to the (redirected) lookup calls, which ignore it.
                     InsnNode replacement = new InsnNode(Opcodes.ACONST_NULL);
+                    insns.set(field, replacement);
+                    insn = replacement;
+                    count++;
+                } else if (insn instanceof org.objectweb.asm.tree.FieldInsnNode field && field.getOpcode() == Opcodes.GETSTATIC
+                        && field.owner.equals("com/google/common/base/CharMatcher") && CHAR_MATCHER_CONSTANTS.containsKey(field.name)) {
+                    // CharMatcher.WHITESPACE -> CharMatcher.whitespace()
+                    MethodInsnNode replacement = new MethodInsnNode(Opcodes.INVOKESTATIC, field.owner, CHAR_MATCHER_CONSTANTS.get(field.name),
+                            "()Lcom/google/common/base/CharMatcher;", false);
                     insns.set(field, replacement);
                     insn = replacement;
                     count++;

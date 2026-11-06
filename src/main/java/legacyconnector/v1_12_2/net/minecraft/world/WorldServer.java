@@ -20,6 +20,16 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         this.worldTeleporter = new Teleporter(this);
     }
 
+    /**
+     * A server world a mod builds itself (a dimension of its own, a simulation): it has no level behind it, so every query sees empty
+     * space; the provider is the dimension's registered one. Worlds of the game are views made by the bridge.
+     */
+    public WorldServer(legacyconnector.v1_12_2.net.minecraft.server.MinecraftServer server, legacyconnector.v1_12_2.net.minecraft.world.storage.ISaveHandler saveHandler,
+            legacyconnector.v1_12_2.net.minecraft.world.storage.WorldInfo info, int dimensionId, legacyconnector.v1_12_2.net.minecraft.profiler.Profiler profiler) {
+        super(saveHandler, info, legacyconnector.v1_12_2.net.minecraftforge.common.DimensionManager.createProviderFor(dimensionId), profiler, false);
+        this.worldTeleporter = new Teleporter(this);
+    }
+
     private ServerLevel server() {
         return mcc$level() instanceof ServerLevel s ? s : null;
     }
@@ -110,7 +120,7 @@ public class WorldServer extends World implements legacyconnector.v1_12_2.net.mi
         return server();
     }
 
-    public void saveAllChunks(boolean all, Object progress) {
+    public void saveAllChunks(boolean all, legacyconnector.v1_12_2.net.minecraft.util.IProgressUpdate progress) {
         ServerLevel s = server();
         if (s != null && mcc$liveLevel() != null) s.save(null, true, false);
     }

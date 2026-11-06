@@ -78,7 +78,7 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
     }
 
     /** The variant names an item's models were registered under (each subtype's model location). */
-    public static java.util.List<String> getVariantNames(Item item) {
+    public java.util.List<String> getVariantNames(Item item) {
         java.util.List<String> names = new java.util.ArrayList<>();
         for (int meta = 0; meta < 16; meta++) {
             ModelResourceLocation m = mcc$model(item, meta);
