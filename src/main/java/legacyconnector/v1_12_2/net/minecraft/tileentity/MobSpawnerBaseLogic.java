@@ -17,6 +17,8 @@ import net.minecraft.world.level.BaseSpawner;
 public abstract class MobSpawnerBaseLogic {
     private int spawnDelay = 20;
     private WeightedSpawnerEntity spawnData = new WeightedSpawnerEntity();
+    /** The weighted entities the spawner may make (its {@code SpawnPotentials}, 1.12 entry format; read on load). */
+    protected java.util.List<WeightedSpawnerEntity> potentialSpawns = new java.util.ArrayList<>();
     private double mobRotation;
     private double prevMobRotation;
     private int minSpawnDelay = 200;
@@ -171,6 +173,14 @@ public abstract class MobSpawnerBaseLogic {
     public void readFromNBT(NBTTagCompound nbt) {
         mcc$spawner.load(mcc$level(), mcc$pos(), nbt.mcc$modern());
         if (nbt.hasKey("SpawnData", 10)) spawnData = new WeightedSpawnerEntity(1, nbt.getCompoundTag("SpawnData"));
+        potentialSpawns.clear();
+        if (nbt.hasKey("SpawnPotentials", 9)) {
+            var list = nbt.getTagList("SpawnPotentials", 10);
+            for (int i = 0; i < list.tagCount(); i++) {
+                var entry = list.getCompoundTagAt(i);
+                if (entry.hasKey("Entity", 10)) potentialSpawns.add(new WeightedSpawnerEntity(entry));
+            }
+        }
         mcc$pull();
         cachedEntity = null;
     }

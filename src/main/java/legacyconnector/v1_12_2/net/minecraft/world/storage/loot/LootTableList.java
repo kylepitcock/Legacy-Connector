@@ -52,6 +52,41 @@ public class LootTableList {
     public static final ResourceLocation ENTITIES_IRON_GOLEM = new ResourceLocation("minecraft", "entities/iron_golem");
     public static final ResourceLocation ENTITIES_SNOWMAN = new ResourceLocation("minecraft", "entities/snowman");
 
+    public static final ResourceLocation ENTITIES_SHEEP_BLACK = new ResourceLocation("minecraft", "entities/sheep/black");
+    public static final ResourceLocation ENTITIES_ENDERMITE = new ResourceLocation("minecraft", "entities/endermite");
+    public static final ResourceLocation ENTITIES_ZOMBIE_HORSE = new ResourceLocation("minecraft", "entities/zombie_horse");
+    public static final ResourceLocation ENTITIES_SKELETON_HORSE = new ResourceLocation("minecraft", "entities/skeleton_horse");
+    public static final ResourceLocation ENTITIES_MUSHROOM_COW = new ResourceLocation("minecraft", "entities/mooshroom");
+    public static final ResourceLocation ENTITIES_SHEEP_ORANGE = new ResourceLocation("minecraft", "entities/sheep/orange");
+    public static final ResourceLocation ENTITIES_SHEEP_MAGENTA = new ResourceLocation("minecraft", "entities/sheep/magenta");
+    public static final ResourceLocation ENTITIES_SHEEP_LIGHT_BLUE = new ResourceLocation("minecraft", "entities/sheep/light_blue");
+    public static final ResourceLocation ENTITIES_SHEEP_YELLOW = new ResourceLocation("minecraft", "entities/sheep/yellow");
+    public static final ResourceLocation ENTITIES_SHEEP_LIME = new ResourceLocation("minecraft", "entities/sheep/lime");
+    public static final ResourceLocation ENTITIES_SHEEP_PINK = new ResourceLocation("minecraft", "entities/sheep/pink");
+    public static final ResourceLocation ENTITIES_SHEEP_GRAY = new ResourceLocation("minecraft", "entities/sheep/gray");
+    public static final ResourceLocation ENTITIES_SHEEP_SILVER = new ResourceLocation("minecraft", "entities/sheep/silver");
+    public static final ResourceLocation ENTITIES_SHEEP_CYAN = new ResourceLocation("minecraft", "entities/sheep/cyan");
+    public static final ResourceLocation ENTITIES_SHEEP_PURPLE = new ResourceLocation("minecraft", "entities/sheep/purple");
+    public static final ResourceLocation ENTITIES_SHEEP_BLUE = new ResourceLocation("minecraft", "entities/sheep/blue");
+    public static final ResourceLocation ENTITIES_SHEEP_BROWN = new ResourceLocation("minecraft", "entities/sheep/brown");
+    public static final ResourceLocation ENTITIES_SHEEP_GREEN = new ResourceLocation("minecraft", "entities/sheep/green");
+    public static final ResourceLocation ENTITIES_SHEEP_RED = new ResourceLocation("minecraft", "entities/sheep/red");
+    public static final ResourceLocation ENTITIES_CAVE_SPIDER = new ResourceLocation("minecraft", "entities/cave_spider");
+    public static final ResourceLocation ENTITIES_GIANT = new ResourceLocation("minecraft", "entities/giant");
+    public static final ResourceLocation ENTITIES_SILVERFISH = new ResourceLocation("minecraft", "entities/silverfish");
+    public static final ResourceLocation ENTITIES_ELDER_GUARDIAN = new ResourceLocation("minecraft", "entities/elder_guardian");
+    public static final ResourceLocation ENTITIES_STRAY = new ResourceLocation("minecraft", "entities/stray");
+    public static final ResourceLocation ENTITIES_POLAR_BEAR = new ResourceLocation("minecraft", "entities/polar_bear");
+    public static final ResourceLocation ENTITIES_HUSK = new ResourceLocation("minecraft", "entities/husk");
+    public static final ResourceLocation ENTITIES_ZOMBIE_VILLAGER = new ResourceLocation("minecraft", "entities/zombie_villager");
+    public static final ResourceLocation ENTITIES_EVOCATION_ILLAGER = new ResourceLocation("minecraft", "entities/evocation_illager");
+    public static final ResourceLocation ENTITIES_VINDICATION_ILLAGER = new ResourceLocation("minecraft", "entities/vindication_illager");
+    public static final ResourceLocation ENTITIES_LLAMA = new ResourceLocation("minecraft", "entities/llama");
+    public static final ResourceLocation ENTITIES_VEX = new ResourceLocation("minecraft", "entities/vex");
+    public static final ResourceLocation ENTITIES_DONKEY = new ResourceLocation("minecraft", "entities/donkey");
+    public static final ResourceLocation ENTITIES_MULE = new ResourceLocation("minecraft", "entities/mule");
+    public static final ResourceLocation ENTITIES_PARROT = new ResourceLocation("minecraft", "entities/parrot");
+
     public static ResourceLocation register(ResourceLocation id) {
         return id;
     }

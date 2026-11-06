@@ -360,6 +360,27 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
         return 0;
     }
 
+    /** Forge: whether the item may edit blocks in adventure mode (false: only items that say so). */
+    public boolean canItemEditBlocks() {
+        return false;
+    }
+
+    /** Forge: the name shown over the hotbar when the held item changes. */
+    public String getHighlightTip(ItemStack item, String displayName) {
+        return displayName;
+    }
+
+    /** Forge: properties a mod's item animation reads (none). */
+    public com.google.common.collect.ImmutableMap<String, legacyconnector.v1_12_2.net.minecraftforge.common.animation.ITimeValue> getAnimationParameters(ItemStack stack,
+            legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.entity.EntityLivingBase entity) {
+        return com.google.common.collect.ImmutableMap.of();
+    }
+
+    /** Forge: draws an overlay when the item is worn on the head (client; the modern game draws its own overlays). */
+    public void renderHelmetOverlay(ItemStack stack, legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player,
+            legacyconnector.v1_12_2.net.minecraft.client.gui.ScaledResolution resolution, float partialTicks) {
+    }
+
     public boolean isEnchantable(ItemStack stack) {
         return getItemStackLimit(stack) == 1 && isDamageable();
     }

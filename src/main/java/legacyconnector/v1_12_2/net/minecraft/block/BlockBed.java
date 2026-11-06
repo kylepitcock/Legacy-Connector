@@ -152,6 +152,15 @@ public class BlockBed extends BlockHorizontal implements ITileEntityProvider {
     }
 
     @Override
+    public void setBedOccupied(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean occupied) {
+        if (world instanceof World w) {
+            IBlockState state = w.getBlockState(pos);
+            if (state.getBlock() == this) w.setBlockState(pos, state.withProperty(OCCUPIED, occupied), 4);
+        }
+    }
+
+    @Override
     public void breakBlock(World worldIn, BlockPos pos, IBlockState state) {
         super.breakBlock(worldIn, pos, state);
         worldIn.removeTileEntity(pos);

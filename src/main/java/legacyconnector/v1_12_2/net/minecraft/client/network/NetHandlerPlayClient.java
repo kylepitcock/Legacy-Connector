@@ -21,6 +21,9 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
     /** Phantom: the server's player limit (redirected to {@link #mcc$get$currentServerMaxPlayers}). */
     @Deprecated
     public int currentServerMaxPlayers;
+    /** Phantom: the client world (redirected to {@link #mcc$get$world}). */
+    @Deprecated
+    public legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient world;
     /** The screen to return to when the connection closes. */
     public legacyconnector.v1_12_2.net.minecraft.client.gui.GuiScreen guiScreenServer;
     private final com.mojang.authlib.GameProfile profile;
@@ -97,6 +100,14 @@ public class NetHandlerPlayClient implements legacyconnector.v1_12_2.net.minecra
 
     public static void mcc$set$currentServerMaxPlayers(NetHandlerPlayClient h, int value) {
         // the server owns it
+    }
+
+    public static legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient mcc$get$world(NetHandlerPlayClient h) {
+        return legacyconnector.v1_12_2.net.minecraft.client.Minecraft.mcc$get$world(legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft());
+    }
+
+    public static void mcc$set$world(NetHandlerPlayClient h, legacyconnector.v1_12_2.net.minecraft.client.multiplayer.WorldClient value) {
+        // the game owns the world
     }
 
     /** A close-window packet a mod hands to the client: the open container screen closes. */

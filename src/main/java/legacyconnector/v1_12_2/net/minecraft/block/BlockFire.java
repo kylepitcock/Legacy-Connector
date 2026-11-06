@@ -101,6 +101,11 @@ public class BlockFire extends Block {
         return null;
     }
 
+    protected boolean canDie(World worldIn, BlockPos pos) {
+        return worldIn.isRainingAt(pos) || worldIn.isRainingAt(pos.west()) || worldIn.isRainingAt(pos.east())
+                || worldIn.isRainingAt(pos.north()) || worldIn.isRainingAt(pos.south());
+    }
+
     @Override
     public int tickRate(World worldIn) {
         return 30;

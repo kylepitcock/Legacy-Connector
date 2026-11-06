@@ -35,6 +35,9 @@ public abstract class GuiContainer extends GuiScreen {
     protected ItemStack returningStack = ItemStack.EMPTY;
     protected Slot returningStackDestSlot;
     protected long returningStackTime;
+    /** The slot a drag or click started on, and the kind of drag split (0 even, 1 one each, 2 clone). */
+    private Slot clickedSlot;
+    protected int dragSplittingLimit;
     protected int touchUpX;
     protected int touchUpY;
 

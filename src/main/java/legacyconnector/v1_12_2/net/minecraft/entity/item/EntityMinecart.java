@@ -127,6 +127,83 @@ public abstract class EntityMinecart extends Entity {
         return c != null ? c.hasCustomDisplay() : mcc$hasDisplayTile;
     }
 
+    private legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState mcc$displayTile;
+    private int mcc$displayTileOffset = -1;
+    private boolean mcc$canUseRail = true;
+    private float mcc$maxSpeedOnRail = 0.4F;
+
+    /** The block the cart shows (air when none was set; a game cart reads its own). */
+    public legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState getDisplayTile() {
+        var c = mcc$cart();
+        if (c != null) {
+            var s = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toLegacy(c.getDisplayBlockState());
+            if (s != null) return s;
+        }
+        return mcc$displayTile != null ? mcc$displayTile : legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR.getDefaultState();
+    }
+
+    public void setDisplayTile(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState displayTile) {
+        mcc$displayTile = displayTile;
+        var c = mcc$cart();
+        if (c != null && displayTile != null) {
+            var modern = org.kylepitcock.legacyconnector.v1_12_2.bridge.StatesBridge1122.toModern(displayTile);
+            if (modern != null) c.setDisplayBlockState(modern);
+        }
+        setHasDisplayTile(true);
+    }
+
+    /** How far (in sixteenths) the shown block sits above the cart's floor; -1 follows the default. */
+    public int getDisplayTileOffset() {
+        if (mcc$displayTileOffset != -1) return mcc$displayTileOffset;
+        var c = mcc$cart();
+        return c != null && hasDisplayTile() ? c.getDisplayOffset() : getDefaultDisplayTileOffset();
+    }
+
+    public void setDisplayTileOffset(int displayTileOffset) {
+        mcc$displayTileOffset = displayTileOffset;
+        var c = mcc$cart();
+        if (c != null) c.setDisplayOffset(displayTileOffset);
+    }
+
+    public int getDefaultDisplayTileOffset() {
+        return 6;
+    }
+
+    /** Forge: whether the cart follows rails (off: it moves like a free entity). */
+    public boolean canUseRail() {
+        return mcc$canUseRail;
+    }
+
+    public void setCanUseRail(boolean use) {
+        mcc$canUseRail = use;
+    }
+
+    /** Forge: the speed cap on rails in blocks per tick (the vanilla 0.4). */
+    public float getMaxCartSpeedOnRail() {
+        return mcc$maxSpeedOnRail;
+    }
+
+    public void setCurrentCartSpeedCapOnRail(float value) {
+        mcc$maxSpeedOnRail = Math.min(value, getMaxCartSpeedOnRail());
+    }
+
+    /** Forge: the speed cap in the cart's current medium (the game's own value for a game cart). */
+    public double getMaximumSpeed() {
+        var c = mcc$cart();
+        return c != null ? (c.isInWater() ? 0.2D : 0.4D) : (double) mcc$maxSpeedOnRail;
+    }
+
+    /** Slows the cart down with its drag (the game applies its own on game carts). */
+    protected void applyDrag() {
+        mcc$set$motionX(this, mcc$get$motionX(this) * 0.96D);
+        mcc$set$motionY(this, 0.0D);
+        mcc$set$motionZ(this, mcc$get$motionZ(this) * 0.96D);
+    }
+
+    /** One step of rail movement: the game's cart moves itself, a mod's cart overrides this. */
+    protected void moveAlongTrack(legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state) {
+    }
+
     /** Forge: whether it is pushed by its own power (furnace carts). */
     public boolean isPoweredCart() {
         var c = mcc$cart();

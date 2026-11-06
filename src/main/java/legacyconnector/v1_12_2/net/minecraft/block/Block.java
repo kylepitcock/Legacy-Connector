@@ -1339,6 +1339,52 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return mcc$vanillaTagged(net.minecraft.tags.BlockTags.BEDS);
     }
 
+    /**
+     * Forge: whether a creature of the placement type may spawn on this block (the state at {@code pos} is the block it would stand
+     * on): solid on top, or any liquid for the water placement; bedrock and barriers never carry spawns.
+     */
+    public boolean canCreatureSpawn(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType type) {
+        if (type == legacyconnector.v1_12_2.net.minecraft.entity.EntityLiving.SpawnPlacementType.IN_WATER) {
+            return state.getMaterial() == legacyconnector.v1_12_2.net.minecraft.block.material.Material.WATER;
+        }
+        if (mcc$named(this, "bedrock", "barrier")) return false;
+        return state.isSideSolid(world, pos, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP);
+    }
+
+    /** A rain or snow fill of the block (cauldrons override it; nothing for other blocks). */
+    public void fillWithRain(legacyconnector.v1_12_2.net.minecraft.world.World worldIn, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+    }
+
+    /** Whether the stats count this block's breaking and use (see {@link #disableStats}). */
+    public boolean getEnableStats() {
+        return enableStats;
+    }
+
+    /** Forge: where a player respawns beside a bed block (a free standable spot around it); null when the block is no bed or none is free. */
+    public legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos getBedSpawnPosition(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+        if (!isBed(state, world, pos, player)) return null;
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dz = -1; dz <= 1; dz++) {
+                if (dx == 0 && dz == 0) continue;
+                var p = pos.add(dx, 0, dz);
+                var below = world.getBlockState(p.down());
+                if (below.isSideSolid(world, p.down(), legacyconnector.v1_12_2.net.minecraft.util.EnumFacing.UP)
+                        && !world.getBlockState(p).getMaterial().blocksMovement() && !world.getBlockState(p.up()).getMaterial().blocksMovement()) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Forge: marks a bed block occupied or free (beds override it; nothing for other blocks). */
+    public void setBedOccupied(legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player, boolean occupied) {
+    }
+
     /** Forge: the direction a bed's head points (its FACING, else north). */
     public legacyconnector.v1_12_2.net.minecraft.util.EnumFacing getBedDirection(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state,
             legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
