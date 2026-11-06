@@ -145,11 +145,16 @@ public final class IdRegistry {
         t.ids.remove(o);
         t.count--;
         if (kind == Kind.BLOCK) {
-            // the ItemBlock slot goes with it unless a real ItemBlock sits there
+            // the ItemBlock slot of the same id goes with it (a block and its ItemBlock share the id below 4096)
             Table it = tables[Kind.ITEM.ordinal()];
-            if (it.slots[id] == RESERVED) {
+            Object ib = it.slots[id];
+            if (ib != null) {
                 it.slots[id] = null;
                 it.owner[id] = null;
+                if (ib != RESERVED) {
+                    it.ids.remove(ib);
+                    it.count--;
+                }
             }
         }
         return true;

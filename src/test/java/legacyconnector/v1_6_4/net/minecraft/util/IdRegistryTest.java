@@ -166,6 +166,24 @@ class IdRegistryTest {
     }
 
     @Test
+    void releasedIdIsFreeAgainButReservedVanillaIdsAreNot() {
+        IdRegistry r = fresh(new ArrayList<>());
+        // a mod nulls blocksList[3] (dirt) to put its own block there
+        assertTrue(r.release(Kind.BLOCK, 3));
+        assertEquals(-1, r.blockId("block:dirt"));
+        assertEquals(3, r.claimBlock("m:dirt", 3, "m"));
+        // a reserved vanilla id with no 1.7.10 object (95) cannot be released
+        assertTrue(!r.release(Kind.BLOCK, 95));
+        assertTrue(r.isTaken(Kind.BLOCK, 95));
+        // releasing a mod block frees its ItemBlock slot too
+        int id = r.claimBlock("m:b", 1000, "m");
+        assertEquals(1000, id);
+        assertTrue(r.release(Kind.BLOCK, 1000));
+        assertEquals(2000, r.claimItem("m:i", 2000, "m"));
+        assertEquals(1000, r.claimBlock("m:b2", 1000, "m"));
+    }
+
+    @Test
     void tableFullReturnsMinusOne() {
         IdRegistry r = fresh(new ArrayList<>());
         int n = 0;

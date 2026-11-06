@@ -82,7 +82,9 @@ public final class Ids {
 
     private static int claimBlockInternal(Block block, int requested) {
         // a mod that cleared the entry (to replace a vanilla block) frees its id
-        if (requested > 0 && requested < blocks.length && blocks[requested] == null) registry.release(IdRegistry.Kind.BLOCK, requested);
+        if (requested > 0 && requested < blocks.length && blocks[requested] == null && registry.release(IdRegistry.Kind.BLOCK, requested)) {
+            items[requested] = null; // its ItemBlock leaves with it
+        }
         int id = registry.claimBlock(block, requested, ownerLabel());
         if (id >= 0) {
             blocks[id] = block;
