@@ -34,6 +34,12 @@ import java.util.zip.ZipFile;
 final class SplitPackageResolver {
     private SplitPackageResolver() {}
 
+    /**
+     * Packages the game itself provides as modules (NeoForge ships {@code jakarta.activation}, which exports {@code javax.activation}): a legacy jar
+     * bundling a copy is stripped of it and the copy is not shared, or the module layer fails to resolve.
+     */
+    private static final Set<String> DROP = Set.of("javax/activation");
+
     record Outcome(List<Path> jars, Path sharedLibrary, Set<String> sharedPackages) {}
 
     static Outcome resolve(List<Path> jars, Path cacheDir) throws IOException {
@@ -57,7 +63,7 @@ final class SplitPackageResolver {
 
         Set<String> shared = new TreeSet<>();
         owners.forEach((pkg, list) -> {
-            if (list.size() > 1) shared.add(pkg);
+            if (list.size() > 1 || DROP.contains(pkg)) shared.add(pkg);
         });
         if (shared.isEmpty()) return new Outcome(jars, null, shared);
 
@@ -105,7 +111,7 @@ final class SplitPackageResolver {
                             ZipEntry e = en.nextElement();
                             String n = e.getName();
                             int slash = n.lastIndexOf('/');
-                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash))) continue;
+                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash)) || DROP.contains(n.substring(0, slash))) continue;
                             try (InputStream in = zip.getInputStream(e)) {
                                 mineClasses.put(n, in.readAllBytes());
                             }

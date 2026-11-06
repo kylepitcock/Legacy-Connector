@@ -73,3 +73,7 @@ net/minecraftforge/common/Property$Type	net/minecraftforge/common/config/Propert
 net/minecraft/network/NetServerHandler	net/minecraft/network/NetHandlerPlayServer
 net/minecraft/network/packet/Packet	net/minecraft/network/Packet
 net/minecraft/network/packet/NetHandler	net/minecraft/network/INetHandler
+net/minecraft/dispenser/IRegistry	net/minecraft/util/IRegistry
+net/minecraft/dispenser/RegistryDefaulted	net/minecraft/util/RegistryDefaulted
+net/minecraft/dispenser/RegistrySimple	net/minecraft/util/RegistrySimple
+net/minecraftforge/common/UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader

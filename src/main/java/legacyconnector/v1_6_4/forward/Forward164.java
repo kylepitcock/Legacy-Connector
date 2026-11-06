@@ -26,4 +26,10 @@ public final class Forward164 {
         if (index < 0 || index >= list.tagCount()) return null;
         return NBTBase.mcc$wrap(list.mcc$modern().get(index), list);
     }
+
+    /** 1.6.4 {@code FMLPreInitializationEvent.getModLog()}: a {@code java.util.logging.Logger} (1.7.10 returns a log4j one). */
+    public static java.util.logging.Logger getModLog(legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLPreInitializationEvent event) {
+        String id = event.getModMetadata() != null ? event.getModMetadata().modId : null;
+        return java.util.logging.Logger.getLogger(id != null ? id : "ForgeModLoader");
+    }
 }
