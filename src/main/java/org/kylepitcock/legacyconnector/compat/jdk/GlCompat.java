@@ -48,6 +48,11 @@ public final class GlCompat {
         out.put(out.position(), glGetShader(program, pname));
     }
 
+    /** LWJGL 2's {@code glGetActiveUniform(program, index, maxLength)}: shaders are never compiled here, so no uniform has a name. */
+    public static String glGetActiveUniform(int program, int index, int maxLength) {
+        return "";
+    }
+
     public static String glGetShaderInfoLog(int shader, int maxLength) {
         return "";
     }

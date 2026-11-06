@@ -112,6 +112,12 @@ public final class JavaCompatRedirects {
                 "(Lcom/google/common/util/concurrent/ListenableFuture;Lcom/google/common/util/concurrent/FutureCallback;)V", COMPAT + "GuavaCompat", "addCallback");
         // fastutil 8: no boxed get(Integer) on int-keyed maps.
         virtualToStatic("it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap", "get", "(Ljava/lang/Integer;)Ljava/lang/Object;", COMPAT + "LibraryCompat");
+        virtualToStatic("it/unimi/dsi/fastutil/bytes/ByteArrayList", "rem", "(Ljava/lang/Object;)Z", COMPAT + "LibraryCompat");
+        // authlib 6: getTextures(profile) returns a record; the old (profile, requireSecure) form returned a map by type.
+        virtualToStatic("com/mojang/authlib/minecraft/MinecraftSessionService", "getTextures",
+                "(Lcom/mojang/authlib/GameProfile;Z)Ljava/util/Map;", COMPAT + "LibraryCompat");
+        // jopt-simple 5: acceptsAll takes a List.
+        virtualToStatic("joptsimple/OptionParser", "acceptsAll", "(Ljava/util/Collection;Ljava/lang/String;)Ljoptsimple/OptionSpecBuilder;", COMPAT + "LibraryCompat");
         // LWJGL 2 -> 3: typed-buffer overloads got explicit suffixes (glUniform1(int, FloatBuffer) -> glUniform1fv).
         String gl20 = "org/lwjgl/opengl/GL20";
         staticToStatic(gl20, "glGetShader", "(IILjava/nio/IntBuffer;)V", COMPAT + "GlCompat", "glGetShaderiv");
@@ -128,6 +134,7 @@ public final class JavaCompatRedirects {
         staticToStatic(gl20, "glCompileShader", "(I)V", gl, "glCompileShader");
         staticToStatic(gl20, "glGetShader", "(II)I", gl, "glGetShader");
         staticToStatic(gl20, "glGetShaderInfoLog", "(II)Ljava/lang/String;", gl, "glGetShaderInfoLog");
+        staticToStatic(gl20, "glGetActiveUniform", "(III)Ljava/lang/String;", gl, "glGetActiveUniform");
         staticToStatic(gl20, "glCreateProgram", "()I", gl, "glCreateProgram");
         staticToStatic(gl20, "glAttachShader", "(II)V", gl, "glAttachShader");
         staticToStatic(gl20, "glLinkProgram", "(I)V", gl, "glLinkProgram");

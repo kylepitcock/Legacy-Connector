@@ -130,4 +130,32 @@ public final class LibraryCompat {
     public static Object get(it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<?> map, Integer key) {
         return key == null ? null : map.get(key.intValue());
     }
+
+    /** fastutil 7's {@code ByteArrayList.rem(Object)}: removes the first occurrence (fastutil 8 spells it remove(Object)). */
+    public static boolean rem(it.unimi.dsi.fastutil.bytes.ByteArrayList list, Object o) {
+        return list.remove(o);
+    }
+
+    /** jopt-simple 4's {@code acceptsAll(Collection, String)} (5 takes a List). */
+    public static joptsimple.OptionSpecBuilder acceptsAll(joptsimple.OptionParser parser, java.util.Collection<String> names, String description) {
+        return parser.acceptsAll(new java.util.ArrayList<>(names), description);
+    }
+
+    /** authlib 1.5's {@code getTextures(profile, requireSecure)}: the textures by type (authlib 6 returns a record of them). */
+    public static java.util.Map<com.mojang.authlib.minecraft.MinecraftProfileTexture.Type, com.mojang.authlib.minecraft.MinecraftProfileTexture> getTextures(
+            MinecraftSessionService service, GameProfile profile, boolean requireSecure) {
+        java.util.Map<com.mojang.authlib.minecraft.MinecraftProfileTexture.Type, com.mojang.authlib.minecraft.MinecraftProfileTexture> out = new java.util.EnumMap<>(
+                com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.class);
+        try {
+            var textures = service.getTextures(profile);
+            if (textures != null) {
+                if (textures.skin() != null) out.put(com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.SKIN, textures.skin());
+                if (textures.cape() != null) out.put(com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.CAPE, textures.cape());
+                if (textures.elytra() != null) out.put(com.mojang.authlib.minecraft.MinecraftProfileTexture.Type.ELYTRA, textures.elytra());
+            }
+        } catch (RuntimeException e) {
+            // no textures known
+        }
+        return out;
+    }
 }

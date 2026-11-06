@@ -25,6 +25,10 @@ public class LivingSpawnEvent extends LivingEvent {
         public CheckSpawn(EntityLivingBase entity, World world, float x, float y, float z) {
             super(entity, world, x, y, z);
         }
+
+        public CheckSpawn(legacyconnector.v1_7_10.net.minecraft.entity.EntityLiving entity, World world, float x, float y, float z) {
+            super(entity, world, x, y, z);
+        }
     }
 
     /** A mob far from players may despawn: ALLOW forces it, DENY keeps the mob. */

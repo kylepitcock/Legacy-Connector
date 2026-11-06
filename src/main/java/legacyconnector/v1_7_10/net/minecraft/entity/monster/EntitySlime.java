@@ -26,6 +26,11 @@ public class EntitySlime extends EntityLiving implements IMob {
         return dataWatcher.getWatchableObjectByte(16);
     }
 
+    /** Ticks between two jumps (10 to 29); subclasses shorten or lengthen it. */
+    protected int getJumpDelay() {
+        return (int) (Math.random() * 20.0D) + 10;
+    }
+
     /** Damage it does to a player it touches: its size. */
     protected int getAttackStrength() {
         return getSlimeSize();
