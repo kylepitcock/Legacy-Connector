@@ -765,7 +765,7 @@ public final class EventBridge1710 {
         }
         org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.beginWorld(pose, buffers, light, net.minecraft.client.renderer.texture.OverlayTexture.NO_OVERLAY);
         double renderPosY = legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY;
-        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - viewerShiftY;
+        legacyconnector.v1_7_10.net.minecraft.client.renderer.entity.RenderManager.renderPosY = renderPosY - 2 * viewerShiftY; // twice the START shift: Morph adds its ySize on top of (posY - renderPosY); one shift left the pig a ySize above the ground (checked in third person)
         try {
             return forge().post(event);
         } finally {
