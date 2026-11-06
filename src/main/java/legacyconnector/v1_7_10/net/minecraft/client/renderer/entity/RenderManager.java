@@ -46,6 +46,7 @@ public class RenderManager {
     }
 
     private static final java.util.Map<Class<?>, java.util.function.Supplier<Render>> VANILLA = java.util.Map.ofEntries(
+            java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.item.EntityItem.class, RenderItem::getInstance),
             java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.monster.EntitySlime.class,
                     () -> new RenderSlime(new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSlime(16), new legacyconnector.v1_7_10.net.minecraft.client.model.ModelSlime(0), 0.25F)),
             java.util.Map.entry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityPig.class,
