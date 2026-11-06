@@ -72,12 +72,33 @@ public final class StatesBridge1122 {
      */
     public static boolean metaHolds(IBlockState state) {
         if (state == null) return true;
+        state = canonical(state);
         try {
             Block block = state.getBlock();
             return state.equals(block.getStateFromMeta(block.getMetaFromState(state)));
         } catch (RuntimeException | LinkageError e) {
             return true;
         }
+    }
+
+    /**
+     * The block's own state instance with the properties of a state some mod wrapped or copied (EnderIO's BlockStateWrapperBase delegates the
+     * properties to the state it wraps but is not equal to it): lookups by state identity and equals need the container's instance.
+     */
+    public static IBlockState canonical(IBlockState state) {
+        if (state == null || state instanceof legacyconnector.v1_12_2.net.minecraft.block.state.BlockStateContainer.StateImplementation) return state;
+        try {
+            IBlockState out = state.getBlock().getDefaultState();
+            for (var e : state.getProperties().entrySet()) out = withValue(out, e.getKey(), e.getValue());
+            return out;
+        } catch (RuntimeException | LinkageError e) {
+            return state;
+        }
+    }
+
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static IBlockState withValue(IBlockState state, legacyconnector.v1_12_2.net.minecraft.block.properties.IProperty property, Comparable value) {
+        return state.withProperty(property, value);
     }
 
     public static BlockState toModern(IBlockState state) {
