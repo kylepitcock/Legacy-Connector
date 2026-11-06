@@ -175,6 +175,40 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
     @SuppressWarnings("unused")
     private final Map<ModelResourceLocation, IModel> stateModels = new java.util.LinkedHashMap<>();
 
+    /** Forge's private map of the exceptions model loading ran into; CodeChickenLib's blockstate loader reads it by reflection. */
+    @SuppressWarnings("unused")
+    private final Map<ResourceLocation, Exception> loadingExceptions = new java.util.HashMap<>();
+
+    /**
+     * Forge's loader of vanilla (json) models, and the way to the model loader instance: CodeChickenLib's blockstate loader reads
+     * {@code VanillaLoader.INSTANCE} and calls {@code getLoader()} by reflection to reach the loader's block model shapes and resource
+     * manager. It claims no model location here (the game's own bakery loads the json models).
+     */
+    public enum VanillaLoader implements ICustomModelLoader {
+        INSTANCE;
+
+        private ModelLoader loader;
+
+        public synchronized ModelLoader getLoader() {
+            if (loader == null) loader = new ModelLoader();
+            return loader;
+        }
+
+        @Override
+        public boolean accepts(ResourceLocation modelLocation) {
+            return false;
+        }
+
+        @Override
+        public IModel loadModel(ResourceLocation modelLocation) throws Exception {
+            return ModelLoaderRegistry.getModel(modelLocation);
+        }
+
+        @Override
+        public void onResourceManagerReload(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager) {
+        }
+    }
+
     /** Forge's multipart model wrapper; mods read its private part list by reflection (CTM). */
     public static class MultipartModel {
         private Map<Object, Object> partModels = new java.util.HashMap<>();

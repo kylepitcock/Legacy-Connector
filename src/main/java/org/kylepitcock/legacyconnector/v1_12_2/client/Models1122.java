@@ -368,6 +368,41 @@ public final class Models1122 {
             }
         }
 
+        /**
+         * 1.12 drew a block in every terrain layer its {@code canRenderInLayer} accepted, asking the model for that layer's quads (a CodeChickenLib
+         * bakery model bakes cutout quads only). The modern default takes the layer from the model's own json, which a model a mod made in code lacks.
+         */
+        @Override
+        public net.neoforged.neoforge.client.ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand,
+                net.neoforged.neoforge.client.model.data.ModelData data) {
+            if (state != null && state.getBlock() instanceof Legacy1122Block) {
+                try {
+                    IBlockState given = data == null ? null : data.get(LEGACY_STATE);
+                    IBlockState legacyState = given != null ? given : StatesBridge1122.toLegacy(state);
+                    if (legacyState != null) {
+                        List<net.minecraft.client.renderer.RenderType> types = new ArrayList<>(4);
+                        var block = legacyState.getBlock();
+                        for (var layer : legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer.values()) {
+                            if (!block.canRenderInLayer(legacyState, layer)) continue;
+                            types.add(switch (layer) {
+                                case SOLID -> net.minecraft.client.renderer.RenderType.solid();
+                                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                                case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
+                                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                            });
+                        }
+                        // only the solid layer (the default): the render type the block's own model json gave stays
+                        if (!types.isEmpty() && !(types.size() == 1 && types.get(0) == net.minecraft.client.renderer.RenderType.solid())) {
+                            return net.neoforged.neoforge.client.ChunkRenderTypeSet.of(types.toArray(new net.minecraft.client.renderer.RenderType[0]));
+                        }
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    // a layer check that needs a world: the default layers
+                }
+            }
+            return BakedModel.super.getRenderTypes(state, rand, data);
+        }
+
         @Override
         public boolean useAmbientOcclusion() {
             try {

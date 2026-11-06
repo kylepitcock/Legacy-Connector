@@ -250,27 +250,43 @@ public final class LegacyRemapper extends Remapper {
             while (dims < s.length() && s.charAt(dims) == '[') dims++;
             if (dims < s.length() - 2 && s.charAt(dims) == 'L') return s.substring(0, dims + 1) + mapString(s.substring(dims + 1, s.length() - 1)) + ";";
         }
+        if (s.charAt(0) == '(' && DESCRIPTOR.matcher(s).matches()) {
+            // a method descriptor used for reflection (CodeChickenLib's ObfMapping finds methods by name and descriptor)
+            java.util.regex.Matcher m = CLASS_IN_DESCRIPTOR.matcher(s);
+            StringBuilder out = new StringBuilder();
+            while (m.find()) m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement("L" + mapStringClass(m.group(1)) + ";"));
+            m.appendTail(out);
+            return out.toString();
+        }
         if (!looksLikeClassName(s)) return s;
         boolean dotted = s.indexOf('.') >= 0;
         String internal = dotted ? s.replace('.', '/') : s;
-        // Strings only create synthetic classes the legacy version really had (reflection on Forge internals);
-        // Class.forName probes for APIs that never existed there (e.g. ModLoader) must keep failing.
-        recording = shim != null && LegacyVersion.isRelocatedRoot(internal)
-                && org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(version).get(internal) != null;
-        String mapped;
-        mappingString = true;
-        try {
-            mapped = map(internal);
-        } finally {
-            recording = true;
-            mappingString = false;
-        }
+        String mapped = mapStringClass(internal);
         if (mapped.equals(internal)) {
             // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.
             if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.linkPrefix() + internal;
             else return s;
         }
         return dotted ? mapped.replace('/', '.') : mapped;
+    }
+
+    private static final java.util.regex.Pattern DESCRIPTOR =
+            java.util.regex.Pattern.compile("\\((\\[*([BCDFIJSZ]|L[\\w/$]+;))*\\)(V|\\[*([BCDFIJSZ]|L[\\w/$]+;))");
+    private static final java.util.regex.Pattern CLASS_IN_DESCRIPTOR = java.util.regex.Pattern.compile("L([\\w/$]+);");
+
+    /** The relocated internal name of a class named by a string (unchanged when it is not a class of the legacy API). */
+    private String mapStringClass(String internal) {
+        // Strings only create synthetic classes the legacy version really had (reflection on Forge internals);
+        // Class.forName probes for APIs that never existed there (e.g. ModLoader) must keep failing.
+        recording = shim != null && LegacyVersion.isRelocatedRoot(internal)
+                && org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(version).get(internal) != null;
+        mappingString = true;
+        try {
+            return map(internal);
+        } finally {
+            recording = true;
+            mappingString = false;
+        }
     }
 
     /**
