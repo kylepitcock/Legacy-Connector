@@ -30,3 +30,9 @@ Minecraft assets are never included.
 | Our file | Taken from | Changes |
 |---|---|---|
 | `loader/src/main/resources/legacyconnector/forward/1.20.1/forge-event-renames.tsv`, `forge-fml-renames.tsv` | `retromod/forge-event-renames.json`, `forge-fml-renames.json` | Converted to TSV; every target re-checked against NeoForge 21.1.235 and FML 4.0.45; `RegisterClientReloadListenersEvent` corrected (21.1 has not renamed it yet) |
+
+## TerraBlender
+
+[TerraBlender](https://github.com/Glitchfiend/TerraBlender) 1.21.1-4.1.0.8, GNU Lesser General Public License v3.0, Copyright (c) Glitchfiend.
+
+Bundled unmodified as a jar-in-jar (`META-INF/jarjar/`) and used through its public API (`terrablender.api.Regions`) to place legacy mod biomes in the overworld. A separately installed TerraBlender takes precedence. Source and license text: the project page above.

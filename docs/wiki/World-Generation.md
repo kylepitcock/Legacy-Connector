@@ -25,16 +25,14 @@ of the multi-noise biome source (`core/worldgen/BiomePlacement`, data from `v1_7
   `GenLayerBiome` drew from on 1.7.10. Mod biomes in no list never generated in a 1.7.10 default overworld (they belong to
   the mod's own dimension or world type), so they are not placed here. The log lists both groups once
   ("Legacy biome climate placement ...").
-- **With TerraBlender** (for example in ATM10), the legacy biomes form a TerraBlender overworld region
-  (`compat/terrablender/LegacyRegion`, the only class that touches TerraBlender, loaded only when it is installed). The region
-  holds the vanilla layout with each analog's points shared among the legacy biomes modelled on it. Its weight is the total
-  legacy weight / 10, clamped to 1-15 (TerraBlender's vanilla region has weight 10), and TerraBlender mixes it with the
-  vanilla region and other mods' regions.
-- **Without TerraBlender**, the legacy biomes are added at server start to the server's `minecraft:overworld` multi-noise
-  parameter list (the preset the overworld biome source refers to), and the vanilla biomes are kept. The analog keeps weight
-  20, so a legacy biome of weight 10 takes a third of its analog's points. The overworld is still saved as
-  `preset: minecraft:overworld`. If a data pack gives the overworld its own inline biome list, legacy biomes do not appear there
-  (logged).
+- **TerraBlender is the only placement path.** The legacy biomes form a TerraBlender overworld region
+  (`compat/terrablender/LegacyRegion`). TerraBlender (LGPL-3.0, see `THIRD_PARTY_NOTICES.md`) is a required dependency, embedded as
+  jar-in-jar with an open-ended version range, so nothing extra needs installing and a separately installed (newer) TerraBlender
+  wins. The region holds the vanilla layout with each analog's points shared among the legacy biomes modelled on it. Its weight is
+  the total legacy weight / 10, clamped to 1-15 (TerraBlender's vanilla region has weight 10), and TerraBlender mixes it with the
+  vanilla region and other mods' regions (Terralith, Tectonic, Biomes O' Plenty...). There is no fallback that edits the
+  `minecraft:overworld` parameter list: worldgen mods such as Tectonic and Terralith reshape that climate space, and points added
+  there landed in thin river-shaped bands (issue #175).
 
 Biome registry ids are unchanged (`thaumcraft:magical_forest`, ...), so existing worlds keep their already generated biomes.
 New chunks of worlds made with older versions use the new placement, so biome borders can show where old and new chunks meet.

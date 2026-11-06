@@ -21,7 +21,7 @@ repositories {
         url = 'https://api.modrinth.com/maven'
         content { includeGroup 'maven.modrinth' }
     }
-    maven { // TerraBlender (legacy biomes placed as a TerraBlender region when it is installed)
+    maven { // TerraBlender (embedded; legacy biomes are placed as a TerraBlender region)
         url = 'https://maven.minecraftforge.net/'
         content { includeGroup 'com.github.glitchfiend' }
     }
@@ -158,7 +158,13 @@ dependencies {
     compileOnly "maven.modrinth:jade:${jade_version}"
     compileOnly "mezz.jei:jei-1.21.1-neoforge-api:${jei_version}"
     compileOnly("com.simibubi.create:create-1.21.1:${create_version}") { transitive = false }
-    compileOnly("com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}") { transitive = false }
+
+    // TerraBlender (LGPL-3.0): the only biome placement path for legacy mod biomes (a region of its overworld layout, which Terralith, Tectonic,
+    // Biomes O' Plenty... also use). Embedded (jar-in-jar) with an open-ended range so a separately installed TerraBlender wins.
+    jarJar(implementation("com.github.glitchfiend:TerraBlender-neoforge:${terrablender_version}")) {
+        transitive = false
+        version { strictly "[${terrablender_version},)"; prefer terrablender_version }
+    }
 
     // Pehkui (MIT, Modrinth): entity size scaling (hitbox, eye height, model). Legacy Entity.setSize / eyeHeight and Fisk's Heroes' size
     // manipulation go through its ScaleTypes API instead of our own dimension mixin. Embedded (jar-in-jar); a separately installed newer Pehkui wins.

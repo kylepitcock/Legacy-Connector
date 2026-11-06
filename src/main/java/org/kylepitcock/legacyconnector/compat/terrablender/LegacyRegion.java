@@ -20,8 +20,7 @@ import terrablender.api.Regions;
  * on (shared by weight when several legacy biomes have the same analog). TerraBlender picks between this region, the vanilla
  * one and other mods' regions by the region weights.
  *
- * <p>The only class that references TerraBlender: it is loaded only when the {@code terrablender} mod is (TerraBlender is an
- * optional, compile-only dependency).
+ * <p>TerraBlender is a required dependency (embedded as jar-in-jar, a standalone install wins).
  */
 public final class LegacyRegion extends Region {
     public static final ResourceLocation NAME = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_overworld");
@@ -40,7 +39,7 @@ public final class LegacyRegion extends Region {
             List<BiomePlacement.Entry> entries = BiomePlacement.entries().stream()
                     .filter(e -> registry.containsKey(e.biome()) && registry.containsKey(e.analog())).toList();
             List<Pair<Climate.ParameterPoint, ResourceKey<Biome>>> points =
-                    BiomePlacement.blend(BiomePlacement.vanillaOverworld(), entries, k -> k, k -> k, 0);
+                    BiomePlacement.blend(BiomePlacement.vanillaOverworld(), entries, k -> k, k -> k);
             points.forEach(mapper);
         } catch (RuntimeException | LinkageError e) {
             // Must never break world loading: fall back to the plain vanilla layout.

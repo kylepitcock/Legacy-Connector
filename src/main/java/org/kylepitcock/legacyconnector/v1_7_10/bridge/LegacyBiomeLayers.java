@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
  * Legacy mod biomes in the overworld.
  * <ul>
  * <li>Default world: the biomes enter the overworld through the native biome placement ({@link BiomePlacement}): a TerraBlender
- * region when TerraBlender is installed, else climate points added to the {@code minecraft:overworld} multi-noise parameter list.
+ * region (TerraBlender is a required dependency).
  * Climate and weight come from the legacy data ({@link LegacyBiomeClimate}).</li>
  * <li>World created with a legacy mod's world type preset (BoP's "BIOMESOP"): its biome source is a {@link LegacyLayeredBiomeSource},
  * whose land biomes come from that world type's 1.7.10 biome layers (this class holds the layer state of one such source).</li>
@@ -93,8 +93,7 @@ public final class LegacyBiomeLayers {
         registered = true;
         BiomePlacement.setEntries(LegacyBiomeClimate::entries);
         BiomePlacement.registerTerraBlender();
-        // HIGHEST: the parameter list must hold the legacy biomes before anything lists the overworld's possible biomes.
-        NeoForge.EVENT_BUS.addListener(EventPriority.HIGHEST, LegacyBiomeLayers::onServerAboutToStart);
+        NeoForge.EVENT_BUS.addListener( LegacyBiomeLayers::onServerAboutToStart);
         NeoForge.EVENT_BUS.addListener((ServerStoppedEvent e) -> unbind());
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> {
             // a diagnostic (1089 biome source lookups): off the server thread, which the joining player waits for (perf.asyncBiomeSample)
@@ -115,13 +114,7 @@ public final class LegacyBiomeLayers {
         MinecraftServer server = event.getServer();
         legacyconnector.v1_7_10.net.minecraft.world.storage.WorldInfo.mcc$overworldType = WorldType.DEFAULT;
         try {
-            if (BiomePlacement.terraBlender()) {
-                mode = "TerraBlender region";
-            } else {
-                int n = BiomePlacement.injectIntoOverworldPreset(server);
-                mode = "overworld parameter list";
-                if (n > 0) LOG.info("Placing {} legacy biome(s) in the overworld through the minecraft:overworld biome parameters", n);
-            }
+            mode = "TerraBlender region";
             LevelStem stem = server.registryAccess().registryOrThrow(Registries.LEVEL_STEM).get(LevelStem.OVERWORLD);
             if (stem != null && stem.generator().getBiomeSource() instanceof LegacyLayeredBiomeSource layered) bindLayers(server, layered);
             else if (stem != null) warnOldLayeredWorld(stem);

@@ -15,7 +15,7 @@ Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector.
 
 **Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in alpha: Atum 2, The Midnight, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
-Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (TerraBlender when it's installed), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
+Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (a TerraBlender region; TerraBlender is bundled, a separately installed one wins), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
 **[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you.
 
