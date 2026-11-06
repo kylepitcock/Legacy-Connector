@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import java.util.HashMap;
 import java.util.Map;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardMembers;
 import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
 import org.kylepitcock.legacyconnector.loader.mapping.NotchNames;
 import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
@@ -72,6 +73,59 @@ public final class LegacyRemapper extends Remapper {
         this.shim = shim;
         this.demand = demand;
         this.notch = version == LegacyVersion.V1_6_4 ? NotchNames.get() : null;
+        ForwardMembers table = version.forward() == null ? null : ForwardMembers.forVersion(version);
+        this.members = table == null || table.isEmpty() ? null : table;
+    }
+
+    /** Member renames of a forward version (1.6.4 to 1.7.10 names), null for the others. */
+    private final ForwardMembers members;
+
+    /** The MCP name of a (possibly notch-named) legacy class, as the forward tables and the 1.6.4 hierarchy data use them. */
+    private String legacyClass(String name) {
+        if (notch != null && name.indexOf('/') < 0 && !notchLocals.containsKey(name)) {
+            String mcpName = notch.mcpClass(name);
+            if (mcpName != null) return mcpName;
+        }
+        return name;
+    }
+
+    /** Supertypes of a class the 1.6.4 hierarchy data does not know: the jar's own classes. */
+    private String[] localSupers(String name) {
+        String[] up = notchLocals.get(name);
+        if (up == null) return null;
+        String[] out = new String[up.length];
+        for (int i = 0; i < up.length; i++) out[i] = up[i] == null ? null : legacyClass(up[i]);
+        return out;
+    }
+
+    /** A descriptor with notch class names replaced by MCP names, the form the forward tables use. */
+    private String legacyDesc(String desc) {
+        if (notch == null || !hasBareClass(desc)) return desc;
+        StringBuilder out = new StringBuilder(desc.length() + 16);
+        for (int i = 0; i < desc.length(); i++) {
+            char ch = desc.charAt(i);
+            out.append(ch);
+            if (ch == 'L') {
+                int end = desc.indexOf(';', i);
+                if (end < 0) break;
+                out.append(legacyClass(desc.substring(i + 1, end))).append(';');
+                i = end;
+            }
+        }
+        return out.toString();
+    }
+
+    private static boolean hasBareClass(String desc) {
+        for (int i = 0; i < desc.length(); i++) {
+            if (desc.charAt(i) == 'L') {
+                int end = desc.indexOf(';', i);
+                if (end < 0) return false;
+                int slash = desc.indexOf('/', i);
+                if (slash < 0 || slash > end) return true;
+                i = end;
+            }
+        }
+        return false;
     }
 
     /**
@@ -211,7 +265,11 @@ public final class LegacyRemapper extends Remapper {
             if (srg != null) name = srg;
         }
         if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
-        return mcp.method(name);
+        String readable = mcp.method(name);
+        if (members != null && !readable.startsWith("func_")) {
+            return members.method(legacyClass(owner), readable, legacyDesc(descriptor), this::localSupers);
+        }
+        return readable;
     }
 
     @Override
@@ -226,7 +284,9 @@ public final class LegacyRemapper extends Remapper {
             String srg = notch.field(owner, name, notchLocals);
             if (srg != null) name = srg;
         }
-        return mcp.field(name);
+        String readable = mcp.field(name);
+        if (members != null && !readable.startsWith("field_")) return members.field(legacyClass(owner), readable, this::localSupers);
+        return readable;
     }
 
     @Override

@@ -65,3 +65,5 @@ net/minecraftforge/common/RotationHelper	net/minecraftforge/common/util/Rotation
 net/minecraftforge/common/Configuration	net/minecraftforge/common/config/Configuration
 net/minecraftforge/common/ConfigCategory	net/minecraftforge/common/config/ConfigCategory
 net/minecraftforge/common/Property	net/minecraftforge/common/config/Property
+net/minecraft/entity/ai/attributes/Attribute	net/minecraft/entity/ai/attributes/IAttribute
+net/minecraft/entity/ai/attributes/AttributeInstance	net/minecraft/entity/ai/attributes/IAttributeInstance
