@@ -28,6 +28,42 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
         STATE_MAPPERS.put(block, mapper);
     }
 
+    /**
+     * Forge's field (by delegate), read by reflection: mods (Botania's ModelHandler) look a block's mapper up in it to name its state
+     * models. A view of the registered mappers.
+     */
+    @SuppressWarnings("unused")
+    private static final Map<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<legacyconnector.v1_12_2.net.minecraft.block.Block>,
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper> customStateMappers = new java.util.AbstractMap<>() {
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper get(Object key) {
+            if (!(key instanceof legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<?> d)
+                    || !(d.get() instanceof legacyconnector.v1_12_2.net.minecraft.block.Block block)) return null;
+            return mcc$stateMapper(block);
+        }
+
+        @Override
+        public legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper put(
+                legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<legacyconnector.v1_12_2.net.minecraft.block.Block> key,
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper value) {
+            if (key == null || key.get() == null) return null;
+            var old = mcc$stateMapper(key.get());
+            setCustomStateMapper(key.get(), value);
+            return old;
+        }
+
+        @Override
+        public java.util.Set<Entry<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<legacyconnector.v1_12_2.net.minecraft.block.Block>,
+                legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper>> entrySet() {
+            java.util.Set<Entry<legacyconnector.v1_12_2.net.minecraftforge.registries.IRegistryDelegate<legacyconnector.v1_12_2.net.minecraft.block.Block>,
+                    legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper>> out = new java.util.LinkedHashSet<>();
+            synchronized (ModelLoader.class) {
+                for (var e : STATE_MAPPERS.entrySet()) out.add(new java.util.AbstractMap.SimpleEntry<>(e.getKey().delegate, e.getValue()));
+            }
+            return out;
+        }
+    };
+
     /** The mapper a block's state variants come from, or null for the default (property string) one. */
     public static synchronized legacyconnector.v1_12_2.net.minecraft.client.renderer.block.statemap.IStateMapper mcc$stateMapper(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
         return STATE_MAPPERS.get(block);
@@ -50,6 +86,23 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
     public static synchronized java.util.Set<ResourceLocation> mcc$itemVariants(Item item) {
         var set = VARIANTS.get(item);
         return set == null ? java.util.Set.of() : java.util.Set.copyOf(set);
+    }
+
+    /** Every extra item model any item registered (ModelBakery.registerItemVariants), as modern "namespace:item/path" model ids. */
+    public static synchronized java.util.Map<String, net.minecraft.resources.ResourceLocation> mcc$allItemVariantModels() {
+        java.util.Map<String, net.minecraft.resources.ResourceLocation> out = new java.util.LinkedHashMap<>();
+        for (var set : VARIANTS.values()) {
+            for (ResourceLocation v : set) {
+                String path = v.getPath().toLowerCase(java.util.Locale.ROOT);
+                String ns = v.getNamespace().toLowerCase(java.util.Locale.ROOT);
+                try {
+                    out.put(v.toString(), net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(ns, path.startsWith("item/") || path.startsWith("block/") ? path : "item/" + path));
+                } catch (RuntimeException e) {
+                    // not a valid model name
+                }
+            }
+        }
+        return out;
     }
 
     /** The model a registered item subtype was given, or null. */

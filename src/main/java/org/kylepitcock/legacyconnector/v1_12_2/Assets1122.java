@@ -396,6 +396,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 else cutoutMeta = true;
             }
             results.put(meta, best);
+            collectModelTextures(best, out);
             if (best.fallback != null) reasons.add("meta " + meta + ": " + best.fallback);
             if (debug) LOG.info("meta {} of {}: {} parts={} fallback={}", meta, id, best.model, best.parts, best.fallback);
         }
@@ -980,6 +981,9 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             r.parts.add(resolved);
         }
         if (r.parts.isEmpty() && r.fallback != null) r.parts.add(fallbackModel(id, null, key, out));
+        // no part applies to this state (a wall or fence without connections draws nothing in a connection-keyed file): another state of the
+        // metadata, one that draws something, stands for the meta (the wall's post)
+        r.empty = r.parts.isEmpty();
         return r;
     }
 
@@ -1056,6 +1060,31 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
         }
         return null;
+    }
+
+    /**
+     * Textures named by the models of a blockstate outside the folders the block atlas scans (a 1.12 model may name any texture file,
+     * "mod:model/apothecary/side": Forge's ModelLoader stitched whatever the models used). The client adds them to the atlas.
+     */
+    public static final java.util.Set<String> MODEL_TEXTURES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    private static void collectModelTextures(Res res, Map<String, Supplier<byte[]>> out) {
+        List<JsonElement> all = new ArrayList<>();
+        if (res.model != null) all.add(res.model);
+        all.addAll(res.parts);
+        for (JsonElement e : all) {
+            for (String model : modelsOf(e)) {
+                Chain chain = new Chain();
+                chainOf(model, out, chain, 0);
+                for (String texture : chain.textures) {
+                    int colon = texture.indexOf(':');
+                    if (colon < 0) continue;
+                    String path = texture.substring(colon + 1);
+                    if (texture.startsWith("minecraft:") || path.startsWith("blocks/") || path.startsWith("items/") || path.startsWith("block/") || path.startsWith("item/")) continue;
+                    if (textureExists(texture)) MODEL_TEXTURES.add(texture);
+                }
+            }
+        }
     }
 
     private static List<String> modelsOf(JsonElement variant) {

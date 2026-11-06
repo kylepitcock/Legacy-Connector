@@ -36,6 +36,7 @@ public final class Client1122 {
             }
             // textures of OBJ materials (Assets1122 ran first and collected them)
             for (String texture : org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.TEXTURES) Sprites1122.register(texture);
+            for (String texture : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.MODEL_TEXTURES) Sprites1122.register(texture);
             Sprites1122.contribute(out);
         });
         modBus.addListener((TextureAtlasStitchedEvent e) -> {
@@ -77,6 +78,10 @@ public final class Client1122 {
             if (!present()) return;
             for (var location : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry.mcc$requested()) {
                 e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(location.mcc$modern()));
+            }
+            // models an item registered beside its own (ModelBakery.registerItemVariants: Botania's gun and its clip)
+            for (var model : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$allItemVariantModels().values()) {
+                e.register(net.minecraft.client.resources.model.ModelResourceLocation.standalone(model));
             }
             // the models of block states beyond their metadata (their variants have no place in the modern blockstate file)
             for (var model : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.stateModelIds()) {

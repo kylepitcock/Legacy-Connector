@@ -184,6 +184,10 @@ public final class Models1122 {
                 if (!list.contains(target)) list.add(target);
             }
         }
+        // models an item registered beside its own: found under their inventory location, baked as standalone models
+        for (var e : legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$allItemVariantModels().entrySet()) {
+            map.putIfAbsent(e.getKey() + "#inventory", new ArrayList<>(List.of(net.minecraft.client.resources.model.ModelResourceLocation.standalone(e.getValue()))));
+        }
         stateLocations = byState;
         return map;
     }

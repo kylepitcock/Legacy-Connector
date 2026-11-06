@@ -23,7 +23,9 @@ final class ItemNames1122 {
                 String name = legacy.getItemStackDisplayName(view);
                 if (name != null) return Component.literal(name);
             }
-            String key = legacy.getUnlocalizedName(view);
+            // 1.12's getItemStackDisplayName translates getUnlocalizedNameInefficiently(stack): Botania's ItemMod prefixes the mod id there
+            String key = Hosts1122.overrides(legacy.getClass(), "getUnlocalizedNameInefficiently", legacyconnector.v1_12_2.net.minecraft.item.ItemStack.class)
+                    ? legacy.getUnlocalizedNameInefficiently(view) : legacy.getUnlocalizedName(view);
             if (key != null) return Component.translatable(key + ".name");
         } catch (RuntimeException | LinkageError e) {
             // keep the default name

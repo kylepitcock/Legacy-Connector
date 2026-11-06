@@ -186,7 +186,7 @@ public class Item extends IForgeRegistryEntry.Impl<Item> {
 
     /** 1.12's name of a stack: the translation of its key (mods call super.getItemStackDisplayName and decorate the result: AbyssalCraft's tools showed "null"). */
     public String getItemStackDisplayName(ItemStack stack) {
-        return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getUnlocalizedName(stack) + ".name").trim();
+        return legacyconnector.v1_12_2.net.minecraft.util.text.translation.I18n.translateToLocal(getUnlocalizedNameInefficiently(stack) + ".name").trim();
     }
 
     public boolean hasEffect(ItemStack stack) {
