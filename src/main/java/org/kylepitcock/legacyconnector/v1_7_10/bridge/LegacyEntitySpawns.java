@@ -34,6 +34,22 @@ public final class LegacyEntitySpawns {
             Map.entry(163, "windswept_savanna"), Map.entry(164, "windswept_savanna"), Map.entry(165, "eroded_badlands"),
             Map.entry(166, "wooded_badlands"), Map.entry(167, "badlands"));
 
+    /** The common (c:) biome tag standing for the modded relatives of a vanilla biome (none where the biome is too specific). */
+    private static final Map<String, String> COMMON_TAGS = Map.ofEntries(
+            Map.entry("plains", "c:is_plains"), Map.entry("sunflower_plains", "c:is_plains"), Map.entry("desert", "c:is_desert"),
+            Map.entry("windswept_hills", "c:is_windswept"), Map.entry("windswept_gravelly_hills", "c:is_windswept"),
+            Map.entry("windswept_forest", "c:is_windswept"), Map.entry("windswept_savanna", "c:is_windswept"),
+            Map.entry("forest", "c:is_forest"), Map.entry("flower_forest", "c:is_forest"), Map.entry("birch_forest", "c:is_birch_forest"),
+            Map.entry("old_growth_birch_forest", "c:is_birch_forest"), Map.entry("taiga", "c:is_taiga"), Map.entry("snowy_taiga", "c:is_taiga"),
+            Map.entry("old_growth_pine_taiga", "c:is_taiga"), Map.entry("old_growth_spruce_taiga", "c:is_taiga"),
+            Map.entry("swamp", "c:is_swamp"), Map.entry("river", "c:is_river"), Map.entry("frozen_river", "c:is_river"),
+            Map.entry("ocean", "c:is_shallow_ocean"), Map.entry("deep_ocean", "c:is_deep_ocean"), Map.entry("frozen_ocean", "c:is_aquatic_icy"),
+            Map.entry("snowy_plains", "c:is_snowy_plains"), Map.entry("mushroom_fields", "c:is_mushroom"), Map.entry("beach", "c:is_beach"),
+            Map.entry("snowy_beach", "c:is_beach"), Map.entry("jungle", "c:is_jungle"), Map.entry("sparse_jungle", "c:is_jungle"),
+            Map.entry("savanna", "c:is_savanna"), Map.entry("savanna_plateau", "c:is_savanna"), Map.entry("badlands", "c:is_badlands"),
+            Map.entry("eroded_badlands", "c:is_badlands"), Map.entry("wooded_badlands", "c:is_badlands"), Map.entry("stony_shore", "c:is_stony_shores"),
+            Map.entry("nether_wastes", "c:is_nether"), Map.entry("the_end", "c:is_end"));
+
     private static volatile Map<ResourceLocation, Integer> reverse;
 
     private LegacyEntitySpawns() {}
@@ -100,7 +116,27 @@ public final class LegacyEntitySpawns {
             json.addProperty("type", "neoforge:add_spawns");
             JsonArray list = new JsonArray();
             biomes.forEach(list::add);
-            json.add("biomes", list);
+            // a tag instead of the bare vanilla ids: the pack's own biomes (Biomes O' Plenty, Terralith...) replace the vanilla ones
+            // in the overworld, and a mob listed for "forest" must also spawn in the forests those mods add
+            String tag = "legacy_spawn_" + info.id().getNamespace() + "_" + info.id().getPath() + "_" + n;
+            JsonObject tagJson = new JsonObject();
+            JsonArray values = new JsonArray();
+            Set<String> seen = new LinkedHashSet<>();
+            for (String b : biomes) {
+                if (seen.add(b)) values.add(b);
+                ResourceLocation rl = ResourceLocation.parse(b);
+                String common = rl.getNamespace().equals("minecraft") ? COMMON_TAGS.get(rl.getPath()) : null;
+                if (common != null && seen.add("#" + common)) {
+                    JsonObject opt = new JsonObject();
+                    opt.addProperty("id", "#" + common);
+                    opt.addProperty("required", false);
+                    values.add(opt);
+                }
+            }
+            tagJson.add("values", values);
+            byte[] tagBytes = tagJson.toString().getBytes(StandardCharsets.UTF_8);
+            out.put("data/legacyconnector/tags/worldgen/biome/" + tag + ".json", () -> tagBytes);
+            json.addProperty("biomes", "#legacyconnector:" + tag);
             JsonObject spawner = new JsonObject();
             spawner.addProperty("type", info.id().toString());
             spawner.addProperty("weight", s.weight());
