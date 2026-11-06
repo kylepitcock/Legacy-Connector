@@ -45,6 +45,8 @@ public final class ClientEvents1710 {
         bus.addListener(ClientEvents1710::onHand);
         bus.addListener(ClientEvents1710::onItemInFrame);
         bus.addListener(ClientEvents1710::onChat);
+        bus.addListener(org.kylepitcock.legacyconnector.v1_7_10.compat.am2.Am2Camera::onCameraAngles);
+        bus.addListener(org.kylepitcock.legacyconnector.v1_7_10.compat.am2.Am2Camera::onMovementInput);
     }
 
     // ---------------------------------------------------------------- fog
