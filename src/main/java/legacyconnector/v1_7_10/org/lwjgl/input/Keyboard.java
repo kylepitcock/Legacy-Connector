@@ -38,11 +38,21 @@ public class Keyboard {
     private static volatile int eventKey;
     private static volatile boolean eventKeyState;
     private static volatile char eventCharacter;
+    private static boolean eventTextInput;
 
     public static void mcc$setEvent(int key, boolean state, char character) {
         eventKey = key;
         eventKeyState = state;
         eventCharacter = character;
+        eventTextInput = false;
+    }
+
+    public static void mcc$markTextInput() {
+        eventTextInput = true;
+    }
+
+    public static boolean mcc$isTextInput() {
+        return eventTextInput;
     }
 
     public static int getEventKey() {

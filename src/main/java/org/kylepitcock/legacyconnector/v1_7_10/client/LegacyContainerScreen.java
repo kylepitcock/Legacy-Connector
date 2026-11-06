@@ -132,7 +132,11 @@ public class LegacyContainerScreen extends AbstractContainerScreen<LegacyMenu> {
     public boolean keyPressed(int key, int scanCode, int modifiers) {
         if (customKeys && !failed) {
             int legacyKey = LegacyKeys.toLegacy(key);
-            if (legacyKey != 0 && legacyKey != 1) failed = !ScreenGuard.run(this, () -> legacy.mcc$keyTyped('\0', legacyKey));
+            if (legacyKey != 0 && legacyKey != 1) {
+                boolean[] textInput = {false};
+                failed = !ScreenGuard.run(this, () -> textInput[0] = legacy.mcc$keyPressed(legacyKey));
+                if (textInput[0]) return true;
+            }
         }
         return super.keyPressed(key, scanCode, modifiers);
     }

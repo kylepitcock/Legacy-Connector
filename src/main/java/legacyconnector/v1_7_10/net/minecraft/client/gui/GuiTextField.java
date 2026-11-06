@@ -118,6 +118,10 @@ public class GuiTextField extends Gui {
 
     public boolean textboxKeyTyped(char c, int keyCode) {
         if (!isFocused) return false;
+        // GLFW delivers the physical key before its character. Reserve container shortcuts now, then insert text on charTyped.
+        if (visible && isEnabled && c == '\0' && keyCode != 0) {
+            legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$markTextInput();
+        }
         switch (keyCode) {
             case 14 -> { // backspace
                 if (isEnabled) deleteFromCursor(-1);
