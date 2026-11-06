@@ -43,8 +43,7 @@ were never uploaded there. Use the CurseForge columns for old versions; Modrinth
 | 1.19.2 | | 30,475 (1.19) | about 9,280 | 8,197 |
 | 1.20.1 | | 31,887 (1.20) | | 25,526 |
 
-The bias in numbers: Modrinth lists 6 to 7 times fewer mods than CurseForge for 1.6.4 and 1.7.10 (131 vs 851, 897 vs 5,229), and 15 times fewer for the old end of the table
-than the whole-family CFLookup figures suggest. It reaches parity only at 1.20.1 and later.
+The bias in numbers: Modrinth lists about 6 times fewer mods than CurseForge for 1.5.2, 1.6.4 and 1.7.10 (74 vs 404, 131 vs 851, 897 vs 5,229) and about 4 times fewer for 1.12.2 (2,748 vs 10,000+); the gap closes only at 1.20.1 and later.
 
 Modpacks (CurseForge, April 2023 census): 1.12.2 about 20,920, 1.16.5 about 12,180, 1.18.2 about 5,660, 1.7.10 about 4,700, 1.19.2 about 4,160. So
 1.12.2 is by far the most played modded version, with 1.16.5 second.
