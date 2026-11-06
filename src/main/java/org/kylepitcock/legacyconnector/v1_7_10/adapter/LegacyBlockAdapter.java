@@ -79,6 +79,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     private final boolean fireSource;
     private final boolean entityDestroy;
     private final boolean customRemoval;
+    /** The mod overrides harvestBlock (drops twice with an axe, awards stats...): its code runs instead of the plain drop. */
+    private final boolean customHarvest;
     private final boolean sustainsPlants;
     private final boolean customExplosion;
     private final boolean enchantBonus;
@@ -130,6 +132,7 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection.class);
         this.entityDestroy = overrides(legacy, "canEntityDestroy", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
                 int.class, legacyconnector.v1_7_10.net.minecraft.entity.Entity.class);
+        this.customHarvest = overrides(legacy, "harvestBlock", World.class, EntityPlayer.class, int.class, int.class, int.class, int.class);
         this.customRemoval = overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class)
                 || overrides(legacy, "removedByPlayer", World.class, EntityPlayer.class, int.class, int.class, int.class, boolean.class);
         this.sustainsPlants = overrides(legacy, "canSustainPlant", legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess.class, int.class, int.class,
@@ -838,8 +841,14 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 }
             }
             if (box == null) return Shapes.empty();
-            return Shapes.create(box.minX - pos.getX(), box.minY - pos.getY(), box.minZ - pos.getZ(),
-                    box.maxX - pos.getX(), box.maxY - pos.getY(), box.maxZ - pos.getZ());
+            // 1.7.10 collided with flat (zero-thickness) boxes, a floor with nothing under it (Aether II's aerclouds); the modern
+            // voxel shapes drop boxes thinner than 1e-7, so such a box gets a hair of thickness
+            double x1 = box.minX - pos.getX(), y1 = box.minY - pos.getY(), z1 = box.minZ - pos.getZ();
+            double x2 = box.maxX - pos.getX(), y2 = box.maxY - pos.getY(), z2 = box.maxZ - pos.getZ();
+            if (x2 - x1 < 0.002 && x2 >= x1) x2 = x1 + 0.002;
+            if (y2 - y1 < 0.002 && y2 >= y1) y2 = y1 + 0.002;
+            if (z2 - z1 < 0.002 && z2 >= z1) z2 = z1 + 0.002;
+            return Shapes.create(x1, y1, z1, x2, y2, z2);
         }
         return getShape(state, level, pos, context);
     }
@@ -935,6 +944,20 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
     }
 
     // ------------------------------------------------------------------ drops
+
+    @Override
+    public void playerDestroy(Level level, Player player, BlockPos pos, BlockState state, net.minecraft.world.level.block.entity.BlockEntity be,
+            net.minecraft.world.item.ItemStack tool) {
+        if (customHarvest && level instanceof ServerLevel) {
+            try {
+                legacy.harvestBlock(World.mcc$wrap(level), (EntityPlayer) EntityBridge.wrap(player), pos.getX(), pos.getY(), pos.getZ(), meta(state));
+                return;
+            } catch (RuntimeException | LinkageError e) {
+                if (DROP_FAILURES.add(legacy.getClass())) org.slf4j.LoggerFactory.getLogger("LegacyConnector/Blocks").warn("harvestBlock of {} failed at {}; using the plain drops", legacy.getClass().getName(), pos, e);
+            }
+        }
+        super.playerDestroy(level, player, pos, state, be, tool);
+    }
 
     @Override
     protected List<net.minecraft.world.item.ItemStack> getDrops(BlockState state, LootParams.Builder params) {

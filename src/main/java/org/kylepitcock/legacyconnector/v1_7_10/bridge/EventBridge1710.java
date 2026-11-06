@@ -213,6 +213,39 @@ public final class EventBridge1710 {
             forge().post(new PlayerInteractEvent(player(e.getEntity()), PlayerInteractEvent.Action.RIGHT_CLICK_AIR,
                     p.getX(), p.getY(), p.getZ(), -1, World.mcc$wrap(e.getLevel())));
         });
+        // 1.7.10's ItemBucket posted FillBucketEvent for every bucket use (Aether II lights its portal with a water bucket on glowstone);
+        // 1.21.1 has no such event, so a vanilla bucket's right click asks the legacy handlers with the block the bucket would hit
+        gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem e) -> {
+            if (!(e.getItemStack().getItem() instanceof net.minecraft.world.item.BucketItem bucket)
+                    || !wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.FillBucketEvent.class)) return;
+            var player = e.getEntity();
+            var level = e.getLevel();
+            boolean empty = bucket == net.minecraft.world.item.Items.BUCKET;
+            var from = player.getEyePosition();
+            var to = from.add(player.getViewVector(1.0F).scale(player.blockInteractionRange()));
+            var hit = level.clip(new net.minecraft.world.level.ClipContext(from, to, net.minecraft.world.level.ClipContext.Block.OUTLINE,
+                    empty ? net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY : net.minecraft.world.level.ClipContext.Fluid.NONE, player));
+            if (hit.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return;
+            var p = hit.getBlockPos();
+            var loc = hit.getLocation();
+            var mop = new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(p.getX(), p.getY(), p.getZ(), hit.getDirection().get3DDataValue(),
+                    legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(loc.x, loc.y, loc.z));
+            var legacy = new legacyconnector.v1_7_10.net.minecraftforge.event.entity.player.FillBucketEvent(player(player),
+                    legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$wrap(e.getItemStack()), World.mcc$wrap(level), mop);
+            forge().post(legacy);
+            if (legacy.isCanceled()) {
+                e.setCanceled(true);
+            } else if (legacy.getResult() == Event.Result.ALLOW && legacy.result != null) {
+                e.setCanceled(true);
+                if (!player.getAbilities().instabuild) {
+                    var inHand = e.getItemStack();
+                    var filled = legacy.result.mcc$modern();
+                    inHand.shrink(1);
+                    if (inHand.isEmpty()) player.setItemInHand(e.getHand(), filled);
+                    else if (!player.getInventory().add(filled)) player.drop(filled, false);
+                }
+            }
+        });
         gameBus.addListener((net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.LeftClickBlock e) -> {
             if (!wants(forge(), PlayerInteractEvent.class)) return;
             var p = e.getPos();
