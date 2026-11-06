@@ -14,7 +14,9 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.WrittenBookContent;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge;
 
 /**
@@ -116,6 +118,10 @@ public final class ItemStack {
         if (known != null && known.mcc$stack == modern) return known;
         ItemStack view = new ItemStack(modern, ItemBridge.legacyItemOf(modern));
         view.mcc$wrapped = true;
+        if (modern.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) {
+            var content = modern.get(DataComponents.WRITTEN_BOOK_CONTENT);
+            if (content == null || WrittenBookContent.EMPTY.equals(content)) view.mcc$syncWrittenBook(view.getTagCompound());
+        }
         recent[at] = modern;
         recent[at + 1] = view;
         return view;
@@ -304,6 +310,27 @@ public final class ItemStack {
         if (tag.hasKey("CustomPotionEffects", 9)) org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.syncCustomEffects(this);
         if (tag.hasKey("ench", 9)) ItemBridge.syncEnchantments(this, false);
         if (tag.hasKey("StoredEnchantments", 9)) ItemBridge.syncEnchantments(this, true);
+        if (mcc$stack.is(net.minecraft.world.item.Items.WRITTEN_BOOK)) mcc$syncWrittenBook(tag);
+    }
+
+    private void mcc$syncWrittenBook(NBTTagCompound tag) {
+        if (tag == null || !tag.hasKey("title", 8) || !tag.hasKey("author", 8) || !tag.hasKey("pages", 9)) return;
+        String title = tag.getString("title");
+        if (title.length() > WrittenBookContent.TITLE_MAX_LENGTH) title = title.substring(0, WrittenBookContent.TITLE_MAX_LENGTH);
+        NBTTagList pages = tag.getTagList("pages", 8);
+        List<Filterable<Component>> text = new ArrayList<>(pages.tagCount());
+        for (int i = 0; i < pages.tagCount(); i++) text.add(Filterable.passThrough(Component.literal(pages.getStringTagAt(i))));
+        int generation = Math.clamp(tag.getInteger("generation"), 0, WrittenBookContent.MAX_GENERATION);
+        mcc$stack.set(DataComponents.WRITTEN_BOOK_CONTENT,
+                new WrittenBookContent(Filterable.passThrough(title), tag.getString("author"), generation, List.copyOf(text), true));
+    }
+
+    /** AM2's inscription slot already holds a written book, so finish that stack in place. */
+    public static ItemStack mcc$finishWrittenBook(ItemStack book, String title, String author) {
+        NBTTagCompound tag = book.getTagCompound();
+        tag.setString("title", title);
+        tag.setString("author", author);
+        return book;
     }
 
     public void setTagInfo(String key, NBTBase value) {
