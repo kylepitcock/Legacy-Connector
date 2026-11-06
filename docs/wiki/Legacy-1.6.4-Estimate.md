@@ -43,7 +43,7 @@ Package names are the same (`cpw.mods.fml`, `net.minecraftforge`, `net.minecraft
 | Milestone | Content | State and estimate |
 |---|---|---|
 | M0 | Corpus (42 jars), tables, `LegacyVersion.V1_6_4`, class renames, notch names | done |
-| M1 | Id facade, statics, `Icon`, member forwards; bridge methods for overridden id-signature methods; biome/potion/enchantment ids | mostly done; 2 to 4 hours |
+| M1 | Id facade, statics, `Icon`, member forwards; bridge methods for overridden id-signature methods; biome/potion/enchantment ids | done: bridge methods (`BridgeMethods`, table `forward/1.6.4/bridge-methods.tsv`: a mod override with a 1.6.4 id signature gets the 1.7.10-shaped method that calls it, `super.` and shim calls are rewritten); biome, potion and enchantment ids are the shim's own numeric ids and needed no facade |
 | M2 | `@NetworkMod`, packets, tick handlers, trackers seen working; entities, worldgen, recipes | adapters merged, unverified; with M1 |
 | M3 | Client rendering, textures, GUIs, notch-named jars | not started; first mods rendering 4 to 8 hours after M2; 'supported' in about 1 to 1.5 days |
 
@@ -94,3 +94,11 @@ Net effect: M0 and M1 stay at about 1 and 1 to 2 days; M2 (network, entities, wo
 - Not covered: int-id members (the id facade), `ChatMessageComponent`, the `Packet*` classes, pools (`AABBPool`, `Vec3Pool`), a mod's own override of a method whose descriptor changed.
 
 Effect on the 40 readable corpus jars (`checkLegacyMod`): members synthesized or stubbed fell from 6,070 to 5,248.
+
+## Server loop result (2026-11-06, 62 legacy mods of the 48 corpus files)
+
+`runServerSubTest` over the whole corpus: 53 mods construct and run their pre-init to post-init, 1 client-only mod (JourneyMap, `@SideOnly(CLIENT)` main class) is skipped on a dedicated server,
+9 fail. The self test prints "1.6.4 tick handlers" (19 registered, each with its call count and first error), "1.6.4 network" (64 channels, 74 packet handlers) and a loopback check of the
+packet receive path (`SelfTest164`). Remaining failures: Thaumic Tinkerer, Gendustry (Scala 2.9 library, Thaumcraft and bdew lib are not in the corpus), bspkrs Core and TreeCapitator
+(client classes loaded on a server by verification), Binnie's three mods and Magic Bees (Forestry's recipe and genetics managers are null when they run), Mystcraft (duplicate
+symbol ids). `.zip` mods are now picked up like FML did (a third of the corpus was ignored before).
