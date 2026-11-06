@@ -4,7 +4,7 @@ import legacyconnector.v1_12_2.net.minecraft.client.Minecraft;
 
 /** The in-game HUD ({@code Minecraft.ingameGUI}) as a view over the modern one: chat, action bar and titles. */
 public class GuiIngame extends Gui {
-    public static final GuiIngame mcc$INSTANCE = new GuiIngame(null);
+    public static final GuiIngame mcc$INSTANCE = new legacyconnector.v1_12_2.net.minecraftforge.client.GuiIngameForge(null);
 
     public GuiIngame(Minecraft mcIn) {
     }

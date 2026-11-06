@@ -17,6 +17,7 @@ public class MinecraftForge {
      * grass loot keeps its wheat seeds, and these are rolled alongside with their share of the weight.
      */
     public static void addGrassSeed(legacyconnector.v1_12_2.net.minecraft.item.ItemStack seed, int weight) {
+        ForgeHooks.mcc$addSeedEntry(seed, weight);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.GrassSeeds1122.add(seed, weight);
     }
 

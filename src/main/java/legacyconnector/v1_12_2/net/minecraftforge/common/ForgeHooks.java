@@ -65,6 +65,26 @@ public class ForgeHooks {
         return world.mcc$level().getBlockState(p).getEnchantPowerBonus(world.mcc$level(), p);
     }
 
+    /** Forge's list of grass seeds (private; mods read it by reflection, Extra Utilities 2's rare seeds); {@code MinecraftForge.addGrassSeed} adds to it. */
+    private static final java.util.List<legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item> seedList = new java.util.ArrayList<>();
+
+    public static class SeedEntry extends legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item {
+        public final ItemStack seed;
+
+        public SeedEntry(ItemStack seed, int weight) {
+            super(weight);
+            this.seed = seed;
+        }
+
+        public ItemStack getStack(Random rand, int fortune) {
+            return seed.copy();
+        }
+    }
+
+    public static synchronized void mcc$addSeedEntry(ItemStack seed, int weight) {
+        seedList.add(new SeedEntry(seed, weight));
+    }
+
     /** A seed broken grass drops (wheat seeds or one a mod added through {@code MinecraftForge.addGrassSeed}). */
     public static ItemStack getGrassSeed(Random rand, int fortune) {
         return new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.WHEAT_SEEDS);

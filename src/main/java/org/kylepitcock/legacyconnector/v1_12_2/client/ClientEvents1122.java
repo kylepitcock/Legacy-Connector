@@ -528,7 +528,13 @@ public final class ClientEvents1122 {
         var level = Minecraft.getInstance().level;
         if (level == null) return null;
         try {
-            return StatesBridge1122.toLegacy(level.getBlockState(camera.getBlockPosition()));
+            var modern = level.getBlockState(camera.getBlockPosition());
+            var legacy = StatesBridge1122.toLegacy(modern);
+            if (legacy != null) return legacy;
+            // the block at the camera is a vanilla one the legacy states do not cover: handlers read getState().getBlock() (EnderCore's fluid fog)
+            if (modern.getFluidState().is(net.minecraft.tags.FluidTags.WATER)) return legacyconnector.v1_12_2.net.minecraft.init.Blocks.WATER.getDefaultState();
+            if (modern.getFluidState().is(net.minecraft.tags.FluidTags.LAVA)) return legacyconnector.v1_12_2.net.minecraft.init.Blocks.LAVA.getDefaultState();
+            return legacyconnector.v1_12_2.net.minecraft.init.Blocks.AIR.getDefaultState();
         } catch (RuntimeException | LinkageError e) {
             return null;
         }
