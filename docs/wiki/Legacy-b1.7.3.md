@@ -102,6 +102,20 @@ OpenAL: b1.7.3 mods call LWJGL's OpenAL directly (IndustrialCraft 2's audio). In
 engine made a context, the real AL classes fail for good and the client's first resource reload never finished (stuck loading screen).
 `org/lwjgl/openal/` of b1.7.3 jars goes to the synthesized API (silent) instead (`LegacyRemapper`).
 
+## Reflection, Forge tables, fire
+
+- **Reflection on vanilla classes.** ModLoader's `getPrivateValue` / `setPrivateValue` take a declared-field index or an obfuscated
+  name (IndustrialCraft 2 reads `BlockFire`'s field 0, Portal Gun writes `Achievement`'s field 3, Minefactory reads `RenderEngine`'s field
+  11). The shim's and synthesized classes have other fields, so `ReflectionB173` looks both up in b1.7.3's own declared fields
+  (`src/main/resources/legacyconnector/b1.7.3/field-order.tsv`: declaration order, readable, client and server obfuscated name, written by
+  `tools/extract_beta_signatures.py`) and finds the field by its readable name.
+- **Fire.** `FireBlock` keeps b1.7.3's two tables by id (fields 0 and 1); after registration the mod blocks' values go to modern fire
+  (`setFlammable`), so IndustrialCraft 2's rubber wood and leaves burn.
+- **Forge tool tables.** `ForgeHooks.toolClasses` / `toolHarvestLevels` / `toolEffectiveness` exist and `MinecraftForge.setToolClass` /
+  `setBlockHarvestLevel` fill them (not yet mapped to modern tool tags); Forge version checks pass as 1.0.7.
+- **LWJGL 2 `BufferUtils`** of b1.7.3 jars is the shim's (plain direct NIO buffers), so client builds also load on a dedicated server.
+- **Vanilla resources.** `/font/default.png` (ComputerCraft's terminal font) comes from the modern ASCII font sheet, which kept the layout.
+
 ## Reference data
 
 `tools/fetch_devtools.sh` downloads the b1.7.3 client and server, Risugami's ModLoader, ModLoaderMP (client and server) and Forge 1.0.7 into
@@ -124,10 +138,10 @@ More Creeps and Weirdos, ComputerCraft, Portal Gun, Twilight Forest (b1.7.3 vers
 
 ## Server results
 
-Dedicated server with 15 b1.7.3 client builds (`run-subtest/mods/b1.7.3/`): 10 construct (NetherCraft, Portal Gun, Minefactory Renewed,
-all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 51 blocks and 230 items registered, 51 of 51 blocks placed by the self test,
-1487 recipes translated (3 name items nothing provides). Failing, as expected for now: ComputerCraft (reads a vanilla texture), Coral Reef
-and More Creeps (need GuiAPI), Moon Mod (needs ShockAhPI), IndustrialCraft 2's client build (LWJGL on a dedicated server).
+Dedicated server with 15 b1.7.3 client builds (`run-subtest/mods/b1.7.3/`): 11 construct (IndustrialCraft 2, NetherCraft, Portal Gun,
+Minefactory Renewed, all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 82 blocks and 390 items registered, 82 of 82 blocks
+placed by the self test, 1786 recipes translated (5 name items nothing provides). Failing, as expected for now: ComputerCraft (needs the
+legacy client instance: `ModLoader.getMinecraftInstance().renderEngine`), Coral Reef and More Creeps (need GuiAPI), Moon Mod (needs ShockAhPI).
 
 Client (dev client, 11 jars): NetherCraft, Portal Gun, Minefactory Renewed, RedPower, Butterflies load with textured blocks and items in
 their creative tabs; 51 blocks, 159 items, 219 textures generated, 1 sprite reference without a texture. IndustrialCraft 2's client
@@ -145,4 +159,5 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
    `Packet230ModLoader` becomes a layer payload. Single player first, dedicated servers partial.
 4. **Other APIs**: ShockAhPI, PlayerAPI, GuiAPI, ModOptionsAPI, AudioMod, ItemSpriteAPI (as bridges, the way Apron provides them).
 5. LWJGL 2 / GL11 for b1.7.3 mods currently links to synthesized stubs; the 1.7.10 GL emulation should serve them too.
-6. Reflection by obfuscated name (`ModLoader.getPrivateValue(cls, obj, "a")`) needs the official to named table at run time.
+6. Reflection outside ModLoader (`Class.getDeclaredField("a")` with an obfuscated name) and by method name.
+7. The legacy client instance (`ModLoader.getMinecraftInstance()`: `renderEngine`, `gameSettings`, `theWorld`, `thePlayer`) as views.

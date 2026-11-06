@@ -175,7 +175,7 @@ public final class ModLoader {
 
     public static Object getPrivateValue(Class<?> owner, Object instance, int index) {
         try {
-            Field f = owner.getDeclaredFields()[index];
+            Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, index);
             f.setAccessible(true);
             return f.get(instance);
         } catch (ReflectiveOperationException | RuntimeException e) {
@@ -187,7 +187,7 @@ public final class ModLoader {
 
     public static Object getPrivateValue(Class<?> owner, Object instance, String name) throws NoSuchFieldException {
         try {
-            Field f = ContentB173.field(owner, name);
+            Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, name);
             f.setAccessible(true);
             return f.get(instance);
         } catch (IllegalAccessException | RuntimeException e) {
@@ -199,7 +199,7 @@ public final class ModLoader {
 
     public static void setPrivateValue(Class<?> owner, Object instance, int index, Object value) {
         try {
-            Field f = owner.getDeclaredFields()[index];
+            Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, index);
             f.setAccessible(true);
             f.set(instance, value);
         } catch (ReflectiveOperationException | RuntimeException e) {
@@ -210,7 +210,7 @@ public final class ModLoader {
 
     public static void setPrivateValue(Class<?> owner, Object instance, String name, Object value) throws NoSuchFieldException {
         try {
-            Field f = ContentB173.field(owner, name);
+            Field f = org.kylepitcock.legacyconnector.vb1_7_3.ReflectionB173.field(owner, name);
             f.setAccessible(true);
             f.set(instance, value);
         } catch (IllegalAccessException | RuntimeException e) {

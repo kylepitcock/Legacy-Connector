@@ -54,6 +54,26 @@ public final class ResourceCompat {
             if (lower != null) in = cls.getResourceAsStream(lower);
         }
         if (in == null && cls.getClassLoader() != null) in = fromLoader(cls, name);
+        if (in == null) in = betaVanilla(cls, name);
+        return in;
+    }
+
+    /**
+     * b1.7.3 mods read the game's own images from minecraft.jar ({@code /font/default.png}, which ComputerCraft's terminal renders with).
+     * Those that kept their layout come from the modern game's assets instead (the ASCII font sheet is still a 16x16 glyph grid).
+     */
+    private static java.io.InputStream betaVanilla(Class<?> cls, String name) {
+        String n = cls.getName();
+        if (!n.startsWith("legacyconnector.vb1_7_3.") && !n.startsWith("legacyconnector_synth.vb1_7_3.") && !n.startsWith("legacyconnector_b173.")) {
+            return null;
+        }
+        String modern = switch (name.startsWith("/") ? name : "/" + name) {
+            case "/font/default.png" -> "assets/minecraft/textures/font/ascii.png";
+            default -> null;
+        };
+        if (modern == null) return null;
+        java.io.InputStream in = ResourceCompat.class.getClassLoader().getResourceAsStream(modern);
+        if (in == null) in = ClassLoader.getSystemResourceAsStream(modern);
         return in;
     }
 

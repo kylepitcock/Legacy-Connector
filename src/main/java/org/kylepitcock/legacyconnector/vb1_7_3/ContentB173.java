@@ -1,6 +1,5 @@
 package org.kylepitcock.legacyconnector.vb1_7_3;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -228,8 +227,4 @@ public final class ContentB173 {
         return ARMOR.size() - 1;
     }
 
-    /** A declared field of the class by name, as ModLoader looked it up (obfuscated vanilla names are not mapped yet). */
-    public static Field field(Class<?> owner, String name) throws NoSuchFieldException {
-        return owner.getDeclaredField(name);
-    }
 }

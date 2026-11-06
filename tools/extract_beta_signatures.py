@@ -20,6 +20,9 @@ DEV = os.path.join(ROOT, "build", "devtools", "b1.7.3")
 TABLE = os.path.join(ROOT, "loader", "build", "generated", "beta-mappings", "legacyconnector", "mappings", "b1.7.3", "official-named.tsv")
 OUT_SIG = os.path.join(ROOT, "build", "devtools", "legacy-b1.7.3.sig")
 OUT_HIER = os.path.join(ROOT, "loader", "src", "main", "resources", "legacyconnector", "legacy", "b1.7.3", "hierarchy.txt")
+# declared fields of every class in declaration order, named with their obfuscated client/server names: ModLoader.getPrivateValue
+# takes a field index or an obfuscated name (src/main/resources/legacyconnector/b1.7.3/field-order.tsv)
+OUT_FIELDS = os.path.join(ROOT, "src", "main", "resources", "legacyconnector", "b1.7.3", "field-order.tsv")
 
 # Must match org.kylepitcock.legacyconnector.loader.BetaJars.MODLOADER_API
 MODLOADER_API = {"BaseMod", "ModLoader", "MLProp", "ModTextureStatic", "ModTextureAnimation", "EntityRendererProxy",
@@ -126,6 +129,7 @@ def resolve(side, raw, owner, kind, name, desc, seen=None):
 
 
 merged = {}  # named -> [super, ifaces, access, {field key: line}, {method key: line}]
+order = {}  # named -> {"c": [(named, official)], "s": [...]}
 for side in ("c", "s"):
     raw = read_side(side)
     for official, (name, sup, ifaces, acc, fs, ms) in raw.items():
@@ -135,8 +139,10 @@ for side in ("c", "s"):
         entry[2] |= acc
         for i in (map_class(side, i) for i in ifaces):
             if i not in entry[1]: entry[1].append(i)
+        side_order = order.setdefault(named, {}).setdefault(side, [])
         for fn, fd, fa in fs:
             nn = resolve(side, raw, official, "F", fn, fd) or fn
+            side_order.append((nn, fn))
             d = map_desc(side, fd)
             entry[3].setdefault(nn + " " + d, "F %s %s %d %s" % (nn, d, fa, nn))
         for mn, md, ma in ms:
@@ -155,4 +161,14 @@ os.makedirs(os.path.dirname(OUT_SIG), exist_ok=True)
 open(OUT_SIG, "w", encoding="utf-8").write("\n".join(lines) + "\n")
 os.makedirs(os.path.dirname(OUT_HIER), exist_ok=True)
 open(OUT_HIER, "w", encoding="utf-8", newline="\n").write("\n".join(hier) + "\n")
-print("wrote", OUT_SIG, "and", OUT_HIER, len(hier), "classes")
+rows = []
+for named in sorted(order):
+    sides = order[named]
+    base = sides.get("c") or sides.get("s") or []
+    server = {n: o for n, o in sides.get("s", [])}
+    client = {n: o for n, o in sides.get("c", [])}
+    cells = ["%s|%s|%s" % (n, client.get(n, "-"), server.get(n, "-")) for n, _ in base]
+    if cells: rows.append(named + "\t" + "\t".join(cells))
+os.makedirs(os.path.dirname(OUT_FIELDS), exist_ok=True)
+open(OUT_FIELDS, "w", encoding="utf-8", newline="\n").write("# b1.7.3 declared fields in order: named|client|server (tools/extract_beta_signatures.py)\n" + "\n".join(rows) + "\n")
+print("wrote", OUT_SIG, "and", OUT_HIER, len(hier), "classes;", OUT_FIELDS, len(rows), "classes with fields")

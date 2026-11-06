@@ -65,10 +65,31 @@ public final class BridgeB173 {
                 LOG.warn("Could not register b1.7.3 item {} of {}: {}", item, mod.legacyId, e.toString());
             }
         }
+        flammability();
         StringBuilder sb = new StringBuilder();
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));
         LOG.info("b1.7.3 content registered:{}{}", sb.length() == 0 ? " none" : sb,
                 replaced > 0 ? "; " + replaced + " replacement(s) of vanilla blocks/items kept as the vanilla ones" : "");
+    }
+
+    /**
+     * {@code BlockFire}'s tables (mods set them with ModLoader's reflection or Forge): how much a block encourages fire and how easily it
+     * burns, the same two numbers as modern fire's {@code setFlammable(block, encouragement, flammability)}.
+     */
+    private static void flammability() {
+        Block fire = Block.BLOCKS[51];
+        if (!(fire instanceof legacyconnector.vb1_7_3.net.minecraft.block.FireBlock f) || f.burnChances == null) return;
+        var modernFire = (net.minecraft.world.level.block.FireBlock) net.minecraft.world.level.block.Blocks.FIRE;
+        int n = 0;
+        for (int id = 0; id < 256; id++) {
+            Block b = Block.BLOCKS[id];
+            if (b == null || b.mcc$owner == null || b.mcc$modern == null || isVanillaReplacement(b.mcc$modern)) continue;
+            int encourage = f.burnChances[id], burn = f.spreadChances[id];
+            if (encourage <= 0 && burn <= 0) continue;
+            modernFire.setFlammable(b.mcc$modern, encourage, burn);
+            n++;
+        }
+        if (n > 0) LOG.info("b1.7.3: {} mod block(s) burn as their fire tables said", n);
     }
 
     private static void register(Block block, LegacyModRecord mod) {
