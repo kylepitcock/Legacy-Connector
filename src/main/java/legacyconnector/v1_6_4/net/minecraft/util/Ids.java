@@ -170,6 +170,29 @@ public final class Ids {
         return "a 1.6.4 mod";
     }
 
+    // ------------------------------------------------------------------ config ids
+
+    /** Whether a block id is unused (Forge's {@code Configuration.getBlock} avoids taken ids). A mod that nulled the entry counts as free. */
+    public static synchronized boolean blockIdFree(int id) {
+        IdRegistry r = reg();
+        if (id <= 0 || id >= blocks.length) return false;
+        return r.isFreeId(IdRegistry.Kind.BLOCK, id) || (blocks[id] == null && r.get(IdRegistry.Kind.BLOCK, id) != null && id != 0);
+    }
+
+    public static synchronized boolean itemIdFree(int id) {
+        IdRegistry r = reg();
+        if (id <= 0 || id >= items.length) return false;
+        return r.isFreeId(IdRegistry.Kind.ITEM, id);
+    }
+
+    public static int blockTableSize() {
+        return IdRegistry.Kind.BLOCK.size;
+    }
+
+    public static int itemTableSize() {
+        return IdRegistry.Kind.ITEM.size;
+    }
+
     // ------------------------------------------------------------------ misc
 
     /** A vanilla block by 1.7.10 registry name, for the statics the shim's {@code Blocks} lacks; null if unknown. */

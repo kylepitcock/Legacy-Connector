@@ -241,6 +241,11 @@ public final class IdRegistry {
 
     // ------------------------------------------------------------------ lookup
 
+    /** True when a request for {@code id} would be granted (not taken, and for ids below 4096 neither as a block nor as an item). */
+    public synchronized boolean isFreeId(Kind kind, int id) {
+        return id >= 0 && id < kind.size && isFree(tables[kind.ordinal()], id);
+    }
+
     /** Object at {@code id} or null (also for a vanilla id that is reserved but has no runtime object). */
     public synchronized Object get(Kind kind, int id) {
         Table t = tables[kind.ordinal()];
