@@ -49,8 +49,14 @@ public final class CheckJar {
         Path out = Files.createTempDirectory("legacyconnector-check");
         LegacyJarTransformer transformer = new LegacyJarTransformer(index, CheckJar.class.getClassLoader());
         List<LegacyJar> jars = new ArrayList<>();
+        // "@list.txt" names a file with one jar path per line (a few hundred jars overflow the Windows command line)
+        List<String> jarArgs = new ArrayList<>();
         for (int i = 1; i < args.length; i++) {
-            Path jarPath = Path.of(args[i]);
+            if (args[i].startsWith("@")) jarArgs.addAll(Files.readAllLines(Path.of(args[i].substring(1))).stream().filter(l -> !l.isBlank()).toList());
+            else jarArgs.add(args[i]);
+        }
+        for (String jarArg : jarArgs) {
+            Path jarPath = Path.of(jarArg);
             LegacyJar jar = LegacyJarInspector.inspect(jarPath);
             if (jar == null) {
                 System.out.println(jarPath.getFileName() + ": not a legacy Forge mod");

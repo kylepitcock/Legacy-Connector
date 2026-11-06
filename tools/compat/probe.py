@@ -42,7 +42,12 @@ def run_probe(jar_dir, out):
             link = safe / f"{i}-{j.name.replace(',', '_')}"
             link.symlink_to(j.resolve())
             jars[i] = link
-    cmd = [str(ROOT / "gradlew"), "-q", "checkLegacyMod", f"-PlegacyJar={','.join(map(str, jars))}", f"-PcheckJson={out}"]
+    jar_arg = ','.join(map(str, jars))
+    if len(jar_arg) > 6000:   # the Windows command line is limited: hand over a list file ("@file", one path per line)
+        listing = safe / "jars.txt"
+        listing.write_text(chr(10).join(map(str, jars)), encoding="utf-8")
+        jar_arg = "@" + str(listing)
+    cmd = [str(ROOT / ("gradlew.bat" if sys.platform == "win32" else "gradlew")), "-q", "checkLegacyMod", f"-PlegacyJar={jar_arg}", f"-PcheckJson={out}"]
     print(f"probing {len(jars)} jar(s) as one mod set ...", flush=True)
     r = subprocess.run(cmd, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     if r.returncode != 0 or not pathlib.Path(out).exists():
