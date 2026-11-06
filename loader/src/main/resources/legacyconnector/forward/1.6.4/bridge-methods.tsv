@@ -1,0 +1,18 @@
+# Bridge methods of 1.6.4 jars (see BridgeMethods): methods a mod overrides with a 1.6.4 signature that the 1.7.10 shim never calls.
+# owner TAB oldName TAB oldDescriptor TAB newName TAB newDescriptor   (all in legacy form: 1.6.4 types left, 1.7.10 types right; relocated by the loader)
+# A mod class below `owner` that declares oldName+oldDescriptor gets a 1.7.10-shaped method that calls it, converting ids and objects: an int where the new
+# descriptor has a Block or Item (and back for the result) goes through the id facade, other differing reference types are cast; trailing parameters the
+# old method lacks are dropped. Calls of oldName+oldDescriptor on shim types (also `super.` calls) are rewritten to the new method.
+net/minecraft/block/Block	breakBlock	(Lnet/minecraft/world/World;IIIII)V	breakBlock	(Lnet/minecraft/world/World;IIILnet/minecraft/block/Block;I)V
+net/minecraft/block/Block	onNeighborBlockChange	(Lnet/minecraft/world/World;IIII)V	onNeighborBlockChange	(Lnet/minecraft/world/World;IIILnet/minecraft/block/Block;)V
+net/minecraft/block/Block	getSubBlocks	(ILnet/minecraft/creativetab/CreativeTabs;Ljava/util/List;)V	getSubBlocks	(Lnet/minecraft/item/Item;Lnet/minecraft/creativetab/CreativeTabs;Ljava/util/List;)V
+net/minecraft/block/Block	idDropped	(ILjava/util/Random;I)I	getItemDropped	(ILjava/util/Random;I)Lnet/minecraft/item/Item;
+net/minecraft/block/Block	getBlockDropped	(Lnet/minecraft/world/World;IIIII)Ljava/util/ArrayList;	getDrops	(Lnet/minecraft/world/World;IIIII)Ljava/util/ArrayList;
+net/minecraft/block/BlockContainer	createNewTileEntity	(Lnet/minecraft/world/World;)Lnet/minecraft/tileentity/TileEntity;	createNewTileEntity	(Lnet/minecraft/world/World;I)Lnet/minecraft/tileentity/TileEntity;
+net/minecraft/item/Item	getSubItems	(ILnet/minecraft/creativetab/CreativeTabs;Ljava/util/List;)V	getSubItems	(Lnet/minecraft/item/Item;Lnet/minecraft/creativetab/CreativeTabs;Ljava/util/List;)V
+net/minecraft/item/Item	onBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIIILnet/minecraft/entity/EntityLivingBase;)Z	onBlockDestroyed	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;Lnet/minecraft/block/Block;IIILnet/minecraft/entity/EntityLivingBase;)Z
+net/minecraft/item/Item	getItemDisplayName	(Lnet/minecraft/item/ItemStack;)Ljava/lang/String;	getItemStackDisplayName	(Lnet/minecraft/item/ItemStack;)Ljava/lang/String;
+net/minecraft/entity/EntityLiving	getDropItemId	()I	getDropItem	()Lnet/minecraft/item/Item;
+net/minecraftforge/common/IPlantable	getPlantID	(Lnet/minecraft/world/World;III)I	getPlant	(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/block/Block;
+net/minecraftforge/common/IPlantable	getPlantMetadata	(Lnet/minecraft/world/World;III)I	getPlantMetadata	(Lnet/minecraft/world/IBlockAccess;III)I
+net/minecraftforge/common/IPlantable	getPlantType	(Lnet/minecraft/world/World;III)Lnet/minecraftforge/common/EnumPlantType;	getPlantType	(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraftforge/common/EnumPlantType;

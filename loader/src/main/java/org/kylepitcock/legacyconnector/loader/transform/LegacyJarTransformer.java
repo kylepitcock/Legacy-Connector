@@ -342,10 +342,16 @@ public final class LegacyJarTransformer {
         int buildHeightChecks = 0;
         int floorClamps = 0;
         int forwardCalls = 0;
+        int bridgeMethods = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
             result.compatRedirects += ForwardRedirects.apply(node, version);
             InterfaceFlags.apply(node, hierarchy);
+            int bridged = BridgeMethods.apply(node, hierarchy, version);
+            if (bridged > 0) {
+                hierarchy.addLocal(ClassInfo.of(node));
+                bridgeMethods += bridged;
+            }
             forwardCalls += ForwardCalls.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
@@ -356,6 +362,7 @@ public final class LegacyJarTransformer {
             result.classes++;
         }
 
+        if (bridgeMethods > 0) result.notes.add(bridgeMethods + " bridge method(s)/call(s) from " + version.id() + " method signatures to their " + version.forward().id() + " shape");
         if (forwardCalls > 0) result.notes.add(forwardCalls + " call(s) of " + version.id() + " API now call their " + version.forward().id() + " equivalent");
         if (buildHeightChecks > 0) result.notes.add(buildHeightChecks + " hard-coded 0..256 height check(s) on a y coordinate now use the world's build range");
         if (floorClamps > 0) result.notes.add(floorClamps + " tile entity height clamp(s) to 1.7.10's bedrock floor now count from the world's bottom");

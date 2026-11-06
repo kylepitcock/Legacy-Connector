@@ -66,7 +66,6 @@ M	net/minecraft/block/BlockJukeBox	ejectRecord	(Lnet/minecraft/world/World;III)V
 M	net/minecraft/block/BlockJukeBox	insertRecord	(Lnet/minecraft/world/World;IIILnet/minecraft/item/ItemStack;)V	func_149926_b
 M	net/minecraft/block/BlockJukeBox	registerIcons	(Lnet/minecraft/client/renderer/texture/IconRegister;)V	registerBlockIcons
 M	net/minecraft/block/BlockLadder	updateLadderBounds	(I)V	func_149797_b
-M	net/minecraft/block/BlockLeaves	breakBlock	(Lnet/minecraft/world/World;IIIII)V	func_150124_c
 M	net/minecraft/block/BlockLog	limitToValidMetadata	(I)I	func_150165_c
 M	net/minecraft/block/BlockMelon	registerIcons	(Lnet/minecraft/client/renderer/texture/IconRegister;)V	registerBlockIcons
 M	net/minecraft/block/BlockMushroomCap	registerIcons	(Lnet/minecraft/client/renderer/texture/IconRegister;)V	registerBlockIcons
