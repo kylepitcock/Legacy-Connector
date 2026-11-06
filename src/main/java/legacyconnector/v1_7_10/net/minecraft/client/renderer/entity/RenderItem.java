@@ -22,17 +22,32 @@ public class RenderItem extends Render {
     }
 
     public void doRender(EntityItem entity, double x, double y, double z, float yaw, float partialTicks) {
+        mcc$renderItem(entity, x, y, z, partialTicks, false);
+    }
+
+    public void mcc$renderIngredientPreview(EntityItem entity, double x, double y, double z, float yaw, float partialTicks) {
+        mcc$renderItem(entity, x, y, z, partialTicks, true);
+    }
+
+    private void mcc$renderItem(EntityItem entity, double x, double y, double z, float partialTicks, boolean preview) {
         ItemStack stack = entity.getEntityItem();
         var pose = RenderContext.pose();
         if (stack == null || pose == null) return;
-        pose.pushPose();
-        pose.translate(x, y, z);
-        if (!renderInFrame && shouldBob()) pose.translate(0, Math.sin(((entity.mcc$entity == null ? 0 : entity.mcc$entity.tickCount) + partialTicks) / 10.0F) * 0.1F + 0.1F, 0);
-        // the GROUND transform already has 1.7.10's dropped sizes (items half a block, blocks a quarter)
+        var modern = stack.mcc$modern();
+        if (modern.isEmpty()) return;
         var mc = Minecraft.getInstance();
-        mc.getItemRenderer().renderStatic(stack.mcc$modern(), ItemDisplayContext.GROUND, RenderContext.light(), RenderContext.overlay(), pose,
-                RenderContext.buffers(), (net.minecraft.world.level.Level) (Object) mc.level, 0);
-        pose.popPose();
+        var renderer = mc.getItemRenderer();
+        var model = renderer.getModel(modern, mc.level, null, 0);
+        pose.pushPose();
+        try {
+            pose.translate(x, y, z);
+            if (!renderInFrame && shouldBob()) pose.translate(0, Math.sin(((entity.mcc$entity == null ? 0 : entity.mcc$entity.tickCount) + partialTicks) / 10.0F) * 0.1F + 0.1F, 0);
+            if (preview && !model.isGui3d()) pose.mulPose(mc.gameRenderer.getMainCamera().rotation());
+            // The GROUND transform supplies the dropped size for both items and blocks.
+            renderer.render(modern, ItemDisplayContext.GROUND, false, pose, RenderContext.buffers(), RenderContext.light(), RenderContext.overlay(), model);
+        } finally {
+            pose.popPose();
+        }
     }
 
     @Override

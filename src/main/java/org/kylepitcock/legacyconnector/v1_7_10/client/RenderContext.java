@@ -645,7 +645,9 @@ public final class RenderContext {
      * alpha blended it covered the slot and its neighbours with black squares and starbursts.
      */
     private static RenderType stated(State s, RenderType base) {
-        boolean depthState = gui(s) != null && !(s.depthFunc == 515 && s.depthWrite && s.colorWrite == 0xF);
+        // Untextured world glows (AM2's lectern rays) must not occlude geometry behind their transparent edges.
+        boolean depthState = gui(s) != null && !(s.depthFunc == 515 && s.depthWrite && s.colorWrite == 0xF)
+                || !s.texture2d && s.blend && !s.depthWrite;
         boolean blendState = s.blend && (s.blendSrc != 770 || s.blendDst != 771);
         if (!depthState && !blendState) return base;
         // -1: the part is not carried, the base type's own state stays (a translucent type's depth writes are off)
