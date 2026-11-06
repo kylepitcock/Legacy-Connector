@@ -756,6 +756,10 @@ public abstract class EntityLivingBase extends Entity {
         return l != null && l.onClimbable();
     }
 
+    /** Particles and sounds of eating or drinking the item in use; nothing here (the modern entity does its own). */
+    protected void updateItemUse(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, int eatingParticleCount) {
+    }
+
     public boolean isElytraFlying() {
         var l = mcc$living();
         return l != null && l.isFallFlying();

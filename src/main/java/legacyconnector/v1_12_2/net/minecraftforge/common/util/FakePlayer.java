@@ -56,6 +56,11 @@ public class FakePlayer extends EntityPlayerMP {
     public void onDeath(legacyconnector.v1_12_2.net.minecraft.util.DamageSource source) {
     }
 
+    /** A fake player never holds an item in use. */
+    @Override
+    protected void updateItemUse(legacyconnector.v1_12_2.net.minecraft.item.ItemStack stack, int eatingParticleCount) {
+    }
+
     @Override
     public void onUpdate() {
     }
