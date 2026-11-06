@@ -27,6 +27,7 @@ public final class TickDispatch {
         boolean active = true;
         int errors;
         long fired;
+        String firstError;
 
         Entry(ITickHandler handler, Side side) {
             this.handler = handler;
@@ -79,6 +80,7 @@ public final class TickDispatch {
                 if (end) e.handler.tickEnd(set, data);
                 else e.handler.tickStart(set, data);
             } catch (RuntimeException | LinkageError ex) {
+                if (e.firstError == null) e.firstError = ex.toString() + (ex.getStackTrace().length > 0 ? " at " + ex.getStackTrace()[0] : "");
                 if (e.errors++ < MAX_ERRORS_LOGGED) {
                     LOG.log(System.Logger.Level.ERROR, "The 1.6.4 tick handler " + label(e.handler) + " failed on " + type + " (" + (end ? "end" : "start") + ")", ex);
                 }
@@ -106,7 +108,7 @@ public final class TickDispatch {
     /** One line per handler: label, side and how often it was called (the self test report). */
     public List<String> summary() {
         List<String> out = new java.util.ArrayList<>();
-        for (Entry e : entries) out.add(label(e.handler) + " [" + e.side + "] fired " + e.fired + "x, " + e.errors + " error(s)");
+        for (Entry e : entries) out.add(label(e.handler) + " [" + e.side + "] fired " + e.fired + "x, " + e.errors + " error(s)" + (e.firstError == null ? "" : ", first: " + e.firstError));
         return out;
     }
 

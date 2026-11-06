@@ -166,6 +166,26 @@ public final class LegacyRemapper extends Remapper {
         methods.forEach((key, names) -> {
             if (names.size() > 1) for (String n : names) if (!mcp.method(n).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
         });
+        if (members != null) {
+            // a forward rename (getEntityName -> getCommandSenderName) onto a method the class declares itself, or two renames onto one name, would duplicate it
+            java.util.Map<String, java.util.List<org.objectweb.asm.tree.MethodNode>> byTarget = new HashMap<>();
+            for (var m : original.methods) {
+                String readable = mcp.method(m.name);
+                String mapped = members.method(legacyClass(original.name), readable, legacyDesc(m.desc), this::localSupers);
+                byTarget.computeIfAbsent(mapped + m.desc, k -> new java.util.ArrayList<>()).add(m);
+            }
+            byTarget.forEach((key, list) -> {
+                if (list.size() < 2) return;
+                String target = key.substring(0, key.indexOf('('));
+                boolean declaresTarget = list.stream().anyMatch(m -> mcp.method(m.name).equals(target));
+                boolean first = true;
+                for (var m : list) {
+                    if (mcp.method(m.name).equals(target)) continue; // the declaration that already has the target name stays
+                    if (!declaresTarget && first) { first = false; continue; } // one of the renamed ones may take the name
+                    keep.add(original.name + "." + m.name + m.desc);
+                }
+            });
+        }
     }
 
     /**
