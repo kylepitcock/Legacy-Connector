@@ -29,4 +29,8 @@ public class EntityMinecartChest extends EntityMinecartContainer {
     public String getGuiID() {
         return "minecraft:chest";
     }
+
+    /** 1.12's loot filling hook, called when a player first opens the cart (the modern cart fills itself on open; a mod's own cart keeps its slots). */
+    public void addLoot(legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayer player) {
+    }
 }

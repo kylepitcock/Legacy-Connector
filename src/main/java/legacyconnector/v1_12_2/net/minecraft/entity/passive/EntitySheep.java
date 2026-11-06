@@ -15,7 +15,7 @@ import legacyconnector.v1_12_2.net.minecraft.world.World;
 import net.minecraft.sounds.SoundEvents;
 
 /** 1.12.2 sheep: fleece colour and shearing (a view reads the modern sheep). */
-public class EntitySheep extends EntityAnimal {
+public class EntitySheep extends EntityAnimal implements legacyconnector.v1_12_2.net.minecraftforge.common.IShearable {
     public EntitySheep(World world) {
         super(world);
         setSize(0.9F, 1.3F);
@@ -190,6 +190,31 @@ public class EntitySheep extends EntityAnimal {
     @Override
     public EntitySheep createChild(legacyconnector.v1_12_2.net.minecraft.entity.EntityAgeable ageable) {
         return new EntitySheep(mcc$get$world(this));
+    }
+
+    @Override
+    public boolean isShearable(legacyconnector.v1_12_2.net.minecraft.item.ItemStack item, legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos) {
+        return !getSheared() && !isChild();
+    }
+
+    /** Shearing (Forge's IShearable): the fleece comes off as 1 to 3 wool of its colour. */
+    @Override
+    public java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> onSheared(legacyconnector.v1_12_2.net.minecraft.item.ItemStack item,
+            legacyconnector.v1_12_2.net.minecraft.world.IBlockAccess world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, int fortune) {
+        setSheared(true);
+        int count = 1 + rand.nextInt(3);
+        java.util.List<legacyconnector.v1_12_2.net.minecraft.item.ItemStack> out = new java.util.ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            out.add(new legacyconnector.v1_12_2.net.minecraft.item.ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Blocks.WOOL, 1, getFleeceColor().getMetadata()));
+        }
+        return out;
+    }
+
+    /** The head's pivot height above the feet while grazing (1.12 renderer maths, used by head-wearing mods). */
+    public float getHeadRotationPointY(float partialTicks) {
+        return sheepTimer <= 0 ? 0.0F : sheepTimer >= 4 && sheepTimer <= 36 ? 1.0F
+                : sheepTimer < 4 ? ((float) sheepTimer - partialTicks) / 4.0F : -((float) (sheepTimer - 40) - partialTicks) / 4.0F;
     }
 
     @Override

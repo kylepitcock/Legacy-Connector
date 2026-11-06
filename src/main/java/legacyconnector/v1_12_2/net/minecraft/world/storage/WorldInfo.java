@@ -366,6 +366,30 @@ public class WorldInfo {
         return level != null ? level.getWorldBorder().getSize() : 6.0E7D;
     }
 
+    public double getBorderSafeZone() {
+        return level != null ? level.getWorldBorder().getDamageSafeZone() : 5.0D;
+    }
+
+    public double getBorderDamagePerBlock() {
+        return level != null ? level.getWorldBorder().getDamagePerBlock() : 0.2D;
+    }
+
+    public int getBorderWarningDistance() {
+        return level != null ? level.getWorldBorder().getWarningBlocks() : 5;
+    }
+
+    public int getBorderWarningTime() {
+        return level != null ? level.getWorldBorder().getWarningTime() : 15;
+    }
+
+    public double getBorderLerpTarget() {
+        return level != null ? level.getWorldBorder().getLerpTarget() : getBorderSize();
+    }
+
+    public long getBorderLerpTime() {
+        return level != null ? level.getWorldBorder().getLerpRemainingTime() : 0L;
+    }
+
     /** Per-dimension data Forge kept in level.dat (by dimension id); kept for the session. */
     public synchronized NBTTagCompound getDimensionData(int dimension) {
         NBTTagCompound tag = dimensionData.get(dimension);

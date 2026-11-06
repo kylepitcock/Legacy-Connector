@@ -21,6 +21,18 @@ public class EntityMinecartTNT extends EntityMinecart {
         return Type.TNT;
     }
 
+    /** 1.12's countdown field (a hosted cart counts it itself; a view reads the modern cart's fuse). */
+    @Deprecated
+    public int minecartTNTFuse = -1;
+
+    public static int mcc$get$minecartTNTFuse(EntityMinecartTNT c) {
+        return c.getFuseTicks();
+    }
+
+    public static void mcc$set$minecartTNTFuse(EntityMinecartTNT c, int v) {
+        c.mcc$fuse = v;
+    }
+
     private int mcc$fuse = -1;
 
     public void ignite() {

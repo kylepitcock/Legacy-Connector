@@ -23,6 +23,16 @@ import org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122;
 public class ForgeEventFactory {
     private ForgeEventFactory() {}
 
+    /** Forge: posts AttachCapabilitiesEvent for a world and wraps what handlers attached (null when none attached anything). */
+    public static legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityDispatcher gatherCapabilities(World world,
+            legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider parent) {
+        var bus = legacyconnector.v1_12_2.net.minecraftforge.common.MinecraftForge.EVENT_BUS;
+        var event = new AttachCapabilitiesEvent<World>(World.class, world);
+        bus.post(event);
+        return event.getCapabilities().isEmpty() ? null
+                : new legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.CapabilityDispatcher(event.getCapabilities(), parent);
+    }
+
     private static net.minecraft.core.BlockPos pos(BlockPos p) {
         return new net.minecraft.core.BlockPos(p.getX(), p.getY(), p.getZ());
     }

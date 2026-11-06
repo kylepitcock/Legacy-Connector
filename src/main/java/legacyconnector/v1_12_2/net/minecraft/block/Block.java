@@ -1401,6 +1401,18 @@ public class Block extends IForgeRegistryEntry.Impl<Block> {
         return null;
     }
 
+    /** Forge: whether an AABB is inside a liquid here (null: decide by the block's material; true/false overrides). */
+    public Boolean isAABBInsideLiquid(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB boundingBox) {
+        return null;
+    }
+
+    /** Forge (client): spawns the block's own particles while an entity runs on it; true replaces the default dust (none by default). */
+    public boolean addRunningEffects(legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, legacyconnector.v1_12_2.net.minecraft.world.World world,
+            legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos, legacyconnector.v1_12_2.net.minecraft.entity.Entity entity) {
+        return false;
+    }
+
     /** Forge: whether an AABB counts as inside a material here (null: decide by the block's material). */
     public Boolean isAABBInsideMaterial(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
             legacyconnector.v1_12_2.net.minecraft.util.math.AxisAlignedBB boundingBox, legacyconnector.v1_12_2.net.minecraft.block.material.Material materialIn) {

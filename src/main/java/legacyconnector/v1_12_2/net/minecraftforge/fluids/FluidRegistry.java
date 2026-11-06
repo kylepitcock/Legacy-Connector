@@ -57,6 +57,11 @@ public abstract class FluidRegistry {
         return java.util.Collections.unmodifiableMap(new LinkedHashMap<>(FLUIDS));
     }
 
+    /** Fluid to numeric id (assigned in registration order). */
+    public static synchronized Map<Fluid, Integer> getRegisteredFluidIDs() {
+        return java.util.Collections.unmodifiableMap(new HashMap<>(IDS));
+    }
+
     /** The fluid whose block this is (vanilla water and lava, flowing or still, included); null for other blocks. */
     public static synchronized Fluid lookupFluidForBlock(legacyconnector.v1_12_2.net.minecraft.block.Block block) {
         if (block == null) return null;
