@@ -208,7 +208,7 @@ public final class LegacyJarTransformer {
                 continue;
             }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
-            if (shim.contains(jar.version.shimPrefix() + name)) {
+            if (shim.contains(jar.version.linkPrefix() + org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name))) {
                 classes.remove(name);
                 dropped++;
             } else {
@@ -291,7 +291,7 @@ public final class LegacyJarTransformer {
         if (side != null) {
             int sided = 0;
             for (ClassNode node : nodes.values()) {
-                int n = SideOnlyStripper.apply(node, version.shimPrefix(), side);
+                int n = SideOnlyStripper.apply(node, version.linkPrefix(), side);
                 if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
                 sided += n;
             }
@@ -299,7 +299,7 @@ public final class LegacyJarTransformer {
         }
         int optionalStripped = 0;
         for (ClassNode node : nodes.values()) {
-            int n = OptionalStripper.apply(node, version.shimPrefix(), presentMods, hierarchy);
+            int n = OptionalStripper.apply(node, version.linkPrefix(), presentMods, hierarchy);
             if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
             optionalStripped += n;
         }

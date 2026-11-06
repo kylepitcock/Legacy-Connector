@@ -10,6 +10,7 @@ import org.kylepitcock.legacyconnector.loader.shim.ClassInfo;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndexGenerator;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
 import org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData;
 import org.objectweb.asm.ClassReader;
 
@@ -77,7 +78,7 @@ public final class Hierarchy {
     public String relocate(String legacyName) {
         if (legacyName == null) return null;
         if (!LegacyVersion.isRelocatedRoot(legacyName)) return legacyName;
-        String s = version.shimPrefix() + legacyName;
+        String s = version.linkPrefix() + ForwardRenames.map(version, legacyName);
         return shim.contains(s) || shim.size() == 0 ? s : version.synthPrefix() + legacyName;
     }
 

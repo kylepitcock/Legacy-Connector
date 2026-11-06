@@ -45,7 +45,7 @@ public final class ModViews {
 
         @Override
         public LegacyVersion minecraftVersion() {
-            return LegacyVersion.byId(mod.version).orElseThrow(() -> new IllegalStateException("Unknown legacy version " + mod.version));
+            return LegacyVersion.byId(org.kylepitcock.legacyconnector.core.LegacyMods.family(mod.version)).orElseThrow(() -> new IllegalStateException("Unknown legacy version " + mod.version));
         }
 
         @Override

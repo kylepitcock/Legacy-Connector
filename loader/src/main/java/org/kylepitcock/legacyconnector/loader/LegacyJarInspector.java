@@ -80,6 +80,7 @@ public final class LegacyJarInspector {
 
             Map<String, JsonObject> infoById = readMcModInfo(zip, jar);
             int refs17 = 0, refs112 = 0;
+            Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
@@ -101,6 +102,7 @@ public final class LegacyJarInspector {
                 String pool = constantPoolText(reader);
                 if (pool.contains("cpw/mods/fml/")) refs17++;
                 if (pool.contains("net/minecraftforge/fml/")) refs112++;
+                markers.scan(pool, entry.getName());
 
                 if (pool.contains(MOD_1_7) || pool.contains(MOD_1_12)) {
                     LegacyModDecl decl = readModAnnotation(reader);
@@ -134,7 +136,7 @@ public final class LegacyJarInspector {
                 jar.mods.add(decl);
             }
 
-            jar.version = chooseVersion(jar, infoById, refs17, refs112);
+            jar.version = chooseVersion(jar, infoById, refs17, refs112, markers);
             return jar.version == null ? null : jar;
         }
     }
@@ -310,12 +312,93 @@ public final class LegacyJarInspector {
         return null;
     }
 
-    private static LegacyVersion chooseVersion(LegacyJar jar, Map<String, JsonObject> infos, int refs17, int refs112) {
-        // 1. The package the code actually links against is the most reliable signal.
-        if (refs17 > 0 && refs112 == 0) {
-            jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes)";
-            return LegacyVersion.V1_7_10;
+    /**
+     * What tells Forge 1.6.4 code from 1.7.x code, both of which link against {@code cpw.mods.fml}: names that exist in only one of the two
+     * (counted per class, with the first example kept for the report).
+     */
+    static final class Markers {
+        // 1.6.4 only: Icon (1.7: IIcon), the IconRegister, the 1.6 packet and event APIs, the Forge classes 1.7 moved, the SRG ids of Block.blocksList / Item.itemsList
+        private static final String[] V164 = {"net/minecraft/util/Icon", "net/minecraft/client/renderer/texture/IconRegister",
+                "net/minecraft/network/packet/Packet250CustomPayload", "net/minecraft/network/packet/Packet",
+                "cpw/mods/fml/common/Mod$PreInit", "cpw/mods/fml/common/Mod$Init", "cpw/mods/fml/common/Mod$PostInit",
+                "cpw/mods/fml/common/Mod$ServerStarting", "cpw/mods/fml/common/Mod$ServerStopping",
+                "cpw/mods/fml/common/network/NetworkMod", "cpw/mods/fml/common/network/IPacketHandler",
+                "cpw/mods/fml/common/network/PacketDispatcher", "cpw/mods/fml/common/registry/TickRegistry", "cpw/mods/fml/common/ITickHandler",
+                "net/minecraftforge/event/ForgeSubscribe", "net/minecraftforge/event/Event", "net/minecraftforge/common/Configuration",
+                "net/minecraftforge/common/ForgeDirection", "net/minecraftforge/liquids/", "net/minecraft/item/EnumToolMaterial",
+                "net/minecraft/block/StepSound", "net/minecraft/util/EnumMovingObjectType", "net/minecraft/world/EnumGameType",
+                "field_71973_m", "field_77698_e"};
+        // 1.7.x only: IIcon, Blocks/Items, the 1.7 event, packet (SimpleNetworkWrapper) and tick APIs
+        private static final String[] V17 = {"net/minecraft/util/IIcon", "net/minecraft/client/renderer/texture/IIconRegister",
+                "net/minecraft/init/Blocks", "net/minecraft/init/Items", "cpw/mods/fml/common/eventhandler/",
+                "cpw/mods/fml/common/network/simpleimpl/", "cpw/mods/fml/common/gameevent/", "net/minecraftforge/common/util/",
+                "net/minecraftforge/common/config/", "net/minecraft/util/ChatComponentText", "net/minecraft/block/Block$SoundType"};
+
+        int v164, v17;
+        String example164, example17;
+
+        /** True when {@code pool} (one name per line) holds {@code name} as a whole class or field name (or a package prefix when it ends with '/'). */
+        private static boolean has(String pool, String name) {
+            int from = 0;
+            for (int i; (i = pool.indexOf(name, from)) >= 0; from = i + 1) {
+                if (name.endsWith("/")) return true;
+                int end = i + name.length();
+                // class names sit inside descriptors ("(Lnet/minecraft/util/Icon;)V"); a bare member name needs a boundary before it too
+                boolean before = name.indexOf('/') >= 0 || i == 0 || !Character.isJavaIdentifierPart(pool.charAt(i - 1));
+                boolean after = end >= pool.length() || !Character.isJavaIdentifierPart(pool.charAt(end));
+                if (before && after) return true;
+            }
+            return false;
         }
+
+        void scan(String pool, String entry) {
+            if (entry.startsWith("META-INF/")) return;
+            for (String m : V164) {
+                if (has(pool, m)) {
+                    v164++;
+                    if (example164 == null) example164 = m.replaceAll("^.*/", "");
+                    break;
+                }
+            }
+            for (String m : V17) {
+                if (has(pool, m)) {
+                    v17++;
+                    if (example17 == null) example17 = m.replaceAll("^.*/", "");
+                    break;
+                }
+            }
+        }
+    }
+
+    /** The family of a jar that links against {@code cpw.mods.fml}: 1.6.4 or 1.7.x (1.7.10 shim). */
+    private static LegacyVersion chooseCpw(LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers) {
+        if (markers.v164 > 0 && markers.v17 == 0) {
+            jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.6.4-only API (" + markers.v164 + " classes, e.g. " + markers.example164 + ")";
+            return LegacyVersion.V1_6_4;
+        }
+        if (markers.v164 == 0 && markers.v17 == 0) {
+            // nothing in the code tells them apart: the declared Minecraft version does
+            for (LegacyModDecl decl : jar.mods) {
+                if (LegacyVersion.fromMinecraftVersion(decl.acceptedMinecraftVersions) == LegacyVersion.V1_6_4) {
+                    jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), @Mod(acceptedMinecraftVersions=" + decl.acceptedMinecraftVersions + ")";
+                    return LegacyVersion.V1_6_4;
+                }
+            }
+            for (JsonObject info : infos.values()) {
+                if (info.has("mcversion") && LegacyVersion.fromMinecraftVersion(info.get("mcversion").getAsString()) == LegacyVersion.V1_6_4) {
+                    jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), mcmod.info mcversion=" + info.get("mcversion").getAsString();
+                    return LegacyVersion.V1_6_4;
+                }
+            }
+        }
+        jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes)"
+                + (markers.v17 > 0 ? ", 1.7-only API (" + markers.v17 + " classes, e.g. " + markers.example17 + ")" : "");
+        return LegacyVersion.V1_7_10;
+    }
+
+    private static LegacyVersion chooseVersion(LegacyJar jar, Map<String, JsonObject> infos, int refs17, int refs112, Markers markers) {
+        // 1. The package the code actually links against is the most reliable signal.
+        if (refs17 > 0 && refs112 == 0) return chooseCpw(jar, infos, refs17, markers);
         if (refs112 > 0 && refs17 == 0) {
             jar.versionEvidence = "links against net.minecraftforge.fml (" + refs112 + " classes)";
             return LegacyVersion.V1_12_2;

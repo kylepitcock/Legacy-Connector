@@ -3,6 +3,7 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import java.util.HashMap;
 import java.util.Map;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
 import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.synth.SynthDemand;
@@ -178,7 +179,7 @@ public final class LegacyRemapper extends Remapper {
     }
 
     private String relocate(String legacyName) {
-        String shimName = version.shimPrefix() + legacyName;
+        String shimName = version.linkPrefix() + ForwardRenames.map(version, legacyName);
         if (shim == null || shim.contains(shimName) || shim.size() == 0) return shimName;
         String synth = version.synthPrefix() + legacyName;
         if (recording && demand != null) demand.addClass(synth);
@@ -241,7 +242,7 @@ public final class LegacyRemapper extends Remapper {
         }
         if (mapped.equals(internal)) {
             // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.
-            if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.shimPrefix() + internal;
+            if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.linkPrefix() + internal;
             else return s;
         }
         return dotted ? mapped.replace('/', '.') : mapped;
@@ -254,7 +255,7 @@ public final class LegacyRemapper extends Remapper {
     private void recordReflectedField(String srg) {
         if (demand == null || shim == null || shim.size() == 0) return;
         org.kylepitcock.legacyconnector.loader.synth.LegacyFields.Field f = org.kylepitcock.legacyconnector.loader.synth.LegacyFields.bySrg(version, srg);
-        if (f == null || shim.contains(version.shimPrefix() + f.owner())) return;
+        if (f == null || shim.contains(version.linkPrefix() + ForwardRenames.map(version, f.owner()))) return;
         String owner = map(f.owner());
         if (owner.equals(f.owner())) return;
         demand.add(owner, f.isStatic() ? SynthDemand.Kind.STATIC_FIELD : SynthDemand.Kind.FIELD, f.name(), mapDesc(f.desc()));

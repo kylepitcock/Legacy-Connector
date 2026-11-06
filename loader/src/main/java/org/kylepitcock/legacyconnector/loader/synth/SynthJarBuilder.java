@@ -764,7 +764,7 @@ public final class SynthJarBuilder {
     }
 
     private String legacyName(String relocated) {
-        for (String p : List.of(version.synthPrefix(), version.shimPrefix())) {
+        for (String p : List.of(version.synthPrefix(), version.shimPrefix(), version.linkPrefix())) {
             if (relocated.startsWith(p)) return relocated.substring(p.length()).replace('/', '.');
         }
         return relocated.replace('/', '.');

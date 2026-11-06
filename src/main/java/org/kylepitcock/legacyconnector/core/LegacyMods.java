@@ -20,8 +20,16 @@ public final class LegacyMods {
         PLATFORMS.put(platform.version(), platform);
     }
 
+    /**
+     * The platform family a legacy version runs on: 1.6.4 mods are linked against the 1.7.10 shim and run on its platform
+     * (see the loader's {@code LegacyVersion.forward}); every other version is its own family.
+     */
+    public static String family(String version) {
+        return "1.6.4".equals(version) ? "1.7.10" : version;
+    }
+
     public static synchronized LegacyPlatform platform(String version) {
-        LegacyPlatform p = PLATFORMS.get(version);
+        LegacyPlatform p = PLATFORMS.get(family(version));
         if (p == null) throw new IllegalStateException("No legacy platform for Minecraft " + version);
         return p;
     }
@@ -96,7 +104,7 @@ public final class LegacyMods {
         boolean other = false;
         for (LegacyModRecord m : MODS) {
             if (!m.legacyId.equalsIgnoreCase(id) && !m.modernId.equalsIgnoreCase(id)) continue;
-            if (m.version.equals(version)) return false;
+            if (family(m.version).equals(family(version))) return false;
             other = true;
         }
         return other;

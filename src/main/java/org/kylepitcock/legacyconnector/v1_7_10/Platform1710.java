@@ -88,7 +88,7 @@ public final class Platform1710 implements LegacyPlatform {
         if (languagesInjected) return;
         languagesInjected = true;
         for (LegacyModRecord m : LegacyMods.ordered()) {
-            if (!m.version.equals("1.7.10")) continue;
+            if (!LegacyMods.family(m.version).equals("1.7.10")) continue;
             try {
                 legacyconnector.v1_7_10.cpw.mods.fml.common.registry.LanguageRegistry.mcc$loadLanguagesFor(m.originalFile());
             } catch (RuntimeException e) {
@@ -136,7 +136,7 @@ public final class Platform1710 implements LegacyPlatform {
      */
     private static void injectObjectHolders() {
         for (LegacyModRecord mod : LegacyMods.ordered()) {
-            if (!mod.version.equals("1.7.10")) continue;
+            if (!LegacyMods.family(mod.version).equals("1.7.10")) continue;
             try {
                 var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
                 if (scan == null) continue;
@@ -251,13 +251,21 @@ public final class Platform1710 implements LegacyPlatform {
         }
     }
 
+    /** {@code @Mod.EventHandler}, or one of the per-event annotations Forge 1.6.4 mods use (@PreInit, @Init, @ServerStarting, ...). */
+    private static boolean isLifecycleHandler(Method m) {
+        return m.isAnnotationPresent(Mod.EventHandler.class) || m.isAnnotationPresent(Mod.PreInit.class) || m.isAnnotationPresent(Mod.Init.class)
+                || m.isAnnotationPresent(Mod.PostInit.class) || m.isAnnotationPresent(Mod.ServerAboutToStart.class)
+                || m.isAnnotationPresent(Mod.ServerStarting.class) || m.isAnnotationPresent(Mod.ServerStarted.class)
+                || m.isAnnotationPresent(Mod.ServerStopping.class) || m.isAnnotationPresent(Mod.ServerStopped.class);
+    }
+
     private static List<Method> handlers(Class<?> cls) {
         List<Method> out = new ArrayList<>();
         // An override of an annotated superclass method is the same handler: invoking both would run it twice.
         java.util.Set<String> seen = new java.util.HashSet<>();
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
-                if (m.isAnnotationPresent(Mod.EventHandler.class) && m.getParameterCount() == 1
+                if (isLifecycleHandler(m) && m.getParameterCount() == 1
                         && seen.add(m.getName() + ":" + m.getParameterTypes()[0].getName())) out.add(m);
             }
         }
@@ -267,7 +275,7 @@ public final class Platform1710 implements LegacyPlatform {
     /** Dispatches a server lifecycle event to every 1.7.10 mod. */
     public static void dispatchAll(Function<LegacyModRecord, FMLEvent> factory) {
         for (LegacyModRecord mod : LegacyMods.ordered()) {
-            if (!mod.version.equals("1.7.10") || mod.instance == null) continue;
+            if (!LegacyMods.family(mod.version).equals("1.7.10") || mod.instance == null) continue;
             try {
                 dispatch(mod, factory.apply(mod));
             } catch (Exception e) {

@@ -15,7 +15,13 @@ import java.util.List;
  * 1.10.2 mod links against the 1.12.2 shim for everything that did not change in between.</p>
  */
 public enum LegacyVersion {
-    /** Forge 1.6.4 - 1.7.10: {@code cpw.mods.fml}, numeric block ids + metadata, IIcon rendering. */
+    /**
+     * Forge 1.6.4: {@code cpw.mods.fml}, {@code Block.blocksList[id]}, {@code Icon}. A forward version: its jars are linked against the 1.7.10 shim
+     * ({@link #forward()}), after the class renames of {@code legacyconnector/forward/1.6.4}; the classes of its own prefixes are the numeric-id facade
+     * and what the synthesizer generates from the 1.6.4 API data.
+     */
+    V1_6_4("1.6.4", "legacyconnector/v1_6_4/", "legacyconnector_synth/v1_6_4/"),
+    /** Forge 1.7.2 - 1.7.10: {@code cpw.mods.fml}, block names + metadata, IIcon rendering. */
     V1_7_10("1.7.10", "legacyconnector/v1_7_10/", "legacyconnector_synth/v1_7_10/"),
     /** Forge 1.8 - 1.12.2: {@code net.minecraftforge.fml}, IBlockState, JSON models, registry events. */
     V1_12_2("1.12.2", "legacyconnector/v1_12_2/", "legacyconnector_synth/v1_12_2/"),
@@ -66,6 +72,22 @@ public enum LegacyVersion {
         this.synthPrefix = synthPrefix;
     }
 
+    /** The family whose shim this version's jars link against (1.6.4 uses the 1.7.10 one), or null when it has its own shim. */
+    public LegacyVersion forward() {
+        return this == V1_6_4 ? V1_7_10 : null;
+    }
+
+    /** The family of the runtime platform and hand-written shim that runs this version's mods. */
+    public LegacyVersion family() {
+        LegacyVersion f = forward();
+        return f != null ? f : this;
+    }
+
+    /** Internal-name prefix of the hand-written shim classes this version's jars link against ({@link #shimPrefix()} unless forwarded). */
+    public String linkPrefix() {
+        return family().shimPrefix;
+    }
+
     /** The canonical Minecraft version this family's shim emulates. Also names the mapping data folder. */
     public String id() {
         return id;
@@ -112,7 +134,8 @@ public enum LegacyVersion {
     public static LegacyVersion fromMinecraftVersion(String mcVersion) {
         if (mcVersion == null) return null;
         String v = mcVersion.replaceAll("[\\[\\]()\\s]", "");
-        if (v.startsWith("1.6") || v.startsWith("1.7")) return V1_7_10;
+        if (v.startsWith("1.6")) return V1_6_4;
+        if (v.startsWith("1.7")) return V1_7_10;
         if (v.startsWith("1.8") || v.startsWith("1.9") || v.startsWith("1.10") || v.startsWith("1.11") || v.startsWith("1.12")) {
             return V1_12_2;
         }

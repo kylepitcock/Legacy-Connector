@@ -43,8 +43,8 @@ public final class WorldFloorClampRewriter {
 
     /** Number of clamps rewritten in the class. */
     public static int apply(ClassNode node, Hierarchy hierarchy, LegacyVersion version) {
-        if (version != LegacyVersion.V1_7_10) return 0;
-        String tileEntity = version.shimPrefix() + "net/minecraft/tileentity/TileEntity";
+        if (version.family() != LegacyVersion.V1_7_10) return 0;
+        String tileEntity = version.linkPrefix() + "net/minecraft/tileentity/TileEntity";
         Map<String, Boolean> tiles = new HashMap<>();
         if (!isSubclass(node.name, tileEntity, hierarchy, tiles, 0)) return 0;
         String desc = "(L" + tileEntity + ";I)I";
