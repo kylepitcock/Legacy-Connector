@@ -67,3 +67,6 @@ net/minecraftforge/common/ConfigCategory	net/minecraftforge/common/config/Config
 net/minecraftforge/common/Property	net/minecraftforge/common/config/Property
 net/minecraft/entity/ai/attributes/Attribute	net/minecraft/entity/ai/attributes/IAttribute
 net/minecraft/entity/ai/attributes/AttributeInstance	net/minecraft/entity/ai/attributes/IAttributeInstance
+net/minecraftforge/event/Event$Result	cpw/mods/fml/common/eventhandler/Event$Result
+net/minecraftforge/event/Event$HasResult	cpw/mods/fml/common/eventhandler/Event$HasResult
+net/minecraftforge/common/Property$Type	net/minecraftforge/common/config/Property$Type

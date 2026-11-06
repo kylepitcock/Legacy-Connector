@@ -42,3 +42,9 @@ C	net/minecraft/nbt/NBTTagFloat	(Ljava/lang/String;F)V	(F)V	drop
 C	net/minecraft/nbt/NBTTagDouble	(Ljava/lang/String;D)V	(D)V	drop
 C	net/minecraft/nbt/NBTTagIntArray	(Ljava/lang/String;[I)V	([I)V	drop
 C	net/minecraft/nbt/NBTTagByteArray	(Ljava/lang/String;[B)V	([B)V	drop
+# Items and players
+M	net/minecraft/item/Item	getItemDisplayName	(Lnet/minecraft/item/ItemStack;)Ljava/lang/String;	getItemStackDisplayName
+R	net/minecraft/item/ItemStack	setItemName	(Ljava/lang/String;)V	call-pop	setStackDisplayName	(Ljava/lang/String;)Lnet/minecraft/item/ItemStack;
+R	net/minecraft/item/Item	getStrVsBlock	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/Block;I)F	droplast	getStrVsBlock	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/block/Block;)F
+R	net/minecraft/entity/player/EntityPlayer	getCurrentPlayerStrVsBlock	(Lnet/minecraft/block/Block;ZI)F	droplast	getCurrentPlayerStrVsBlock	(Lnet/minecraft/block/Block;Z)F
+R	net/minecraft/entity/player/EntityPlayer	dropPlayerItem	(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/entity/item/EntityItem;	append-int	dropPlayerItemWithRandomChoice	(Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/item/EntityItem;	0

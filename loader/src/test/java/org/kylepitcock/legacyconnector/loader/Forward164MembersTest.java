@@ -115,6 +115,9 @@ class Forward164MembersTest {
                     String to = r[5].equals("=") ? owner : r[5];
                     if (!has(LegacyVersion.V1_7_10, H17, to, r[6], r[7])) bad.add("1.7.10 has no " + to + "." + r[6] + r[7]);
                 }
+                case "call-pop", "droplast", "append-int" -> {
+                    if (!has(LegacyVersion.V1_7_10, H17, owner, r[5], r[6])) bad.add("1.7.10 has no " + owner + "." + r[5] + r[6]);
+                }
                 case "wrap-text" -> {
                     if (!has(LegacyVersion.V1_7_10, H17, owner, r[5], r[6])) bad.add("1.7.10 has no " + owner + "." + r[5] + r[6]);
                 }

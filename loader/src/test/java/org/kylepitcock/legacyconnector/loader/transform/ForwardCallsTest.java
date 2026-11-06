@@ -98,6 +98,22 @@ class ForwardCallsTest {
     }
 
     @Test
+    void argumentAndResultAdaptations() {
+        ClassNode node = with(
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, P + "net/minecraft/item/ItemStack", "setItemName", "(Ljava/lang/String;)V"),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, P + "net/minecraft/item/Item", "getStrVsBlock",
+                        "(L" + P + "net/minecraft/item/ItemStack;L" + P + "net/minecraft/block/Block;I)F"),
+                new MethodInsnNode(Opcodes.INVOKEVIRTUAL, P + "net/minecraft/entity/player/EntityPlayer", "dropPlayerItem",
+                        "(L" + P + "net/minecraft/item/ItemStack;)L" + P + "net/minecraft/entity/item/EntityItem;"));
+        assertEquals(3, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));
+        String item = "L" + P + "net/minecraft/item/ItemStack;";
+        assertEquals(List.of("182 " + P + "net/minecraft/item/ItemStack.setStackDisplayName(Ljava/lang/String;)" + item, "op87",
+                "op87", "182 " + P + "net/minecraft/item/Item.getStrVsBlock(" + item + "L" + P + "net/minecraft/block/Block;)F",
+                "op3", "182 " + P + "net/minecraft/entity/player/EntityPlayer.dropPlayerItemWithRandomChoice(" + item + "Z)L" + P + "net/minecraft/entity/item/EntityItem;"),
+                body(node));
+    }
+
+    @Test
     void otherVersionsAndUnrelatedCallsAreUntouched() {
         ClassNode node = with(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "my/Other", "getTagList", "(Ljava/lang/String;)V"));
         assertEquals(0, ForwardCalls.apply(node, hierarchy(), LegacyVersion.V1_6_4));

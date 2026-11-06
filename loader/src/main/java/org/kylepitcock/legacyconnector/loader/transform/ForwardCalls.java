@@ -87,6 +87,37 @@ public final class ForwardCalls {
                 m.desc = norm.linkDesc(rule[7]);
                 return m;
             }
+            case "call-pop" -> {
+                // the 1.7.10 method returns what the 1.6.4 one did not (a fluent setter); the caller does not expect a value
+                String newDesc = norm.linkDesc(rule[6]);
+                m.name = rule[5];
+                m.desc = newDesc;
+                if (Type.getReturnType(newDesc).getSort() == Type.VOID) return m;
+                InsnNode pop = new InsnNode(Type.getReturnType(newDesc).getSize() == 2 ? Opcodes.POP2 : Opcodes.POP);
+                list.insert(m, pop);
+                return pop;
+            }
+            case "droplast" -> {
+                // R ... droplast newName newDesc: the trailing arguments the new descriptor lacks are discarded
+                String newDesc = norm.linkDesc(rule[6]);
+                Type[] old = Type.getArgumentTypes(m.desc);
+                int keep = Type.getArgumentTypes(newDesc).length;
+                InsnList drop = new InsnList();
+                for (int i = old.length - 1; i >= keep; i--) drop.add(new InsnNode(old[i].getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+                list.insertBefore(m, drop);
+                m.name = rule[5];
+                m.desc = newDesc;
+                return m;
+            }
+            case "append-int" -> {
+                // R ... append-int newName newDesc value: the new method takes one more int/boolean argument
+                int value = Integer.parseInt(rule[7]);
+                list.insertBefore(m, value >= -1 && value <= 5 ? new InsnNode(Opcodes.ICONST_0 + value) : new org.objectweb.asm.tree.LdcInsnNode(value));
+                method.maxStack += 1;
+                m.name = rule[5];
+                m.desc = norm.linkDesc(rule[6]);
+                return m;
+            }
             case "static" -> {
                 MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[5], rule[6], norm.linkDesc(rule[7]), false);
                 list.set(m, helper);
