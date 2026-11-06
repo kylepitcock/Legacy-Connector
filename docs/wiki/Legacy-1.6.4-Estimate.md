@@ -1,7 +1,8 @@
 # Estimate: legacy 1.6.4 Forge mods on NeoForge 1.21.1
 
-Research note, written 2026-11-06 from the repository state and general knowledge of Forge 9.11 / MC 1.6.4 (not re-verified
-against the 1.6.4 sources; there are **no 1.6.4 jars in `test-mods*`**, so "what mods use" below is an expectation). Back to [Home](Home.md).
+Research note, written 2026-11-06 from the repository state and general knowledge of Forge 9.11 / MC 1.6.4. A 43-jar corpus
+(`test-mods-164/`, gitignored) has since been scanned; **measured numbers are in [Legacy-1.6.4-Corpus](Legacy-1.6.4-Corpus.md)** and the "Measured" section at the end of this page
+lists where they change the estimate. Back to [Home](Home.md).
 Not on the roadmap yet (the order in `CLAUDE.md` is 1.7.10, 1.12.2, 1.20.1, 1.16.5, 1.2.5); this answers "how big would it be".
 
 ## Short answer
@@ -64,3 +65,24 @@ handling, and that long tail is open-ended like for every version (it is the iss
 - **Coremods:** like 1.7.10, many big 1.6.4 mods (IC2, BuildCraft, ThermalExpansion via CoFH later) patch vanilla with ASM that cannot run here;
   the same per-mod hook bridges as for 1.7.10 mods apply.
 - **Shared maintenance:** every API added to the 1.7.10 shim now has a second consumer; keep the id facade out of the shared classes.
+
+## Measured (corpus of 43 jars, 2026-11-06)
+
+Details and tables: [Legacy-1.6.4-Corpus](Legacy-1.6.4-Corpus.md); scanner `tools/compat/scan_164.py`. What changes in the estimate above:
+
+- **Confirmed, bigger than assumed: numeric ids** are used by 31 of 43 jars (72%): `blockID`/`itemID` fields 26-30 jars, `Block.blocksList`/`Item.itemsList` 22-27, `World.getBlockId` 25,
+  int `setBlock` 23, int constructors of Block/Item/ItemStack 18-26 jars, biome/potion/enchantment ids 7-17. Keep the 1 to 1.5 weeks, and add: the facade must also cover int-taking constructors of
+  about 40 vanilla block/item subclasses (`BlockContainer`, `ItemArmor`, `ItemFood`, `BlockFlower`, `ItemSword`...), `PotionEffect(int, ...)` (17 jars) and `Potion.potionTypes`.
+- **Networking is larger than the 4 to 6 days line:** 35 of 43 jars (81%) use `NetworkMod`/`IPacketHandler`/`Packet250CustomPayload`/`PacketDispatcher`, and 34 use `ITickHandler`/`TickRegistry`, 17 `IPlayerTracker`,
+  12 `IConnectionHandler`, 12 `KeyBindingRegistry`. The 1.7.10 shim has none of these; budget **1 to 1.5 weeks** for the network + tick + tracker + key binding adapters together (all are adapters onto 1.7.10 events/`FmlChannelBridge`).
+- **Smaller than assumed: mod entry.** 40 of 40 `@Mod` jars already use `@Mod.EventHandler`; only 1 also has `@PreInit`/`@Init`/`@PostInit`. Cut "1 to 2 days" to a few hours.
+- **Smaller than assumed: the class long tail.** Of 1,020 distinct Minecraft/Forge classes referenced by the 40 non-obfuscated jars, 861 exist in the shim unchanged, 84 are renames/package moves (a table in the remapper),
+  28 are removed APIs (the network/tick/player-tracker/key-binding families above, `AABBPool`, `Vec3Pool`, `SoundPool`) and only 47 are unaccounted for (61 class-file references, 2 used by more than one jar). The
+  "1.5 to 2 weeks" long-tail line is now mostly *member-level* work (1.6.4 method/field names and signatures against the shim), which the class scan cannot measure; run `probe.py --mc 1.6.4` once the mapping tables exist before trusting it.
+- **New item not in the estimate: notch-named jars.** 9 of 43 jars (21%: CodeChickenCore, NEI, ChickenChunks, Ender Storage, TreeCapitator, Backpacks, Decocraft, Modular Turrets, VoxelMap) reference Minecraft
+  by obfuscated class names (`ye`, `atv`...). The loader needs the 1.6.4 notch to MCP class map for them (1 to 2 days with the FML `joined.srg`); NEI is replaced by JEI anyway, so the real count that needs it is lower.
+- **Corpus gaps:** BuildCraft 4, Railcraft, Thermal Expansion 3, CoFHCore, Redstone Arsenal, Waila, Ars Magica 2, Natura, MineFactory Reloaded and ComputerCraft are blocked from third-party download
+  (HTTP 403 on the CDN); Biomes O' Plenty, Thaumcraft, Applied Energistics, Mekanism, Galacticraft, GregTech and Pam's have no 1.6.4 file on CurseForge. M0's "30 to 50 jars" is met (43), but a Tekkit/FTB-style
+  pack cannot be assembled from it.
+
+Net effect: M0 and M1 stay at 1 and 1 to 1.5 weeks; M2 (network, entities, world generation) grows by about a week; the class-level part of M3 shrinks. Total range unchanged at **4 to 6 weeks**.
