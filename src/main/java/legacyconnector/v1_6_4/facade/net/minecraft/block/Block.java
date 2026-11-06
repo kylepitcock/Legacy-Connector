@@ -36,6 +36,34 @@ public final class Block {
         return Ids.block(constructorId + 256);
     }
 
+    // The per-id property tables of 1.6.4. Mods write them for their blocks ({@code Block.opaqueCubeLookup[blockID] = true}) in the
+    // constructor; the shim keeps these properties in the blocks, so the arrays only absorb the writes.
+    private static final boolean[] OPAQUE_CUBE_LOOKUP = new boolean[4096];
+    private static final boolean[] USE_NEIGHBOR_BRIGHTNESS = new boolean[4096];
+    private static final boolean[] CAN_BLOCK_GRASS = new boolean[4096];
+    private static final int[] LIGHT_OPACITY = new int[4096];
+    private static final int[] LIGHT_VALUE = new int[4096];
+
+    public static boolean[] mcc$get$opaqueCubeLookup() {
+        return OPAQUE_CUBE_LOOKUP;
+    }
+
+    public static boolean[] mcc$get$useNeighborBrightness() {
+        return USE_NEIGHBOR_BRIGHTNESS;
+    }
+
+    public static boolean[] mcc$get$canBlockGrass() {
+        return CAN_BLOCK_GRASS;
+    }
+
+    public static int[] mcc$get$lightOpacity() {
+        return LIGHT_OPACITY;
+    }
+
+    public static int[] mcc$get$lightValue() {
+        return LIGHT_VALUE;
+    }
+
     // BEGIN GENERATED (tools/gen_statics_164.py): vanilla statics of Block in 1.6.4
     /** Block.anvil = Blocks.anvil */
     public static legacyconnector.v1_7_10.net.minecraft.block.Block mcc$get$anvil() {
