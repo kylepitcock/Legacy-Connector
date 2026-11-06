@@ -140,7 +140,7 @@ parallel work per old engineer-week for the mechanical parts, less where tooling
 | Worldgen data formats and features | 1 |
 | Library adapters (Curios, GeckoLib, Patchouli, JEI, Cloth Config, Architectury; Create not feasible) | 2 |
 | Testing, bug triage, corpus runs, compat site data (ongoing, 25% of the above) | 5 |
-| **Total to broad coverage** | **about 25 to 30 agent-days, i.e. 2 to 4 weeks of wall-clock time** |
+| **Total to broad coverage** | **about 25 to 30 agent-days, i.e. roughly 1 to 2 weeks of wall-clock time with about five agents in parallel** |
 | Fabric 1.20.1 via Connector (reading b) | +4 to 6 |
 
 Still plus or minus 40%, and the long tail after "broad coverage" is open-ended (it is the issue list, as for every version).
@@ -160,16 +160,16 @@ Still plus or minus 40%, and the long tail after "broad coverage" is open-ended 
 6. **Rendering.** Custom `RenderType`/shader/vertex code (GeckoLib-free mods that draw by hand) breaks in many small ways with no compile-time guide.
 7. **Sinytra reading (b).** Depends on a third-party transformer whose internals shift between releases.
 
-## 7. Milestones
+## 7. Milestones (wall-clock, corrected 2026-11-06)
 
-| # | Milestone | Done when | Wall-clock |
-|---|---|---|---|
-| 0 | Corpus and gap report | 30 to 50 real 1.20.1 jars in `test-mods4/`; `checkLegacyMod` reports missing symbols vs 1.21.1 per jar; ranked list of the most-missing APIs, mixin counts per mod; decide go/no-go | 1 day |
-| 1 | First mod loads | A simple content mod (blocks, items, one block entity, DeferredRegister, no mixins) is translated, loads on a server, registers its content | 3 to 5 days cumulative |
-| 2 | Content registered across the corpus | 60% of the corpus loads without errors; items, blocks, recipes, loot, tags, assets resolve; server self-test prints registration counts like the 1.12.2 one | about 1.5 weeks |
-| 3 | Gameplay | Block entities, menus, networking, capabilities and entities work in a survival session; client renders blocks/items/tile entities; the three most-used library adapters in | about 2.5 weeks |
-| 4 | Breadth | NBT/component edge cases, worldgen, mixin triage, compat site entries | 3 to 4 weeks |
-| 5 | Fabric 1.20.1 through Connector | Optional | +1 week |
+| # | Milestone | Wall-clock |
+|---|---|---|
+| 0 | Corpus and gap report | about 1 day |
+| 1 | First mod loads on a server | 1 to 2 days |
+| 2 | Content registered across the corpus (60%) | 3 to 4 days |
+| 3 | Gameplay: block entities, menus, networking, capabilities, client rendering, main library adapters | about 1 week |
+| 4 | Breadth: NBT/component edge cases, worldgen, mixin triage | 1 to 2 weeks |
+| 5 | Fabric 1.20.1 through Sinytra Connector (reuse it at runtime, do not port it: MIT licensed, about 9 to 10k lines; our part is the 1.20.1 to 1.21.1 migration of the jar) | +3 to 5 days |
 
 ## 8. Recommendation
 

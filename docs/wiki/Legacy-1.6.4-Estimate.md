@@ -7,14 +7,9 @@ Not on the roadmap yet (the order in `CLAUDE.md` is 1.7.10, 1.12.2, 1.20.1, 1.16
 
 ## Short answer
 
-**About 4 to 8 days of wall-clock time to reach the level 1.7.10 has today ("loads, server side works, a playable client"), working the way the
-project has worked so far (parallel agents, generated gap lists, real-client checks), because 1.6.4 is built as a thin layer on top of the
-existing 1.7.10 shim.** (Corrected 2026-11-06: the first version of this note gave 4 to 6 weeks, a conventional human estimate that ignored the measured pace
-of this project. The per-area sizes below are relative; read the "days" as agent-days of work that run in parallel.)
+**About 1 to 1.5 days of wall-clock time to a first usable 1.6.4 tier (a handful of real content mods playable in a client); the server side (M1 and M2) needs about 2 to 4 more hours.** Built as a thin layer on the 1.7.10 shim.
 
-Measured pace (this repo): the first commit is 2026-10-10; by 2026-11-06 it holds the 1.7.10 shim (1,339 files / 112k lines, plus 183 bridge
-files / 33k lines), the 1.12.2 shim (169k lines, started 2026-10-25), the 1.20.1 groundwork, 22 releases and the fixes of about 160 issues. 1.12.2 reached its
-playable tier about 12 days after it started, as a separate shim; 1.6.4 reuses the 1.7.10 shim, so it is a fraction of that.
+Wall-clock figures below were corrected on 2026-11-06: elapsed time, not summed agent time, at the project's measured pace (1.6.4 work started 15:27; by 16:45 the loader, member forwards, id layer and network adapters were merged and 4 corpus mods loaded on a server, with 3 to 4 agents in parallel; limits are merging and about three game clients at once). Plus or minus 50%.
 
 ## What differs between 1.6.4 and 1.7.10
 
@@ -43,17 +38,16 @@ Package names are the same (`cpw.mods.fml`, `net.minecraftforge`, `net.minecraft
 2. Collect a corpus (CurseForge/Modrinth have the 1.6.4 files of the era: IC2 1.115, BuildCraft 4.x, Forestry 2.x, Thermal Expansion 3, Railcraft 7, Mekanism 6, Twilight Forest 1.x, Biomes O' Plenty 1.6.4, Thaumcraft 4.0/4.1, Applied Energistics rv1, Industrial... ) and run the offline probe (`tools/compat/probe.py --mc 1.6.4`) to produce the gap lists, exactly as was done for 1.12.2.
 3. Work the lists with parallel agents in order of use; use the server self tests and the headless/real client for rendering.
 
-## Milestones (wall-clock, parallel agents)
+## Milestones (wall-clock, from 2026-11-06 16:45)
 
-| Milestone | Content | Estimate |
+| Milestone | Content | State and estimate |
 |---|---|---|
-| M0 | Corpus (30 to 50 jars), mapping tables, `LegacyVersion.V1_6_4`, inspector accepts the old `@Mod` forms, probe numbers | about 1 day |
-| M1 | Id facade + vanilla statics + `Icon`: the first content mods register blocks/items/tiles and the server self test passes | 1 to 2 days |
-| M2 | Network adapter, entities, world generation, recipes: server-side "playable" | 1 to 2 days |
-| M3 | Client rendering and GUIs through the 1.7.10 bridges, probe gap lists worked down | 2 to 3 days |
+| M0 | Corpus (42 jars), tables, `LegacyVersion.V1_6_4`, class renames, notch names | done |
+| M1 | Id facade, statics, `Icon`, member forwards; bridge methods for overridden id-signature methods; biome/potion/enchantment ids | mostly done; 2 to 4 hours |
+| M2 | `@NetworkMod`, packets, tick handlers, trackers seen working; entities, worldgen, recipes | adapters merged, unverified; with M1 |
+| M3 | Client rendering, textures, GUIs, notch-named jars | not started; first mods rendering 4 to 8 hours after M2; 'supported' in about 1 to 1.5 days |
 
-Total: **4 to 8 days** for a first usable 1.6.4 tier; compatibility will stay lower than 1.7.10's for mods with their own packet protocols and tight id
-handling, and that long tail is open-ended like for every version (it is the issue list, not a milestone).
+Then 1.5.2 (about 1 day, overlapping) and 1.4.7 (0.5 to 1 day after it); the 0.4.0 release is about 3 to 4 days out (range 2 to 5).
 
 ## Risks and cost drivers
 

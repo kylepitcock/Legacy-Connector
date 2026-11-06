@@ -16,6 +16,21 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 10 | 1.2.5 | Planned | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Different layer: `ModLoader`/`BaseMod` emulation and flat names, no FML |
 | 11 | 1.3.2 | On demand | Few mods | Only if a specific mod needs it |
 
+## Estimates (wall-clock, 2026-11-06 evening; plus or minus 50%)
+
+| Item | Estimate |
+|---|---|
+| 1.6.4 server side | 2 to 4 hours |
+| 1.6.4 supported (a handful of content mods playable) | 1 to 1.5 days |
+| 1.5.2 | about 1 day after 1.6.4 loads, overlapping |
+| 1.4.7 | 0.5 to 1 day after 1.5.2 |
+| **0.4.0 (1.6.4 + 1.5.2 + 1.4.7)** | about 3 to 4 days (range 2 to 5) |
+| 1.12.2 beta | about half a day (rendering issues #169 to #172, then a re-sweep) |
+| 1.20.1 | corpus 1 day; first mod 1 to 2 days; broad coverage 1 to 2 weeks |
+| 1.19.2, 1.18.2, 1.16.5 | 1 to 2 days each after the 1.20.1 pipeline |
+| 1.2.5 | 2 to 3 days (a different layer) |
+| Fabric 1.20.1 via Sinytra Connector | 3 to 5 days after Forge 1.20.1 works, if the corpus justifies it |
+
 Always in parallel: keep the layer able to follow newer NeoForge/Minecraft host versions (1.21.4 and later). That is not a legacy version but it decides
 whether any of the above keeps working.
 
