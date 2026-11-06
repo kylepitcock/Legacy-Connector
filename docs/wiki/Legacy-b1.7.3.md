@@ -2,9 +2,9 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: started (loader only).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are detected, deobfuscated, linked against a
-synthesized b1.7.3 API and loaded into the game's module layer. The ModLoader runtime is not written yet: `PlatformB173` loads each `mod_*`
-class but does not construct it, so **nothing of these mods enters the game yet**.
+**Status: started (server side: blocks, items, recipes).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are detected,
+deobfuscated and linked; the mods are constructed as ModLoader did and their blocks, items and recipes become modern content. Not
+yet: rendering (no textures or models, the client shows placeholder models), tile entities, entities, world generation, GUIs, tick hooks.
 
 ## Putting the mods in
 
@@ -41,6 +41,37 @@ with the same `mod_X` class; when both are present, the build for the running si
 String constants are not renamed: ModLoader finds mods by simple class name, and reflection by obfuscated member name
 (`ModLoader.getPrivateValue(cls, obj, "a")`) must be mapped at run time by the shim (the table has the reverse direction for that).
 
+## Runtime (server side)
+
+`vb1_7_3/PlatformB173` runs the ModLoader lifecycle:
+
+1. **Vanilla first** (`VanillaB173`): `Block.BLOCKS` / `Item.ITEMS` get a view of every b1.7.3 vanilla block and item at its original id
+   (ids read from the game's own static initialisers by `tools/extract_beta_vanilla_ids.py` into `vanilla-ids.tsv`), mapped to the modern
+   block/item (metadata variants such as wool and dye colours, logs and slabs to the flattened items). `Block.STONE` and the other constants
+   are served on first read by a static resolver, as for 1.12.2.
+2. **Every mod class is loaded and its `@MLProp` config read** (`config/mod_X.cfg`, written with the defaults), then block ids two mods
+   share are moved apart: an `@MLProp` int named `...ID` with a block id that vanilla, another mod's block or an earlier mod already has gets
+   the highest free id, saved in that mod's config (NetherCraft and ComputerCraft both default to 207). Forge's `Configuration` hands out
+   ids the same way it did, and also skips ids other mods reserve through `@MLProp` (MineFactory's conveyor and RedPower Array, which
+   creates its blocks only in `ModsLoaded`, both default to 125).
+3. **Construction**: the `mod_*` class is constructed (a ModLoader mod registers everything from its constructor). A clash found only
+   now ("Slot N is already occupied") moves that `@MLProp` id and constructs the mod again. A mod that fails gives its block and item ids
+   back. Every block and item belongs to the mod whose jar defines its class (RedPower Array's `ModsLoaded` initialises Logic and Wiring).
+4. **`ModsLoaded()`** for every mod, then **registration** (`BridgeB173`, registries are still open): each mod block becomes a
+   `LegacyB173Block` (`mod:name` from its translation key, e.g. `nether:netherrack_ore`, else `mod:block_<id>`) with the legacy hardness,
+   resistance, light, sound, slipperiness, material flags and bounds, one `meta` property (0-15) like 1.12.2, and drops asked from the
+   legacy block (`getDroppedItemId/Count/Meta`); its `ItemBlock` becomes a modern `BlockItem` (metadata through the `block_state`
+   component), other items become modern items (stack size, durability). `ModLoader.AddName` becomes the display name.
+5. **Recipes** (`RecipesB173`): `AddRecipe`, `AddShapelessRecipe` and `AddSmelting` become data pack recipes when the pack is built
+   (Block ingredients match any metadata, as in b1.7.3: any wool colour).
+
+Texture overrides keep ModLoader's sprite indices (same free slots of terrain.png / gui/items.png); past the 256 slots of a sheet the
+indices go on instead of failing ("No more empty item sprite indices left!" stopped NetherCraft and Portal Gun together), as InfSprites
+allowed.
+
+The server test logs `b1.7.3 content registered: ...` and, with `-Dlegacyconnector.entitySelfTest=true`, `B1.7.3 SELF TEST` (every
+mod block placed, read back and asked for drops).
+
 ## Reference data
 
 `tools/fetch_devtools.sh` downloads the b1.7.3 client and server, Risugami's ModLoader, ModLoaderMP (client and server) and Forge 1.0.7 into
@@ -61,17 +92,24 @@ and 0 failing methods in bytecode verification. NetherCraft, IndustrialCraft 2, 
 More Creeps and Weirdos, ComputerCraft, Portal Gun, Twilight Forest (b1.7.3 version), Moon Mod, Butterflies and Coral Reef link with
 0 unresolved references. Not detected outside `mods/b1.7.3/`: the two OverrideAPI library jars (no `mod_*` class).
 
+## Server results
+
+Dedicated server with 15 b1.7.3 client builds (`run-subtest/mods/b1.7.3/`): 10 construct (NetherCraft, Portal Gun, Minefactory Renewed,
+all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 51 blocks and 230 items registered, 51 of 51 blocks placed by the self test,
+1487 recipes translated (3 name items nothing provides). Failing, as expected for now: ComputerCraft (reads a vanilla texture), Coral Reef
+and More Creeps (need GuiAPI), Moon Mod (needs ShockAhPI), IndustrialCraft 2's client build (LWJGL on a dedicated server).
+
 ## Plan
 
-1. **ModLoader runtime**: `BaseMod` lifecycle (constructor registration, `ModsLoaded`, `OnTickInGame`/`OnTickInGUI`, `AddRecipes`,
-   `GenerateSurface`/`GenerateNether`, `AddRenderer`, `RegisterAnimation`, `KeyboardEvent`), `MLProp` config files, `ModLoader.*` static API,
-   reflection by obfuscated name.
-2. **Bridges**: numeric block/item ids (blocks under 256, items shifted by 256) and 4-bit metadata to registry entries, terrain.png /
-   gui/items.png sprite indices and `ModLoader.addOverride` / Forge sprite sheets to atlas sprites, recipes to a data pack, tile entities,
-   entities (`RegisterEntityID`), world generation to placed features, dimensions (Nether-style, ShockAhPI later). Apron's StationAPI
-   modules (`ModContentRegistry`, `SpriteSheet`, `MetaBlockState`) are the reference for the id/sprite/metadata mapping.
+1. **Rendering (client)**: terrain.png / gui/items.png sprite indices and `ModLoader.addOverride` / Forge sprite sheets to atlas
+   sprites, block and item models generated per legacy block (per side and metadata, as `getTexture(side, meta)` answers), the b1.7.3
+   vanilla sprites mapped to modern textures. Apron's StationAPI modules (`SpriteSheet`, `MetaBlockState`) are the reference.
+2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
+   (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /
+   `GenerateNether` as placed features), fuel (`AddFuel`).
 3. **Logic on the server**: plain ModLoader mods expected one world. Their logic (`OnTickInGame`, `mc.theWorld`, `mc.thePlayer`) runs
    against server-side views, rendering and GUIs stay on the client, `ModLoader.OpenGUI` becomes a synced menu; ModLoaderMP's
    `Packet230ModLoader` becomes a layer payload. Single player first, dedicated servers partial.
 4. **Other APIs**: ShockAhPI, PlayerAPI, GuiAPI, ModOptionsAPI, AudioMod, ItemSpriteAPI (as bridges, the way Apron provides them).
 5. LWJGL 2 / GL11 for b1.7.3 mods currently links to synthesized stubs; the 1.7.10 GL emulation should serve them too.
+6. Reflection by obfuscated name (`ModLoader.getPrivateValue(cls, obj, "a")`) needs the official to named table at run time.

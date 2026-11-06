@@ -154,6 +154,9 @@ public final class LegacyConnector {
         });
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge::changedSinceGenerate);
         org.kylepitcock.legacyconnector.core.pack.LegacyRecipeSync.watch(org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122::changedSinceGenerate);
+        GeneratedPack.addRecipeContributor((type, out) -> {
+            if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.vb1_7_3.RecipesB173.generate(out);
+        });
 
         IEventBus game = NeoForge.EVENT_BUS;
         org.kylepitcock.legacyconnector.core.LevelReleases.register(game);
@@ -163,6 +166,7 @@ public final class LegacyConnector {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.DimensionPhysics1710.register(game);
         org.kylepitcock.legacyconnector.v1_7_10.compat.chromaticraft.ChromaDimensionBarriers.register(game);
         org.kylepitcock.legacyconnector.v1_12_2.entity.Entities1122.register(game);
+        org.kylepitcock.legacyconnector.vb1_7_3.SelfTestB173.register(game);
         game.addListener((net.neoforged.neoforge.event.server.ServerStoppedEvent e) -> {
             if (!e.getServer().isDedicatedServer()) return;
             // Legacy mods start non-daemon thread pools (IC2 and others) they never stop, which keep a stopped dedicated server's JVM alive.

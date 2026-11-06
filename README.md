@@ -38,7 +38,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | 1.20.1 | **Started (experimental, off by default; `experimental.forge1201`).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge). So far: jar detection, the renames, `mods.toml` conversion and the first compatibility layer; no 1.20.1 mod has been run in game yet (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
 | 1.16.5 | Planned (after 1.20.1). |
 | 1.2.5 | Planned (after 1.16.5). |
-| b1.7.3 | **Started (loader only).** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are detected, deobfuscated (Babric intermediary + biny names) and linked; 23 of 25 test jars link with 0 failing methods. The ModLoader runtime is not written yet, so they add nothing to the game ([details](docs/wiki/Legacy-b1.7.3.md)). |
+| b1.7.3 | **Started (server side).** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are detected, deobfuscated (Babric intermediary + biny names) and linked; 23 of 25 test jars link with 0 failing methods. their blocks, items and recipes are registered (server side; NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no textures, tile entities, entities or world generation yet ([details](docs/wiki/Legacy-b1.7.3.md)). |
 
 Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
 
