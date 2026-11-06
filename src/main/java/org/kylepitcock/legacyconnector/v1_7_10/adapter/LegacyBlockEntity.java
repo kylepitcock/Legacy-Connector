@@ -352,6 +352,15 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         if (p instanceof S35PacketUpdateTileEntity s35 && s35.getNbtCompound() != null) {
             CompoundTag tag = s35.getNbtCompound().mcc$modern().copy();
             tag.putInt("mcc$type", s35.getTileEntityType());
+            // 1.6.4's Packet132TileEntityData goes to the tile's 1.6.4 onDataPacket (see Tiles164)
+            if (s35 instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet132TileEntityData) tag.putBoolean("mcc$164", true);
+            return tag;
+        }
+        if (p instanceof legacyconnector.v1_6_4.net.minecraft.network.packet.Packet250CustomPayload payload164) {
+            // 1.6.4 tiles answer with a custom payload packet: carried like a 1.7.10 custom-channel one
+            CompoundTag tag = new CompoundTag();
+            tag.putString("mcc$channel", payload164.channel == null ? "" : payload164.channel);
+            tag.putByteArray("mcc$fml", payload164.mcc$bytes());
             return tag;
         }
         if (p instanceof legacyconnector.v1_7_10.cpw.mods.fml.common.network.internal.FMLProxyPacket fml) {
@@ -402,7 +411,13 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
         int type = tag.getInt("mcc$type");
         CompoundTag copy = tag.copy();
         copy.remove("mcc$type");
+        boolean legacy164 = copy.getBoolean("mcc$164");
+        copy.remove("mcc$164");
         try {
+            if (legacy164 && org.kylepitcock.legacyconnector.v1_6_4.bridge.Tiles164.deliver(te, worldPosition.getX(), worldPosition.getY(),
+                    worldPosition.getZ(), type, new NBTTagCompound(copy))) {
+                return;
+            }
             te.onDataPacket(NetworkManager.MCC_DUMMY, new S35PacketUpdateTileEntity(worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), type,
                     new NBTTagCompound(copy)));
         } catch (RuntimeException | LinkageError e) {

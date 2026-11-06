@@ -69,7 +69,20 @@ public final class FmlChannelBridge {
     }
 
     public static boolean has(String name) {
-        return CHANNELS.containsKey(name) || EVENT_CHANNELS.containsKey(name);
+        return CHANNELS.containsKey(name) || EVENT_CHANNELS.containsKey(name) || RAW.containsKey(name);
+    }
+
+    /** Receives the bytes of a channel as they arrived (1.6.4's {@code IPacketHandler}s: no pipeline, the handler decodes). */
+    @FunctionalInterface
+    public interface RawReceiver {
+        void receive(String channel, byte[] data, Side side, Object netHandler);
+    }
+
+    private static final Map<String, RawReceiver> RAW = new ConcurrentHashMap<>();
+
+    /** Routes the bytes arriving on {@code channel} to {@code receiver} instead of an FML pipeline. */
+    public static void registerRaw(String channel, RawReceiver receiver) {
+        RAW.put(channel, receiver);
     }
 
     private static final Map<String, legacyconnector.v1_7_10.cpw.mods.fml.common.network.FMLEventChannel> EVENT_CHANNELS = new ConcurrentHashMap<>();
@@ -144,6 +157,15 @@ public final class FmlChannelBridge {
 
     public static void deliver(String channelName, byte[] data, Side side, Object netHandler,
             legacyconnector.v1_7_10.cpw.mods.fml.common.network.handshake.NetworkDispatcher dispatcher) {
+        RawReceiver raw = RAW.get(channelName);
+        if (raw != null) {
+            try {
+                raw.receive(channelName, data, side, netHandler);
+            } catch (RuntimeException | LinkageError e) {
+                LOG.error("Legacy channel {} failed to handle a packet", channelName, e);
+            }
+            return;
+        }
         var eventChannel = EVENT_CHANNELS.get(channelName);
         if (eventChannel != null) {
             FMLProxyPacket packet = inbound(data, channelName, side, netHandler, dispatcher);
