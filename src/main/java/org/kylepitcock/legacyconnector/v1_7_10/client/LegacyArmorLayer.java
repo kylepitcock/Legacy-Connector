@@ -75,16 +75,18 @@ public class LegacyArmorLayer<T extends LivingEntity, M extends HumanoidModel<T>
                         inner = new ModelBiped(0.5F);
                     }
                     model = slot == 2 ? inner : outer;
+                    // 1.7.10's RenderPlayer picked the parts per slot on the vanilla model only, before ForgeHooksClient.getArmorModel: a model the
+                    // item supplies keeps the visibility it set itself (Fisk's suit model draws the whole body from the chest piece)
+                    model.bipedHead.showModel = slot == 0;
+                    model.bipedHeadwear.showModel = slot == 0;
+                    model.bipedBody.showModel = slot == 1 || slot == 2;
+                    model.bipedRightArm.showModel = slot == 1;
+                    model.bipedLeftArm.showModel = slot == 1;
+                    model.bipedRightLeg.showModel = slot == 2 || slot == 3;
+                    model.bipedLeftLeg.showModel = slot == 2 || slot == 3;
                 }
                 String path = armor.getArmorTexture(legacyStack, legacyEntity, slot, null);
                 ResourceLocation texture = path != null ? textureOf(path) : defaultTexture(armor, slot);
-                model.bipedHead.showModel = slot == 0;
-                model.bipedHeadwear.showModel = slot == 0;
-                model.bipedBody.showModel = slot == 1 || slot == 2;
-                model.bipedRightArm.showModel = slot == 1;
-                model.bipedLeftArm.showModel = slot == 1;
-                model.bipedRightLeg.showModel = slot == 2 || slot == 3;
-                model.bipedLeftLeg.showModel = slot == 2 || slot == 3;
                 model.isSneak = entity.isCrouching();
                 model.isRiding = entity.isPassenger();
                 model.isChild = entity.isBaby();

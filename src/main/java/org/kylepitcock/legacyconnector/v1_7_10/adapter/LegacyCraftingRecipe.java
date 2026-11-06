@@ -70,6 +70,8 @@ public final class LegacyCraftingRecipe implements CraftingRecipe {
     public boolean matches(CraftingInput input, Level level) {
         IRecipe r = legacy();
         if (r == null) return false;
+        // 1.7.10's CraftingManager never asked recipes about an empty grid, and some (Fisk's empty-gun and pizza box recipes) answer true for one
+        if (input.isEmpty()) return false;
         try {
             return r.matches(view(input), World.mcc$wrap(level));
         } catch (RuntimeException | LinkageError e) {
