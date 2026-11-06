@@ -16,6 +16,14 @@ import java.util.List;
  */
 public enum LegacyVersion {
     /**
+     * Forge 1.4.7 (6.6.x, FML 4.x): the 1.5.2 model one step back, and the last version before the package restructuring: every Minecraft class is
+     * {@code net.minecraft.src.<Name>} (MCP 6.x), and ModLoader-style mods ({@code net.minecraft.src.BaseMod}, {@code mod_*}) run next to {@code @Mod}.
+     * A forward version like {@link #V1_5_2}: same shim prefix and numeric-id facades, the forward tables of 1.6.4 and 1.5.2 under its own, plus
+     * {@code forward/1.4.7/flat-names.tsv} ({@link org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames#flat}), which moves the flat names into the 1.5.2 packages first.
+     * Textures are sprite-sheet indices ({@code setTextureFile}, {@code ITextureProvider}, {@code blockIndexInTexture}), not {@code Icon}s.
+     */
+    V1_4_7("1.4.7", "legacyconnector/v1_6_4/", "legacyconnector_synth/v1_4_7/"),
+    /**
      * Forge 1.5.2 (7.8.x): the 1.6.4 model one step back. A forward version like {@link #V1_6_4}: it links against the 1.7.10 shim, shares the numeric-id facade
      * classes of 1.6.4 (its {@link #shimPrefix()} is the 1.6.4 one), takes the 1.6.4 forward tables as a fallback ({@link #forwardTableIds()}) and has its own API
      * tables ({@code legacy/1.5.2}) and synthesized classes. Differences from 1.6.4: {@code @PreInit/@Init/@PostInit} only (no {@code @EventHandler}),
@@ -82,20 +90,29 @@ public enum LegacyVersion {
 
     /** The family whose shim this version's jars link against (1.5.2 and 1.6.4 use the 1.7.10 one), or null when it has its own shim. */
     public LegacyVersion forward() {
-        return this == V1_5_2 || this == V1_6_4 ? V1_7_10 : null;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4 ? V1_7_10 : null;
     }
 
-    /** True for the versions with numeric block and item ids (1.5.2 and 1.6.4): they share the id facade and the notch-name handling. */
+    /** True for the versions with numeric block and item ids (1.4.7, 1.5.2 and 1.6.4): they share the id facade and the notch-name handling. */
     public boolean numericIds() {
-        return this == V1_5_2 || this == V1_6_4;
+        return this == V1_4_7 || this == V1_5_2 || this == V1_6_4;
+    }
+
+    /** True when the version names Minecraft classes {@code net.minecraft.src.<Name>} (1.4.7 and earlier) and needs the {@code flat-names.tsv} relocation. */
+    public boolean flatNames() {
+        return this == V1_4_7;
     }
 
     /**
      * Ids of the forward table folders ({@code legacyconnector/forward/<id>/}) that apply to this version, oldest first: later entries win. 1.5.2 starts from the
-     * 1.6.4 tables (same renames to the 1.7.10 shim) and overrides them with its own.
+     * 1.6.4 tables (same renames to the 1.7.10 shim) and overrides them with its own; 1.4.7 chains 1.6.4, 1.5.2 and its own.
      */
     public List<String> forwardTableIds() {
-        return this == V1_5_2 ? List.of(V1_6_4.id, id) : List.of(id);
+        return switch (this) {
+            case V1_4_7 -> List.of(V1_6_4.id, V1_5_2.id, id);
+            case V1_5_2 -> List.of(V1_6_4.id, id);
+            default -> List.of(id);
+        };
     }
 
     /** The family of the runtime platform and hand-written shim that runs this version's mods. */
@@ -155,6 +172,7 @@ public enum LegacyVersion {
     public static LegacyVersion fromMinecraftVersion(String mcVersion) {
         if (mcVersion == null) return null;
         String v = mcVersion.replaceAll("[\\[\\]()\\s]", "");
+        if (v.startsWith("1.4")) return V1_4_7;
         if (v.startsWith("1.5")) return V1_5_2;
         if (v.startsWith("1.6")) return V1_6_4;
         if (v.startsWith("1.7")) return V1_7_10;

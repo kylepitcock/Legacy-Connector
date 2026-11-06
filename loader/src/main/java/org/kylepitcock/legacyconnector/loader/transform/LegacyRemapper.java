@@ -100,6 +100,11 @@ public final class LegacyRemapper extends Remapper {
 
     /** A descriptor with notch class names replaced by MCP names, the form the forward tables use. */
     private String legacyDesc(String desc) {
+        String d = notchDesc(desc);
+        return version.flatNames() && d.contains("net/minecraft/src/") ? flatDesc(d) : d;
+    }
+
+    private String notchDesc(String desc) {
         if (notch == null || !hasBareClass(desc)) return desc;
         StringBuilder out = new StringBuilder(desc.length() + 16);
         for (int i = 0; i < desc.length(); i++) {
@@ -109,6 +114,22 @@ public final class LegacyRemapper extends Remapper {
                 int end = desc.indexOf(';', i);
                 if (end < 0) break;
                 out.append(legacyClass(desc.substring(i + 1, end))).append(';');
+                i = end;
+            }
+        }
+        return out.toString();
+    }
+
+    /** A descriptor with flat {@code net/minecraft/src} names (1.4.7) replaced by the packaged names the forward tables use. */
+    private String flatDesc(String desc) {
+        StringBuilder out = new StringBuilder(desc.length() + 16);
+        for (int i = 0; i < desc.length(); i++) {
+            char ch = desc.charAt(i);
+            out.append(ch);
+            if (ch == 'L') {
+                int end = desc.indexOf(';', i);
+                if (end < 0) break;
+                out.append(ForwardRenames.flat(version, desc.substring(i + 1, end))).append(';');
                 i = end;
             }
         }

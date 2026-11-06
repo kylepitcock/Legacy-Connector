@@ -22,6 +22,8 @@ public final class LegacyModDecl {
     /** FML dependency string, e.g. {@code required-after:Forge@[10.13.4,);after:NotEnoughItems}. */
     public String dependencies = "";
     public String acceptedMinecraftVersions;
+    /** A ModLoader mod (1.4.x and earlier): the main class extends {@code BaseMod} and there is no {@code @Mod} annotation. */
+    public boolean modLoader;
     public boolean clientSideOnly;
     public boolean serverSideOnly;
 
