@@ -1,6 +1,6 @@
 // run: ./gradlew runServerSubTest -PautostopTicks=600 -PserverTickScriptFrom=100 -PserverTickScript=<abs path of this file>
 // needs the Reika jars (DragonAPI, RotaryCraft, ElectriCraft, ReactorCraft) + CoFHCore in run-subtest/mods/1.7.10; see docs/wiki/Development.md
-var __p = String(java.lang.System.getProperty("legacyconnector.serverScript")).split("\\").join("/");
+var __p = String(java.lang.System.getProperty("legacyconnector.serverScript") || java.lang.System.getProperty("legacyconnector.serverTickScript")).split("\\").join("/");
 load(__p.substring(0, __p.lastIndexOf("/") + 1) + "lib-reika.js");
 var Y = -60, X = 300;
 var ET = Java.type("Reika.ElectriCraft.Registry.ElectriTiles");
@@ -25,6 +25,7 @@ var lines = {
   B: {z: 308, parts: [eng("JET"), GEN, W(-1), W(-2), T(-3, "MOTOR")]},
   B2: {z: 316, parts: [eng("JET"), GEN, W(-1, "TIN"), W(-2, "TIN"), T(-3, "MOTOR")]},
   C: {z: 324, parts: [eng("GAS"), GEN, W(-1, "COPPER"), BAT, UP(W(-2, "COPPER")), UP(W(-3, "COPPER")), UP(T(-4, "MOTOR"))]},
+  K: {z: 340 /* jet engine, copper wire, no fuse: 128 A fits the 4096 A rating */, parts: [eng("JET"), GEN, W(-1, "COPPER"), W(-2, "COPPER"), T(-3, "MOTOR")]},
   J: {z: 332, parts: [eng("JET"), GEN, W(-1, "COPPER"), T(-2, "FUSE"), W(-3, "COPPER"), T(-4, "MOTOR")]}
 };
 var names = Object.keys(lines);
@@ -68,5 +69,5 @@ function rd(n) {
   });
   return o;
 }
-if (tick >= 60 && tick % 100 == 0) { out += "T" + tick; names.forEach(function (n) { try { out += rd(n); } catch (e) { out += "\n[" + n + "] EXC " + e; } }); }
+if ((tick >= 60 && tick % 100 == 0) || (tick >= 31 && tick < 60 && tick % 6 == 1)) { out += "T" + tick; ["B","K"].concat(tick >= 60 ? names : []).filter(function (v, i, a) { return a.indexOf(v) == i; }).forEach(function (n) { try { out += rd(n); } catch (e) { out += "\n[" + n + "] EXC " + e; } }); }
 out;

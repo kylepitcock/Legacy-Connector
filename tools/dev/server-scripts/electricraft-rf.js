@@ -1,6 +1,6 @@
 // run: ./gradlew runServerSubTest -PautostopTicks=600 -PserverTickScriptFrom=100 -PserverTickScript=<abs path of this file>
 // needs the Reika jars (DragonAPI, RotaryCraft, ElectriCraft, ReactorCraft) + CoFHCore in run-subtest/mods/1.7.10; see docs/wiki/Development.md
-var __p = String(java.lang.System.getProperty("legacyconnector.serverScript")).split("\\").join("/");
+var __p = String(java.lang.System.getProperty("legacyconnector.serverScript") || java.lang.System.getProperty("legacyconnector.serverTickScript")).split("\\").join("/");
 load(__p.substring(0, __p.lastIndexOf("/") + 1) + "lib-reika.js");
 var Y = -60, X = 300, Z = 300;
 var ET = Java.type("Reika.ElectriCraft.Registry.ElectriTiles");

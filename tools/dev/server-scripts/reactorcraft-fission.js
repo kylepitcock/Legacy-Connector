@@ -1,6 +1,6 @@
 // run: ./gradlew runServerSubTest -PautostopTicks=600 -PserverTickScriptFrom=100 -PserverTickScript=<abs path of this file>
 // needs the Reika jars (DragonAPI, RotaryCraft, ElectriCraft, ReactorCraft) + CoFHCore in run-subtest/mods/1.7.10; see docs/wiki/Development.md
-var __p = String(java.lang.System.getProperty("legacyconnector.serverScript")).split("\\").join("/");
+var __p = String(java.lang.System.getProperty("legacyconnector.serverScript") || java.lang.System.getProperty("legacyconnector.serverTickScript")).split("\\").join("/");
 load(__p.substring(0, __p.lastIndexOf("/") + 1) + "lib-reika.js");
 var Y = 100, X = 300, Z = 300;
 var RT = Java.type("Reika.ReactorCraft.Registry.ReactorTiles");
@@ -48,6 +48,13 @@ if (tick == T0) {
   out += "loaded " + tiles("FUEL").length + " rods, " + tiles("COOLANT").length + " cells, " + tiles("CONTROL").length + " control";
 }
 if (tick == T0 + 30) tiles("CPU")[0].raiseAllRods();
+// meltdown: the cells lose their coolant and the core is pushed past its limit (needs autostopTicks >= 500)
+if (tick == T0 + 250) {
+  tiles("COOLANT").forEach(function (t) { t.setLiquidState(LS.EMPTY); t.setTemperature(t.getMaxTemperature() + 500); });
+  tiles("FUEL").forEach(function (t) { t.setTemperature(t.getMaxTemperature() + 500); });
+  out += "MELTDOWN forced ";
+}
+if (tick > T0 + 250 && tick <= T0 + 330 && tick % 10 == 0) out += "after meltdown +" + (tick - T0 - 250) + ": fuel tiles " + tiles("FUEL").length + ", coolant tiles " + tiles("COOLANT").length + ", block@core=" + lvl().getBlockState(bp(X, Y, Z)).getBlock() + " ";
 function neutrons() {
   var n = 0, ents = lvl().getAllEntities();
   for (var it = ents.iterator(); it.hasNext();) { var e = it.next(); if (("" + e.getType()).indexOf("neutron") >= 0) n++; }
