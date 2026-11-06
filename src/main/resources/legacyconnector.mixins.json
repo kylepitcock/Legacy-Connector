@@ -25,6 +25,9 @@
     "perf.LevelChunkStaticTickerMixin"
   ],
   "client": [
+    "Am2CameraPositionMixin",
+    "Am2MouseMixin",
+    "Am2PlayerModelMixin",
     "ClientLevelSkyColorMixin",
     "MinecraftAttackMixin",
     "MultiPlayerGameModeMixin",

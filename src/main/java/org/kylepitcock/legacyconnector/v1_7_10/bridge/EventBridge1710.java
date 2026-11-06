@@ -601,6 +601,12 @@ public final class EventBridge1710 {
             if (forge().post(legacy)) e.setCanceled(true);
             else e.setDistance(legacy.distance);
         });
+        gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent e) -> {
+            if (!wants(forge(), LivingEvent.LivingJumpEvent.class)) return;
+            if (EntityBridge.wrap(e.getEntity()) instanceof EntityLivingBase living) {
+                forge().post(new LivingEvent.LivingJumpEvent(living));
+            }
+        });
 
         gameBus.addListener((net.neoforged.neoforge.event.entity.living.LivingHealEvent e) -> {
             if (!wants(forge(), legacyconnector.v1_7_10.net.minecraftforge.event.entity.living.LivingHealEvent.class)) return;
