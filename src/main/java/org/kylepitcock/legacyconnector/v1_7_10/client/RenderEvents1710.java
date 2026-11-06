@@ -75,6 +75,11 @@ public final class RenderEvents1710 {
     }
 
     private static void onHighlight(RenderHighlightEvent.Block e) {
+        var level = Minecraft.getInstance().level;
+        if (level != null && level.getBlockState(e.getTarget().getBlockPos()).getBlock() instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockAdapter b
+                && b.hidesOutline(level, e.getTarget().getBlockPos())) {
+            e.setCanceled(true); // an aura node is targetable but has no outline, as in 1.7.10
+        }
         if (!MinecraftForge.EVENT_BUS.mcc$hasListeners(DrawBlockHighlightEvent.class) || Minecraft.getInstance().player == null) return;
         var hit = e.getTarget();
         var pos = hit.getBlockPos();

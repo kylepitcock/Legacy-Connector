@@ -332,6 +332,13 @@ public final class SoundBridge {
      */
     public static void play(Level level, Player except, double x, double y, double z, String name, float volume, float pitch, SoundSource fallback) {
         if (name == null || name.isEmpty()) return;
+        if (level.isClientSide) {
+            // A 1.7.10 client world played its sounds itself (Thaumcraft's thaumometer ticks, wand charging...): ClientLevel.playSound(null, ...) plays
+            // nothing in 1.21 (it only answers the local player's own sounds), so the sound goes out as a local one, unless it excludes the local player.
+            if (except != null && except.isLocalPlayer()) return;
+            level.playLocalSound(x, y, z, sound(name), legacySource(name, fallback), volume, pitch, false);
+            return;
+        }
         level.playSound(except, x, y, z, Holder.direct(sound(name)), legacySource(name, fallback), volume, pitch);
     }
 

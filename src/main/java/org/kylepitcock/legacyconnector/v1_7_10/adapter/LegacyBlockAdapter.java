@@ -744,8 +744,9 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                     if (box != null) {
                         VoxelShape selected = Shapes.create(Math.max(0, box.minX - pos.getX()), Math.max(0, box.minY - pos.getY()), Math.max(0, box.minZ - pos.getZ()),
                                 Math.min(1, box.maxX - pos.getX()), Math.min(1, box.maxY - pos.getY()), Math.min(1, box.maxZ - pos.getZ()));
-                        // an empty selection box (Thaumcraft's aura nodes) is not drawn, but a legacy ray trace still hit the block's bounds
-                        if (!selected.isEmpty() || context != LegacyRayContext.INSTANCE) return selected;
+                        // an empty selection box (Thaumcraft's aura nodes) is not drawn (see hidesOutline), but 1.7.10's ray traces (the player's
+                        // crosshair too, so a wand's right-click reaches the node) still hit the block's bounds
+                        if (!selected.isEmpty()) return selected;
                     }
                 } catch (RuntimeException | LinkageError e) {
                     shapeFailure(e);
@@ -767,6 +768,21 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
                 // tile entity; a full block is the safe answer there.
                 shapeFailure(e);
                 return Shapes.block();
+            }
+        }
+    }
+
+    /** True when the block's legacy selection box is empty: the shape stays targetable (ray traces use the bounds) but no outline is drawn. */
+    public boolean hidesOutline(BlockGetter level, BlockPos pos) {
+        if (!selectedBox || !(level instanceof LevelAccessor acc)) return false;
+        synchronized (legacy) {
+            try {
+                AxisAlignedBB box = legacy.getSelectedBoundingBoxFromPool(world(acc), pos.getX(), pos.getY(), pos.getZ());
+                return box != null && (box.maxX - pos.getX() <= 0 || box.maxY - pos.getY() <= 0 || box.maxZ - pos.getZ() <= 0
+                        || box.minX - pos.getX() >= 1 || box.minY - pos.getY() >= 1 || box.minZ - pos.getZ() >= 1
+                        || box.maxX <= box.minX || box.maxY <= box.minY || box.maxZ <= box.minZ);
+            } catch (RuntimeException | LinkageError e) {
+                return false;
             }
         }
     }

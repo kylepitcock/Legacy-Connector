@@ -80,7 +80,7 @@ final class IsbrhQuads {
 
     /**
      * The baked light of a corner: the brightness the renderer set itself ({@code Tessellator.setBrightness}) when it is full block
-     * light, as glowing overlays are drawn in 1.7.10 ({@code setBrightness(240)}: ChromatiCraft's pylon structure runes, glowing ore
+     * light (or at least block light 10, a dimmer glow), as glowing overlays are drawn in 1.7.10 ({@code setBrightness(240)}: ChromatiCraft's pylon structure runes, glowing ore
      * layers), else 0. The modern pipeline lights a corner with the larger of the baked and the world light, so those parts glow
      * in the dark as they did instead of taking the world's light; the world brightness legacy RenderBlocks sets for ordinary faces is
      * left to the modern lighting (and its ambient occlusion).
@@ -88,7 +88,9 @@ final class IsbrhQuads {
     private static int emissive(RenderContext.Capture capture, int q, int i) {
         if (capture.get(q, i, 8) == 0.0D) return 0;
         int light = (int) capture.get(q, i, 6);
-        return (light & 0xFFFF) >= 0xF0 ? light : 0;
+        if ((light & 0xFFFF) >= 0xF0) return light;
+        // a glow short of full (Thaumcraft's ore shards: setBrightness(max(world, 160))): its block light only, never the sky's (the time of day is the world's)
+        return (light & 0xFFFF) >= 0xA0 ? light & 0xFFFF : 0;
     }
 
     /** 1.7.10's (and the modern) directional shade of a face. */

@@ -490,6 +490,12 @@ public final class BlockBridge {
     public static Block legacyBlock(BlockState state) {
         var modern = state.getBlock();
         if (modern instanceof LegacyBlockAdapter a) return (Block) a.legacy();
+        if (modern == net.minecraft.world.level.block.Blocks.LAVA || modern == net.minecraft.world.level.block.Blocks.WATER) {
+            // A source block is the "still" block, as 1.7.10 worlds held it (Blocks.lava, Blocks.water; only flowing liquid was flowing_*): legacy structure
+            // checks compare against Blocks.lava (Thaumcraft's infernal furnace never formed, its middle lava was read as flowing_lava).
+            Block still = stillLiquid(state);
+            if (still != null) return still;
+        }
         if (org.kylepitcock.legacyconnector.core.perf.Perf.BLOCK_LOOKUP_CACHE) {
             Object known = ((org.kylepitcock.legacyconnector.core.perf.LegacySlot) modern).legacyconnector$slot1710();
             if (known != null) return (Block) known;
@@ -498,6 +504,14 @@ public final class BlockBridge {
             return made;
         }
         return legacyBlockLocked(state);
+    }
+
+    private static Block stillLiquid(BlockState state) {
+        if (!(state.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) || state.getValue(net.minecraft.world.level.block.LiquidBlock.LEVEL) != 0) return null;
+        ensureVanilla();
+        synchronized (BlockBridge.class) {
+            return BY_NAME.get(state.getBlock() == net.minecraft.world.level.block.Blocks.LAVA ? "minecraft:lava" : "minecraft:water");
+        }
     }
 
     private static synchronized Block legacyBlockLocked(BlockState state) {
