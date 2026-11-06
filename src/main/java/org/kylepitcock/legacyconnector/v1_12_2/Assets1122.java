@@ -99,8 +99,28 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static final boolean SHARE_MODELS = org.kylepitcock.legacyconnector.core.LegacyConfig.perfShareBlockModels();
     private static final Map<String, String> GENERATED_MODELS = new java.util.concurrent.ConcurrentHashMap<>();
 
+    /** A block variant whose model a mod's own ModelLoader loads ({@code ns:path} is the model below models/, with the block/ folder). */
+    public record LoaderVariant(ResourceLocation block, int meta, String ns, String path, JsonObject source) {}
+
+    private static final List<LoaderVariant> LOADER_VARIANTS = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** The block variants whose models come from the mods' custom model loaders. */
+    public static List<LoaderVariant> loaderVariants() {
+        return List.copyOf(LOADER_VARIANTS);
+    }
+
+    private static boolean loaderAccepts(String ns, String path) {
+        try {
+            return legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoaderRegistry.mcc$loaderFor(
+                    new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(ns, "models/" + path)) != null;
+        } catch (RuntimeException | LinkageError e) {
+            return false;
+        }
+    }
+
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
         long t0 = System.nanoTime();
+        LOADER_VARIANTS.clear();
         GENERATED_MODELS.clear();
         RESOURCE_EXISTS.clear();
         JSON_FILES.clear();
@@ -683,9 +703,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         String exact = keyOf(props);
         Acc acc = original == null ? null : merge(original, props, List.of(exact));
         String reason = original == null ? "no blockstate file" : null;
-        if (!usable(acc) && mapped != null) {
+        Boolean markerOverride = null;
+        ResourceLocation mappedTo = mapped == null ? null
+                : ResourceLocation.fromNamespaceAndPath(Ids.namespace(mapped.getNamespace()), Ids.normalizePath(mapped.getPath()));
+        // a mapper naming another blockstate file than the block's own decides the model (Forge looked up only the mapper's location)
+        boolean otherFile = mappedTo != null && !mappedTo.equals(id) && readOriginal(mappedTo) != null;
+        if ((!usable(acc) || otherFile) && mapped != null) {
             // a block whose states are mapped in code (ModelLoader.setCustomStateMapper): the mapper names the blockstate file and variant
-            ResourceLocation file = ResourceLocation.fromNamespaceAndPath(Ids.namespace(mapped.getNamespace()), Ids.normalizePath(mapped.getPath()));
+            ResourceLocation file = mappedTo;
             JsonObject mappedFile = readOriginal(file);
             if (mappedFile != null) {
                 // Forge looked the variant up by the mapper's variant string ("type=plastic" for a block whose state has no such property)
@@ -695,12 +720,23 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     if (eq > 0) viaProps.put(part.substring(0, eq), part.substring(eq + 1));
                 }
                 Acc viaMapper = merge(mappedFile, viaProps, List.of(mapped.getVariant(), exact));
-                if (usable(viaMapper) || acc == null) acc = viaMapper;
+                if (usable(viaMapper) || acc == null) {
+                    acc = viaMapper;
+                    // the textures of the variant come from the mapper's file: whether they apply depends on that file's marker, not the block's own
+                    markerOverride = mappedFile.has("forge_marker");
+                }
             } else {
                 reason = "state mapper file " + file + " not found";
             }
         }
-        return finish(acc, id, key, reason, out);
+        if (markerOverride == null) return finish(acc, id, key, reason, out);
+        boolean before = FORGE_MARKER.get();
+        FORGE_MARKER.set(markerOverride);
+        try {
+            return finish(acc, id, key, reason, out);
+        } finally {
+            FORGE_MARKER.set(before);
+        }
     }
 
     private static boolean usable(Acc acc) {
@@ -1583,7 +1619,19 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                     textures == null ? null : blockId.getPath() + "_" + key, out));
             return copy;
         }
-        if (!modelResolves(modelNs, modelPath, out, 0)) return null;
+        if (!modelResolves(modelNs, modelPath, out, 0)) {
+            // a model no json file describes may belong to a mod's own ModelLoader (Immersive Engineering's "smartmodel/connector"): the
+            // variant is baked from that loader at ModelEvent (CustomModels1122), the blockstate gets a plain cube until then
+            java.util.regex.Matcher meta = java.util.regex.Pattern.compile("meta_(\\d+)(_\\d+)?").matcher(key);
+            if (meta.matches() && loaderAccepts(modelNs, modelPath)) {
+                int n = Integer.parseInt(meta.group(1));
+                if (LOADER_VARIANTS.stream().noneMatch(v -> v.block().equals(blockId) && v.meta() == n)) {
+                    LOADER_VARIANTS.add(new LoaderVariant(blockId, n, modelNs, modelPath, source.deepCopy()));
+                }
+                return fallbackModel(blockId, source, key, out) instanceof JsonObject placeholder ? placeholder : null;
+            }
+            return null;
+        }
         if (FORGE_MARKER.get() && source.has("textures") && source.get("textures").isJsonObject() && source.getAsJsonObject("textures").size() > 0) {
             JsonObject generated = new JsonObject();
             generated.addProperty("parent", model);

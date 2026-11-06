@@ -55,12 +55,74 @@ public final class CustomModels1122 {
                 RenderErrors1122.report("listing the textures of the model " + key, e);
             }
         }
+        int variants = 0;
+        for (var variant : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.loaderVariants()) {
+            IModel model = loadVariant(variant);
+            if (model == null) continue;
+            variants++;
+            try {
+                for (ResourceLocation texture : model.getTextures()) Sprites1122.register(texture.toString());
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("listing the textures of the model " + variant.ns() + ":" + variant.path(), e);
+            }
+        }
         if (models > 0) LOG.info("{} 1.12.2 model location(s) come from custom model loaders", models);
+        if (variants > 0) LOG.info("{} 1.12.2 block variant(s) are models of custom model loaders", variants);
+    }
+
+    /**
+     * The loader model of a blockstate variant, set up as Forge's variant loader did: the loader's model, retextured with the variant's
+     * textures, given the variant's custom data (a map of JSON strings).
+     */
+    private static IModel loadVariant(org.kylepitcock.legacyconnector.v1_12_2.Assets1122.LoaderVariant variant) {
+        String key = variant.ns() + ":models/" + variant.path();
+        try {
+            IModel model = ModelLoaderRegistry.getModel(new ResourceLocation(variant.ns(), "models/" + variant.path()));
+            var source = variant.source();
+            var textures = com.google.common.collect.ImmutableMap.<String, String>builder();
+            if (source.has("textures") && source.get("textures").isJsonObject()) {
+                for (var t : source.getAsJsonObject("textures").entrySet()) {
+                    if (t.getValue().isJsonPrimitive()) textures.put(t.getKey(), t.getValue().getAsString());
+                }
+            }
+            var retexture = textures.build();
+            if (!retexture.isEmpty()) model = model.retexture(retexture);
+            var custom = com.google.common.collect.ImmutableMap.<String, String>builder();
+            if (source.has("custom") && source.get("custom").isJsonObject()) {
+                for (var c : source.getAsJsonObject("custom").entrySet()) custom.put(c.getKey(), c.getValue().toString());
+            }
+            var customData = custom.build();
+            if (!customData.isEmpty()) model = model.process(customData);
+            return model;
+        } catch (Exception | LinkageError e) {
+            RenderErrors1122.report("loading the model " + key, e);
+            return null;
+        }
+    }
+
+    /** Bakes the loader models of the block variants no json describes, as the models of their metadata states. */
+    private static void bakeVariants(Map<net.minecraft.client.resources.model.ModelResourceLocation, BakedModel> models) {
+        for (var variant : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.loaderVariants()) {
+            IModel model = loadVariant(variant);
+            if (model == null) continue;
+            try {
+                if (!(net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(variant.block()) instanceof
+                        org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block block)) continue;
+                IBakedModel baked = model.bake(model.getDefaultState(), DefaultVertexFormats.BLOCK, ModelLoader.defaultTextureGetter());
+                if (baked == null) continue;
+                var state = block.defaultBlockState().setValue(org.kylepitcock.legacyconnector.v1_12_2.adapter.Legacy1122Block.META, variant.meta());
+                models.put(net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state), Models1122.modern(baked));
+            } catch (RuntimeException | LinkageError ex) {
+                LOG.warn("Could not bake the loader model {}:{} of {} meta {} ({}): {}", variant.ns(), variant.path(), variant.block(), variant.meta(),
+                        variant.source(), ex.toString());
+            }
+        }
     }
 
     /** Bakes the loader models and puts them in place of the game's models of the same locations. */
     static void bakeInto(Map<net.minecraft.client.resources.model.ModelResourceLocation, BakedModel> models) {
         if (!anyLoader()) return;
+        bakeVariants(models);
         for (var e : Models1122.allLocations().entrySet()) {
             IModel model = load(e.getKey());
             if (model == null) continue;

@@ -102,12 +102,20 @@ public final class ObjAssets1122 {
         if (mtl == null) return null;
         StringBuilder sb = new StringBuilder();
         String material = null;
+        // Forge 1.12 took a material's texture from map_Ka as well as map_Kd (Immersive Engineering's libraries only have map_Ka); NeoForge reads map_Kd
+        java.util.Set<String> diffuse = new java.util.HashSet<>();
+        String scanned = null;
+        for (String line : mtl.split("\n")) {
+            String l = line.trim();
+            if (l.startsWith("newmtl ")) scanned = l.substring(7).trim();
+            else if (l.startsWith("map_Kd ") && scanned != null) diffuse.add(scanned);
+        }
         for (String line : mtl.split("\n")) {
             String l = line.trim();
             if (l.startsWith("newmtl ")) {
                 material = l.substring(7).trim();
                 sb.append(l).append('\n');
-            } else if (l.startsWith("map_Kd ")) {
+            } else if (l.startsWith("map_Kd ") || (l.startsWith("map_Ka ") && material != null && !diffuse.contains(material))) {
                 String ref = l.substring(7).trim();
                 if (material != null && overrides.has(material)) {
                     sb.append("map_Kd #").append(material).append('\n');
