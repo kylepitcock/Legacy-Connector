@@ -27,9 +27,51 @@ public final class Stacks1122 {
         if (tag != null) {
             var data = tag.mcc$modern().copy();
             if (isPotionItem(modern)) potionToModern(data, out);
+            displayToModern(data, out);
             if (!data.isEmpty()) out.set(DataComponents.CUSTOM_DATA, CustomData.of(data));
         }
         return out;
+    }
+
+    /**
+     * 1.12's {@code display} tag (Name, Lore: strings with section-sign codes) as the modern custom name and lore components, so the name and
+     * the extra tooltip lines of a stack a mod labelled in code (a written report, a renamed item) show. The tag itself stays for legacy code.
+     */
+    public static void displayToModern(net.minecraft.nbt.CompoundTag data, net.minecraft.world.item.ItemStack out) {
+        if (!data.contains("display", 10)) return;
+        var display = data.getCompound("display");
+        if (display.contains("Name", 8)) out.set(DataComponents.CUSTOM_NAME, legacyText(display.getString("Name")));
+        if (display.contains("Lore", 9)) {
+            var list = display.getList("Lore", 8);
+            java.util.List<net.minecraft.network.chat.Component> lines = new java.util.ArrayList<>();
+            for (int i = 0; i < list.size(); i++) lines.add(legacyText(list.getString(i)));
+            if (!lines.isEmpty()) out.set(DataComponents.LORE, new net.minecraft.world.item.component.ItemLore(lines));
+        }
+    }
+
+    /** A string with section-sign formatting codes as a styled component. */
+    public static net.minecraft.network.chat.Component legacyText(String text) {
+        if (text.indexOf('§') < 0) return net.minecraft.network.chat.Component.literal(text);
+        var root = net.minecraft.network.chat.Component.empty();
+        net.minecraft.network.chat.Style style = net.minecraft.network.chat.Style.EMPTY;
+        StringBuilder run = new StringBuilder();
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c == '§' && i + 1 < text.length()) {
+                var f = net.minecraft.ChatFormatting.getByCode(Character.toLowerCase(text.charAt(++i)));
+                if (f == null) continue;
+                if (run.length() > 0) {
+                    root.append(net.minecraft.network.chat.Component.literal(run.toString()).withStyle(style));
+                    run.setLength(0);
+                }
+                style = f == net.minecraft.ChatFormatting.RESET ? net.minecraft.network.chat.Style.EMPTY
+                        : f.isColor() ? net.minecraft.network.chat.Style.EMPTY.applyFormat(f) : style.applyFormat(f);
+            } else {
+                run.append(c);
+            }
+        }
+        if (run.length() > 0) root.append(net.minecraft.network.chat.Component.literal(run.toString()).withStyle(style));
+        return root;
     }
 
     private static boolean isPotionItem(net.minecraft.world.item.Item item) {

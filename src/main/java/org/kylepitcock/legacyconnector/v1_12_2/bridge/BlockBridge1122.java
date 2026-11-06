@@ -35,7 +35,17 @@ public final class BlockBridge1122 {
         if (light > 0) p.lightLevel(s -> light);
         if (block.slipperiness != 0.6F) p.friction(block.slipperiness);
         Material m = block.getMaterialLegacy();
-        if (m != null && !m.isOpaque()) p.noOcclusion();
+        boolean opaque = m == null || m.isOpaque();
+        if (opaque && Legacy1122Block.overrides(block, "isOpaqueCube", legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState.class)) {
+            // a block of an opaque material that says it is no opaque cube (a tile entity renderer or a custom model draws it): it lets light through
+            // (an opaque block made the light at its own position 0, and its renderer drew black)
+            try {
+                opaque = block.isOpaqueCube(block.getDefaultState());
+            } catch (RuntimeException | LinkageError e) {
+                // keeps the material's answer
+            }
+        }
+        if (!opaque) p.noOcclusion();
         if (m != null && !m.blocksMovement()) p.noCollission();
         if (m != null) {
             p.pushReaction(m.mcc$pushReaction());

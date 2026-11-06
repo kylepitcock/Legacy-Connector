@@ -102,9 +102,18 @@ public final class ItemStack {
         if (b == null || b.isEmpty()) return;
         net.minecraft.nbt.CompoundTag now = stackTagCompound == null || stackTagCompound.isEmpty() ? null : stackTagCompound.mcc$modern();
         if (java.util.Objects.equals(now, mcc$seenTag == null || mcc$seenTag.isEmpty() ? null : mcc$seenTag)) return;
+        var before = mcc$seenTag;
         mcc$seenTag = now == null ? null : now.copy();
         if (stackTagCompound == null || stackTagCompound.isEmpty()) b.remove(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
         else b.set(net.minecraft.core.component.DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(stackTagCompound.mcc$modern()));
+        // the display tag's name and lore are the modern components too (removed again when legacy code removed them)
+        if (now != null) org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.displayToModern(now, b);
+        if (before != null && before.contains("display", 10)) {
+            var was = before.getCompound("display");
+            var is = now != null && now.contains("display", 10) ? now.getCompound("display") : new net.minecraft.nbt.CompoundTag();
+            if (was.contains("Name", 8) && !is.contains("Name", 8)) b.remove(net.minecraft.core.component.DataComponents.CUSTOM_NAME);
+            if (was.contains("Lore", 9) && !is.contains("Lore", 9)) b.remove(net.minecraft.core.component.DataComponents.LORE);
+        }
         mcc$seenData = b.get(net.minecraft.core.component.DataComponents.CUSTOM_DATA);
     }
 

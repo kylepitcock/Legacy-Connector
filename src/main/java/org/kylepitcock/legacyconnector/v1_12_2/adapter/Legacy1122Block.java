@@ -84,6 +84,8 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
     private final boolean collisionBox;
     private final boolean replaceable;
     private final boolean lightValue;
+    /** The block overrides getRenderType (EnumBlockRenderType.INVISIBLE: only a tile entity renderer or nothing draws it). */
+    private final boolean renderType;
     private final boolean lightOpacity;
     private final boolean slipperiness;
     private final boolean dropsList;
@@ -134,6 +136,7 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
         this.tracedBoxes = collisionList && !bounds && overrides(legacy, "collisionRayTrace", S, W, P, V, V);
         this.replaceable = overrides(legacy, "isReplaceable", A, P);
         this.lightValue = overrides(legacy, "getLightValue", S, A, P);
+        this.renderType = overrides(legacy, "getRenderType", S);
         this.lightOpacity = overrides(legacy, "getLightOpacity", S, A, P);
         this.slipperiness = overrides(legacy, "getSlipperiness", S, A, P, legacyconnector.v1_12_2.net.minecraft.entity.Entity.class);
         this.dropsList = overrides(legacy, "getDrops", legacyconnector.v1_12_2.net.minecraft.util.NonNullList.class, A, P, S, int.class)
@@ -753,6 +756,20 @@ public class Legacy1122Block extends net.minecraft.world.level.block.Block imple
             failure("isReplaceable", e);
             return super.canBeReplaced(state, context);
         }
+    }
+
+    /** EnumBlockRenderType.INVISIBLE: the block's model is not drawn (invisible helper blocks, blocks drawn by their tile entity renderer). */
+    @Override
+    protected net.minecraft.world.level.block.RenderShape getRenderShape(BlockState state) {
+        if (!renderType) return super.getRenderShape(state);
+        try {
+            if (legacy.getRenderType(state(state)) == legacyconnector.v1_12_2.net.minecraft.util.EnumBlockRenderType.INVISIBLE) {
+                return net.minecraft.world.level.block.RenderShape.INVISIBLE;
+            }
+        } catch (RuntimeException | LinkageError e) {
+            failure("getRenderType", e);
+        }
+        return super.getRenderShape(state);
     }
 
     @Override
