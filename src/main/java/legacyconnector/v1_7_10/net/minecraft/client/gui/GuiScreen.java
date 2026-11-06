@@ -248,14 +248,20 @@ public class GuiScreen extends Gui {
         mcc$dispatchKey(c, legacyKeyCode, true);
     }
 
+    /** Dispatches the physical key and reports whether a focused text field reserved it for text input. */
+    public boolean mcc$keyPressed(int legacyKeyCode) {
+        return mcc$dispatchKey('\0', legacyKeyCode, true);
+    }
+
     public void mcc$keyReleased(int legacyKeyCode) {
         mcc$dispatchKey('\0', legacyKeyCode, false);
     }
 
-    private void mcc$dispatchKey(char c, int legacyKeyCode, boolean pressed) {
+    private boolean mcc$dispatchKey(char c, int legacyKeyCode, boolean pressed) {
         legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(legacyKeyCode, pressed, c);
         try {
             handleKeyboardInput();
+            return legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$isTextInput();
         } finally {
             legacyconnector.v1_7_10.org.lwjgl.input.Keyboard.mcc$setEvent(0, false, '\0');
         }
