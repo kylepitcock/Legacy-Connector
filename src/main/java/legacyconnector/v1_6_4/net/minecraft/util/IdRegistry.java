@@ -131,6 +131,30 @@ public final class IdRegistry {
         return claim(Kind.ITEM, item, requestedId, owner, false);
     }
 
+    /**
+     * Frees an id whose object a mod removed from the table ({@code Block.blocksList[id] = null}); a reserved vanilla id with no
+     * runtime object stays taken. Returns whether anything was freed.
+     */
+    public synchronized boolean release(Kind kind, int id) {
+        Table t = tables[kind.ordinal()];
+        if (id < 0 || id >= kind.size) return false;
+        Object o = t.slots[id];
+        if (o == null || o == RESERVED) return false;
+        t.slots[id] = null;
+        t.owner[id] = null;
+        t.ids.remove(o);
+        t.count--;
+        if (kind == Kind.BLOCK) {
+            // the ItemBlock slot goes with it unless a real ItemBlock sits there
+            Table it = tables[Kind.ITEM.ordinal()];
+            if (it.slots[id] == RESERVED) {
+                it.slots[id] = null;
+                it.owner[id] = null;
+            }
+        }
+        return true;
+    }
+
     /** Puts the ItemBlock of block {@code blockId} into its item slot (returns false if the slot holds another real item). */
     public synchronized boolean claimBlockItem(int blockId, Object itemBlock) {
         Table it = tables[Kind.ITEM.ordinal()];

@@ -194,6 +194,17 @@ public final class ShimLinker {
         }
         if (l != Hierarchy.Lookup.MISSING_MEMBER && l != Hierarchy.Lookup.MISSING_CLASS) return null;
 
+        if (!m.name.equals("<init>") && m.getOpcode() != Opcodes.INVOKESPECIAL && h.version() != null && h.version().forward() != null) {
+            // A forward version's facade (legacyconnector/v1_6_4/...) supplies the legacy methods the shim lacks, e.g. World.getBlockId(III) over the id table.
+            String[] facade = h.findFacadeMethod(m.owner, m.name, m.desc, m.getOpcode() == Opcodes.INVOKESTATIC);
+            if (facade != null) {
+                MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, facade[0], m.name, facade[1], false);
+                method.instructions.set(m, call);
+                report.adapted(m.owner, m.name + m.desc + " -> " + facade[0], from);
+                return call;
+            }
+        }
+
         if (m.name.equals("<init>")) {
             if (h.isSynth(m.owner)) {
                 demand.add(m.owner, Kind.CONSTRUCTOR, m.name, m.desc);
@@ -269,6 +280,10 @@ public final class ShimLinker {
      */
     private static AbstractInsnNode adaptConstructor(MethodNode method, MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
         Type[] args = Type.getArgumentTypes(m.desc);
+        if (h.version() != null && h.version().forward() != null) {
+            AbstractInsnNode viaId = IdConstructors.adapt(method, m, args, h, report, from);
+            if (viaId != null) return viaId;
+        }
         CtorChooser.Choice choice = CtorChooser.choose(h.find(m.owner), args);
         if (choice == null) {
             report.missingMember(m.owner, m.name + m.desc, from, true);
@@ -303,9 +318,10 @@ public final class ShimLinker {
         boolean isStatic = f.getOpcode() == Opcodes.GETSTATIC || f.getOpcode() == Opcodes.PUTSTATIC;
         boolean isGet = f.getOpcode() == Opcodes.GETSTATIC || f.getOpcode() == Opcodes.GETFIELD;
         if (hierarchy.isLocal(f.owner) && hierarchy.find(f.owner).hasField(f.name, f.desc)) return null;
-        String declaring = hierarchy.findVirtualFieldOwner(f.owner, f.name, f.desc, isStatic);
-        if (declaring == null) return null;
-        String self = isStatic ? "" : "L" + declaring + ";";
+        Hierarchy.VirtualField vf = hierarchy.findVirtualField(f.owner, f.name, f.desc, isStatic);
+        if (vf == null) return null;
+        String declaring = vf.host(); // the shim class itself, or its facade for a forward version
+        String self = isStatic ? "" : "L" + vf.self() + ";";
         // Read-only virtual field: the write links to the phantom field the shim declares (and is lost, as the
         // modern state it views cannot be assigned this way).
         if (!isGet && !hierarchy.find(declaring).hasMethod(ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V")) return null;

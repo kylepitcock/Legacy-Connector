@@ -252,18 +252,90 @@ public final class Hierarchy {
      * is real, belongs to the mod, or no accessor exists.
      */
     public String findVirtualFieldOwner(String owner, String name, String desc, boolean isStatic) {
+        VirtualField f = findVirtualField(owner, name, desc, isStatic);
+        return f == null ? null : f.host();
+    }
+
+    /** Where a virtual-field accessor lives ({@code host}) and the shim class it takes as its receiver ({@code self}); they differ for facades. */
+    public record VirtualField(String host, String self) {}
+
+    /**
+     * Like {@link #findVirtualFieldOwner}, and for a forward version also looks into the facade of each shim class on the chain
+     * ({@link #facadeOf}), where the version's own accessors live (1.6.4's {@code blockID} is an id-table lookup, not state of the 1.7.10 shim).
+     */
+    public VirtualField findVirtualField(String owner, String name, String desc, boolean isStatic) {
         ClassInfo c = find(owner);
         java.util.Set<String> seen = new java.util.HashSet<>();
         while (c != null && seen.add(c.name)) {
             if (shim.contains(c.name)) {
                 // Shim classes declare the phantom field (so legacy code links) *and* the accessor; accessor wins.
                 String getterDesc = isStatic ? "()" + desc : "(L" + c.name + ";)" + desc;
-                if (c.hasMethod(ShimIndex.GETTER_PREFIX + name, getterDesc)) return c.name;
+                if (c.hasMethod(ShimIndex.GETTER_PREFIX + name, getterDesc)) return new VirtualField(c.name, c.name);
+                String facade = facadeOf(c.name);
+                if (facade != null && find(facade).hasMethod(ShimIndex.GETTER_PREFIX + name, getterDesc)) return new VirtualField(facade, c.name);
             }
             if (c.hasField(name, desc)) return null; // a real field (e.g. declared by the mod) shadows inherited accessors
             c = c.superName == null ? null : find(c.superName);
         }
         return null;
+    }
+
+    /**
+     * The facade of a shim class for a forward version: the class of the same name under the version's own shim prefix
+     * ({@code legacyconnector/v1_6_4/net/minecraft/block/Block} for the 1.7.10 {@code Block}), holding static members that give
+     * the forwarded shim class the legacy members it lacks (virtual-field accessors, methods taking the receiver first). Null if there is none.
+     */
+    public String facadeOf(String shimClass) {
+        if (version == null || version.forward() == null || !shimClass.startsWith(version.linkPrefix())) return null;
+        String facade = version.shimPrefix() + shimClass.substring(version.linkPrefix().length());
+        return shim.contains(facade) ? facade : null;
+    }
+
+    /**
+     * A facade static method standing in for a legacy method the shim lacks: {@code owner.name desc} (instance call, receiver first in the
+     * facade's descriptor) or the static method itself. Returns {host, desc} or null.
+     */
+    public String[] findFacadeMethod(String owner, String name, String desc, boolean isStatic) {
+        java.util.ArrayDeque<String> todo = new java.util.ArrayDeque<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        todo.add(owner);
+        while (!todo.isEmpty()) {
+            String n = todo.poll();
+            if (!seen.add(n)) continue;
+            ClassInfo c = find(n);
+            if (c == null) continue;
+            if (shim.contains(n)) {
+                String facade = facadeOf(n);
+                if (facade != null) {
+                    String d = isStatic ? desc : "(L" + n + ";" + desc.substring(1);
+                    if (find(facade).hasMethod(name, d)) return new String[] {facade, d};
+                }
+            }
+            if (c.superName != null) todo.add(c.superName);
+            todo.addAll(c.interfaces);
+        }
+        return null;
+    }
+
+    /** True when {@code cls} is {@code ancestor} or has it on its superclass/interface chain. */
+    public boolean isSubclassOf(String cls, String ancestor) {
+        java.util.ArrayDeque<String> todo = new java.util.ArrayDeque<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        todo.add(cls);
+        while (!todo.isEmpty()) {
+            String n = todo.poll();
+            if (n.equals(ancestor)) return true;
+            if (!seen.add(n)) continue;
+            ClassInfo c = find(n);
+            if (c == null) continue;
+            if (c.superName != null) todo.add(c.superName);
+            todo.addAll(c.interfaces);
+        }
+        return false;
+    }
+
+    public LegacyVersion version() {
+        return version;
     }
 
     private static java.util.List<String> parents(ClassInfo c) {
