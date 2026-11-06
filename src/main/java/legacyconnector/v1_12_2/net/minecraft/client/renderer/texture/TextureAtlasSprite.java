@@ -108,7 +108,7 @@ public class TextureAtlasSprite {
 
     /** The modern sprite this one shows (stitched lazily if legacy code asks before the atlas reload told it). */
     public net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern() {
-        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(iconName));
+        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(getIconName()));
         return mcc$modern;
     }
 
@@ -125,7 +125,7 @@ public class TextureAtlasSprite {
     }
 
     private void ensure() {
-        if (!mcc$pinned && mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(iconName));
+        if (!mcc$pinned && mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(getIconName()));
     }
 
     public int getOriginX() {

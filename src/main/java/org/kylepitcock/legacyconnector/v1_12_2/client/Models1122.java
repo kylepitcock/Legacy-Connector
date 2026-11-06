@@ -139,6 +139,56 @@ public final class Models1122 {
         return legacy(manager.getMissingModel());
     }
 
+    /** Whether a baked model is a copy of the missing model (a cube of missing-texture faces, baked for a location whose json failed to load). */
+    static boolean looksMissing(BakedModel model, BakedModel missing) {
+        if (model == missing) return true;
+        if (model instanceof ModernView || !(model instanceof net.minecraft.client.resources.model.SimpleBakedModel)) return false;
+        try {
+            var sprite = missing.getParticleIcon();
+            if (model.getParticleIcon() != sprite) return false;
+            var random = RandomSource.create(0);
+            int mine = 0;
+            int theirs = 0;
+            for (var side : new net.minecraft.core.Direction[] {null, net.minecraft.core.Direction.DOWN, net.minecraft.core.Direction.UP, net.minecraft.core.Direction.NORTH,
+                    net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST, net.minecraft.core.Direction.EAST}) {
+                for (var q : model.getQuads(null, side, random)) {
+                    if (q.getSprite() != sprite) return false;
+                    mine++;
+                }
+                theirs += missing.getQuads(null, side, random).size();
+            }
+            return mine == theirs;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * The modern state locations of a block variant name given by a state mapper registered after the location map was built (Extra Utilities 2
+     * registers its mappers inside ModelBakeEvent): the block's current mapper is run again, for that block only.
+     */
+    private static List<net.minecraft.client.resources.model.ModelResourceLocation> viaCurrentMapper(ModelResourceLocation location) {
+        String variant = location.getVariant();
+        if (variant.equals("inventory")) return null;
+        try {
+            var block = Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(location.getNamespace(), location.getPath()));
+            if (block == null || !(block.mcc$modern instanceof Legacy1122Block modern)) return null;
+            var mapper = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$stateMapper(block);
+            if (mapper == null) return null;
+            List<net.minecraft.client.resources.model.ModelResourceLocation> found = new ArrayList<>();
+            for (var e : mapper.putStateModelLocations(block).entrySet()) {
+                var mrl = e.getValue();
+                if (!mrl.getNamespace().equals(location.getNamespace()) || !mrl.getPath().equals(location.getPath()) || !mrl.getVariant().equals(variant)) continue;
+                BlockState state = modern.defaultBlockState().setValue(Legacy1122Block.META, block.getMetaFromState(e.getKey()) & 15);
+                var target = BlockModelShaper.stateToModelLocation(state);
+                if (!found.contains(target)) found.add(target);
+            }
+            return found.isEmpty() ? null : found;
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** Forgets the location map (models were reloaded; registrations may have changed). */
     public static void invalidate() {
         locations = null;
@@ -152,6 +202,8 @@ public final class Models1122 {
         if (found != null) return found;
         var id = location.mcc$modern();
         String variant = location.getVariant();
+        List<net.minecraft.client.resources.model.ModelResourceLocation> viaMapper = viaCurrentMapper(location);
+        if (viaMapper != null) return viaMapper;
         return List.of(new net.minecraft.client.resources.model.ModelResourceLocation(id, variant.equals("normal") ? "" : variant));
     }
 

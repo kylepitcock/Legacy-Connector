@@ -104,6 +104,14 @@ public final class Assets1122 implements GeneratedPack.Contributor {
 
     private static final List<LoaderVariant> LOADER_VARIANTS = new java.util.concurrent.CopyOnWriteArrayList<>();
 
+    /** Modern state locations ("ns:block#meta=N") drawn by a stand-in cube because the legacy block had no usable model json (1.12 drew the missing model there). */
+    private static final java.util.Set<String> FALLBACK_STATES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** Whether a state location has only a stand-in model (see {@link #FALLBACK_STATES}). */
+    public static boolean isStandIn(net.minecraft.client.resources.model.ModelResourceLocation location) {
+        return FALLBACK_STATES.contains(location.id() + "#" + location.variant());
+    }
+
     /** The block variants whose models come from the mods' custom model loaders. */
     public static List<LoaderVariant> loaderVariants() {
         return List.copyOf(LOADER_VARIANTS);
@@ -121,6 +129,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void translateAll(Map<String, Supplier<byte[]>> out) {
         long t0 = System.nanoTime();
         LOADER_VARIANTS.clear();
+        FALLBACK_STATES.clear();
         GENERATED_MODELS.clear();
         RESOURCE_EXISTS.clear();
         JSON_FILES.clear();
@@ -432,6 +441,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 else cutoutMeta = true;
             }
             results.put(meta, best);
+            if (best.fallback != null) FALLBACK_STATES.add(id + "#meta=" + meta);
             collectModelTextures(best, out);
             if (best.fallback != null) reasons.add("meta " + meta + ": " + best.fallback);
             if (debug) LOG.info("meta {} of {}: {} parts={} fallback={}", meta, id, best.model, best.parts, best.fallback);
@@ -495,7 +505,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
     private static void fallbackBlockstate(ResourceLocation id, JsonObject hint, Map<String, Supplier<byte[]>> out) {
         JsonObject variants = new JsonObject();
         JsonElement model = fallbackModel(id, hint, "all", out);
-        for (int meta = 0; meta < 16; meta++) variants.add("meta=" + meta, model);
+        for (int meta = 0; meta < 16; meta++) {
+            variants.add("meta=" + meta, model);
+            FALLBACK_STATES.add(id + "#meta=" + meta);
+        }
         JsonObject result = new JsonObject();
         result.add("variants", variants);
         byte[] bytes = GSON.toJson(result).getBytes(StandardCharsets.UTF_8);

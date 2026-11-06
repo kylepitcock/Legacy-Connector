@@ -21,6 +21,8 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 
     protected final List<TextureAtlasSprite> listAnimatedSprites = Lists.newArrayList();
     protected final Map<String, TextureAtlasSprite> mapRegisteredSprites = Maps.newHashMap();
+    /** Sprite objects a later registration under the same name replaced; legacy code may still hold them, so they are placed too. */
+    private final List<TextureAtlasSprite> superseded = new java.util.ArrayList<>();
     protected final Map<String, TextureAtlasSprite> mapUploadedSprites = Maps.newHashMap();
     protected final String basePath;
     protected final ITextureMapPopulator iTextureMapPopulator;
@@ -62,6 +64,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
 
     public void loadSprites(IResourceManager resourceManager, ITextureMapPopulator iconCreatorIn) {
         mapRegisteredSprites.clear();
+        superseded.clear();
         iconCreatorIn.registerSprites(this);
         initMissingImage();
     }
@@ -140,7 +143,11 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
     public boolean setTextureEntry(TextureAtlasSprite entry) {
         String name = entry.getIconName();
         synchronized (this) {
-            if (mapRegisteredSprites.containsKey(name)) return false;
+            TextureAtlasSprite existing = mapRegisteredSprites.get(name);
+            if (existing == entry) return false;
+            // 1.12 emptied the registered sprites before every TextureStitchEvent.Pre; here the event runs several times (early, resource build, reload) over one
+            // map, and a mod that makes new sprite objects each time (Extra Utilities 2's connected textures) keeps the latest: that one must be placed
+            if (existing != null) superseded.add(existing);
             mapRegisteredSprites.put(name, entry);
         }
         Sprites1122.register(name);
@@ -194,6 +201,7 @@ public class TextureMap extends AbstractTexture implements ITickableTextureObjec
         synchronized (this) {
             sprites = new java.util.ArrayList<>(mapRegisteredSprites.values());
             sprites.addAll(mapUploadedSprites.values());
+            sprites.addAll(superseded);
         }
         for (TextureAtlasSprite sprite : sprites) {
             try {
