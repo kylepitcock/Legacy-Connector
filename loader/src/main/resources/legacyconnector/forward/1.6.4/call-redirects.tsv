@@ -1,0 +1,5 @@
+# Call redirects of 1.6.4 jars (see ForwardRedirects): kind, owner, name, descriptor after relocation, target class, target method.
+# {S} = forwarded 1.7.10 shim prefix, {O} = 1.6.4 shim prefix. virtual: any shim receiver, passed to the target as an Object first argument. static: exactly that owner (legacy name).
+virtual	*	sendChatToPlayer	(L{O}net/minecraft/util/ChatMessageComponent;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	sendChatToPlayer
+virtual	*	sendPacketToPlayer	(L{S}net/minecraft/network/Packet;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	sendPacketToPlayer
+static	cpw/mods/fml/common/registry/GameRegistry	registerPlayerTracker	(L{O}cpw/mods/fml/common/IPlayerTracker;)V	org/kylepitcock/legacyconnector/v1_6_4/bridge/Players164	registerPlayerTracker

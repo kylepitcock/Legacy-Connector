@@ -78,6 +78,10 @@ public final class Hierarchy {
     public String relocate(String legacyName) {
         if (legacyName == null) return null;
         if (!LegacyVersion.isRelocatedRoot(legacyName)) return legacyName;
+        if (version.forward() != null) {
+            String own = version.shimPrefix() + ForwardRenames.map(version, legacyName);
+            if (shim.contains(own)) return own;
+        }
         String s = version.linkPrefix() + ForwardRenames.map(version, legacyName);
         return shim.contains(s) || shim.size() == 0 ? s : version.synthPrefix() + legacyName;
     }

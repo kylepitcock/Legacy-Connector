@@ -251,6 +251,11 @@ public final class LegacyRemapper extends Remapper {
 
     private String relocate(String legacyName) {
         String shimName = version.linkPrefix() + ForwardRenames.map(version, legacyName);
+        // A forward version's own classes (1.6.4's network/tick API, which 1.7.10 lacks or shapes differently) win over the forwarded shim.
+        if (shim != null && version.forward() != null) {
+            String own = version.shimPrefix() + ForwardRenames.map(version, legacyName);
+            if (shim.contains(own)) return own;
+        }
         if (shim == null || shim.contains(shimName) || shim.size() == 0) return shimName;
         String synth = version.synthPrefix() + legacyName;
         if (recording && demand != null) demand.addClass(synth);

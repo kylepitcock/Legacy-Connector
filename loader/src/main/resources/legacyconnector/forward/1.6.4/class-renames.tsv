@@ -70,3 +70,6 @@ net/minecraft/entity/ai/attributes/AttributeInstance	net/minecraft/entity/ai/att
 net/minecraftforge/event/Event$Result	cpw/mods/fml/common/eventhandler/Event$Result
 net/minecraftforge/event/Event$HasResult	cpw/mods/fml/common/eventhandler/Event$HasResult
 net/minecraftforge/common/Property$Type	net/minecraftforge/common/config/Property$Type
+net/minecraft/network/NetServerHandler	net/minecraft/network/NetHandlerPlayServer
+net/minecraft/network/packet/Packet	net/minecraft/network/Packet
+net/minecraft/network/packet/NetHandler	net/minecraft/network/INetHandler

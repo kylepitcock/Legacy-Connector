@@ -208,7 +208,9 @@ public final class LegacyJarTransformer {
                 continue;
             }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
-            if (shim.contains(jar.version.linkPrefix() + org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name))) {
+            String forwarded = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name);
+            if (shim.contains(jar.version.linkPrefix() + forwarded)
+                    || (jar.version.forward() != null && shim.contains(jar.version.shimPrefix() + forwarded))) {
                 classes.remove(name);
                 dropped++;
             } else {
@@ -342,6 +344,7 @@ public final class LegacyJarTransformer {
         int forwardCalls = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
+            result.compatRedirects += ForwardRedirects.apply(node, version);
             InterfaceFlags.apply(node, hierarchy);
             forwardCalls += ForwardCalls.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
