@@ -239,27 +239,4 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
             return java.util.Optional.ofNullable(model);
         }
     }
-
-    /** Forge's loader of plain json models (a singleton with the owning ModelLoader in a private field; AE2's UVL models read it by reflection). */
-    public static final class VanillaLoader implements ICustomModelLoader {
-        public static final VanillaLoader INSTANCE = new VanillaLoader();
-        private ModelLoader loader;
-
-        private VanillaLoader() {
-        }
-
-        @Override
-        public boolean accepts(ResourceLocation modelLocation) {
-            return false;
-        }
-
-        @Override
-        public IModel loadModel(ResourceLocation modelLocation) {
-            return ModelLoaderRegistry.getMissingModel();
-        }
-
-        @Override
-        public void onResourceManagerReload(legacyconnector.v1_12_2.net.minecraft.client.resources.IResourceManager resourceManager) {
-        }
-    }
 }
