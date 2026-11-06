@@ -168,6 +168,10 @@ public final class GuiBridge {
     }
 
     static IGuiHandler handlerFor(String legacyId) {
+        // a mod that registered its handler under its mod id (Fisk's Heroes: registerGuiHandler("fiskheroes", ...), openGui("fiskheroes", ...)) has no
+        // entry for the mod instance, which the client side looks up by the id the server sent
+        IGuiHandler byId = handler(legacyId);
+        if (byId != null) return byId;
         LegacyModRecord r = LegacyMods.byLegacyId(legacyId);
         return r == null ? null : handler(r.instance);
     }
