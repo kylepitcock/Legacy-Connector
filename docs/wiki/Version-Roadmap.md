@@ -26,6 +26,40 @@ whether any of the above keeps working.
 
 ## Evidence
 
-Modrinth mod counts (Forge category, project type mod; understates old versions, whose mods live on CurseForge): 1.20.1 25,526; 1.19.2 8,197; 1.18.2 6,072;
-1.16.5 4,295; 1.12.2 2,748; 1.7.10 897; 1.6.4 131; 1.5.2 74; 1.4.7 77; 1.2.5 71. Compatibility data in `docs/data/mods.json` rates 86 1.12.2 mods "works" or better and
-202 1.7.10 mods (2026-11-06). Effort figures use the project's measured pace (about four weeks from the first commit to two shims and the 1.20.1 groundwork).
+Mod counts per Minecraft version from several sources (all fetched 2026-11-06 unless noted). **Modrinth is biased toward new versions**: it is a newer platform, so most old mods
+were never uploaded there. Use the CurseForge columns for old versions; Modrinth is shown to make the bias visible.
+
+| Version | CurseForge (site search, `version=` filter, all loaders) | CFLookup, Forge only, whole 1.x family | CurseForge via a forum census, April 2023 | Modrinth (Forge category) |
+|---|---|---|---|---|
+| 1.2.5 | 108 | 220 (1.2) | | 71 |
+| 1.3.2 | 91 | 123 (1.3) | | |
+| 1.4.7 | 175 | 409 (1.4) | | 77 |
+| 1.5.2 | 404 | 605 (1.5) | | 74 |
+| 1.6.4 | 851 | 1,339 (1.6) | | 131 |
+| 1.7.10 | 5,229 | 6,893 (1.7) | about 4,300 | 897 |
+| 1.12.2 | 10,000+ (the site caps the count) | 15,199 (1.12) | about 10,620 | 2,748 |
+| 1.16.5 | | 25,806 (1.16) | about 14,440 | 4,295 |
+| 1.18.2 | | 17,585 (1.18) | about 11,380 | 6,072 |
+| 1.19.2 | | 30,475 (1.19) | about 9,280 | 8,197 |
+| 1.20.1 | | 31,887 (1.20) | | 25,526 |
+
+The bias in numbers: Modrinth lists 6 to 7 times fewer mods than CurseForge for 1.6.4 and 1.7.10 (131 vs 851, 897 vs 5,229), and 15 times fewer for the old end of the table
+than the whole-family CFLookup figures suggest. It reaches parity only at 1.20.1 and later.
+
+Modpacks (CurseForge, April 2023 census): 1.12.2 about 20,920, 1.16.5 about 12,180, 1.18.2 about 5,660, 1.7.10 about 4,700, 1.19.2 about 4,160. So
+1.12.2 is by far the most played modded version, with 1.16.5 second.
+
+What this changes in the order above: nothing yet, but it sharpens three points. (1) 1.16.5 is the second largest old pool (about 14,000 to 26,000 mods, depending on the
+source), larger than 1.12.2 in mod count, so its slot after the 1.20.1 pipeline is about the pipeline, not the size. (2) 1.6.4 (about 850 to 1,300 mods)
+is about twice 1.5.2 (about 400 to 600), which is about twice 1.4.7 (about 175 to 410), so each step down the old versions is worth about half the previous one
+while costing much less; that supports doing them as cheap deltas right after 1.6.4. (3) The 1.2.5 pool (108 to 220) is the smallest of all, which fits it being last
+among the planned versions even though some of its mods exist nowhere else.
+
+Caveats: CurseForge's search count includes every loader and any project that lists the version, and caps at 10,000. CFLookup counts Forge projects for a whole 1.x family
+(1.7 includes 1.7.2 to 1.7.10) and several versions overlap between mods. The forum census is a person's count from 2023. None of these is the number of *abandoned*
+mods (the ones that matter here), which needs a per-mod check against NeoForge 1.21.1. Compatibility data in `docs/data/mods.json` currently rates 86 1.12.2 mods "works" or better and
+202 1.7.10 mods. Effort figures use the project's measured pace (about four weeks from the first commit to two shims and the 1.20.1 groundwork).
+
+Sources: [CurseForge search with the version filter](https://www.curseforge.com/minecraft/search?class=mc-mods&version=1.6.4), [CFLookup Minecraft mod stats](https://cflookup.com/MinecraftModStats),
+[Minecraft Forum: What version have the most mods?](https://www.minecraftforum.net/forums/minecraft-java-edition/discussion/3174330-what-version-have-the-most-mods),
+[Modrinth search API](https://docs.modrinth.com/api/operations/searchprojects/).
