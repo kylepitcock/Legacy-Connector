@@ -100,6 +100,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
 
     private void updateBossBar() {
         if (!(level() instanceof ServerLevel sl)) return;
+        if (isRemoved()) {
+            clearBossBar();
+            return;
+        }
         float health, max;
         if (legacy instanceof legacyconnector.v1_7_10.net.minecraft.entity.boss.IBossDisplayData boss) {
             health = boss.getHealth();
@@ -108,6 +112,10 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
             health = getHealth();
             max = getMaxHealth();
         } else {
+            return;
+        }
+        if (health <= 0) {
+            clearBossBar();
             return;
         }
         if (bossEvent == null) {
@@ -124,9 +132,15 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         }
     }
 
+    private void clearBossBar() {
+        if (bossEvent == null) return;
+        bossEvent.removeAllPlayers();
+        bossEvent = null;
+    }
+
     @Override
     public void remove(net.minecraft.world.entity.Entity.RemovalReason reason) {
-        if (bossEvent != null) bossEvent.removeAllPlayers();
+        clearBossBar();
         super.remove(reason);
     }
 
@@ -261,6 +275,7 @@ public class LegacyMobHost extends PathfinderMob implements LegacyLivingHost, IE
         EntityLivingBase l = living();
         if (l == null) super.die(source);
         else l.onDeath(legacyconnector.v1_7_10.net.minecraft.util.DamageSource.mcc$wrap(source));
+        if (isDeadOrDying() || isRemoved()) clearBossBar();
     }
 
     @Override
