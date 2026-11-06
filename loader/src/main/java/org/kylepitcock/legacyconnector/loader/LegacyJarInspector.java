@@ -64,9 +64,12 @@ public final class LegacyJarInspector {
                 LegacyJar forge = inspectForge1201(zip, path);
                 if (forge != null) return forge;
             }
+            // A 1.12.2 library jar built from a 1.15 template keeps a stray mods.toml next to its FML coremod plugin (Obfuscate 0.4.2 for 1.12.2).
+            boolean strayModsToml = zip.getEntry("META-INF/neoforge.mods.toml") == null && zip.getEntry("fabric.mod.json") == null
+                    && zip.getEntry("META-INF/MANIFEST.MF") != null && legacyCorePlugin(zip);
             // Anything that already speaks a modern metadata format is not ours to touch.
             if (zip.getEntry("META-INF/neoforge.mods.toml") != null
-                    || zip.getEntry("META-INF/mods.toml") != null
+                    || (zip.getEntry("META-INF/mods.toml") != null && !strayModsToml)
                     || zip.getEntry("fabric.mod.json") != null
                     || zip.getEntry("quilt.mod.json") != null) {
                 return null;
@@ -339,6 +342,12 @@ public final class LegacyJarInspector {
             return refs17 >= refs112 ? LegacyVersion.V1_7_10 : LegacyVersion.V1_12_2;
         }
         return null;
+    }
+
+    private static boolean legacyCorePlugin(ZipFile zip) throws IOException {
+        try (InputStream in = zip.getInputStream(zip.getEntry(JarFile.MANIFEST_NAME))) {
+            return new Manifest(in).getMainAttributes().getValue("FMLCorePlugin") != null;
+        }
     }
 
     private static void readManifest(ZipFile zip, LegacyJar jar) throws IOException {
