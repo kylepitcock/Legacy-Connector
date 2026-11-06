@@ -213,7 +213,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.6.4** (started) → **1.5.2** (started) → **1.4.7** → **1.20.1** → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5** → 1.3.2 (on demand)
+✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.6.4** (started) → **1.5.2** (started) → **1.4.7** (started) → **1.20.1** → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5** → 1.3.2 (on demand)
 
 ## Star history
 
