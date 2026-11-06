@@ -72,7 +72,7 @@ public final class LegacyRemapper extends Remapper {
         this.mcp = mcp;
         this.shim = shim;
         this.demand = demand;
-        this.notch = version == LegacyVersion.V1_6_4 ? NotchNames.get() : null;
+        this.notch = version.numericIds() ? NotchNames.get(version.id()) : null;
         ForwardMembers table = version.forward() == null ? null : ForwardMembers.forVersion(version);
         this.members = table == null || table.isEmpty() ? null : table;
     }

@@ -18,6 +18,7 @@ repositories {
 configurations {
     forge1710
     forge164
+    forge152
     mcp1710
     mcp1122
     mcpconfig1201
@@ -40,6 +41,8 @@ dependencies {
     forge1710 "net.minecraftforge:forge:${forge_1_7_10}:userdev@jar"
     // 1.6.4: the MCP names of Forge 9.11.1.1345 (fml/conf of the source zip); there is no separate MCP export
     forge164 "net.minecraftforge:forge:${forge_1_6_4}:src@zip"
+    // 1.5.2: the MCP 7.51 names of Forge 7.8.1.738 (fml/conf of the source zip)
+    forge152 "net.minecraftforge:forge:${forge_1_5_2}:src@zip"
     mcp1710 "de.oceanlabs.mcp:mcp_stable:${mcp_1_7_10}@zip"
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
@@ -85,6 +88,11 @@ def extractMappings = tasks.register('extractMappings', Sync) {
     from({ zipTree(configurations.forge164.singleFile) }) {
         include 'forge/fml/conf/methods.csv', 'forge/fml/conf/fields.csv'
         eachFile { it.path = "legacyconnector/mappings/1.6.4/${it.name}" }
+        includeEmptyDirs = false
+    }
+    from({ zipTree(configurations.forge152.singleFile) }) {
+        include 'forge/fml/conf/methods.csv', 'forge/fml/conf/fields.csv'
+        eachFile { it.path = "legacyconnector/mappings/1.5.2/${it.name}" }
         includeEmptyDirs = false
     }
 }

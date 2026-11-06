@@ -334,8 +334,20 @@ public final class LegacyJarInspector {
                 "cpw/mods/fml/common/network/simpleimpl/", "cpw/mods/fml/common/gameevent/", "net/minecraftforge/common/util/",
                 "net/minecraftforge/common/config/", "net/minecraft/util/ChatComponentText", "net/minecraft/block/Block$SoundType"};
 
-        int v164, v17;
-        String example164, example17;
+        // 1.5.2 only (absent from 1.6.4; legacy/*/hierarchy.txt diff): the string-path texture API, the Forge classes 1.6 moved
+        private static final String[] V152 = {"net/minecraft/client/renderer/RenderEngine", "net/minecraft/client/renderer/texture/TextureStitched",
+                "net/minecraft/client/renderer/texture/Texture", "net/minecraft/client/texturepacks/", "net/minecraftforge/common/ISidedInventory",
+                "net/minecraftforge/common/IThrowableEntity", "net/minecraftforge/common/IArmorTextureProvider", "net/minecraft/block/BlockCloth",
+                "net/minecraftforge/client/event/TextureLoadEvent", "cpw/mods/fml/client/ITextureFX"};
+        // 1.6 and later only (absent from 1.5.2): EntityLivingBase, attributes, the resource system, @EventHandler, the 1.6 blocks
+        private static final String[] V16 = {"net/minecraft/entity/EntityLivingBase", "net/minecraft/entity/ai/attributes/", "net/minecraft/util/ResourceLocation",
+                "net/minecraft/client/resources/", "cpw/mods/fml/common/Mod$EventHandler", "net/minecraft/client/renderer/texture/TextureManager",
+                "net/minecraft/client/renderer/texture/TextureAtlasSprite", "net/minecraft/client/renderer/entity/RendererLivingEntity",
+                "net/minecraft/client/entity/AbstractClientPlayer", "net/minecraft/entity/passive/EntityHorse", "net/minecraft/block/BlockColored",
+                "net/minecraft/block/BlockRotatedPillar", "cpw/mods/fml/common/Optional"};
+
+        int v164, v17, v152, v16;
+        String example164, example17, example152, example16;
 
         /** True when {@code pool} (one name per line) holds {@code name} as a whole class or field name (or a package prefix when it ends with '/'). */
         private static boolean has(String pool, String name) {
@@ -360,6 +372,20 @@ public final class LegacyJarInspector {
                     break;
                 }
             }
+            for (String m : V152) {
+                if (has(pool, m)) {
+                    v152++;
+                    if (example152 == null) example152 = m.replaceAll("/$", "").replaceAll("^.*/", "");
+                    break;
+                }
+            }
+            for (String m : V16) {
+                if (has(pool, m)) {
+                    v16++;
+                    if (example16 == null) example16 = m.replaceAll("/$", "").replaceAll("^.*/", "");
+                    break;
+                }
+            }
             for (String m : V17) {
                 if (has(pool, m)) {
                     v17++;
@@ -370,14 +396,38 @@ public final class LegacyJarInspector {
         }
     }
 
-    /** The family of a jar that links against {@code cpw.mods.fml}: 1.6.4 or 1.7.x (1.7.10 shim). */
+    /** True when a mod of the jar declares {@code acceptedMinecraftVersions} (or mcmod.info {@code mcversion}) of {@code version}. */
+    private static boolean declaresVersion(LegacyJar jar, Map<String, JsonObject> infos, LegacyVersion version) {
+        for (LegacyModDecl decl : jar.mods) {
+            if (LegacyVersion.fromMinecraftVersion(decl.acceptedMinecraftVersions) == version) return true;
+        }
+        for (JsonObject info : infos.values()) {
+            if (info.has("mcversion") && LegacyVersion.fromMinecraftVersion(info.get("mcversion").getAsString()) == version) return true;
+        }
+        return false;
+    }
+
+    /** The family of a jar that links against {@code cpw.mods.fml}: 1.5.2, 1.6.4 or 1.7.x (1.7.10 shim). */
     private static LegacyVersion chooseCpw(LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers) {
+        if (markers.v164 > 0 && markers.v17 == 0 && markers.v152 > 0 && markers.v16 == 0) {
+            jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.5.2-only API (" + markers.v152 + " classes, e.g. " + markers.example152 + ")";
+            return LegacyVersion.V1_5_2;
+        }
         if (markers.v164 > 0 && markers.v17 == 0) {
+            // the 1.6.4 markers (Icon, @PreInit, ForgeSubscribe...) exist in 1.5.2 as well: with neither side's own API present, the declared version decides
+            if (markers.v152 == 0 && markers.v16 == 0 && declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
             jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.6.4-only API (" + markers.v164 + " classes, e.g. " + markers.example164 + ")";
             return LegacyVersion.V1_6_4;
         }
         if (markers.v164 == 0 && markers.v17 == 0) {
             // nothing in the code tells them apart: the declared Minecraft version does
+            if (declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
             for (LegacyModDecl decl : jar.mods) {
                 if (LegacyVersion.fromMinecraftVersion(decl.acceptedMinecraftVersions) == LegacyVersion.V1_6_4) {
                     jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), @Mod(acceptedMinecraftVersions=" + decl.acceptedMinecraftVersions + ")";

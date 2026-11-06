@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Minecraft 1.6.4's obfuscated (notch) names to SRG names. Most 1.6.4 mods were reobfuscated to SRG ids ({@code func_71857_b}), but the coremod-era ones
+ * Minecraft 1.6.4's (and 1.5.2's, same layout) obfuscated (notch) names to SRG names. Most 1.6.4 mods were reobfuscated to SRG ids ({@code func_71857_b}), but the coremod-era ones
  * (CodeChickenCore, NEI, ChickenChunks, Ender Storage, ...) reference the game by its notch names ({@code aqz.a(Lym;)V}). The table is
  * {@code legacy/1.6.4/notch.txt}, written by {@code tools/extract_legacy_signatures.py 1.6.4} from the client jar and the MCP joined.srg:
  * <pre>
@@ -21,26 +21,31 @@ import java.util.Map;
  * come from the {@code locals} the caller supplies.
  */
 public final class NotchNames {
-    private static NotchNames instance;
+    private static final java.util.Map<String, NotchNames> INSTANCES = new HashMap<>();
 
     private final Map<String, String> classes = new HashMap<>();
     private final Map<String, String[]> supers = new HashMap<>();
     private final Map<String, String> fields = new HashMap<>();
     private final Map<String, String> methods = new HashMap<>();
 
-    public static synchronized NotchNames get() {
-        if (instance == null) instance = load();
-        return instance;
+    /** The 1.6.4 table. */
+    public static NotchNames get() {
+        return get("1.6.4");
+    }
+
+    /** The table of a version with notch-named jars: {@code legacy/<id>/notch.txt} (1.5.2 and 1.6.4). */
+    public static synchronized NotchNames get(String versionId) {
+        return INSTANCES.computeIfAbsent(versionId, NotchNames::load);
     }
 
     /** Drops the loaded table (perf.releaseLoaderData). */
     public static synchronized void releaseCaches() {
-        instance = null;
+        INSTANCES.clear();
     }
 
-    private static NotchNames load() {
+    private static NotchNames load(String versionId) {
         NotchNames n = new NotchNames();
-        String resource = "legacyconnector/legacy/1.6.4/notch.txt";
+        String resource = "legacyconnector/legacy/" + versionId + "/notch.txt";
         try (InputStream in = NotchNames.class.getClassLoader().getResourceAsStream(resource)) {
             if (in == null) return n;
             BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));

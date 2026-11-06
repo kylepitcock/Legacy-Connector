@@ -71,7 +71,7 @@ public final class Platform1710 implements LegacyPlatform {
             injectInstanceAndMetadata(mod, container);
             injectProxies(mod, loader);
             // 1.6.4's @NetworkMod: the channels and handlers it declares are registered as FML did when the mod loaded
-            if ("1.6.4".equals(mod.version)) org.kylepitcock.legacyconnector.v1_6_4.bridge.NetworkModHook.apply(mod);
+            if ("1.6.4".equals(mod.version) || "1.5.2".equals(mod.version)) org.kylepitcock.legacyconnector.v1_6_4.bridge.NetworkModHook.apply(mod);
         } finally {
             LegacyModContainer1710.setActive(null);
         }

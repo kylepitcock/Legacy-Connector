@@ -251,7 +251,7 @@ public final class LegacyJarTransformer {
 
     /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
     private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper) {
-        if (remapper.version() != LegacyVersion.V1_6_4) return;
+        if (!remapper.version().numericIds()) return;
         Map<String, String[]> locals = new java.util.HashMap<>();
         for (byte[] data : classes.values()) {
             try {

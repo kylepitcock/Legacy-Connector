@@ -66,14 +66,16 @@ public final class ForwardMembers {
     private static ForwardMembers load(LegacyVersion v) {
         ForwardMembers t = new ForwardMembers(v);
         if (v.forward() == null) return t;
-        for (String file : FILES) {
-            String resource = "legacyconnector/forward/" + v.id() + "/" + file;
-            try (InputStream in = ForwardMembers.class.getClassLoader().getResourceAsStream(resource)) {
-                if (in == null) continue;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) t.parse(line);
-            } catch (IOException e) {
-                throw new IllegalStateException("Corrupt rename table " + resource, e);
+        for (String id : v.forwardTableIds()) {
+            for (String file : FILES) {
+                String resource = "legacyconnector/forward/" + id + "/" + file;
+                try (InputStream in = ForwardMembers.class.getClassLoader().getResourceAsStream(resource)) {
+                    if (in == null) continue;
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    for (String line = reader.readLine(); line != null; line = reader.readLine()) t.parse(line);
+                } catch (IOException e) {
+                    throw new IllegalStateException("Corrupt rename table " + resource, e);
+                }
             }
         }
         return t;

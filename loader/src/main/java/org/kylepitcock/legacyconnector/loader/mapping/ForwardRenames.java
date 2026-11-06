@@ -29,17 +29,19 @@ public final class ForwardRenames {
     public static synchronized Map<String, String> forVersion(LegacyVersion version) {
         return CACHE.computeIfAbsent(version, v -> {
             Map<String, String> out = new HashMap<>();
-            String resource = "legacyconnector/forward/" + v.id() + "/class-renames.tsv";
-            try (InputStream in = ForwardRenames.class.getClassLoader().getResourceAsStream(resource)) {
-                if (in == null) return out;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    if (line.isBlank() || line.startsWith("#")) continue;
-                    int tab = line.indexOf('\t');
-                    if (tab > 0) out.put(line.substring(0, tab), line.substring(tab + 1).strip());
+            for (String id : v.forwardTableIds()) {
+                String resource = "legacyconnector/forward/" + id + "/class-renames.tsv";
+                try (InputStream in = ForwardRenames.class.getClassLoader().getResourceAsStream(resource)) {
+                    if (in == null) continue;
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                        if (line.isBlank() || line.startsWith("#")) continue;
+                        int tab = line.indexOf('\t');
+                        if (tab > 0) out.put(line.substring(0, tab), line.substring(tab + 1).strip());
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Corrupt rename table " + resource, e);
                 }
-            } catch (IOException e) {
-                throw new IllegalStateException("Corrupt rename table " + resource, e);
             }
             return Map.copyOf(out);
         });

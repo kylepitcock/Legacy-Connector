@@ -16,6 +16,14 @@ import java.util.List;
  */
 public enum LegacyVersion {
     /**
+     * Forge 1.5.2 (7.8.x): the 1.6.4 model one step back. A forward version like {@link #V1_6_4}: it links against the 1.7.10 shim, shares the numeric-id facade
+     * classes of 1.6.4 (its {@link #shimPrefix()} is the 1.6.4 one), takes the 1.6.4 forward tables as a fallback ({@link #forwardTableIds()}) and has its own API
+     * tables ({@code legacy/1.5.2}) and synthesized classes. Differences from 1.6.4: {@code @PreInit/@Init/@PostInit} only (no {@code @EventHandler}),
+     * {@code EntityLiving} is the base of every living entity (no {@code EntityLivingBase}), no attributes, textures are string paths
+     * ({@code RenderEngine.bindTexture(String)}), no {@code ResourceLocation}.
+     */
+    V1_5_2("1.5.2", "legacyconnector/v1_6_4/", "legacyconnector_synth/v1_5_2/"),
+    /**
      * Forge 1.6.4: {@code cpw.mods.fml}, {@code Block.blocksList[id]}, {@code Icon}. A forward version: its jars are linked against the 1.7.10 shim
      * ({@link #forward()}), after the class renames of {@code legacyconnector/forward/1.6.4}; the classes of its own prefixes are the numeric-id facade
      * and what the synthesizer generates from the 1.6.4 API data.
@@ -72,9 +80,22 @@ public enum LegacyVersion {
         this.synthPrefix = synthPrefix;
     }
 
-    /** The family whose shim this version's jars link against (1.6.4 uses the 1.7.10 one), or null when it has its own shim. */
+    /** The family whose shim this version's jars link against (1.5.2 and 1.6.4 use the 1.7.10 one), or null when it has its own shim. */
     public LegacyVersion forward() {
-        return this == V1_6_4 ? V1_7_10 : null;
+        return this == V1_5_2 || this == V1_6_4 ? V1_7_10 : null;
+    }
+
+    /** True for the versions with numeric block and item ids (1.5.2 and 1.6.4): they share the id facade and the notch-name handling. */
+    public boolean numericIds() {
+        return this == V1_5_2 || this == V1_6_4;
+    }
+
+    /**
+     * Ids of the forward table folders ({@code legacyconnector/forward/<id>/}) that apply to this version, oldest first: later entries win. 1.5.2 starts from the
+     * 1.6.4 tables (same renames to the 1.7.10 shim) and overrides them with its own.
+     */
+    public List<String> forwardTableIds() {
+        return this == V1_5_2 ? List.of(V1_6_4.id, id) : List.of(id);
     }
 
     /** The family of the runtime platform and hand-written shim that runs this version's mods. */
@@ -134,6 +155,7 @@ public enum LegacyVersion {
     public static LegacyVersion fromMinecraftVersion(String mcVersion) {
         if (mcVersion == null) return null;
         String v = mcVersion.replaceAll("[\\[\\]()\\s]", "");
+        if (v.startsWith("1.5")) return V1_5_2;
         if (v.startsWith("1.6")) return V1_6_4;
         if (v.startsWith("1.7")) return V1_7_10;
         if (v.startsWith("1.8") || v.startsWith("1.9") || v.startsWith("1.10") || v.startsWith("1.11") || v.startsWith("1.12")) {
