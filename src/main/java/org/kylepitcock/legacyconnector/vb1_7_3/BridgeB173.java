@@ -34,9 +34,16 @@ public final class BridgeB173 {
     private BridgeB173() {}
 
     public static synchronized void registerAll() {
+        int replaced = 0;
         for (Block block : ContentB173.blocks()) {
             if (block.mcc$modern != null || !(block.mcc$owner instanceof LegacyModRecord mod) || Block.BLOCKS[block.id] != block) continue;
             if (LegacyLifecycle.isFailed(mod.modernId)) continue;
+            if (VanillaB173.isVanillaId(block.id) && VanillaB173.modernBlock(block.id) != null) {
+                // a mod's replacement of a vanilla block (same id): the vanilla block it replaced stays the modern one
+                block.mcc$modern = VanillaB173.modernBlock(block.id);
+                replaced++;
+                continue;
+            }
             try {
                 register(block, mod);
             } catch (RuntimeException | LinkageError e) {
@@ -46,6 +53,12 @@ public final class BridgeB173 {
         for (Item item : ContentB173.items()) {
             if (item.mcc$modern != null || !(item.mcc$owner instanceof LegacyModRecord mod) || Item.ITEMS[item.id] != item) continue;
             if (LegacyLifecycle.isFailed(mod.modernId)) continue;
+            if (VanillaB173.isVanillaId(item.id) && VanillaB173.modernItem(item.id, 0) != null) {
+                // mods re-create vanilla items at their ids to change them (NetherCraft's tools): they stay the vanilla items
+                item.mcc$modern = VanillaB173.modernItem(item.id, 0);
+                replaced++;
+                continue;
+            }
             try {
                 register(item, mod);
             } catch (RuntimeException | LinkageError e) {
@@ -54,7 +67,8 @@ public final class BridgeB173 {
         }
         StringBuilder sb = new StringBuilder();
         PER_MOD.forEach((mod, n) -> sb.append(' ').append(mod).append('=').append(n[0]).append(" blocks/").append(n[1]).append(" items"));
-        LOG.info("b1.7.3 content registered:{}", sb.length() == 0 ? " none" : sb);
+        LOG.info("b1.7.3 content registered:{}{}", sb.length() == 0 ? " none" : sb,
+                replaced > 0 ? "; " + replaced + " replacement(s) of vanilla blocks/items kept as the vanilla ones" : "");
     }
 
     private static void register(Block block, LegacyModRecord mod) {
@@ -124,6 +138,13 @@ public final class BridgeB173 {
         }
         if (name == null && legacyKey != null) name = readable(legacyKey.substring(legacyKey.indexOf('.') + 1));
         if (name != null) GeneratedTranslations.put("en_us", modernKey, name);
+    }
+
+    /** True if the legacy content maps onto Minecraft's own block or item (a mod's replacement of vanilla content). */
+    public static boolean isVanillaReplacement(Object modern) {
+        ResourceLocation key = modern instanceof net.minecraft.world.level.block.Block b ? BuiltInRegistries.BLOCK.getKey(b)
+                : modern instanceof net.minecraft.world.item.Item i ? BuiltInRegistries.ITEM.getKey(i) : null;
+        return key != null && key.getNamespace().equals("minecraft");
     }
 
     /** {@code tile.oreTitanium} -> {@code ore_titanium}; no key -> the fallback. */

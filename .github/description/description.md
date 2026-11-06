@@ -215,7 +215,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ✅ 1.7.10 → 🧪 **1.12.2** (in progress) → **1.20.1** → **1.16.5** → **1.2.5**
 
-Also started: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load (no textures yet).
+Also started: **Beta 1.7.3** ModLoader / Forge 1.0 mods (`mods/b1.7.3/`): their blocks, items and recipes load with their own textures.
 
 ## Star history
 

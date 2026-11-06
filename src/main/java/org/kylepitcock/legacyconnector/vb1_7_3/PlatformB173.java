@@ -145,5 +145,6 @@ public final class PlatformB173 implements LegacyPlatform {
     public void afterPostInit() {
         if (!started) return;
         BridgeB173.registerAll();
+        CreativeTabsB173.register();
     }
 }

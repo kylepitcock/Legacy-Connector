@@ -146,6 +146,7 @@ public final class LegacyConnector {
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Data1122());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Assets1122());
         GeneratedPack.addContributor(new Assets1710());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AssetsB173());
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_7_10.bridge.RecipeBridge.generate(out);
         });

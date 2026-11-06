@@ -2,9 +2,9 @@
 
 Status and design of Minecraft Beta 1.7.3 support. Back to [Home](Home.md). Started 2026-11-06.
 
-**Status: started (server side: blocks, items, recipes).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are detected,
-deobfuscated and linked; the mods are constructed as ModLoader did and their blocks, items and recipes become modern content. Not
-yet: rendering (no textures or models, the client shows placeholder models), tile entities, entities, world generation, GUIs, tick hooks.
+**Status: started (blocks, items, recipes and their textures).** Beta 1.7.3 ModLoader / ModLoaderMP / Forge 1.0.x jars are detected,
+deobfuscated and linked; the mods are constructed as ModLoader did, their blocks, items and recipes become modern content with their
+own textures, one creative tab per mod. Not yet: block behaviour beyond drops, tile entities, entities, world generation, GUIs, tick hooks.
 
 ## Putting the mods in
 
@@ -72,6 +72,32 @@ allowed.
 The server test logs `b1.7.3 content registered: ...` and, with `-Dlegacyconnector.entitySelfTest=true`, `B1.7.3 SELF TEST` (every
 mod block placed, read back and asked for drops).
 
+## Client assets
+
+`AssetsB173` (a generated-pack contributor) turns sprite indices into textures and models:
+
+- **Textures.** A b1.7.3 block names its sprites by index: `getTexture(side, meta)` into terrain.png, or into the block's own 256x256
+  sheet when it is a Forge `ITextureProvider` (`getTextureFile()`); items likewise into gui/items.png. A mod's own sprite is a
+  `ModLoader.addOverride` image (read from the mod's jar) at the index ModLoader handed out, a sheet sprite is that tile of the sheet; both
+  are written as `assets/<mod>/textures/block/b173/*.png`. An index without either is the vanilla sprite at that place, mapped to the modern
+  texture (tables of the terrain.png and gui/items.png layouts in `AssetsB173`, with the wool and dye formulas of BlockCloth and ItemDye);
+  doors' negative indices (a mirrored face) count as their absolute value.
+- **Models.** One block model per metadata, deduplicated: faces down, up, north, south, west, east are b1.7.3's sides 0-5, the block's
+  bounds are the element (slabs, plates), render types 1 (crossed plants), 2 (torches) and 6 (crops) use the vanilla shapes, other render
+  types (custom renderers) are a cube for now; non-opaque blocks are cutout, render layer 1 translucent. The blockstate maps `meta=0..15`.
+  Block items use the block model (flat sprite for plants and torches), items a flat or handheld sprite.
+- **Names**: `ModLoader.AddName` / `AddLocalization`, else the translation key made readable.
+- **Creative tabs** (`CreativeTabsB173`): b1.7.3 had no creative inventory, so each mod gets one tab with its blocks then its items; a block
+  item with subtypes lists each metadata whose sprites differ.
+- A mod that re-creates a vanilla block or item at its vanilla id (NetherCraft's tools) keeps the vanilla 1.21.1 one: no new entry, model
+  or tab slot.
+
+The server test generates the assets too (`-PassetsDump=<dir>` writes them), which is how they can be checked without a client.
+
+OpenAL: b1.7.3 mods call LWJGL's OpenAL directly (IndustrialCraft 2's audio). Initialised on the mod-loading thread, before the sound
+engine made a context, the real AL classes fail for good and the client's first resource reload never finished (stuck loading screen).
+`org/lwjgl/openal/` of b1.7.3 jars goes to the synthesized API (silent) instead (`LegacyRemapper`).
+
 ## Reference data
 
 `tools/fetch_devtools.sh` downloads the b1.7.3 client and server, Risugami's ModLoader, ModLoaderMP (client and server) and Forge 1.0.7 into
@@ -99,11 +125,14 @@ all five RedPower modules, Butterflies, Twilight Forest b1.7.3); 51 blocks and 2
 1487 recipes translated (3 name items nothing provides). Failing, as expected for now: ComputerCraft (reads a vanilla texture), Coral Reef
 and More Creeps (need GuiAPI), Moon Mod (needs ShockAhPI), IndustrialCraft 2's client build (LWJGL on a dedicated server).
 
+Client (dev client, 11 jars): NetherCraft, Portal Gun, Minefactory Renewed, RedPower, Butterflies load with textured blocks and items in
+their creative tabs; 51 blocks, 159 items, 219 textures generated, 1 sprite reference without a texture. IndustrialCraft 2's client
+build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfuscated field name (plan item 6).
+
 ## Plan
 
-1. **Rendering (client)**: terrain.png / gui/items.png sprite indices and `ModLoader.addOverride` / Forge sprite sheets to atlas
-   sprites, block and item models generated per legacy block (per side and metadata, as `getTexture(side, meta)` answers), the b1.7.3
-   vanilla sprites mapped to modern textures. Apron's StationAPI modules (`SpriteSheet`, `MetaBlockState`) are the reference.
+1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
+   sprites (`ModTextureAnimation`), colour multipliers, item subtypes as their own items (today one modern item per legacy item).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
    (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /
    `GenerateNether` as placed features), fuel (`AddFuel`).
