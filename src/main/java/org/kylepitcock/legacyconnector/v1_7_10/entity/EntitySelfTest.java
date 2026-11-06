@@ -28,6 +28,7 @@ public final class EntitySelfTest {
     /** Where each test entity started: after 100 ticks the distance walked shows mobs that move far too fast. */
     private static final Map<Entity, net.minecraft.world.phys.Vec3> START = new java.util.IdentityHashMap<>();
     private static final Map<String, String> RESULT = new TreeMap<>();
+    private static final Map<Entity, String> DEATH = new java.util.IdentityHashMap<>();
     private static int ticks = -1;
 
     private EntitySelfTest() {}
@@ -36,6 +37,9 @@ public final class EntitySelfTest {
         if (!Boolean.getBoolean("legacyconnector.entitySelfTest")) return;
         NeoForge.EVENT_BUS.addListener((ServerStartedEvent e) -> start(e.getServer()));
         NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post e) -> tick());
+        NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.entity.living.LivingDeathEvent e) -> {
+            if (ticks >= 0 && SPAWNED.contains(e.getEntity())) DEATH.put(e.getEntity(), e.getSource().getMsgId());
+        });
         // Other dev fixtures may stop the server early: report what there is.
         NeoForge.EVENT_BUS.addListener((net.neoforged.neoforge.event.server.ServerStoppingEvent e) -> {
             if (ticks >= 0 && ticks < 100) {
@@ -98,7 +102,7 @@ public final class EntitySelfTest {
                 }
                 copy.load(tag);
                 if (!level.addFreshEntity(copy)) {
-                    RESULT.put(name, "addFreshEntity refused");
+                    RESULT.put(name, "addFreshEntity refused (removal reason " + copy.getRemovalReason() + ", y " + copy.getY() + ")");
                     continue;
                 }
                 SPAWNED.add(copy);
@@ -141,7 +145,7 @@ public final class EntitySelfTest {
                 RESULT.put(name, "alive at " + e.blockPosition().toShortString());
             } else {
                 gone++;
-                RESULT.put(name, "removed (" + e.getRemovalReason() + ")");
+                RESULT.put(name, "removed (" + e.getRemovalReason() + (DEATH.containsKey(e) ? ", damage " + DEATH.get(e) : "") + ")");
             }
         }
         java.util.List<String> fast = new ArrayList<>();

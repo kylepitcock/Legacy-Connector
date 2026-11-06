@@ -78,3 +78,4 @@ net/minecraft/dispenser/RegistryDefaulted	net/minecraft/util/RegistryDefaulted
 net/minecraft/dispenser/RegistrySimple	net/minecraft/util/RegistrySimple
 net/minecraftforge/common/UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader
 net/minecraftforge/common/Configuration$UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader
+net/minecraft/entity/ai/EntityAITaskEntry	net/minecraft/entity/ai/EntityAITasks$EntityAITaskEntry
