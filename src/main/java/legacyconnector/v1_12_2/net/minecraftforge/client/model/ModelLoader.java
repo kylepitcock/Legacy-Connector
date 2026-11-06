@@ -105,6 +105,17 @@ public class ModelLoader extends legacyconnector.v1_12_2.net.minecraft.client.re
         return out;
     }
 
+    /** The models an item may show, in registration order (the order {@link #mcc$mesh} results are numbered in). */
+    public static synchronized java.util.List<ResourceLocation> mcc$variantList(Item item) {
+        var set = VARIANTS.get(item);
+        return set == null ? java.util.List.of() : java.util.List.copyOf(set);
+    }
+
+    /** The per-stack model chooser a mod gave an item, or null. */
+    public static synchronized ItemMeshDefinition mcc$mesh(Item item) {
+        return MESH.get(item);
+    }
+
     /** The model a registered item subtype was given, or null. */
     public static synchronized ModelResourceLocation mcc$model(Item item, int meta) {
         var m = CUSTOM.get(item);

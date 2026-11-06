@@ -164,6 +164,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
 
     /** Item models registered in code (ModelLoader): each subtype's modern item points at the model file the mod named. */
     private static void itemModels(Map<String, Supplier<byte[]>> out) {
+        meshIds = meshItemIds();
         for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             if (item.getRegistryName() == null || item instanceof legacyconnector.v1_12_2.net.minecraft.item.ItemBlock) continue;
             // every subtype the item registered (metadata goes beyond 15: AbyssalCraft's crystal shards run to 26 and more)
@@ -173,9 +174,10 @@ public final class Assets1122 implements GeneratedPack.Contributor {
                 var mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, meta);
                 // a subtype the mod gave no model of its own shows the base subtype's (instead of the missing-model cube)
                 if (mrl == null && meta != 0) mrl = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$model(item, 0);
-                if (mrl == null) continue;
                 ResourceLocation id = BuiltInRegistries.ITEM.getKey(modern);
-                String target = Ids.namespace(mrl.getNamespace()) + ":item/" + Ids.normalizePath(mrl.getPath());
+                if (meshModel(item, mrl, id, out)) continue;
+                if (mrl == null) continue;
+                String target = itemModelTarget(mrl.getNamespace(), mrl.getPath());
                 if (ObjAssets1122.isObj(mrl.getPath())) {
                     // an OBJ item model (models/item/<name>.obj): NeoForge's OBJ loader
                     target = ObjAssets1122.model(Ids.namespace(mrl.getNamespace()),
@@ -1127,6 +1129,183 @@ public final class Assets1122 implements GeneratedPack.Contributor {
             }
         }
         return readJson(file);
+    }
+
+    /** The property item models select a per-stack model on: its value is the 1-based position of the model the item's mesh definition returned. */
+    public static final ResourceLocation MESH_PROPERTY = ResourceLocation.fromNamespaceAndPath("legacyconnector", "mesh");
+
+    /** The modern model id of a legacy model location: vanilla's 1.12 item models that were renamed map to the new names. */
+    public static String itemModelTarget(String namespace, String path) {
+        String ns = Ids.namespace(namespace);
+        String p = Ids.normalizePath(path);
+        if (ns.equals("minecraft") && p.equals("spawn_egg")) return "minecraft:item/template_spawn_egg";
+        return ns + ":item/" + p;
+    }
+
+    /**
+     * An item whose mod gave it an {@code ItemMeshDefinition} (a model chosen per stack, from its tag or capabilities: TF2 weapons are one
+     * item per weapon class showing the model of the weapon named in the stack) gets a model with one {@code overrides} entry per model
+     * the mod registered as a variant, selected by {@link #MESH_PROPERTY}, which {@code ItemProperties1122} computes by asking the mesh
+     * definition. Returns false for an item without a mesh definition or variants.
+     */
+    /** Ids ("namespace:path") of the modern items whose model {@link #meshModel} replaces with a wrapper. */
+    private static java.util.Set<String> meshIds = java.util.Set.of();
+
+    private static java.util.Set<String> meshItemIds() {
+        java.util.Set<String> ids = new java.util.HashSet<>();
+        for (legacyconnector.v1_12_2.net.minecraft.item.Item item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            if (item.getRegistryName() == null || legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$mesh(item) == null
+                    || legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$variantList(item).isEmpty()) continue;
+            for (var modern : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.variants(item).values()) {
+                ResourceLocation key = modern == null ? null : BuiltInRegistries.ITEM.getKey(modern);
+                if (key != null) ids.add(key.toString());
+            }
+        }
+        return ids;
+    }
+
+    /**
+     * The model a wrapper points at: when it is the model file of an item that a wrapper replaces (an item named like the model it shows:
+     * the weapon class "minigun" shows models/item/minigun.json), the mod's own file is kept under another name.
+     */
+    private static String meshTarget(String target, Map<String, Supplier<byte[]>> out) {
+        int colon = target.indexOf(':');
+        String ns = target.substring(0, colon);
+        String path = target.substring(colon + 1);
+        if (!path.startsWith("item/") || !meshIds.contains(ns + ":" + path.substring(5)) || !modelExists(ns, path)) return target;
+        String moved = "item/lc1122/mesh_" + path.substring(5);
+        String file = "assets/" + ns + "/models/" + moved + ".json";
+        if (!out.containsKey(file)) {
+            JsonObject json = readJson("assets/" + ns + "/models/" + path + ".json");
+            if (json == null) return target;
+            byte[] bytes = GSON.toJson(json).getBytes(StandardCharsets.UTF_8);
+            out.put(file, () -> bytes);
+        }
+        return ns + ":" + moved;
+    }
+
+    private static boolean meshModel(legacyconnector.v1_12_2.net.minecraft.item.Item item,
+            legacyconnector.v1_12_2.net.minecraft.client.renderer.block.model.ModelResourceLocation base, ResourceLocation id, Map<String, Supplier<byte[]>> out) {
+        if (legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$mesh(item) == null) return false;
+        var variants = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$variantList(item);
+        if (variants.isEmpty()) return false;
+        JsonArray overrides = new JsonArray();
+        String fallback = null;
+        for (int i = 0; i < variants.size(); i++) {
+            var v = variants.get(i);
+            String target = meshTarget(itemModelTarget(v.getNamespace(), v.getPath()), out);
+            int colon = target.indexOf(':');
+            String ns = target.substring(0, colon);
+            String path = target.substring(colon + 1);
+            if (!ns.equals("minecraft") && !modelExists(ns, path) && !out.containsKey("assets/" + ns + "/models/" + path + ".json")) continue;
+            if (fallback == null) fallback = target;
+            JsonObject override = new JsonObject();
+            JsonObject predicate = new JsonObject();
+            predicate.addProperty(MESH_PROPERTY.toString(), i + 1);
+            override.add("predicate", predicate);
+            override.addProperty("model", target);
+            overrides.add(override);
+        }
+        if (overrides.isEmpty()) return false;
+        JsonObject model = new JsonObject();
+        model.addProperty("parent", base != null && (base.getNamespace().equals("minecraft") || modelExists(Ids.namespace(base.getNamespace()), "item/" + Ids.normalizePath(base.getPath())))
+                ? meshTarget(itemModelTarget(base.getNamespace(), base.getPath()), out) : fallback);
+        model.add("overrides", overrides);
+        byte[] bytes = GSON.toJson(model).getBytes(StandardCharsets.UTF_8);
+        out.put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", () -> bytes);
+        if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) org.kylepitcock.legacyconnector.v1_7_10.client.SharedItemModels.note(id, GSON.toJson(model));
+        return true;
+    }
+
+    /**
+     * 1.12 stitched every texture a model named, wherever the file lived ({@code "layer0": "mod:living/claymore"} is
+     * {@code textures/living/claymore.png}); the modern block atlas only scans the folders it is told to. Walks the models of the pack's
+     * blockstates and of every item (parents and item overrides too) and registers the textures outside {@code blocks/}, {@code items/},
+     * {@code block/} and {@code item/} so the atlas gets a source for each.
+     */
+    public static void registerModelTextures(Map<String, Supplier<byte[]>> out) {
+        java.util.ArrayDeque<String> queue = new java.util.ArrayDeque<>();
+        java.util.Set<String> seen = new java.util.HashSet<>();
+        for (var e : out.entrySet()) {
+            String key = e.getKey();
+            if (!key.endsWith(".json") || !key.startsWith("assets/")) continue;
+            int slash = key.indexOf('/', 7);
+            if (slash < 0) continue;
+            String ns = key.substring(7, slash);
+            String rest = key.substring(slash + 1);
+            if (ns.equals("minecraft")) continue;
+            if (rest.startsWith("models/item/")) {
+                queue.add(ns + ":" + rest.substring(7, rest.length() - 5));
+            } else if (rest.startsWith("blockstates/")) {
+                try {
+                    collectModels(JsonParser.parseString(new String(e.getValue().get(), StandardCharsets.UTF_8)), ns, queue);
+                } catch (RuntimeException ignored) {
+                    // an unreadable blockstate has no textures to add
+                }
+            }
+        }
+        for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
+            ResourceLocation name = item.getRegistryName() == null ? null : ResourceLocation.parse(Ids.namespace(item.getRegistryName().getNamespace()) + ":" + Ids.normalizePath(item.getRegistryName().getPath()));
+            if (name != null && !name.getNamespace().equals("minecraft")) queue.add(name.getNamespace() + ":item/" + name.getPath());
+        }
+        int added = 0;
+        while (!queue.isEmpty()) {
+            String model = queue.poll();
+            int colon = model.indexOf(':');
+            String ns = colon < 0 ? "minecraft" : Ids.namespace(model.substring(0, colon));
+            if (ns.equals("minecraft") || !seen.add(model)) continue;
+            JsonObject json = modelJson(ns + ":" + Ids.normalizePath(colon < 0 ? model : model.substring(colon + 1)), out);
+            if (json == null) continue;
+            if (json.has("textures") && json.get("textures").isJsonObject()) {
+                for (var t : json.getAsJsonObject("textures").entrySet()) {
+                    if (!t.getValue().isJsonPrimitive()) continue;
+                    String ref = t.getValue().getAsString();
+                    int c = ref.indexOf(':');
+                    if (c < 0 || ref.startsWith("#")) continue;
+                    String tns = Ids.namespace(ref.substring(0, c));
+                    String path = Ids.normalizePath(ref.substring(c + 1));
+                    if (tns.equals("minecraft") || path.startsWith("blocks/") || path.startsWith("items/") || path.startsWith("block/") || path.startsWith("item/")) continue;
+                    if (!resourceExists("assets/" + tns + "/textures/" + path + ".png")) continue;
+                    org.kylepitcock.legacyconnector.v1_12_2.client.Sprites1122.register(tns + ":" + path);
+                    added++;
+                }
+            }
+            if (json.has("parent") && json.get("parent").isJsonPrimitive()) {
+                String parent = json.get("parent").getAsString();
+                int pc = parent.indexOf(':');
+                String pns = pc < 0 ? ns : Ids.namespace(parent.substring(0, pc));
+                String ppath = Ids.normalizePath(pc < 0 ? parent : parent.substring(pc + 1));
+                // a bare parent is looked up in the model's own namespace first (item/generated and the like are vanilla's)
+                if (pc < 0 && !modelExists(ns, ppath)) pns = "minecraft";
+                queue.add(pns + ":" + ppath);
+            }
+            if (json.has("overrides") && json.get("overrides").isJsonArray()) {
+                for (JsonElement o : json.getAsJsonArray("overrides")) {
+                    if (o.isJsonObject() && o.getAsJsonObject().has("model") && o.getAsJsonObject().get("model").isJsonPrimitive()) {
+                        String m = o.getAsJsonObject().get("model").getAsString();
+                        queue.add((m.indexOf(':') < 0 ? ns + ":" : "") + m);
+                    }
+                }
+            }
+        }
+        if (added > 0) LOG.info("1.12.2 model textures outside blocks/ and items/: {} added to the atlas", added);
+    }
+
+    /** Every model id a blockstate file names (variants, multipart), as "namespace:path". */
+    private static void collectModels(JsonElement e, String ns, java.util.Collection<String> into) {
+        if (e == null) return;
+        if (e.isJsonArray()) {
+            for (JsonElement x : e.getAsJsonArray()) collectModels(x, ns, into);
+        } else if (e.isJsonObject()) {
+            for (var entry : e.getAsJsonObject().entrySet()) {
+                if (entry.getKey().equals("model") && entry.getValue().isJsonPrimitive()) {
+                    String m = entry.getValue().getAsString();
+                    into.add(m.indexOf(':') < 0 ? ns + ":" + m : m);
+                } else {
+                    collectModels(entry.getValue(), ns, into);
+                }
+            }
+        }
     }
 
     private static void chainOf(String model, Map<String, Supplier<byte[]>> out, Chain chain, int depth) {

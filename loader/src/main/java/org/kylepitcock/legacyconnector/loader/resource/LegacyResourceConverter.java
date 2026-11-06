@@ -254,6 +254,15 @@ public final class LegacyResourceConverter {
 
     private static void fixRefs(JsonElement element, String key) {
         if (element instanceof JsonObject obj) {
+            // item override predicates name properties ("bodyModel"): modern ids take lower case only (the runtime registers them lower-cased)
+            if ("overrides".equals(key) || obj.has("predicate")) {
+                var predicate = obj.get("predicate");
+                if (predicate instanceof JsonObject p) {
+                    JsonObject fixed = new JsonObject();
+                    for (var pe : p.entrySet()) fixed.add(normalizeRef(pe.getKey()), pe.getValue());
+                    obj.add("predicate", fixed);
+                }
+            }
             for (var e : obj.entrySet()) {
                 if (e.getValue() instanceof JsonPrimitive p && p.isString() && isRefKey(e.getKey(), key)) {
                     String fixed = normalizeRef(p.getAsString());

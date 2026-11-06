@@ -37,6 +37,12 @@ public final class Client1122 {
             // textures of OBJ materials (Assets1122 ran first and collected them)
             for (String texture : org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.TEXTURES) Sprites1122.register(texture);
             for (String texture : org.kylepitcock.legacyconnector.v1_12_2.Assets1122.MODEL_TEXTURES) Sprites1122.register(texture);
+            try {
+                // textures the models name in folders the atlas does not scan (textures/living/x.png)
+                org.kylepitcock.legacyconnector.v1_12_2.Assets1122.registerModelTextures(out);
+            } catch (RuntimeException | LinkageError e) {
+                RenderErrors1122.report("listing the model textures outside blocks/ and items/", e);
+            }
             Sprites1122.contribute(out);
         });
         modBus.addListener((TextureAtlasStitchedEvent e) -> {
