@@ -89,6 +89,8 @@ public final class TileViews1122 {
                 return new legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntityFurnace(furnace);
             }
             if (be instanceof net.minecraft.world.Container c) return new InventoryView(c);
+            // a modern machine without an inventory but with the energy capability: legacy generators and cables push into it
+            if (ModernEnergy1122.offers(be)) return new ModernEnergy1122.EnergyTile(be);
         } catch (RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").debug("No legacy view of {}: {}", be.getClass().getName(), e.toString());
         }
@@ -145,6 +147,20 @@ public final class TileViews1122 {
         @Override
         public void markDirty() {
             modern.setChanged();
+        }
+
+        @Override
+        public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+            return modern instanceof BlockEntity be && capability == legacyconnector.v1_12_2.net.minecraftforge.energy.CapabilityEnergy.ENERGY
+                    && ModernEnergy1122.modern(be, facing) != null;
+        }
+
+        /** A modern machine with an inventory and the energy capability answers Forge Energy. */
+        @Override
+        public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability,
+                legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+            return modern instanceof BlockEntity be ? ModernEnergy1122.capability(be, capability, facing) : null;
         }
 
         @Override

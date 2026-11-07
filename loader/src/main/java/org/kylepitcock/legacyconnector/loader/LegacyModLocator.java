@@ -346,7 +346,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 context.addLocated(jar.path);
                 LibraryBridges.Bridge replacedBy = LibraryBridges.replacing(jar, bridges);
                 String obsolete = LibraryBridges.obsoleteReason(jar);
-                String skip = replacedBy != null ? "replaced by " + replacedBy.modernModId() + " (legacy " + replacedBy.legacyModId()
+                String skip = replacedBy != null ? "replaced by " + (replacedBy.modernModId() == null ? "NeoForge" : replacedBy.modernModId()) + " (legacy " + replacedBy.legacyModId()
                         + " API bridged)" : obsolete != null ? "not loaded: " + obsolete : skipReason(jar);
                 if (skip != null) {
                     outcomes.put(jar, skip);

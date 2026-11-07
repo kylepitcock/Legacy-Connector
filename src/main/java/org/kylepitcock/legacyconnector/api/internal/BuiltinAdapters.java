@@ -62,6 +62,11 @@ public final class BuiltinAdapters {
         return storage == null ? null : new Energy1122(storage);
     }
 
+    public static IEnergyStorage rf1122(Object tile, Direction side, BlockEntity host) {
+        return tile instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity t
+                ? org.kylepitcock.legacyconnector.v1_12_2.bridge.EnergyBridge1122.forTile(t, side) : null;
+    }
+
     /** A Forge 1.12 item handler seen as NeoForge's; stacks are converted on every call (the legacy side owns the real ones). */
     private record ItemHandler1122(legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandler handler) implements IItemHandler {
         @Override

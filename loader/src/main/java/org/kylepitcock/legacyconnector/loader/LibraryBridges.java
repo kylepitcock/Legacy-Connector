@@ -48,7 +48,10 @@ public final class LibraryBridges {
             // Without a legacy CodeChickenLib jar its API is synthesized with the bridged NEI; a real CodeChickenLib is loaded instead.
             new Bridge(null, "codechicken/lib/", "jei", "nei"),
             // CoFH's RF energy API (shaded by most 1.7.10 tech mods) is backed by NeoForge's Energy capability.
-            new Bridge(null, "cofh/api/energy/", null, "cofhEnergy"));
+            new Bridge(null, "cofh/api/energy/", null, "cofhEnergy"),
+            // The same for 1.12.2's Redstone Flux library (cofh.redstoneflux.api / .impl, a separate mod "redstoneflux" that Thermal Expansion,
+            // Thermal Dynamics, Mekanism, ... need): re-implemented in the 1.12.2 shim, so the library jar itself is not loaded.
+            new Bridge("redstoneflux", "cofh/redstoneflux/", null, "cofhEnergy"));
 
     /**
      * Mods that only make sense on the 1.7.10 engine or launcher (performance/bug-fix patches, ID extenders, mixin
