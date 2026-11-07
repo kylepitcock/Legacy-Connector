@@ -109,6 +109,7 @@ public final class LegacyCoreModTransformers {
             Class<?> lclImpl = api == LegacyVersion.V1_6_4 ? apiLoader.loadClass("cpw.mods.fml.relauncher.RelaunchClassLoader") : lclClass;
             URLClassLoader lcl = (URLClassLoader) lclImpl.getConstructor(URL[].class, ClassLoader.class)
                     .newInstance(urls.toArray(URL[]::new), fml);
+            openJavaLang(lcl);
             Class<?> launch = apiLoader.loadClass("net.minecraft.launchwrapper.Launch");
             launch.getField("classLoader").set(null, lcl);
             apiLoader.loadClass("cpw.mods.fml.relauncher.FMLInjectionData").getField("mcVersion").set(null, coremods.get(0).version.id());
@@ -167,6 +168,7 @@ public final class LegacyCoreModTransformers {
                     data.put("coremodList", coremodNames);
                     data.put("runtimeDeobfuscationEnabled", Boolean.TRUE);
                     data.put("coremodLocation", jar.path.toFile());
+                    data.put("classLoader", lcl);   // FML 1.5.2 handed the RelaunchClassLoader to the plugin (CodeChickenCore keeps it)
                     pluginType.getMethod("injectData", Map.class).invoke(p.instance(), data);
                     // FML constructed the plugin's mod container before any class was transformed; transformers rely on
                     // what its constructor sets up (loggers, shared state).
@@ -196,6 +198,21 @@ public final class LegacyCoreModTransformers {
         } catch (Throwable e) {
             LOG.warn("Legacy Connector: legacy coremod transformers are not applied", e);
             return empty();
+        }
+    }
+
+    /** Coremod code of the 1.5 era makes ClassLoader.defineClass accessible (CodeChickenCore's DelegatedTransformer); Java 8 let it. */
+    private static void openJavaLang(ClassLoader lcl) {
+        try {
+            java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            sun.misc.Unsafe unsafe = (sun.misc.Unsafe) f.get(null);
+            java.lang.reflect.Field implField = java.lang.invoke.MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+            var impl = (java.lang.invoke.MethodHandles.Lookup) unsafe.getObject(unsafe.staticFieldBase(implField), unsafe.staticFieldOffset(implField));
+            var addOpens = impl.findVirtual(Module.class, "implAddOpens", java.lang.invoke.MethodType.methodType(void.class, String.class, Module.class));
+            addOpens.invoke(Object.class.getModule(), "java.lang", lcl.getUnnamedModule());
+        } catch (Throwable t) {
+            LOG.debug("Legacy Connector: could not open java.lang to the coremod class loader: {}", t.toString());
         }
     }
 
