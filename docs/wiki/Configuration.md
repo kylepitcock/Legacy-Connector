@@ -31,6 +31,8 @@ Settings live in `config/legacyconnector.properties`, written with defaults and 
 | `energy.fePerEu` | `4` | FE per IC2 EU for IC2 sinks, sources and electric items exposed as NeoForge energy |
 | `energy.fePerMj` | `10` | FE per BuildCraft MJ for BuildCraft power receptors (BuildCraft's own 1 MJ = 10 RF) |
 | `energy.fePerEu.in`, `energy.fePerEu.out` | `energy.fePerEu` | Per direction rate for IC2 EU: `.in` = FE received by a legacy tile or item (modern cables and generators powering legacy machines), `.out` = FE extracted from one (legacy generators feeding modern cables). `0` turns that direction off. Stored/capacity readouts keep using `energy.fePerEu` |
+| `energy.fePerJoule` | `1` | FE per Universal Electricity joule for UE tiles (1.6.4 mods such as Minechem, Mad Science, ICBM) exposed as NeoForge energy |
+| `energy.fePerJoule.in`, `energy.fePerJoule.out` | `energy.fePerJoule` | The same per direction rates for Universal Electricity |
 | `energy.fePerMj.in`, `energy.fePerMj.out` | `energy.fePerMj` | The same per direction rates for BuildCraft MJ (BuildCraft tiles are receive only, so `.out` has nothing to switch today) |
 | `perf.staticTileEntities` | `true` | Legacy tile entities that never ticked in their version (1.7.10: `canUpdate()` false or no `updateEntity()`; 1.12.2: not `ITickable`; or crashed while ticking) get no modern ticker |
 | `perf.blockLookupCache` | `true` | The legacy block of a modern block and the 1.7.10 metadata of a vanilla state are kept on the block and the state (no lock per legacy block read) |

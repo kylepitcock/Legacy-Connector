@@ -46,7 +46,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 
 Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Beta/Alpha jar-mod era.
 
-Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
+Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Universal Electricity, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
 
 Per-mod results, known issues and what is not supported: [Compatibility and status](docs/wiki/Compatibility-and-Status.md). After
 launching, read `logs/legacyconnector-report.txt`: for every legacy jar it lists the detected version and mod ids, references that

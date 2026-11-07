@@ -13,7 +13,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 | NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
 | Waila / HWYLA (`mcp.mobius.waila`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy head/body/tail/stack providers show their lines in Jade and NBT providers sync server data to the client ([per version](#waila-and-nei-per-legacy-version)). |
 | Patchouli 1.12 (`vazkii.patchouli.api`, 1.12.2 only) | [Patchouli](https://modrinth.com/mod/patchouli) | The legacy Patchouli is skipped; legacy mods' books are shown by the modern one ([details](#patchouli-books)). |
-| CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
+| CoFH RF API (`cofh.api.energy` 1.6.4/1.7.10, shaded by most tech mods; Redstone Flux `cofh.redstoneflux` 1.12.2, a separate mod) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. The API is re-implemented in the shim of each version, so the Redstone Flux library jar is not loaded either (`bridges.cofhEnergy.enabled=false` loads it). See [Energy per version](#energy-per-version). |
 
 | IC2 EU, BuildCraft MJ, Forge fluids, `IInventory` | NeoForge Energy / Fluid / Item capabilities (built in) | Always on: legacy tiles and items are capabilities by default (EU at `energy.fePerEu` = 4 FE, MJ at `energy.fePerMj` = 10 FE; `.in`/`.out` suffixes set each direction, 0 turns it off, see [Configuration](Configuration.md)). Details in [Addon-API](Addon-API.md#capabilities). |
 
@@ -291,3 +291,19 @@ Mod models and blockstates name vanilla textures the 1.12 way (`blocks/planks_oa
 parents that were renamed live in `LegacyResourceConverter.MODEL_RENAMES`. Ore dictionary names map to common tags in `OreDictBridge` (`SPECIAL`
 for exact names, prefixes such as `ingot` for the rest).
 
+## Energy per version
+
+Every legacy energy system is exposed as NeoForge's `Capabilities.EnergyStorage` (blocks and items) by default, in both directions: a legacy producer can feed a modern
+consumer (the capability's `extractEnergy` calls the tile) and a modern producer can feed a legacy machine (its `receiveEnergy`). Modern block entities that offer
+the capability are also visible to legacy code (1.7.10: `ModernCapabilityTile` is an `IEnergyHandler`; 1.12.2: a tile entity answering `CapabilityEnergy.ENERGY` and implementing
+`IEnergyReceiver`/`IEnergyProvider`), so legacy generators and cables push into them. Rates are in [Configuration](Configuration.md).
+
+| API | Versions | Adapter | Rate |
+|---|---|---|---|
+| CoFH RF `IEnergyReceiver` / `IEnergyProvider` / `IEnergyHandler` tiles, `IEnergyContainerItem` items, `EnergyStorage`, `TileEnergyHandler`, `ItemEnergyContainer` | 1.7.10 | `EnergyBridge` | 1 RF = 1 FE |
+| CoFH RF monolithic `IEnergyHandler` (`canInterface`) | 1.6.4, 1.5.2, 1.4.7 (late builds) | forwarded to the 1.7.10 shim; a bridge method adds `canConnectEnergy` | 1 RF = 1 FE |
+| Redstone Flux `cofh.redstoneflux.api` (`IEnergyReceiver`, `IEnergyProvider`, `IEnergyHandler`, `IEnergyConnection`, `IEnergyStorage`, `IEnergyContainerItem`) and `.impl` / `.util` helpers | 1.12.2 | `EnergyBridge1122` (tiles and items) | 1 RF = 1 FE |
+| Forge Energy `CapabilityEnergy.ENERGY` on tiles and items | 1.12.2 | `BuiltinAdapters.energy1122`, `ItemCapabilities1122` (entities are not bridged) | 1:1 |
+| IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10; sinks of 1.6.4, 1.5.2, 1.4.7 | `ForeignEnergy1710` (reflection; each API generation: `injectEnergy` 1.7.10, `injectEnergyUnits` 1.6.4, `injectEnergy(Direction, int)` 1.5.2) | `energy.fePerEu` = 4 |
+| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10, 1.6.4, 1.5.2, 1.4.7 | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
+| Universal Electricity `IEnergyInterface` / `IEnergyContainer` tiles | 1.6.4 | `ForeignEnergy1710` | `energy.fePerJoule` = 1 |
