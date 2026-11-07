@@ -119,7 +119,11 @@ public final class LegacyJarInspector {
                 markers.scan(pool, entry.getName());
                 // ModLoader (1.4.x): a mod is a class extending BaseMod (net.minecraft.src.BaseMod, or the bare name in a reobfuscated jar)
                 String superName = reader.getSuperName();
-                if ("BaseMod".equals(superName) || "net/minecraft/src/BaseMod".equals(superName)) modLoaderMods.add(reader.getClassName());
+                // (ModLoader only loads classes named mod_*; the others of a jar, such as MCreator's per-element mcreator_*, are helpers the mod_ class constructs)
+                if (("BaseMod".equals(superName) || "net/minecraft/src/BaseMod".equals(superName))
+                        && reader.getClassName().substring(reader.getClassName().lastIndexOf('/') + 1).startsWith("mod_")) {
+                    modLoaderMods.add(reader.getClassName());
+                }
 
                 if (pool.contains(MOD_1_7) || pool.contains(MOD_1_12)) {
                     LegacyModDecl decl = readModAnnotation(reader);

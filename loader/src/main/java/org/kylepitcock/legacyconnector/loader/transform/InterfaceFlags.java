@@ -30,6 +30,9 @@ public final class InterfaceFlags {
                     if (m.getOpcode() == Opcodes.INVOKEINTERFACE) itf = Boolean.TRUE;
                     if (itf != null && m.itf != itf) {
                         m.itf = itf;
+                        // A call written against a class that the shim models as an interface (1.6.4's NetHandler is 1.7.10's INetHandler) or the other way round
+                        if (itf && m.getOpcode() == Opcodes.INVOKEVIRTUAL) m.setOpcode(Opcodes.INVOKEINTERFACE);
+                        else if (!itf && m.getOpcode() == Opcodes.INVOKEINTERFACE) m.setOpcode(Opcodes.INVOKEVIRTUAL);
                         fixed++;
                     }
                 } else if (insn instanceof InvokeDynamicInsnNode d) {
@@ -57,7 +60,10 @@ public final class InterfaceFlags {
         if (handle.getTag() < Opcodes.H_INVOKEVIRTUAL) return handle; // field handles
         Boolean itf = handle.getTag() == Opcodes.H_INVOKEINTERFACE ? Boolean.TRUE : interfaceOwner(handle.getOwner(), h);
         if (itf == null || itf == handle.isInterface()) return handle;
-        return new Handle(handle.getTag(), handle.getOwner(), handle.getName(), handle.getDesc(), itf);
+        int tag = handle.getTag();
+        if (itf && tag == Opcodes.H_INVOKEVIRTUAL) tag = Opcodes.H_INVOKEINTERFACE;
+        else if (!itf && tag == Opcodes.H_INVOKEINTERFACE) tag = Opcodes.H_INVOKEVIRTUAL;
+        return new Handle(tag, handle.getOwner(), handle.getName(), handle.getDesc(), itf);
     }
 
     /** Null when the class is not known (an absent dependency): its call sites stay as they are. */

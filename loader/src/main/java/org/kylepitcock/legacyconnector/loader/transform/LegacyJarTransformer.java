@@ -223,6 +223,14 @@ public final class LegacyJarTransformer {
                 remapper.override(name, privateRoot + name);
             }
         }
+        // Classes in the default package (ModLoader-style mod_X, MCreator's mcreator_X, a mod compiled without a package): a named module cannot hold
+        // them (the class loader never finds them), so they move into a private package of the jar.
+        for (String name : List.copyOf(classes.keySet())) {
+            if (name.indexOf('/') < 0 && !name.startsWith(privateRoot)) remapper.override(name, privateRoot + "root/" + name);
+        }
+        for (LegacyModDecl mod : jar.mods) {
+            if (mod.mainClass != null && mod.mainClass.indexOf('/') < 0 && classes.containsKey(mod.mainClass)) mod.mainClass = privateRoot + "root/" + mod.mainClass;
+        }
         // A mod whose own classes live under a relocated root (Engender: net.minecraft.AgeOfMinecraft.*) moved with them.
         for (LegacyModDecl mod : jar.mods) {
             if (mod.mainClass != null && classes.containsKey(mod.mainClass) && LegacyVersion.isRelocatedRoot(mod.mainClass)) {

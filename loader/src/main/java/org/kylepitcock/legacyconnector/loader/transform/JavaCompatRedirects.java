@@ -64,6 +64,8 @@ public final class JavaCompatRedirects {
         virtualToStatic("java/net/URL", "openStream", "()Ljava/io/InputStream;", COMPAT + "NetCompat");
         // Java 20+: Thread.stop/suspend/resume throw UnsupportedOperationException.
         virtualToStatic("java/lang/Thread", "stop", "()V", COMPAT + "JdkCompat");
+        // Java 9+: Arrays.asList(array).toArray() is an Object[] (it was the array's own type on Java 8).
+        staticToStatic("java/util/Arrays", "asList", "([Ljava/lang/Object;)Ljava/util/List;", COMPAT + "JdkCompat", "asList");
         // Java 11: Thread.stop(Throwable) was removed.
         virtualToStatic("java/lang/Thread", "stop", "(Ljava/lang/Throwable;)V", COMPAT + "JdkCompat");
         virtualToStatic("java/lang/Thread", "suspend", "()V", COMPAT + "JdkCompat");

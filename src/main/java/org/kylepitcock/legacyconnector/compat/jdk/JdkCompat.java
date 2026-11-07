@@ -27,6 +27,28 @@ public final class JdkCompat {
         }
     }
 
+    /**
+     * Arrays.asList(array).toArray() returned an array of the argument's type up to Java 8 (JDK-6260652, fixed in 9 to Object[]); old code casts it
+     * ({@code (String[]) Arrays.asList(names).toArray()}).
+     */
+    public static <T> java.util.List<T> asList(T[] array) {
+        java.util.Objects.requireNonNull(array);
+        return new ArrayView<>(array);
+    }
+
+    private static final class ArrayView<T> extends java.util.AbstractList<T> implements java.util.RandomAccess {
+        private final T[] a;
+        ArrayView(T[] a) { this.a = a; }
+        @Override public int size() { return a.length; }
+        @Override public T get(int i) { return a[i]; }
+        @Override public T set(int i, T v) { T old = a[i]; a[i] = v; return old; }
+        @Override public Object[] toArray() { return a.clone(); }
+        @Override public int indexOf(Object o) { for (int i = 0; i < a.length; i++) if (java.util.Objects.equals(o, a[i])) return i; return -1; }
+        @Override public boolean contains(Object o) { return indexOf(o) >= 0; }
+        @Override public void sort(java.util.Comparator<? super T> c) { java.util.Arrays.sort(a, c); }
+        @Override public void forEach(java.util.function.Consumer<? super T> action) { for (T t : a) action.accept(t); }
+    }
+
     /** Thread.stop() throws since Java 20; interrupting is the closest safe behaviour. */
     public static void stop(Thread thread) {
         LOG.warn("Legacy code called Thread.stop() on {}; interrupting instead", thread.getName());
