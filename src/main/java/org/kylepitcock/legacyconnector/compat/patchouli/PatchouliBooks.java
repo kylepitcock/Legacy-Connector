@@ -62,6 +62,11 @@ public final class PatchouliBooks {
 
         /** The id of the furnace recipe that smelts this 1.12 item string, or null when there is none. */
         String smelting(String inputSpec);
+
+        /** Whether the layer converted a 1.12 mod advancement of this modern id (a lock on it can be kept). */
+        default boolean hasAdvancement(String id) {
+            return false;
+        }
     }
 
     private PatchouliBooks() {}
@@ -137,7 +142,7 @@ public final class PatchouliBooks {
     static void category(JsonObject o, Resolver r) {
         iconField(o, "icon", r);
         resourceField(o, "parent");
-        advancementField(o);
+        advancementField(o, r);
     }
 
     // entries -------------------------------------------------------------------------------------------------------------------------
@@ -145,7 +150,7 @@ public final class PatchouliBooks {
     static void entry(JsonObject o, String namespace, Resolver r) {
         iconField(o, "icon", r);
         resourceField(o, "category");
-        advancementField(o);
+        advancementField(o, r);
         if (o.has("extra_recipe_mappings") && o.get("extra_recipe_mappings").isJsonObject()) {
             JsonObject mapped = new JsonObject();
             for (var e : o.getAsJsonObject("extra_recipe_mappings").entrySet()) mapped.add(r.item(e.getKey()), e.getValue());
@@ -170,7 +175,7 @@ public final class PatchouliBooks {
             // a template of the book: referred to by name (with or without the mod prefix)
             p.addProperty("type", type.contains(":") ? Ids1122Lite.resource(type) : namespace + ":" + Ids1122Lite.path(type));
         }
-        advancementField(p);
+        advancementField(p, r);
         resourceField(p, "anchor", false);
         switch (bare) {
             case "spotlight" -> stackListField(p, "item", r);
@@ -295,12 +300,15 @@ public final class PatchouliBooks {
     }
 
     /**
-     * A lock on an advancement: kept for vanilla advancements; a mod's own 1.12 advancements (assets/mod/advancements, a format the layer does not
-     * convert) never exist in the game, so the lock would hide the entry or category for good; they are dropped (the content is always unlocked).
+     * A lock on an advancement: kept for vanilla advancements and for the mod advancements the layer converted from the 1.12 files
+     * (assets/mod/advancements, see Advancements1122); a lock on any other advancement would hide the entry or category for good, so it is dropped.
      */
-    private static void advancementField(JsonObject o) {
+    private static void advancementField(JsonObject o, Resolver r) {
         resourceField(o, "advancement");
-        if (o.has("advancement") && o.get("advancement").isJsonPrimitive() && !o.get("advancement").getAsString().startsWith("minecraft:")) o.remove("advancement");
+        if (o.has("advancement") && o.get("advancement").isJsonPrimitive()) {
+            String id = o.get("advancement").getAsString();
+            if (!id.startsWith("minecraft:") && !r.hasAdvancement(id)) o.remove("advancement");
+        }
     }
 
     private static void resourceField(JsonObject o, String key) {

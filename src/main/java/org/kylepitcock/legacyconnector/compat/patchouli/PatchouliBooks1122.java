@@ -66,6 +66,11 @@ public final class PatchouliBooks1122 {
         }
 
         @Override
+        public boolean hasAdvancement(String id) {
+            return org.kylepitcock.legacyconnector.v1_12_2.advancement.Advancements1122.known(id);
+        }
+
+        @Override
         public String smelting(String inputSpec) {
             try {
                 var input = Ids1122.stack(inputSpec);

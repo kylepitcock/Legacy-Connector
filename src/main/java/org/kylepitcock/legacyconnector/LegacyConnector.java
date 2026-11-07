@@ -83,6 +83,13 @@ public final class LegacyConnector {
         });
     }
 
+    private static final DeferredRegister<net.minecraft.advancements.CriterionTrigger<?>> TRIGGERS = DeferredRegister.create(Registries.TRIGGER_TYPE, MOD_ID);
+
+    static {
+        // The criteria of 1.12.2 advancements that use a trigger a mod registered itself (v1_12_2.advancement.LegacyTrigger1122).
+        TRIGGERS.register("legacy", () -> org.kylepitcock.legacyconnector.v1_12_2.advancement.LegacyTrigger1122.INSTANCE);
+    }
+
     private static final DeferredRegister<net.minecraft.world.inventory.MenuType<?>> MENUS = DeferredRegister.create(Registries.MENU, MOD_ID);
     public static final DeferredHolder<net.minecraft.world.inventory.MenuType<?>, net.minecraft.world.inventory.MenuType<org.kylepitcock.legacyconnector.v1_7_10.gui.LegacyMenu>> LEGACY_MENU_1_7_10 =
             MENUS.register("legacy_1_7_10", () -> net.neoforged.neoforge.common.extensions.IMenuTypeExtension.create(
@@ -110,6 +117,7 @@ public final class LegacyConnector {
         BIOME_SOURCES.register(modBus);
         STRUCTURE_TYPES.register(modBus);
         STRUCTURE_PIECES.register(modBus);
+        TRIGGERS.register(modBus);
         modBus.addListener(org.kylepitcock.legacyconnector.core.worldgen.BiomePlacement::onCommonSetup);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts::onAttributeCreation);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.entity.Hosts1122::onAttributeCreation);
