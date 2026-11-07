@@ -168,6 +168,12 @@ public final class EntityBridge {
         if (entity.mcc$hosted() && !level.isClientSide()) {
             ((org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHost) entity.mcc$entity).mcc$syncWatcher(entity.mcc$dataWatcher().mcc$toTag());
         }
+        // a client world refuses addFreshEntity (the server sends entities); 1.6.4 mods spawn client-side helpers themselves (Crafting
+        // Dead's hit boxes around every mob, the targets of its client-side bullet ray trace)
+        if (level.isClientSide() && level instanceof net.minecraft.client.multiplayer.ClientLevel client) {
+            client.addEntity(entity.mcc$entity);
+            return true;
+        }
         return world.mcc$level().addFreshEntity(entity.mcc$entity);
     }
 
