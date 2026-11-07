@@ -214,3 +214,26 @@ Full tables, method and the per-jar classification are in **[Legacy-1.20.1-Corpu
   `SynchedEntityData.define` 24, `Player.broadcastBreakEvent` 24, `MobEffectInstance` 23, `BlockBehaviour$Properties.copy` 22.
 - Recommended order (details in the corpus page): mod loading and registries first (about 50 and 40 jars; that alone loads the data-only and several cheap mods), then `ResourceLocation` and the
   attribute/effect holders, networking, `ItemStack` NBT, vertex builder rewrite, capabilities, bridge methods, mixin triage last; heavy mods (Botania, Tinkers', Alex's, Ice and Fire, Blue Skies) are not a target for milestone 2.
+
+## 10. Status 2026-11-08: Minecraft migration
+
+The Minecraft 1.20.1 to 1.21.1 part of the layer (`loader/.../transform/Mc1201Migration`, tables `forward/1.20.1/mc-*.tsv`, helpers
+`org/kylepitcock/legacyconnector/v1_20_1/migrate/**`). Runs after the SRG/Forge renames in `Forge1201Transformer`; classes it changes get their frames
+recomputed (`Mc1201Hierarchy.frameWriter`, mod classes plus the 1.21.1 class tree `mc-hierarchy.tsv.gz` from `tools/dev/gen_mc_hierarchy.py`).
+
+| Mechanism | Table | What it does |
+|---|---|---|
+| Call redirect | `mc-calls.tsv` | call (or `NEW/DUP/INVOKESPECIAL` constructor) to a static helper; `=`, `=swap`, `=pop`, `=ret` change a call in place. Not applied when a mod class declares the method on the way up |
+| Field | `mc-fields.tsv` | `MobEffects.X`, `Attributes.X`, `GameEvent.X`... are `Holder`s (unwrapped), enchantments are `ResourceKey`s (looked up), loot tables are keys, removed fields come from helpers |
+| Rename | `mc-classes.tsv`, `mc-members.tsv` | class and member renames; also lambdas (`FriendlyByteBuf.Writer.accept` to `StreamEncoder.encode`) |
+| Bridge method | `mc-bridges.tsv` | overridden method with a changed signature gets the 1.21.1-shaped method calling the mod's: `BlockEntity.load/saveAdditional/getUpdateTag`, `Block.use` to `useItemOn`, `defineSynchedData`, `Recipe.matches/assemble`, `appendHoverText`, `playerWillDestroy`, `Model.renderToBuffer`, `finalizeSpawn`... `super.` calls get the provider/builder from `MigrateContext` |
+
+Helpers: `ItemStackNbt` (NBT over `CUSTOM_DATA` plus Damage, display, Enchantments, BlockEntityTag... components), `HolderCompat`, `VertexCompat` and
+`CompatBufferBuilder` (`BufferBuilder` is renamed to it; `Tesselator.getBuilder/end`), `MiscCompat`, `RecipeCompat`, `BridgeHelpers`, `ClientCompat`.
+Measured with `./gradlew gap1201 -Pgap.translate=true` (jars go through the real transformer; 248 Forge 1.20.1 jars of `test-mods4`), Minecraft symbols still
+unresolved, distinct/jar occurrences: before (groundwork, `ResourceLocation` factories only) classes 612/1668, methods 1792/9210, fields 526/2417; after
+classes 610/1610, methods 1393/4700, fields 291/558. `./gradlew verify1201 -PverifyDir=<-Pgap.translated.dir>` links the translated classes with the JVM verifier:
+54 of 73,000 linkable classes are invalid, none involve the migration helpers (API visibility changes, `ModelResourceLocation` no longer a `ResourceLocation`).
+
+Open: `ArmorMaterial`/`Tier` implementations, custom `Enchantment` subclasses (data-driven now), `MobType`, `RenderSystem.getModelViewStack`, `LootDataManager`,
+recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (not started).

@@ -64,7 +64,9 @@ public final class Verify1201 {
 
     private static String firstLine(String s) {
         if (s == null) return "";
-        int nl = s.indexOf('\n');
-        return nl > 0 ? s.substring(0, nl) : s;
+        String flat = s.replace('\n', ' ');
+        int reason = flat.indexOf("Reason:");
+        String out = reason > 0 ? flat.substring(0, Math.min(flat.indexOf("Current Frame"), flat.length()) > 0 ? flat.indexOf("Current Frame") : flat.length()) : flat;
+        return out.length() > 420 ? out.substring(0, 420) : out;
     }
 }
