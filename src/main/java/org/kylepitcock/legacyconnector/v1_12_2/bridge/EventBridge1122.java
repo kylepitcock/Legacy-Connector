@@ -356,8 +356,10 @@ public final class EventBridge1122 {
         bus.addListener((net.neoforged.neoforge.event.level.BlockEvent.BreakEvent e) -> {
             if (!wants(legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.BreakEvent.class)) return;
             if (!(e.getLevel() instanceof net.minecraft.world.level.Level level)) return;
+            var legacyState = StatesBridge1122.toLegacy(e.getState());
+            if (legacyState == null) return; // a block 1.12 never had
             var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.BreakEvent(WorldBridge1122.wrap(level), pos(e.getPos()),
-                    StatesBridge1122.toLegacy(e.getState()), player(e.getPlayer()));
+                    legacyState, player(e.getPlayer()));
             if (post(event)) e.setCanceled(true);
         });
         bus.addListener((net.neoforged.neoforge.event.level.BlockDropsEvent e) -> {
@@ -384,8 +386,10 @@ public final class EventBridge1122 {
             fortune = e.getTool().getEnchantmentLevel(enchantments.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.FORTUNE));
             silk = e.getTool().getEnchantmentLevel(enchantments.getHolderOrThrow(net.minecraft.world.item.enchantment.Enchantments.SILK_TOUCH)) > 0;
         }
+        var legacyState = StatesBridge1122.toLegacy(e.getState());
+        if (legacyState == null) return; // a block 1.12 never had: no legacy handler knows it (and none expects a null state)
         var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.HarvestDropsEvent(WorldBridge1122.wrap(level), pos(e.getPos()),
-                StatesBridge1122.toLegacy(e.getState()), fortune, 1.0F, drops, breaker, silk);
+                legacyState, fortune, 1.0F, drops, breaker, silk);
         post(event);
         boolean changed = event.getDropChance() < 1.0F || drops.size() != before.size();
         for (int i = 0; !changed && i < drops.size(); i++) {

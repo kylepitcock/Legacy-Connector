@@ -7,6 +7,10 @@ import legacyconnector.v1_12_2.net.minecraft.client.gui.Gui;
 public class GuiToast extends Gui {
     public static final GuiToast mcc$INSTANCE = new GuiToast(null);
 
+    /** Forge-visible private queue of the toasts waiting (mods read it by reflection, Quark's recipe unlock hides the recipe toast): the modern manager owns the toasts, so it is empty. */
+    @SuppressWarnings("unused")
+    private final java.util.Deque<IToast> toastsQueue = new java.util.ArrayDeque<>();
+
     public GuiToast(Minecraft mcIn) {
     }
 

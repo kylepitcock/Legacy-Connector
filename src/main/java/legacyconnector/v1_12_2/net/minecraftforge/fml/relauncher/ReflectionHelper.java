@@ -188,6 +188,15 @@ public class ReflectionHelper {
         try {
             Field f = findField(classToAccess, fieldNames);
             if (f.getDeclaringClass() == Dummy.class) return null;
+            if (ours(f.getDeclaringClass()) && !java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+                // a field the shim only mimics (GuiNewChat.drawnChatLines over the modern chat) is read through its accessor
+                try {
+                    Method get = f.getDeclaringClass().getMethod("mcc$get$" + f.getName(), f.getDeclaringClass());
+                    return (T) get.invoke(null, instance);
+                } catch (NoSuchMethodException | java.lang.reflect.InvocationTargetException e) {
+                    // a plain field
+                }
+            }
             return (T) f.get(instance);
         } catch (IllegalAccessException e) {
             throw new UnableToAccessFieldException(fieldNames, e);

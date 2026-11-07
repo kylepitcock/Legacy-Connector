@@ -66,6 +66,27 @@ public abstract class EntityPlayer extends EntityLivingBase {
 
     public EntityPlayer(World world, GameProfile profile) {
         super(world);
+        mcc$standIn(world, profile);
+    }
+
+    /**
+     * A player a mod makes itself (BiblioCraft's armor stand renderer builds a dummy player to wear the armor on) is a view of a modern
+     * player of its own: a remote player on the client, a fake player on the server. The entity host the base constructor adopted is not
+     * a player, so nothing of the player API (inventory, profile) would work on it.
+     */
+    private void mcc$standIn(World world, GameProfile profile) {
+        if (mcc$entity instanceof Player) return;
+        var level = world == null ? null : world.mcc$level();
+        if (level == null) return;
+        GameProfile who = profile != null ? profile : new GameProfile(java.util.UUID.randomUUID(), "[Legacy]");
+        try {
+            Player stand = null;
+            if (level instanceof net.minecraft.server.level.ServerLevel sl) stand = new net.neoforged.neoforge.common.util.FakePlayer(sl, who);
+            else if (level.isClientSide) stand = org.kylepitcock.legacyconnector.v1_12_2.client.Players1122.remote(level, who);
+            if (stand != null) org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.bind(this, stand);
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Entities").warn("No modern player for {}: {}", getClass().getName(), e.toString());
+        }
     }
 
     protected EntityPlayer(Player modern) {
