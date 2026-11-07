@@ -7184,7 +7184,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: it loads now (the VerifyError in the configuration reader is gone): the apiary (Bee House screen with its slots and side tabs), analyzer, engine, factory and mail blocks place and open their own screens, and the impregnated frame recipe crafts. A meta 0 core block shows an untranslated title (tile.for.null). Breeding, the engines' power and the farm were not tried."
+   "notes": "Real client, survival, shaders: it loads now (the VerifyError in the configuration reader is gone): the apiary (Bee House screen with its slots and side tabs), analyzer, engine, factory and mail blocks place and open their own screens, and the impregnated frame recipe crafts. A meta 0 core block shows an untranslated title (tile.for.null). Breeding, the engines' power and the farm were not tried. 2026-11-07: with other mods in mods/ it registered every item twice ('Tried to recreate an item') because getSourceFile gave the translated copy's name; fixed. Apiary, engine, factory, alveary, beehive and stump blocks render."
   },
   {
    "name": "Forestry for Minecraft",
@@ -13001,7 +13001,7 @@
    "source": "client",
    "date": "2026-11-06",
    "status": "fails",
-   "notes": "The mod is disabled at startup (VerifyError in the configuration reader class)."
+   "notes": "The mod is disabled at startup (VerifyError in the configuration reader class). 2026-11-07: with other mods in mods/ it registered every item twice ('Tried to recreate an item') because getSourceFile gave the translated copy's name; fixed. Apiary, engine, factory, alveary, beehive and stump blocks render."
   },
   {
    "name": "NEI Addons: Misc Peripherals",
@@ -18509,7 +18509,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
-   "notes": "Real client, survival, shaders: the ironwood axe recipe gives its result from the crafting grid (the 3 recipes with an empty result are code recipes). Earlier checks: blocks, items and several mobs render; hostile mobs and the dimension were not checked."
+   "notes": "Real client, survival, shaders: the ironwood axe recipe gives its result from the crafting grid (the 3 recipes with an empty result are code recipes). Earlier checks: blocks, items and several mobs render; hostile mobs and the dimension were not checked. 2026-11-07 round: the dimension generated nothing (void) because MapGenStructure.getStructureName was abstract; fixed. Portal (diamond into the flower pool) forms and teleports, terrain and trees generate, mobs (lich, knight phantom, tower golem, redcap, druid, minotaur, boar, deer, penguin) render with boss bars; the Naga draws as a leaf cube (issue #190)."
   },
   {
    "name": "The Twilight Forest",
@@ -18802,7 +18802,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "playable",
-   "notes": "Real client, survival, shaders: the Tool Station crafts a pickaxe (durability 96/96, mining speed 3.5) which mines, a heart canister raises max health, the blue slime mob renders. The smeltery now works: a seared brick structure with a lava tank in its wall and the controller placed by hand forms (3x3 floor, 9 slots), draws its fuel from the lava tank, melts iron, gold and copper ore into molten metal shown in its screen. (It stayed cold before: the tank's lava fluid had no block id for 1.6.4 code.) Casting basins and tables, the other stations and the Steelworks add-on were not tried."
+   "notes": "Real client, survival, shaders: the Tool Station crafts a pickaxe (durability 96/96, mining speed 3.5) which mines, a heart canister raises max health, the blue slime mob renders. The smeltery now works: a seared brick structure with a lava tank in its wall and the controller placed by hand forms (3x3 floor, 9 slots), draws its fuel from the lava tank, melts iron, gold and copper ore into molten metal shown in its screen. (It stayed cold before: the tank's lava fluid had no block id for 1.6.4 code.) Casting basins and tables, the other stations and the Steelworks add-on were not tried. 2026-11-07: a casting basin filled with molten iron produces an iron block (fluid API); Tinkers' Steelworks fails to load (#189)."
   },
   {
    "name": "Tinkers' Gregworks",
@@ -18838,7 +18838,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "fails",
-   "notes": "Built for another Tinkers' Construct than EX.30: it fails at postInit with a missing member (FluidType.Water)."
+   "notes": "Built for another Tinkers' Construct than EX.30: it fails at postInit with a missing member (FluidType.Water). 2026-11-07: a casting basin filled with molten iron produces an iron block (fluid API); Tinkers' Steelworks fails to load (#189)."
   },
   {
    "name": "Tiny Inv",
@@ -20034,7 +20034,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: it loads now (the null potion statics are gone): the witches' oven and the distillery open their screens, the kobold helm recipe gives its result from the crafting grid, owl and goblin entities exist. Rituals, brewing and the altar were not played."
+   "notes": "Real client, survival, shaders: it loads now (the null potion statics are gone): the witches' oven and the distillery open their screens, the kobold helm recipe gives its result from the crafting grid, owl and goblin entities exist. Rituals, brewing and the altar were not played. 2026-11-07: witch's oven, kettle, distillery, candelabra, chalk circle and bramble render when placed; rituals not tried."
   },
   {
    "name": "WitcheryPatch",
