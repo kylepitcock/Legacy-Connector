@@ -158,6 +158,7 @@ public final class LegacyConnector {
         });
         GeneratedPack.addRecipeContributor(org.kylepitcock.legacyconnector.v1_7_10.bridge.Achievements1710::contribute);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.Achievements1710.register();
+        org.kylepitcock.legacyconnector.core.worldgen.LegacyStructureIndex.register();
         GeneratedPack.addRecipeContributor((type, out) -> {
             if (type == net.minecraft.server.packs.PackType.SERVER_DATA) org.kylepitcock.legacyconnector.v1_12_2.bridge.RecipeBridge1122.generate(out);
         });

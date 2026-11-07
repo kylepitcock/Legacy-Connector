@@ -183,6 +183,10 @@ does not change: the same generator builds at the same places in the same decora
   chunk's outcome and skips the chunk afterwards, its pylon generator records every pylon (the pylon finder points at them), Witchery
   keeps a list of its structures and builds none near one, Thaumcraft keeps a map of what it placed. A dry run would make them skip
   or misplace the real structure.
+- Recorded builds are also kept per dimension in saved data (`LegacyStructureIndex`, `legacyconnector_structures`), and `/locate structure
+  <mod>:legacy/<name>` answers from it at any distance without loading chunks (the handler is merged into the game's own `locate structure
+  <structure>` node; a structure with nothing recorded, vanilla structures and tags go to the game's command). Worlds generated before the index
+  existed fall back to the chunk walk. Tab completion lists the structures (they are in the structure registry).
 - Cost: one block read per legacy write while a generator runs (the replaced block), and per chunk one empty structure check per
   generator. `/locate` with spacing 1 reads every chunk's saved structure data out to the nearest find (vanilla's own path; slow only
   when nothing is found within the radius).

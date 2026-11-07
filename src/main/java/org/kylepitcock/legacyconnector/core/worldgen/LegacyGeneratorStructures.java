@@ -382,6 +382,7 @@ public final class LegacyGeneratorStructures {
         }
         // StructureCheck (what /locate asks) keeps what it read of loaded chunks: refresh this one
         level.onStructureStartsAvailable(chunk);
+        LegacyStructureIndex.record(level, o.structure, (o.minX + o.maxX) >> 1, (o.minZ + o.maxZ) >> 1);
         int n = MARKS.incrementAndGet();
         if (n <= 5 || n % 500 == 0) {
             LOG.info("Legacy structure {} recorded at {} {} {} ({} blocks; {} recorded so far)", o.structure, (o.minX + o.maxX) >> 1, o.minY,
