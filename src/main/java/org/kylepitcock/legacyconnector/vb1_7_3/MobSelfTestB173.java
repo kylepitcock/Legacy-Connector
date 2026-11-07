@@ -9,6 +9,7 @@ import net.minecraft.world.item.Items;
 /** Actual-mod regression fixture; production hosting is selected by vanilla API ancestry, never this name. */
 public final class MobSelfTestB173 {
     public static void register(IEventBus game){
+        ModelSelfTestB173.register(game);
         if(Boolean.getBoolean("legacyconnector.entitySelfTest"))game.addListener((ServerStartedEvent e)->run(e.getServer().overworld()));
     }
     private static void require(boolean condition,String message){if(!condition)throw new IllegalStateException("B1.7.3 MOB TEST: "+message);}
