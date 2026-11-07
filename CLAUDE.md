@@ -17,6 +17,7 @@ holding the hand-written shim under `src/main/java/legacyconnector/v1_7_10`, bri
   version before the earlier one is done (the user may explicitly pull one forward, as for 1.6.4). Keep the README status table and `.gitignore` current.
   Exception: Beta 1.7.3 (ModLoader / Forge 1.0) was started on request on 2026-11-06, outside that order (`docs/wiki/Legacy-b1.7.3.md`; loader:
   `BetaJars`, `transform/BetaDeobfuscator`, `mapping/BetaMappings`; runtime: `org/.../vb1_7_3` (`PlatformB173`, `BridgeB173`, `VanillaB173`), shim `legacyconnector/vb1_7_3`; test jars in gitignored `test-mods-b173/`, server test with them in `run-subtest/mods/b1.7.3/`).
+  User requirement (2026-11-07): Beta fixes must implement shared legacy APIs and execute mods' original callbacks, never hardcode behavior by mod identity. The only mod-specific reimplementation the user would consider is a mod's edits to base game classes. Actual-mod regression fixtures may name mods.
 - Legacy containers are exposed as NeoForge capabilities BY DEFAULT (items, fluids, energy: RF, IC2 EU, BuildCraft MJ; tiles and items; both versions), not left to addons. New legacy container/energy interfaces get an adapter in `CapabilityRules`/`BuiltinAdapters`/`ForeignEnergy1710`, rates in `LegacyConfig`.
 - Outdated dependencies are bridged to modern equivalents instead of loaded (Baubles -> Curios, Waila -> Jade,
   NEI -> JEI, CoFH RF -> NeoForge energy). NEI is never loaded when JEI is present; everything it registers is mapped into JEI.

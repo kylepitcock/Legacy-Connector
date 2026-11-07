@@ -182,7 +182,9 @@ public final class ModLoader {
     }
 
     public static synchronized int getUniqueBlockModelID(BaseMod mod, boolean full3DItem) {
-        return nextBlockModelID++;
+        int id=nextBlockModelID++;
+        org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.register(id,mod);
+        return id;
     }
 
     public static void SetInGameHook(BaseMod mod, boolean enable, boolean useClock) {

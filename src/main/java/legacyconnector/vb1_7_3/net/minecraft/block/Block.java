@@ -353,6 +353,8 @@ public class Block {
     public int getTextureId(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z, int side) {
         return getTexture(side, view.getBlockMeta(x, y, z));
     }
+    /** The modern chunk renderer supplies world lighting after geometry capture. */
+    public float getLuminance(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view,int x,int y,int z){return 1.0F;}
 
     /** Forge's position-aware light. */
     public int getLightValue(legacyconnector.vb1_7_3.net.minecraft.world.BlockView view, int x, int y, int z) {

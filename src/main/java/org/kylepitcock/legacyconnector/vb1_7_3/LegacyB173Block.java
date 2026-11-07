@@ -169,13 +169,13 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
     @Override
     protected void tick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
         World w = view(level);
-        call("updateTick", () -> legacy.onTick(w, pos.getX(), pos.getY(), pos.getZ(), w.random));
+        try { call("updateTick", () -> legacy.onTick(w, pos.getX(), pos.getY(), pos.getZ(), w.random)); }
+        finally { EntityViewsB173.flush(); }
     }
 
     @Override
     protected void randomTick(BlockState state, net.minecraft.server.level.ServerLevel level, BlockPos pos, net.minecraft.util.RandomSource random) {
-        World w = view(level);
-        call("updateTick", () -> legacy.onTick(w, pos.getX(), pos.getY(), pos.getZ(), w.random));
+        tick(state,level,pos,random);
     }
 
     @Override

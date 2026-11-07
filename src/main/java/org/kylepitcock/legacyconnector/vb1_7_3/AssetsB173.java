@@ -131,6 +131,19 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     private Map<String, ContentB173.TextureOverride> overrides;
     private Map<String, Supplier<byte[]>> out;
     private int missing;
+    private static final Map<Block,Map<Integer,String>> WORLD_TEXTURES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** Palette baked into the atlas for world-dependent face selection. */
+    public static Map<Integer,String> worldTextures(Block block) { return WORLD_TEXTURES.getOrDefault(block,Map.of()); }
+    public static boolean usesWorldTextures(Block block) {
+        try { return block.getClass().getMethod("getTextureId",legacyconnector.vb1_7_3.net.minecraft.world.BlockView.class,int.class,int.class,int.class,int.class).getDeclaringClass()!=Block.class; }
+        catch(ReflectiveOperationException e){return false;}
+    }
+    public static int[] faceTextures(Block block,net.minecraft.world.level.BlockGetter level,net.minecraft.core.BlockPos pos,net.minecraft.world.level.block.state.BlockState state) {
+        var view=new BlockQueryB173(level,pos,state);int[] faces=new int[6];
+        synchronized(block) { for(int side=0;side<6;side++){final int s=side;faces[side]=safe(()->block.getTextureId(view,pos.getX(),pos.getY(),pos.getZ(),s),block.textureId);} }
+        return faces;
+    }
 
     @Override
     public synchronized void contribute(PackType type, Map<String, Supplier<byte[]>> out) {
@@ -201,16 +214,26 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         JsonObject variants = new JsonObject();
         Map<String, String> modelByJson = new LinkedHashMap<>();
         String[] metaModels = new String[16];
+        Map<Integer,String> palette=new java.util.TreeMap<>();
+        if(usesWorldTextures(block) || BlockRenderB173.hasRenderer(renderType)) {
+            // Include faces only encountered beside neighbours or with a tile entity, before atlas stitching.
+            var indices=new java.util.TreeSet<Integer>();for(int i=0;i<256;i++)indices.add(i);
+            for(var o:ContentB173.textureOverrides())if(o.sheet().equals(sheet))indices.add(o.index());
+            for(int index:indices){String key=sheet+"#"+index;String ref=sprites.get(key);if(ref==null){ref=resolve(mod,sheet,index,false);if(ref!=null)sprites.put(key,ref);}if(ref!=null)palette.put(index,ref);}
+        }
+        WORLD_TEXTURES.put(block,Map.copyOf(palette));
         for (int meta = 0; meta < 16; meta++) {
             final int m = meta;
             String[] tex = new String[6];
+            int[] worldFaces=faceTextures(block,net.minecraft.world.level.EmptyBlockGetter.INSTANCE,net.minecraft.core.BlockPos.ZERO,block.mcc$modern.defaultBlockState().setValue(LegacyB173Block.META,meta));
             for (int side = 0; side < 6; side++) {
                 final int s = side;
-                tex[side] = texture(mod, sheet, safe(() -> block.getTexture(s, m), block.textureId), false);
+                tex[side] = texture(mod, sheet, worldFaces[side], false);
             }
             boolean seeThrough = false;
             for (String t : tex) seeThrough |= hasAlpha(t);
             JsonObject model = blockModel(block, renderType, tex, opaque && !seeThrough, layer,meta);
+            palette.forEach((index,ref)->model.getAsJsonObject("textures").addProperty("world_"+index,ref));
             String json = GSON.toJson(model);
             String name = modelByJson.get(json);
             if (name == null) {

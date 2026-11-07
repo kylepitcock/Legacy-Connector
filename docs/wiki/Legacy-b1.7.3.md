@@ -146,20 +146,33 @@ each query. Collision boxes can form a union, so stairs have two steps instead o
 uses Beta's four horizontal orientations. Torches attach to floors/walls, have no collision, and drop when their
 support is removed. Doors use two metadata-bearing halves, thin rotating collision/model bounds, wooden-door
 click behavior, redstone opening/closing, and paired removal when their support or other half disappears.
+Pressure plates have inset, non-colliding outlines and models, pressed/unpressed heights, the original
+entity activation filters, binary weak power, strong power into their support, scheduled release checks,
+and support-loss removal.
+
+Placed face textures use `getTextureId(BlockView, x, y, z, side)`, rather than the inventory-only callback.
+Metadata models preserve furnace facing; chunk model data queries the render region for neighbour-dependent
+chest fronts and paired textures. Dynamic sprite palettes are included before atlas stitching.
 
 Entity views distinguish dropped items from living entities and apply changed velocity/ground fields after a
 block callback. MineFactory's original conveyor callback therefore moves dropped items, mobs and players,
 including slope metadata, sneaking bypass and redstone stopping. `isEmittingRedstonePower` checks weak sources
 and power through adjacent solids; `canTransferPower` checks strong power entering a block. The earlier world
-bridge had these two queries swapped. Custom conveyor renderer
-geometry/animation still uses the generated bounds fallback.
+bridge had these two queries swapped. Custom render IDs now dispatch to their registering mod's
+`RenderWorldBlock` callback. Shared `BlockRenderManager` cuboid helpers and a thread-local `Tessellator`
+capture geometry and UVs for modern baked quads. This runs the original conveyor renderer, including
+direction and slopes, with no mod-specific rendering rules. Animated sprites and arbitrary GL rendering
+remain unsupported; renderer failures are logged and retain the generated bounds fallback.
 
 `compat/b173/BlockFamiliesSelfTest` uses installed NetherCraft stairs/doors, NetherCraft/Aether torches,
 IndustrialCraft doors and MineFactory conveyors. It checks modern placement, metadata, collision volumes,
 generated models, support removal, door clicks/redstone, and all 12 conveyor states for items/mobs/players,
-plus actual dropped-item ticks. No graphical client is launched by these tests.
-The supplied set passes 2 stair blocks, 3 torch blocks, 2 door items and the conveyor (all 12 metadata states
-for all three entity categories, with direct-source and through-solid redstone checks).
+plus actual dropped-item ticks, pressure plate activation/release, furnace placement faces, chest neighbour
+and paired textures, and the original conveyor renderer's vertices/UVs in all 12 states.
+No graphical client is launched by these tests.
+The supplied set passes 2 stair blocks, 3 torch blocks, 2 door items, 1 pressure plate, 2 furnace blocks,
+1 chest block and the conveyor (all 12 metadata states for all three entity categories and original
+rendered geometry/UVs, with direct-source and through-solid redstone checks).
 
 The server test runs `B1.7.3 BEHAVIOUR TEST`: every mod block placed, given a neighbour change, a scheduled and a random tick, a right click by
 a fake player, asked for redstone power and removed. With the 11 mods: 10 callbacks fail, all of blocks whose tile entity is missing (NetherCraft's
@@ -380,7 +393,7 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
    container)`; today the client draws a plain panel for those), entity GUIs (item right-click callbacks are bridged), tile entity
    special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
-1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
+1. **Rendering, rest**: remaining standard block render types (fences, rails, ...), broader custom renderer helpers/GL calls, animated
    sprites (`ModTextureAnimation`), colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
    (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /
