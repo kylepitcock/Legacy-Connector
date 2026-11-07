@@ -209,6 +209,9 @@ dependencies {
             additionalRuntimeClasspath lib
         }
     }
+    // Scala 2.10 for Forge 1.6.4 / 1.5.2 mods (bdew's Gendustry, BD Lib): only in the bundle, never on the class path (2.11 is the class path's Scala).
+    legacyLibs 'org.scala-lang:scala-library:2.10.3'
+    legacyLibs 'org.scala-lang:scala-reflect:2.10.3'
     // Java 8 shipped Nashorn (legacy mods script with jdk.nashorn, relocated to the standalone engine; the dev remote control
     // evaluates JavaScript with it too). NeoForge ships the same engine for its coremods, so it is not embedded: a second
     // copy in the game layer stops the game from starting ("Module scala.reflect reads more than one module named
