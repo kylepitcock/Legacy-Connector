@@ -139,6 +139,8 @@ public final class LegacyLifecycle {
             long modStart = System.nanoTime();
             Thread thread = Thread.currentThread();
             ClassLoader previous = thread.getContextClassLoader();
+            boolean numericIds = mod.version.equals("1.6.4") || mod.version.equals("1.5.2") || mod.version.equals("1.4.7");
+            String previousIds = numericIds ? legacyconnector.v1_6_4.net.minecraft.util.Ids.enter(mod.version, mod.mainClass == null ? null : mod.mainClass.getClassLoader()) : null;
             try {
                 if (mod.mainClass != null) thread.setContextClassLoader(mod.mainClass.getClassLoader());
                 phase.run(mod);
@@ -155,6 +157,7 @@ public final class LegacyLifecycle {
                 LOG.error("{}", wrapped.getMessage(), t);
                 FAILED.put(mod, wrapped);
             } finally {
+                if (numericIds) legacyconnector.v1_6_4.net.minecraft.util.Ids.leave(previousIds);
                 thread.setContextClassLoader(previous);
                 long ms = (System.nanoTime() - modStart) / 1_000_000;
                 if (ms >= 50) perMod.append(' ').append(mod.legacyId).append('=').append(ms);
