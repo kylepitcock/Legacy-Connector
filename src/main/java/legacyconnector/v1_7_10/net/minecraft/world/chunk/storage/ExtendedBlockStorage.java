@@ -158,6 +158,7 @@ public class ExtendedBlockStorage {
     }
 
     private int[] mcc$idCache;
+    private byte[] mcc$metaCache;
     private long mcc$idCacheAt;
 
     /**
@@ -171,12 +172,15 @@ public class ExtendedBlockStorage {
         if (mcc$idCache != null && now - mcc$idCacheAt < 100_000_000L) return mcc$idCache;
         if (chunk.mcc$clientState(0, yBase, 0) == null) return null;
         int[] ids = new int[4096];
+        byte[] metas = new byte[4096];
         for (int i = 0; i < 4096; i++) {
             var state = chunk.mcc$clientState(i & 15, yBase + (i >> 8), i >> 4 & 15);
             if (state == null) return null;
             ids[i] = Block.getIdFromBlock(org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyBlock(state));
+            metas[i] = (byte) (org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge.legacyMeta(state) & 15);
         }
         mcc$idCache = ids;
+        mcc$metaCache = metas;
         mcc$idCacheAt = now;
         return ids;
     }
@@ -184,9 +188,10 @@ public class ExtendedBlockStorage {
     /** The metadata of each block (index y << 8 | z << 4 | x, one nibble each), as a copy: writes to it change nothing. */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getMetadataArray() {
         legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(4096, 4);
+        boolean cached = mcc$clientIds() != null;
         for (int i = 0; i < 4096; i++) {
             int x = i & 15, y = i >> 8, z = i >> 4 & 15;
-            out.set(x, y, z, getExtBlockMetadata(x, y, z) & 15);
+            out.set(x, y, z, cached ? mcc$metaCache[i] : getExtBlockMetadata(x, y, z) & 15);
         }
         return out;
     }
