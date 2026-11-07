@@ -82,7 +82,7 @@ public final class SheetCutter {
             String key = normalize(e.getKey());
             boolean sheet = sheets.contains(key) || relativeSheet(key);
             boolean single = singles.contains(key);
-            if (!sheet && !single) continue;
+            if (!sheet && !single && !conventionalName(key)) continue;
             try {
                 BufferedImage image = ImageIO.read(new ByteArrayInputStream(e.getValue()));
                 if (image == null) continue;
