@@ -10,7 +10,7 @@
 
 {{buttons}}
 
-**Play unmodified 1.7.10, 1.12.2 and (new in 0.4, alpha) 1.6.4, 1.5.2 and 1.4.7 Forge mods on NeoForge 1.21.1.**
+**Play unmodified 1.7.10, 1.12.2, 1.6.4, 1.5.2 and 1.4.7 Forge mods on NeoForge 1.21.1.**
 
 | Legacy version | Support |
 | --- | --- |
