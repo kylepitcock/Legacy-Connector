@@ -20,6 +20,14 @@ public final class BiomeGenBase {
         return self.getBiomeFoliageColor(0, 64, 0);
     }
 
+    /** {@code setMinMaxHeight(min, max)}: 1.6.4's {@code minHeight}/{@code maxHeight} are 1.7.10's {@code rootHeight}/{@code heightVariation}, stored as given. */
+    public static legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase setMinMaxHeight(
+            legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase self, float min, float max) {
+        self.rootHeight = min;
+        self.heightVariation = max;
+        return self;
+    }
+
     private static Block blockOf(byte id, Block fallback) {
         Block b = Ids.block(id & 0xFF);
         return b != null ? b : fallback;

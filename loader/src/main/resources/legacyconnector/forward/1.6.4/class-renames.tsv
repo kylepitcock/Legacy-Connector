@@ -94,3 +94,4 @@ net/minecraft/world/gen/structure/ComponentVillageField	net/minecraft/world/gen/
 net/minecraft/world/gen/structure/ComponentVillageField2	net/minecraft/world/gen/structure/StructureVillagePieces$Field2
 net/minecraft/world/gen/structure/ComponentVillageChurch	net/minecraft/world/gen/structure/StructureVillagePieces$Church
 net/minecraft/world/gen/structure/StructureVillagePieceWeight	net/minecraft/world/gen/structure/StructureVillagePieces$PieceWeight
+net/minecraft/world/gen/feature/MapGenScatteredFeature	net/minecraft/world/gen/structure/MapGenScatteredFeature

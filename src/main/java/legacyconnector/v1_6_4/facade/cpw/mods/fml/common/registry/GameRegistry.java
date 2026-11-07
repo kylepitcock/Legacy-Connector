@@ -24,6 +24,11 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerBlock(block, itemClass, name, modId);
     }
 
+    /** {@code addBiome(biome)}: Forge 1.6.4 added the biome to the default world type's biome list, which the pack's biome placement then draws from. */
+    public static void addBiome(legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase biome) {
+        if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.addNewBiome(biome);
+    }
+
     /** {@code registerWorldGenerator(generator)}: no weight argument in 1.6.4. */
     public static void registerWorldGenerator(legacyconnector.v1_7_10.cpw.mods.fml.common.IWorldGenerator generator) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerWorldGenerator(generator, 0);

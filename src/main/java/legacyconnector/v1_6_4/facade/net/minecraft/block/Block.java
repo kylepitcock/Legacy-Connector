@@ -26,6 +26,37 @@ public final class Block {
         return Ids.blocksList();
     }
 
+    private static int[] flammability;
+    private static int[] fireSpreadSpeed;
+
+    /**
+     * Block.blockFlammability: how likely the block is to burn, by block id (Forge 1.6.4 / 1.5.2). Mods write entries at load time; the 1.7.10 shim's
+     * {@code getFlammability} default reads them (legacy table first, then vanilla's fire table).
+     */
+    public static synchronized int[] mcc$get$blockFlammability() {
+        if (flammability == null) {
+            int[] table = new int[Ids.blockTableSize()];
+            flammability = table;
+            legacyconnector.v1_7_10.net.minecraft.block.Block.mcc$legacyFlammability = b -> tableEntry(table, b);
+        }
+        return flammability;
+    }
+
+    /** Block.blockFireSpreadSpeed: how fast fire spreads onto the block, by block id (see {@link #mcc$get$blockFlammability}). */
+    public static synchronized int[] mcc$get$blockFireSpreadSpeed() {
+        if (fireSpreadSpeed == null) {
+            int[] table = new int[Ids.blockTableSize()];
+            fireSpreadSpeed = table;
+            legacyconnector.v1_7_10.net.minecraft.block.Block.mcc$legacyFireSpread = b -> tableEntry(table, b);
+        }
+        return fireSpreadSpeed;
+    }
+
+    private static int tableEntry(int[] table, legacyconnector.v1_7_10.net.minecraft.block.Block block) {
+        int id = Ids.claimedBlockId(block);
+        return id > 0 && id < table.length ? table[id] : 0;
+    }
+
     // The step sounds of 1.6.4 ({@code Block.soundGrassFootstep}); 1.7.10 calls them soundTypeGrass and so on.
     public static legacyconnector.v1_7_10.net.minecraft.block.Block.SoundType mcc$get$soundPowderFootstep() {
         return legacyconnector.v1_7_10.net.minecraft.block.Block.soundTypeStone;

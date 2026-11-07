@@ -112,3 +112,14 @@ C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/Item
 C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
 C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
 M	net/minecraft/world/gen/structure/MapGenStructureIO	func_143031_a	(Ljava/lang/Class;Ljava/lang/String;)V	registerStructureComponent
+# Stub pass (members the shim lacked and the linker synthesized as empty): renamed members, retyped calls and the EnchantmentThorns statics
+F	net/minecraft/client/gui/GuiButton	field_82253_i	hovered
+M	net/minecraft/item/ItemArmor	func_94602_b	(I)Lnet/minecraft/util/Icon;	getBackgroundIcon
+M	net/minecraft/entity/passive/EntityTameable	func_130012_q	()Lnet/minecraft/entity/EntityLivingBase;	getOwner
+R	net/minecraft/client/gui/GuiNewChat	printChatMessage	(Ljava/lang/String;)V	wrap-text	printChatMessage	(Lnet/minecraft/util/IChatComponent;)V
+M	net/minecraft/client/gui/inventory/GuiContainer	drawItemStackTooltip	(Lnet/minecraft/item/ItemStack;II)V	renderToolTip
+M	net/minecraft/client/gui/inventory/GuiContainerCreative	drawItemStackTooltip	(Lnet/minecraft/item/ItemStack;II)V	renderToolTip
+C	net/minecraft/world/biome/WorldChunkManagerHell	(Lnet/minecraft/world/biome/BiomeGenBase;FF)V	(Lnet/minecraft/world/biome/BiomeGenBase;F)V	args	0	2
+R	net/minecraft/enchantment/EnchantmentThorns	func_92096_a	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V	static	legacyconnector/v1_6_4/forward/Thorns164	attack	(Lnet/minecraft/entity/Entity;Lnet/minecraft/entity/EntityLivingBase;Ljava/util/Random;)V
+R	net/minecraft/enchantment/EnchantmentThorns	func_92094_a	(ILjava/util/Random;)Z	static	legacyconnector/v1_6_4/forward/Thorns164	shouldHit	(ILjava/util/Random;)Z
+R	net/minecraft/enchantment/EnchantmentThorns	func_92095_b	(ILjava/util/Random;)I	static	legacyconnector/v1_6_4/forward/Thorns164	damage	(ILjava/util/Random;)I

@@ -35,6 +35,9 @@ public final class Ids {
             blocks = b;
             items = it;
             registry = r;
+            // chunk generators that work on block ids (MapGenBase.recursiveGenerate with a byte[]) read the same tables
+            legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase.mcc$blockById = Ids::block;
+            legacyconnector.v1_7_10.net.minecraft.world.gen.MapGenBase.mcc$idOfBlock = Ids::claimedBlockId;
         }
         return registry;
     }
@@ -67,6 +70,12 @@ public final class Ids {
         int id = r.blockId(block);
         if (id >= 0) return id;
         return claimBlockInternal(block, -1);
+    }
+
+    /** Id of a block that has one already, else -1 (never claims: for lookups on hot paths over every block). */
+    public static synchronized int claimedBlockId(Block block) {
+        if (block == null) return 0;
+        return reg().blockId(block);
     }
 
     /** The claim a Block constructor makes: {@code super(id, material)}. */

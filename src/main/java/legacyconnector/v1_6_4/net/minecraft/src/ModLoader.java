@@ -176,6 +176,11 @@ public class ModLoader {
         EntityRegistry.removeSpawn(entityClass, spawnList, biomes);
     }
 
+    /** {@code ModLoader.addBiome(biome)}: the biome joins the default world type's list (same as Forge's {@code GameRegistry.addBiome}). */
+    public static void addBiome(BiomeGenBase biome) {
+        if (biome != null) legacyconnector.v1_7_10.net.minecraft.world.WorldType.DEFAULT.addNewBiome(biome);
+    }
+
     public static void addTrade(int profession, TradeEntry entry) {}
 
     public static void registerContainerID(BaseMod mod, int id) {}
