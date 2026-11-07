@@ -18453,7 +18453,7 @@
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
     },
     {
-      "name": "Bibliocraft",
+      "name": "BiblioCraft",
       "version": "",
       "mc": "1.6.4",
       "source": "client",
@@ -18489,7 +18489,7 @@
       "notes": "The mod is disabled at startup (null potion statics)."
     },
     {
-      "name": "Bibliocraft",
+      "name": "BiblioCraft",
       "version": "",
       "mc": "1.5.2",
       "source": "client",
@@ -18498,7 +18498,7 @@
       "notes": "Server load: registers without errors. Not played."
     },
     {
-      "name": "Carpenter",
+      "name": "Carpenter's Blocks",
       "version": "",
       "mc": "1.5.2",
       "source": "client",
@@ -18507,7 +18507,7 @@
       "notes": "Server load: registers without errors. Not played."
     },
     {
-      "name": "Computercraft",
+      "name": "ComputerCraft",
       "version": "",
       "mc": "1.5.2",
       "source": "client",
@@ -18516,7 +18516,7 @@
       "notes": "Server load: registers without errors. Not played."
     },
     {
-      "name": "Custom Npcs",
+      "name": "Custom NPCs",
       "version": "",
       "mc": "1.5.2",
       "source": "client",
