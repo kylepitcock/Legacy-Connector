@@ -156,6 +156,10 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
         PlayerViewB173 view = PlayerViewB173.of(player);
         boolean[] used = new boolean[1];
         call("blockActivated", () -> used[0] = legacy.onUse(view(level), pos.getX(), pos.getY(), pos.getZ(), view));
+        if (legacy instanceof legacyconnector.vb1_7_3.net.minecraft.block.BlockWithEntity) {
+            MenusB173.trace("right click on {} ({}) on the {} side: {}", legacy.getClass().getName(), state.getValue(META),
+                    level.isClientSide ? "client" : "server", used[0] ? "used" : "not used");
+        }
         if (!level.isClientSide) view.writeBack();
         return used[0] ? net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide) : net.minecraft.world.InteractionResult.PASS;
     }

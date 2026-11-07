@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu;
+import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -38,6 +39,7 @@ public class LegacyB173Screen extends AbstractContainerScreen<LegacyB173Menu> {
     @Override
     protected void init() {
         super.init();
+        MenusB173.trace("screen for menu {} shown ({}x{} at {},{})", menu.containerId, imageWidth, imageHeight, leftPos, topPos);
         if (!live()) return;
         try {
             gui.init(legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$instance(), width, height);

@@ -94,6 +94,8 @@ public class LegacyB173Menu extends AbstractContainerMenu {
             gui = MenusB173.pending(guiClass);
             forward = gui != null;
         }
+        MenusB173.trace("client menu {}: {} slots, drawn by {}", id, layout.length,
+                gui != null ? gui.getClass().getName() + (forward ? " (the client's own)" : " (handed over)") : "a plain panel (" + guiClass + " not found)");
         return new LegacyB173Menu(id, inventory, layout, gui, forward, width, height);
     }
 

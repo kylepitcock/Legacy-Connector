@@ -38,8 +38,6 @@ public final class MenusB173 {
     private static final AtomicInteger NEXT = new AtomicInteger();
     private static volatile MenuType<LegacyB173Menu> type;
     private static volatile Client client;
-    /** Self test: the container and GUI of an {@code OpenGUI} go here instead of a menu (a fake player opens none). */
-    static volatile java.util.function.BiConsumer<ScreenHandler, Screen> testOpen;
 
     /** The client's part. */
     public interface Client {
@@ -81,10 +79,19 @@ public final class MenusB173 {
         return client != null && !sp.server.isDedicatedServer() && sp.server.isSingleplayerOwner(sp.getGameProfile());
     }
 
+    private static final AtomicInteger TRACED = new AtomicInteger();
+
+    /** The first GUI events of a session go to the log (where an open stops when a GUI does not show). */
+    public static void trace(String format, Object... args) {
+        if (TRACED.incrementAndGet() <= 40) LOG.info("b1.7.3 GUI trace: " + format, args);
+    }
+
     /** {@code ModLoader.OpenGUI(player, gui)}. */
     public static void open(PlayerEntity player, Screen gui) {
         if (gui == null) return;
         Player p = modern(player);
+        trace("OpenGUI({}) by {} on the {} side", gui.getClass().getName(), p == null ? "an unknown player" : p.getGameProfile().getName(),
+                p == null ? "unknown" : p.level().isClientSide ? "client" : "server");
         if (p instanceof ServerPlayer sp) {
             if (gui instanceof HandledScreen hs && hs.container != null) {
                 openMenu(sp, hs.container, gui);
@@ -104,17 +111,17 @@ public final class MenusB173 {
     }
 
     private static void openMenu(ServerPlayer sp, ScreenHandler container, Screen gui) {
-        var test = testOpen;
-        if (test != null) {
-            test.accept(container, gui);
+        if (type == null) {
+            LOG.error("b1.7.3 GUI {} not opened: the menu type was never registered", gui == null ? container.getClass().getName() : gui.getClass().getName());
             return;
         }
-        if (type == null) return;
         int handoff = gui != null && localHost(sp) ? NEXT.incrementAndGet() : 0;
         if (handoff != 0) HANDOFF.put(handoff, gui);
         try {
             var opened = sp.openMenu(new SimpleMenuProvider((id, inv, pl) -> new LegacyB173Menu(id, sp, container, handoff), Component.empty()),
                     buf -> LegacyB173Menu.write(buf, container, gui, handoff));
+            trace("menu {} for {} ({} slots), GUI handed over: {}", opened.isPresent() ? opened.getAsInt() : "not opened",
+                    container.getClass().getName(), container.slots.size(), handoff != 0);
             if (opened.isEmpty()) release(handoff);
         } catch (RuntimeException | LinkageError e) {
             release(handoff);

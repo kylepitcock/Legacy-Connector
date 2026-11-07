@@ -112,22 +112,21 @@ public final class SelfTestB173 {
     }
 
     /**
-     * Right-clicks every block (blocks with a tile entity with every metadata: IndustrialCraft 2's machines differ by it) with a fake player;
-     * a {@code GuiContainer} it opens becomes a {@link LegacyB173Menu} (built directly: a fake player opens no menus). In each menu the
+     * Right-clicks every block (blocks with a tile entity with every metadata: IndustrialCraft 2's machines differ by it) with a server player
+     * (a plain {@code ServerPlayer} on a {@link TestConnection}, which sends nothing: a fake player itself opens no menus), so
+     * {@code OpenGUI} goes the whole way to {@code ServerPlayer.openMenu} and a {@link LegacyB173Menu}. In each menu the
      * client's slot layout is rebuilt from the open-screen extra data, a stack of coal is shift-clicked from the player's inventory into the
      * container and back, a crafting grid gets a log and its result is taken, the menu is updated ({@code updateCraftingResults}) and closed.
      * Also looks up a smelting and a crafting result the way mods' furnaces and tables do.
      */
     private static void guis(ServerLevel level, List<LegacyB173Block> blocks, BlockPos base) {
-        var player = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
+        var player = new net.minecraft.server.level.ServerPlayer(level.getServer(), level,
+                new com.mojang.authlib.GameProfile(java.util.UUID.nameUUIDFromBytes("b173-gui-test".getBytes()), "[B173GuiTest]"),
+                net.minecraft.server.level.ClientInformation.createDefault());
+        new TestConnection(level.getServer(), player);
         int tried = 0, opened = 0, slots = 0, legacySlots = 0, shiftIn = 0, shiftOut = 0, grids = 0, crafted = 0, failures = 0, layouts = 0, byItem = 0;
         java.util.Set<Class<?>> kinds = new java.util.LinkedHashSet<>();
         List<String> notes = new ArrayList<>();
-        Object[] captured = new Object[2];
-        MenusB173.testOpen = (container, gui) -> {
-            captured[0] = container;
-            captured[1] = gui;
-        };
         int n = 0;
         try {
             for (LegacyB173Block b : blocks) {
@@ -157,16 +156,15 @@ public final class SelfTestB173 {
                         if (level.getBlockState(pos).getBlock() == b) byItem++;
                         else level.setBlock(pos, state, 3);
                         var hit = new net.minecraft.world.phys.BlockHitResult(net.minecraft.world.phys.Vec3.atCenterOf(pos), net.minecraft.core.Direction.UP, pos, false);
-                        captured[0] = captured[1] = null;
                         level.getBlockState(pos).useWithoutItem(level, player, hit);
-                        if (!(captured[0] instanceof legacyconnector.vb1_7_3.net.minecraft.screen.ScreenHandler container)) continue;
-                        LegacyB173Menu menu = new LegacyB173Menu(1, player, container, 0);
+                        if (!(player.containerMenu instanceof LegacyB173Menu menu)) continue;
+                        var container = menu.legacy();
                         opened++;
                         slots += menu.slots.size();
                         boolean first = kinds.add(container.getClass());
                         // the client's menu from the open-screen packet's extra data has the same slots
                         var buf = new net.minecraft.network.RegistryFriendlyByteBuf(io.netty.buffer.Unpooled.buffer(), level.registryAccess());
-                        LegacyB173Menu.write(buf, container, captured[1], 0);
+                        LegacyB173Menu.write(buf, container, null, 0);
                         if (LegacyB173Menu.client(2, player.getInventory(), buf).slots.size() == menu.slots.size()) layouts++;
                         int playerSlot = -1, result = -1, grid = -1;
                         for (int i = 0; i < menu.slots.size(); i++) {
@@ -213,19 +211,20 @@ public final class SelfTestB173 {
                             failures++;
                             notes.add(name + " failed while updating");
                         }
-                        menu.removed(player);
+                        player.closeContainer();
                         if (first) notes.add(name + " (" + container.getClass().getSimpleName() + "): " + menu.slots.size() + " slots");
                     } catch (RuntimeException | LinkageError e) {
                         failures++;
                         notes.add(name + " (" + e + ")");
                     } finally {
+                        if (player.containerMenu != player.inventoryMenu) player.closeContainer();
                         level.setBlock(pos, Blocks.AIR.defaultBlockState(), 3);
                         level.setBlock(pos.below(), Blocks.AIR.defaultBlockState(), 3);
                     }
                 }
             }
         } finally {
-            MenusB173.testOpen = null;
+            player.discard();
         }
         LOG.info("B1.7.3 GUI TEST: {} blocks/metadata right-clicked ({} placed from their item), {} opened a menu ({} container classes, {} slots, {} "
                 + "of the containers; {} client layouts match); shift-click: {} took coal in, {} gave it back; crafting grids: {} of {} crafted; {} failed",
@@ -271,6 +270,35 @@ public final class SelfTestB173 {
                 ContentB173.entities().size());
         for (String f : failed.subList(0, Math.min(20, failed.size()))) LOG.info("  failed: {}", f);
         subtypes();
+    }
+
+    /** The GUI test player's connection: sends nothing and has no modded channels (menus send their data as vanilla packets). */
+    private static final class TestConnection extends net.minecraft.server.network.ServerGamePacketListenerImpl {
+        TestConnection(net.minecraft.server.MinecraftServer server, net.minecraft.server.level.ServerPlayer player) {
+            super(server, new net.minecraft.network.Connection(net.minecraft.network.protocol.PacketFlow.CLIENTBOUND), player,
+                    net.minecraft.server.network.CommonListenerCookie.createInitial(player.getGameProfile(), false));
+        }
+
+        @Override
+        public void send(net.minecraft.network.protocol.Packet<?> packet) {}
+
+        @Override
+        public void send(net.minecraft.network.protocol.Packet<?> packet, net.minecraft.network.PacketSendListener listener) {}
+
+        @Override
+        public boolean hasChannel(net.minecraft.resources.ResourceLocation id) {
+            return false;
+        }
+
+        @Override
+        public boolean hasChannel(net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type<?> type) {
+            return false;
+        }
+
+        @Override
+        public boolean hasChannel(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
+            return false;
+        }
     }
 
     /** Block items with subtypes: how many have names per metadata, with the names of each. */
