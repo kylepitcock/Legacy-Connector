@@ -75,7 +75,7 @@ def stage(inventory, archive_name, root, label):
 
 def assess(game, manifest, exit_code):
     text = (game / 'test.log').read_text(encoding='utf-8', errors='replace')
-    problems = [line for line in text.splitlines() if re.search(r'failed during construction:|failed during (?:postInit|init)|Exception caught during firing event|Encountered an unexpected exception|BUILD FAILED|\b[1-9]\d* (?:legacy callbacks )?failed\b|\bof legacyconnector_b173\..* failed\b|^[\w.$]+(?:Exception|Error)(?::|$)', line)]
+    problems = [line for line in text.splitlines() if re.search(r'failed during construction:|failed during (?:postInit|init)|Exception caught during firing event|Encountered an unexpected exception|BUILD FAILED|\b[1-9]\d* (?:legacy callbacks )?(?:failed|failures)\b|B1\.7\.3 .* TEST failed\b|\bof legacyconnector_b173\..* failed\b|^[\w.$]+(?:Exception|Error)(?::|$)', line)]
     evidence = [line for line in text.splitlines() if 'B1.7.3 ' in line and 'TEST:' in line]
     completed = any('B1.7.3 GUI TEST:' in line and '0 failed;' in line for line in evidence)
     constructed = [line for line in text.splitlines() if 'b1.7.3 mod ' in line and ' constructed' in line]

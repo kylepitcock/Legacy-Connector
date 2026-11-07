@@ -97,7 +97,9 @@ class ArchiveAuditTests(unittest.TestCase):
             game = Path(temp)
             for failure in ['onPlaced of legacyconnector_b173.example.Block[100] failed: details',
                             'B1.7.3 BEHAVIOUR TEST: 12 legacy callbacks failed, 0 escaped',
-                            'B1.7.3 ACTUAL BUCKET/BOW TEST: 0 passed, 10 failed']:
+                            'B1.7.3 ACTUAL BUCKET/BOW TEST: 0 passed, 10 failed',
+                            'B1.7.3 RECIPE COUNT TEST: 1 oversized recipes, 1 failures',
+                            'B1.7.3 RECIPE COUNT TEST failed for example:recipe']:
                 with self.subTest(failure=failure):
                     (game / 'test.log').write_text('b1.7.3 mod Example 1.0 constructed\n' + failure +
                                                  '\nB1.7.3 GUI TEST: 0 failed;\nBUILD SUCCESSFUL\n')
