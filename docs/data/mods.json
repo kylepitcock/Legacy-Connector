@@ -958,8 +958,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "Old-only. Survival check 2026-11-07: controller, cables, drive and terminal place through the item path; the ME Terminal and ME Drive screens open and draw. Cables draw as dark cubes, and without power the network cannot be used (crafting through a network not reached)."
+      "status": "works",
+      "notes": "Old-only. Real client 2026-11-07: cables draw as thin cables with their arms (they were dark cubes), controller, drive and crafting terminal place through the item path. A wooden BuildCraft engine beside the controller powers the network; a 1k storage cell in the drive shows '0 of 1024 bytes used', and 64 cobblestone put into the C-Terminal stay listed there. The ME Access Terminal item (multiblock1 meta 6) does not place. A light blue square is drawn on the ground under each cable (cause not found)."
     },
     {
       "name": "Applied Energistics 2",
@@ -4058,8 +4058,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "Computer, disk drive and turtle place and draw; the computer screen opens but its terminal draws white rows (the font sheet is not applied to the terminal quads), so nothing can be typed or read yet."
+      "status": "works",
+      "notes": "Real client 2026-11-07: the computer screen draws and works. 'help' and 'ls' print, the Lua prompt runs, keys reach the program. A turtle takes fuel by hand-in-slot, runs turtle.refuel() and moves forward. A MiscPeripherals block beside a computer shows up as a peripheral (getType and getMethods answer). Fixed: the font sheet the mod builds itself and uploads as an OpenGL texture, and the ROM mount (the translated jar had no folder entries)."
     },
     {
       "name": "ComputerCraft Turtles",
@@ -4076,8 +4076,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "partial",
-      "notes": "Self-tested in 1.4.7 corpus server self test (2026-11-07): 1 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned; 2 threw errors (100%)."
+      "status": "works",
+      "notes": "A turtle placed in survival opens its screen (terminal and 4x4 inventory), refuels from coal put in its slot, moves and turns on Lua commands. A plain turtle cannot dig (no tool), which is the mod's own rule."
     },
     {
       "name": "Computronics",
@@ -11725,7 +11725,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Old-only (needs ComputerCraft). Loads in a real client; eight of its blocks (charge station, iron note block, resupply station, interactive sorter, rail reader, teleporter, player detector, crafter) place and draw with their textures; use through a computer not tried."
+      "notes": "Old-only (needs ComputerCraft). Loads in a real client; eight of its blocks place and draw with their textures; a block beside a ComputerCraft computer is found as a peripheral (gateReader, with its 'get' method)."
     },
     {
       "name": "Mithril",
