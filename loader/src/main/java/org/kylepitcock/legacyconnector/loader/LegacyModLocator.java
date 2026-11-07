@@ -236,6 +236,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                 }
             }
             if (legacy.isEmpty()) return;
+            dropDuplicateMods(legacy);
 
             List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
             // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
@@ -765,9 +766,61 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
 
     private static volatile String currentSide = "CLIENT";
 
+    /** Jars left out because another jar holds the same mod id in a newer version (a player keeps two downloads of one mod in mods/). */
+    private static final Map<LegacyJar, String> DUPLICATE_SKIPS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * FML refuses two files with one mod id; here the second copy used to make neither load (the mod never registered, with no message). Keeps the
+     * jar with the highest declared version (ties: the newer file) and says which one was dropped.
+     */
+    private static void dropDuplicateMods(List<LegacyJar> legacy) {
+        DUPLICATE_SKIPS.clear();
+        Map<String, List<LegacyJar>> byId = new java.util.LinkedHashMap<>();
+        for (LegacyJar j : legacy) for (LegacyModDecl m : j.mods) byId.computeIfAbsent(m.modernId(), k -> new ArrayList<>()).add(j);
+        for (Map.Entry<String, List<LegacyJar>> e : byId.entrySet()) {
+            List<LegacyJar> jars = e.getValue().stream().distinct().toList();
+            if (jars.size() < 2) continue;
+            LegacyJar best = jars.get(0);
+            for (LegacyJar j : jars) if (compareDeclared(j, e.getKey(), best, e.getKey()) > 0) best = j;
+            for (LegacyJar j : jars) {
+                if (j == best || DUPLICATE_SKIPS.containsKey(j)) continue;
+                DUPLICATE_SKIPS.put(j, "another file holds the same mod (" + e.getKey() + ") in a newer version: " + best.fileName());
+                LOG.warn("Legacy Connector: {} and {} are two copies of the mod '{}'; only {} is loaded (remove the other from mods/).",
+                        j.fileName(), best.fileName(), e.getKey(), best.fileName());
+            }
+        }
+    }
+
+    private static int compareDeclared(LegacyJar a, String idA, LegacyJar b, String idB) {
+        long[] na = numbers(declaredVersion(a, idA)), nb = numbers(declaredVersion(b, idB));
+        for (int i = 0; i < Math.max(na.length, nb.length); i++) {
+            long x = i < na.length ? na[i] : 0, y = i < nb.length ? nb[i] : 0;
+            if (x != y) return Long.compare(x, y);
+        }
+        try {
+            return Long.compare(Files.getLastModifiedTime(a.existing()).toMillis(), Files.getLastModifiedTime(b.existing()).toMillis());
+        } catch (IOException | RuntimeException ex) {
+            return 0;
+        }
+    }
+
+    private static String declaredVersion(LegacyJar jar, String modernId) {
+        return jar.mods.stream().filter(m -> m.modernId().equals(modernId)).map(m -> m.version).filter(java.util.Objects::nonNull).findFirst().orElse("");
+    }
+
+    /** The digit groups of a version string ("1.3.5 B3" gives 1, 3, 5, 3). */
+    private static long[] numbers(String version) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\\d{1,9}").matcher(version);
+        List<Long> out = new ArrayList<>();
+        while (m.find()) out.add(Long.parseLong(m.group()));
+        return out.stream().mapToLong(Long::longValue).toArray();
+    }
+
     private static String skipReason(LegacyJar jar) {
         String lib = LIBRARY_SKIPS.get(jar);
         if (lib != null) return lib;
+        String dup = DUPLICATE_SKIPS.get(jar);
+        if (dup != null) return dup;
         // A client-only mod (@Mod class under @SideOnly(CLIENT), or clientSideOnly = true) has nothing to do on a dedicated server: FML dropped it there.
         if (jar.hasMods() && "SERVER".equals(currentSide) && jar.mods.stream().allMatch(m -> m.clientSideOnly)) {
             return "client-only mod (@SideOnly(CLIENT) mod class); not loaded on a dedicated server";
