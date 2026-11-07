@@ -75,6 +75,7 @@ public abstract class Entity {
 
     /** The modern entity this one is a view of, or null for a mod's own entity. */
     public net.minecraft.world.entity.Entity mcc$modern;
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box boundingBox;
 
     public Entity(World world) {
         this.world = world;
@@ -89,9 +90,27 @@ public abstract class Entity {
         this.x = x;
         this.y = y;
         this.z = z;
+        boundingBox = legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(x-width/2, y-standingEyeHeight, z-width/2,
+                x+width/2, y-standingEyeHeight+height, z+width/2);
     }
 
     public void tick() {}
+
+    public void setBoundingBoxSpacing(float width, float height) {
+        this.width=width; this.height=height; setPosition(x,y,z);
+    }
+    public boolean isCollidable() { return mcc$modern != null && mcc$modern.isPickable(); }
+    public boolean checkWaterCollisions() { return mcc$modern != null && mcc$modern.level().getFluidState(mcc$modern.blockPosition()).is(net.minecraft.tags.FluidTags.WATER); }
+    public boolean isSubmergedInWater() { return checkWaterCollisions(); }
+    public boolean damage(Entity attacker, int amount) {
+        if (mcc$modern == null) return false;
+        var source = attacker != null && attacker.mcc$modern instanceof net.minecraft.world.entity.player.Player p
+                ? mcc$modern.damageSources().playerAttack(p) : mcc$modern.damageSources().generic();
+        return mcc$modern.hurt(source, amount);
+    }
+    public void onPlayerInteraction(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player) {}
+    public void writeNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag) {}
+    public void readNbt(legacyconnector.vb1_7_3.net.minecraft.nbt.NbtCompound tag) {}
 
     public float getEyeHeight() {
         return 0.0F;
@@ -102,6 +121,7 @@ public abstract class Entity {
     }
 
     public void setPositionAndAngles(double x, double y, double z, float yaw, float pitch) {
+        setPosition(x,y,z);
         this.prevX = this.x = x;
         this.prevY = this.y = y;
         this.prevZ = this.z = z;
@@ -110,6 +130,7 @@ public abstract class Entity {
     }
 
     public void setPositionAndAnglesKeepPrevAngles(double x, double y, double z, float yaw, float pitch) {
+        setPosition(x,y,z);
         this.prevX = this.x = x;
         this.prevY = this.y = y;
         this.prevZ = this.z = z;

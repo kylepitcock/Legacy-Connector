@@ -27,6 +27,10 @@ public abstract class PlayerEntity extends LivingEntity {
     }
 
     public void sendMessage(String message) {}
+    @Override public float getEyeHeight() { return 0.12F; }
+    public void sendPickup(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, int count) {
+        if (mcc$modern instanceof net.minecraft.world.entity.player.Player p && entity.mcc$modern != null) p.take(entity.mcc$modern,count);
+    }
 
     /** MCP {@code displayGUIChest}: a chest screen over the inventory (a modern chest menu). */
     public void openChestScreen(Inventory inventory) {

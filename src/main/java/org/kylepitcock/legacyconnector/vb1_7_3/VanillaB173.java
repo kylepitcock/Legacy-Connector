@@ -204,7 +204,9 @@ public final class VanillaB173 {
         var state = block.defaultBlockState();
         if (state.isAir()) return Material.AIR;
         var fluid = state.getFluidState();
-        if (!fluid.isEmpty()) return fluid.is(net.minecraft.tags.FluidTags.LAVA) ? Material.LAVA : Material.WATER;
+        // Tags are not bound while the vanilla views are initialized during mod loading.
+        if (!fluid.isEmpty()) return fluid.getType() == net.minecraft.world.level.material.Fluids.LAVA
+                || fluid.getType() == net.minecraft.world.level.material.Fluids.FLOWING_LAVA ? Material.LAVA : Material.WATER;
         if (block instanceof net.minecraft.world.level.block.BaseFireBlock) return Material.FIRE;
         if (block instanceof net.minecraft.world.level.block.NetherPortalBlock) return Material.NETHER_PORTAL;
         if (block instanceof net.minecraft.world.level.block.LeavesBlock) return Material.LEAVES;

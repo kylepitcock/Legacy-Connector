@@ -50,6 +50,14 @@ public class Block {
     public boolean constructed = true;
     public boolean shouldTrackStatistics = true;
     public double minX;
+    public legacyconnector.vb1_7_3.net.minecraft.util.math.Box getCollisionShape(legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z) {
+        if (world.mcc$level()==null) return null;
+        var pos=new net.minecraft.core.BlockPos(x,y,z);
+        var shape=world.mcc$level().getBlockState(pos).getCollisionShape(world.mcc$level(),pos);
+        if(shape.isEmpty())return null;
+        var b=shape.bounds().move(x,y,z);
+        return legacyconnector.vb1_7_3.net.minecraft.util.math.Box.create(b.minX,b.minY,b.minZ,b.maxX,b.maxY,b.maxZ);
+    }
     public double minY;
     public double minZ;
     public double maxX;

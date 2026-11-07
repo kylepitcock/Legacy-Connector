@@ -125,6 +125,7 @@ public final class SelfTestB173 {
                 net.minecraft.server.level.ClientInformation.createDefault());
         new TestConnection(level.getServer(), player);
         ItemUseSelfTestB173.run(level, player, base);
+        org.kylepitcock.legacyconnector.compat.b173.BucketBowSelfTest.run(level, player, base);
         // single player: the client's and the server's player share an entity id (Entity.equals compares ids); each needs its own view
         var twin = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
         int twinId = twin.getId();

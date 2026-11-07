@@ -30,6 +30,10 @@ public final class StacksB173 {
                     stack.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, damage & 15));
                 } else if (stack.isDamageableItem()) {
                     stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
+                } else if (legacy.hasSubtypes()) {
+                    var tag = new net.minecraft.nbt.CompoundTag();
+                    tag.putInt("b173_meta", damage);
+                    stack.set(DataComponents.CUSTOM_DATA, net.minecraft.world.item.component.CustomData.of(tag));
                 }
             } else if (stack.isDamageableItem()) {
                 stack.setDamageValue(Math.min(damage, stack.getMaxDamage()));
@@ -55,6 +59,8 @@ public final class StacksB173 {
             if (meta != null) damage = meta;
         } else if (modern.isDamageableItem()) {
             damage = modern.getDamageValue();
+        } else if (modern.getItem() instanceof LegacyB173Item && modern.has(DataComponents.CUSTOM_DATA)) {
+            damage = modern.get(DataComponents.CUSTOM_DATA).copyTag().getInt("b173_meta");
         }
         return new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(hit[0], modern.getCount(), damage);
     }

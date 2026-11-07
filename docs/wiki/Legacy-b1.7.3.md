@@ -154,13 +154,44 @@ a menu through `ModLoader.OpenGUI` from either callback, using the same bridge a
 
 An unhandled block use passes through. Items without an overridden air-use callback also pass through.
 Offhand use passes through without calling Beta code (Beta only had a selected inventory slot).
-Callback exceptions are contained and logged, at most three per item. This connects the callbacks; individual
-items can still need missing legacy APIs such as projectile entities. Block items retain their modern placement
+Callback exceptions are contained and logged, at most three per item. Individual items can still need missing legacy APIs.
+Block items retain their modern placement
 path; custom block-item callbacks, entity interactions, combat, eating animations and inventory ticks are separate work.
 
 The development server's `B1.7.3 ITEM USE TEST` checks position/side/world, consumption, returned replacements,
 direct inventory replacement, preservation of unrelated modern items, offhand pass-through and an item callback
 opening a real 63-slot server menu. The test fixture is registered only when the self-test flag is enabled.
+
+### Buckets and bows
+
+Fluid buckets now have actual raycasts, block hit results and permission checks. Raycasts distinguish source
+fluids from flowing fluids; the world view supplies the dimension's water-evaporation flag. Lava is classified
+without fluid tags, because those tags are not bound when the vanilla views are initialized. Plain-item metadata
+round-trips through the stack's custom-data component, with item models for metadata 0–15: Aether's skyroot
+bucket stores water as metadata 8 rather than as a different item. Waterlogged solid blocks are not exposed as
+standalone legacy fluid blocks.
+
+Arrow-like entities with `setArrowHeading` are hosted by `LegacyB173Arrow` (`legacyconnector:arrow_b1_7_3`).
+The server runs the mod's original tick and pickup code: its velocity, collision tests, damage, fire effects,
+embedded-arrow behavior and returned ammunition. Entity views connect queries and damage to modern targets;
+direct writes to a target's fire timer are applied after the tick. Bounds follow both position-setting APIs.
+The modern host provides entity tracking and saves the legacy class and NBT, including arrows a mod did not
+register with `RegisterEntityID`; restoration only accepts arrow classes from loaded Beta mod modules.
+Shooter identity is stored by the modern projectile. Bow/fireball/hit sounds use modern sound events.
+
+This is arrow support, not a general mob bridge. Client arrows currently use the standard arrow model/texture,
+not the mods' custom renderers. Skyroot milk/poison/remedy effects and mod creatures are separate work.
+
+`compat/b173/BucketBowSelfTest` uses the actual installed NetherCraft and Aether classes through their modern
+item entry points. Bucket checks cover source pickup, placement, flowing-fluid rejection, misses and denied
+building permission. Bow checks cover four NetherCraft bow classes with each of their four ammunition types,
+plus the Phoenix bow: no-ammo behavior, consumption, spawning, flight, mob damage, ignition, wall impacts,
+pickup and save/reload. These checks run with the existing headless server self tests; client appearance still
+needs an in-game check.
+
+Validated with NetherCraft 1.9b (ModLoader-only build) and Aether 1.02: both buckets and all five bow classes
+pass (17 bow/ammunition combinations). Existing regression checks remain at 113 menus, 29/29 shift-click
+cases, 2/2 crafting cases and zero block-callback failures.
 
 ## Tile entities
 

@@ -36,6 +36,11 @@ public final class LegacyConnector {
     public static final String MOD_ID = "legacyconnector";
 
     private static final DeferredRegister<Feature<?>> FEATURES = DeferredRegister.create(Registries.FEATURE, MOD_ID);
+    private static final DeferredRegister<net.minecraft.world.entity.EntityType<?>> BETA_ENTITIES = DeferredRegister.create(Registries.ENTITY_TYPE, MOD_ID);
+    public static final DeferredHolder<net.minecraft.world.entity.EntityType<?>, net.minecraft.world.entity.EntityType<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>> BETA_ARROW =
+            BETA_ENTITIES.register("arrow_b1_7_3", () -> net.minecraft.world.entity.EntityType.Builder
+                    .<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>of(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow::new, net.minecraft.world.entity.MobCategory.MISC)
+                    .sized(0.5F,0.5F).clientTrackingRange(8).updateInterval(1).build("legacyconnector:arrow_b1_7_3"));
     public static final DeferredHolder<Feature<?>, LegacyWorldGenFeature> LEGACY_WORLDGEN =
             FEATURES.register("legacy_worldgen", () -> new LegacyWorldGenFeature(NoneFeatureConfiguration.CODEC));
     static {
@@ -95,6 +100,7 @@ public final class LegacyConnector {
                     org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Menu::client));
 
     public LegacyConnector(IEventBus modBus, ModContainer container) {
+        BETA_ENTITIES.register(modBus);
         org.slf4j.LoggerFactory.getLogger("LegacyConnector").info("Legacy Connector {} (runtime) loaded",
                 container.getModInfo().getVersion());
         org.kylepitcock.legacyconnector.core.DirectMemoryGuard.start();

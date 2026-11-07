@@ -25,7 +25,7 @@ public final class BlocksB173 {
         if (state.getBlock() instanceof LegacyB173Block l) return l.legacy().id;
         if (state.isAir()) return 0;
         var fluid = state.getFluidState();
-        if (!fluid.isEmpty()) {
+        if (!fluid.isEmpty() && state.getBlock() instanceof net.minecraft.world.level.block.LiquidBlock) {
             if (fluid.getType() == Fluids.WATER) return 9;
             if (fluid.getType() == Fluids.FLOWING_WATER) return 8;
             if (fluid.getType() == Fluids.LAVA) return 11;

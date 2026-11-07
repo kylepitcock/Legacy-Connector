@@ -33,6 +33,7 @@ public class World implements BlockView {
     public int difficulty = 2;
     public Random random = new Random();
     public boolean isRemote;
+    public legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension dimension = new legacyconnector.vb1_7_3.net.minecraft.world.dimension.Dimension();
 
     private final Level mcc$level;
 
@@ -43,6 +44,9 @@ public class World implements BlockView {
     private World(Level level) {
         this.mcc$level = level;
         this.isRemote = level.isClientSide;
+        dimension.evaporatesWater = level.dimensionType().ultraWarm();
+        dimension.hasNoSky = !level.dimensionType().hasSkyLight();
+        dimension.id = level.dimension() == Level.NETHER ? -1 : level.dimension() == Level.END ? 1 : 0;
     }
 
     /** The legacy view of a modern level (one per level). */
@@ -55,6 +59,35 @@ public class World implements BlockView {
 
     public Level mcc$level() {
         return mcc$level;
+    }
+
+    public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to) {
+        return raycast(from, to, false);
+    }
+
+    public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to, boolean fluids) {
+        if (mcc$level == null || from == null || to == null) return null;
+        var hit = mcc$level.clip(new net.minecraft.world.level.ClipContext(
+                new net.minecraft.world.phys.Vec3(from.x, from.y, from.z), new net.minecraft.world.phys.Vec3(to.x, to.y, to.z),
+                net.minecraft.world.level.ClipContext.Block.COLLIDER, fluids ? net.minecraft.world.level.ClipContext.Fluid.SOURCE_ONLY
+                        : net.minecraft.world.level.ClipContext.Fluid.NONE, net.minecraft.world.phys.shapes.CollisionContext.empty()));
+        if (hit.getType() == net.minecraft.world.phys.HitResult.Type.MISS) return null;
+        var p = hit.getBlockPos(); var v = hit.getLocation();
+        return new legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult(p.getX(), p.getY(), p.getZ(), hit.getDirection().get3DDataValue(),
+                legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d.create(v.x, v.y, v.z));
+    }
+
+    public boolean canInteract(legacyconnector.vb1_7_3.net.minecraft.entity.player.PlayerEntity player, int x, int y, int z) {
+        return mcc$level != null && player != null && player.mcc$modern instanceof net.minecraft.world.entity.player.Player modern
+                && modern.mayBuild() && mcc$level.mayInteract(modern, pos(x, y, z));
+    }
+
+    public legacyconnector.vb1_7_3.net.minecraft.util.hit.HitResult raycast(
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d from, legacyconnector.vb1_7_3.net.minecraft.util.math.Vec3d to,
+            boolean fluids, boolean ignoreWithoutCollision) {
+        return raycast(from,to,fluids);
     }
 
     private static BlockPos pos(int x, int y, int z) {
@@ -278,6 +311,26 @@ public class World implements BlockView {
     }
 
     public void playSound(double x, double y, double z, String sound, float volume, float pitch) {}
+
+    public void playSound(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, String sound, float volume, float pitch) {
+        if (mcc$level == null || mcc$level.isClientSide) return;
+        var event = switch(sound) {
+            case "random.bow" -> net.minecraft.sounds.SoundEvents.ARROW_SHOOT;
+            case "random.bowhit" -> net.minecraft.sounds.SoundEvents.ARROW_HIT;
+            case "mob.ghast.fireball" -> net.minecraft.sounds.SoundEvents.GHAST_SHOOT;
+            default -> null;
+        };
+        if (event != null) mcc$level.playSound(null,entity.x,entity.y,entity.z,event,net.minecraft.sounds.SoundSource.PLAYERS,volume,pitch);
+    }
+    public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
+        return mcc$level != null && org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
+    }
+    public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
+            legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {
+        if (mcc$level == null) return List.of();
+        return mcc$level.getEntities(except == null ? null : except.mcc$modern,box.mcc$box()).stream()
+                .map(org.kylepitcock.legacyconnector.vb1_7_3.EntityViewsB173::wrap).toList();
+    }
 
     public void addParticle(String name, double x, double y, double z, double vx, double vy, double vz) {
         if (mcc$level == null || !mcc$level.isClientSide) return;

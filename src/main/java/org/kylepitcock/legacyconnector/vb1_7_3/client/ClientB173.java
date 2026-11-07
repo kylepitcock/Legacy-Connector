@@ -20,6 +20,13 @@ public final class ClientB173 implements MenusB173.Client {
     private ClientB173() {}
 
     public static void register(IEventBus modBus) {
+        modBus.addListener((net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers e) ->
+                e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ARROW.get(), context ->
+                        new net.minecraft.client.renderer.entity.ArrowRenderer<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>(context) {
+                            @Override public net.minecraft.resources.ResourceLocation getTextureLocation(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow arrow) {
+                                return net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
+                            }
+                        }));
         modBus.addListener((RegisterMenuScreensEvent e) -> {
             var type = org.kylepitcock.legacyconnector.LegacyConnector.LEGACY_MENU_B1_7_3.get();
             e.register(type, LegacyB173Screen::new);
@@ -29,6 +36,13 @@ public final class ClientB173 implements MenusB173.Client {
         // block items with subtypes pick their model per metadata (Minefactory's machines are one block item)
         modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
             for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Item) {
+                    net.minecraft.client.renderer.item.ItemProperties.register(item, org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.META,
+                            (stack,level,entity,seed) -> {
+                                var legacy=org.kylepitcock.legacyconnector.vb1_7_3.StacksB173.toLegacy(stack);
+                                return legacy == null ? 0 : legacy.getDamage()/16.0F;
+                            });
+                }
                 if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem bi && bi.hasSubtypes()) {
                     net.minecraft.client.renderer.item.ItemProperties.register(bi, org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.META,
                             (stack, level, entity, seed) -> org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.meta(stack) / 16.0F);

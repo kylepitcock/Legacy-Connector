@@ -370,6 +370,20 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         JsonObject t = new JsonObject();
         t.addProperty("layer0", texture(mod, sheet, safe(() -> item.getTextureId(0), 0), true));
         model.add("textures", t);
+        if (item.hasSubtypes()) {
+            JsonArray variants = new JsonArray();
+            for (int meta=0; meta<16; meta++) {
+                final int m=meta;
+                JsonObject variant=model.deepCopy();
+                variant.getAsJsonObject("textures").addProperty("layer0",texture(mod,sheet,safe(() -> item.getTextureId(m),0),true));
+                String path=id.getPath()+"_m"+meta;
+                put("assets/"+id.getNamespace()+"/models/item/"+path+".json",variant);
+                JsonObject entry=new JsonObject(), predicate=new JsonObject();
+                predicate.addProperty(LegacyB173BlockItem.META.toString(),meta/16.0F);
+                entry.add("predicate",predicate); entry.addProperty("model",id.getNamespace()+":item/"+path); variants.add(entry);
+            }
+            model.add("overrides",variants);
+        }
         put("assets/" + id.getNamespace() + "/models/item/" + id.getPath() + ".json", model);
     }
 
