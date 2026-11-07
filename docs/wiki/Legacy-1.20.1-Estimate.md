@@ -1,4 +1,4 @@
-# Estimate: legacy 1.20.1 Forge mods (and Sinytra Connector Fabric mods) on NeoForge 1.21.1
+﻿# Estimate: legacy 1.20.1 Forge mods (and Sinytra Connector Fabric mods) on NeoForge 1.21.1
 
 Research note. **Roadmap (2026-11-04): 1.20.1 comes before 1.16.5**, right after 1.12.2; groundwork so far is the Forge to NeoForge rename tables under `loader/src/main/resources/legacyconnector/forward/1.20.1/`. Back to [Home](Home.md). Written 2026-11-01 from the repository state and general knowledge of the
 Forge 47 / NeoForge 21.1 APIs. Figures about third-party APIs were not re-verified against the 1.20.1 sources; check them when the work starts.
@@ -236,7 +236,7 @@ classes 610/1610, methods 1393/4700, fields 291/558. `./gradlew verify1201 -Pver
 54 of 73,000 linkable classes are invalid, none involve the migration helpers (API visibility changes, `ModelResourceLocation` no longer a `ResourceLocation`).
 
 Open: `ArmorMaterial`/`Tier` implementations, custom `Enchantment` subclasses (data-driven now), `MobType`, `RenderSystem.getModelViewStack`, `LootDataManager`,
-recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (not started).
+recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (see section 13).
 ## 11. Status 2026-11-08: milestone 1 (Forge API facades)
 
 **Milestone 1 reached:** a Forge 1.20.1 content mod loads and registers its content on a NeoForge 1.21.1 server through the layer. Another Furniture 3.0.4 registers
@@ -332,3 +332,34 @@ Measurement (10 content jars of the corpus that need Architectury/Curios/Patchou
 (the rest is Minecraft/NeoForge/other libraries: JEI 44 classes, EMI 23, Vinery 18, Bookshelf 8, Ears 8 ...), with **0** left in the Architectury, Curios and Patchouli packages (from 22 + 27 + 26 classes in 5, 3 and 2 jars). `verify1201` over the translated jars: 2105 classes, 1772
 verified, 332 not linkable here (libraries not on the verifier's class path), 1 invalid (Botania `ModelResourceLocation`, a known Minecraft item, not from the library tables).
 Not done: a server run (other game processes were running, the rule is one java at a time; the translated mods were only link-checked), the config switch to force translating a 1.20.1 library even when the modern build exists, library mods other than the above.
+
+
+## 14. Status 2026-11-08: milestone 2, Minecraft side (mixins and signature changes)
+
+**Mixin triage** (`loader/.../transform/Mixin1201`, called from `Forge1201Transformer`; offline measurement `loader/.../tools/Mixin1201Triage`: `java -cp <asm,asm-tree,gson,tools> org.kylepitcock.legacyconnector.loader.tools.Mixin1201Triage <neoforge-merged.jar> <report> <jar-dir>`,
+`-Dtriage.tables=<forward/1.20.1>` applies the rename tables first). Corpus of 60 Forge 1.20.1 jars (`test-mods-1201-a`): 50 carry mixin configs (82 configs, 843 mixin classes, 792 target Minecraft/NeoForge classes).
+Before: 17 mixin targets and 24 members/`@At` targets named in annotations do not exist in 1.21.1 (140 annotation strings use SRG names, which the refmap used to translate), 24 configs have a plugin. What the layer does now:
+
+- **Names**: SRG names in `method`/`@At(target)`/`@Accessor` strings become Mojang names, the class and member renames of `mc-classes.tsv`/`mc-members.tsv` are applied inside those strings (descriptors too, but never to the `CompatBufferBuilder`-style stand-ins).
+- **No aborts**: Mixin aborts the launch on a required config and, whatever the config says, on an injector whose `require` is not met (`InjectionError`). Every injector gets `require = 0`, the config becomes `required: false`, `injectors.defaultRequire: 0`, no refmap;
+  an invalid mixin (missing shadow member or accessor target) is then logged and skipped by Mixin itself.
+- **Dropped**: a mixin whose targets are all Minecraft/NeoForge classes that do not exist in 1.21.1 (`PotionUtils`, `LootDataManager`, `ForgeGui`...) is removed from its config with a report note (12 in the corpus).
+- After translation: 1 unresolved target class and 1 unresolved member (down from 17 and 24; the name-only check does not see changed signatures, so a mixin can still fail to apply at runtime and is then skipped, not fatal).
+- Not done: mixin config plugins still run unchanged (they read Forge's `LoadingModList`, which the facades answer); mixins that target another mod's class are untouched.
+
+**Signature changes** (tables in `forward/1.20.1`, helpers in `org/kylepitcock/legacyconnector/v1_20_1/migrate`):
+
+- New generic in-place rule `=args` in `mc-calls.tsv` (spills the old arguments to fresh locals and builds the new ones, with optional static helpers `Class.method@a+b`): `ArmorItem(ArmorMaterial, Type, Properties)` (holder + durability from the material), `ShapedRecipe`/`ShapelessRecipe`
+  without the id (pattern object), `FlowerBlock(MobEffect, int, ...)`, `LootItemConditionalFunction(LootItemCondition[])`, `TemptGoal`, `FollowOwnerGoal`; `=swappop` drops the second to last argument (`CustomRecipe(id, category)`).
+- Stand-ins (classes renamed to facades): `ArmorMaterial` (interface, built into a 1.21.1 `ArmorMaterial` holder and cached by `ArmorCompat`), `ArmorMaterials` (wraps the vanilla ones), `MobType` (answered from entity type tags), `LootDataManager` (`MinecraftServer.getLootData()` over the reloadable registries).
+- `Tier` implementations get `getIncorrectBlocksForDrops()` from their `getLevel()` (bridge). `BlockSource` (a record now) calls go to helpers. 33 class renames (`ChunkStatus`, options screens, `BlockPathTypes` to `PathType`, `GlassBlock` to `TransparentBlock`, `FrameType`, `BootstapContext`...),
+  `SpawnPlacements.Type` constants, `RenderSystem.getModelViewStack()` (a `PoseStack` mirroring onto the JOML stack), `Registry.register` after the registries froze (custom stats and similar entries in common setup, the registry is opened for that one entry), `CriteriaTriggers.register`,
+  `ItemStack.getUseDuration/getTooltipLines/getAttributeModifiers`, `FoodProperties.getEffects`, `Recipe.getId` (looked up in the server's recipe manager), `EnchantedBookItem.getEnchantments`, `Commands.performPrefixedCommand`, `VertexConsumer.defaultColor`, small utilities.
+
+Measured on the 60 jars (`gap1201 -Pgap.translate=true`), Minecraft symbols still unresolved, distinct/occurrences: before classes 83/217, fields 76/115, methods 717/1288; after classes 49/129, fields 75/113, methods 643/1072.
+`verify1201` over the translated classes: 26,635 linked and verified (26,594 before), the same 2 invalid (`invokevirtual` of a method that became protected in another package, `AnalogLeverBlock.getShape`, `CeilingBannerBlock.getDrops`; not caused by the migration).
+Unit tests: `Mixin1201Test`, and `Mc1201MigrationTest` for `=args`, `=swappop` and the `Tier` bridge.
+
+Open: custom `Enchantment` subclasses (data-driven in 1.21: needs a conversion of the subclass to an enchantment definition, `Enchantment.Rarity`/`EnchantmentCategory` are gone), `AbstractTreeGrower` (`TreeGrower` is final), recipe serializers and `LootItemFunctionType`/`LootItemConditionType` (serializers became codecs),
+`DyeableArmorItem`/`DyeableLeatherItem`, `PortalInfo`, `Score`/scoreboard, `ServerAdvancementManager.getAdvancement`, datagen providers (`RecipeProvider`, `LootTableProvider`), `ImageButton`/`ObjectSelectionList` constructors, `Options.renderDebug`.
+Not yet run in a server: the mixin and migration changes were verified offline (unit tests, `gap1201`, `verify1201`, the mixin triage tool); the server test of mixin-carrying mods (`run-subtest/mods/1.20.1`: Clumps, AttributeFix, NoChatReports, EasyAnvils, VisualWorkbench, PickUpNotifier...) is still to do.
