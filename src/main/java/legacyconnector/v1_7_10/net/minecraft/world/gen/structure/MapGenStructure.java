@@ -22,7 +22,14 @@ public abstract class MapGenStructure extends MapGenBase {
         org.kylepitcock.legacyconnector.v1_7_10.bridge.LegacyStructures.track(this);
     }
 
-    public abstract String getStructureName();
+    /**
+     * 1.7.10 made this abstract; 1.6.4 and older structure generators (Twilight Forest's major feature...) have no such method, so it has a
+     * default naming the class (it only keys the saved structure data).
+     */
+    public String getStructureName() {
+        String n = getClass().getSimpleName();
+        return n.isEmpty() ? "Structure" : n;
+    }
 
     @Override
     protected final void func_151538_a(World world, int cx, int cz, int p4, int p5, Block[] blocks) {
