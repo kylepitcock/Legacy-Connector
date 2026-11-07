@@ -9164,7 +9164,7 @@
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
-   "notes": "Real client, survival, shaders: it loads (the earlier offline check that failed on NEI's RecipeInfo is out of date): the generator screen opens and burns coal (flame lit, energy bar fills). Cables, machines, ore processing and the reactor were not tried."
+   "notes": "Real client, survival, shaders: it loads (the earlier offline check that failed on NEI's RecipeInfo is out of date): the generator screen opens and burns coal (flame lit, energy bar fills). Cables, machines, ore processing and the reactor were not tried. 2026-11-07: machine, generator, cable and ore faces were magenta in the world (IC2's own sprite loader was not called); fixed, all 1812 sprites build. A generator burns coal, feeds an adjacent macerator and iron ore becomes crushed ore."
   },
   {
    "name": "IndustrialCraft 2 Classic",
