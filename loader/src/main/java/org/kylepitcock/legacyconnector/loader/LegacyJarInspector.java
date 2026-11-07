@@ -150,6 +150,7 @@ public final class LegacyJarInspector {
                 jar.mods.add(decl);
             }
 
+            if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
             jar.version = chooseVersion(zip, jar, infoById, refs17, refs112, markers, !modLoaderMods.isEmpty());
             return jar.version == null ? null : jar;
         }
@@ -813,6 +814,7 @@ public final class LegacyJarInspector {
                 if (!descriptor.equals(MOD_1_7) && !descriptor.equals(MOD_1_12)) return null;
                 LegacyModDecl decl = new LegacyModDecl();
                 decl.mainClass = className;
+                decl.clientSideOnly = sideOnlyClient;
                 result[0] = decl;
                 return new AnnotationVisitor(Opcodes.ASM9) {
                     @Override

@@ -24,6 +24,9 @@ public class Loader {
         return "7.10.99.99";
     }
 
+    /** FML's private game directory field; CodeChickenCore reads it reflectively (CommonUtils.getMinecraftDir). */
+    private File minecraftDir = FMLPaths.GAMEDIR.get().toFile();
+
     public static Loader instance() {
         return INSTANCE;
     }
