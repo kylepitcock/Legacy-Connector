@@ -8,7 +8,24 @@ import java.util.Map;
 public final class LiquidDictionary {
     private static final Map<String, LiquidStack> LIQUIDS = new HashMap<>();
 
+    static {
+        // Forge seeds the dictionary with the two vanilla liquids (Forestry registers containers for "Water" and "Lava" at once)
+        LIQUIDS.put("Water", new LiquidStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.water, LiquidContainerRegistry.BUCKET_VOLUME));
+        LIQUIDS.put("Lava", new LiquidStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.lava, LiquidContainerRegistry.BUCKET_VOLUME));
+    }
+
     public LiquidDictionary() {}
+
+    /** Posted on Forge's event bus when a liquid is registered under a new name (mods keep their own tables of liquids by it). */
+    public static class LiquidRegisterEvent extends legacyconnector.v1_7_10.cpw.mods.fml.common.eventhandler.Event {
+        public final String Name;
+        public final LiquidStack Liquid;
+
+        public LiquidRegisterEvent(String name, LiquidStack liquid) {
+            this.Name = name;
+            this.Liquid = liquid.copy();
+        }
+    }
 
     /** The liquid called {@code name}, registered with {@code liquid} when it is new; the canonical stack otherwise. */
     public static synchronized LiquidStack getOrCreateLiquid(String name, LiquidStack liquid) {
@@ -16,6 +33,11 @@ public final class LiquidDictionary {
         if (existing != null) return existing;
         if (liquid == null) return null;
         LIQUIDS.put(name, liquid);
+        try {
+            legacyconnector.v1_7_10.net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(new LiquidRegisterEvent(name, liquid));
+        } catch (RuntimeException | LinkageError e) {
+            org.slf4j.LoggerFactory.getLogger("LegacyConnector/Liquids").warn("A handler of the registration of the liquid {} failed: {}", name, e.toString());
+        }
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Liquids164.liquidNamed(name, liquid);
         return liquid;
     }

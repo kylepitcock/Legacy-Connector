@@ -37,6 +37,8 @@ public final class Platform1710 implements LegacyPlatform {
         return "1.7.10";
     }
 
+    private static boolean coreModsConstructed;
+
     @Override
     public void construct(LegacyModRecord mod) throws Exception {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.CONSTRUCTING);
@@ -46,6 +48,11 @@ public final class Platform1710 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_7_10.entity.LegacyHosts.registerFallbacks();
         ClassLoader loader = Thread.currentThread().getContextClassLoader();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.CoreModPlugins.runAll(loader);
+        // FML constructed the coremods' mod containers before the mods: a library's mod (Immibis Core) checks whether its container already set it up
+        if (!coreModsConstructed) {
+            coreModsConstructed = true;
+            coreModPhase("construct");
+        }
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$loadApiPackages(loader);
         // FML's Scala adapter: an `object` mod is the singleton Foo$.MODULE$, and its handlers live on Foo$.
         Class<?> scalaModule = null;
@@ -267,7 +274,10 @@ public final class Platform1710 implements LegacyPlatform {
         java.util.Set<String> seen = new java.util.HashSet<>();
         for (Class<?> c = cls; c != null && c != Object.class; c = c.getSuperclass()) {
             for (Method m : c.getDeclaredMethods()) {
+                // Forge 1.5/1.6 only looked at the mod class's own methods for @PreInit/@Init/...: Immibis' ModBase annotates its
+                // base _preinit too and every mod calls it from its own handler, so inheriting it would run it twice.
                 if (isLifecycleHandler(m) && m.getParameterCount() == 1
+                        && (c == cls || m.isAnnotationPresent(Mod.EventHandler.class))
                         && seen.add(m.getName() + ":" + m.getParameterTypes()[0].getName())) out.add(m);
             }
         }
@@ -289,6 +299,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void coreModPhase(String phase) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$postToCoreModBuses(switch (phase) {
+            case "construct" -> new legacyconnector.v1_7_10.cpw.mods.fml.common.event.FMLConstructionEvent();
             case "preInit" -> new FMLPreInitializationEvent(null);
             case "init" -> new FMLInitializationEvent();
             default -> new FMLPostInitializationEvent();

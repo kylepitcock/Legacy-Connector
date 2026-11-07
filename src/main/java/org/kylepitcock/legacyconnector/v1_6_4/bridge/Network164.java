@@ -95,6 +95,12 @@ public final class Network164 {
         TINY.put(modId, handler);
     }
 
+    /** The tiny packet handler of a mod (its instance or id) as its {@code @NetworkMod} declared it, or null. */
+    public static ITinyPacketHandler tinyHandler(Object mod) {
+        LegacyModRecord record = record(mod);
+        return record == null ? null : TINY.get(record.legacyId);
+    }
+
     // ------------------------------------------------------------------ receiving
 
     private static void receive(String channel, byte[] data, Side side, Object netHandler) {

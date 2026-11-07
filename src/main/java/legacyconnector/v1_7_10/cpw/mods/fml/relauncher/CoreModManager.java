@@ -8,6 +8,9 @@ import java.util.List;
  * coremod jar is translated and loaded like any other mod, so none is hidden and the lists are empty.
  */
 public class CoreModManager {
+    /** FML's private flag (Factorization reads it reflectively): the layer always runs obfuscation-free. */
+    private static boolean deobfuscatedEnvironment = false;
+
     private static final List<String> loadedCoremods = new ArrayList<>();
     private static final List<String> reparsedCoremods = new ArrayList<>();
 

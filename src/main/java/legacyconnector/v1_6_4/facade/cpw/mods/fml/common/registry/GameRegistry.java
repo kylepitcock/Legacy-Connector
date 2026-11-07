@@ -29,6 +29,14 @@ public final class GameRegistry {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerWorldGenerator(generator, 0);
     }
 
+    /** {@code registerBlock(block, itemClass)} (1.5.2): the name is the unlocalized name without {@code tile.}, or the block id for blocks that have none (Applied Energistics 1 names its subtypes per item stack). */
+    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass) {
+        String n = block.getUnlocalizedName();
+        if (n != null && n.startsWith("tile.")) n = n.substring(5);
+        if (n == null || n.isEmpty() || n.equals("null")) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
+        registerBlock(block, itemClass, n);
+    }
+
     /** {@code registerBlock(block)}: the name is the unlocalized name without the {@code tile.} prefix. */
     public static void registerBlock(Block block) {
         String n = block.getUnlocalizedName();

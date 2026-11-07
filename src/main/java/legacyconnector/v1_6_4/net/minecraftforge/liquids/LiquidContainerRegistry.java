@@ -12,6 +12,14 @@ public final class LiquidContainerRegistry {
 
     private static final List<LiquidContainerData> DATA = new ArrayList<>();
 
+    static {
+        // vanilla buckets (Forge registered these itself)
+        DATA.add(new LiquidContainerData(new LiquidStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.water, BUCKET_VOLUME),
+                new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.water_bucket), EMPTY_BUCKET));
+        DATA.add(new LiquidContainerData(new LiquidStack(legacyconnector.v1_7_10.net.minecraft.init.Blocks.lava, BUCKET_VOLUME),
+                new ItemStack(legacyconnector.v1_7_10.net.minecraft.init.Items.lava_bucket), EMPTY_BUCKET));
+    }
+
     private LiquidContainerRegistry() {}
 
     public static synchronized void registerLiquid(LiquidContainerData data) {

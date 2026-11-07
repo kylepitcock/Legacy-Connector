@@ -102,7 +102,37 @@ public class ItemBlock extends Item {
 
     @Override
     public String getUnlocalizedName(ItemStack stack) {
-        return blockInstance == null ? super.getUnlocalizedName(stack) : blockInstance.getUnlocalizedName();
+        if (blockInstance == null) return super.getUnlocalizedName(stack);
+        String name = blockInstance.getUnlocalizedName();
+        // vanilla's ItemMultiTexture/ItemColored/ItemCloth named every subtype ("tile.log.spruce"); mods key tables by that name
+        String[] variants = mcc$variants(name);
+        if (variants != null && getClass() == ItemBlock.class) {
+            int meta = stack == null ? 0 : stack.getItemDamage();
+            return name + "." + variants[(meta & 15) % variants.length];
+        }
+        return name;
+    }
+
+    private static final String[] MCC$COLORS = {"white", "orange", "magenta", "lightBlue", "yellow", "lime", "pink", "gray", "silver", "cyan", "purple", "blue", "brown", "green", "red", "black"};
+    private static final String[] MCC$WOODS = {"oak", "spruce", "birch", "jungle", "acacia", "big_oak"};
+
+    private static String[] mcc$variants(String name) {
+        return switch (name) {
+            case "tile.log" -> new String[] {"oak", "spruce", "birch", "jungle"};
+            case "tile.log2" -> new String[] {"acacia", "big_oak"};
+            case "tile.wood", "tile.planks" -> MCC$WOODS;
+            case "tile.leaves" -> new String[] {"oak", "spruce", "birch", "jungle"};
+            case "tile.leaves2" -> new String[] {"acacia", "big_oak"};
+            case "tile.sapling" -> MCC$WOODS;
+            case "tile.cloth", "tile.clayHardenedStained", "tile.stainedGlass", "tile.woolCarpet", "tile.thinStainedGlass" -> MCC$COLORS;
+            case "tile.sandStone" -> new String[] {"default", "chiseled", "smooth"};
+            case "tile.stonebricksmooth" -> new String[] {"default", "mossy", "cracked", "chiseled"};
+            case "tile.cobbleWall" -> new String[] {"normal", "mossy"};
+            case "tile.quartzBlock" -> new String[] {"default", "chiseled", "lines"};
+            case "tile.tallgrass" -> new String[] {"shrub", "grass", "fern"};
+            case "tile.monsterStoneEgg" -> new String[] {"stone", "cobble", "brick", "mossybrick", "crackedbrick", "chiseledbrick"};
+            default -> null;
+        };
     }
 
     @Override

@@ -361,6 +361,7 @@ public final class LegacyJarTransformer {
         for (ClassNode node : nodes.values()) CustomMainMenuVersionFix.apply(node);
         for (ClassNode node : nodes.values()) org.kylepitcock.legacyconnector.loader.transform.compat.UpdateCheckFix.apply(node);
         for (ClassNode node : nodes.values()) CofhWorldProxyFix.apply(node);
+        for (ClassNode node : nodes.values()) org.kylepitcock.legacyconnector.loader.transform.compat.FatalErrorScreenFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellIconFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellEffectsFix.apply(node);
         for (ClassNode node : nodes.values()) Am2CompendiumFix.apply(node);

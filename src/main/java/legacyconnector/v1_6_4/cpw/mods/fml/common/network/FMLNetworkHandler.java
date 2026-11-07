@@ -15,6 +15,6 @@ public final class FMLNetworkHandler {
     /** The network record of a mod (given its instance or its id), or null when it is not a legacy mod. */
     public NetworkModHandler findNetworkModHandler(Object mod) {
         int id = Network164.networkId(mod);
-        return id < 0 ? null : new NetworkModHandler(id);
+        return id < 0 ? null : new NetworkModHandler(id, Network164.tinyHandler(mod));
     }
 }

@@ -57,6 +57,16 @@ public final class Configuration {
         return getBlock(self, "block", key, defaultId, null);
     }
 
+    /** Forge 1.5.2's {@code getBlock(key, defaultId, comment)}. */
+    public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId, String comment) {
+        return getBlock(self, "block", key, defaultId, comment);
+    }
+
+    /** Forge 1.5.2's {@code getItem(key, defaultId, comment)}. */
+    public static Property getItem(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String key, int defaultId, String comment) {
+        return getItem(self, "item", key, defaultId, comment);
+    }
+
     public static Property getBlock(legacyconnector.v1_7_10.net.minecraftforge.common.config.Configuration self, String category, String key, int defaultId) {
         return getBlock(self, category, key, defaultId, null);
     }
