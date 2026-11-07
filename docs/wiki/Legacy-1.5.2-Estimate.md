@@ -48,3 +48,13 @@ the liquid API's link to fluids) and the client side.
 4. Per-version Minecraft version string for CodeChicken's version checks.
 
 Wall-clock at the measured pace: 1 to 1.5 days for 1 to 3, plus the client verification.
+
+## Better Than Wolves (jar mod): why it does not load (checked 2026-11-07, BTW 4 B0000003 for 1.5.2)
+
+BTW is not a Forge mod; it is a patched Minecraft. The zip holds `MINECRAFT-JAR/` (1,756 entries) and `MINECRAFT_SERVER-JAR/` (905), meant to be copied over `minecraft.jar` / the server jar, plus `BTWConfig.txt`. There is no `mcmod.info`, no `@Mod`, no `mod_*` `BaseMod` class; the loader's "not a legacy Forge mod" is correct.
+
+- Client side: 1,018 classes. 749 are new `FC*` classes (blocks, items, entities, tile entities) whose superclasses are notch names (`apa` = Block 69 times, `wk` = Item 45, `xn`, `om`...). The other 269 (`aab`, `ah`, `ahc`...) are **replaced vanilla classes** with BTW's changes compiled in (hunger, block hardness, mob AI, the world generator, the crafting manager, `Block`/`Item` registration tables), plus ~670 replaced textures.
+- To load it the layer would have to (1) map notch names with the 1.5.2 table (exists), and (2) let those 269 modified classes **replace** the shim's vanilla classes. The shim's vanilla classes are hand-written facades over the modern game, not the 1.5.2 bytecode, so a replaced `Block` or `World` has fields and internals (`blocksList[]`, chunk providers, the entity tracker) that nothing implements. That is a different architecture (running real 1.5.2 vanilla code), not an extension of the shim. It stays out of scope, as for every jar mod; the BTW add-ons (which patch the same classes) are out too.
+- What would work instead: a BTW-inspired Forge mod rewrite is a different mod. Nothing of BTW renders here, so there is no screenshot.
+
+RedPower 2 has no 1.5.2 or 1.6.4 build in the corpus (the latest public builds are 2.0pr5/pr6 for 1.4.7; the modules are in `test-mods-147` and have screenshots under `docs/screenshots/old-versions/1.4.7`).

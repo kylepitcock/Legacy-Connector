@@ -420,6 +420,7 @@ public class Minecraft {
     public void loadWorld(WorldClient world) {
         if (world != null) return;
         var mc = mc();
+        org.apache.logging.log4j.LogManager.getLogger("LegacyConnector/Client").warn("A legacy mod left the world (loadWorld(null)), called from", new Throwable());
         if (mc.level != null) mc.level.disconnect();
         mc.disconnect(new net.minecraft.client.gui.screens.TitleScreen());
     }

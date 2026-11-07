@@ -975,8 +975,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 67 items, 5 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "partial",
+      "notes": "Real client, shaders: the blocks and multi-block items render with their textures; the terminal says 'ChatMsg.NoController' untranslated (no network built); no GUI could be opened without a controller."
     },
     {
       "name": "Applied Energistics rv14.finale3",
@@ -984,8 +984,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 67 items, 5 blocks, 1 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "fails",
+      "notes": "In a real client session the mod failed during init: NoClassDefFoundError ic2/api/item/IElectricItemManager (the IC2 API class it reaches is not provided). The server self test did not hit this."
     },
     {
       "name": "Aqua Acrobatics",
@@ -4166,8 +4166,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 9 items, 9 blocks, 7 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "partial",
+      "notes": "Real client, shaders: blocks (crates, barrels, bench) render; the bench opens a full-screen logo splash instead of a crafting screen. Guns were not tested."
     },
     {
       "name": "CPM OSC Compat",
@@ -9873,7 +9873,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 21 items, 15 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, shaders: counters, cupboard, churn, cooking stand and icebox render; the icebox opens its container screen with the mod's own title."
     },
     {
       "name": "Konkrete",
@@ -10628,8 +10628,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 152 items, 23 blocks, 9 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "status": "fails",
+      "notes": "In a real client session the mod failed during preInit: AbstractMethodError, its MadTechneModelLoader does not implement IModelCustomLoader.loadInstance(ResourceLocation) as the shim declares it."
     },
     {
       "name": "Magia Naturalis",
@@ -14106,7 +14106,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 27 items, 37 blocks, 32 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, survival, shaders: blocks (electric and lightning blocks), the lightning hammer, armor and the soldier mob render and are usable; the ice titan did not show in the test."
     },
     {
       "name": "Prefab",
@@ -14841,8 +14841,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "loads",
-      "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+      "status": "fails",
+      "notes": "In a real client session the mod failed during preInit: One or more errors were thrown while loading RedLogic."
     },
     {
       "name": "RedPower 2 (Core, Base, Mechanical, Digital, Compat)",
@@ -15075,8 +15075,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 34 items, 14 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. 4 blocks did not stay placed."
+      "status": "partial",
+      "notes": "Real client, survival, shaders: blocks, gem blocks, tools, armor and scythes render and give correctly; the composter GUI has no mod background (plain slots), the Thor chest (backpack) screen is far taller than the window with items drawn off their slots."
     },
     {
       "name": "Resource Pack Organizer",
@@ -16251,7 +16251,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 81 items, 11 blocks, 28 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Real client, survival, shaders: blocks, the unicorn, phoenix, unicow and golden chicken render with their models; no defects seen."
     },
     {
       "name": "soundphysics",
@@ -17626,8 +17626,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 135 items, 87 blocks, 39 entity types; every block placed and used, every item used, every entity spawned without errors. 3 blocks did not stay placed."
+      "status": "fails",
+      "notes": "In a real client session the game disconnects about 100 ms after joining a world (empty reason, no exception logged) when this mod is installed; removing it fixes the join. The server self test passed. Cause not found yet."
     },
     {
       "name": "The Lost Cities",
@@ -17752,8 +17752,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 209 items, 25 blocks, 55 entity types; every block placed and used, every item used, every entity spawned without errors. 6 blocks did not stay placed."
+      "status": "partial",
+      "notes": "Real client, shaders: 55 mobs and the blocks register, but init failed with InstantiationError RenderLiving, so the mobs draw with vanilla boar/sheep models instead of their own."
     },
     {
       "name": "The Twilight Forest",
@@ -18262,7 +18262,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, old-only 1.6.4 set: 189 items, 13 blocks, 50 entity types; every block placed and used, every item used, every entity spawned without errors. 2 blocks did not stay placed."
+      "notes": "Real client, survival, shaders: boss mobs (Kitsune with its boss bar), troll, wraith, minotaur and vampire render with their own models and attack the player; the blocks render. Hostile mobs vanish at once on a Peaceful world, as in vanilla."
     },
     {
       "name": "Translocator",
