@@ -551,6 +551,11 @@ public abstract class EntityPlayer extends EntityLivingBase {
     // ------------------------------------------------------------------ capabilities (the player's own item handler, then mods')
 
     @Override
+    protected boolean mcc$equipmentCap() {
+        return false;
+    }
+
+    @Override
     public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability, EnumFacing facing) {
         if (capability != null && capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return true;
         if (capability != null && mcc$baubles(capability)) return true;

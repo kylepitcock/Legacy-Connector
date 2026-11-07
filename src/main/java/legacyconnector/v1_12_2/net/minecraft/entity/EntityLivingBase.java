@@ -1122,19 +1122,49 @@ public abstract class EntityLivingBase extends Entity {
         return !getItemStackFromSlot(slot).isEmpty();
     }
 
+    /** Players answer the item handler capability with their inventory instead. */
+    protected boolean mcc$equipmentCap() {
+        return true;
+    }
+
+    private legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper mcc$armorHandler;
+    private legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper mcc$handHandler;
+    private legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.CombinedInvWrapper mcc$joinedHandler;
+
+    private legacyconnector.v1_12_2.net.minecraftforge.items.IItemHandlerModifiable mcc$equipmentHandler(legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        if (mcc$joinedHandler == null) {
+            mcc$armorHandler = new legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper(this, EntityEquipmentSlot.Type.ARMOR);
+            mcc$handHandler = new legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.EntityEquipmentInvWrapper(this, EntityEquipmentSlot.Type.HAND);
+            mcc$joinedHandler = new legacyconnector.v1_12_2.net.minecraftforge.items.wrapper.CombinedInvWrapper(mcc$armorHandler, mcc$handHandler);
+        }
+        return facing == null ? mcc$joinedHandler : facing.getAxis().isVertical() ? mcc$handHandler : mcc$armorHandler;
+    }
+
+    /** Forge 1.12.2 gave every living entity its equipment as an item handler (up: hands, a side: armour, null: both); mods such as TF2's mercenary GUI read it. */
+    @Override
+    public boolean hasCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<?> capability, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        if (mcc$equipmentCap() && capability != null && capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return true;
+        return super.hasCapability(capability, facing);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getCapability(legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.Capability<T> capability, legacyconnector.v1_12_2.net.minecraft.util.EnumFacing facing) {
+        T own = super.getCapability(capability, facing);
+        if (own != null) return own;
+        if (mcc$equipmentCap() && capability != null && capability == legacyconnector.v1_12_2.net.minecraftforge.items.CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) return (T) mcc$equipmentHandler(facing);
+        return null;
+    }
+
+    /** 1.12 returned the live {@code armorArray} (a NonNullList; mods cast it, e.g. TF2's {@code ISpecialArmor.ArmorProperties.applyArmor(this, (NonNullList) getArmorInventoryList(), ...)}). */
     @Override
     public Iterable<ItemStack> getArmorInventoryList() {
-        java.util.List<ItemStack> out = new java.util.ArrayList<>();
-        for (EntityEquipmentSlot s : new EntityEquipmentSlot[] {EntityEquipmentSlot.FEET, EntityEquipmentSlot.LEGS, EntityEquipmentSlot.CHEST,
-                EntityEquipmentSlot.HEAD}) {
-            out.add(getItemStackFromSlot(s));
-        }
-        return out;
+        return mcc$get$armorArray(this);
     }
 
     @Override
     public Iterable<ItemStack> getHeldEquipment() {
-        return java.util.List.of(getHeldItemMainhand(), getHeldItemOffhand());
+        return mcc$get$handInventory(this);
     }
 
     public void setActiveHand(EnumHand hand) {
