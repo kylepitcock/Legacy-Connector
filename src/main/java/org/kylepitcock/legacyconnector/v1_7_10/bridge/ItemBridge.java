@@ -385,8 +385,10 @@ public final class ItemBridge {
             return;
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
-        String domain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";
-        String namespace = owner != null && modId == null ? owner.record().modernId : Ids.modernModId(domain);
+        // see BlockBridge.register: items an Immibis mod hands to Immibis Core are registered while no mod is active
+        org.kylepitcock.legacyconnector.core.LegacyModRecord byPackage = owner == null && modId == null ? BlockBridge.ownerByPackage(item.getClass()) : null;
+        String domain = modId != null ? modId : owner != null ? owner.getModId() : byPackage != null ? byPackage.legacyId : "minecraft";
+        String namespace = owner != null && modId == null ? owner.record().modernId : byPackage != null ? byPackage.modernId : Ids.modernModId(domain);
         ResourceLocation base = ResourceLocation.fromNamespaceAndPath(namespace, Ids.normalizePath(name).replace('/', '_'));
         String legacyName = domain + ":" + name;
         // An ItemBlock registered under its block's name is that block's item (FML linked them by name): AE2 builds

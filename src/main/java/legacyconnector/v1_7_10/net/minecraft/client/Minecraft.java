@@ -77,7 +77,8 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.client.renderer.EntityRenderer entityRenderer =
             new legacyconnector.v1_7_10.net.minecraft.client.renderer.EntityRenderer();
 
-    private legacyconnector.v1_7_10.net.minecraft.util.Session session;
+    /** A public field in 1.5.2 and 1.6.4 (Liquid XP reads {@code mc.session.username} while loading), so it exists from the start. */
+    public legacyconnector.v1_7_10.net.minecraft.util.Session session = legacyconnector.v1_7_10.net.minecraft.util.Session.mcc$current();
 
     public legacyconnector.v1_7_10.net.minecraft.util.Session getSession() {
         if (session == null) session = legacyconnector.v1_7_10.net.minecraft.util.Session.mcc$current();

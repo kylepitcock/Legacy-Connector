@@ -421,7 +421,14 @@ public final class LegacyJarTransformer {
             // Forge 1.5.2 kept a mod's files under /mods/<id>/ (textures, lang, sounds); they are the mod's assets/<id>/ for the modern resource system.
             // The original stays too: mods also read them as class path files.
             if (version.numericIds() && name.startsWith("mods/") && name.indexOf('/', 5) > 5 && !name.endsWith("/")) {
-                resources.accept("assets/" + name.substring(5), e.getValue());
+                String rest = name.substring(5);
+                // A domain with a slash (Immibis' "immibis/redlogic": /mods/immibis/redlogic/textures/...) is the resource domain "immibis/redlogic",
+                // which the runtime turns into the namespace immibis_redlogic (Ids.namespace): the folder before textures/ or lang/ is the whole domain.
+                int dirAt = Math.min(idxOrMax(rest, "/textures/"), idxOrMax(rest, "/lang/"));
+                if (dirAt != Integer.MAX_VALUE && rest.substring(0, dirAt).indexOf('/') >= 0) {
+                    rest = rest.substring(0, dirAt).replace('/', '_').replace('.', '_') + rest.substring(dirAt);
+                }
+                resources.accept("assets/" + rest, e.getValue());
             }
             if (resources.accept(name, e.getValue())) continue;
             outResources.put(name, e.getValue());
@@ -653,6 +660,11 @@ public final class LegacyJarTransformer {
         jos.putNextEntry(entry);
         jos.write(data);
         jos.closeEntry();
+    }
+
+    private static int idxOrMax(String s, String part) {
+        int i = s.indexOf(part);
+        return i < 0 ? Integer.MAX_VALUE : i;
     }
 
     static boolean isSignatureFile(String name) {

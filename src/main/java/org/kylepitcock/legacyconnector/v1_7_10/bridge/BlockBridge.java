@@ -274,8 +274,11 @@ public final class BlockBridge {
             if (name.equals("null")) name = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
-        String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";
-        String namespace = owner != null && modId == null ? owner.record().modernId : Ids.modernModId(legacyDomain);
+        // Immibis Core registers the blocks of every Immibis mod from its own code, so no mod is "active" then: the mod whose package holds the
+        // block's class owns it (otherwise RedLogic's gates would be minecraft:redlogic.gates).
+        org.kylepitcock.legacyconnector.core.LegacyModRecord byPackage = owner == null && modId == null ? ownerByPackage(block.getClass()) : null;
+        String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : byPackage != null ? byPackage.legacyId : "minecraft";
+        String namespace = owner != null && modId == null ? owner.record().modernId : byPackage != null ? byPackage.modernId : Ids.modernModId(legacyDomain);
         ResourceLocation id = ResourceLocation.fromNamespaceAndPath(namespace, Ids.normalizePath(name).replace('/', '_'));
         String legacyName = legacyDomain + ":" + name;
 
@@ -335,6 +338,24 @@ public final class BlockBridge {
         }
         if (count > 0) LOG.info("Registered {} legacy block(s) that their mods never registered (the numeric id table had them)", count);
         return count;
+    }
+
+    /** The legacy mod whose main class lives in the package of (or above) {@code cls}; null when no mod's own package contains it. */
+    static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerByPackage(Class<?> cls) {
+        String name = cls.getName();
+        org.kylepitcock.legacyconnector.core.LegacyModRecord best = null;
+        int bestLen = 0;
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            String main = m.mainClassName;
+            int dot = main == null ? -1 : main.lastIndexOf('.');
+            if (dot <= 0) continue;
+            String pkg = main.substring(0, dot + 1);
+            if (pkg.indexOf('.') != pkg.lastIndexOf('.') && name.startsWith(pkg) && pkg.length() > bestLen) {
+                best = m;
+                bestLen = pkg.length();
+            }
+        }
+        return best;
     }
 
     /** The legacy mod whose main class shares the longest package prefix with {@code cls}. */

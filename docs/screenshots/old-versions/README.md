@@ -76,6 +76,16 @@ Third round (survival, shaders; all new old-only mods):
 | `1.6.4/dimensional-warps-mobs-shaders.png` | Emerald's Dimensional Warps | Star cow, bull, seagull and other mobs with their own models | Works |
 | `1.6.4/dimensional-warps-sky-dimension-shaders.png` | Emerald's Dimensional Warps | The sky dimension, which now generates (its chunk provider constructor failed on a mismatched `TerrainGen.getModdedNoiseGenerators` signature) | Works |
 
+1.5.2 (same round):
+
+| File | Mod | What it shows | Rating |
+|---|---|---|---|
+| `1.5.2/grimoire-of-gaia-mobs-shaders.png` | Grimoire of Gaia | Valkyrie, harpy, dryad and other mobs with their models | Works |
+| `1.5.2/grimoire-of-gaia-fight-survival-shaders.png` | Grimoire of Gaia | A witch and a creeper girl fought with a diamond sword in survival; drops in the hotbar | Works |
+| `1.5.2/applied-energistics-1-controller-terminal-drive-shaders.png` | Applied Energistics rv14.dev2 | Controller, terminal, drive and energy cell placed in survival | Partly working |
+| `1.5.2/applied-energistics-1-terminal-gui-shaders.png` | Applied Energistics rv14.dev2 | The ME Terminal screen opened next to the controller | Partly working |
+| `1.5.2/redlogic-lamp-lit-wire-shaders.png` | RedLogic (with Immibis Core and Microblocks) | A lamp lit by a redstone block, a RedLogic wire (flat white pad, does not conduct) and the items in the hotbar; ids are `redlogic:redlogic.*` now (they were `minecraft:redlogic.*`) and the lamp textures resolve | Partly working |
+
 Findings of the first round and their causes (fixed in the second round, details in `docs/data/mods.json`): The Lion King Mod's disconnect was `connectionReceived` returning an empty string; Mad Science
 implements the 1.6.4 `IModelCustomLoader.loadInstance(String, URL)`; Applied Energistics rv14.finale3 needed absent IC2 types stubbed; RedLogic needs Immibis Microblocks next to Immibis Core
 (and read `BlockRedstoneWire.getDeclaredFields()[0]`); Counter Craft calls `System.exit` when more than five mods are loaded; Twilight Forest 1.5.2 instantiates the concrete `RenderLiving`;

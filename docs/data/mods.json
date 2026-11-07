@@ -976,7 +976,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: the blocks and multi-block items render with their textures; its own lang file (loadLocalization of /mods/appeng/lang/en_US.properties, a class path file in another jar than the shim) is now read, so the terminal's message reads 'Unable to communicate with controller.' (checked through StatCollector and the chat log); no GUI without a controller (the mod's design)."
+      "notes": "Real client, shaders: the blocks and multi-block items render with their textures; its own lang file (loadLocalization of /mods/appeng/lang/en_US.properties, a class path file in another jar than the shim) is now read, so the terminal's message reads 'Unable to communicate with controller.' (checked through StatCollector and the chat log); no GUI without a controller (the mod's design). Third round: a controller, ME terminal, drive and energy cell placed side by side in survival; the ME Terminal screen opens with its search box, sort buttons and slot grid. Item names are the mod's raw ones (block900_2 and similar registry names)."
     },
     {
       "name": "Applied Energistics rv14.finale3",
@@ -7890,7 +7890,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 0 items, 0 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Self-tested in server self test, 1.5.2 set: 0 items, 0 blocks, 52 entity types; every block placed and used, every item used, every entity spawned without errors. Real client, survival, shaders: valkyrie, harpy, dryad, centaur, slime girl, anubis, creeper girl and witch mobs draw with their own models; fought with a diamond sword, they drop items (feathers, gunpowder, ender pearls) that the player picks up."
     },
     {
       "name": "Grimoire of Gaia 3",
@@ -14841,8 +14841,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "loads",
-      "notes": "Needs Immibis Microblocks (its TileCoverableBase API class): the earlier failure was a missing dependency in the test set, not a layer defect. With Immibis Core and Microblocks it loads (0 failed). Placing a wire by command crashed the server: RedLogic reads BlockRedstoneWire.getDeclaredFields()[0] and asserts it is a boolean (the shim's wire had icon fields first) and the AssertionError escaped the tile entity creation; both fixed. Wires and gates were not placed through items."
+      "status": "partial",
+      "notes": "Needs Immibis Microblocks (its TileCoverableBase API class): the earlier failure was a missing dependency in the test set, not a layer defect. With Immibis Core and Microblocks it loads (0 failed). Placing a wire by command crashed the server: RedLogic reads BlockRedstoneWire.getDeclaredFields()[0] and asserts it is a boolean (the shim's wire had icon fields first) and the AssertionError escaped the tile entity creation; both fixed. Real client, survival, shaders (third round): lamps, wires and gates are given and placed with their items; a vanilla redstone block beside a lamp lights it (the lit lamp glows white). Fixed: its blocks and items were registered as minecraft:redlogic.* (Immibis Core registers them while no mod is active; the owner is now the mod whose package holds the class, so redlogic:redlogic.*), and its textures under /mods/immibis/redlogic/ (a resource domain with a slash) were not found, so the lamps drew as missing textures. Still open: a wire between a power source and a lamp does not conduct, wires draw as a flat white pad, and names show raw keys (the mod's own lang file format with item:/tile: keys is not read)."
     },
     {
       "name": "RedPower 2 (Core, Base, Mechanical, Digital, Compat)",
