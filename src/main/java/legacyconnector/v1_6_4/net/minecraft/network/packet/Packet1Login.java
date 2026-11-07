@@ -8,6 +8,9 @@ public class Packet1Login extends Packet {
     public int dimension;
     public byte difficultySetting;
     public int maxPlayers;
+    public boolean hardcoreMode;
+    public legacyconnector.v1_7_10.net.minecraft.world.WorldType terrainType;
+    public legacyconnector.v1_7_10.net.minecraft.world.WorldSettings.GameType gameType;
 
     public Packet1Login() {}
 }

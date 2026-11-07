@@ -148,6 +148,47 @@ class ClientServerPacketsTest {
     }
 
     @Test
+    void mapChunkWireCarriesTheCompressedPayload() throws IOException {
+        byte[] payload = legacyconnector.v1_6_4.forward.ChunkWire164.deflate(new byte[4096 + 4096]);
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        DataOutputStream out = new DataOutputStream(bytes);
+        out.writeInt(-3);
+        out.writeInt(12);
+        out.writeBoolean(true);
+        out.writeShort(1);
+        out.writeShort(0);
+        out.writeInt(payload.length);
+        out.write(payload);
+        Packet51MapChunk p = new Packet51MapChunk();
+        read(p, bytes.toByteArray());
+        assertEquals(-3, p.xCh);
+        assertEquals(12, p.zCh);
+        assertTrue(p.includeInitialize);
+        assertEquals(1, p.yChMin);
+        assertArrayEquals(payload, p.getCompressedChunkData());
+        assertArrayEquals(bytes.toByteArray(), write(p));
+        assertEquals(bytes.size(), p.getPacketSize());
+    }
+
+    @Test
+    void digPacketMapsItsStatusToTheModernAction() throws IOException {
+        Packet14BlockDig p = new Packet14BlockDig(2, 100, 64, -100, 5);
+        byte[] data = write(p);
+        assertEquals(11, data.length);
+        Packet14BlockDig back = new Packet14BlockDig();
+        read(back, data);
+        assertEquals(2, back.getStatus());
+        assertEquals(100, back.getXPosition());
+        assertEquals(64, back.getYPosition());
+        assertEquals(-100, back.getZPosition());
+        assertEquals(5, back.getFace());
+        assertEquals("START_DESTROY_BLOCK", Packet14BlockDig.actionName(0));
+        assertEquals("STOP_DESTROY_BLOCK", Packet14BlockDig.actionName(2));
+        assertEquals("DROP_ITEM", Packet14BlockDig.actionName(4));
+        assertNull(Packet14BlockDig.actionName(9));
+    }
+
+    @Test
     void blockChangeReadsTheLegacyLayout() throws IOException {
         Packet53BlockChange p = new Packet53BlockChange();
         read(p, new byte[] {0, 0, 0, 5, 64, 0, 0, 0, 7, 0, 3, 9});

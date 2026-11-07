@@ -11,6 +11,13 @@ public final class ServerConfigurationManager {
         if (message != null) self.sendChatMsg(message.mcc$toLegacy());
     }
 
+    /** ServerConfigurationManager.areCommandsAllowed(name): operators, and everybody when the world allows cheats (single player, open to LAN). */
+    public static boolean areCommandsAllowed(legacyconnector.v1_7_10.net.minecraft.server.management.ServerConfigurationManager self, String name) {
+        if (legacyconnector.v1_6_4.forward.Forward164.isPlayerOpped(self, name)) return true;
+        var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server != null && server.getWorldData().isAllowCommands() && !server.isDedicatedServer();
+    }
+
     /** 1.5.2: ServerConfigurationManager.sendChatMsg(String). */
     public static void sendChatMsg(legacyconnector.v1_7_10.net.minecraft.server.management.ServerConfigurationManager self, String message) {
         if (message != null) self.sendChatMsg(ChatMessageComponent.createFromText(message).mcc$toLegacy());
