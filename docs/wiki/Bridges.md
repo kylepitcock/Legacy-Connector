@@ -11,7 +11,7 @@ installed (the same idea as Connector Extras bridging Trinkets to Curios):
 |---|---|---|
 | Baubles 1.0 (`baubles.api`) | [Curios](https://www.curseforge.com/minecraft/mc-mods/curios) | Baubles is skipped; `IBauble` items become curios in the ring/necklace/belt slots; `BaublesApi.getBaubles` reads the Curios slots. |
 | NotEnoughItems (`codechicken.nei`) | [JEI](https://www.curseforge.com/minecraft/mc-mods/jei) | NEI is skipped; mods' `NEI*Config` plugins run; each legacy recipe handler becomes a JEI category drawn by the handler itself ([details](#nei--jei-recipe-categories)); NEI-hidden items are hidden in JEI. NEI always came with CodeChickenLib, so without a 1.7.10 CodeChickenLib jar its API (`codechicken.lib`: `GuiDraw`, `Rectangle4i`, ...) is bridged too (a modern CodeChickenLib in the pack does not count); NEI's GUI hooks (`INEIGuiHandler`, `INEIGuiAdapter`, `API.registerNEIGuiHandler`) are accepted and ignored, as JEI lays out its own panel. |
-| Waila (`mcp.mobius.waila.api`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy tooltip providers registered through Waila's IMC callback show their lines in Jade. |
+| Waila / HWYLA (`mcp.mobius.waila`) | [Jade](https://www.curseforge.com/minecraft/mc-mods/jade) | Waila is skipped; legacy head/body/tail/stack providers show their lines in Jade and NBT providers sync server data to the client ([per version](#waila-and-nei-per-legacy-version)). |
 | Patchouli 1.12 (`vazkii.patchouli.api`, 1.12.2 only) | [Patchouli](https://modrinth.com/mod/patchouli) | The legacy Patchouli is skipped; legacy mods' books are shown by the modern one ([details](#patchouli-books)). |
 | CoFH RF API (`cofh.api.energy`, shaded by most tech mods) | NeoForge Energy capability (built in) | Always on: RF tiles and items expose `IEnergyStorage` (1 RF = 1 FE), so modern cables and machines connect. |
 
@@ -24,6 +24,19 @@ ID extenders, LWJGL 3 ports) are not loaded; client mods (JourneyMap, Inventory 
 `legacyconnector-report.txt` says why.
 
 New bridges are declared in `loader/.../LibraryBridges.java` and implemented under the shim namespace.
+
+## Waila and NEI per legacy version
+
+The bridged package roots are the same on every version (`mcp/mobius/waila/`, `codechicken/nei/`, `codechicken/lib/`, `baubles/`); a bridge
+is on for a pack when Jade/JEI/Curios is installed and `bridges.<waila|nei|baubles>.enabled` is not `false` in `config/legacyconnector.properties`.
+
+| Legacy version | Waila -> Jade | NEI -> JEI | Baubles -> Curios |
+|---|---|---|---|
+| 1.7.10 | `IMC "Waila" "register"` callbacks; head, body, tail and stack providers; NBT providers (server data synced through Jade); `TipList` as the tooltip list | recipe handlers, hidden items, catalysts (see below) | `baubles.api` |
+| 1.6.4, 1.5.2, 1.4.7 | the 1.7.10 shim, plus `registerXProvider(provider, blockId)` by numeric id (`facade/.../IWailaRegistrar`) | the 1.7.10 shim plus the 1.6.4 `API.hideItem(int)` facade | resolved to the 1.7.10 shim when a mod uses it (no Baubles API existed on CurseForge before 1.7.10; no 1.4.7 / 1.5.2 / 1.6.4 mod of the test sets uses it) |
+| 1.12.2 | `@WailaPlugin` / `IWailaPlugin.register(IWailaRegistrar)` (HWYLA 1.8 API incl. `ModuleRegistrar`, `ConfigHandler`, `ITaggedList`), block and entity providers, NBT providers | `IConfigureNEI` + `API.hideItem` (items hidden in JEI); recipe handlers do not exist on 1.12 NEI | capability API |
+
+Multipart (FMP) providers, block decorators and custom tooltip renderers are accepted and ignored.
 
 ## Bridges at a glance
 
