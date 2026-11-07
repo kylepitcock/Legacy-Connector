@@ -655,7 +655,7 @@ public final class DataConverter1201 {
     }
 
     private static void itemPredicatesOfLoot(JsonObject o, Ctx c) {
-        if (o.has("condition") && id(o.get("condition").getAsString()).equals("minecraft:entity_properties") && o.has("predicate")) {
+        if (o.has("condition") && o.get("condition").isJsonPrimitive() && id(o.get("condition").getAsString()).equals("minecraft:entity_properties") && o.has("predicate")) {
             itemPredicates(o.get("predicate"), c);
         }
     }
