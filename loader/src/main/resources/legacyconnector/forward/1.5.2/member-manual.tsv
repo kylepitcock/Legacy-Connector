@@ -29,3 +29,6 @@ R	net/minecraft/network/Packet	writeByteArray	(Ljava/io/DataOutputStream;[B)V	st
 R	net/minecraft/network/Packet	getNewPacket	(Lnet/minecraft/logging/ILogAgent;I)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	getNewPacket	(Ljava/lang/Object;I)Lnet/minecraft/network/Packet;
 R	net/minecraft/network/Packet	readPacket	(Lnet/minecraft/logging/ILogAgent;Ljava/io/DataInputStream;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/lang/Object;Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
 R	net/minecraft/network/Packet	readPacket	(Ljava/io/DataInputStream;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;	static	legacyconnector/v1_6_4/forward/Packets164	readPacket	(Ljava/io/DataInput;ZLjava/net/Socket;)Lnet/minecraft/network/Packet;
+M	net/minecraft/entity/ai/attributes/BaseAttributeMap	func_111150_b	(Lnet/minecraft/entity/ai/attributes/IAttribute;)Lnet/minecraft/entity/ai/attributes/IAttributeInstance;	registerAttribute
+M	net/minecraft/tileentity/TileEntityMobSpawner	func_98049_a	()Lnet/minecraft/tileentity/MobSpawnerBaseLogic;	func_145881_a
+M	net/minecraft/item/ItemEnchantedBook	func_92111_a	(Lnet/minecraft/enchantment/EnchantmentData;)Lnet/minecraft/item/ItemStack;	getEnchantedItemStack

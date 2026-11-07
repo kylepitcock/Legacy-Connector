@@ -152,3 +152,9 @@ M	net/minecraft/entity/EntityLivingBase	func_142015_aE	()I	getLastAttackerTime
 R	net/minecraft/util/FoodStats	addStats	(Lnet/minecraft/item/ItemFood;)V	static	legacyconnector/v1_6_4/forward/Forward164	addFoodStats	(Lnet/minecraft/util/FoodStats;Lnet/minecraft/item/ItemFood;)V
 G	net/minecraft/client/Minecraft	statFileWriter	Lnet/minecraft/stats/StatFileWriter;	static	legacyconnector/v1_6_4/forward/Forward164	statFileWriter	(Lnet/minecraft/client/Minecraft;)Lnet/minecraft/stats/StatFileWriter;
 R	net/minecraft/stats/StatBase	getName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	statName	(Lnet/minecraft/stats/StatBase;)Ljava/lang/String;
+# Obfuscated getters/helpers the 1.7.10 shim has under another name (stub pass 2026-11-07)
+M	net/minecraft/block/BlockCocoa	func_72219_c	(I)I	func_149987_c
+M	net/minecraft/block/BlockColored	getBlockFromDye	(I)I	func_150032_b
+M	net/minecraft/village/MerchantRecipe	func_82784_g	()Z	isRecipeDisabled
+M	net/minecraft/item/ItemSword	func_82803_g	()F	func_150931_i
+M	net/minecraft/entity/EntityCreature	func_110174_bM	()F	getMaximumHomeDistance

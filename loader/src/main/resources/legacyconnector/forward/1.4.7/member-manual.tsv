@@ -22,3 +22,5 @@ F	net/minecraft/util/Direction	vineGrowth	facingToDirection
 F	net/minecraft/entity/EntityHanging	xPosition	field_146063_b
 F	net/minecraft/entity/EntityHanging	yPosition	field_146064_c
 F	net/minecraft/entity/EntityHanging	zPosition	field_146062_d
+# 1.4.7 getBlockName() is the unlocalized name ("tile." + name), 1.7.10's getUnlocalizedName()
+M	net/minecraft/block/Block	getBlockName	()Ljava/lang/String;	getUnlocalizedName

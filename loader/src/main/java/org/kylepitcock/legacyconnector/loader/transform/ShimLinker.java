@@ -237,6 +237,12 @@ public final class ShimLinker {
             }
         }
 
+        // A shim method that takes wider numbers (1.5.2's PathNavigate.tryMoveToXYZ(DDDF) is (DDDD) in 1.7.10): convert the arguments and call it.
+        if (h.isShim(m.owner)) {
+            AbstractInsnNode widened = widenedMethod(method, m, h, report, from);
+            if (widened != null) return widened;
+        }
+
         // A shim method that exists with another reference return type (Forge's OreDictionary.getOres(String, boolean) returned
         // List in later 1.7.10 builds, ArrayList in the shim): call it and narrow the result instead of stubbing it.
         if (h.isShim(m.owner)) {
@@ -283,6 +289,75 @@ public final class ShimLinker {
         m.desc = desc;
         m.itf = false;
         return m;
+    }
+
+    /**
+     * The shim lacks {@code owner.name(desc)} but declares the same method with the same return type and the same arguments except that some
+     * primitive ones are wider (float to double, int to long...), or a number return of another type: spill the arguments, widen the differing ones, call that and convert the result. Only done when
+     * exactly one such method exists on the owner's superclass chain.
+     */
+    private static AbstractInsnNode widenedMethod(MethodNode method, MethodInsnNode m, Hierarchy h, LinkReport report, String from) {
+        if (m.getOpcode() == Opcodes.INVOKESPECIAL || m.owner.startsWith("[")) return null;
+        Type[] args = Type.getArgumentTypes(m.desc);
+        Type wantedRet = Type.getReturnType(m.desc);
+        String found = null;
+        Set<String> seen = new HashSet<>();
+        for (String c = m.owner; c != null && seen.add(c); ) {
+            var info = h.find(c);
+            if (info == null) break;
+            for (var e : info.methods.entrySet()) {
+                String key = e.getKey();
+                if (!key.startsWith(m.name + "(") || (e.getValue() & Opcodes.ACC_PRIVATE) != 0) continue;
+                String d = key.substring(m.name.length());
+                Type[] target = Type.getArgumentTypes(d);
+                if (target.length != args.length || d.equals(m.desc)) continue;
+                Type ret = Type.getReturnType(d);
+                if (!ret.equals(wantedRet) && returnConversion(ret, wantedRet) < 0) continue;
+                boolean ok = true;
+                for (int i = 0; i < args.length && ok; i++) ok = args[i].equals(target[i]) || CtorChooser.widens(args[i], target[i]);
+                if (!ok) continue;
+                if (found != null && !found.equals(d)) return null;   // ambiguous
+                found = d;
+            }
+            if (found != null) break;
+            c = info.superName;
+        }
+        if (found == null) return null;
+        Type[] target = Type.getArgumentTypes(found);
+        InsnList pre = new InsnList();
+        int[] slots = new int[args.length];
+        int slot = method.maxLocals;
+        for (int i = 0; i < args.length; i++) {
+            slots[i] = slot;
+            slot += args[i].getSize();
+        }
+        for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
+        int pushed = 0;
+        for (int j = 0; j < args.length; j++) {
+            pre.add(new VarInsnNode(args[j].getOpcode(Opcodes.ILOAD), slots[j]));
+            if (CtorChooser.widens(args[j], target[j])) pre.add(new InsnNode(CtorChooser.widenOpcode(args[j], target[j])));
+            pushed += target[j].getSize();
+        }
+        method.maxLocals = slot;
+        method.maxStack += pushed;
+        method.instructions.insertBefore(m, pre);
+        report.adapted(m.owner, m.name + m.desc + " -> " + found, from);
+        m.desc = found;
+        int conv = returnConversion(Type.getReturnType(found), wantedRet);
+        if (conv >= 0) method.instructions.insert(m, new InsnNode(conv));
+        return m;
+    }
+
+    /** The instruction turning a returned number of type {@code from} into {@code to} (1.5.2's int damage became a float in 1.7.10), or -1. */
+    private static int returnConversion(Type from, Type to) {
+        int f = from.getSort(), t = to.getSort();
+        if (f == Type.FLOAT && t == Type.INT) return Opcodes.F2I;
+        if (f == Type.DOUBLE && t == Type.INT) return Opcodes.D2I;
+        if (f == Type.INT && t == Type.FLOAT) return Opcodes.I2F;
+        if (f == Type.INT && t == Type.DOUBLE) return Opcodes.I2D;
+        if (f == Type.FLOAT && t == Type.DOUBLE) return Opcodes.F2D;
+        if (f == Type.DOUBLE && t == Type.FLOAT) return Opcodes.D2F;
+        return -1;
     }
 
     /**
