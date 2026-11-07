@@ -4,14 +4,17 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/kylepitcock/Legacy-Connector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-**Play unmodified 1.7.10 and 1.12.2 Forge mods on NeoForge 1.21.1.**
+**Play unmodified 1.7.10, 1.12.2 and (new in 0.4, alpha) 1.6.4, 1.5.2 and 1.4.7 Forge mods on NeoForge 1.21.1.**
 
 | Legacy version | Support |
 | --- | --- |
 | **1.7.10** | ✅ Supported (beta) |
 | **1.12.2** | ✅ Supported (beta) |
+| **1.6.4** | 🧪 Alpha (new in 0.4) |
+| **1.5.2** | 🧪 Alpha (new in 0.4) |
+| **1.4.7** | 🧪 Alpha (new in 0.4) |
 
-Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
+Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next to Legacy Connector. They get translated when the game loads and run as normal NeoForge mods. It's the same idea as Sinytra Connector, but for old Forge mods instead of Fabric. Your original jars are never modified.
 
 **Built for mods that only exist on these old versions** and never got a 1.21.1 port. **Beta:** on 1.7.10, Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons (each planet's own gravity) run with their blocks, items, mobs, recipes, GUIs, world generation and dimensions, and big packs like GT New Horizons load most of their mods. 1.12.2 support is in alpha: Atum 2, The Midnight, Scape and Run: Parasites and Abyssalcraft load and play with their own models, mobs, GUIs, dimensions and world generation. Back up your worlds before trying a new mod set.
 
