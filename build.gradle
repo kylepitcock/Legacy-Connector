@@ -277,14 +277,9 @@ tasks.named('processResources') {
 // 1.20.1 gap report (milestone 0): ./gradlew gap1201 -PsrgTable=srg.tsv -PtargetJars=a.jar,b.jar -PgapJars=dir [-PgapReport=file]
 // SRG table: built by :loader:genSrgMojang1201 (default); targets: Minecraft 1.21.1 (Mojang names) + NeoForge, e.g. build/moddev/artifacts/neoforge-*-merged.jar
 tasks.register('gap1201', JavaExec) {
-<<<<<<< HEAD
     dependsOn ':loader:genSrgMojang1201', 'classes' // the Forge facades (legacyconnector/v1_20_1) count as present
-    classpath = project(':loader').sourceSets.main.runtimeClasspath
-=======
-    dependsOn ':loader:genSrgMojang1201'
     // gson (the provenance watermark of the transformer) and the fancy mod loader's annotations are compileOnly in the loader
     classpath = project(':loader').sourceSets.main.runtimeClasspath + project(':loader').sourceSets.main.compileClasspath.filter { it.name.startsWith('gson') || it.name.startsWith('slf4j') }
->>>>>>> c4c5cba1 (1.20.1: Minecraft migration (Mc1201Migration: call/constructor/field redirects to migrate helpers, bridge methods for changed overrides, tables mc-*.tsv, 1.21.1 class tree), gap1201 translate mode, tests)
     mainClass = 'org.kylepitcock.legacyconnector.loader.tools.Gap1201'
     // -Pgap.translate=true runs the jars through Forge1201Transformer first (the report then shows what the layer leaves); -Pgap.limit=N rows per list
     if (project.findProperty('gap.translate')) systemProperty 'gap.translate', project.findProperty('gap.translate').toString()
