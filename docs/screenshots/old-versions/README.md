@@ -86,6 +86,8 @@ Third round (survival, shaders; all new old-only mods):
 | `1.5.2/applied-energistics-1-terminal-gui-shaders.png` | Applied Energistics rv14.dev2 | The ME Terminal screen opened next to the controller | Partly working |
 | `1.5.2/redlogic-lamp-lit-wire-shaders.png` | RedLogic (with Immibis Core and Microblocks) | A lamp lit by a redstone block, a RedLogic wire (flat white pad, does not conduct) and the items in the hotbar; ids are `redlogic:redlogic.*` now (they were `minecraft:redlogic.*`) and the lamp textures resolve | Partly working |
 
+| `1.5.2/miscperipherals-resupply-station-gui-shaders.png` | MiscPeripherals, Liquid XP | MiscPeripherals' Resupply Station screen over a row of placed Liquid XP and MiscPeripherals machines (Liquid XP now loads: it read `Minecraft.session` while loading). One block in the hotbar shows the missing texture: Advanced Machines, which needs IC2 | Works (MiscPeripherals), Works (Liquid XP) |
+
 Findings of the first round and their causes (fixed in the second round, details in `docs/data/mods.json`): The Lion King Mod's disconnect was `connectionReceived` returning an empty string; Mad Science
 implements the 1.6.4 `IModelCustomLoader.loadInstance(String, URL)`; Applied Energistics rv14.finale3 needed absent IC2 types stubbed; RedLogic needs Immibis Microblocks next to Immibis Core
 (and read `BlockRedstoneWire.getDeclaredFields()[0]`); Counter Craft calls `System.exit` when more than five mods are loaded; Twilight Forest 1.5.2 instantiates the concrete `RenderLiving`;

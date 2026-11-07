@@ -10115,8 +10115,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "loads",
-      "notes": "Loads in server self test, 1.5.2 set without errors (no blocks, items or entities of its own)."
+      "status": "works",
+      "notes": "Real client, survival, shaders: it failed in preInit on a null `Minecraft.session` (a public field in 1.5.2, fixed); now its 8 LXP machines and the medallions register with their names and the Immibis blocks are placed (the remaining bad texture was Advanced Machines, which needs IC2)."
     },
     {
       "name": "Litematica",
@@ -11428,7 +11428,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Self-tested in server self test, 1.5.2 set: 25 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
+      "notes": "Self-tested in server self test, 1.5.2 set: 25 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors. Real client, survival, shaders: the Resupply Station placed and its 54-slot screen opened with the mod's own title and the player's inventory."
     },
     {
       "name": "Mithril",
