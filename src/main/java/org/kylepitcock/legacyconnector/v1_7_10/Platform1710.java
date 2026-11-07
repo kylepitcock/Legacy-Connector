@@ -348,6 +348,7 @@ public final class Platform1710 implements LegacyPlatform {
     @Override
     public void afterPostInit() {
         BlockBridge.registerImplicit();
+        org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.registerImplicit();
         injectObjectHolders();
         org.kylepitcock.legacyconnector.v1_7_10.bridge.Brewing1710.ensureListener();
         legacyconnector.v1_7_10.net.minecraft.item.crafting.CraftingManager.getInstance().mcc$syncSwappedList();

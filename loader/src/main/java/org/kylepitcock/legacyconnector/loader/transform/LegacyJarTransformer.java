@@ -209,8 +209,8 @@ public final class LegacyJarTransformer {
             }
             if (name.indexOf('/') < 0) {
                 // The default package (ModLoader's mod_* classes, reobfuscated helpers): a named module cannot hold classes outside a package.
-                remapper.override(name, privateRoot + name);
-                for (LegacyModDecl mod : jar.mods) if (name.equals(mod.mainClass)) mod.mainClass = privateRoot + name;
+                remapper.override(name, privateRoot + "root/" + name);
+                for (LegacyModDecl mod : jar.mods) if (name.equals(mod.mainClass)) mod.mainClass = privateRoot + "root/" + name;
                 continue;
             }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;

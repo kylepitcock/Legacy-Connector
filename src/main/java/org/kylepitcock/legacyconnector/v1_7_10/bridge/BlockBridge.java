@@ -307,7 +307,7 @@ public final class BlockBridge {
      */
     public static synchronized int registerImplicit() {
         boolean numeric = false;
-        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2");
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2") || m.version.equals("1.4.7");
         if (!numeric) return 0;
         int count = 0;
         Block[] list = legacyconnector.v1_6_4.net.minecraft.util.Ids.blocksList();
@@ -338,7 +338,7 @@ public final class BlockBridge {
     }
 
     /** The legacy mod whose main class shares the longest package prefix with {@code cls}. */
-    private static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerOf(Class<?> cls) {
+    static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerOf(Class<?> cls) {
         org.kylepitcock.legacyconnector.core.LegacyModRecord best = null;
         int bestLen = -1;
         String name = cls.getName();
