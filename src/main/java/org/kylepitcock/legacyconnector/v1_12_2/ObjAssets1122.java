@@ -129,6 +129,8 @@ public final class ObjAssets1122 {
         String dir = slash < 0 ? "" : objPath.substring(0, slash + 1);
         String mtl = lib.contains(":") ? read("assets/" + Ids.namespace(lib.substring(0, lib.indexOf(':'))) + "/" + lib.substring(lib.indexOf(':') + 1))
                 : read("assets/" + namespace + "/models/" + dir + lib);
+        // Forge 1.12 took a library name with a folder as a path under the domain ("mtllib models/block/x.mtl")
+        if (mtl == null && !lib.contains(":") && lib.contains("/")) mtl = read("assets/" + namespace + "/" + lib);
         // the jar's files carry lower-case names, the .obj still names the library with its original capitals
         if (mtl == null && !lib.contains(":")) mtl = read("assets/" + namespace + "/models/" + dir + Ids.normalizePath(lib));
         if (mtl == null) return null;
@@ -149,8 +151,12 @@ public final class ObjAssets1122 {
                 sb.append(l).append('\n');
             } else if (l.startsWith("map_Kd ") || (l.startsWith("map_Ka ") && material != null && !diffuse.contains(material))) {
                 String ref = l.substring(7).trim();
+                String refKey = ref.startsWith("#") ? ref.substring(1) : ref;
                 if (material != null && overrides.has(material)) {
                     sb.append("map_Kd #").append(material).append('\n');
+                } else if (overrides.has(refKey)) {
+                    // Forge 1.12 also matched the override key against the texture path the material names ("#node" for "map_Kd node")
+                    sb.append("map_Kd #").append(refKey).append('\n');
                 } else if (ref.startsWith("#")) {
                     sb.append("map_Kd ").append(ref).append('\n');
                 } else {

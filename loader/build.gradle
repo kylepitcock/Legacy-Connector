@@ -19,6 +19,7 @@ configurations {
     forge1710
     forge164
     forge152
+    forge147
     mcp1710
     mcp1122
     mcpconfig1201
@@ -45,6 +46,8 @@ dependencies {
     forge164 "net.minecraftforge:forge:${forge_1_6_4}:src@zip"
     // 1.5.2: the MCP 7.51 names of Forge 7.8.1.738 (fml/conf of the source zip)
     forge152 "net.minecraftforge:forge:${forge_1_5_2}:src@zip"
+    // 1.4.7: the MCP 6.x names of Forge 6.6.2.534 (fml/conf of the source zip)
+    forge147 "net.minecraftforge:forge:${forge_1_4_7}:src@zip"
     mcp1710 "de.oceanlabs.mcp:mcp_stable:${mcp_1_7_10}@zip"
     mcp1122 "de.oceanlabs.mcp:mcp_stable:${mcp_1_12_2}@zip"
     // Forge 1.20.1 mods are SRG-named; the SRG -> Mojang table is chained from MCPConfig and Mojang's mappings at build time (never committed)
@@ -109,6 +112,11 @@ def extractMappings = tasks.register('extractMappings', Sync) {
     from({ zipTree(configurations.forge152.singleFile) }) {
         include 'forge/fml/conf/methods.csv', 'forge/fml/conf/fields.csv'
         eachFile { it.path = "legacyconnector/mappings/1.5.2/${it.name}" }
+        includeEmptyDirs = false
+    }
+    from({ zipTree(configurations.forge147.singleFile) }) {
+        include 'forge/fml/conf/methods.csv', 'forge/fml/conf/fields.csv'
+        eachFile { it.path = "legacyconnector/mappings/1.4.7/${it.name}" }
         includeEmptyDirs = false
     }
 }
@@ -209,14 +217,26 @@ sourceSets.main.resources.srcDir(files(buildIdDir).builtBy(generateBuildId))
 // Packed as a nested jar: it is only ever loaded in the isolated class loader that runs legacy coremods.
 sourceSets {
     coremodApi
+    // the pieces of the API that differ in Forge 1.6.4 / 1.5.2 (java.util.logging FMLLog, IFMLLoadingPlugin.getLibraryRequestClass)
+    coremodApi164 {
+        compileClasspath += sourceSets.coremodApi.output
+    }
 }
 dependencies {
     coremodApiCompileOnly "org.ow2.asm:asm-commons:${asm_version}"
     coremodApiCompileOnly "org.apache.logging.log4j:log4j-api:2.22.1"
+    coremodApiCompileOnly "com.google.guava:guava:33.0.0-jre"
 }
 def coremodApiJar = tasks.register('coremodApiJar', Jar) {
     from sourceSets.coremodApi.output
     archiveFileName = 'coremod-api.jar'
     destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.7.10')
 }
-sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar))
+def coremodApi164Jar = tasks.register('coremodApi164Jar', Jar) {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from sourceSets.coremodApi164.output // first: wins over the 1.7.10 classes of the same name
+    from sourceSets.coremodApi.output
+    archiveFileName = 'coremod-api.jar'
+    destinationDirectory = layout.buildDirectory.dir('generated/coremodApi/legacyconnector/legacy/1.6.4')
+}
+sourceSets.main.resources.srcDir(files(layout.buildDirectory.dir('generated/coremodApi')).builtBy(coremodApiJar, coremodApi164Jar))

@@ -43,7 +43,18 @@ public class Chunk {
         // a chunk fetched through the chunk source is an ImposterProtoChunk around the loaded chunk, which lists no block entities itself
         net.minecraft.world.level.chunk.ChunkAccess source = c.modern instanceof net.minecraft.world.level.chunk.ImposterProtoChunk imposter ? imposter.getWrapped() : c.modern;
         for (var pos : source.getBlockEntitiesPos()) {
-            TileEntity te = c.worldObj.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+            // read from the chunk itself: World.getTileEntity asks the chunk source, which blocks the server thread for good when this runs in
+            // ChunkEvent.Unload (ComputerCraft's handler walks the map) and the chunk is on its way out
+            var blockEntity = source.getBlockEntity(pos);
+            TileEntity te;
+            if (blockEntity instanceof org.kylepitcock.legacyconnector.v1_7_10.adapter.LegacyBlockEntity legacy) {
+                te = legacy.legacy(c.worldObj);
+            } else if (c.worldObj.mcc$level() instanceof net.minecraft.world.level.Level live
+                    && live.getChunkSource().getChunkNow(pos.getX() >> 4, pos.getZ() >> 4) != null) {
+                te = c.worldObj.getTileEntity(pos.getX(), pos.getY(), pos.getZ());
+            } else {
+                te = null;
+            }
             if (te != null) out.put(new legacyconnector.v1_7_10.net.minecraft.world.ChunkPosition(pos.getX() & 15, pos.getY(), pos.getZ() & 15), te);
         }
         return out;

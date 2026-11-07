@@ -19,7 +19,7 @@ public class BlockDispenser extends legacyconnector.v1_7_10.net.minecraft.block.
     };
 
     private static Object defaultBehavior() {
-        for (String prefix : new String[] {"legacyconnector.v1_7_10.", "legacyconnector_synth.v1_7_10."}) {
+        for (String prefix : org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.API_1710) {
             try {
                 return Class.forName(prefix + "net.minecraft.dispenser.BehaviorDefaultDispenseItem").getDeclaredConstructor().newInstance();
             } catch (ReflectiveOperationException | LinkageError e) {

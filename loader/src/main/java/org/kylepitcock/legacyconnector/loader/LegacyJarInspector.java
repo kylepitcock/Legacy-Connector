@@ -41,6 +41,19 @@ public final class LegacyJarInspector {
     private static final java.util.Set<Path> DERIVATIVES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** True once if the last {@link #inspect} of this path found a translated jar (it carries a provenance watermark). */
+    /** True when a zip in mods/ holds class files (a mod distributed as a zip, as most 1.5.2 ones were) rather than only resources. */
+    public static boolean zipHasClasses(Path path) {
+        try (ZipFile zip = new ZipFile(path.toFile())) {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                if (entries.nextElement().getName().endsWith(".class")) return true;
+            }
+        } catch (IOException | RuntimeException e) {
+            // not a readable zip: leave it to whoever else looks at it
+        }
+        return false;
+    }
+
     static boolean takeDerivative(Path path) {
         return DERIVATIVES.remove(path);
     }
@@ -82,6 +95,7 @@ public final class LegacyJarInspector {
             int refs17 = 0, refs112 = 0;
             Markers markers = new Markers();
             List<LegacyModDecl> found = new ArrayList<>();
+            List<String> modLoaderMods = new ArrayList<>();
 
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
@@ -103,6 +117,9 @@ public final class LegacyJarInspector {
                 if (pool.contains("cpw/mods/fml/")) refs17++;
                 if (pool.contains("net/minecraftforge/fml/")) refs112++;
                 markers.scan(pool, entry.getName());
+                // ModLoader (1.4.x): a mod is a class extending BaseMod (net.minecraft.src.BaseMod, or the bare name in a reobfuscated jar)
+                String superName = reader.getSuperName();
+                if ("BaseMod".equals(superName) || "net/minecraft/src/BaseMod".equals(superName)) modLoaderMods.add(reader.getClassName());
 
                 if (pool.contains(MOD_1_7) || pool.contains(MOD_1_12)) {
                     LegacyModDecl decl = readModAnnotation(reader);
@@ -118,8 +135,24 @@ public final class LegacyJarInspector {
             }
 
             if (found.isEmpty() && refs17 == 0 && refs112 == 0 && infoById.isEmpty() && jar.coreModClass == null) {
-                // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod, or not a legacy mod
-                return BetaJars.inspect(zip, path, jar);
+                // no FML at all: a Beta 1.7.3 ModLoader / Forge 1.0 mod (in mods/b1.7.3/, or linking to b1.7.3's names), else a 1.4.7
+                // ModLoader mod (BaseMod subclasses: decided below) or not a legacy mod; mods/1.4.7/ never holds b1.7.3 jars
+                Path folder = path.getParent() == null ? null : path.getParent().getFileName();
+                if (folder == null || !folder.toString().equals("1.4.7")) {
+                    LegacyJar beta = BetaJars.inspect(zip, path, jar);
+                    if (beta != null) return beta;
+                }
+                if (modLoaderMods.isEmpty()) return null;
+            }
+            // ModLoader-only jars have no @Mod: each BaseMod subclass is a mod (id = its class name, as ModLoader showed it)
+            if (found.isEmpty()) {
+                for (String cls : modLoaderMods) {
+                    LegacyModDecl decl = new LegacyModDecl();
+                    decl.mainClass = cls;
+                    decl.legacyId = cls.substring(cls.lastIndexOf('/') + 1);
+                    decl.modLoader = true;
+                    found.add(decl);
+                }
             }
 
             // Scala objects carry @Mod on both the mirror class Foo and the module class Foo$; one mod each.
@@ -137,7 +170,8 @@ public final class LegacyJarInspector {
                 jar.mods.add(decl);
             }
 
-            jar.version = chooseVersion(jar, infoById, refs17, refs112, markers);
+            if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
+            jar.version = chooseVersion(zip, jar, infoById, refs17, refs112, markers, !modLoaderMods.isEmpty());
             return jar.version == null ? null : jar;
         }
     }
@@ -347,8 +381,35 @@ public final class LegacyJarInspector {
                 "net/minecraft/client/entity/AbstractClientPlayer", "net/minecraft/entity/passive/EntityHorse", "net/minecraft/block/BlockColored",
                 "net/minecraft/block/BlockRotatedPillar", "cpw/mods/fml/common/Optional"};
 
-        int v164, v17, v152, v16;
-        String example164, example17, example152, example16;
+        // 1.4.7 only (absent from 1.5.2; legacy/*/hierarchy.txt diff): FML's texture-FX helpers, the dispenser hooks, the 1.4 minecart registry and special-spawn event
+        private static final String[] V147 = {"cpw/mods/fml/client/FMLTextureFX", "cpw/mods/fml/client/SpriteHelper", "cpw/mods/fml/common/IDispenseHandler",
+                "cpw/mods/fml/common/IDispenserHandler", "net/minecraftforge/common/MinecartRegistry",
+                "net/minecraftforge/event/entity/living/LivingSpecialSpawnEvent"};
+        // 1.5.2 and later only (absent from 1.4.7): Forge classes added in 1.5. (Packaged vanilla names do not tell: the last 1.4.7 builds of Forge, 6.6.2.5xx, already
+        // compiled mods against MCP 7 package names, so 1.4.7 jars mix notch names with a few net/minecraft/world/World.)
+        private static final String[] V152_ONLY = {"net/minecraftforge/common/BiomeDictionary", "net/minecraftforge/common/IExtendedEntityProperties",
+                "net/minecraftforge/common/FakePlayer", "net/minecraftforge/client/event/TextureStitchEvent", "net/minecraftforge/client/event/RenderGameOverlayEvent",
+                "net/minecraftforge/client/event/RenderLivingEvent", "net/minecraftforge/client/event/RenderPlayerEvent", "net/minecraftforge/client/model/",
+                "net/minecraftforge/common/network/", "cpw/mods/fml/relauncher/IClassNameTransformer"};
+        /** Classes the ModLoader emulation keeps in net.minecraft.src (default package in a reobfuscated jar); every other net/minecraft/src name is flat vanilla. */
+        private static final java.util.Set<String> ML_NAMES = java.util.Set.of("BaseMod", "ModLoader", "MLProp", "ModTextureStatic", "ModTextureAnimation",
+                "TradeEntry", "EntityRendererProxy", "FMLRenderAccessLibrary");
+
+        int v164, v17, v152, v16, v147, v152only, flat;
+        String example164, example17, example152, example16, example147, example152only, exampleFlat;
+
+        /** True when {@code pool} references a vanilla class by its flat MCP 6.x name {@code net/minecraft/src/<Name>} (1.4.7). */
+        private static String flatVanilla(String pool) {
+            int from = 0;
+            for (int i; (i = pool.indexOf("net/minecraft/src/", from)) >= 0; from = i + 1) {
+                int start = i + "net/minecraft/src/".length();
+                int end = start;
+                while (end < pool.length() && Character.isJavaIdentifierPart(pool.charAt(end))) end++;
+                String name = pool.substring(start, end);
+                if (!name.isEmpty() && !ML_NAMES.contains(name)) return name;
+            }
+            return null;
+        }
 
         /** True when {@code pool} (one name per line) holds {@code name} as a whole class or field name (or a package prefix when it ends with '/'). */
         private static boolean has(String pool, String name) {
@@ -394,6 +455,25 @@ public final class LegacyJarInspector {
                     break;
                 }
             }
+            for (String m : V147) {
+                if (has(pool, m)) {
+                    v147++;
+                    if (example147 == null) example147 = m.replaceAll("^.*/", "");
+                    break;
+                }
+            }
+            for (String m : V152_ONLY) {
+                if (has(pool, m)) {
+                    v152only++;
+                    if (example152only == null) example152only = m.replaceAll("/$", "").replaceAll("^.*/", "");
+                    break;
+                }
+            }
+            String flatName = flatVanilla(pool);
+            if (flatName != null) {
+                flat++;
+                if (exampleFlat == null) exampleFlat = flatName;
+            }
         }
     }
 
@@ -416,8 +496,14 @@ public final class LegacyJarInspector {
         }
         if (markers.v164 > 0 && markers.v17 == 0) {
             // the 1.6.4 markers (Icon, @PreInit, ForgeSubscribe...) exist in 1.5.2 as well: with neither side's own API present, the declared version decides
-            if (markers.v152 == 0 && markers.v16 == 0 && declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
+            // (a jar that also carries 1.6 API, like Immibis Core's texture switch, still is a 1.5.2 jar when it declares 1.5.2 and uses 1.5.2-only API)
+            if ((markers.v16 == 0 || markers.v152 > 0) && declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
                 jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
+            // nothing declared: a file name naming 1.5.2 (and no 1.6-only API) is the last hint
+            if (markers.v16 == 0 && jar.fileName().matches("(?i).*(1\\.5\\.2|mc15x).*")) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), file name says 1.5.2";
                 return LegacyVersion.V1_5_2;
             }
             jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.6.4-only API (" + markers.v164 + " classes, e.g. " + markers.example164 + ")";
@@ -427,6 +513,10 @@ public final class LegacyJarInspector {
             // nothing in the code tells them apart: the declared Minecraft version does
             if (declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
                 jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
+            if (markers.v16 == 0 && jar.fileName().matches("(?i).*(1\\.5\\.2|mc15x).*")) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), file name says 1.5.2";
                 return LegacyVersion.V1_5_2;
             }
             for (LegacyModDecl decl : jar.mods) {
@@ -447,7 +537,120 @@ public final class LegacyJarInspector {
         return LegacyVersion.V1_7_10;
     }
 
-    private static LegacyVersion chooseVersion(LegacyJar jar, Map<String, JsonObject> infos, int refs17, int refs112, Markers markers) {
+    /**
+     * Forge 1.4.7: told from 1.5.2 and later by what it does not have. 1.4.x mods name Minecraft by obfuscated (notch) names, or by the flat
+     * {@code net/minecraft/src/<Name>} of MCP 6.x; none of the packaged vanilla names, 1.5 Forge classes or 1.6/1.7 markers appear. Positive evidence, in order:
+     * flat names, a 1.4.7-only FML/Forge class, the notch fingerprint (member references that resolve against the 1.4.7 table but not the 1.5.2/1.6.4 ones),
+     * the declared Minecraft version. Returns null when the jar is not 1.4.7 (or nothing says so), leaving the other versions' detection untouched.
+     */
+    private static LegacyVersion choose147(ZipFile zip, LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers, boolean modLoader) {
+        if (markers.v17 > 0) return null;
+        // the notch fingerprint is the strongest evidence, so it comes first and overrides the 1.5.2/1.6 markers (1.4.7 jars use @PreInit, ISidedInventory...)
+        boolean candidate = refs17 > 0 || modLoader;
+        double[] score = candidate ? NotchFingerprint.scores(zip) : null;
+        if (score != null && score[0] >= 0.6 && score[0] > score[1] + 0.15 && score[0] > score[2] + 0.15) {
+            jar.versionEvidence = "obfuscated names match Minecraft 1.4.7 (" + Math.round(score[0] * 100) + "% of the member references; 1.5.2 " + Math.round(score[1] * 100)
+                    + "%, 1.6.4 " + Math.round(score[2] * 100) + "%)";
+            return LegacyVersion.V1_4_7;
+        }
+        // an older or newer version's obfuscation clearly fits better (a 1.5.2 ModLoader mod can name flat net/minecraft/src classes as well)
+        if (score != null && (score[1] >= 0.6 || score[2] >= 0.6) && Math.max(score[1], score[2]) > score[0] + 0.15) return null;
+        if (markers.v16 > 0 || markers.v152only > 0) return null;
+        if (markers.flat > 0) {
+            jar.versionEvidence = "names Minecraft classes by their flat MCP 6.x names (net/minecraft/src/" + markers.exampleFlat + ")";
+            return LegacyVersion.V1_4_7;
+        }
+        if (markers.v147 > 0) {
+            jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.4.7-only API (" + markers.v147 + " classes, e.g. " + markers.example147 + ")";
+            return LegacyVersion.V1_4_7;
+        }
+        if (!candidate) return null;
+        if (declaresVersion(jar, infos, LegacyVersion.V1_4_7)) {
+            jar.versionEvidence = "1.4.x declared" + (modLoader ? " (ModLoader mod)" : "");
+            return LegacyVersion.V1_4_7;
+        }
+        // tiny jars give the fingerprint too little to count: their file name (BiblioCraft-1.4.7.zip, PonySocks147.jar, ...MC1.4...) is the last hint
+        String fileName = jar.path.getFileName().toString().toLowerCase();
+        if (java.util.regex.Pattern.compile("(^|[^0-9.])1\\.4\\.[67]([^0-9]|$)|mc1\\.4|[a-z]147([^0-9]|$)").matcher(fileName).find()) {
+            jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), file name names Minecraft 1.4";
+            return LegacyVersion.V1_4_7;
+        }
+        if (modLoader && refs17 == 0) {
+            // BaseMod exists up to 1.5.2; without any other evidence a bare ModLoader mod is taken for the oldest supported version
+            jar.versionEvidence = "ModLoader mod (extends BaseMod), no version evidence: taken for 1.4.7";
+            return LegacyVersion.V1_4_7;
+        }
+        return null;
+    }
+
+    /**
+     * Which version's obfuscation a notch-named jar was built against: the share of its member references (to default-package owners the jar does not define)
+     * that resolve in the notch table of 1.4.7, 1.5.2 and 1.6.4 respectively ({@code legacy/<id>/notch.txt}, same owner, name and descriptor). The obfuscation
+     * is re-randomized with every Minecraft release, so only the right version matches more than a few percent.
+     */
+    static final class NotchFingerprint {
+        private NotchFingerprint() {}
+
+        /** {1.4.7, 1.5.2, 1.6.4} match ratios, or null when the jar has too few member references into obfuscated classes to say. */
+        static double[] scores(ZipFile zip) {
+            java.util.Set<String> own = new java.util.HashSet<>();
+            Enumeration<? extends ZipEntry> en = zip.entries();
+            while (en.hasMoreElements()) {
+                String n = en.nextElement().getName();
+                if (n.endsWith(".class")) own.add(n.substring(0, n.length() - 6));
+            }
+            org.kylepitcock.legacyconnector.loader.mapping.NotchNames[] tables = {
+                    org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get("1.4.7"),
+                    org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get("1.5.2"),
+                    org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get("1.6.4")};
+            int[] hits = new int[3];
+            int[] total = {0};
+            en = zip.entries();
+            while (en.hasMoreElements()) {
+                ZipEntry entry = en.nextElement();
+                if (entry.isDirectory() || !entry.getName().endsWith(".class")) continue;
+                try (InputStream in = zip.getInputStream(entry)) {
+                    new ClassReader(in).accept(new ClassVisitor(Opcodes.ASM9) {
+                        @Override
+                        public org.objectweb.asm.MethodVisitor visitMethod(int access, String name, String descriptor, String signature, String[] exceptions) {
+                            return new org.objectweb.asm.MethodVisitor(Opcodes.ASM9) {
+                                @Override
+                                public void visitMethodInsn(int opcode, String owner, String mname, String mdesc, boolean itf) {
+                                    count(owner, mname, mdesc, false);
+                                }
+
+                                @Override
+                                public void visitFieldInsn(int opcode, String owner, String fname, String fdesc) {
+                                    count(owner, fname, fdesc, true);
+                                }
+
+                                private void count(String owner, String mname, String mdesc, boolean field) {
+                                    // only members whose name is itself obfuscated tell the versions apart ("a", "b"... or "func_" free names of 1-3 letters)
+                                    if (owner.indexOf('/') >= 0 || own.contains(owner) || mname.length() > 3 || mname.startsWith("<")) return;
+                                    total[0]++;
+                                    for (int v = 0; v < 3; v++) {
+                                        String r = field ? tables[v].field(owner, mname, null) : tables[v].method(owner, mname, mdesc, null);
+                                        if (r != null) hits[v]++;
+                                    }
+                                }
+                            };
+                        }
+                    }, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                } catch (IOException | RuntimeException e) {
+                    // an unreadable class does not count
+                }
+            }
+            if (total[0] < 15) return null;
+            return new double[] {hits[0] / (double) total[0], hits[1] / (double) total[0], hits[2] / (double) total[0]};
+        }
+    }
+
+    private static LegacyVersion chooseVersion(ZipFile zip, LegacyJar jar, Map<String, JsonObject> infos, int refs17, int refs112, Markers markers, boolean modLoader) {
+        // 0. Forge 1.4.7 / ModLoader: decided on what it lacks (see choose147); leaves the other versions as they were
+        if (refs112 == 0) {
+            LegacyVersion v147 = choose147(zip, jar, infos, refs17, markers, modLoader);
+            if (v147 != null) return v147;
+        }
         // 1. The package the code actually links against is the most reliable signal.
         if (refs17 > 0 && refs112 == 0) return chooseCpw(jar, infos, refs17, markers);
         if (refs112 > 0 && refs17 == 0) {
@@ -511,6 +714,7 @@ public final class LegacyJarInspector {
             JsonElement root = JsonParser.parseReader(reader);
             JsonArray list = root.isJsonArray() ? root.getAsJsonArray()
                     : root.getAsJsonObject().getAsJsonArray("modList");
+            if (list == null && root.isJsonObject()) list = root.getAsJsonObject().getAsJsonArray("modlist"); // TreeCapitator, ...
             if (list == null) return out;
             for (JsonElement e : list) {
                 if (e.isJsonObject() && e.getAsJsonObject().has("modid")) {
@@ -641,6 +845,7 @@ public final class LegacyJarInspector {
                 if (!descriptor.equals(MOD_1_7) && !descriptor.equals(MOD_1_12)) return null;
                 LegacyModDecl decl = new LegacyModDecl();
                 decl.mainClass = className;
+                decl.clientSideOnly = sideClient;
                 result[0] = decl;
                 return new AnnotationVisitor(Opcodes.ASM9) {
                     @Override

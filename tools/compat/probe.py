@@ -223,8 +223,25 @@ def resources(records, mc, date, layer):
     return {"version": layer, "date": date, "checked": checked, "mods": mods}
 
 
+def newest_builds(records, mc):
+    """Keeps only the newest build of each mod of this Minecraft version (a corpus often holds two builds of one mod: the run list must show it once)."""
+    def vkey(v):
+        return [int(x) if x.isdigit() else 0 for x in re.split(r"[^0-9]+", str(v)) if x != ""]
+    best = {}
+    for r in records:
+        if r.get("mc") != mc or not r.get("mods"):
+            continue
+        m = r["mods"][0]
+        k = re.sub(r"[^a-z0-9]+", "", (m.get("name") or m["id"]).lower())
+        if k not in best or vkey(m.get("version") or "") > vkey(best[k]["mods"][0].get("version") or ""):
+            best[k] = r
+    keep = {id(r) for r in best.values()}
+    return [r for r in records if r.get("mc") != mc or not r.get("mods") or id(r) in keep]
+
+
 def history(records, mc, date, layer, source=""):
     """Appends this run to docs/data/probe.json: counts per result and the per-jar list (mod, result, first unresolved reference)."""
+    records = newest_builds(records, mc)
     rows, counts, seen = [], {"links": 0, "stubs": 0, "gap_shim": 0, "gap_mod": 0, "gap_lib": 0, "obsolete": 0}, set()
     assets = {"checked": 0, "modsWithLayerProblems": 0, "layerRefs": 0, "modsWithOwnProblems": 0, "ownRefs": 0}
     for r in records:

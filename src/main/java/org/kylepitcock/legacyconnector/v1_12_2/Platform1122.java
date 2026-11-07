@@ -351,6 +351,21 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(
                 org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ITEMS));
         injectObjectHolders(); // later registry events (recipes) read the holders
+        // Forge 1.12 posted the other registries sorted by name and filled the object holders after each one: Vampirism's skills
+        // (vampirism:skills) are built from the actions registered before them (vampirism:actions) through holder fields; and a
+        // mod registry named before "minecraft:" (bloodmagic:blood_orbs) is complete before the recipes event reads its holders
+        var customs = new java.util.ArrayList<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries());
+        customs.sort(java.util.Comparator.comparing(r -> {
+            var name = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customName(r);
+            return name == null ? "~" : name.toString().toLowerCase(java.util.Locale.ROOT);
+        }));
+        java.util.List<org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.Reg<?>> early = new java.util.ArrayList<>();
+        java.util.List<org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.Reg<?>> late = new java.util.ArrayList<>();
+        for (var custom : customs) {
+            var name = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customName(custom);
+            (name != null && name.toString().toLowerCase(java.util.Locale.ROOT).compareTo("minecraft:") < 0 ? early : late).add(custom);
+        }
+        for (var custom : early) postCustom(custom);
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.SOUND_EVENTS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.POTIONS));
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENCHANTMENTS));
@@ -360,18 +375,7 @@ public final class Platform1122 implements LegacyPlatform {
         post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.ENTITIES));
         // registries typed by classes only the synthesizer has; the events go out once the type is known
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122R.postSynthesized(Platform1122::post);
-        // Forge 1.12 posted the other registries sorted by name and filled the object holders after each one: Vampirism's skills
-        // (vampirism:skills) are built from the actions registered before them (vampirism:actions) through holder fields
-        var customs = new java.util.ArrayList<>(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customRegistries());
-        customs.sort(java.util.Comparator.comparing(r -> {
-            var name = org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.customName(r);
-            return name == null ? "~" : name.toString().toLowerCase(java.util.Locale.ROOT);
-        }));
-        for (var custom : customs) {
-            if (custom.getRegistrySuperType() == null) continue;
-            injectObjectHolders();
-            post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
-        }
+        for (var custom : late) postCustom(custom);
         if (FMLEnvironment.dist.isClient()) {
             post(new legacyconnector.v1_12_2.net.minecraftforge.client.event.ModelRegistryEvent());
             org.kylepitcock.legacyconnector.v1_12_2.client.Client1122.earlyStitchPre();
@@ -379,6 +383,14 @@ public final class Platform1122 implements LegacyPlatform {
         MISSING_HOLDERS.clear();
         injectObjectHolders();
         if (!MISSING_HOLDERS.isEmpty()) LOG.warn("Object holders with nothing registered under their name: {}", MISSING_HOLDERS);
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private static void postCustom(org.kylepitcock.legacyconnector.v1_12_2.bridge.Registries1122.Reg<?> custom) {
+        if (custom.getRegistrySuperType() == null) return;
+        injectObjectHolders();
+        post(new legacyconnector.v1_12_2.net.minecraftforge.event.RegistryEvent.Register(custom));
+        injectObjectHolders(); // Forge filled the holders right after the registry's event: the recipes event reads them
     }
 
     private static final java.util.Set<String> LOG_MODDED_HOLDERS = java.util.concurrent.ConcurrentHashMap.newKeySet();

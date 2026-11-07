@@ -84,7 +84,8 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public java.io.File getFile(String name) {
-        return new java.io.File(mcc$server.getServerDirectory().toFile(), name);
+        // before the server exists (mods asked during preInit, as FML had created the server by then) the game directory is the same folder
+        return new java.io.File(mcc$server == null ? net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile() : mcc$server.getServerDirectory().toFile(), name);
     }
 
     /** The game's directory (the server directory; the client's game directory in single player). */

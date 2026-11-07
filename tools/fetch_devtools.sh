@@ -13,8 +13,10 @@ curl -sfo "$D/srg1122.zip" $M/de/oceanlabs/mcp/mcp_config/1.12.2/mcp_config-1.12
 curl -sfo "$D/forge164-src.zip" $M/net/minecraftforge/forge/1.6.4-9.11.1.1345/forge-1.6.4-9.11.1.1345-src.zip
 curl -sfo "$D/srg164.zip" $M/de/oceanlabs/mcp/mcp/1.6.4/mcp-1.6.4-srg.zip
 curl -sfo "$D/forge152-src.zip" $M/net/minecraftforge/forge/1.5.2-7.8.1.738/forge-1.5.2-7.8.1.738-src.zip
+curl -sfo "$D/forge147-src.zip" $M/net/minecraftforge/forge/1.4.7-6.6.2.534/forge-1.4.7-6.6.2.534-src.zip
 mkdir -p build/devtools/mojang
 curl -sfo build/devtools/mojang/client-1.5.2.jar https://launcher.mojang.com/v1/objects/465378c9dc2f779ae1d6e8046ebc46fb53a57968/client.jar
+curl -sfo build/devtools/mojang/client-1.4.7.jar https://launcher.mojang.com/v1/objects/53ed4b9d5c358ecfff2d8b846b4427b888287028/client.jar
 # Beta 1.7.3 (tools/extract_beta_signatures.py): the game jars, Risugami's ModLoader, ModLoaderMP and Forge 1.0.7 (names and
 # supertypes are read from them; nothing is shipped)
 B=build/devtools/b1.7.3

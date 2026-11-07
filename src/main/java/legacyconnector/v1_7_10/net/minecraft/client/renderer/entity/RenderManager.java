@@ -40,6 +40,8 @@ public class RenderManager {
         public Render get(Object key) {
             Render r = super.get(key);
             if (r != null || !(key instanceof Class<?> cls)) return r;
+            // 1.7.10's map held RenderPlayer for EntityPlayer; OpenBlocks swaps it for its own renderer at init
+            if (cls == legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer.class) return RenderManager.instance.mcc$playerRenderer();
             java.util.function.Supplier<Render> factory = VANILLA.get(cls);
             return factory == null ? null : vanilla.computeIfAbsent(cls, c -> factory.get());
         }

@@ -12,6 +12,26 @@ public class GuiNewChat extends Gui {
     private static final java.util.Map<Integer, net.minecraft.network.chat.MessageSignature> SIGNATURES = new java.util.concurrent.ConcurrentHashMap<>();
 
     public GuiNewChat(Minecraft mcIn) {
+        // a live view of the modern chat's lines, for mods that read the field by reflection or a method handle (Quark's chat item symbols);
+        // set by reflection: shim code never touches a mimicked field directly
+        try {
+            var field = GuiNewChat.class.getDeclaredField("drawnChatLines");
+            field.setAccessible(true);
+            field.set(this, new java.util.AbstractList<ChatLine>() {
+                // a live view, for mods that read the field by reflection or a method handle (Quark's chat item symbols)
+                @Override
+                public ChatLine get(int index) {
+                    return mcc$get$drawnChatLines(GuiNewChat.this).get(index);
+                }
+        
+                @Override
+                public int size() {
+                    return mcc$get$drawnChatLines(GuiNewChat.this).size();
+                }
+            });
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            // the accessor still answers translated code
+        }
     }
 
     private static net.minecraft.client.gui.components.ChatComponent chat() {

@@ -45,6 +45,20 @@ public class BiomeManager {
         return biomes;
     }
 
+    /**
+     * Forge's private factory of vanilla's default climate lists, called by reflection (Biomes O' Plenty copies the entries other mods
+     * added beside them): a fresh array of the vanilla entries per climate, by type ordinal.
+     */
+    @SuppressWarnings({"unchecked", "unused"})
+    private static ArrayList<BiomeEntry>[] setupBiomes() {
+        synchronized (BiomeManager.class) {
+            TrackedList<BiomeEntry>[] current = lists();
+            ArrayList<BiomeEntry>[] out = new ArrayList[current.length];
+            for (int i = 0; i < out.length; i++) out[i] = new ArrayList<>(current[i].vanilla);
+            return out;
+        }
+    }
+
     /** The live list of village biomes ({@code MapGenVillage.VILLAGE_SPAWN_BIOMES} is this list; it starts with the vanilla four). */
     public static List<Biome> mcc$villageBiomes() {
         synchronized (VILLAGE) {

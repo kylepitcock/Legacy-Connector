@@ -137,7 +137,7 @@
    "mod": "Kindred Legacy pre-1.3_1",
    "mc": "1.8 - 1.12.2",
    "status": "partial",
-   "details": "- Most base mob AI seems to work fine - Immortal Arcanine lacks some particles, animations, and the ability to jump while being ridden - Natural mob spawning doesn't seem to work, though I suspect it probably would if I set up a proper datapack to manually do it - Tameable mob items mostly function as they should, retaining NBT data - ~Tameable mob items can't be sneak-right-clicked to open a GUI…",
+   "details": "- Most base mob AI seems to work fine - Immortal Arcanine lacks some animations and the ability to jump while being ridden - Both Immortal Arcanine and Firecracker Litten lack firework particles when using their attacks - Natural mob spawning doesn't seem to work, though I suspect it probably would if I set up a proper datapack to manually do it - Tameable mob items function as they should, retai…",
    "lc": "0.3.6",
    "neoforge": "21.1.265",
    "link": "https://www.curseforge.com/minecraft/mc-mods/kindred-legacy",

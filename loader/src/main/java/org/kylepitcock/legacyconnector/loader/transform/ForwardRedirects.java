@@ -71,24 +71,26 @@ public final class ForwardRedirects {
     static synchronized Map<String, Rule> rules(LegacyVersion version) {
         return CACHE.computeIfAbsent(version, v -> {
             Map<String, Rule> out = new HashMap<>();
-            String resource = "legacyconnector/forward/" + v.id() + "/call-redirects.tsv";
-            try (InputStream in = ForwardRedirects.class.getClassLoader().getResourceAsStream(resource)) {
-                if (in == null) return out;
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-                    if (line.isBlank() || line.startsWith("#")) continue;
-                    String[] f = line.strip().split("\t");
-                    if (f.length < 6) throw new IllegalStateException("Corrupt redirect rule in " + resource + ": " + line);
-                    boolean isStatic = f[0].equals("static");
-                    if (!isStatic && !f[0].equals("virtual")) throw new IllegalStateException("Unknown redirect kind in " + resource + ": " + line);
-                    String desc = expand(f[3], v);
-                    String key = isStatic
-                            ? "static " + v.linkPrefix() + org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(v, f[1]) + "." + f[2] + desc
-                            : "virtual " + f[2] + desc;
-                    out.put(key, new Rule(expand(f[4], v), f[5].strip(), isStatic));
+            for (String id : v.forwardTableIds()) { // 1.5.2 starts from the 1.6.4 rules
+                String resource = "legacyconnector/forward/" + id + "/call-redirects.tsv";
+                try (InputStream in = ForwardRedirects.class.getClassLoader().getResourceAsStream(resource)) {
+                    if (in == null) continue;
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+                    for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                        if (line.isBlank() || line.startsWith("#")) continue;
+                        String[] f = line.strip().split("\t");
+                        if (f.length < 6) throw new IllegalStateException("Corrupt redirect rule in " + resource + ": " + line);
+                        boolean isStatic = f[0].equals("static");
+                        if (!isStatic && !f[0].equals("virtual")) throw new IllegalStateException("Unknown redirect kind in " + resource + ": " + line);
+                        String desc = expand(f[3], v);
+                        String key = isStatic
+                                ? "static " + v.linkPrefix() + org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(v, f[1]) + "." + f[2] + desc
+                                : "virtual " + f[2] + desc;
+                        out.put(key, new Rule(expand(f[4], v), f[5].strip(), isStatic));
+                    }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Corrupt redirect table " + resource, e);
                 }
-            } catch (IOException e) {
-                throw new IllegalStateException("Corrupt redirect table " + resource, e);
             }
             return Map.copyOf(out);
         });

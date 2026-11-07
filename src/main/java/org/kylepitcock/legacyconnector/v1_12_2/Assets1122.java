@@ -1601,7 +1601,7 @@ public final class Assets1122 implements GeneratedPack.Contributor {
         int c = model.indexOf(':');
         String modelNs = model.substring(0, c);
         String modelPath = model.substring(c + 1);
-        if (modelPath.startsWith("builtin/")) {
+        if (modelPath.startsWith("builtin/") || modelPath.startsWith("block/builtin/")) {
             // "builtin/generated", "builtin/entity": the block is drawn by code (a model replaced in ModelBakeEvent, a TESR); the game's own model
             // is an empty one, so nothing is drawn if the mod does not replace it and no missing-model warning is logged per variant
             String emptyPath = "block/lc1122/builtin_empty";

@@ -286,7 +286,7 @@ public final class ItemBridge {
     private static <T extends Item> Class<? extends T> runtimeClass(String legacyName, Class<T> declared) {
         String simple = RUNTIME_CLASSES.get(legacyName);
         if (simple == null) return declared;
-        for (String prefix : new String[] {"legacyconnector.v1_7_10.net.minecraft.item.", "legacyconnector_synth.v1_7_10.net.minecraft.item."}) {
+        for (String prefix : org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.api1710("net.minecraft.item.")) {
             try {
                 Class<?> c = Class.forName(prefix + simple, false, Item.class.getClassLoader());
                 if (declared.isAssignableFrom(c) && !java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return (Class<? extends T>) c;

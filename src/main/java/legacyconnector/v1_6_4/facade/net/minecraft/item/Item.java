@@ -25,6 +25,12 @@ public final class Item {
         Ids.claimItem(self, constructorId);
     }
 
+    /** Item.getContainerItemStack (1.7.10: getContainerItem(stack), Forge). */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack getContainerItemStack(
+            legacyconnector.v1_7_10.net.minecraft.item.Item self, legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack) {
+        return self.getContainerItem(stack);
+    }
+
     /** {@code new ItemStack(itemId, ...)}: the item of an id (null for 0 or an unused id). */
     public static legacyconnector.v1_7_10.net.minecraft.item.Item mcc$fromId(int id) {
         return Ids.item(id);

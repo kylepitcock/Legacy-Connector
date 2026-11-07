@@ -35,6 +35,12 @@ public final class World {
         self.notifyBlockChange(x, y, z, blockOf(id));
     }
 
+    /** Forge's {@code isBlockSolidOnSide} (1.7.10: isSideSolid). */
+    public static boolean isBlockSolidOnSide(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection side) {
+        return self.isSideSolid(x, y, z, side);
+    }
+
     public static void scheduleBlockUpdate(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int delay) {
         self.scheduleBlockUpdate(x, y, z, blockOf(id), delay);
     }

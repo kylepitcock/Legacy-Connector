@@ -61,7 +61,8 @@ final class BundledLibraries {
             new Group("trove", "trove4j", List.of("trove4j-"), List.of("gnu/trove/"), false, true),
             // The 1.12.2 shim itself is written against vecmath.
             new Group("vecmath", "vecmath", List.of("vecmath-"), List.of("javax/vecmath/"), true, true),
-            new Group("activation", "javax.activation", List.of("jakarta.activation-"), List.of("javax/activation/"), false, true));
+            new Group("activation", "javax.activation", List.of("jakarta.activation-"), List.of("javax/activation/"), false, true),
+            new Group("argo", "argo JSON parser (a Minecraft 1.6.4 launcher library)", List.of("argo-"), List.of("argo/"), false, true));
 
     /** What was decided, for the log and the report. */
     record Result(Map<LegacyJar, String> unsupported, List<String> notes) {
@@ -129,7 +130,7 @@ final class BundledLibraries {
             boolean cacheChanged = false;
             for (LegacyJar jar : legacy) {
                 Path p = jar.existing();
-                String key = p.toAbsolutePath() + "|" + safeSize(p) + "|" + safeMtime(p);
+                String key = p.toAbsolutePath() + "|" + safeSize(p) + "|" + safeMtime(p) + "|g" + GROUPS.size();
                 String cached = cache.getProperty(key);
                 Set<String> used;
                 if (cached != null) {
@@ -424,7 +425,7 @@ final class BundledLibraries {
         Properties out = new Properties();
         for (LegacyJar jar : current) {
             Path p = jar.existing();
-            String key = p.toAbsolutePath() + "|" + safeSize(p) + "|" + safeMtime(p);
+            String key = p.toAbsolutePath() + "|" + safeSize(p) + "|" + safeMtime(p) + "|g" + GROUPS.size();
             String v = all.getProperty(key);
             if (v != null) out.setProperty(key, v);
         }

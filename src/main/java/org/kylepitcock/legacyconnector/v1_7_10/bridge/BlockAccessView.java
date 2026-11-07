@@ -59,7 +59,11 @@ public final class BlockAccessView implements IBlockAccess {
         net.minecraft.world.level.LevelReader reader = getter instanceof net.minecraft.world.level.LevelReader r ? r : ClientAccess.level();
         if (reader == null) return legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
         try {
-            var key = reader.getBiome(new BlockPos(x + dx, reader.getSeaLevel(), z + dz)).unwrapKey().map(k -> k.location()).orElse(null);
+            // 1.7.10 biomes are per column: read the column's biome at its surface like World.getBiomeGenForCoords does (a mod's biome
+            // lives at the surface, while sea level is inside terrain or a cave biome there: Thaumcraft's Tainted Land soil turned green)
+            int bx = x + dx, bz = z + dz;
+            int by = reader.hasChunk(bx >> 4, bz >> 4) ? reader.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.WORLD_SURFACE, bx, bz) : reader.getSeaLevel();
+            var key = reader.getNoiseBiome(bx >> 2, by >> 2, bz >> 2).unwrapKey().map(k -> k.location()).orElse(null);
             var legacy = LegacyEntitySpawns.legacyBiome(key);
             return legacy != null ? legacy : legacyconnector.v1_7_10.net.minecraft.world.biome.BiomeGenBase.plains;
         } catch (RuntimeException e) {

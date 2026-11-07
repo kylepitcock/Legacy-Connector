@@ -11,6 +11,12 @@ import legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation;
 public class FMLClientHandler {
     private static final FMLClientHandler INSTANCE = new FMLClientHandler();
 
+    /** FML's records of textures that failed to load (private; mods read them by reflection to report broken textures: Blood Magic). They stay empty here. */
+    @SuppressWarnings("unused")
+    private final com.google.common.collect.SetMultimap<String, ResourceLocation> missingTextures = com.google.common.collect.HashMultimap.create();
+    @SuppressWarnings("unused")
+    private final java.util.Set<String> badTextureDomains = new java.util.HashSet<>();
+
     public static FMLClientHandler instance() {
         return INSTANCE;
     }

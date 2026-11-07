@@ -110,6 +110,13 @@ public final class RecipeBridge {
 
     public static synchronized void addShapeless(ItemStack output, Object[] params) {
         if (output == null) return;
+        for (Object p : params) {
+            if (p == null) {
+                // an ingredient that is not there (an item of the old game that has no counterpart): 1.7.10 would have thrown at registration, the layer skips the recipe
+                LOG.warn("Ignoring legacy shapeless recipe for {}: it names an item that does not exist", output);
+                return;
+            }
+        }
         ShapelessOreRecipe recipe = new ShapelessOreRecipe(output, params);
         RECIPES.add(new Shapeless(owner(), recipe, output.copy(), new ArrayList<>(List.of(params))));
         CraftingManager.getInstance().mcc$track(recipe);

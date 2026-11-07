@@ -49,3 +49,5 @@ R	net/minecraft/item/Item	getStrVsBlock	(Lnet/minecraft/item/ItemStack;Lnet/mine
 R	net/minecraft/entity/player/EntityPlayer	getCurrentPlayerStrVsBlock	(Lnet/minecraft/block/Block;ZI)F	droplast	getCurrentPlayerStrVsBlock	(Lnet/minecraft/block/Block;Z)F
 R	net/minecraft/entity/player/EntityPlayer	dropPlayerItem	(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/entity/item/EntityItem;	append-int	dropPlayerItemWithRandomChoice	(Lnet/minecraft/item/ItemStack;Z)Lnet/minecraft/entity/item/EntityItem;	0
 R	cpw/mods/fml/common/event/FMLPreInitializationEvent	getModLog	()Ljava/util/logging/Logger;	static	legacyconnector/v1_6_4/forward/Forward164	getModLog	(Lcpw/mods/fml/common/event/FMLPreInitializationEvent;)Ljava/util/logging/Logger;
+# GUI
+F	net/minecraft/client/gui/GuiButton	drawButton	visible

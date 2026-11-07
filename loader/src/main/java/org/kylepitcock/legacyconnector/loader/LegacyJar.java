@@ -18,6 +18,11 @@ public final class LegacyJar {
     /** Value of the FMLCorePlugin manifest attribute, if the jar ships a coremod. */
     public String coreModClass;
     public boolean coreModContainsMod;
+    /**
+     * Mod ids of mcmod.info for a jar with a coremod plugin and no {@code @Mod} class: FML 1.6.4 registered the plugin's mod container (NEI's
+     * {@code NEIModContainer}) as the mod, so other mods depend on that id and a library bridge replaces it by it.
+     */
+    public final List<String> containerModIds = new ArrayList<>();
     public String tweakClass;
     public String mixinConfigs;
     /** Resource names of the mixin configs of the translated jar that NeoForge should register ({@code [[mixins]]}); set by the transformer. */
@@ -55,7 +60,7 @@ public final class LegacyJar {
         if (dir == null) return p;
         String name = p.getFileName().toString();
         List<Path> candidates = new ArrayList<>();
-        for (String v : new String[] {"1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1", "1.16.5", "b1.7.3"}) candidates.add(dir.resolve(v).resolve(name));
+        for (String v : new String[] {"1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1", "1.16.5", "b1.7.3"}) candidates.add(dir.resolve(v).resolve(name));
         if (dir.getParent() != null) candidates.add(dir.getParent().resolve(name));
         for (Path c : candidates) {
             if (Files.exists(c)) {

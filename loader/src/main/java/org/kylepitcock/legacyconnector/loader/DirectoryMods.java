@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  */
 final class DirectoryMods {
     private static final Logger LOG = LoggerFactory.getLogger("Legacy Connector");
-    private static final Set<String> VERSION_FOLDERS = Set.of("1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1", "1.16.5", "1.2.5");
+    private static final Set<String> VERSION_FOLDERS = Set.of("1.4.7", "1.5.2", "1.6.4", "1.7.10", "1.12.2", "1.20.1", "1.16.5", "1.2.5", BetaJars.FOLDER);
 
     private DirectoryMods() {}
 

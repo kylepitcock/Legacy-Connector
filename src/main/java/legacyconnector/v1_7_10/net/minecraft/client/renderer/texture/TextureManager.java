@@ -19,6 +19,24 @@ public class TextureManager implements ITickable {
         RenderContext.bindTexture(modern);
     }
 
+    /** Forge 1.5.2 (RenderEngine): textures are string paths, resolved by Textures152. */
+    public void bindTexture(String path) {
+        bindTexture(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
+    }
+
+    /** 1.5.2's cached binding is not tracked here (every bind goes through the render context). */
+    public void resetBoundTexture() {
+    }
+
+    /** 1.5.2 RenderEngine.getTexture(path): the OpenGL id of a texture, 0 until it is loaded. */
+    public int getTexture(String path) {
+        var modern = TextureLocations.modern(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
+        var mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc == null || mc.getTextureManager() == null) return 0;
+        var tex = mc.getTextureManager().getTexture(modern, null);
+        return tex == null ? 0 : tex.getId();
+    }
+
     private final java.util.Set<net.minecraft.resources.ResourceLocation> mcc$modAtlases = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** 1.7.10 loaded the texture right away; a mod's atlas registers its items' icons then (see TextureMap#loadTexture). */

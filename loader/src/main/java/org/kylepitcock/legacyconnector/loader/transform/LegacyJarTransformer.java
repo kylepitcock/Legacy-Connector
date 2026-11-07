@@ -242,13 +242,18 @@ public final class LegacyJarTransformer {
         for (byte[] data : c.classes.values()) {
             try {
                 ClassNode node = new ClassNode();
-                new ClassReader(data).accept(new ClassRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                new ClassReader(data).accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
                 out.add(ClassInfo.of(node));
             } catch (RuntimeException ignored) {
                 // reported when the jar itself is translated
             }
         }
         return out;
+    }
+
+    /** The class visitor that relocates and renames a legacy class (1.5.2 jars keep the real EntityLiving where they mean the class itself). */
+    private static ClassRemapper classRemapper(org.objectweb.asm.ClassVisitor next, LegacyRemapper remapper) {
+        return remapper.version() == LegacyVersion.V1_5_2 ? new Living152ClassRemapper(next, remapper) : new ClassRemapper(next, remapper);
     }
 
     /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
@@ -302,7 +307,7 @@ public final class LegacyJarTransformer {
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
             try {
-                new ClassReader(e.getValue()).accept(new ClassRemapper(node, remapper), 0);
+                new ClassReader(e.getValue()).accept(classRemapper(node, remapper), 0);
             } catch (RuntimeException ex) {
                 result.notes.add("Skipped unreadable class " + e.getKey() + ": " + ex);
                 continue;
@@ -322,6 +327,9 @@ public final class LegacyJarTransformer {
                 sided += n;
             }
             if (sided > 0) result.notes.add("Removed " + sided + " @SideOnly member(s) for the other side");
+            int guards = 0;
+            for (ClassNode node : nodes.values()) guards += ClientClassGuard.apply(node, version.linkPrefix(), side);
+            if (guards > 0) result.notes.add(guards + " client class probe(s) (catch NoClassDefFoundError) now see the class as absent on this dedicated server");
         }
         int optionalStripped = 0;
         for (ClassNode node : nodes.values()) {
@@ -331,6 +339,7 @@ public final class LegacyJarTransformer {
         }
         if (optionalStripped > 0) result.notes.add("Stripped " + optionalStripped + " @Optional interface(s)/method(s) for absent mods");
         for (ClassNode node : nodes.values()) CustomMainMenuVersionFix.apply(node);
+        for (ClassNode node : nodes.values()) org.kylepitcock.legacyconnector.loader.transform.compat.UpdateCheckFix.apply(node);
         for (ClassNode node : nodes.values()) CofhWorldProxyFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellIconFix.apply(node);
         for (ClassNode node : nodes.values()) Am2SpellEffectsFix.apply(node);
@@ -346,6 +355,7 @@ public final class LegacyJarTransformer {
         int floorClamps = 0;
         int forwardCalls = 0;
         int bridgeMethods = 0;
+        int livingCasts = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
             result.compatRedirects += ForwardRedirects.apply(node, version);
@@ -356,6 +366,8 @@ public final class LegacyJarTransformer {
                 bridgeMethods += bridged;
             }
             forwardCalls += ForwardCalls.apply(node, hierarchy, version);
+            livingCasts += LivingCasts152.apply(node, hierarchy, version);
+            ClassLoaderCasts.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
@@ -367,6 +379,7 @@ public final class LegacyJarTransformer {
 
         if (bridgeMethods > 0) result.notes.add(bridgeMethods + " bridge method(s)/call(s) from " + version.id() + " method signatures to their " + version.forward().id() + " shape");
         if (forwardCalls > 0) result.notes.add(forwardCalls + " call(s) of " + version.id() + " API now call their " + version.forward().id() + " equivalent");
+        if (livingCasts > 0) result.notes.add(livingCasts + " use(s) of members only EntityLiving has (1.5.2 has no EntityLivingBase) now cast to it");
         if (buildHeightChecks > 0) result.notes.add(buildHeightChecks + " hard-coded 0..256 height check(s) on a y coordinate now use the world's build range");
         if (floorClamps > 0) result.notes.add(floorClamps + " tile entity height clamp(s) to 1.7.10's bedrock floor now count from the world's bottom");
 
@@ -387,7 +400,8 @@ public final class LegacyJarTransformer {
 
         if (jar.coreModClass != null) {
             // The runtime constructs the coremod's plugin (without applying its transformers), as FML did.
-            outResources.put(COREMOD_RESOURCE, jar.coreModClass.trim().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            // second line: the Minecraft version of the plugin's jar (plugins check FMLInjectionData.data()[4])
+            outResources.put(COREMOD_RESOURCE, (jar.coreModClass.trim() + "\n" + version.id()).getBytes(java.nio.charset.StandardCharsets.UTF_8));
         }
         if (jar.hasMods()) {
             outResources.put("META-INF/neoforge.mods.toml", ModMetadataGenerator.modsToml(jar));

@@ -16,6 +16,11 @@ public class FMLInjectionData {
     static String mcpversion = "9.05";
     public static final List<String> containers = new ArrayList<>();
 
+    /** Sets the Minecraft version plugins read while one is set up (1.6.4 plugins check it against their own). */
+    public static void mcc$setMcVersion(String version) {
+        mccversion = version;
+    }
+
     public static Object[] data() {
         return new Object[] {major, minor, rev, build, mccversion, mcpversion, minecraftHome, containers};
     }

@@ -1,0 +1,10 @@
+# Forge 1.5.2 -> 1.7.10 class renames (old<TAB>new), on top of forward/1.6.4/class-renames.tsv (a later file wins). Targets are checked against legacy/1.7.10/hierarchy.txt by Forward152Test.
+# 1.5.2's EntityLiving is the base of every living entity (the player included, no EntityLivingBase): a type use of it means 1.7.10's EntityLivingBase. The cases
+# that need the real EntityLiving (a class extending it, super calls) are kept apart by LivingSplit152 / LegacyRemapper (the Living152.KEEP marker); members only
+# EntityLiving has get a cast (LivingCasts152).
+net/minecraft/entity/EntityLiving	net/minecraft/entity/EntityLivingBase
+# the string-path texture API: RenderEngine becomes the texture manager (bindTexture(String) is resolved by Textures152), TextureStitched a sprite
+net/minecraft/client/renderer/RenderEngine	net/minecraft/client/renderer/texture/TextureManager
+net/minecraft/client/renderer/texture/TextureStitched	net/minecraft/client/renderer/texture/TextureAtlasSprite
+net/minecraft/block/BlockCloth	net/minecraft/block/BlockColored
+net/minecraftforge/common/Configuration$UnicodeInputStreamReader	net/minecraftforge/common/config/UnicodeInputStreamReader

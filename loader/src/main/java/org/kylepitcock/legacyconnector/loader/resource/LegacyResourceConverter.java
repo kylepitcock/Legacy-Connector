@@ -243,13 +243,50 @@ public final class LegacyResourceConverter {
 
     /** Model/blockstate JSON written for 1.7.10-1.12 may reference textures and parents with upper case. */
     static byte[] lowercaseResourceRefs(byte[] data) {
+        String text = new String(data, StandardCharsets.UTF_8);
         try {
-            JsonElement root = JsonParser.parseString(new String(data, StandardCharsets.UTF_8));
+            JsonElement root = JsonParser.parseString(text);
             fixRefs(root, null);
             return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
         } catch (RuntimeException e) {
+            // a file cut off before its closing brackets (BiblioCraft's models/item/atlascover.json) is closed here
+            String closed = closeTruncated(text);
+            if (closed != null) {
+                try {
+                    JsonElement root = JsonParser.parseString(closed);
+                    fixRefs(root, null);
+                    return GSON.toJson(root).getBytes(StandardCharsets.UTF_8);
+                } catch (RuntimeException again) {
+                    // not just a missing tail
+                }
+            }
             return data; // keep malformed JSON byte-identical; the vanilla loader will report it
         }
+    }
+
+    /** The JSON text with the brackets still open at its end closed, or null when it is not cut off inside brackets. */
+    static String closeTruncated(String text) {
+        StringBuilder open = new StringBuilder();
+        boolean inString = false;
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (inString) {
+                if (c == '\\') i++;
+                else if (c == '"') inString = false;
+            } else if (c == '"') {
+                inString = true;
+            } else if (c == '{' || c == '[') {
+                open.append(c);
+            } else if (c == '}' || c == ']') {
+                if (open.length() == 0) return null;
+                open.setLength(open.length() - 1);
+            }
+        }
+        if (inString || open.length() == 0) return null;
+        StringBuilder out = new StringBuilder(text.stripTrailing());
+        if (out.length() > 0 && out.charAt(out.length() - 1) == ',') out.setLength(out.length() - 1);
+        for (int i = open.length() - 1; i >= 0; i--) out.append(open.charAt(i) == '{' ? '}' : ']');
+        return out.toString();
     }
 
     private static void fixRefs(JsonElement element, String key) {

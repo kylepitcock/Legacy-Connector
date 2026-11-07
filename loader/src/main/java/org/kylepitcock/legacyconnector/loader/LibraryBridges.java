@@ -157,7 +157,9 @@ public final class LibraryBridges {
         List<Bridge> out = new ArrayList<>();
         boolean realBaubles = hasJarNamed(modsDir, "baubles");
         // only a 1.7.10 CodeChickenLib counts: packs like ATM10 ship the modern one (CodeChickenLib-1.21.1-...), which legacy code cannot use
-        boolean realCcl = hasLegacyJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib");
+        boolean realCcl = hasLegacyJarNamed(modsDir, "codechickenlib") || hasJarNamed(modsDir.resolve("1.7.10"), "codechickenlib")
+                // 1.6.4 / 1.5.2: CodeChickenCore's DepLoader downloaded CodeChickenLib into mods/<minecraft version>/
+                || hasJarNamed(modsDir.resolve("1.6.4"), "codechickenlib") || hasJarNamed(modsDir.resolve("1.5.2"), "codechickenlib");
         for (Bridge b : KNOWN) {
             if (!enabled(config, b)) continue;
             if ("codechicken/lib/".equals(b.apiRoot) && realCcl) continue;
@@ -238,6 +240,7 @@ public final class LibraryBridges {
     public static Bridge replacing(LegacyJar jar, List<Bridge> active) {
         for (Bridge b : active) {
             for (LegacyModDecl m : jar.mods) if (b.legacyModId != null && m.legacyId.equalsIgnoreCase(b.legacyModId)) return b;
+            if (b.legacyModId != null && jar.mods.isEmpty() && jar.containerModIds.stream().anyMatch(id -> id.equalsIgnoreCase(b.legacyModId))) return b;
         }
         return null;
     }

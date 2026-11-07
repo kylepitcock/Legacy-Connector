@@ -27,6 +27,12 @@ public abstract class Render {
         if (location != null) RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 
+    /** Forge 1.5.2: textures are string paths (see Textures152). */
+    protected void loadTexture(String path) {
+        ResourceLocation location = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path);
+        if (location != null) bindTexture(location);
+    }
+
     public void doRenderShadowAndFire(Entity entity, double x, double y, double z, float yaw, float partialTicks) {
     }
 

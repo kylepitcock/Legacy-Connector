@@ -336,6 +336,7 @@ public class OBJModel implements IModel {
             String objPath = from.getPath();
             ResourceLocation location;
             if (path.contains(":")) location = new ResourceLocation(path);
+            else if (path.contains("/")) location = new ResourceLocation(domain, path); // Forge 1.12: a library with a folder is a path under the domain as written
             else {
                 int slash = objPath.lastIndexOf('/');
                 location = new ResourceLocation(domain, (slash < 0 ? "" : objPath.substring(0, slash + 1)) + path);

@@ -204,7 +204,8 @@ public class NBTTagCompound extends NBTBase {
     }
 
     public void setString(String key, String value) {
-        mcc$tag.putString(key, value);
+        // a null string was storable in 1.7.10 (an unset owner name); the modern tag rejects it, which crashed the server on the next sync
+        mcc$tag.putString(key, value == null ? "" : value);
         mcc$markDirty();
     }
 

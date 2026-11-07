@@ -148,7 +148,8 @@ public final class ForwardMembers {
         while (!todo.isEmpty() && seen.size() < 64) {
             String c = todo.poll();
             if (c == null || !seen.add(c)) continue;
-            String hit = table.get(c + "." + key);
+            // the tables name classes as 1.5.2/1.6.4 do (packaged); the walk runs over the version's own (flat in 1.4.7) hierarchy
+            String hit = table.get(ForwardRenames.flat(version, c) + "." + key);
             if (hit != null) return hit;
             var entry = data.get(c);
             if (entry != null) {
