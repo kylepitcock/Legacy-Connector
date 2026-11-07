@@ -55,6 +55,7 @@ public final class ClientB173 implements MenusB173.Client {
         }));
         GuiDrawB173.install(new ClientGuiB173());
         MenusB173.installClient(new ClientB173());
+        AudioClientB173.install();
     }
 
     @Override

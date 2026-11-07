@@ -22,7 +22,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.StacksB173;
 /**
  * Beta 1.7.3 {@code World} as a view of a modern level: block ids and metadata ({@link BlocksB173}), block changes with or without
  * neighbour notification (flags 3 and 2), scheduled ticks, redstone power, light and time. One view per level ({@link #mcc$wrap}).
- * Tile entities, entities, sounds and world generation are not bridged yet.
+ * Sound requests use the native client engine (server requests are sent to nearby clients).
  */
 public class World implements BlockView {
     private static final Map<Level, World> VIEWS = Collections.synchronizedMap(new WeakHashMap<>());
@@ -310,17 +310,15 @@ public class World implements BlockView {
         if (!modern.isEmpty()) net.minecraft.world.level.block.Block.popResource(mcc$level, pos(x, y, z), modern);
     }
 
-    public void playSound(double x, double y, double z, String sound, float volume, float pitch) {}
+    public void playSound(double x, double y, double z, String sound, float volume, float pitch) {
+        org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.play(mcc$level,new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Request(org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Kind.SOUND,sound,x,y,z,volume,pitch,false));
+    }
 
     public void playSound(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity, String sound, float volume, float pitch) {
-        if (mcc$level == null || mcc$level.isClientSide) return;
-        var event = switch(sound) {
-            case "random.bow" -> net.minecraft.sounds.SoundEvents.ARROW_SHOOT;
-            case "random.bowhit" -> net.minecraft.sounds.SoundEvents.ARROW_HIT;
-            case "mob.ghast.fireball" -> net.minecraft.sounds.SoundEvents.GHAST_SHOOT;
-            default -> null;
-        };
-        if (event != null) mcc$level.playSound(null,entity.x,entity.y,entity.z,event,net.minecraft.sounds.SoundSource.PLAYERS,volume,pitch);
+        if(entity!=null)playSound(entity.x,entity.y,entity.z,sound,volume,pitch);
+    }
+    public void playStreaming(String name,int x,int y,int z){
+        org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.play(mcc$level,new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Request(org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Kind.STREAMING,name,x+.5,y+.5,z+.5,4,1,false));
     }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
         return mcc$level != null && org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);

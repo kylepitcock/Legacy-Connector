@@ -85,7 +85,7 @@
     {
       "priority": 4,
       "mod": "IndustrialCraft 2 v1.00",
-      "archive": "IndustrialCraft²_v1.00_b173.zip",
+      "archive": "IndustrialCraftÂ²_v1.00_b173.zip",
       "root": "",
       "api_references": "Forge; ModLoader; ModLoaderMP",
       "next_check": "Untested in isolation; this archive version differs from the existing v1.337b test jar."
@@ -223,5 +223,26 @@
     "Direct API references, reflective class strings and README mentions are separate evidence, not guaranteed mandatory dependency lists.",
     "Archive API patch fingerprints identify matching bundled API installers; unknown replacements remain deferred.",
     "Only isolated headless checks were run; no graphical or complete gameplay verification."
-  ]
+  ],
+  "audio_followup": {
+    "date": "2026-11-07",
+    "implementation": "Generic AudioMod OGG/WAV folders rooted at FMLPaths.GAMEDIR, explicit external File registrations, native client playback and server sound payloads",
+    "decoded_assets": {
+      "PortalGun v5": 239,
+      "MoCreatures 2.12.2": 168,
+      "Aether 1.01": 15
+    },
+    "archive_defects": [
+      "Aether has one MP3-framed file named .wav inside the sound folder, rejected by the WAV decoder",
+      "Two additional Aether files are outside recognized AudioMod folders"
+    ],
+    "original_callback": "PortalGun Aerial Faith Plate launch passed: external source discovery, World sound dispatch, payload roundtrip and resource-pack bytes",
+    "manifest": "run-b173-single/portalgun-audio-20261107-160126-f18f20/audit-manifest.json",
+    "whole_mod_status": "failed-or-needs-review: Portal Spawner placement accesses a null legacy Minecraft.player; audio-specific test passed",
+    "remaining": [
+      "Tracker codecs and encrypted .mus",
+      "Direct Paulscode/OpenAL APIs and synthesized options/init internals",
+      "Audible playback, music timing and complete gameplay verification"
+    ]
+  }
 }

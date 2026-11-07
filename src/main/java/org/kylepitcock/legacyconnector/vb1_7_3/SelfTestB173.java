@@ -251,6 +251,7 @@ public final class SelfTestB173 {
     }
 
     private static void run(ServerLevel level) {
+        AudioSelfTestB173.run();
         List<LegacyB173Block> blocks = new ArrayList<>();
         for (var b : BuiltInRegistries.BLOCK) if (b instanceof LegacyB173Block l) blocks.add(l);
         int items = 0;

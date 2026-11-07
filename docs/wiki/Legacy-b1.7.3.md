@@ -125,6 +125,45 @@ OpenAL: b1.7.3 mods call LWJGL's OpenAL directly (IndustrialCraft 2's audio). In
 engine made a context, the real AL classes fail for good and the client's first resource reload never finished (stuck loading screen).
 `org/lwjgl/openal/` of b1.7.3 jars goes to the synthesized API (silent) instead (`LegacyRemapper`).
 
+## AudioMod external sounds
+
+The shared AudioMod path now supports OGG and PCM WAV assets through the host sound engine. Install a mod's external
+audio beneath the **active instance's game directory** (the directory containing `mods`), preserving its installer layout:
+
+```
+resources/mod/sound/       # positional effects and GUI sounds
+resources/mod/streaming/   # records / streaming source
+resources/mod/music/      # background music above ground
+resources/mod/cavemusic/  # background music underground
+```
+
+The root comes from `FMLPaths.GAMEDIR`, with no `%APPDATA%` or home-directory fallback. This works with custom Prism and
+portable instance locations. `Minecraft.getApplicationDirectory("minecraft/resources/...")` resolves against that same
+instance. Explicit `SoundManager.loadSound/loadStreaming/loadMusic` and `SoundEntry.loadStatic` file arguments may point
+outside it. Audio files are client-side resources; server packets carry sound names and parameters, never filesystem paths.
+
+`SoundEntry` preserves Beta's names: slashes become dots, numbered effect/music variants share an event, and streaming
+names retain their trailing digits. Discovery ignores dot files/directories, and resource reloads rescan the folders.
+`Minecraft.loadResource`, positional/entity `World.playSound`, `World.playStreaming`, and both `SoundManager.playSound`
+overloads route to native sound instances. A null streaming name stops the previous streaming source. Sound categories,
+listener, attenuation and volume sliders belong to the host engine. Standard OGG effects use buffered effect channels;
+WAV uses a PCM decoder on streaming channels. Music/cave music use AudioMod's delays and sky check without overlapping
+the streaming source. No content-mod identity is used by the implementation.
+
+Validation uses `:test --tests '*AudioB173Test'`: sound naming, portable roots, explicit external files, rescans, generated
+assets, request serialization, native instance parameters and decoding. User-owned archive fixtures are tested separately:
+PortalGun v5 (239 OGG files), Mo' Creatures 2.12.2 (168 OGG files), and Aether 1.01 (15 valid OGG/WAV files). Aether also
+ships one MP3-framed file named `.wav`, which is rejected, and two files outside AudioMod's recognized folders. These
+archive defects are recorded in tests; production discovery does not special-case them. Fixtures are not redistributed.
+`AudioSelfTestB173` additionally exercises PortalGun's original Aerial Faith Plate launch callback when that mod and its
+external resources are installed in an isolated server test. This passed with 239 external files on 2026-11-07. The broader
+PortalGun run remains `failed-or-needs-review`: placing its Portal Spawner block accesses a null legacy client player.
+The audio result is not a whole-mod compatibility claim.
+
+This is partial AudioMod compatibility: tracker codecs (`.xm`, `.s3m`, `.mod`) and encrypted `.mus` are not implemented;
+direct Paulscode/OpenAL APIs and synthesized `GameOptions`/sound-system initialization internals remain incomplete.
+Headless decoding/callback tests do not establish audible playback, music timing, or complete mod compatibility in a client.
+
 ## Block behaviour
 
 The modern block (`LegacyB173Block`) calls the legacy block's own code with a legacy view of the level (`World`, shim):

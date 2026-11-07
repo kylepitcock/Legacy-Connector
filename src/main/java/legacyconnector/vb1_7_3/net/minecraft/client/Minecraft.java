@@ -23,6 +23,7 @@ public class Minecraft {
     public volatile boolean paused;
     public TextureManager textureManager = TextureManager.mcc$instance();
     public TextRenderer textRenderer = TextRenderer.mcc$instance();
+    public legacyconnector.vb1_7_3.net.minecraft.client.sound.SoundManager soundManager = new legacyconnector.vb1_7_3.net.minecraft.client.sound.SoundManager();
     /** The legacy screen shown, if any. */
     public Screen currentScreen;
 
@@ -47,8 +48,17 @@ public class Minecraft {
         return net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
     }
 
-    /** MCP {@code getAppDir(String)}: also the game directory (b1.7.3 used ~/.minecraft for "minecraft"). */
+    /** MCP {@code getAppDir(String)}: resolve the old minecraft prefix within the active instance. */
     public static File getApplicationDirectory(String name) {
-        return getRunDirectory();
+        String path=name.replace('\\','/');
+        if(path.equals("minecraft")||path.equals(".minecraft"))return getRunDirectory();
+        if(path.startsWith("minecraft/"))path=path.substring("minecraft/".length());
+        else if(path.startsWith(".minecraft/"))path=path.substring(".minecraft/".length());
+        return getRunDirectory().toPath().resolve(path).normalize().toFile();
+    }
+    public void loadResource(String name,File file){
+        String path=name.replace('\\','/');int slash=path.indexOf('/');if(slash<0)return;
+        String kind=path.substring(0,slash),entry=path.substring(slash+1);
+        switch(kind){case "sound","newsound"->soundManager.loadSound(entry,file);case "streaming"->soundManager.loadStreaming(entry,file);case "music","newmusic"->soundManager.loadMusic(entry,file);default->{}}
     }
 }

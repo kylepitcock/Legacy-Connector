@@ -161,11 +161,13 @@ public final class LegacyConnector {
         modBus.addListener(org.kylepitcock.legacyconnector.core.pack.GameResourcesFolderPack::onAddPackFinders);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.LegacyModPacks::onAddPackFinders);
         modBus.addListener(LegacyNetwork::onRegisterPayloads);
+        org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.init();
         modBus.addListener(CreativeTabBridge::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_12_2.bridge.CreativeTabBridge1122::onBuildContents);
         modBus.addListener(org.kylepitcock.legacyconnector.v1_7_10.entity.LegacySpawnEggs::addToTab);
 
         GeneratedPack.addContributor(new CoreData());
+        GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173());
         GeneratedPack.addContributor(new Data1710());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Data1122());
         GeneratedPack.addContributor(new org.kylepitcock.legacyconnector.v1_12_2.Assets1122());
