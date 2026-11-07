@@ -186,6 +186,18 @@ public final class ShimLinker {
     private static AbstractInsnNode missingMethod(MethodNode method, MethodInsnNode m, Hierarchy h, SynthDemand demand, LinkReport report, String from) {
         if (!isLegacyApi(m.owner, h) && !isModClass(m.owner, h)) return null;
         Hierarchy.Lookup l = h.resolveMethod(m.owner, m.name, m.desc);
+        if (l == Hierarchy.Lookup.FOUND && !m.name.equals("<init>") && m.getOpcode() != Opcodes.INVOKESPECIAL && h.version() != null && h.version().forward() != null
+                && h.isShim(m.owner)) {
+            // The shim has the method, but the forward version's returns something else (1.6.4's FurnaceRecipes.getSmeltingList() is a map keyed
+            // by item id, the 1.7.10 one by ItemStack): its facade declares the version's own under "mcc$legacy$<name>".
+            String[] own = h.findFacadeMethod(m.owner, "mcc$legacy$" + m.name, m.desc, m.getOpcode() == Opcodes.INVOKESTATIC);
+            if (own != null) {
+                MethodInsnNode call = new MethodInsnNode(Opcodes.INVOKESTATIC, own[0], "mcc$legacy$" + m.name, own[1], false);
+                method.instructions.set(m, call);
+                report.adapted(m.owner, m.name + m.desc + " -> " + own[0], from);
+                return call;
+            }
+        }
         if (l == Hierarchy.Lookup.FOUND && staticMismatch(m, h)) {
             // the shim declares it static where the call is virtual, or the other way round: the JVM would throw
             // IncompatibleClassChangeError at the call, so it links like a missing method (a stub, reported)
