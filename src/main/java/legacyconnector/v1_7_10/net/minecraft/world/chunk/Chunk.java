@@ -165,14 +165,7 @@ public class Chunk {
         this(world, blocks, null, x, z);
     }
 
-    /** Forge 1.5.2/1.6.4's {@code new Chunk(world, blockIds, x, z)}: block ids of the 128-high column layout (x*2048 + z*128 + y). */
-    public Chunk(World world, byte[] ids, int x, int z) {
-        this(world, ids, null, x, z);
-    }
 
-    public Chunk(World world, byte[] ids, byte[] meta, int x, int z) {
-        this(world, mcc$blocksOfIds(ids), meta, x, z);
-    }
 
     private static Block[] mcc$blocksOfIds(byte[] ids) {
         Block[] blocks = new Block[ids.length];

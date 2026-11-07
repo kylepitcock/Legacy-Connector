@@ -57,13 +57,6 @@ public final class GameRegistry {
     public static void registerItem(Item item, String name, String modId) {
         legacyconnector.v1_7_10.cpw.mods.fml.common.registry.GameRegistry.registerItem(item, name, modId);
     }
-    /** {@code registerBlock(block, itemClass)} (1.5.2): the name comes from the block. */
-    public static void registerBlock(Block block, Class<? extends ItemBlock> itemClass) {
-        String n = block.getUnlocalizedName();
-        if (n == null) n = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
-        if (n.startsWith("tile.")) n = n.substring(5);
-        registerBlock(block, itemClass, n);
-    }
 
     public static void registerCraftingHandler(legacyconnector.v1_6_4.cpw.mods.fml.common.ICraftingHandler handler) {
         org.kylepitcock.legacyconnector.v1_6_4.bridge.Crafting164.registerCraftingHandler(handler);
