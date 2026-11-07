@@ -139,15 +139,6 @@
    "name": "Advanced Machines",
    "version": "55.0.3",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (9 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Advanced Machines",
-   "version": "55.0.3",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -170,15 +161,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (121 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Advanced Repulsion Systems",
-   "version": "55.1.4",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (115 classes). 9 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Advanced Repulsion Systems",
@@ -1493,15 +1475,6 @@
    "name": "Backpacks!",
    "version": "1.5.2 - 1.2.0",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (27 classes). 8 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Backpacks!",
-   "version": "1.5.2 - 1.2.0",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
@@ -1718,15 +1691,6 @@
    "name": "BC Builders",
    "version": "3.7.4.1",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "BC Builders",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
@@ -1763,15 +1727,6 @@
    "name": "BC Energy",
    "version": "3.7.4.1",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "BC Energy",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
@@ -1803,15 +1758,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 8 items, 8 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Factory",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "BC Factory",
@@ -1871,15 +1817,6 @@
    "name": "BC Silicon",
    "version": "3.7.4.1",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "BC Silicon",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "works",
@@ -1911,15 +1848,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in 64-mod 1.7.10 test pack (0.3.10 overnight): 47 items, 2 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "BC Transport",
-   "version": "3.7.4.1",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (581 classes). But 114 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "BC Transport",
@@ -2548,15 +2476,6 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Binnie Core",
-   "version": "1.7.3b",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Binnie Core",
@@ -3595,15 +3514,6 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (49 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "ChickenChunks",
-   "version": "1.3.2.5",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: codechicken.core.packet.PacketCustom.setChunkDataPacket()V, codechicken.core.packet.PacketCustom.writeBoolean(Z)V, codechicken.core.packet.PacketCustom.writeByte(I)V, codechicken.core.packet.PacketCustom.writeCoord(III)V, codechicken.core.packet.PacketCustom.writeFloat(F)V (+3 more)."
   },
   {
    "name": "ChickenChunks",
@@ -5063,15 +4973,6 @@
    "name": "Dimensional Anchors",
    "version": "55.0.3",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (42 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Dimensional Anchors",
-   "version": "55.0.3",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -5112,15 +5013,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (10 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Dirt Tools and Armor",
-   "version": "24.07.19",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (12 classes). 2 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Dirt Tools and Armor",
@@ -5273,15 +5165,6 @@
    "date": "2026-11-07",
    "status": "works",
    "notes": "Server self-test (1.4.7 layer, 700 ticks). Loads, dragon egg block and dragon entity register; client not tried."
-  },
-  {
-   "name": "Dragon Mounts Forge (WIP)",
-   "version": "0.99.2",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (50 classes). But 44 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Dragon Mounts Forge (WIP)",
@@ -5605,15 +5488,6 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (31 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Enchanting Plus",
-   "version": "1.15.6",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (58 classes). But 18 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Enchanting Plus",
@@ -6014,15 +5888,6 @@
    "name": "EnderStorage",
    "version": "1.4.2.16",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (44 classes). But 22 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "EnderStorage",
-   "version": "1.4.2.16",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
@@ -6383,15 +6248,6 @@
    "name": "Extra Bees",
    "version": "1.7.3b",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Extra Bees",
-   "version": "1.7.3b",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -6486,15 +6342,6 @@
    "date": "2026-11-07",
    "status": "loads",
    "notes": "Automated check: translates offline and everything it uses exists (1036 classes). 6 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Extra Trees",
-   "version": "1.7.3b",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (874 classes). But 83 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Extra Trees",
@@ -7190,15 +7037,6 @@
    "name": "Forge Microblocks",
    "version": "1.0.0.149",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
-  },
-  {
-   "name": "Forge Microblocks",
-   "version": "1.0.0.149",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -7221,15 +7059,6 @@
    "date": "2026-10-28",
    "status": "works",
    "notes": "Self-tested in the GT New Horizons server test: 0 items, 1 blocks, 0 entity types; every block placed and used, every item used, every entity spawned without errors."
-  },
-  {
-   "name": "Forge Multipart",
-   "version": "1.0.0.149",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
   },
   {
    "name": "Forge Multipart",
@@ -9198,15 +9027,6 @@
    "name": "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
    "version": "55.0.7",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (79 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
-   "version": "55.0.7",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -9220,15 +9040,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (134 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Immibis's Peripherals",
-   "version": "55.0.4",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (144 classes). But 15 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Immibis's Peripherals",
@@ -9417,15 +9228,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (60 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "InfiniTubes",
-   "version": "55.0.6",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (55 classes). But 10 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "InfiniTubes",
@@ -10414,15 +10216,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (36 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Liquid XP",
-   "version": "55.1.5",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (35 classes). But 19 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Liquid XP",
@@ -11551,15 +11344,6 @@
    "name": "Minecraft Multipart Plugin",
    "version": "1.0.0.149",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "fails",
-   "notes": "Automated check: needs code from another mod or API that is not available or does not match: scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$DefDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$SuperExtractor.apply(Lscala.reflect.api.Trees$TreeApi;Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$TemplateExtractor.apply(Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;Lscala.collection.immutable.List;)Lscala.reflect.api.Trees$TreeApi;, scala.reflect.api.Trees$ThisExtractor.apply(Lscala.reflect.api.Names$NameApi;)Lscala.reflect.api.Trees$TreeApi; (+1 more)."
-  },
-  {
-   "name": "Minecraft Multipart Plugin",
-   "version": "1.0.0.149",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "loads",
@@ -11726,15 +11510,6 @@
    "date": "2026-11-07",
    "status": "fails",
    "notes": "Needs a library mod (com.mod.guffcore.TaggingUtility) that is not in the download."
-  },
-  {
-   "name": "MiscPeripherals",
-   "version": "3.3",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (320 classes). But 58 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "MiscPeripherals",
@@ -15239,15 +15014,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (353 classes). The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "RedLogic",
-   "version": "55.4.1",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (105 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "RedLogic",
@@ -18826,15 +18592,6 @@
    "name": "Translocator",
    "version": "1.1.0.5",
    "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (28 classes). But 21 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Translocator",
-   "version": "1.1.0.5",
-   "mc": "1.5.2",
    "source": "client",
    "date": "2026-11-07",
    "status": "partial",
@@ -18983,15 +18740,6 @@
    "date": "2026-11-06",
    "status": "loads",
    "notes": "Automated check 0.3.23: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
-  },
-  {
-   "name": "Tubestuff",
-   "version": "55.0.5",
-   "mc": "1.5.2",
-   "source": "probe",
-   "date": "2026-11-06",
-   "status": "loads",
-   "notes": "Automated check: translates offline and everything it uses exists (56 classes). But 45 features it uses are empty placeholders, so large parts probably do nothing. The game was not started: this only shows the jar translates, not that it works."
   },
   {
    "name": "Tubestuff",
