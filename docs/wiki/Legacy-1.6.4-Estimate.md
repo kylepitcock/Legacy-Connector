@@ -102,3 +102,16 @@ Effect on the 40 readable corpus jars (`checkLegacyMod`): members synthesized or
 packet receive path (`SelfTest164`). Remaining failures: Thaumic Tinkerer, Gendustry (Scala 2.9 library, Thaumcraft and bdew lib are not in the corpus), bspkrs Core and TreeCapitator
 (client classes loaded on a server by verification), Binnie's three mods and Magic Bees (Forestry's recipe and genetics managers are null when they run), Mystcraft (duplicate
 symbol ids). `.zip` mods are now picked up like FML did (a third of the corpus was ignored before).
+
+## Measured again (2026-11-07, stubs and unresolved references)
+
+Offline link check (`checkLegacyMod`) over `test-mods-164` (98 jars with `old-only/`), `test-mods-152` (45) and `test-mods-147` (64); synthesized members (empty stubs) / synthesized classes / unresolved references:
+
+| Version | Before | After |
+|---|---|---|
+| 1.6.4 | 1424 / 182 / 57 | 1113 / 167 / 57 |
+| 1.5.2 | 596 / 121 / 11 | 474 / 112 / 11 |
+| 1.4.7 | 2210 / 390 / 72 | 1958 / 374 / 72 |
+
+Replaced by real behaviour: `Entity.dropItem(id, n)`, fire tables (`Block.blockFlammability`, metadata shaped `isFlammable`/`getFireSpreadSpeed`), `MapGenBase` over block ids (`generate(byte[])`, `recursiveGenerate(byte[])` overrides), `EnchantmentThorns` statics, ops/whitelist/login members by name, grass plants, chat events as strings, the old packet classes (open window, window click, respawn, place, entity moves, map chunk wire format), int health / `moveSpeed` / `getMaxHealth()` / `initCreature` for 1.5.2 and 1.4.7 mobs, absolute AI speeds converted to multipliers, and numeric widening in the constructor adaptation (a float argument no longer becomes a defaulted double).
+Left: bundled copies of NEI/Waila API classes (unresolved), Scala library members, client rendering members (`MapItemRenderer`, `ThreadDownloadImageData`), texture classes of 1.4.7 (another agent), notch-named jars (BTW), `EntityAIDoorInteract`, Tinkers' `stats.player` (needs a runtime trace).
