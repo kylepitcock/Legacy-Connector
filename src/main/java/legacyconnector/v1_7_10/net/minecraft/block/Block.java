@@ -100,6 +100,9 @@ public class Block {
     /** Forge: whether this block provides a tile entity (mods reflect on it). */
     protected boolean isTileProvider = this instanceof ITileEntityProvider;
     protected IIcon blockIcon;
+    /** Minecraft 1.4.7: the block's tile in its sprite sheet ({@code Block.blockIndexInTexture}); -1 for blocks that register icons (see SpriteSheets147). */
+    public int blockIndexInTexture = -1;
+    private String mcc$textureFile;
     private CreativeTabs displayOnCreativeTab;
 
     // Forge 1.7.10 harvest levels, indexed by metadata.
@@ -664,8 +667,21 @@ public class Block {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIcon(int side, int meta) {
-        if (this.blockIcon == null && mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
+        if (this.blockIcon == null) {
+            if (mcc$vanilla != null) return mcc$vanillaBlockIcon(side, meta);
+            if (blockIndexInTexture >= 0) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, blockIndexInTexture);
+        }
         return this.blockIcon;
+    }
+
+    /** Forge 1.4.7's per-block sprite sheet ({@code ITextureProvider}); {@code /terrain.png} unless set. */
+    public Block setTextureFile(String file) {
+        this.mcc$textureFile = file;
+        return this;
+    }
+
+    public String getTextureFile() {
+        return mcc$textureFile != null ? mcc$textureFile : "/terrain.png";
     }
 
     /**

@@ -89,6 +89,11 @@ public final class LegacyResourceConverter {
         return true;
     }
 
+    /** The jar adds textures of its own to the atlas (the sprite sheet tiles of {@link SheetCutter}). */
+    public void addsTextures() {
+        sawTextures = true;
+    }
+
     /** A model that names one of the 1.12 vanilla vine models as parent gets it generated into the minecraft namespace (1.13 has no such file). */
     private void addVineModels(byte[] data) {
         java.util.regex.Matcher m = VINE_MODEL.matcher(new String(data, StandardCharsets.UTF_8));

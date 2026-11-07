@@ -134,6 +134,12 @@ final class IdConstructors {
             }
         }
 
+        // 1.4.7: Block(int id, int textureIndex, Material, ...) -> the shim's Block(Material) and the index handed to the facade afterwards
+        String textureOwner = null;
+        if (claimOwner != null && isBlock && h.version().flatNames() && args.length >= 3 && args[1].getSort() == Type.INT && args[2].getSort() == Type.OBJECT) {
+            String facade = h.facadeOf(blockCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimTexture", "(L" + blockCls + ";I)V")) textureOwner = facade;
+        }
         InsnList pre = new InsnList();
         int[] slots = new int[args.length];
         int slot = method.maxLocals;
@@ -143,6 +149,7 @@ final class IdConstructors {
         }
         for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
         if (claimOwner != null) pre.add(new InsnNode(Opcodes.DUP)); // the receiver stays on the stack for the claim after the call
+        if (textureOwner != null) pre.add(new InsnNode(Opcodes.DUP));
         Type[] target = Type.getArgumentTypes(targetDesc);
         int pushed = 0;
         for (int j = 0; j < target.length; j++) {
@@ -160,6 +167,10 @@ final class IdConstructors {
         method.instructions.insertBefore(m, pre);
         if (claimOwner != null) {
             InsnList post = new InsnList();
+            if (textureOwner != null) {
+                post.add(new VarInsnNode(Opcodes.ILOAD, slots[1]));
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimTexture", "(L" + blockCls + ";I)V", false));
+            }
             post.add(new VarInsnNode(Opcodes.ILOAD, slots[0]));
             post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, claimOwner, "mcc$claimId", claimDesc, false));
             method.instructions.insert(m, post);

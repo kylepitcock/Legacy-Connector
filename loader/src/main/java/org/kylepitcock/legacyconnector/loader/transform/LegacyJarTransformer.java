@@ -38,7 +38,7 @@ import org.objectweb.asm.tree.ClassNode;
  */
 public final class LegacyJarTransformer {
     /** Bump whenever the output of this class changes, to invalidate caches. */
-    public static final int TRANSFORMER_VERSION = 8;
+    public static final int TRANSFORMER_VERSION = 9;
     /** Names the legacy coremod plugin class of a translated jar. */
     public static final String COREMOD_RESOURCE = "META-INF/legacyconnector-coremod.txt";
 
@@ -240,8 +240,14 @@ public final class LegacyJarTransformer {
         for (byte[] data : c.classes.values()) {
             try {
                 ClassNode node = new ClassNode();
-                new ClassReader(data).accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
-                out.add(ClassInfo.of(node));
+                ClassReader reader = new ClassReader(data);
+                reader.accept(classRemapper(node, remapper), ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                ClassInfo info = ClassInfo.of(node);
+                String[] ifaces = reader.getInterfaces();
+                info.originalSupers = new String[1 + ifaces.length];
+                info.originalSupers[0] = reader.getSuperName();
+                System.arraycopy(ifaces, 0, info.originalSupers, 1, ifaces.length);
+                out.add(info);
             } catch (RuntimeException ignored) {
                 // reported when the jar itself is translated
             }
@@ -256,8 +262,14 @@ public final class LegacyJarTransformer {
 
     /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
     private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper) {
+        notchLocals(classes, remapper, Map.of());
+    }
+
+    private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper, Map<String, ClassInfo> peers) {
         if (!remapper.version().numericIds()) return;
         Map<String, String[]> locals = new java.util.HashMap<>();
+        // packaged classes only: a peer jar that carries vanilla classes under their notch names (a jar mod) must not hide them from this jar
+        for (ClassInfo peer : peers.values()) if (peer.originalSupers != null && peer.name.indexOf('/') > 0) locals.put(peer.name, peer.originalSupers);
         for (byte[] data : classes.values()) {
             try {
                 ClassReader r = new ClassReader(data);
@@ -291,7 +303,7 @@ public final class LegacyJarTransformer {
 
         int platformCopies = dropPlatformLibraries(classes, other);
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
-        notchLocals(classes, remapper);
+        notchLocals(classes, remapper, peers);
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
@@ -388,6 +400,19 @@ public final class LegacyJarTransformer {
             if (isSignatureFile(name)) continue;
             if (resources.accept(name, e.getValue())) continue;
             outResources.put(name, e.getValue());
+        }
+        if (version.flatNames()) {
+            // 1.4.7: sprite sheets named by the code are cut into one texture per tile, which the atlas stitches (see SheetCutter)
+            org.kylepitcock.legacyconnector.loader.resource.SheetCutter cutter = new org.kylepitcock.legacyconnector.loader.resource.SheetCutter();
+            cutter.scan(nodes.values());
+            if (cutter.found()) {
+                Map<String, byte[]> tiles = cutter.cut(other);
+                if (!tiles.isEmpty()) {
+                    outResources.putAll(tiles);
+                    resources.addsTextures();
+                    result.notes.add("Cut " + cutter.sheets().size() + " sprite sheet(s) into " + tiles.size() + " texture(s)");
+                }
+            }
         }
         outResources.putAll(resources.finish());
         if (version == LegacyVersion.V1_12_2 && jar.hasMods()) {

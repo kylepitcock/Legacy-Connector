@@ -17,6 +17,11 @@ public final class ClassInfo {
     public final Map<String, Integer> methods = new HashMap<>();
     /** Keyed by {@code name + ":" + descriptor}. */
     public final Map<String, Integer> fields = new HashMap<>();
+    /**
+     * The supertypes as the class's own jar names them before translation ({@code [super, interfaces...]}; notch names in a reobfuscated jar), set for the
+     * classes {@code LegacyJarTransformer.scan} returns: another jar's subclass of such a class finds the vanilla members it inherits through them.
+     */
+    public String[] originalSupers;
 
     public ClassInfo(String name, String superName, List<String> interfaces, int access) {
         this.name = name;

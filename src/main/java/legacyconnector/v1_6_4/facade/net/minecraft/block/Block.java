@@ -11,6 +11,11 @@ import legacyconnector.v1_7_10.net.minecraft.init.Blocks;
 public final class Block {
     private Block() {}
 
+    /** 1.4.7's {@code Block(int id, int blockIndexInTexture, Material)}: the sprite sheet index the constructor was given. */
+    public static void mcc$claimTexture(legacyconnector.v1_7_10.net.minecraft.block.Block self, int index) {
+        self.blockIndexInTexture = index;
+    }
+
     /** Block.blockID */
     public static int mcc$get$blockID(legacyconnector.v1_7_10.net.minecraft.block.Block self) {
         return Ids.blockId(self);

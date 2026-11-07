@@ -36,6 +36,9 @@ public class Item {
     private String potionEffect;
     private String unlocalizedName;
     protected IIcon itemIcon;
+    /** Minecraft 1.4.7: the item's tile in its sprite sheet ({@code Item.iconIndex}); -1 for items that register icons (see SpriteSheets147). */
+    public int iconIndex = -1;
+    private String mcc$textureFile;
     protected String iconString;
     private CreativeTabs tabToDisplayOn;
     protected boolean canRepair = true;
@@ -449,8 +452,27 @@ public class Item {
     // ------------------------------------------------------------------ rendering (client)
 
     public IIcon getIconFromDamage(int damage) {
-        if (itemIcon == null && mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
+        if (itemIcon == null) {
+            if (mcc$vanilla != null) return mcc$vanillaItemIcon(damage, 0);
+            if (iconIndex >= 0) return org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.mcc$icon(this, iconIndex);
+        }
         return itemIcon;
+    }
+
+    /** Minecraft 1.4.7: the item's tile in its sprite sheet. */
+    public Item setIconIndex(int index) {
+        this.iconIndex = index;
+        return this;
+    }
+
+    /** Forge 1.4.7's per-item sprite sheet ({@code ITextureProvider}); {@code /gui/items.png} unless set. */
+    public Item setTextureFile(String file) {
+        this.mcc$textureFile = file;
+        return this;
+    }
+
+    public String getTextureFile() {
+        return mcc$textureFile != null ? mcc$textureFile : "/gui/items.png";
     }
 
     public IIcon getIconFromDamageForRenderPass(int damage, int pass) {

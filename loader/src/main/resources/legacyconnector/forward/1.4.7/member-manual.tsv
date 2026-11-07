@@ -1,0 +1,10 @@
+# Hand written 1.4.7 -> 1.5.2 -> 1.7.10 member forwards, on top of forward/1.6.4 and forward/1.5.2 (same line formats, see forward/1.6.4/member-manual.tsv; a later file wins).
+# Owners, names and descriptors in 1.5.2 (packaged) form: the loader moves 1.4.7's flat net/minecraft/src names there first (forward/1.4.7/flat-names.tsv).
+#
+# The block-setting family: one method per notification mode in 1.4.7 (Redirects147 maps them to setBlock(x, y, z, id, meta, flags))
+R	net/minecraft/world/World	setBlockWithNotify	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockWithNotify	(Lnet/minecraft/world/World;IIII)Z
+R	net/minecraft/world/World	setBlockAndMetadataWithNotify	(IIIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockAndMetadataWithNotify	(Lnet/minecraft/world/World;IIIII)Z
+R	net/minecraft/world/World	setBlockAndMetadata	(IIIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockAndMetadata	(Lnet/minecraft/world/World;IIIII)Z
+R	net/minecraft/world/World	setBlockMetadataWithNotify	(IIII)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockMetadataWithNotify	(Lnet/minecraft/world/World;IIII)V
+R	net/minecraft/world/World	setBlockMetadata	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockMetadata	(Lnet/minecraft/world/World;IIII)Z
+R	net/minecraft/world/World	canPlaceEntityOnSide	(IIIIZILnet/minecraft/entity/Entity;)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	canPlaceEntityOnSide	(Lnet/minecraft/world/World;IIIIZILnet/minecraft/entity/Entity;)Z

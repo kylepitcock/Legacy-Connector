@@ -326,7 +326,7 @@ public final class ShimLinker {
         // modern state it views cannot be assigned this way).
         if (!isGet && !hierarchy.find(declaring).hasMethod(ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V")) return null;
         if (isGet) {
-            return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + f.desc, false);
+            return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.GETTER_PREFIX + f.name, "(" + self + ")" + (vf.getterDesc() != null ? vf.getterDesc() : f.desc), false);
         }
         return new MethodInsnNode(Opcodes.INVOKESTATIC, declaring, ShimIndex.SETTER_PREFIX + f.name, "(" + self + f.desc + ")V", false);
     }

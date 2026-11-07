@@ -109,6 +109,12 @@ public final class BridgeMethods {
         Type newRet = Type.getReturnType(rule.newDesc());
         if (newRet.getSort() == Type.VOID) {
             if (oldRet.getSize() > 0) il.add(new InsnNode(oldRet.getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
+        } else if (oldRet.getSort() == Type.INT && newRet.getSort() == Type.OBJECT && newRet.getInternalName().equals(h.relocate("net/minecraft/util/IIcon"))) {
+            // 1.4.7's sprite sheet index -> the sprite of that index in the owner's sheet (the owner, this, is the block or item)
+            il.add(new VarInsnNode(Opcodes.ALOAD, 0));
+            il.add(new InsnNode(Opcodes.SWAP));
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "org/kylepitcock/legacyconnector/v1_6_4/bridge/SpriteSheets147", "mcc$icon",
+                    "(Ljava/lang/Object;I)L" + newRet.getInternalName() + ";", false));
         } else if (!convert(il, oldRet, newRet, h)) {
             return null;
         }

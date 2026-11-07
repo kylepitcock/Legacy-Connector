@@ -268,6 +268,10 @@ public final class LegacyRemapper extends Remapper {
             String mcp = notch.mcpClass(internalName);
             if (mcp != null) return map(mcp);
         }
+        if (version.flatNames() && internalName.indexOf('/') < 0 && MODLOADER_CLASSES.contains(internalName) && !notchLocals.containsKey(internalName)) {
+            // ModLoader's classes are not obfuscated; a reobfuscated jar names them in the default package (mod_X extends BaseMod)
+            return map("net/minecraft/src/" + internalName);
+        }
         String jdk = JDK_RELOCATIONS.get(internalName);
         if (jdk != null) return jdk;
         for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
@@ -281,6 +285,10 @@ public final class LegacyRemapper extends Remapper {
     }
 
     private boolean mappingString;
+
+    /** The ModLoader emulation classes a reobfuscated 1.4.x jar references by their bare names (see {@code legacyconnector/v1_6_4/net/minecraft/src}). */
+    private static final java.util.Set<String> MODLOADER_CLASSES = java.util.Set.of("BaseMod", "ModLoader", "MLProp", "TradeEntry", "ModTextureStatic",
+            "ModTextureAnimation", "EntityRendererProxy");
 
     private static final java.util.Set<String> JAVA_KEYWORDS = java.util.Set.of(
             "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue",

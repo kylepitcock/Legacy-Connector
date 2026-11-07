@@ -257,7 +257,11 @@ public final class Hierarchy {
     }
 
     /** Where a virtual-field accessor lives ({@code host}) and the shim class it takes as its receiver ({@code self}); they differ for facades. */
-    public record VirtualField(String host, String self) {}
+    public record VirtualField(String host, String self, String getterDesc) {
+        public VirtualField(String host, String self) {
+            this(host, self, null);
+        }
+    }
 
     /**
      * Like {@link #findVirtualFieldOwner}, and for a forward version also looks into the facade of each shim class on the chain
@@ -273,6 +277,15 @@ public final class Hierarchy {
                 if (c.hasMethod(ShimIndex.GETTER_PREFIX + name, getterDesc)) return new VirtualField(c.name, c.name);
                 String facade = facadeOf(c.name);
                 if (facade != null && find(facade).hasMethod(ShimIndex.GETTER_PREFIX + name, getterDesc)) return new VirtualField(facade, c.name);
+                if (facade != null && isStatic && desc.startsWith("L")) {
+                    // a static the facade types more narrowly than the legacy version did (1.4.7 declares Block.chest as a Block, the facade as the BlockChest 1.6.4 had): any subtype serves
+                    String prefix = ShimIndex.GETTER_PREFIX + name + "()L";
+                    for (String key : find(facade).methods.keySet()) {
+                        if (!key.startsWith(prefix)) continue;
+                        String ret = key.substring(prefix.length() - 1);
+                        if (isSubclassOf(ret.substring(1, ret.length() - 1), desc.substring(1, desc.length() - 1))) return new VirtualField(facade, c.name, ret);
+                    }
+                }
             }
             if (c.hasField(name, desc)) return null; // a real field (e.g. declared by the mod) shadows inherited accessors
             c = c.superName == null ? null : find(c.superName);

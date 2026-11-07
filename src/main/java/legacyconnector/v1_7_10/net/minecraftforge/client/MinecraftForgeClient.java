@@ -9,6 +9,9 @@ import legacyconnector.v1_7_10.net.minecraft.item.ItemStack;
 public class MinecraftForgeClient {
     private static final Map<Item, IItemRenderer> RENDERERS = new ConcurrentHashMap<>();
 
+    /** Forge 1.4.7: loads a texture file ahead of its first use; textures are resolved when bound here. */
+    public static void preloadTexture(String texture) {}
+
     public static void registerItemRenderer(Item item, IItemRenderer renderer) {
         if (item != null && renderer != null) RENDERERS.put(item, renderer);
     }

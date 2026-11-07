@@ -19,6 +19,12 @@ public class TextureManager implements ITickable {
         RenderContext.bindTexture(modern);
     }
 
+    /** 1.4.7 and 1.5.2 (RenderEngine.bindTexture(int)): a texture by the OpenGL id {@link #getTexture} returned. */
+    public void bindTexture(int glId) {
+        if (org.kylepitcock.legacyconnector.core.pack.GeneratedPack.building()) return;
+        com.mojang.blaze3d.systems.RenderSystem.setShaderTexture(0, glId);
+    }
+
     /** Forge 1.5.2 (RenderEngine): textures are string paths, resolved by Textures152. */
     public void bindTexture(String path) {
         bindTexture(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
