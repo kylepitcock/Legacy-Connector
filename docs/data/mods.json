@@ -11941,7 +11941,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during construction: java.lang.ClassNotFoundException: mod_FCBetterThanWolves"
+      "notes": "Does not start: patched-game jar mod. It replaces vanilla classes of minecraft.jar (mobs, blocks, world generation), which the layer cannot express."
     },
     {
       "name": "mod_genesesbosses",
@@ -14987,7 +14987,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during init in a real client: needs JInput (net.java.games.input), a library the game does not ship. Not a layer defect; would need a JInput shim over GLFW."
+      "notes": "Does not start: needs LWJGL joystick libs (JInput, net.java.games.input), which this game does not ship. Not a layer defect."
     },
     {
       "name": "rawOre_on_1.12.2",
@@ -19962,7 +19962,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "fails",
-      "notes": "Fails during init in a real client: needs JInput (net.java.games.input), a library the game does not ship. Not a layer defect; would need a JInput shim over GLFW."
+      "notes": "Does not start: needs LWJGL joystick libs (JInput, net.java.games.input), which this game does not ship. Not a layer defect."
     },
     {
       "name": "XNet",
