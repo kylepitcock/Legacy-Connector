@@ -309,6 +309,12 @@ public final class BlockBridge {
      * (Forestry's ore block). They are registered under their unlocalized name, for the mod whose package owns the class.
      */
     public static synchronized int registerImplicit() {
+        int[] total = {0};
+        legacyconnector.v1_6_4.net.minecraft.util.Ids.inEachSpace(() -> total[0] += registerImplicitInSpace());
+        return total[0];
+    }
+
+    private static int registerImplicitInSpace() {
         boolean numeric = false;
         for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2") || m.version.equals("1.4.7");
         if (!numeric) return 0;
