@@ -106,6 +106,17 @@ public final class LibraryBridges {
 
     /** Legacy mod ids (lower case) the pack maker switched off with {@code mods.skip} in config/legacyconnector.properties. */
     private static volatile Set<String> userSkips = Set.of();
+    /** Modern mod ids of the mods folder, kept for the 1.20.1 library jars that a native 1.21.1 build replaces ({@link NativeLibraries1201}); empty when 1.20.1 support is off. */
+    private static volatile Set<String> installedModern = Set.of();
+
+    private static boolean forge1201On(Path modsDir) {
+        return Boolean.getBoolean("legacyconnector.forge1201") || "true".equalsIgnoreCase(readConfig(modsDir).getProperty("experimental.forge1201", "false").trim());
+    }
+
+    /** Modern mod ids of the mods folder seen by the last {@link #active} call. */
+    public static Set<String> installedModernIds() {
+        return installedModern;
+    }
     /** {@code mods.alias.<id> = <other id>}: a dependency on the first id is treated as one on the second (lower case keys). */
     private static volatile java.util.Map<String, String> userAliases = java.util.Map.of();
 
@@ -157,6 +168,7 @@ public final class LibraryBridges {
      */
     public static List<Bridge> active(Path modsDir) {
         Set<String> modern = modernModIds(modsDir);
+        installedModern = forge1201On(modsDir) ? modern : Set.of();
         Properties config = readConfig(modsDir);
         applyUserConfig(config);
         String forced = System.getProperty("legacyconnector.bridges", "").toLowerCase(Locale.ROOT);
@@ -220,7 +232,7 @@ public final class LibraryBridges {
         return !"false".equalsIgnoreCase(config.getProperty("bridges." + b.configKey + ".enabled", "true").trim());
     }
 
-    private static Set<String> modernModIds(Path modsDir) {
+    static Set<String> modernModIds(Path modsDir) {
         Set<String> ids = new HashSet<>();
         if (!Files.isDirectory(modsDir)) return ids;
         try (Stream<Path> files = Files.list(modsDir)) {
@@ -244,6 +256,8 @@ public final class LibraryBridges {
 
     /** True if this legacy jar is the library a bridge replaces (it declares the bridged mod id). */
     public static Bridge replacing(LegacyJar jar, List<Bridge> active) {
+        Bridge lib = NativeLibraries1201.replacing(jar, installedModern);
+        if (lib != null) return lib;
         for (Bridge b : active) {
             for (LegacyModDecl m : jar.mods) if (b.legacyModId != null && m.legacyId.equalsIgnoreCase(b.legacyModId)) return b;
             if (b.legacyModId != null && jar.mods.isEmpty() && jar.containerModIds.stream().anyMatch(id -> id.equalsIgnoreCase(b.legacyModId))) return b;

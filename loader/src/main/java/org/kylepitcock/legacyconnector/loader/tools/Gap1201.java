@@ -294,6 +294,15 @@ public final class Gap1201 {
         System.out.println("report: " + report + " (" + missingClasses.size() + " classes, " + missingMethods.size() + " methods, " + missingFields.size() + " fields)");
     }
 
+    /** -Dgap.shimIndex=<file>: the real shim index, so the facade classes get the names they have in the game (descriptors of the library tables match). */
+    private static org.kylepitcock.legacyconnector.loader.shim.ShimIndex shimIndex() throws IOException {
+        String file = System.getProperty("gap.shimIndex");
+        if (file == null || !Files.isRegularFile(Path.of(file))) return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty();
+        try (java.io.InputStream in = Files.newInputStream(Path.of(file))) {
+            return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read(in);
+        }
+    }
+
     /**
      * -Dgap.translate=true: the jars go through the real Forge1201Transformer first (names, Minecraft migration), so the report shows what is left
      * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
@@ -301,7 +310,7 @@ public final class Gap1201 {
     private static List<Path> translated(List<Path> mods) throws IOException {
         String keep = System.getProperty("gap.translated.dir");
         Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
-        var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty());
+        var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(shimIndex());
         List<Path> out = new ArrayList<>();
         for (Path m : mods) {
             Path t = dir.resolve(m.getFileName());

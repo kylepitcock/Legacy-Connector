@@ -1,0 +1,26 @@
+# Library bridges for 1.20.1 mods: calls into libraries whose 1.21.1 build changed (same format as mc-calls.tsv, read after it; helpers in
+# org/kylepitcock/legacyconnector/v1_20_1/migrate). See docs/wiki/Legacy-1.20.1-Estimate.md, section 13.
+# Curios 5.x to 9.x
+top/theillusivec4/curios/api/CuriosApi	getCuriosInventory	(Lnet/minecraft/world/entity/LivingEntity;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	CuriosCompat	getCuriosInventory	-
+top/theillusivec4/curios/api/CuriosApi	getCurio	(Lnet/minecraft/world/item/ItemStack;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	CuriosCompat	getCurio	-
+top/theillusivec4/curios/api/CuriosApi	getSlotUuid	(Ltop/theillusivec4/curios/api/SlotContext;)Ljava/util/UUID;	CuriosCompat	slotUuid	-
+top/theillusivec4/curios/api/CuriosApi	getAttributeModifiers	(Ltop/theillusivec4/curios/api/SlotContext;Ljava/util/UUID;Lnet/minecraft/world/item/ItemStack;)Lcom/google/common/collect/Multimap;	CuriosCompat	getAttributeModifiers	-
+top/theillusivec4/curios/api/CuriosApi	addSlotModifier	(Lcom/google/common/collect/Multimap;Ljava/lang/String;Ljava/util/UUID;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V	CuriosCompat	addSlotModifier	-
+top/theillusivec4/curios/api/type/util/ICuriosHelper	getCuriosHandler	(Lnet/minecraft/world/entity/LivingEntity;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	CuriosCompat	getCuriosHandler	-
+top/theillusivec4/curios/api/type/util/ICuriosHelper	getEquippedCurios	(Lnet/minecraft/world/entity/LivingEntity;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	CuriosCompat	getEquippedCurios	-
+top/theillusivec4/curios/api/type/util/ICuriosHelper	addSlotModifier	(Lcom/google/common/collect/Multimap;Ljava/lang/String;Ljava/util/UUID;DLnet/minecraft/world/entity/ai/attributes/AttributeModifier$Operation;)V	CuriosCompat	addSlotModifier	-
+top/theillusivec4/curios/api/type/capability/ICuriosItemHandler	getLootingLevel	(Lnet/minecraft/world/damagesource/DamageSource;Lnet/minecraft/world/entity/LivingEntity;I)I	CuriosCompat	lootingLevel	-
+top/theillusivec4/curios/api/type/capability/ICurioItem	playRightClickEquipSound	(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;)V	CuriosCompat	playRightClickEquipSound	-
+# Patchouli 85 (1.20.1) to 93 (1.21.1): the variable API takes the registries
+vazkii/patchouli/api/IVariable	from	(Ljava/lang/Object;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	from	-
+vazkii/patchouli/api/IVariable	wrap	(Lcom/google/gson/JsonElement;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	wrap	-
+vazkii/patchouli/api/IVariable	wrapList	(Ljava/lang/Iterable;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	wrapList	-
+vazkii/patchouli/api/IVariable	asStream	()Ljava/util/stream/Stream;	PatchouliCompat	asStream	-
+vazkii/patchouli/api/IVariable	asStreamOrSingleton	()Ljava/util/stream/Stream;	PatchouliCompat	asStreamOrSingleton	-
+vazkii/patchouli/api/IVariable	asList	()Ljava/util/List;	PatchouliCompat	asList	-
+vazkii/patchouli/api/IVariable	asListOrSingleton	()Ljava/util/List;	PatchouliCompat	asListOrSingleton	-
+vazkii/patchouli/api/IVariableProvider	get	(Ljava/lang/String;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	get	-
+vazkii/patchouli/api/VariableHelper	createFromObject	(Ljava/lang/Object;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	createFromObject	-
+vazkii/patchouli/api/VariableHelper	createFromJson	(Lcom/google/gson/JsonElement;)Lvazkii/patchouli/api/IVariable;	PatchouliCompat	createFromJson	-
+# Architectury 9 (1.20.1) to 13 (1.21.1): the loot pool is added as a builder (the receiver is passed as Object, Architectury is no compile dependency)
+dev/architectury/event/events/common/LootEvent$LootTableModificationContext	addPool	(Lnet/minecraft/world/level/storage/loot/LootPool;)V	ArchitecturyCompat	addPool	(Ljava/lang/Object;Lnet/minecraft/world/level/storage/loot/LootPool;)V

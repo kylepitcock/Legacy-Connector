@@ -81,7 +81,14 @@ final class Mc1201Tables {
         return r != null ? r : name;
     }
 
+    /** The rows of {@code mc-X.tsv} followed by those of {@code lib-X.tsv} (the 1.20.1 library bridges: same formats, kept in their own files). */
     private static List<String[]> rows(String file, int min) {
+        List<String[]> out = rows1(file, min);
+        if (file.startsWith("mc-")) out.addAll(rows1("lib-" + file.substring(3), min));
+        return out;
+    }
+
+    private static List<String[]> rows1(String file, int min) {
         List<String[]> out = new ArrayList<>();
         try (InputStream in = Mc1201Tables.class.getClassLoader().getResourceAsStream(DIR + file)) {
             if (in == null) return out;

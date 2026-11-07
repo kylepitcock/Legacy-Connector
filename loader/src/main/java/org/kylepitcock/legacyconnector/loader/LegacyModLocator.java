@@ -239,6 +239,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             dropDuplicateMods(legacy);
 
             List<LibraryBridges.Bridge> bridges = LibraryBridges.active(modsDir);
+            if (forge1201Enabled(modsDir)) for (String missing : NativeLibraries1201.missing(legacy, LibraryBridges.installedModernIds())) LOG.warn("Legacy Connector: {}", missing);
             // Scala, trove, ... are handed to FML only when a legacy mod uses them and nothing else in the pack provides them.
             Set<Path> libraryKeep = new HashSet<>();
             LIBRARY_SKIPS.clear();

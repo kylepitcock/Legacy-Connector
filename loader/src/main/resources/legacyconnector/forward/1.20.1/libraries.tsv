@@ -1,0 +1,25 @@
+# 1.20.1 libraries that also exist as native NeoForge 1.21.1 mods with the same mod id (NativeLibraries1201): with the 1.21.1 build installed the mod's
+# 1.20.1 copy is not loaded; without either, the log names the build to install.
+# modId TAB name TAB download page of the NeoForge 1.21.1 build
+architectury	Architectury API	https://modrinth.com/mod/architectury-api
+curios	Curios API	https://modrinth.com/mod/curios
+geckolib	GeckoLib	https://modrinth.com/mod/geckolib
+patchouli	Patchouli	https://modrinth.com/mod/patchouli
+cloth_config	Cloth Config API	https://modrinth.com/mod/cloth-config
+resourcefullib	Resourceful Lib	https://modrinth.com/mod/resourceful-lib
+resourcefulconfig	Resourceful Config	https://modrinth.com/mod/resourceful-config
+puzzleslib	Puzzles Lib	https://modrinth.com/mod/puzzles-lib
+jade	Jade	https://modrinth.com/mod/jade
+theoneprobe	The One Probe	https://modrinth.com/mod/the-one-probe
+moonlight	Moonlight Lib	https://modrinth.com/mod/moonlight
+citadel	Citadel	https://modrinth.com/mod/citadel
+blueprint	Blueprint	https://modrinth.com/mod/blueprint
+balm	Balm	https://modrinth.com/mod/balm
+kuma_api	KumaAPI	https://modrinth.com/mod/kuma-api
+caelus	Caelus API	https://modrinth.com/mod/caelus
+bookshelf	Bookshelf	https://www.curseforge.com/minecraft/mc-mods/bookshelf
+mantle	Mantle	https://modrinth.com/mod/mantle
+jei	Just Enough Items	https://modrinth.com/mod/jei
+emi	EMI	https://modrinth.com/mod/emi
+framework	Framework	https://modrinth.com/mod/framework
+playeranimator	Player Animation Lib	https://modrinth.com/mod/playeranimator
