@@ -8,6 +8,7 @@
     "Varint21FrameDecoderMixin",
     "Varint21LengthFieldPrependerMixin",
     "EntityGravityMixin",
+    "OversizedCraftingMenuMixin",
     "PlayerStepSoundMixin",
     "FoodDataHealRateMixin",
     "LivingEntityTravelMixin",

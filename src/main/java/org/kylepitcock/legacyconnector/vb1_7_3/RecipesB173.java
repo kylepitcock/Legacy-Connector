@@ -190,7 +190,7 @@ public final class RecipesB173 {
         JsonObject result = result(r.output());
         if (result == null) return null;
         o.add("result", result);
-        return o;
+        return craftingResult(o, r);
     }
 
     private static JsonObject shapelessJson(Recipe r) {
@@ -208,7 +208,19 @@ public final class RecipesB173 {
         JsonObject result = result(r.output());
         if (result == null) return null;
         o.add("result", result);
-        return o;
+        return craftingResult(o, r);
+    }
+
+    private static JsonObject craftingResult(JsonObject recipe, Recipe legacy) {
+        var stack = StacksB173.toModern(legacy.output());
+        if (stack.getCount() <= stack.getMaxStackSize()) return recipe;
+        recipe.getAsJsonObject("result").remove("count");
+        recipe.remove("type");
+        JsonObject wrapper = new JsonObject();
+        wrapper.addProperty("type", "legacyconnector:oversized_" + legacy.kind());
+        wrapper.add("recipe", recipe);
+        wrapper.addProperty("count", stack.getCount());
+        return wrapper;
     }
 
     private static JsonObject smeltingJson(Recipe r) {
