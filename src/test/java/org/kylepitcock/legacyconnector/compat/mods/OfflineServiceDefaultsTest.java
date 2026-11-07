@@ -22,8 +22,11 @@ class OfflineServiceDefaultsTest {
         JsonObject pack = o.getAsJsonObject("resource-pack");
         assertTrue(pack.has("url") && pack.has("hash"));
         assertDoesNotThrow(() -> new java.net.URI(pack.get("url").getAsString()).toURL());
-        Files.writeString(f, "{}");
+        for (String k : new String[] {"network-address", "remote", "team"}) assertTrue(o.has(k), k);
+        Files.writeString(f, "{\"website\":\"x\"}");
         OfflineServiceDefaults.beforePreInit("craftingdead", dir);
-        assertEquals("{}", Files.readString(f));
+        JsonObject merged = JsonParser.parseString(Files.readString(f)).getAsJsonObject();
+        assertEquals("x", merged.get("website").getAsString());
+        assertTrue(merged.has("network-address") && merged.has("servers"));
     }
 }
