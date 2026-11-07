@@ -52,7 +52,7 @@ R	cpw/mods/fml/common/event/FMLPreInitializationEvent	getModLog	()Ljava/util/log
 # GUI
 F	net/minecraft/client/gui/GuiButton	drawButton	visible
 # Missing-shim pass (links that were synthesized empty before): renamed enum constant and fields, sound manager, NBT names, server lists
-F	net/minecraft/util/MovingObjectPosition$MovingObjectType	TILE	BLOCK
+F	net/minecraft/util/EnumMovingObjectType	TILE	BLOCK
 F	net/minecraft/world/ChunkPosition	x	chunkPosX
 F	net/minecraft/world/ChunkPosition	y	chunkPosY
 F	net/minecraft/world/ChunkPosition	z	chunkPosZ
@@ -87,3 +87,27 @@ R	net/minecraft/nbt/NBTBase	setName	(Ljava/lang/String;)Lnet/minecraft/nbt/NBTBa
 R	net/minecraft/server/management/ServerConfigurationManager	isPlayerOpped	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
 R	net/minecraft/server/management/ServerConfigurationManager	getOps	()Ljava/util/Set;	static	legacyconnector/v1_6_4/forward/Forward164	getOps	(Lnet/minecraft/server/management/ServerConfigurationManager;)Ljava/util/Set;
 R	net/minecraft/server/management/ServerConfigurationManager	addOp	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addOp	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)V
+R	net/minecraft/network/Packet	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;	static	legacyconnector/v1_6_4/forward/Forward164	readItemStack	(Ljava/io/DataInput;)Lnet/minecraft/item/ItemStack;
+R	net/minecraft/network/Packet	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeItemStack	(Lnet/minecraft/item/ItemStack;Ljava/io/DataOutput;)V
+R	net/minecraft/nbt/NBTBase	readNamedTag	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTBase;	static	legacyconnector/v1_6_4/forward/Forward164	readNamedTag	(Ljava/io/DataInput;)Lnet/minecraft/nbt/NBTBase;
+R	net/minecraft/nbt/NBTBase	writeNamedTag	(Lnet/minecraft/nbt/NBTBase;Ljava/io/DataOutput;)V	static	legacyconnector/v1_6_4/forward/Forward164	writeNamedTag	(Lnet/minecraft/nbt/NBTBase;Ljava/io/DataOutput;)V
+# second pass: ids and conversions
+F	net/minecraft/block/material/Material	pumpkin	gourd
+M	net/minecraft/block/BlockColored	getBlockFromDye	(I)I	func_150032_b
+M	net/minecraft/block/BlockColored	getDyeFromBlock	(I)I	func_150031_c
+M	net/minecraft/util/StatCollector	func_94522_b	(Ljava/lang/String;)Z	canTranslate
+R	net/minecraft/item/crafting/FurnaceRecipes	getExperience	(Lnet/minecraft/item/ItemStack;)F	call	=	getSmeltingExperience	(Lnet/minecraft/item/ItemStack;)F
+M	net/minecraft/stats/Achievement	registerAchievement	()Lnet/minecraft/stats/Achievement;	registerStat
+M	net/minecraft/stats/Achievement	setIndependent	()Lnet/minecraft/stats/Achievement;	initIndependentStat
+R	net/minecraft/world/World	rayTraceBlocks_do_do	(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;ZZ)Lnet/minecraft/util/MovingObjectPosition;	append-int	rayTraceBlocks	(Lnet/minecraft/util/Vec3;Lnet/minecraft/util/Vec3;ZZZ)Lnet/minecraft/util/MovingObjectPosition;	0
+R	net/minecraft/item/crafting/FurnaceRecipes	getMetaSmeltingList	()Ljava/util/Map;	static	legacyconnector/v1_6_4/forward/Forward164	getMetaSmeltingList	(Lnet/minecraft/item/crafting/FurnaceRecipes;)Ljava/util/Map;
+R	net/minecraft/entity/IEntityOwnable	getOwnerName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	getOwnerName	(Lnet/minecraft/entity/IEntityOwnable;)Ljava/lang/String;
+R	net/minecraftforge/common/MinecraftForge	setToolClass	(Lnet/minecraft/item/Item;Ljava/lang/String;I)V	static	legacyconnector/v1_6_4/forward/Forward164	setToolClass	(Lnet/minecraft/item/Item;Ljava/lang/String;I)V
+R	net/minecraftforge/common/util/FakePlayerFactory	get	(Lnet/minecraft/world/World;Ljava/lang/String;)Lnet/minecraftforge/common/util/FakePlayer;	static	legacyconnector/v1_6_4/forward/Forward164	fakePlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)Lnet/minecraftforge/common/util/FakePlayer;
+C	net/minecraft/client/gui/ScaledResolution	(Lnet/minecraft/client/settings/GameSettings;II)V	(Lnet/minecraft/client/Minecraft;II)V	args	0:legacyconnector/v1_6_4/forward/Forward164#minecraft#(Lnet/minecraft/client/settings/GameSettings;)Lnet/minecraft/client/Minecraft;	1	2
+C	net/minecraft/entity/player/EntityPlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraft/client/entity/AbstractClientPlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/World;Lcom/mojang/authlib/GameProfile;)V	args	0	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraftforge/common/util/FakePlayer	(Lnet/minecraft/world/World;Ljava/lang/String;)V	(Lnet/minecraft/world/WorldServer;Lcom/mojang/authlib/GameProfile;)V	args	0:legacyconnector/v1_6_4/forward/Forward164#worldServer#(Lnet/minecraft/world/World;)Lnet/minecraft/world/WorldServer;	1:legacyconnector/v1_6_4/forward/Forward164#profile#(Ljava/lang/String;)Lcom/mojang/authlib/GameProfile;
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5

@@ -17,6 +17,7 @@ import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
 
 /**
  * Call-site rewrites of a forward version (1.6.4 on the 1.7.10 shim) for members whose name is not the only thing that changed:
@@ -159,6 +160,7 @@ public final class ForwardCalls {
     private static AbstractInsnNode constructor(MethodNode method, MethodInsnNode m, ForwardMembers table, Normalizer norm) {
         String[] rule = table.constructorRules().get(norm.strip(m.owner) + ".<init>" + norm.strip(m.desc));
         if (rule == null) return null;
+        if (rule.length > 4 && rule[4].equals("args")) return constructorArgs(method, m, rule, norm);
         // C owner desc newDesc drop: drop the first argument (a name the tag no longer carries)
         Type[] args = Type.getArgumentTypes(m.desc);
         if (args.length == 0) return null;
@@ -184,6 +186,45 @@ public final class ForwardCalls {
         }
         method.instructions.insertBefore(m, drop);
         m.desc = norm.linkDesc(rule[3]);
+        return m;
+    }
+
+    /**
+     * C owner desc newDesc args spec...: the constructor takes other arguments, one spec per new argument: {@code src} (the old argument
+     * with that index, as is) or {@code src:HelperOwner#helper#(desc)Ret} (a static helper applied to it first). The old arguments are spilled to
+     * fresh locals and pushed again in the new order, so the conversion may read any of them (1.6.4 {@code Achievement(int id, String name, ...)}
+     * becomes the 1.7.10 constructor taking {@code "achievement." + name} and the name).
+     */
+    private static AbstractInsnNode constructorArgs(MethodNode method, MethodInsnNode m, String[] rule, Normalizer norm) {
+        String newDesc = norm.linkDesc(rule[3]);
+        Type[] old = Type.getArgumentTypes(m.desc);
+        Type[] nw = Type.getArgumentTypes(newDesc);
+        if (rule.length - 5 != nw.length) return null;
+        int[] slots = new int[old.length];
+        int slot = method.maxLocals;
+        for (int i = 0; i < old.length; i++) {
+            slots[i] = slot;
+            slot += old[i].getSize();
+        }
+        InsnList il = new InsnList();
+        for (int i = old.length - 1; i >= 0; i--) il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ISTORE), slots[i]));
+        int pushed = 0;
+        for (int j = 0; j < nw.length; j++) {
+            String spec = rule[5 + j];
+            int colon = spec.indexOf(':');
+            int src = Integer.parseInt(colon < 0 ? spec : spec.substring(0, colon));
+            if (src < 0 || src >= old.length) return null;
+            il.add(new VarInsnNode(old[src].getOpcode(Opcodes.ILOAD), slots[src]));
+            if (colon >= 0) {
+                String[] h = spec.substring(colon + 1).split("#");
+                il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, h[0], h[1], norm.linkDesc(h[2]), false));
+            }
+            pushed += nw[j].getSize();
+        }
+        method.maxLocals = Math.max(method.maxLocals, slot);
+        method.maxStack += pushed + 2;
+        method.instructions.insertBefore(m, il);
+        m.desc = newDesc;
         return m;
     }
 

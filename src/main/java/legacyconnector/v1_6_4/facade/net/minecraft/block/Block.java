@@ -83,6 +83,17 @@ public final class Block {
         return self.isSideSolid(world, x, y, z, side);
     }
 
+    /** 1.6.4's static {@code Block.isNormalCube(blockId)}: whether the block of the id is a full opaque cube (false for air and unused ids). */
+    public static boolean isNormalCube(int id) {
+        legacyconnector.v1_7_10.net.minecraft.block.Block b = id <= 0 ? null : Ids.block(id);
+        return b != null && b.isNormalCube();
+    }
+
+    /** 1.6.4's {@code Block.lockedChest}, the April Fools' locked chest: a chest here. */
+    public static legacyconnector.v1_7_10.net.minecraft.block.Block mcc$get$lockedChest() {
+        return legacyconnector.v1_7_10.net.minecraft.init.Blocks.chest;
+    }
+
     /** Block.setUnlocalizedName (1.7.10: setBlockName). */
     public static legacyconnector.v1_7_10.net.minecraft.block.Block setUnlocalizedName(legacyconnector.v1_7_10.net.minecraft.block.Block self, String name) {
         return self.setBlockName(name);

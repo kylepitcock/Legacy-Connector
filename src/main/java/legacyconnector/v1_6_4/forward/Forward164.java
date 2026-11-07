@@ -121,6 +121,167 @@ public final class Forward164 {
         return tag;
     }
 
+    // ------------------------------------------------------------------ legacy wire formats (Packet.readItemStack, NBTBase.readNamedTag)
+
+    /** 1.6.4 {@code Packet.readItemStack(DataInput)}: short id (-1 for none), byte count, short damage, gzipped NBT behind a short length (-1 for none). */
+    public static legacyconnector.v1_7_10.net.minecraft.item.ItemStack readItemStack(java.io.DataInput in) throws java.io.IOException {
+        short id = in.readShort();
+        if (id < 0) return null;
+        int count = in.readByte();
+        int damage = in.readShort();
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id);
+        legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack = item == null ? null
+                : new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, count, damage);
+        short length = in.readShort();
+        if (length >= 0) {
+            byte[] bytes = new byte[length];
+            in.readFully(bytes);
+            if (stack != null) {
+                net.minecraft.nbt.CompoundTag tag = net.minecraft.nbt.NbtIo.readCompressed(new java.io.ByteArrayInputStream(bytes), net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+                stack.setTagCompound(new NBTTagCompound(tag));
+            }
+        }
+        return stack;
+    }
+
+    public static void writeItemStack(legacyconnector.v1_7_10.net.minecraft.item.ItemStack stack, java.io.DataOutput out) throws java.io.IOException {
+        legacyconnector.v1_7_10.net.minecraft.item.Item item = stack == null ? null : stack.getItem();
+        if (item == null) {
+            out.writeShort(-1);
+            return;
+        }
+        out.writeShort(legacyconnector.v1_6_4.net.minecraft.util.Ids.itemId(item));
+        out.writeByte(legacyconnector.v1_7_10.net.minecraft.item.ItemStack.mcc$get$stackSize(stack));
+        out.writeShort(stack.getItemDamage());
+        NBTTagCompound tag = stack.getTagCompound();
+        if (tag == null) {
+            out.writeShort(-1);
+            return;
+        }
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        net.minecraft.nbt.NbtIo.writeCompressed(tag.mcc$modern(), bytes);
+        out.writeShort((short) bytes.size());
+        out.write(bytes.toByteArray());
+    }
+
+    /** 1.6.4 {@code NBTBase.readNamedTag(DataInput)}: type byte (0 ends), UTF name, payload. The name stays on the tag (see {@link #getName}). */
+    public static NBTBase readNamedTag(java.io.DataInput in) throws java.io.IOException {
+        byte type = in.readByte();
+        if (type == 0) return null;
+        String name = in.readUTF();
+        net.minecraft.nbt.Tag tag = net.minecraft.nbt.TagTypes.getType(type).load(in, net.minecraft.nbt.NbtAccounter.unlimitedHeap());
+        NBTBase wrapped = NBTBase.mcc$wrap(tag, null);
+        wrapped.mcc$name = name;
+        return wrapped;
+    }
+
+    public static void writeNamedTag(NBTBase tag, java.io.DataOutput out) throws java.io.IOException {
+        byte type = tag.getId();
+        out.writeByte(type);
+        if (type == 0) return;
+        out.writeUTF(getName(tag));
+        tag.mcc$modern().write(out);
+    }
+
+    // ------------------------------------------------------------------ constructor argument converters (rules "C ... args")
+
+    /** 1.6.4 {@code new ScaledResolution(gameSettings, w, h)}: 1.7.10 takes the client. */
+    public static legacyconnector.v1_7_10.net.minecraft.client.Minecraft minecraft(legacyconnector.v1_7_10.net.minecraft.client.settings.GameSettings settings) {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    /** 1.6.4 players were named; 1.7.10 ones have a profile (the offline profile of the name, as an offline server makes it). */
+    public static com.mojang.authlib.GameProfile profile(String name) {
+        String n = name == null ? "[Unknown]" : name;
+        return new com.mojang.authlib.GameProfile(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(n), n);
+    }
+
+    public static legacyconnector.v1_7_10.net.minecraft.world.WorldServer worldServer(legacyconnector.v1_7_10.net.minecraft.world.World world) {
+        return (legacyconnector.v1_7_10.net.minecraft.world.WorldServer) world;
+    }
+
+    /** 1.6.4 {@code new Achievement(id, name, ...)}: the stat id was derived from the name. */
+    public static String achievementId(String name) {
+        return "achievement." + name;
+    }
+
+    /** 1.6.4 {@code FakePlayerFactory.get(world, name)}. */
+    public static legacyconnector.v1_7_10.net.minecraftforge.common.util.FakePlayer fakePlayer(legacyconnector.v1_7_10.net.minecraft.world.World world, String name) {
+        return legacyconnector.v1_7_10.net.minecraftforge.common.util.FakePlayerFactory.get(worldServer(world), profile(name));
+    }
+
+    /** 1.6.4 {@code MinecraftForge.setToolClass(item, toolClass, level)}: 1.7.10 sets it on the item. */
+    public static void setToolClass(legacyconnector.v1_7_10.net.minecraft.item.Item item, String toolClass, int level) {
+        item.setHarvestLevel(toolClass, level);
+    }
+
+    /**
+     * 1.6.4 {@code getOwnerName()} of tameable animals: the owner's name (1.7.10 stores the UUID; the name of an online player, else the UUID text).
+     */
+    public static String getOwnerName(legacyconnector.v1_7_10.net.minecraft.entity.IEntityOwnable entity) {
+        String id = entity.func_152113_b();
+        if (id == null || id.isEmpty()) return "";
+        try {
+            java.util.UUID uuid = java.util.UUID.fromString(id);
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server != null) {
+                var player = server.getPlayerList().getPlayer(uuid);
+                if (player != null) return player.getGameProfile().getName();
+                var cached = server.getProfileCache() == null ? java.util.Optional.<com.mojang.authlib.GameProfile>empty() : server.getProfileCache().get(uuid);
+                if (cached.isPresent()) return cached.get().getName();
+            }
+        } catch (IllegalArgumentException e) {
+            return id;   // already a name
+        }
+        return id;
+    }
+
+    // ------------------------------------------------------------------ furnace recipes by id and damage
+
+    /**
+     * 1.6.4 {@code FurnaceRecipes.getMetaSmeltingList()}: a map keyed by {@code List(itemId, damage)}, a live view of the recipes: a put registers a
+     * smelting recipe for that item and damage, a get finds one.
+     */
+    public static java.util.Map getMetaSmeltingList(legacyconnector.v1_7_10.net.minecraft.item.crafting.FurnaceRecipes recipes) {
+        return new java.util.AbstractMap<Object, Object>() {
+            private legacyconnector.v1_7_10.net.minecraft.item.ItemStack stackOf(Object key) {
+                if (!(key instanceof java.util.List<?> l) || l.size() != 2 || !(l.get(0) instanceof Integer id) || !(l.get(1) instanceof Integer dmg)) return null;
+                legacyconnector.v1_7_10.net.minecraft.item.Item item = legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id);
+                return item == null ? null : new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(item, 1, dmg);
+            }
+
+            @Override
+            public Object put(Object key, Object value) {
+                legacyconnector.v1_7_10.net.minecraft.item.ItemStack in = stackOf(key);
+                if (in != null && value instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemStack out) recipes.addSmeltingRecipe(in, out, 0.0F);
+                return null;
+            }
+
+            @Override
+            public Object get(Object key) {
+                legacyconnector.v1_7_10.net.minecraft.item.ItemStack in = stackOf(key);
+                return in == null ? null : recipes.getSmeltingResult(in);
+            }
+
+            @Override
+            public boolean containsKey(Object key) {
+                return get(key) != null;
+            }
+
+            @Override
+            public java.util.Set<Entry<Object, Object>> entrySet() {
+                java.util.Set<Entry<Object, Object>> out = new java.util.LinkedHashSet<>();
+                for (Object o : recipes.getSmeltingList().entrySet()) {
+                    Entry<?, ?> e = (Entry<?, ?>) o;
+                    if (e.getKey() instanceof legacyconnector.v1_7_10.net.minecraft.item.ItemStack in && in.getItem() != null) {
+                        out.add(new java.util.AbstractMap.SimpleEntry<>(java.util.Arrays.asList(legacyconnector.v1_6_4.net.minecraft.util.Ids.itemId(in.getItem()), in.getItemDamage()), e.getValue()));
+                    }
+                }
+                return out;
+            }
+        };
+    }
+
     // ------------------------------------------------------------------ server lists by player name
 
     private static String[] opNames(legacyconnector.v1_7_10.net.minecraft.server.management.ServerConfigurationManager m) {

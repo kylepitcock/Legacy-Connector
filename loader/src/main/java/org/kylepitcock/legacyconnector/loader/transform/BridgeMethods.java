@@ -126,6 +126,14 @@ public final class BridgeMethods {
      */
     private static boolean convert(InsnList il, Type from, Type to, Hierarchy h) {
         if (from.equals(to)) return true;
+        if (from.getSort() == Type.INT && to.getSort() == Type.FLOAT) {   // 1.5.2 health and damage were ints
+            il.add(new InsnNode(Opcodes.I2F));
+            return true;
+        }
+        if (from.getSort() == Type.FLOAT && to.getSort() == Type.INT) {
+            il.add(new InsnNode(Opcodes.F2I));
+            return true;
+        }
         if (from.getSort() == Type.OBJECT && to.getSort() == Type.INT) {
             MethodInsnNode id = idOf(h, from.getInternalName());
             if (id == null) return false;
@@ -194,7 +202,9 @@ public final class BridgeMethods {
         Type newRet = Type.getReturnType(rule.newDesc());
 
         boolean needsConversion = newArgs.length != oldArgs.length;
-        for (int i = 0; i < oldArgs.length; i++) needsConversion |= oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.OBJECT;
+        for (int i = 0; i < oldArgs.length; i++) {
+            needsConversion |= oldArgs[i].getSort() == Type.INT && (newArgs[i].getSort() == Type.OBJECT || newArgs[i].getSort() == Type.FLOAT);
+        }
         InsnList pre = new InsnList();
         if (needsConversion) {
             // spill the arguments to fresh locals, then push them again converted (the receiver stays below)
@@ -213,6 +223,8 @@ public final class BridgeMethods {
                         MethodInsnNode conv = fromId(h, newArgs[i].getInternalName());
                         if (conv == null) return null;
                         pre.add(conv);
+                    } else if (oldArgs[i].getSort() == Type.INT && newArgs[i].getSort() == Type.FLOAT) {
+                        pre.add(new InsnNode(Opcodes.I2F));
                     }
                 } else {
                     pre.add(new InsnNode(CtorChooser.defaultConst(newArgs[i])));

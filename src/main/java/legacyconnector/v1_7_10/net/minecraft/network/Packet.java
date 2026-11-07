@@ -10,10 +10,30 @@ import java.io.IOException;
  * {@link #mcc$sendToServer} for packets the client sends.
  */
 public abstract class Packet {
+    /** 1.5.2 / 1.6.4 flag of packets that carry chunk data (the legacy network threads sorted by it); no effect here. */
+    public boolean isChunkDataPacket;
+
+    /**
+     * The 1.5.2 / 1.6.4 wire format ({@code DataInput}/{@code DataOutput}) of a mod's own {@code Packet} subclass. The 1.7.10 buffer methods
+     * below delegate to it, so a legacy subclass overriding these is read and written whichever way the layer carries it (see {@code Network164}).
+     */
+    public void readPacketData(java.io.DataInput in) throws IOException {
+    }
+
+    public void writePacketData(java.io.DataOutput out) throws IOException {
+    }
+
+    /** 1.5.2 / 1.6.4 size estimate of the packet in bytes. */
+    public int getPacketSize() {
+        return 0;
+    }
+
     public void readPacketData(PacketBuffer data) throws IOException {
+        readPacketData((java.io.DataInput) new java.io.DataInputStream(new io.netty.buffer.ByteBufInputStream(data)));
     }
 
     public void writePacketData(PacketBuffer data) throws IOException {
+        writePacketData((java.io.DataOutput) new java.io.DataOutputStream(new io.netty.buffer.ByteBufOutputStream(data)));
     }
 
     public void processPacket(INetHandler handler) {
