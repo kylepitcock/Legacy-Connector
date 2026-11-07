@@ -301,6 +301,7 @@ public final class RenderContext {
         resetColor(s);
         Capture c = new Capture();
         s.capture = c;
+        s.sheet = null;
         return c;
     }
 
@@ -420,6 +421,11 @@ public final class RenderContext {
     }
 
     /** Minecraft 1.4.7: the sprite sheet path ({@code /eloraam/base/base1.png}) just bound, whose tiles the pack cut into the atlas (see IsbrhQuads). */
+    /** Whether this thread is capturing a block's geometry into a model. */
+    public static boolean capturing() {
+        return STATE.get().capture != null;
+    }
+
     public static void setSheet(String path) {
         STATE.get().sheet = path;
     }

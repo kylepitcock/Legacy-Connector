@@ -27,6 +27,15 @@ public class TextureManager implements ITickable {
 
     /** Forge 1.5.2 (RenderEngine): textures are string paths, resolved by Textures152. */
     public void bindTexture(String path) {
+        // Forge 1.4.7 drew the vertices collected so far with the old texture before the new one was bound (a block renderer binds a
+        // sheet per part while the chunk's Tessellator is drawing): the captured quads must keep the sheet they were added under
+        if (RenderContext.capturing()) {
+            var t = legacyconnector.v1_7_10.net.minecraft.client.renderer.Tessellator.mcc$get$instance();
+            if (t.isDrawing) {
+                t.draw();
+                t.startDrawingQuads();
+            }
+        }
         bindTexture(org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path));
         // a 1.4.7 index sheet: tessellator UVs are tile positions of this image, not atlas UVs (IsbrhQuads maps them to the cut tiles)
         if (path != null && path.indexOf(':') < 0 && path.endsWith(".png")) RenderContext.setSheet(path);

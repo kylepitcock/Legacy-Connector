@@ -54,6 +54,11 @@ import legacyconnector.v1_7_10.net.minecraft.world.World;
 public class RenderBlocks {
     public IBlockAccess blockAccess;
     public IIcon overrideBlockTexture;
+
+    /** Minecraft 1.4.7's int {@code overrideBlockTexture} (-1: none; a tile index while breaking progress is drawn), read by mods' block renderers. */
+    public int mcc$overrideIndex() {
+        return overrideBlockTexture == null ? -1 : 0;
+    }
     public boolean flipTexture;
     /** Mirrors the U of north and east faces (1.7.10 sets it while drawing ambient-occluded faces of some blocks). */
     public boolean field_152631_f;

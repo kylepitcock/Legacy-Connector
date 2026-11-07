@@ -8,3 +8,4 @@ R	net/minecraft/world/World	setBlockAndMetadata	(IIIII)Z	static	org/kylepitcock/
 R	net/minecraft/world/World	setBlockMetadataWithNotify	(IIII)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockMetadataWithNotify	(Lnet/minecraft/world/World;IIII)V
 R	net/minecraft/world/World	setBlockMetadata	(IIII)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	setBlockMetadata	(Lnet/minecraft/world/World;IIII)Z
 R	net/minecraft/world/World	canPlaceEntityOnSide	(IIIIZILnet/minecraft/entity/Entity;)Z	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects147	canPlaceEntityOnSide	(Lnet/minecraft/world/World;IIIIZILnet/minecraft/entity/Entity;)Z
+G	net/minecraft/client/renderer/RenderBlocks	overrideBlockTexture	I	=	mcc$overrideIndex	()I
