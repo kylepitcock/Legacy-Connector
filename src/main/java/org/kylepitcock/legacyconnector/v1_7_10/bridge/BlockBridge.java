@@ -299,6 +299,65 @@ public final class BlockBridge {
     }
 
     /**
+     * Forge 1.5.2/1.6.4 blocks that a mod constructed (which put them in {@code Block.blocksList}) and never passed to
+     * {@code GameRegistry.registerBlock}: the game still had them, with whatever item the mod wrote to {@code Item.itemsList}
+     * (Forestry's ore block). They are registered under their unlocalized name, for the mod whose package owns the class.
+     */
+    public static synchronized int registerImplicit() {
+        boolean numeric = false;
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) numeric |= m.version.equals("1.6.4") || m.version.equals("1.5.2");
+        if (!numeric) return 0;
+        int count = 0;
+        Block[] list = legacyconnector.v1_6_4.net.minecraft.util.Ids.blocksList();
+        for (int id = 1; id < list.length; id++) {
+            Block block = list[id];
+            if (block == null || block.mcc$modern != null || block.mcc$vanilla != null || NAMES.containsKey(block)) continue;
+            if (block.getClass().getName().startsWith("legacyconnector.")) continue;
+            org.kylepitcock.legacyconnector.core.LegacyModRecord owner = ownerOf(block.getClass());
+            if (owner == null) continue;
+            String name = block.getUnlocalizedName();
+            name = name != null && !name.isEmpty() && !name.equals("tile.null") ? name.replaceFirst("^tile\\.", "") : "block" + id;
+            try {
+                if (BY_NAME.containsKey(owner.legacyId + ":" + name)) name = name + "_" + id;
+                register(block, null, name, owner.legacyId, new Object[0]);
+                legacyconnector.v1_7_10.net.minecraft.item.Item item = legacyconnector.v1_6_4.net.minecraft.util.Ids.item(id);
+                if (item instanceof ItemBlock ib && ib.mcc$block() == block && block.mcc$modern != null) {
+                    ItemBridge.registerBlockItem(ib, block, BuiltInRegistries.BLOCK.getKey((net.minecraft.world.level.block.Block) block.mcc$modern), NAMES.get(block));
+                } else {
+                    ItemBridge.fromBlock(block);
+                }
+                count++;
+            } catch (RuntimeException | LinkageError e) {
+                LOG.warn("Could not register the unregistered legacy block {} (id {}): {}", block, id, e.toString());
+            }
+        }
+        if (count > 0) LOG.info("Registered {} legacy block(s) that their mods never registered (the numeric id table had them)", count);
+        return count;
+    }
+
+    /** The legacy mod whose main class shares the longest package prefix with {@code cls}. */
+    private static org.kylepitcock.legacyconnector.core.LegacyModRecord ownerOf(Class<?> cls) {
+        org.kylepitcock.legacyconnector.core.LegacyModRecord best = null;
+        int bestLen = -1;
+        String name = cls.getName();
+        for (var m : org.kylepitcock.legacyconnector.core.LegacyMods.all()) {
+            String main = m.mainClassName == null ? "" : m.mainClassName;
+            int i = 0;
+            int n = Math.min(main.length(), name.length());
+            int lastDot = 0;
+            while (i < n && main.charAt(i) == name.charAt(i)) {
+                if (main.charAt(i) == '.') lastDot = i;
+                i++;
+            }
+            if (lastDot > bestLen) {
+                bestLen = lastDot;
+                best = m;
+            }
+        }
+        return best;
+    }
+
+    /**
      * Ores that generate deep (legacy y=0 is modern y=-64) get a deepslate twin, placed instead of the ore where the rock is
      * deepslate. The twin is the same legacy block (drops, hardness, behaviour), without an item of its own.
      */
@@ -585,13 +644,15 @@ public final class BlockBridge {
         return key >= 0 && key >> 4 == wrapper.mcc$vanilla.legacyId() ? key & 15 : 0;
     }
 
+    private static final java.util.Set<Block> UNREGISTERED_WARNED = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<>());
+
     public static BlockState toModern(Block block, int meta) {
         if (block == null) return Blocks.AIR.defaultBlockState();
         var equivalent = VanillaEquivalents.block(block, meta);
         if (equivalent != null) return equivalent.defaultBlockState();
         if (block.mcc$modern instanceof LegacyBlockAdapter a) return a.stateForMeta(meta);
         if (block.mcc$vanilla != null) return stateOfVanilla(block.mcc$vanilla, meta);
-        LOG.warn("Legacy block {} used in the world before it was registered; placing air", block);
+        if (UNREGISTERED_WARNED.add(block)) LOG.warn("Legacy block {} used in the world before it was registered; placing air (logged once per block)", block);
         return Blocks.AIR.defaultBlockState();
     }
 

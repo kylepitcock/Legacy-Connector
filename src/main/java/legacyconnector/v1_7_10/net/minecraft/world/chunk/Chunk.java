@@ -146,6 +146,24 @@ public class Chunk {
         this(world, blocks, null, x, z);
     }
 
+    /** Forge 1.5.2/1.6.4's {@code new Chunk(world, blockIds, x, z)}: block ids of the 128-high column layout (x*2048 + z*128 + y). */
+    public Chunk(World world, byte[] ids, int x, int z) {
+        this(world, ids, null, x, z);
+    }
+
+    public Chunk(World world, byte[] ids, byte[] meta, int x, int z) {
+        this(world, mcc$blocksOfIds(ids), meta, x, z);
+    }
+
+    private static Block[] mcc$blocksOfIds(byte[] ids) {
+        Block[] blocks = new Block[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i] & 0xFF;
+            if (id != 0) blocks[i] = Block.getBlockById(id);
+        }
+        return blocks;
+    }
+
     /** A chunk of 256-high column arrays, as legacy terrain generators build them. */
     public Chunk(World world, Block[] blocks, byte[] meta, int x, int z) {
         this(world, x, z, null);
