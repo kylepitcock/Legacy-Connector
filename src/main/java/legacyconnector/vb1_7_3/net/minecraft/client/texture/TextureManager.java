@@ -10,6 +10,7 @@ import org.kylepitcock.legacyconnector.vb1_7_3.GuiDrawB173;
  */
 public class TextureManager {
     public static boolean MIPMAP;
+    public legacyconnector.vb1_7_3.net.minecraft.client.resource.pack.TexturePacks texturePacks=new legacyconnector.vb1_7_3.net.minecraft.client.resource.pack.TexturePacks();
 
     protected TextureManager() {}
 
@@ -21,6 +22,8 @@ public class TextureManager {
 
     /** MCP {@code getTexture}. */
     public int getTextureId(String path) {
+        Integer captured=org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.textureId(path);
+        if(captured!=null)return captured;
         return GuiDrawB173.textureId(path);
     }
 
@@ -30,6 +33,7 @@ public class TextureManager {
     }
 
     public void bindTexture(int id) {
+        if(org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.bindId(id))return;
         GuiDrawB173.bind(id);
     }
 
@@ -38,4 +42,5 @@ public class TextureManager {
     public void tick() {}
 
     public void reload() {}
+    public void addDynamicTexture(legacyconnector.vb1_7_3.net.minecraft.client.render.texture.DynamicTexture effect){org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.add(effect);}
 }

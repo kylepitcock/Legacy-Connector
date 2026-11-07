@@ -171,6 +171,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
 
     private void generate(Map<String, Supplier<byte[]>> out) {
         this.out = out;
+        AnimationsB173.registerHooks();
         ProjectileTexturesB173.contribute(out);
         sprites.clear();
         sheets.clear();
@@ -178,6 +179,10 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         missing = 0;
         overrides = new HashMap<>();
         for (var o : ContentB173.textureOverrides()) overrides.put(o.sheet() + "#" + o.index(), o);
+        for(var animation:AnimationsB173.entries())if(animation.owner()!=null){
+            int repeat=Math.max(1,animation.effect().replicate);
+            for(int y=0;y<repeat;y++)for(int x=0;x<repeat;x++)texture(animation.owner(),animation.sheet(),animation.effect().sprite+x+y*16,animation.effect().atlas==1);
+        }
         int blocks = 0, items = 0;
         for (Block block : ContentB173.blocks()) {
             if (block.mcc$modern == null || !(block.mcc$owner instanceof LegacyModRecord mod) || BridgeB173.isVanillaReplacement(block.mcc$modern)) continue;
@@ -461,6 +466,15 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
     }
 
     private String resolve(LegacyModRecord mod, String sheet, int index, boolean item) {
+        var animation=AnimationsB173.find(sheet,index);
+        if(animation!=null){
+            var owner=animation.owner()!=null?animation.owner():mod;
+            if(owner!=null){
+                String name="animated_"+sheet.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+","_")+"_"+index;
+                String ref=write(owner,name,AnimationsB173.image(animation.effect()));
+                if(ref!=null){AnimationsB173.target(sheet,index,ref);withAlpha.add(ref);}return ref;
+            }
+        }
         ContentB173.TextureOverride o = overrides.get(sheet + "#" + index);
         if (o != null) {
             LegacyModRecord owner = o.mod() != null ? o.mod() : mod;
@@ -551,6 +565,12 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         } catch (IOException | RuntimeException e) {
             return null;
         }
+    }
+    /** Original legacy resource paths, shared by texture-pack and animation APIs. */
+    public static byte[] resourceBytes(String path){
+        byte[] bytes=resource(ContentB173.current(),path);if(bytes!=null)return bytes;
+        for(var mod:LegacyMods.all())if(PlatformB173.VERSION.equals(mod.version)){bytes=resource(mod,path);if(bytes!=null)return bytes;}
+        return null;
     }
 
     private void put(String path, JsonObject json) {

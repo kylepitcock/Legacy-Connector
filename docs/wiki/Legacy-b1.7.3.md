@@ -89,6 +89,17 @@ mod block placed, read back and asked for drops).
   are written as `assets/<mod>/textures/block/b173/*.png`. An index without either is the vanilla sprite at that place, mapped to the modern
   texture (tables of the terrain.png and gui/items.png layouts in `AssetsB173`, with the wool and dye formulas of BlockCloth and ItemDye);
   doors' negative indices select the absolute sprite index and mirror the face UVs.
+- **Animated sprites.** `BaseMod.RegisterAnimation`, `ModLoader.addAnimation`, `TextureManager.addDynamicTexture`,
+  `DynamicTexture` (Beta `TextureFX`) and `ModTextureAnimation` use shared APIs. Effects load their original resources,
+  select terrain/items or a custom Forge sheet through `bind`, and retain their own tick code and RGBA frame buffers.
+  Initial frames become generated atlas sprites; client texture ticks upload subsequent frames to the stitched locations
+  and regenerate their mip levels. Resource reloads recreate hook-owned effects without accumulating registrations.
+  Replicated tiles and multiple callbacks sharing a sprite retain Beta's upload order. No mod-specific animation rules.
+  `compat/b173/AnimationSelfTest` compares the real factory and fizzler callbacks with their source PNG frames, checks
+  conveyor sprite routing, shared-slot ordering, resource reloads and ModLoader strip timing. The server test verifies
+  frame delivery without launching a graphical client; final GPU appearance still requires an in-game check.
+  The supplied set passes all 8 factory effects and the portal fizzler over 32 ticks, including wraparound,
+  with exact RGBA comparisons against the original horizontal strips.
 - **Models.** One block model per metadata, deduplicated: faces down, up, north, south, west, east are b1.7.3's sides 0-5, the block's
   metadata-dependent bounds are the element (doors, slabs, plates). Render types 1 (crossed plants), 2 (floor/wall torches), 6 (crops)
   and 10 (oriented Beta stairs) use the vanilla model templates; other custom renderers fall back to their bounds. Non-opaque blocks are cutout, render layer 1 translucent, and so is any block whose sprites
@@ -161,8 +172,8 @@ and power through adjacent solids; `canTransferPower` checks strong power enteri
 bridge had these two queries swapped. Custom render IDs now dispatch to their registering mod's
 `RenderWorldBlock` callback. Shared `BlockRenderManager` cuboid helpers and a thread-local `Tessellator`
 capture geometry and UVs for modern baked quads. This runs the original conveyor renderer, including
-direction and slopes, with no mod-specific rendering rules. Animated sprites and arbitrary GL rendering
-remain unsupported; renderer failures are logged and retain the generated bounds fallback.
+direction and slopes, with no mod-specific rendering rules. Animated atlas sprites use the shared TextureFX bridge;
+arbitrary GL rendering remains unsupported. Renderer failures are logged and retain the generated bounds fallback.
 
 `compat/b173/BlockFamiliesSelfTest` uses installed NetherCraft stairs/doors, NetherCraft/Aether torches,
 IndustrialCraft doors and MineFactory conveyors. It checks modern placement, metadata, collision volumes,
@@ -393,8 +404,8 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
 0. **GUIs, rest**: ModLoaderMP's client side (`BaseModMp.HandleGUI` builds the client GUI for a server's `OpenGUI(player, id, inventory,
    container)`; today the client draws a plain panel for those), entity GUIs (item right-click callbacks are bridged), tile entity
    special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
-1. **Rendering, rest**: remaining standard block render types (fences, rails, ...), broader custom renderer helpers/GL calls, animated
-   sprites (`ModTextureAnimation`), colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
+1. **Rendering, rest**: remaining standard block render types (fences, rails, ...), broader custom renderer helpers/GL calls,
+   colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
    (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /
    `GenerateNether` as placed features), fuel (`AddFuel`).

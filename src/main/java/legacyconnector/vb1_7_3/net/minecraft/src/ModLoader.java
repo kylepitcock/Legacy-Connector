@@ -186,6 +186,13 @@ public final class ModLoader {
         org.kylepitcock.legacyconnector.vb1_7_3.BlockRenderB173.register(id,mod);
         return id;
     }
+    public static void addAnimation(legacyconnector.vb1_7_3.net.minecraft.client.render.texture.DynamicTexture effect){org.kylepitcock.legacyconnector.vb1_7_3.AnimationsB173.add(effect);}
+    public static java.awt.image.BufferedImage loadImage(legacyconnector.vb1_7_3.net.minecraft.client.texture.TextureManager manager,String path) throws java.io.IOException {
+        try(var stream=manager.texturePacks.selected.getResource(path)){
+            if(stream==null)throw new java.io.IOException("Missing Beta texture "+path);
+            var image=javax.imageio.ImageIO.read(stream);if(image==null)throw new java.io.IOException("Invalid Beta texture "+path);return image;
+        }
+    }
 
     public static void SetInGameHook(BaseMod mod, boolean enable, boolean useClock) {
         ContentB173.setTickHook(mod, enable, useClock, false);
