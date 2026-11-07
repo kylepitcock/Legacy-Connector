@@ -42,12 +42,12 @@ public final class EnergyBridge {
     private record TileStorage(TileEntity tile, ForgeDirection from) implements IEnergyStorage {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
-            return tile instanceof IEnergyReceiver r ? r.receiveEnergy(from, amount, simulate) : 0;
+            return amount > 0 && tile instanceof IEnergyReceiver r ? org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(amount, r.receiveEnergy(from, amount, simulate)) : 0;
         }
 
         @Override
         public int extractEnergy(int amount, boolean simulate) {
-            return tile instanceof IEnergyProvider p ? p.extractEnergy(from, amount, simulate) : 0;
+            return amount > 0 && tile instanceof IEnergyProvider p ? org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(amount, p.extractEnergy(from, amount, simulate)) : 0;
         }
 
         @Override

@@ -59,6 +59,13 @@ public final class BuiltinAdapters {
         if (!(tile instanceof legacyconnector.v1_12_2.net.minecraft.tileentity.TileEntity t)) return null;
         EnumFacing facing = side == null ? null : EnumFacing.mcc$of(side);
         var storage = t.getCapability(CapabilityEnergy.ENERGY, facing);
+        if (storage == null && side == null) {
+            // a sideless query of a tile that only answers per side: the first side that has one
+            for (EnumFacing f : EnumFacing.values()) {
+                storage = t.getCapability(CapabilityEnergy.ENERGY, f);
+                if (storage != null) break;
+            }
+        }
         return storage == null ? null : new Energy1122(storage);
     }
 
@@ -104,25 +111,48 @@ public final class BuiltinAdapters {
         }
     }
 
+    /** A transfer result held to NeoForge's contract: between 0 and what was asked (a legacy mod may report more, or a negative number). */
+    public static int clampTransfer(int requested, int moved) {
+        return requested <= 0 ? 0 : Math.max(0, Math.min(requested, moved));
+    }
+
     private record Energy1122(legacyconnector.v1_12_2.net.minecraftforge.energy.IEnergyStorage storage) implements IEnergyStorage {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
-            return storage.receiveEnergy(amount, simulate);
+            if (amount <= 0) return 0;
+            try {
+                return clampTransfer(amount, storage.receiveEnergy(amount, simulate));
+            } catch (NullPointerException e) {
+                return 0;   // a mod that cannot answer a sideless query (the facing is null)
+            }
         }
 
         @Override
         public int extractEnergy(int amount, boolean simulate) {
-            return storage.extractEnergy(amount, simulate);
+            if (amount <= 0) return 0;
+            try {
+                return clampTransfer(amount, storage.extractEnergy(amount, simulate));
+            } catch (NullPointerException e) {
+                return 0;
+            }
         }
 
         @Override
         public int getEnergyStored() {
-            return storage.getEnergyStored();
+            try {
+                return Math.max(0, storage.getEnergyStored());
+            } catch (NullPointerException e) {
+                return 0;
+            }
         }
 
         @Override
         public int getMaxEnergyStored() {
-            return storage.getMaxEnergyStored();
+            try {
+                return Math.max(0, storage.getMaxEnergyStored());
+            } catch (NullPointerException e) {
+                return 0;
+            }
         }
 
         @Override

@@ -107,6 +107,25 @@ class EnergyBridge1122Test {
     }
 
     @Test
+    void aMisbehavingModCannotMoveMoreThanAskedOrNegativeAmounts() {
+        assertEquals(50, org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(50, 9999));
+        assertEquals(0, org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(50, -7));
+        assertEquals(0, org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(0, 10));
+        assertEquals(20, org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters.clampTransfer(50, 20));
+    }
+
+    @Test
+    void aSidelessQueryUsesTheFirstSideTheTileConnectsOn() {
+        // the machine does not connect DOWN (the first side): a sideless query must still give a view whose calls never see a null side
+        Machine m = new Machine();
+        m.fill(500);
+        IEnergyStorage fe = EnergyBridge1122.forTile(m, null);
+        assertNotNull(fe);
+        assertEquals(500, fe.getEnergyStored());
+        assertEquals(40, fe.extractEnergy(1000, false));
+    }
+
+    @Test
     void referenceBufferBehavesLikeRedstoneFlux() {
         EnergyStorage s = new EnergyStorage(100, 30, 20);
         assertEquals(30, s.receiveEnergy(100, false));

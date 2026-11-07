@@ -11,6 +11,7 @@ import net.minecraft.core.Direction;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.energy.IEnergyStorage;
+import org.kylepitcock.legacyconnector.api.internal.BuiltinAdapters;
 
 /**
  * Redstone Flux (the 1.12.2 {@code cofh.redstoneflux.api}: the {@code IEnergyReceiver}/{@code IEnergyProvider} tiles and
@@ -24,9 +25,16 @@ public final class EnergyBridge1122 {
     /** The RF view of a tile for a side, or null when it is not an RF tile or does not connect on that side. */
     public static IEnergyStorage forTile(TileEntity tile, Direction side) {
         if (!(tile instanceof IEnergyReceiver) && !(tile instanceof IEnergyProvider)) return null;
-        EnumFacing from = side == null ? null : EnumFacing.mcc$of(side);
-        if (side != null && tile instanceof IEnergyConnection c && !c.canConnectEnergy(from)) return null;
-        return new TileStorage(tile, from);
+        if (side != null) {
+            EnumFacing from = EnumFacing.mcc$of(side);
+            return tile instanceof IEnergyConnection c && !c.canConnectEnergy(from) ? null : new TileStorage(tile, from);
+        }
+        // a sideless query (a modern cable, a jade tooltip): Redstone Flux has no "unknown" side and its tiles index arrays by it,
+        // so use the first side the tile connects on
+        for (EnumFacing from : EnumFacing.values()) {
+            if (!(tile instanceof IEnergyConnection c) || c.canConnectEnergy(from)) return new TileStorage(tile, from);
+        }
+        return null;
     }
 
     /** Registers the energy item capability of every 1.12.2 item implementing Redstone Flux's {@code IEnergyContainerItem}. */
@@ -43,12 +51,12 @@ public final class EnergyBridge1122 {
     public record TileStorage(TileEntity tile, EnumFacing from) implements IEnergyStorage {
         @Override
         public int receiveEnergy(int amount, boolean simulate) {
-            return amount > 0 && tile instanceof IEnergyReceiver r ? Math.max(0, r.receiveEnergy(from, amount, simulate)) : 0;
+            return amount > 0 && tile instanceof IEnergyReceiver r ? BuiltinAdapters.clampTransfer(amount, r.receiveEnergy(from, amount, simulate)) : 0;
         }
 
         @Override
         public int extractEnergy(int amount, boolean simulate) {
-            return amount > 0 && tile instanceof IEnergyProvider p ? Math.max(0, p.extractEnergy(from, amount, simulate)) : 0;
+            return amount > 0 && tile instanceof IEnergyProvider p ? BuiltinAdapters.clampTransfer(amount, p.extractEnergy(from, amount, simulate)) : 0;
         }
 
         @Override
