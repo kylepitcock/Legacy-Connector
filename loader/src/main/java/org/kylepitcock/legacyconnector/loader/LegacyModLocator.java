@@ -434,7 +434,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
     private static boolean isModArchive(Path f) {
         String name = f.getFileName().toString().toLowerCase();
         return name.endsWith(".jar") || (name.endsWith(".zip") && f.getParent() != null && f.getParent().getFileName() != null
-                && f.getParent().getFileName().toString().equals("1.4.7"));
+                && java.util.Set.of("1.4.7", "1.5.2", "1.6.4").contains(f.getParent().getFileName().toString()));
     }
 
     private static Map<String, String> fmlIdRenames(List<LegacyJar> loading, List<LegacyJar> allLegacy, List<Path> dirs) {
