@@ -321,6 +321,11 @@ public class BiomeGenBase {
         return rainfall;
     }
 
+    /** The temperature as a 16.16 fixed point number (1.7.10: used by the temperature-to-colour maps and by mods comparing biomes). */
+    public final int getIntTemperature() {
+        return (int) (temperature * 65536.0F);
+    }
+
     public final float getFloatTemperature(int x, int y, int z) {
         return y > 64 ? temperature - (y - 64) * 0.05F / 30.0F : temperature;
     }

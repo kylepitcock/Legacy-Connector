@@ -1486,6 +1486,13 @@ public abstract class Entity implements ICommandSender {
         return list;
     }
 
+    /** The direction (0-3) the entity entered a portal from; portal blocks that set it through a teleporter read it back here. */
+    protected int teleportDirection;
+
+    public int getTeleportDirection() {
+        return teleportDirection;
+    }
+
     /** Fall bookkeeping of the entity; the modern game tracks fall distance itself. */
     protected void updateFallState(double y, boolean onGround) {
     }

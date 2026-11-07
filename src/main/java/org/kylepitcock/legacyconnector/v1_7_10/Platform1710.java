@@ -309,6 +309,7 @@ public final class Platform1710 implements LegacyPlatform {
 
     @Override
     public void preInit(LegacyModRecord mod) throws Exception {
+        org.kylepitcock.legacyconnector.compat.mods.OfflineServiceDefaults.beforePreInit(mod.modernId, java.nio.file.Path.of(System.getProperty("user.dir")));
         legacyconnector.v1_7_10.cpw.mods.fml.common.Loader.mcc$setState(legacyconnector.v1_7_10.cpw.mods.fml.common.LoaderState.PREINITIALIZATION);
         org.kylepitcock.legacyconnector.v1_7_10.bridge.ItemBridge.setDeferDiscovery(true);
         try {

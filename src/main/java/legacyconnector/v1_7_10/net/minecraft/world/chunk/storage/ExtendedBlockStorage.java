@@ -152,6 +152,16 @@ public class ExtendedBlockStorage {
         return out;
     }
 
+    /** The metadata of each block (index y << 8 | z << 4 | x, one nibble each), as a copy: writes to it change nothing. */
+    public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getMetadataArray() {
+        legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = new legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray(4096, 4);
+        for (int i = 0; i < 4096; i++) {
+            int x = i & 15, y = i >> 8, z = i >> 4 & 15;
+            out.set(x, y, z, getExtBlockMetadata(x, y, z) & 15);
+        }
+        return out;
+    }
+
     /** The high four bits of the legacy ids above 255 (null when every id fits in eight bits, as 1.7.10 left it); a copy. */
     public legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray getBlockMSBArray() {
         legacyconnector.v1_7_10.net.minecraft.world.chunk.NibbleArray out = null;

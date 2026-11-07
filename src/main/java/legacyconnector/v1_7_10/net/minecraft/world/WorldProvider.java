@@ -27,6 +27,11 @@ public class WorldProvider {
     }
 
     /** Whether it is day here (dimensions without a day cycle override it). */
+    /** Moves the world's spawn point (1.7.10 {@code WorldProvider.setSpawnPoint}; the world info keeps it). */
+    public void setSpawnPoint(int x, int y, int z) {
+        if (worldObj != null) worldObj.getWorldInfo().setSpawnPosition(x, y, z);
+    }
+
     public boolean isDaytime() {
         return worldObj == null || worldObj.isDaytime();
     }

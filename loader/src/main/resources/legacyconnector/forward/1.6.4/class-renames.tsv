@@ -97,3 +97,6 @@ net/minecraft/world/gen/structure/StructureVillagePieceWeight	net/minecraft/worl
 net/minecraft/world/gen/feature/MapGenScatteredFeature	net/minecraft/world/gen/structure/MapGenScatteredFeature
 net/minecraft/block/BlockComparator	net/minecraft/block/BlockRedstoneComparator
 net/minecraft/block/BlockRedstoneLogic	net/minecraft/block/BlockRedstoneDiode
+net/minecraft/block/EnumMobType	net/minecraft/block/BlockPressurePlate$Sensitivity
+net/minecraft/world/PortalPosition	net/minecraft/world/Teleporter$PortalPosition
+net/minecraft/client/gui/GuiSmallButton	net/minecraft/client/gui/GuiOptionButton

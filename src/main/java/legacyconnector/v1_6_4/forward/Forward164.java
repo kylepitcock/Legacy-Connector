@@ -322,4 +322,28 @@ public final class Forward164 {
                 : new com.mojang.authlib.GameProfile(net.minecraft.core.UUIDUtil.createOfflinePlayerUUID(name), name);
         m.addOp(profile);
     }
+
+    /** 1.6.4 {@code FoodStats.addStats(ItemFood)}: the food's own heal amount and saturation (1.7.10 also takes the stack eaten). */
+    public static void addFoodStats(legacyconnector.v1_7_10.net.minecraft.util.FoodStats stats, legacyconnector.v1_7_10.net.minecraft.item.ItemFood food) {
+        stats.addStats(food, new legacyconnector.v1_7_10.net.minecraft.item.ItemStack(food));
+    }
+
+    /** 1.6.4 {@code Minecraft.statFileWriter}: the player's statistics and achievements (1.7.10 keeps them on the client player). */
+    public static legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter statFileWriter(legacyconnector.v1_7_10.net.minecraft.client.Minecraft mc) {
+        var player = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$thePlayer(mc);
+        legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter writer = player == null ? null : player.getStatFileWriter();
+        return writer != null ? writer : (STAT_FALLBACK == null ? (STAT_FALLBACK = new legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter()) : STAT_FALLBACK);
+    }
+
+    private static legacyconnector.v1_7_10.net.minecraft.stats.StatFileWriter STAT_FALLBACK;
+
+    /** 1.6.4 {@code StatBase.getName()}: the displayed name as plain text (1.7.10 holds a chat component). */
+    public static String statName(legacyconnector.v1_7_10.net.minecraft.stats.StatBase stat) {
+        return stat.getStatName().getUnformattedText();
+    }
+
+    /** 1.6.4 {@code EntityPlayerMP.incrementWindowID()}: the next container window id (1-100). */
+    public static void incrementWindowID(legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player) {
+        player.getNextWindowId();
+    }
 }

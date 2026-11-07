@@ -27,6 +27,33 @@ public class Display {
     public static void destroy() {
     }
 
+    /**
+     * LWJGL 2's {@code Display.setIcon}: the window icon from RGBA images (square, 4 bytes a pixel). Returns the number of icons
+     * used. The game's own icon stays when there is no window or no usable image.
+     */
+    public static int setIcon(java.nio.ByteBuffer[] icons) {
+        Window w = window();
+        if (w == null || icons == null) return 0;
+        try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
+            org.lwjgl.glfw.GLFWImage.Buffer images = org.lwjgl.glfw.GLFWImage.malloc(icons.length, stack);
+            int used = 0;
+            for (java.nio.ByteBuffer icon : icons) {
+                if (icon == null) continue;
+                int pixels = icon.remaining() / 4;
+                int size = (int) Math.round(Math.sqrt(pixels));
+                if (size <= 0 || size * size != pixels) continue;
+                images.position(used++);
+                images.width(size).height(size).pixels(icon);
+            }
+            if (used == 0) return 0;
+            images.position(0).limit(used);
+            GLFW.glfwSetWindowIcon(w.getWindow(), images);
+            return used;
+        } catch (RuntimeException | LinkageError e) {
+            return 0;
+        }
+    }
+
     public static void update() {
     }
 

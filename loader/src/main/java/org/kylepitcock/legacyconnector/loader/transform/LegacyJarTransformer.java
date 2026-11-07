@@ -299,8 +299,41 @@ public final class LegacyJarTransformer {
         notchLocals(classes, remapper, Map.of());
     }
 
+    /**
+     * Copies of obfuscated vanilla classes a mod jar carries in its default package (Crafting Dead ships the reobfuscated ModelBiped,
+     * RenderPlayer and ThreadDownloadImageData$1 of its build): Forge's class loader read the game's own jar first, so the copy was never
+     * used. Dropping it lets the mod's references resolve to the vanilla class they name, as they did. Recognised by a notch name of the
+     * version whose SourceFile is the vanilla class's simple name.
+     */
+    static int dropBundledVanilla(Map<String, byte[]> classes, LegacyVersion version) {
+        org.kylepitcock.legacyconnector.loader.mapping.NotchNames notch = org.kylepitcock.legacyconnector.loader.mapping.NotchNames.get(version.id());
+        if (notch == null || notch.isEmpty()) return 0;
+        int dropped = 0;
+        for (String name : List.copyOf(classes.keySet())) {
+            if (name.indexOf('/') >= 0) continue;
+            String mcp = notch.mcpClass(name);
+            if (mcp == null) continue;
+            try {
+                ClassNode node = new ClassNode();
+                new ClassReader(classes.get(name)).accept(node, ClassReader.SKIP_CODE | ClassReader.SKIP_FRAMES);
+                String outer = mcp.substring(mcp.lastIndexOf('/') + 1);
+                int dollar = outer.indexOf('$');
+                if (dollar >= 0) outer = outer.substring(0, dollar);
+                String source = node.sourceFile == null ? "" : node.sourceFile.replaceAll("INNER\\d+(?=\\.java$)", "");
+                if (source.equals(outer + ".java")) {
+                    classes.remove(name);
+                    dropped++;
+                }
+            } catch (RuntimeException ignored) {
+                // unreadable: kept, reported later
+            }
+        }
+        return dropped;
+    }
+
     private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper, Map<String, ClassInfo> peers) {
         if (!remapper.version().numericIds()) return;
+        dropBundledVanilla(classes, remapper.version());
         Map<String, String[]> locals = new java.util.HashMap<>();
         // packaged classes only: a peer jar that carries vanilla classes under their notch names (a jar mod) must not hide them from this jar
         for (ClassInfo peer : peers.values()) if (peer.originalSupers != null && peer.name.indexOf('/') > 0) locals.put(peer.name, peer.originalSupers);

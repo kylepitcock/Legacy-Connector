@@ -101,6 +101,11 @@ public final class World {
         info.setRaining(!info.isRaining());
     }
 
+    /** 1.6.4 {@code getWorldLogAgent()}: the logger of the world (the shim has log4j only). */
+    public static legacyconnector.v1_6_4.net.minecraft.logging.ILogAgent getWorldLogAgent(legacyconnector.v1_7_10.net.minecraft.world.World self) {
+        return legacyconnector.v1_6_4.net.minecraft.logging.LogAgent.world();
+    }
+
     public static void scheduleBlockUpdate(legacyconnector.v1_7_10.net.minecraft.world.World self, int x, int y, int z, int id, int delay) {
         self.scheduleBlockUpdate(x, y, z, blockOf(id), delay);
     }
