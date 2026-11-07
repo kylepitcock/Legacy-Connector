@@ -119,6 +119,12 @@ public class Item {
         return false;
     }
 
+    public boolean postHit(ItemStack stack, legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity target,
+            legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity attacker) { return false; }
+
+    public boolean postMine(ItemStack stack, int blockId, int x, int y, int z,
+            legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity miner) { return false; }
+
     public Item setHandheld() {
         this.handheld = true;
         return this;

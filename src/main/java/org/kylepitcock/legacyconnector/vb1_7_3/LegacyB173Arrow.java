@@ -8,6 +8,12 @@ import net.minecraft.world.level.Level;
 
 /** A tracked modern arrow whose server flight, collision, damage and pickup run the mod's original code. */
 public final class LegacyB173Arrow extends Arrow {
+    private static final net.minecraft.network.syncher.EntityDataAccessor<String> TEXTURE = net.minecraft.network.syncher.SynchedEntityData.defineId(
+            LegacyB173Arrow.class, net.minecraft.network.syncher.EntityDataSerializers.STRING);
+    @Override protected void defineSynchedData(net.minecraft.network.syncher.SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);builder.define(TEXTURE,ProjectileTexturesB173.FALLBACK.toString());
+    }
+    public net.minecraft.resources.ResourceLocation texture() { return net.minecraft.resources.ResourceLocation.parse(entityData.get(TEXTURE)); }
     public Entity legacy;
     public LegacyB173Arrow(EntityType<? extends Arrow> type, Level level) { super(type, level); }
     public static boolean spawn(Level level, Entity entity) {
@@ -26,6 +32,7 @@ public final class LegacyB173Arrow extends Arrow {
         return level.addFreshEntity(host);
     }
     private void sync() {
+        entityData.set(TEXTURE,ProjectileTexturesB173.of(legacy.getClass()).toString());
         setPos(legacy.x,legacy.y,legacy.z);
         setDeltaMovement(legacy.velocityX,legacy.velocityY,legacy.velocityZ);
         setYRot(legacy.yaw); setXRot(legacy.pitch);
@@ -79,6 +86,7 @@ public final class LegacyB173Arrow extends Arrow {
                 legacy.setPositionAndAngles(getX(),getY(),getZ(),getYRot(),getXRot());
                 legacy.velocityX=getDeltaMovement().x;legacy.velocityY=getDeltaMovement().y;legacy.velocityZ=getDeltaMovement().z;
                 legacy.readNbt(NbtB173.fromModern(tag.getCompound("beta")));
+                entityData.set(TEXTURE,ProjectileTexturesB173.of(legacy.getClass()).toString());
             }
         } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn("Could not restore legacy projectile {}",tag.getString("betaClass"),e);

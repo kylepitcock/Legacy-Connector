@@ -148,5 +148,6 @@ public final class PlatformB173 implements LegacyPlatform {
         if (!started) return;
         BridgeB173.registerAll();
         CreativeTabsB173.register();
+        ProjectileTexturesB173.discover();
     }
 }

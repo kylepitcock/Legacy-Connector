@@ -111,6 +111,19 @@ public class ItemStack {
         this.damage = damage;
     }
 
+    /** Beta breaks after exceeding the maximum, not on reaching it. Subtype-only items do not wear. */
+    public void damage(int amount, legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
+        if (!isDamageable() || amount <= 0 || count <= 0) return;
+        if (entity != null && entity.mcc$modern instanceof net.minecraft.world.entity.player.Player p && p.getAbilities().instabuild) return;
+        long next = (long) damage + amount;
+        if (next > getMaxDamage()) {
+            count = Math.max(0, count - 1);
+            damage = 0;
+            if (entity != null && entity.mcc$modern instanceof net.minecraft.world.entity.LivingEntity living)
+                living.onEquippedItemBroken(living.getMainHandItem().getItem(), net.minecraft.world.entity.EquipmentSlot.MAINHAND);
+        } else damage = (int) next;
+    }
+
     public int getMaxDamage() {
         Item item = getItem();
         return item == null ? 0 : item.getMaxDamage();

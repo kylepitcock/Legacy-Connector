@@ -24,7 +24,7 @@ public final class ClientB173 implements MenusB173.Client {
                 e.registerEntityRenderer(org.kylepitcock.legacyconnector.LegacyConnector.BETA_ARROW.get(), context ->
                         new net.minecraft.client.renderer.entity.ArrowRenderer<org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow>(context) {
                             @Override public net.minecraft.resources.ResourceLocation getTextureLocation(org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow arrow) {
-                                return net.minecraft.resources.ResourceLocation.withDefaultNamespace("textures/entity/projectiles/arrow.png");
+                                return arrow.texture();
                             }
                         }));
         modBus.addListener((RegisterMenuScreensEvent e) -> {

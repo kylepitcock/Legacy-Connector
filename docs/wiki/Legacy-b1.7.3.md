@@ -179,19 +179,38 @@ The modern host provides entity tracking and saves the legacy class and NBT, inc
 register with `RegisterEntityID`; restoration only accepts arrow classes from loaded Beta mod modules.
 Shooter identity is stored by the modern projectile. Bow/fireball/hit sounds use modern sound events.
 
-This is arrow support, not a general mob bridge. Client arrows currently use the standard arrow model/texture,
-not the mods' custom renderers. Skyroot milk/poison/remedy effects and mod creatures are separate work.
+Client arrows use the standard arrow geometry with the mod's own PNG when its registered renderer binds one
+constant texture. `ProjectileTexturesB173` reads `AddRenderer` registrations and delegated registration methods
+without loading client renderer classes on the server. The generated resource pack includes the original PNG;
+the host synchronizes the texture identifier and restores it after loading. Conditional/animated texture
+selection, custom geometry and other projectile types still need their renderer/entity bridges. Skyroot
+milk/poison/remedy effects and mod creatures are separate work.
 
 `compat/b173/BucketBowSelfTest` uses the actual installed NetherCraft and Aether classes through their modern
 item entry points. Bucket checks cover source pickup, placement, flowing-fluid rejection, misses and denied
 building permission. Bow checks cover four NetherCraft bow classes with each of their four ammunition types,
 plus the Phoenix bow: no-ammo behavior, consumption, spawning, flight, mob damage, ignition, wall impacts,
-pickup and save/reload. These checks run with the existing headless server self tests; client appearance still
+pickup, original projectile PNG bytes and texture save/reload. These checks run with the existing headless server self tests; client appearance still
 needs an in-game check.
 
 Validated with NetherCraft 1.9b (ModLoader-only build) and Aether 1.02: both buckets and all five bow classes
 pass (17 bow/ammunition combinations). Existing regression checks remain at 113 menus, 29/29 shift-click
 cases, 2/2 crafting cases and zero block-callback failures.
+
+### Item durability
+
+Modern mining and melee callbacks invoke the item's original `postMine` and `postHit` methods. `ItemStack.damage`
+applies the requested wear, keeps an item at exactly its maximum damage, and breaks it only when damage exceeds
+that maximum, matching Beta. Creative players do not incur wear. Right-click callbacks use the same damage API.
+Damage is stored in the modern stack component for inventory bars and saving; subtype metadata remains separate.
+The `ToolItem`, `SwordItem` and `ToolMaterial` shims supply inherited durability behavior for mod subclasses.
+
+`compat/b173/DurabilitySelfTest` exercises actual NetherCraft tools/swords and Aether Zanite tools/swords,
+including mining versus combat costs, persistence, creative use, the last use and breakage. It also checks
+NetherCraft's firestarter through the modern right-click entry point and protects Skyroot bucket metadata.
+The supplied NetherCraft 1.9b/Aether 1.02 set passes all 22 registered tools/swords and the firestarter checks.
+Vanilla item replacements retain the modern vanilla item's behavior.
+Armor wear and tool mining-speed/attack attributes are separate work.
 
 ## Tile entities
 

@@ -76,4 +76,36 @@ public final class LegacyB173Item extends Item {
         if (failures++ < 3) LoggerFactory.getLogger("LegacyConnector/b1.7.3").warn(
                 "b1.7.3 item {} callback {} failed", legacy, callback, error);
     }
+
+    @Override
+    public boolean mineBlock(ItemStack stack, Level level, net.minecraft.world.level.block.state.BlockState state,
+            net.minecraft.core.BlockPos pos, net.minecraft.world.entity.LivingEntity miner) {
+        if (level.isClientSide) return false;
+        return wear(stack, miner, null, state, pos);
+    }
+
+    @Override
+    public boolean hurtEnemy(ItemStack stack, net.minecraft.world.entity.LivingEntity target, net.minecraft.world.entity.LivingEntity attacker) {
+        if (attacker.level().isClientSide) return false;
+        return wear(stack, attacker, target, null, null);
+    }
+
+    private boolean wear(ItemStack stack, net.minecraft.world.entity.LivingEntity actor, net.minecraft.world.entity.LivingEntity target,
+            net.minecraft.world.level.block.state.BlockState state, net.minecraft.core.BlockPos pos) {
+        var held=StacksB173.toLegacy(stack);
+        if (held==null) return false;
+        var view=(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(actor);
+        try {
+            legacyconnector.vb1_7_3.net.minecraft.client.Minecraft.mcc$use(World.mcc$wrap(actor.level()));
+            boolean result=target==null ? legacy.postMine(held,BlocksB173.legacyId(state),pos.getX(),pos.getY(),pos.getZ(),view)
+                    : legacy.postHit(held,(legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity)EntityViewsB173.wrap(target),view);
+            // Keep the caller's modern stack identity and components; vanilla still holds this object after the callback.
+            stack.setCount(Math.max(0,held.count));
+            if (!stack.isEmpty() && stack.isDamageableItem()) stack.setDamageValue(held.getDamage());
+            if (view instanceof PlayerViewB173 player) player.writeBack();
+            return result;
+        } catch (RuntimeException | LinkageError e) {
+            failed(target==null?"postMine":"postHit",e);return false;
+        } finally { EntityViewsB173.flush(); }
+    }
 }

@@ -83,9 +83,26 @@ public final class BucketBowSelfTest {
             var arrows=level.getEntitiesOfClass(LegacyB173Arrow.class,area);
             require(arrows.size()==1,"one arrow spawned");require(p.getInventory().items.get(1).getCount()==1,"one ammo consumed");
             var arrow=arrows.getFirst();var start=arrow.position();float health=target.getHealth();
+            require(!arrow.texture().equals(ProjectileTexturesB173.FALLBACK),"mod projectile texture selected: "+arrow.legacy.getClass());
+            var assets=new java.util.HashMap<String,java.util.function.Supplier<byte[]>>();
+            ProjectileTexturesB173.contribute(assets);
+            var texture=assets.get("assets/"+arrow.texture().getNamespace()+"/"+arrow.texture().getPath());
+            require(texture!=null && texture.get().length>8,"projectile PNG included in resource pack");
+            String source=switch(arrow.legacy.getClass().getSimpleName()) {
+                case "EntityLarrow" -> "item/larrows.png";
+                case "EntityNarrow" -> "item/narrows.png";
+                case "EntityParrow" -> "item/parrows.png";
+                case "EntityNetherArrow" -> "item/netherarrows.png";
+                case "EntityFlamingArrow" -> "aether/other/FlamingArrows.png";
+                default -> throw new IllegalStateException("Unknown test arrow "+arrow.legacy.getClass());
+            };
+            try(var stream=arrow.legacy.getClass().getModule().getResourceAsStream(source)) {
+                require(stream!=null && java.util.Arrays.equals(texture.get(),stream.readAllBytes()),"original mod PNG bytes retained");
+            } catch(java.io.IOException e) { throw new IllegalStateException(e); }
             var saved=new net.minecraft.nbt.CompoundTag(); arrow.save(saved);
             var restored=net.minecraft.world.entity.EntityType.loadEntityRecursive(saved,level,e -> e);
             require(restored instanceof LegacyB173Arrow copy && copy.legacy!=null && copy.legacy.getClass()==arrow.legacy.getClass(),"arrow saves and reloads as same mod class");
+            require(((LegacyB173Arrow)restored).texture().equals(arrow.texture()),"custom texture survives reload");
             restored.discard();
             for(int tick=0;tick<20 && !arrow.isRemoved() && target.getHealth()==health;tick++) arrow.tick();
             require(arrow.position().distanceTo(start)>0.1,"arrow moves");

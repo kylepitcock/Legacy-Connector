@@ -158,6 +158,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
 
     private void generate(Map<String, Supplier<byte[]>> out) {
         this.out = out;
+        ProjectileTexturesB173.contribute(out);
         sprites.clear();
         sheets.clear();
         withAlpha.clear();
