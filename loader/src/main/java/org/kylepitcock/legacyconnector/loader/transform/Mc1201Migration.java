@@ -150,6 +150,10 @@ final class Mc1201Migration {
      * the result of a method that used to return void.
      */
     private static void inPlace(MethodNode m, MethodInsnNode call, Call rule) {
+        if (rule.helper().equals("=args")) {
+            rewriteArgs(m, call, rule);
+            return;
+        }
         if (rule.helper().equals("=swap")) m.instructions.insertBefore(call, new InsnNode(Opcodes.SWAP));
         else if (rule.helper().equals("=pop")) m.instructions.insertBefore(call, new InsnNode(Opcodes.POP));
         else if (rule.helper().equals("=swappop")) {
@@ -160,6 +164,52 @@ final class Mc1201Migration {
         else if (rule.helper().equals("=ret")) m.instructions.insert(call, new InsnNode(Type.getReturnType(rule.helperDesc()).getSize() == 2 ? Opcodes.POP2 : Opcodes.POP));
         if (!rule.helperName().equals("-")) call.name = rule.helperName();
         if (rule.helperDesc() != null) call.desc = rule.helperDesc();
+    }
+
+    /**
+     * {@code =args}: the call keeps its name and receiver, its arguments are produced again from the old ones. The helper-name column lists one token per
+     * new parameter: {@code N} (old argument N unchanged), {@code Class.method@a+b} (a static helper taking old arguments a and b, returning the new parameter),
+     * and the helper-descriptor column is the new descriptor. The old arguments are spilled to fresh locals first, so any argument can be dropped, reordered or
+     * converted (super constructors that lost an id, took a {@code Holder}...).
+     */
+    private static void rewriteArgs(MethodNode m, MethodInsnNode call, Call rule) {
+        Type[] old = Type.getArgumentTypes(call.desc);
+        Type[] now = Type.getArgumentTypes(rule.helperDesc());
+        String[] tokens = rule.helperName().split(",");
+        if (tokens.length != now.length) throw new IllegalStateException("=args row for " + call.owner + "." + call.name + call.desc + ": " + tokens.length + " tokens for " + now.length + " parameters");
+        int[] slot = new int[old.length];
+        int next = m.maxLocals;
+        for (int i = 0; i < old.length; i++) {
+            slot[i] = next;
+            next += old[i].getSize();
+        }
+        InsnList il = new InsnList();
+        for (int i = old.length - 1; i >= 0; i--) il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ISTORE), slot[i]));
+        for (int j = 0; j < now.length; j++) {
+            String tok = tokens[j].strip();
+            int at = tok.indexOf('@');
+            if (at < 0) {
+                int i = Integer.parseInt(tok);
+                il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ILOAD), slot[i]));
+                continue;
+            }
+            String helper = tok.substring(0, at);
+            StringBuilder desc = new StringBuilder("(");
+            for (String a : tok.substring(at + 1).split("\\+")) {
+                int i = Integer.parseInt(a);
+                il.add(new VarInsnNode(old[i].getOpcode(Opcodes.ILOAD), slot[i]));
+                desc.append(old[i].getDescriptor());
+            }
+            desc.append(')').append(now[j].getDescriptor());
+            int dot = helper.lastIndexOf('.');
+            String cls = helper.substring(0, dot);
+            if (!cls.contains("/")) cls = Mc1201Tables.HELPER_PACKAGE + cls;
+            il.add(new MethodInsnNode(Opcodes.INVOKESTATIC, cls, helper.substring(dot + 1), desc.toString(), false));
+        }
+        m.instructions.insertBefore(call, il);
+        call.desc = rule.helperDesc();
+        m.maxLocals = next;
+        m.maxStack += 4;
     }
 
     private static void rewriteField(MethodNode m, FieldInsnNode f, Field rule) {

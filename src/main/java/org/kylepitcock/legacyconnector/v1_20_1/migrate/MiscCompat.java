@@ -16,6 +16,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.ContainerHelper;
@@ -325,5 +326,156 @@ public final class MiscCompat {
 
     public static net.minecraft.world.entity.SpawnPlacementType spawnNoRestrictions() {
         return net.minecraft.world.entity.SpawnPlacementTypes.NO_RESTRICTIONS;
+    }
+
+    /** {@code LivingEntity.getMobType()}, answered from the entity type tags that replaced {@code MobType}. */
+    public static LegacyMobType getMobType(LivingEntity entity) {
+        net.minecraft.world.entity.EntityType<?> type = entity.getType();
+        if (type.is(net.minecraft.tags.EntityTypeTags.UNDEAD)) return LegacyMobType.UNDEAD;
+        if (type.is(net.minecraft.tags.EntityTypeTags.ARTHROPOD)) return LegacyMobType.ARTHROPOD;
+        if (type.is(net.minecraft.tags.EntityTypeTags.ILLAGER)) return LegacyMobType.ILLAGER;
+        if (type.is(net.minecraft.tags.EntityTypeTags.AQUATIC)) return LegacyMobType.WATER;
+        return LegacyMobType.UNDEFINED;
+    }
+
+    /** {@code MinecraftServer.getLootData()}. */
+    public static LegacyLootData getLootData(net.minecraft.server.MinecraftServer server) {
+        return new LegacyLootData(server);
+    }
+
+    /**
+     * {@code Registry.register} after the registries froze (a mod adding a custom stat or a similar entry in common setup, which 1.20.1 allowed until the game
+     * started): the registry is opened for this one entry.
+     */
+    public static <V, T extends V> T registerLate(net.minecraft.core.Registry<V> registry, ResourceLocation id, T value) {
+        if (registry instanceof net.minecraft.core.MappedRegistry<V> mapped && mapped.frozen) {
+            mapped.frozen = false;
+            try {
+                return net.minecraft.core.Registry.register(registry, id, value);
+            } finally {
+                mapped.frozen = true;
+            }
+        }
+        return net.minecraft.core.Registry.register(registry, id, value);
+    }
+
+    public static <V, T extends V> T registerLate(net.minecraft.core.Registry<V> registry, String name, T value) {
+        return registerLate(registry, ResourceLocation.parse(name), value);
+    }
+
+    /** {@code new ShapedRecipe(id, group, category, width, height, ingredients, result)}: the shape is a pattern object now. */
+    public static net.minecraft.world.item.crafting.ShapedRecipePattern pattern(int width, int height, NonNullList<Ingredient> ingredients) {
+        return new net.minecraft.world.item.crafting.ShapedRecipePattern(width, height, ingredients, java.util.Optional.empty());
+    }
+
+    public static float intToFloat(int value) {
+        return value;
+    }
+
+    public static List<net.minecraft.world.level.storage.loot.predicates.LootItemCondition> conditions(net.minecraft.world.level.storage.loot.predicates.LootItemCondition[] array) {
+        return java.util.Arrays.asList(array);
+    }
+
+    // ------------------------------------------------------------------ dispenser: BlockSource became a record
+
+    public static BlockPos sourcePos(net.minecraft.core.dispenser.BlockSource s) {
+        return s.pos();
+    }
+
+    public static ServerLevel sourceLevel(net.minecraft.core.dispenser.BlockSource s) {
+        return s.level();
+    }
+
+    public static net.minecraft.world.level.block.state.BlockState sourceState(net.minecraft.core.dispenser.BlockSource s) {
+        return s.state();
+    }
+
+    public static net.minecraft.world.level.block.entity.BlockEntity sourceEntity(net.minecraft.core.dispenser.BlockSource s) {
+        return s.blockEntity();
+    }
+
+    public static double sourceX(net.minecraft.core.dispenser.BlockSource s) {
+        return s.pos().getX() + 0.5;
+    }
+
+    public static double sourceY(net.minecraft.core.dispenser.BlockSource s) {
+        return s.pos().getY() + 0.5;
+    }
+
+    public static double sourceZ(net.minecraft.core.dispenser.BlockSource s) {
+        return s.pos().getZ() + 0.5;
+    }
+
+    // ------------------------------------------------------------------ other signature changes
+
+    /** {@code Commands.performPrefixedCommand(source, command)} returned the result; it returns nothing now. */
+    public static int performPrefixedCommand(net.minecraft.commands.Commands commands, net.minecraft.commands.CommandSourceStack source, String command) {
+        commands.performPrefixedCommand(source, command);
+        return 1;
+    }
+
+    /** {@code ItemStack.getAttributeModifiers(slot)}: the modifiers of the attribute component that apply in that slot. */
+    public static com.google.common.collect.Multimap<net.minecraft.world.entity.ai.attributes.Attribute, net.minecraft.world.entity.ai.attributes.AttributeModifier>
+            getAttributeModifiers(ItemStack stack, EquipmentSlot slot) {
+        com.google.common.collect.Multimap<net.minecraft.world.entity.ai.attributes.Attribute, net.minecraft.world.entity.ai.attributes.AttributeModifier> out =
+                com.google.common.collect.ArrayListMultimap.create();
+        net.minecraft.world.item.component.ItemAttributeModifiers mods = stack.getOrDefault(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS,
+                net.minecraft.world.item.component.ItemAttributeModifiers.EMPTY);
+        for (net.minecraft.world.item.component.ItemAttributeModifiers.Entry e : mods.modifiers()) {
+            if (e.slot().test(slot)) out.put(e.attribute().value(), e.modifier());
+        }
+        return out;
+    }
+
+    /** {@code EnchantedBookItem.getEnchantments(stack)}: the stored enchantments as the list of {@code {id, lvl}} compounds. */
+    public static net.minecraft.nbt.ListTag getBookEnchantments(ItemStack stack) {
+        net.minecraft.nbt.ListTag list = new net.minecraft.nbt.ListTag();
+        net.minecraft.world.item.enchantment.ItemEnchantments stored = stack.getOrDefault(net.minecraft.core.component.DataComponents.STORED_ENCHANTMENTS,
+                net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
+        for (var e : stored.entrySet()) {
+            CompoundTag tag = new CompoundTag();
+            e.getKey().unwrapKey().ifPresent(k -> tag.putString("id", k.location().toString()));
+            tag.putShort("lvl", (short) e.getIntValue());
+            list.add(tag);
+        }
+        return list;
+    }
+
+    public static net.minecraft.world.scores.Team getTeam(Entity entity) {
+        return entity.getTeam();
+    }
+
+    public static <T> void writeId(FriendlyByteBuf buf, net.minecraft.core.IdMap<T> map, T value) {
+        buf.writeVarInt(map.getId(value));
+    }
+
+    public static <T> T readById(FriendlyByteBuf buf, net.minecraft.core.IdMap<T> map) {
+        return map.byId(buf.readVarInt());
+    }
+
+    public static java.util.function.Predicate<ItemStack> asPredicate(Ingredient ingredient) {
+        return ingredient;
+    }
+
+    public static net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings setKeepLiquids(
+            net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings settings, boolean keep) {
+        return settings.setLiquidSettings(keep ? net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.APPLY_WATERLOGGING
+                : net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSettings.IGNORE_WATERLOGGING);
+    }
+
+    /**
+     * {@code CriteriaTriggers.register(trigger)}: the trigger carried its id ({@code getId()}); 1.21.1 registers by name. The registry may be frozen when a mod
+     * registers in common setup, as in {@link #registerLate}.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static net.minecraft.advancements.CriterionTrigger registerTrigger(net.minecraft.advancements.CriterionTrigger trigger) {
+        String name;
+        try {
+            name = String.valueOf(trigger.getClass().getMethod("getId").invoke(trigger));
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            name = trigger.getClass().getName().toLowerCase(java.util.Locale.ROOT).replace('.', '_').replace('$', '_');
+        }
+        net.minecraft.core.Registry registry = BuiltInRegistries.TRIGGER_TYPES;
+        return (net.minecraft.advancements.CriterionTrigger) registerLate(registry, ResourceLocation.parse(name), trigger);
     }
 }

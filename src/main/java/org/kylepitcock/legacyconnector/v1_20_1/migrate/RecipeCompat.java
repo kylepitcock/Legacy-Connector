@@ -43,4 +43,12 @@ public final class RecipeCompat {
         List<RecipeHolder> found = manager.getRecipesFor(type, BridgeHelpers.input(container), level);
         return found.stream().map(RecipeHolder::value).toList();
     }
+
+    /** {@code Recipe.getId()}: recipes do not know their id in 1.21.1; it is found through the server's recipe manager (null for a recipe it does not hold). */
+    public static net.minecraft.resources.ResourceLocation getId(net.minecraft.world.item.crafting.Recipe<?> recipe) {
+        net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return null;
+        for (net.minecraft.world.item.crafting.RecipeHolder<?> h : server.getRecipeManager().getRecipes()) if (h.value() == recipe) return h.id();
+        return null;
+    }
 }

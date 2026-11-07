@@ -240,6 +240,66 @@ class Mc1201MigrationTest implements Opcodes {
     }
 
     @Test
+    void armorItemConstructorGetsAHolderAndDurability() {
+        String mat = "org/kylepitcock/legacyconnector/v1_20_1/migrate/LegacyArmorMaterial";
+        String type = "net/minecraft/world/item/ArmorItem$Type";
+        String props = "net/minecraft/world/item/Item$Properties";
+        String armor = "net/minecraft/world/item/ArmorItem";
+        ClassNode c = cls("test/MyArmor", armor);
+        MethodNode init = method(c, ACC_PUBLIC, "<init>", "(L" + mat + ";L" + type + ";L" + props + ";)V");
+        init.instructions.add(new VarInsnNode(ALOAD, 0));
+        init.instructions.add(new VarInsnNode(ALOAD, 1));
+        init.instructions.add(new VarInsnNode(ALOAD, 2));
+        init.instructions.add(new VarInsnNode(ALOAD, 3));
+        init.instructions.add(new MethodInsnNode(INVOKESPECIAL, armor, "<init>", "(L" + mat + ";L" + type + ";L" + props + ";)V", false));
+        init.instructions.add(new InsnNode(RETURN));
+        init.maxLocals = 4;
+        init.maxStack = 4;
+        assertEquals(1, apply(c).constructors);
+        MethodInsnNode sup = find(init, armor, "<init>");
+        assertEquals("(Lnet/minecraft/core/Holder;L" + type + ";L" + props + ";)V", sup.desc);
+        MethodInsnNode holder = find(init, MIGRATE + "ArmorCompat", "holder");
+        assertNotNull(holder);
+        assertEquals("(L" + mat + ";)Lnet/minecraft/core/Holder;", holder.desc);
+        MethodInsnNode properties = find(init, MIGRATE + "ArmorCompat", "properties");
+        assertNotNull(properties);
+        assertEquals("(L" + mat + ";L" + type + ";L" + props + ";)L" + props + ";", properties.desc);
+        assertTrue(init.maxLocals >= 7, "three argument spill slots");
+    }
+
+    @Test
+    void customRecipeDropsItsId() {
+        String custom = "net/minecraft/world/item/crafting/CustomRecipe";
+        String rl = "net/minecraft/resources/ResourceLocation";
+        String cat = "net/minecraft/world/item/crafting/CraftingBookCategory";
+        ClassNode c = cls("test/MyRecipe", custom);
+        MethodNode init = method(c, ACC_PUBLIC, "<init>", "(L" + rl + ";L" + cat + ";)V");
+        init.instructions.add(new VarInsnNode(ALOAD, 0));
+        init.instructions.add(new VarInsnNode(ALOAD, 1));
+        init.instructions.add(new VarInsnNode(ALOAD, 2));
+        init.instructions.add(new MethodInsnNode(INVOKESPECIAL, custom, "<init>", "(L" + rl + ";L" + cat + ";)V", false));
+        init.instructions.add(new InsnNode(RETURN));
+        apply(c);
+        MethodInsnNode sup = find(init, custom, "<init>");
+        assertEquals("(L" + cat + ";)V", sup.desc);
+        assertEquals(POP, sup.getPrevious().getOpcode());
+        assertEquals(SWAP, sup.getPrevious().getPrevious().getOpcode());
+    }
+
+    @Test
+    void tierImplementationGetsTheBlockTagMethod() {
+        ClassNode c = cls("test/MyTier", "java/lang/Object");
+        c.interfaces.add("net/minecraft/world/item/Tier");
+        MethodNode level = method(c, ACC_PUBLIC, "getLevel", "()I");
+        level.instructions.add(new InsnNode(ICONST_2));
+        level.instructions.add(new InsnNode(IRETURN));
+        assertEquals(1, apply(c).bridges);
+        boolean found = false;
+        for (var m : c.methods) found |= m.name.equals("getIncorrectBlocksForDrops") && m.desc.equals("()Lnet/minecraft/tags/TagKey;");
+        assertTrue(found);
+    }
+
+    @Test
     void voidSuperCallThatNowReturnsAValueIsPopped() {
         String block = "net/minecraft/world/level/block/Block";
         String level = "net/minecraft/world/level/Level";
