@@ -8,6 +8,11 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 
 public abstract class EntityLivingBase extends Entity {
+    /** Minecraft 1.4.7's numeric drop (a mod's reflection finds it by name; the bridge turns an override into {@code getDropItem}). */
+    protected int getDropItemId() {
+        return 0;
+    }
+
     @Deprecated
     public float rotationYawHead;
     @Deprecated

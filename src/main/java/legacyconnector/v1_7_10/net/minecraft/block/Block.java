@@ -676,6 +676,16 @@ public class Block {
 
     /** Minecraft 1.4.7: the sprite sheet index of a side for a metadata value. */
     public int getBlockTextureFromSideAndMetadata(int side, int meta) {
+        if (blockIndexInTexture < 0 && mcc$vanilla != null) {
+            // a vanilla block: its tile of /terrain.png (RedPower's covers draw the material's texture from that sheet)
+            try {
+                IIcon icon = getIcon(side, meta);
+                int index = org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.terrainIndexOf(icon == null ? null : icon.getIconName());
+                if (index >= 0) return index;
+            } catch (RuntimeException | LinkageError e) {
+                // no tile
+            }
+        }
         return blockIndexInTexture;
     }
 

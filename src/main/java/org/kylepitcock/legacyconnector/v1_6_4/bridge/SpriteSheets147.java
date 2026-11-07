@@ -141,6 +141,26 @@ public final class SpriteSheets147 {
         return index >= 0 && index < table.length ? table[index] : null;
     }
 
+    private static volatile Map<String, Integer> terrainIndex;
+
+    /** The {@code /terrain.png} tile of a vanilla block texture by its 1.7.10 name ("cobblestone"), -1 when the sheet has no such tile. */
+    public static int terrainIndexOf(String legacyName) {
+        if (legacyName == null) return -1;
+        Map<String, Integer> map = terrainIndex;
+        if (map == null) {
+            map = new HashMap<>();
+            for (int i = 0; i < 256; i++) {
+                String n = vanillaName(true, i);
+                if (n != null) map.putIfAbsent(n, i);
+            }
+            terrainIndex = map;
+        }
+        String n = legacyName.startsWith("minecraft:") ? legacyName.substring(10) : legacyName;
+        if (n.startsWith("blocks/")) n = n.substring(7);
+        Integer i = map.get(n);
+        return i == null ? -1 : i;
+    }
+
     private static String[] load(String file) {
         String[] out = new String[256];
         try (InputStream in = SpriteSheets147.class.getClassLoader().getResourceAsStream("legacyconnector/v1_6_4/" + file)) {
