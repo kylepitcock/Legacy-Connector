@@ -329,7 +329,10 @@ public final class LegacyResourceConverter {
     }
 
     private static boolean isRefKey(String key, String parentKey) {
-        return key.equals("parent") || key.equals("model") || "textures".equals(parentKey);
+        // a model's "parent" is a top-level key; deeper ones belong to mod formats stored under models/ (Bedrock geometry JSON, HuajiAge's stand
+        // models: "parent" names a bone, which must keep its case to match the bone's "name")
+        if (key.equals("parent")) return parentKey == null;
+        return key.equals("model") || "textures".equals(parentKey);
     }
 
     /**
