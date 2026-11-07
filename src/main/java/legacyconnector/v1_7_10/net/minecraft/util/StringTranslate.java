@@ -59,6 +59,13 @@ public class StringTranslate {
         return StatCollector.translateToLocalFormatted(key, args);
     }
 
+    /** 1.4.7/1.5.2: the languages the game knows, keyed by code; mods (Immibis Core) iterate the keys to load their own language files. */
+    public java.util.TreeMap<String, Object> getLanguageList() {
+        java.util.TreeMap<String, Object> languages = new java.util.TreeMap<>();
+        languages.put("en_US", "English (US)");
+        return languages;
+    }
+
     public synchronized boolean containsTranslateKey(String key) {
         return StatCollector.canTranslate(key);
     }

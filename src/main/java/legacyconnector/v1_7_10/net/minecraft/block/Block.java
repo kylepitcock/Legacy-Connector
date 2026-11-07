@@ -1018,6 +1018,17 @@ public class Block {
     }
 
     public boolean canProvidePower() {
+        // a vanilla block wrapped as a plain Block (redstone block, observer...) is a power source as its modern block says;
+        // wires of legacy mods (RedLogic) only connect to blocks that answer true
+        if (mcc$plainVanilla()) {
+            try {
+                var state = mcc$modern != null ? mcc$modern.defaultBlockState()
+                        : org.kylepitcock.legacyconnector.core.flatten.VanillaFlattening.state(mcc$vanilla.legacyId(), 0);
+                return state != null && state.isSignalSource();
+            } catch (RuntimeException ignored) {
+                // not bridged yet: no power source
+            }
+        }
         return false;
     }
 

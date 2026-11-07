@@ -30,6 +30,12 @@ public class LanguageRegistry {
         GeneratedTranslations.put(lang, key, value);
     }
 
+    /** Forge 1.5.2: a whole table of keys for one language. */
+    public void addStringLocalization(java.util.Properties properties, String lang) {
+        if (properties == null) return;
+        for (String k : properties.stringPropertyNames()) addStringLocalization(k, lang, properties.getProperty(k));
+    }
+
     public void addNameForObject(Object obj, String lang, String name) {
         String key;
         if (obj instanceof ItemStack s) {
