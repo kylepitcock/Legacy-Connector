@@ -163,9 +163,10 @@ public final class Ids1122 {
 
     /** {@code mod:name} of an entity with the id a 1.12 mod registered under; the modern id the layer gave it when known. */
     public static String entity(String id) {
-        String n = Ids.normalizePath(id);
-        if (n.startsWith("minecraft:")) return "minecraft:" + legacyconnector.v1_12_2.net.minecraft.entity.EntityList.modernVanillaPath(n.substring("minecraft:".length()));
-        return n;
+        var rl = Ids.location(id, "minecraft");
+        String path = rl.getPath().replace('/', '_');
+        if (rl.getNamespace().equals("minecraft")) return "minecraft:" + legacyconnector.v1_12_2.net.minecraft.entity.EntityList.modernVanillaPath(rl.getPath());
+        return Ids.modernModId(rl.getNamespace()) + ":" + path;
     }
 
     /**

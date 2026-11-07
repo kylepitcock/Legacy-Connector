@@ -139,6 +139,6 @@ public final class LegacyTrigger1122 implements CriterionTrigger<LegacyTrigger11
         net.minecraft.server.level.ServerPlayer sp = advancements.player;
         if (sp == null) return null;
         return org.kylepitcock.legacyconnector.v1_12_2.bridge.EntityBridge1122.wrap(sp) instanceof legacyconnector.v1_12_2.net.minecraft.entity.player.EntityPlayerMP mp
-                ? mp.getAdvancements() : null;
+                ? new legacyconnector.v1_12_2.net.minecraft.advancements.PlayerAdvancements(mp, advancements) : null;
     }
 }

@@ -98,16 +98,15 @@ public final class Advancements1122 {
 
         @Override
         public String entity(String id) {
-            String modern = Ids1122.entity(id.indexOf(':') < 0 ? "minecraft:" + id : id);
+            String modern = Ids1122.entity(id);
             var rl = net.minecraft.resources.ResourceLocation.tryParse(modern);
             return rl != null && BuiltInRegistries.ENTITY_TYPE.containsKey(rl) ? modern : null;
         }
 
         @Override
         public String effect(String id) {
-            String n = Ids.normalizePath(id.indexOf(':') < 0 ? "minecraft:" + id : id).replace('/', '_');
-            int c = n.indexOf(':');
-            String modern = Ids.modernModId(n.substring(0, c)) + ":" + n.substring(c + 1);
+            var loc = Ids.location(id, "minecraft");
+            String modern = Ids.modernModId(loc.getNamespace()) + ":" + loc.getPath().replace('/', '_');
             var rl = net.minecraft.resources.ResourceLocation.tryParse(modern);
             return rl != null && BuiltInRegistries.MOB_EFFECT.containsKey(rl) ? modern : null;
         }
@@ -206,6 +205,7 @@ public final class Advancements1122 {
         }
         if (converted.isEmpty() && failed == 0) return;
         int impossible = 0;
+        Map<String, List<String>> kinds = new LinkedHashMap<>();
         for (var entry : converted.entrySet()) {
             var result = entry.getValue();
             if (result.parent != null && !result.parent.startsWith("minecraft:") && !converted.containsKey(result.parent)) {
@@ -213,7 +213,8 @@ public final class Advancements1122 {
                 result.notes.add("parent " + result.parent + " does not exist (made a root)");
             }
             for (String note : result.notes) {
-                if (REPORTED.add(note)) LOG.info("1.12.2 advancements: {} (first in {})", note, entry.getKey());
+                if (!REPORTED.add(note)) continue;
+                kinds.computeIfAbsent(note.replaceFirst("\\S+ is unknown", "<id> is unknown"), k -> new ArrayList<>()).add(note.replaceFirst(" is unknown$", "") + " in " + entry.getKey());
             }
             String text = GSON.toJson(result.json);
             if (text.contains("minecraft:impossible")) impossible++;
@@ -223,6 +224,11 @@ public final class Advancements1122 {
             byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
             out.put("data/" + key.substring(0, colon) + "/advancement/" + key.substring(colon + 1) + ".json", () -> bytes);
             CONVERTED.add(key);
+        }
+        for (var kind : kinds.entrySet()) {
+            List<String> all = kind.getValue();
+            LOG.info("1.12.2 advancements: {} ({} times; e.g. {}{})", kind.getKey(), all.size(), String.join("; ", all.subList(0, Math.min(3, all.size()))),
+                    all.size() > 3 ? "; ..." : "");
         }
         LOG.info("1.12.2 advancements of mod jars: {} converted, {} failed to convert; {} use a trigger of a mod, {} contain a criterion that can not be met here",
                 converted.size(), failed, custom, impossible);
