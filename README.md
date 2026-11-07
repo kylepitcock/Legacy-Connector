@@ -4,19 +4,21 @@
 
 [![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/vC6x4Kwwdq) [![CurseForge](https://img.shields.io/badge/CurseForge-F16436?style=for-the-badge&logo=curseforge&logoColor=white)](https://www.curseforge.com/minecraft/mc-mods/legacy-connector) [![Modrinth](https://img.shields.io/badge/Modrinth-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white)](https://modrinth.com/mod/legacyconnector) [![Ko-fi](https://img.shields.io/badge/Ko--fi-FF5E5B?style=for-the-badge&logo=kofi&logoColor=white)](https://ko-fi.com/kylepitcock)
 
-Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10 or 1.12.2 mod jars into your `mods` folder next to
+Run **unmodified legacy Forge mods on NeoForge 1.21.1**. Drop 1.7.10 or 1.12.2 mod jars (and, new in 0.4 and in alpha, 1.6.4, 1.5.2 and 1.4.7 jars) into your `mods` folder next to
 this mod; it is translated at load time, the same way [Sinytra Connector](https://github.com/Sinytra/Connector)
-runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars can also go in `mods/1.7.10/` or
-`mods/1.12.2/`; mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods) must, because
+runs Fabric mods on NeoForge. The original jar is never modified. Legacy jars can also go in `mods/1.7.10/`, `mods/1.12.2/`,
+`mods/1.6.4/`, `mods/1.5.2/` or `mods/1.4.7/`; mods that bundle their own Mixin (common in 1.12.2: Spartan Weaponry, MixinBooter mods) must, because
 NeoForge loads such jars from `mods/` as launcher plugins before they can be translated, and the game stops with
 "Module ... contains package org.spongepowered...".
 
-> **Status: beta (0.3.x).** The point is mods that **only exist on these old versions** and never got a 1.21.1 port.
+> **Status: beta (0.4.x).** The point is mods that **only exist on these old versions** and never got a 1.21.1 port.
 > 1.7.10 is in beta: Thaumcraft 4, Witchery, HBM's Nuclear Tech, the Reika mods (RotaryCraft, ReactorCraft, ChromatiCraft),
 > OreSpawn, Fisk's Superheroes, Morph and Galacticraft with its addons (per-planet gravity, silent space) run with their blocks, items,
 > entities, recipes, GUIs, world generation and dimensions, and large tech packs like GT New Horizons load most of their mods.
 > 1.12.2 is in beta: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real
-> client with their own models, GUIs, mobs, dimensions and world generation. Some
+> client with their own models, GUIs, mobs, dimensions and world generation.
+> 1.6.4, 1.5.2 and 1.4.7 are new in 0.4 and in alpha: RedPower 2, BuildCraft, ComputerCraft and Applied Energistics (1.4.7), Twilight Forest and
+> Applied Energistics 1 (1.5.2), Tinkers' Construct, Mo' Creatures and Goblins! (1.6.4) and many more run in a real client. Some
 > features are still missing (see [Known compatibility issues](docs/wiki/Compatibility-and-Status.md#known-compatibility-issues)); back up your worlds before trying a new
 > mod set.
 
@@ -37,7 +39,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | 1.12.2 | **Beta (since 2026-11-07; issue #64).** Old-only mods are the focus: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (Atum, the Midnight, the Betweenlands) can be entered. Botania, Chisel, Thermal Foundation and Expansion, Tinkers' Construct, Immersive Engineering, Mekanism, Astral Sorcery, Actually Additions, Electroblob's Wizardry and Recurrent Complex now render and load (2026-11-06 sweeps); Applied Energistics 2, EnderIO, Industrial Foregoing and Extra Utilities 2 still have rendering defects. Mod advancements, Patchouli books through the modern Patchouli, and containers that move their slots at runtime work. |
 | 1.6.4 | **Alpha (2026-11-07).** A thin layer over the 1.7.10 support: numeric block/item ids, `Icon`, the old packet API, old tick handlers, `ModLoader` mods. Of 106 mods rated so far, 44 have working basics, 1 is mostly playable (Tinkers' Construct, smeltery included), 17 partly work, 33 start but are untested (libraries and add-ons) and 11 fail. Played in a real client in survival, with shaders: Tinkers' Construct, Mo' Creatures, Lycanites Mobs, OpenBlocks, Minechem, IndustrialCraft 2, Forestry, Witchery, Twilight Forest, ExtrabiomesXL, Ancient Warfare, MythicalCraft, Galaxy Warfare, TragicMC, Sorcery, Kitchens, Mad Science, The Lion King and others ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.6.4-Estimate.md)). Missing: Thaumcraft 4 and some mod-specific defects. |
 | 1.5.2 | **Alpha (2026-11-07).** A small delta over 1.6.4 (same numeric ids and packet API; no `EntityLivingBase`, string texture paths). Of 54 mods rated so far, 19 have working basics, 14 partly work, 18 start but are untested (libraries and add-ons with nothing to play) and 3 fail. Grimoire of Gaia, Twilight Forest, Applied Energistics 1, Resource Engineering, BuildCraft, BiblioCraft, Mystcraft, Forestry (apiary screen), ComputerCraft, RedLogic, Liquid XP, MiscPeripherals, Backpacks, Ender Storage, Chicken Chunks, Dimensional Anchors and InfiniTubes run in a real client, with recipes crafted in the 3x3 grid. ForgeMultipart and Block Helper load; client-only mods are skipped quietly on a server. Better Than Wolves and other patched-`minecraft.jar` mods cannot work (they replace vanilla classes; reported as "not supported: patched-game jar mod") ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.5.2-Estimate.md)). |
-| 1.4.7 | **Alpha (2026-11-07).** After 1.5.2: the same numeric ids and old packet API, with obfuscated class names, sprite-sheet textures (cut into tiles), texture animations and `ModLoader`/`BaseMod` mods. Of 83 mods rated, 47 have working basics (28 load, 5 partly work, 3 fail with a plain reason): RedPower 2, BuildCraft and Twilight Forest render and run in a real client; ComputerCraft (computers and turtles with a working terminal) and Applied Energistics (a powered ME network stores and lists items) work. Better Than Wolves cannot work ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.4.7-Estimate.md)). Survival checks since: RedPower 2 wires, gates, transposer, tubes, project table and ore generation, BuildCraft pipes and engines, AE terminal and drive screens; the 65-file corpus loads (Better Than Wolves and two JInput mods excepted); RedPower rubber trees generate in jungles. |
+| 1.4.7 | **Alpha (2026-11-07).** After 1.5.2: the same numeric ids and old packet API, with obfuscated class names, sprite-sheet textures (cut into tiles), texture animations and `ModLoader`/`BaseMod` mods. Of 85 mods rated, 47 have working basics (30 load, 5 partly work, 3 fail with a plain reason): RedPower 2, BuildCraft and Twilight Forest render and run in a real client; ComputerCraft (computers and turtles with a working terminal) and Applied Energistics (a powered ME network stores and lists items) work. Better Than Wolves cannot work ([screenshots](docs/screenshots/old-versions/README.md), [estimate](docs/wiki/Legacy-1.4.7-Estimate.md)). Survival checks since: RedPower 2 wires, gates, transposer, tubes, project table and ore generation, BuildCraft pipes and engines, AE terminal and drive screens; the 65-file corpus loads (Better Than Wolves and two JInput mods excepted); RedPower rubber trees generate in jungles. |
 | 1.20.1 | **Started (experimental, off by default; `experimental.forge1201`).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge). So far: jar detection, the renames, `mods.toml` conversion and the first compatibility layer; no 1.20.1 mod has been run in game yet (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
 | 1.19.2, 1.18.2 | Planned (after 1.20.1; renames and diffs over the same pipeline). |
 | 1.16.5 | Planned (after 1.18.2). |
@@ -45,7 +47,7 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 
 Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Beta/Alpha jar-mod era.
 
-Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
+Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF and Forge Energy, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)). Outdated libraries are bridged to their modern equivalents instead of being loaded: Baubles to Curios, Waila to Jade, NEI to JEI, Patchouli books to Patchouli, and CoFH RF / Redstone Flux to NeoForge energy ([Bridges](docs/wiki/Bridges.md)).
 
 Per-mod results, known issues and what is not supported: [Compatibility and status](docs/wiki/Compatibility-and-Status.md). After
 launching, read `logs/legacyconnector-report.txt`: for every legacy jar it lists the detected version and mod ids, references that
@@ -85,7 +87,7 @@ Addons for legacy mods (a mod that registers content for, or hooks into, a trans
 
 ## Screenshots
 
-All taken in a real game client (NeoForge 1.21.1) with unmodified 1.7.10 mods that have no modern version, running next to modern content.
+All taken in a real game client (NeoForge 1.21.1) with unmodified legacy mods that have no modern version, running next to modern content. The older versions (1.6.4, 1.5.2, 1.4.7) have their own [screenshot gallery](docs/screenshots/old-versions/README.md); a few of them are at the end of this section.
 
 A Thaumcraft 4 workshop: infusion altar with items on its pedestals, crucible over lava, alchemical furnace with alembics, essentia
 jars, arcane workbench, research table, an aura node over a stabiliser, infused stones with crystal clusters, and greatwood and
@@ -143,6 +145,22 @@ drawn by the mod's own renderers under Complementary shaders:
 generated by the mod's own chunk generator and biomes:
 
 ![The Midnight's Deceitful Bog](docs/images/midnight-bog.png)
+
+Older versions (alpha), taken with shaders in survival. 1.4.7: RedPower 2 logic, a lever, a red alloy wire, a NOT gate and a lamp, and a ComputerCraft computer with its terminal:
+
+![RedPower 2 on 1.4.7](docs/screenshots/old-versions/1.4.7/redpower-logic-not-gate-lever-lamp-lit-survival-shaders.jpg)
+
+![ComputerCraft on 1.4.7](docs/screenshots/old-versions/1.4.7/computercraft-computer-terminal-help-shaders.jpg)
+
+1.6.4: Tinkers' Construct's smeltery melting ore into molten metal, and Mo' Creatures' ostrich and elephant:
+
+![Tinkers' Construct smeltery on 1.6.4](docs/screenshots/old-versions/1.6.4/tinkers-smeltery-molten-metal-survival-shaders.jpg)
+
+![Mo' Creatures on 1.6.4](docs/screenshots/old-versions/1.6.4/mo-creatures-ostrich-elephant-shaders.jpg)
+
+1.5.2: Applied Energistics 1's controller, terminal and drive:
+
+![Applied Energistics 1 on 1.5.2](docs/screenshots/old-versions/1.5.2/applied-energistics-1-controller-terminal-drive-shaders.jpg)
 
 ## Star history
 
