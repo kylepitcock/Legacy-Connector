@@ -20,7 +20,7 @@ Drop 1.7.10, 1.12.2, 1.6.4, 1.5.2 or 1.4.7 mod jars into your `mods` folder next
 
 Old mods' content joins the game the way a modern mod's does: their biomes through the pack's biome placement (a TerraBlender region; TerraBlender is bundled, a separately installed one wins), their ores and world generators as normal features, their village buildings as houses in normal villages, and structure loot through loot tables. So it plays along with your other mods, and data packs can tweak it like anything else.
 
-**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you.
+**[Compatibility list & reports](https://kylepitcock.github.io/Legacy-Connector/)**: check whether a mod works, or report how it went for you (1.7.10, 1.12.2 and the older versions in development, plus an experimental Forge 1.20.1 tab).
 
 ---
 
@@ -211,7 +211,7 @@ modern/legacy stack and tile conversion, and NeoForge capabilities for legacy ti
 
 ## Roadmap
 
-✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
+✅ 1.7.10 → ✅ **1.12.2** (beta) → **1.6.4** (alpha) → **1.5.2** (alpha) → **1.4.7** (alpha) → **1.20.1** (experimental, started) → **1.19.2** → **1.18.2** → **1.16.5** → **1.2.5**
 
 ## Star history
 
