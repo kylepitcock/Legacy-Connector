@@ -73,3 +73,24 @@ Fixes from the first real-client round (screenshots in `docs/screenshots/old-ver
 - Registry names: Immibis Core registers every Immibis mod's blocks and items from its own code, when no mod is the active owner, so they landed in the `minecraft:` namespace (`minecraft:redlogic.gates`). They are now owned by the mod whose package holds the class (`redlogic:redlogic.gates`); `BlockBridge.ownerByPackage`. This changes the saved ids of existing test worlds (acceptable at this stage; no migration). Raw path names such as `tile.x` come from the mod's own registration names (the 1.6.4 facade strips `tile.`); Applied Energistics 1 registers its blocks as `block900_2`-style ids because it hands the layer a null name, left as is since renaming would change world data for no functional gain.
 - Resource domains with a slash (`/mods/immibis/redlogic/textures/...`) are now one namespace (`immibis_redlogic`), as the runtime derives it from the icon name.
 - Open: Immibis' own lang files (`item:wire.red-alloy<TAB>name` keys) are not read, so RedLogic items show raw keys; RedLogic wires do not conduct and draw flat; Advanced Machines and Advanced Repulsion Systems need IC2.
+
+## Status for 0.4.0 (2026-11-07)
+
+What "supported" means here: a 1.5.2 mod set of the 55-mod corpus loads in a real client and on a dedicated server, the mods that add content register their blocks, items and entities, and the basics of the content mods that were played (placing blocks, items, opening GUIs, machines) work. It does not mean every mod is complete; the per-mod ratings are on the compatibility site (`docs/data/mods.json`, source "client").
+
+Fixed in the last round:
+
+- Client-only mods (Sprintable, Sprint on CTRL) on a dedicated server are skipped quietly (info log, not counted as failed) when they touch client classes; `LegacyLifecycle.touchedClientOnServer`.
+- ForgeMultipart loads: the FML class loader view handed out bytes of JDK classes, so its Scala mixin compiler walked up to `java.lang.Object` and asked for the super class of Object. FML's loader returns no bytes for them; `findClass` delegates to the real loader.
+- Block Helper loads: 1.5-era ModLoader jars name `net.minecraft.src.BlockComparator` (flat names added for the classes 1.5 introduced, `forward/1.4.7/flat-names.tsv`), the 1.6.4 table maps `BlockComparator`/`BlockRedstoneLogic` to the 1.7.10 names, and `Block.redstoneComparatorIdle/Active` exist.
+- Forestry's tamper check (`Runtime.halt` when its jar has no signature) no longer ends the game: `Runtime.halt/exit` from a legacy mod is ignored like `System.exit`.
+- Mystcraft's linkbook entity (data watcher slot 7, which the 1.7.10 living entity also registers) no longer fails its construction.
+- Patched-game jar mods (Better Than Wolves and its add-ons: a zip of `MINECRAFT-JAR/` files meant to be copied over `minecraft.jar`) are listed in the report under "Files that are not Forge mods" as "not supported: patched-game jar mod" and logged at warn level; the site rates Better Than Wolves "fails" with the same plain words.
+
+Known not to work or not verified:
+
+- Better Than Wolves and other patched-`minecraft.jar` mods (see above). Advanced Machines / Advanced Repulsion Systems features that need IC2 (IC2 has no 1.5.2 build to test with).
+- Immibis' mods share one block id file (`immibis.cfg`); when another mod uses the same numeric id (Resource Engineering's `Loaded Sand` = 410, ComputerCraft's disk item 4001) Immibis Core's allocator aborts, as it does in the real game with an error screen, and every Immibis block after the conflict is lost. This is a configuration conflict of the mod set, not a layer defect; change the id in `immibis.cfg`.
+- NEI's server handler (`NEIServerConfig.loadSavedConfig`) fails every tick on a null world save location (`CommonUtils.getWorldBaseSaveLocation` reads the chunk loader's folder); NEI is replaced by JEI in a real pack.
+- Mystcraft age dimensions generate with errors without age data (self test).
+- The server self test reports "Listener already listening" for Mystcraft, Ender Storage pouch and similar GUIs opened by a fake player; real-client behaviour is not yet verified.

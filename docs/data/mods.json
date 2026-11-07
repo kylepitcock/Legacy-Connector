@@ -7210,8 +7210,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "Fails during preInit: java.lang.NullPointerException: Cannot invoke \"codechicken.multipart.asm.ASMMixinCompiler$BaseNodeInfo$ClassInfoSource.methods()\" because \"o"
+      "status": "loads",
+      "notes": "Loads now (server self test, 1.5.2 set): its Scala mixin compiler failed on the bytes of java.lang.Object (the FML loader view handed out JDK classes' bytes; it now returns none, as FML's did) and loaded the vanilla classes through the wrong loader."
     },
     {
       "name": "Forge Multipart CBE",
@@ -11977,7 +11977,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "loads",
-      "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+      "notes": "Sprint on CTRL: a client-only ModLoader mod; on a dedicated server it is skipped quietly (not reported as failed). Not yet tried in a client."
     },
     {
       "name": "Modern Warfare Cubed",
@@ -16844,8 +16844,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "Fails during init: java.lang.RuntimeException: Attempted to load class net/minecraft/client/server/IntegratedServer for invalid dist DEDICATED_SERVER"
+      "status": "loads",
+      "notes": "Client-only mod: on a dedicated server it is skipped quietly (logged at info level, not reported as failed), as FML did. Not yet tried in a client."
     },
     {
       "name": "Sprintable",
@@ -20134,6 +20134,15 @@
       "date": "2026-11-06",
       "status": "loads",
       "notes": "Automated check 0.3.23: translates offline and everything it uses exists (50 classes). 1 minor feature(s) it uses are empty placeholders. The game was not started: this only shows the jar translates, not that it works."
+    },
+    {
+      "name": "Better Than Wolves",
+      "version": "4.B0000003",
+      "mc": "1.5.2",
+      "source": "client",
+      "date": "2026-11-07",
+      "status": "fails",
+      "notes": "Not supported: a patched-game jar mod. It is installed by copying files over minecraft.jar and replaces Minecraft's own classes (blocks, mobs, world generation); this layer runs mods that add to the game, so it cannot load. The log and the report say so in plain words."
     }
   ],
   "hidden": [
