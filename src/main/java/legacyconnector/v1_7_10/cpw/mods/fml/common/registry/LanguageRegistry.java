@@ -52,7 +52,8 @@ public class LanguageRegistry {
     }
 
     public void loadLocalization(String localizationFile, String lang, boolean isXML) {
-        java.io.InputStream in = LanguageRegistry.class.getResourceAsStream(localizationFile);
+        // mods name their own files by class path (1.5.2: "/mods/appeng/lang/en_US.properties"); they live in other jars than the shim
+        java.io.InputStream in = org.kylepitcock.legacyconnector.compat.jdk.ResourceCompat.getResourceAsStream(LanguageRegistry.class, localizationFile);
         if (in == null) return;
         mcc$load(in, lang, isXML);
     }

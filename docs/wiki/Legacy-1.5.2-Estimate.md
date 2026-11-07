@@ -58,3 +58,12 @@ BTW is not a Forge mod; it is a patched Minecraft. The zip holds `MINECRAFT-JAR/
 - What would work instead: a BTW-inspired Forge mod rewrite is a different mod. Nothing of BTW renders here, so there is no screenshot.
 
 RedPower 2 has no 1.5.2 or 1.6.4 build in the corpus (the latest public builds are 2.0pr5/pr6 for 1.4.7; the modules are in `test-mods-147` and have screenshots under `docs/screenshots/old-versions/1.4.7`).
+
+## Client survival round, second pass (2026-11-07)
+
+Fixes from the first real-client round (screenshots in `docs/screenshots/old-versions/1.5.2`):
+
+- **Twilight Forest**: `new RenderLiving(model, shadow)` is concrete in 1.5.2; the shim's was abstract (InstantiationError during init). It is concrete now and `Render.bindEntityTexture` binds the entity's string texture (`EntityLiving.texture` / `getTexture()`, default compared by identity) before the renderer's default, so the boar, sheep, bunny and penguin draw with their own models and skins.
+- **Applied Energistics 1**: `LanguageRegistry.loadLocalization("/mods/appeng/lang/en_US.properties", ...)` read the path from the shim's own class loader; it goes through `ResourceCompat` (the mod's jar) now, so `ChatMsg.NoController` and the GUI strings translate.
+- **RedLogic**: needs Immibis Microblocks beside Immibis Core (a test-set omission). It reads `BlockRedstoneWire.class.getDeclaredFields()[0]` and asserts a boolean: the shim's wire now declares `wiresProvidePower` first; an `AssertionError` from a legacy tile entity constructor no longer escapes `LegacyBlockEntity.legacy()` (it crashed the server).
+- **Resource Engineering**: no layer defect found. The composter does draw the mod's background (it reuses `sifterGUI.png`; its foreground method has a wrong signature, no title in the real game either). The Thor chest's mismatch is the mod's: `GuiHandler.getServerGuiElement` builds a `ContainerBackpack` (53 slots), the client a `ContainerThorChest` (117).

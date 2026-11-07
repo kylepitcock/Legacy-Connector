@@ -40,9 +40,10 @@ Real client (NeoForge 1.21.1, superflat), survival mode for the actions (craftin
 |---|---|---|---|
 | `1.5.2/resource-engineering-blocks-shaders.png` | Resource Engineering 0.5.3 | Gem blocks (ruby, emerald, citrine...) and its machines (composter, pressure vessel, fracker, Thor chest) | Partly working |
 | `1.5.2/resource-engineering-tools-survival-shaders.png` | Resource Engineering, Applied Energistics | Survival hotbar with ruby pickaxe, boots, citrine sword, scythe, hammer and chain mesh in front of AE1 blocks | Partly working |
-| `1.5.2/resource-engineering-composter-gui-shaders.png` | Resource Engineering | The composter screen opened by right-click (container works; the mod's own GUI background is missing) | Partly working |
+| `1.5.2/resource-engineering-composter-gui-shaders.png` | Resource Engineering | The composter screen opened by right-click with seeds and flesh in the hotbar: the mod's own background (it reuses `sifterGUI.png`) and items on their slots. (The earlier note of a missing background was wrong; the Thor chest's item mismatch is the mod's own server/client container mismatch) | Works |
 | `1.5.2/applied-energistics-1-blocks-shaders.png` | Applied Energistics rv14 (AE1) | Its blocks (grinder, terminals, ore, crafting grid) with their textures | Partly working |
-| `1.5.2/twilight-forest-mobs-shaders.png` | The Twilight Forest 1.5.2 | A boar and a bighorn sheep summoned; the mod's init failed on a render class so they use vanilla models | Partly working |
+| `1.5.2/twilight-forest-mobs-shaders.png` | The Twilight Forest 1.5.2 | Penguin, bighorn sheep and wild boar with the mod's own models and skins (init no longer fails on `new RenderLiving(model, shadow)`; the entity's string texture is bound) | Works |
+| `1.5.2/applied-energistics-1-machines-shaders.png` | Applied Energistics rv14 (AE1) | Its terminal, chest, drive, crafting and interface blocks in a row; the mod's lang file now loads (the no-controller message reads "Unable to communicate with controller.") | Partly working |
 
 ### 1.6.4
 
@@ -54,9 +55,15 @@ Real client (NeoForge 1.21.1, superflat), survival mode for the actions (craftin
 | `1.6.4/tragicmc-mobs-kitsune-boss-shaders.png` | TragicMC | Kitsune boss (with boss bar), troll, wraith, minotaur | Works |
 | `1.6.4/tragicmc-troll-death-survival-shaders.png` | TragicMC | Survival: the player killed by the troll; death message uses the mob's name | Works |
 | `1.6.4/kitchens-icebox-gui-shaders.png` | Kitchens | The icebox container screen | Works |
-| `1.6.4/counter-craft-bench-screen-shaders.png` | Counter Craft | Right-click on the bench: a full-screen logo splash instead of a crafting screen | Partly working |
+| `1.6.4/counter-craft-bench-menu-shaders.png` | Counter Craft | Right-click on the bench: the mod's own menu (Play, Inventory, Community; "Cloud offline" since the mod is an online lobby). The earlier logo splash was the intro of a menu whose client setup had been aborted by the mod's System.exit check (now ignored) | Works (offline) |
+| `1.6.4/the-lion-king-mobs-shaders.png` | The Lion King Mod | A lion, a giraffe and a rhino: the client now stays connected (the mod's `connectionReceived` returned an empty string, which the layer took as a kick) | Works |
+| `1.6.4/mad-science-machines-and-gmo-cows-shaders.png` | Mad Science | Cryofreezer, genome sequencer, mainframe, voxbox, CNC machine drawn with Techne models, and a GMO wooly cow (the mod's `loadInstance(String, URL)` loader now links) | Works |
+| `1.6.4/applied-energistics-rv14-and-lion-king-blocks-shaders.png` | Applied Energistics rv14.finale3, The Lion King Mod | AE blocks (loads without IC2) and Lion King blocks (altar, hyena head, peacock block, pridestone brick, termite mound) | Partly working (AE), Works (Lion King) |
+| `1.6.4/power-of-the-elements-titans-shaders.png` | Power of the Elements | Ice, fire and air titans and a soldier summoned: all draw with the mod's skins | Works |
 | `1.6.4/power-of-the-elements-hammer-and-soldier.png` | Power of the Elements | Survival hotbar (lightning hammer, earth chestplate, blocks) and a soldier mob in the distance; no shaders | Works |
 | `1.6.4/power-of-the-elements-electric-and-lightning-blocks.png` | Power of the Elements | Electric and lightning blocks placed in survival; no shaders | Works |
 
-Findings: The Lion King Mod makes the client disconnect right after joining (empty reason); Mad Science, Applied Energistics rv14.finale3 (1.6.4) and RedLogic (1.5.2) fail to load in a client session
-(details in `docs/data/mods.json`).
+Findings of the first round and their causes (fixed in the second round, details in `docs/data/mods.json`): The Lion King Mod's disconnect was `connectionReceived` returning an empty string; Mad Science
+implements the 1.6.4 `IModelCustomLoader.loadInstance(String, URL)`; Applied Energistics rv14.finale3 needed absent IC2 types stubbed; RedLogic needs Immibis Microblocks next to Immibis Core
+(and read `BlockRedstoneWire.getDeclaredFields()[0]`); Counter Craft calls `System.exit` when more than five mods are loaded; Twilight Forest 1.5.2 instantiates the concrete `RenderLiving`;
+Applied Energistics 1 loads its lang file by class path. Resource Engineering's Thor chest mismatch is the mod's own (its server handler builds the backpack container).

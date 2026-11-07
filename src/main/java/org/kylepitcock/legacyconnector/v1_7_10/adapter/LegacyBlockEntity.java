@@ -50,7 +50,7 @@ public class LegacyBlockEntity extends BlockEntity implements org.kylepitcock.le
                     if (!block.hasTileEntity(LegacyBlockAdapter.metaOf(getBlockState()))) return null;
                     legacy = block.createTileEntity(level != null ? World.mcc$wrap(level) : fallback, LegacyBlockAdapter.metaOf(getBlockState()));
                 }
-            } catch (RuntimeException | LinkageError e) {
+            } catch (RuntimeException | LinkageError | AssertionError e) {
                 // A tile entity that cannot be created must not take the server down (this runs while chunks are sent
                 // and saved): the block stays, without its tile entity.
                 createFailed = true;

@@ -78,8 +78,16 @@ public final class JdkCompat {
         return new IllegalStateException("Legacy mod requested the game to exit (code " + code + "); the mod is disabled instead");
     }
 
+    private static final java.util.Set<String> EXIT_CALLERS = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /**
+     * {@code System.exit} from a legacy mod: ignored, and the mod carries on. Mods call it for their own reasons (Counter Craft exits when more than five mods are
+     * loaded, an anti-modpack check that no pack satisfies) and the game must not end; unwinding the mod's call instead would abandon its client setup half way.
+     */
     public static void exit(int code) {
-        throw exitRequested(code);
+        StackTraceElement[] stack = new Throwable().getStackTrace();
+        String caller = stack.length > 1 ? stack[1].getClassName() + "." + stack[1].getMethodName() : "?";
+        if (EXIT_CALLERS.add(caller)) LOG.warn("Legacy code called System.exit({}) from {}; ignored, the mod carries on", code, caller);
     }
 
     /** {@code result}, or {@code fallback} when the result is null or empty (see the loader's UpdateCheckFix). */

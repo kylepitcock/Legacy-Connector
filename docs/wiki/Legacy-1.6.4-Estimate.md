@@ -115,3 +115,13 @@ Offline link check (`checkLegacyMod`) over `test-mods-164` (98 jars with `old-on
 
 Replaced by real behaviour: `Entity.dropItem(id, n)`, fire tables (`Block.blockFlammability`, metadata shaped `isFlammable`/`getFireSpreadSpeed`), `MapGenBase` over block ids (`generate(byte[])`, `recursiveGenerate(byte[])` overrides), `EnchantmentThorns` statics, ops/whitelist/login members by name, grass plants, chat events as strings, the old packet classes (open window, window click, respawn, place, entity moves, map chunk wire format), int health / `moveSpeed` / `getMaxHealth()` / `initCreature` for 1.5.2 and 1.4.7 mobs, absolute AI speeds converted to multipliers, and numeric widening in the constructor adaptation (a float argument no longer becomes a defaulted double).
 Left: bundled copies of NEI/Waila API classes (unresolved), Scala library members, client rendering members (`MapItemRenderer`, `ThreadDownloadImageData`), texture classes of 1.4.7 (another agent), notch-named jars (BTW), `EntityAIDoorInteract`, Tinkers' `stats.player` (needs a runtime trace).
+
+## Client survival round, second pass (2026-11-07)
+
+Fixes from the first real-client round (screenshots in `docs/screenshots/old-versions/1.6.4`):
+
+- **The Lion King Mod**: the client was kicked ~100 ms after joining with an empty reason. Its `IConnectionHandler.connectionReceived` returns `""` for accepted; `Players164` treated any non-null result as a refusal. Null or empty accepts now (as FML's `Strings.isNullOrEmpty`).
+- **Mad Science**: 1.6.4's `IModelCustomLoader` is `loadInstance(String, URL)`; the 1.7.10 shim declares `loadInstance(ResourceLocation)`. The interface has both as defaults (the ResourceLocation form builds a URL that reads through the mods' resource lookup and calls the 1.6.4 form).
+- **Applied Energistics rv14.finale3**: `ElectricTool.getManager` returns `this` as IC2's absent `IElectricItemManager`; the verifier loads the type for that check, so the class failed. `AbsentDependencyStubber` now stubs an `areturn` in a method whose return type is absent (unless it returns null or a parameter of that type).
+- **Counter Craft**: calls `System.exit(0)` when more than five mods are listed (Forge, FML, mcp, Minecraft and bridged libraries count). The layer turned that into an exception that aborted the client setup half way (the "logo splash" bench was the mod's intro of a menu that never finished loading). `System.exit` from a legacy mod is now ignored (logged once per caller) and the mod carries on; the bench opens the mod's own menu (an online lobby: "Cloud offline").
+- **Power of the Elements**: the ice, fire and air titans draw with their skins; the first round's "did not show" could not be reproduced.

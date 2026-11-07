@@ -9,7 +9,9 @@ import net.minecraft.world.entity.LivingEntity;
 
 public abstract class EntityLivingBase extends Entity {
     /** Minecraft 1.5.2 and older: the entity's texture as a string path (read by {@code RenderLiving}, see Textures152). */
-    public String texture = "/mob/char.png";
+    public String texture = DEFAULT_TEXTURE;
+    /** The default of {@link #texture}, compared by identity: a mod that sets its own path makes {@code Render} use it. */
+    public static final String DEFAULT_TEXTURE = new String("/mob/char.png");
 
     /** Minecraft 1.5.2: overridable by mods that switch texture at run time. */
     public String getTexture() {

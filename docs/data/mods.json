@@ -976,7 +976,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: the blocks and multi-block items render with their textures; the terminal says 'ChatMsg.NoController' untranslated (no network built); no GUI could be opened without a controller."
+      "notes": "Real client, shaders: the blocks and multi-block items render with their textures; its own lang file (loadLocalization of /mods/appeng/lang/en_US.properties, a class path file in another jar than the shim) is now read, so the terminal's message reads 'Unable to communicate with controller.' (checked through StatCollector and the chat log); no GUI without a controller (the mod's design)."
     },
     {
       "name": "Applied Energistics rv14.finale3",
@@ -984,8 +984,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "In a real client session the mod failed during init: NoClassDefFoundError ic2/api/item/IElectricItemManager (the IC2 API class it reaches is not provided). The server self test did not hit this."
+      "status": "partial",
+      "notes": "Real client, shaders: loads without IC2: ElectricTool.getManager returned this as IC2's IElectricItemManager, which the verifier must load to check; methods returning an absent type are now stubbed like other absent-API code. Its blocks (grinder, terminals, ore, crafting grid, multiblocks) place and draw."
     },
     {
       "name": "Aqua Acrobatics",
@@ -4167,7 +4167,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: blocks (crates, barrels, bench) render; the bench opens a full-screen logo splash instead of a crafting screen. Guns were not tested."
+      "notes": "Real client, shaders: blocks render and the bench opens the mod's own menu (Play, Inventory, Community, 'Cloud offline': the mod is an online lobby). The earlier 'full-screen logo' was the mod's intro splash, shown because its client setup had been aborted: it calls System.exit when more than five mods are loaded (an anti-modpack check), which the layer turned into an exception half way through. System.exit from a legacy mod is now ignored and the mod carries on. Guns were not tested."
     },
     {
       "name": "CPM OSC Compat",
@@ -10628,8 +10628,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "In a real client session the mod failed during preInit: AbstractMethodError, its MadTechneModelLoader does not implement IModelCustomLoader.loadInstance(ResourceLocation) as the shim declares it."
+      "status": "works",
+      "notes": "Real client, shaders: loads; its machines (cryofreezer, genome sequencer, computer mainframe, voxbox, CNC machine...) draw with their Techne models and the GMO cows walk. The 1.6.4 IModelCustomLoader is loadInstance(String, URL); the shim's interface now declares both forms as defaults (the ResourceLocation one calls the 1.6.4 one with a URL)."
     },
     {
       "name": "Magia Naturalis",
@@ -14106,7 +14106,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Real client, survival, shaders: blocks (electric and lightning blocks), the lightning hammer, armor and the soldier mob render and are usable; the ice titan did not show in the test."
+      "notes": "Real client, survival, shaders: blocks (electric and lightning blocks), the lightning hammer, armor and the soldier mob render and are usable; the ice, fire and air titans summoned later draw with the mod's own human-shaped skins (the earlier 'ice titan did not show' could not be reproduced)."
     },
     {
       "name": "Prefab",
@@ -14841,8 +14841,8 @@
       "mc": "1.5.2",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "In a real client session the mod failed during preInit: One or more errors were thrown while loading RedLogic."
+      "status": "loads",
+      "notes": "Needs Immibis Microblocks (its TileCoverableBase API class): the earlier failure was a missing dependency in the test set, not a layer defect. With Immibis Core and Microblocks it loads (0 failed). Placing a wire by command crashed the server: RedLogic reads BlockRedstoneWire.getDeclaredFields()[0] and asserts it is a boolean (the shim's wire had icon fields first) and the AssertionError escaped the tile entity creation; both fixed. Wires and gates were not placed through items."
     },
     {
       "name": "RedPower 2 (Core, Base, Mechanical, Digital, Compat)",
@@ -15076,7 +15076,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, survival, shaders: blocks, gem blocks, tools, armor and scythes render and give correctly; the composter GUI has no mod background (plain slots), the Thor chest (backpack) screen is far taller than the window with items drawn off their slots."
+      "notes": "Real client, survival, shaders: blocks, gem blocks, tools, armor and scythes render and give correctly; the composter GUI does draw the mod's background (the composter reuses sifterGUI.png; the mod's foreground method has the wrong signature, so it has no title in the real game either) and items sit on their slots. The Thor chest screen fits the window; its item mismatch is the mod's own: GuiHandler.getServerGuiElement returns a ContainerBackpack (53 slots) while the client builds ContainerThorChest (117), so stacks show in the wrong slots. Not a layer defect."
     },
     {
       "name": "Resource Pack Organizer",
@@ -17626,8 +17626,8 @@
       "mc": "1.6.4",
       "source": "client",
       "date": "2026-11-07",
-      "status": "fails",
-      "notes": "In a real client session the game disconnects about 100 ms after joining a world (empty reason, no exception logged) when this mod is installed; removing it fixes the join. The server self test passed. Cause not found yet."
+      "status": "works",
+      "notes": "Real client, shaders: joins and plays. Cause of the old disconnect: its IConnectionHandler.connectionReceived returns an empty string for accepted, which the layer took as a refusal (a kick with an empty reason); null or an empty string now accepts, as in FML. Mobs (lions, giraffe, rhino) and blocks draw."
     },
     {
       "name": "The Lost Cities",
@@ -17753,7 +17753,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Real client, shaders: 55 mobs and the blocks register, but init failed with InstantiationError RenderLiving, so the mobs draw with vanilla boar/sheep models instead of their own."
+      "notes": "Real client, shaders: init succeeds now: Minecraft 1.5.2's RenderLiving was concrete (new RenderLiving(model, shadow)); the shim's is too, and binds the entity's string texture (EntityLiving.texture / getTexture, set by the mod's constructor) before the renderer's default, so the wild boar, bighorn sheep, bunny and penguin draw with their own models and skins."
     },
     {
       "name": "The Twilight Forest",
