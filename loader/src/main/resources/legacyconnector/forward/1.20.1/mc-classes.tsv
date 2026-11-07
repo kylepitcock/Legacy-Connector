@@ -1,0 +1,6 @@
+# Minecraft class renames 1.20.1 to 1.21.1 (old TAB new), applied to every reference of a translated mod.
+# BufferBuilder becomes a compatibility class (see CompatBufferBuilder); its RenderedBuffer is MeshData.
+com/mojang/blaze3d/vertex/BufferBuilder	org/kylepitcock/legacyconnector/v1_20_1/migrate/CompatBufferBuilder
+com/mojang/blaze3d/vertex/BufferBuilder$RenderedBuffer	com/mojang/blaze3d/vertex/MeshData
+net/minecraft/network/FriendlyByteBuf$Writer	net/minecraft/network/codec/StreamEncoder
+net/minecraft/network/FriendlyByteBuf$Reader	net/minecraft/network/codec/StreamDecoder

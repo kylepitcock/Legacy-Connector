@@ -29,6 +29,7 @@ import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.ClassRemapper;
 import org.objectweb.asm.commons.Remapper;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -108,29 +109,38 @@ public final class Forge1201Transformer {
     private final class Mapper extends Remapper {
         @Override
         public String map(String internalName) {
-            return mapClass(internalName);
+            String r = mapClass(internalName);
+            if (r.equals(internalName)) {
+                String mc = Mc1201Tables.get().classes.get(internalName);
+                if (mc != null) return mc;
+            }
+            return r;
         }
 
         @Override
         public String mapMethodName(String owner, String name, String descriptor) {
             if (name.length() > 3 && name.charAt(1) == '_') {
                 String m = srg.get(name);
-                if (m != null) return m;
+                if (m != null) name = m;
             }
-            return name;
+            return Mc1201Tables.get().renamedMember(owner, name, descriptor);
         }
 
         @Override
         public String mapFieldName(String owner, String name, String descriptor) {
             if (name.length() > 3 && name.charAt(1) == '_') {
                 String m = srg.get(name);
-                if (m != null) return m;
+                if (m != null) name = m;
             }
-            return name;
+            return Mc1201Tables.get().renamedMember(owner, name, ":" + descriptor);
         }
 
         @Override
         public String mapInvokeDynamicMethodName(String name, String descriptor) {
+            // a lambda for a functional interface whose method was renamed (FriendlyByteBuf.Writer.accept is StreamEncoder.encode): the factory returns the interface
+            String iface = Type.getReturnType(descriptor).getInternalName();
+            String renamed = Mc1201Tables.get().renamedMember(iface, name, "*");
+            if (!renamed.equals(name)) return renamed;
             return mapMethodName(null, name, descriptor);
         }
     }
@@ -160,6 +170,8 @@ public final class Forge1201Transformer {
         Map<String, byte[]> outClasses = new LinkedHashMap<>();
         int stringsMapped = 0;
         int rewrites = 0;
+        List<ClassNode> nodes = new ArrayList<>();
+        Mc1201Hierarchy hierarchy = new Mc1201Hierarchy();
         for (var e : classes.entrySet()) {
             ClassNode node = new ClassNode();
             try {
@@ -168,13 +180,20 @@ public final class Forge1201Transformer {
                 result.notes.add("Skipped unreadable class " + e.getKey() + ": " + ex);
                 continue;
             }
+            hierarchy.add(node);
+            nodes.add(node);
+        }
+        Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
+        for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
             rewrites += CallRewrites1201.apply(node);
+            mc.add(Mc1201Migration.apply(node, hierarchy));
             ClassWriter writer = new ClassWriter(0);
             node.accept(writer);
             outClasses.put(node.name + ".class", writer.toByteArray());
             result.classes++;
         }
+        if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
         if (rewrites > 0) result.notes.add(rewrites + " call site(s) rewritten for changed 1.21.1 signatures (ResourceLocation factories, event bus post)");
         if (stringsMapped > 0) result.notes.add(stringsMapped + " reflection string(s) with SRG names now use Mojang names");
 

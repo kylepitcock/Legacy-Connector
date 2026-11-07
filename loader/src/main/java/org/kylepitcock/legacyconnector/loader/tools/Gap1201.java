@@ -211,6 +211,7 @@ public final class Gap1201 {
     private final Map<String, Set<String>> missingFields = new TreeMap<>();
 
     private void run(List<Path> mods, Path report) throws IOException {
+        if (Boolean.getBoolean("gap.translate")) mods = translated(mods);
         Map<String, Cls> own = new HashMap<>();
         for (Path m : mods) index(m, own);
         // the mods' own members must be renamed like the references to them (descriptors with moved classes, SRG names of overrides)
@@ -281,13 +282,51 @@ public final class Gap1201 {
         ranked(out, "Missing fields", missingFields);
         out.close();
         detail.close();
+        System.out.println(mcSummary());
         System.out.println("report: " + report + " (" + missingClasses.size() + " classes, " + missingMethods.size() + " methods, " + missingFields.size() + " fields)");
+    }
+
+    /**
+     * -Dgap.translate=true: the jars go through the real Forge1201Transformer first (names, Minecraft migration), so the report shows what is left
+     * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
+     */
+    private static List<Path> translated(List<Path> mods) throws IOException {
+        Path dir = Files.createTempDirectory("gap1201-");
+        var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty());
+        List<Path> out = new ArrayList<>();
+        for (Path m : mods) {
+            Path t = dir.resolve(m.getFileName());
+            try {
+                var lj = new org.kylepitcock.legacyconnector.loader.LegacyJar(m);
+                lj.version = org.kylepitcock.legacyconnector.loader.LegacyVersion.V1_20_1;
+                transformer.transform(lj, t);
+                out.add(t);
+            } catch (RuntimeException | IOException e) {
+                System.out.println("translation failed for " + m.getFileName() + ": " + e);
+            }
+        }
+        return out;
+    }
+
+    /** Distinct symbols and jar x symbol occurrences that are Minecraft's own (the area of the migration tables; Forge API gaps are not counted). */
+    private String mcSummary() {
+        StringBuilder sb = new StringBuilder("MC-gap (distinct/occurrences):");
+        for (var e : new TreeMap<>(Map.of("classes", missingClasses, "methods", missingMethods, "fields", missingFields)).entrySet()) {
+            int d = 0, o = 0;
+            for (var en : e.getValue().entrySet()) {
+                if (!(en.getKey().startsWith("net/minecraft/") || en.getKey().startsWith("com/mojang/"))) continue;
+                d++;
+                o += en.getValue().size();
+            }
+            sb.append(' ').append(e.getKey()).append(' ').append(d).append('/').append(o);
+        }
+        return sb.toString();
     }
 
     private static void ranked(PrintStream out, String title, Map<String, Set<String>> map) {
         out.println("\n== " + title + ": " + map.size() + " distinct ==");
         map.entrySet().stream().sorted(Comparator.comparingInt((Map.Entry<String, Set<String>> e) -> -e.getValue().size()).thenComparing(Map.Entry::getKey))
-                .limit(400).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
+                .limit(Integer.getInteger("gap.limit", 400)).forEach(e -> out.println(String.format("%3d  %s", e.getValue().size(), e.getKey())));
     }
 
     private int check(ClassNode n, Map<String, Cls> own, Set<String> mc, Set<String> mm, Set<String> mf) {
@@ -354,6 +393,6 @@ public final class Gap1201 {
                 || name.startsWith("org/lwjgl/") || name.startsWith("org/joml/") || name.startsWith("it/unimi/") || name.startsWith("com/mojang/")
                 || name.startsWith("org/jetbrains/") || name.startsWith("org/objectweb/") || name.startsWith("org/spongepowered/") || name.startsWith("javax/")
                 || name.startsWith("com/electronwill/") || name.startsWith("org/openjdk/") || name.startsWith("net/neoforged/fml/") || name.startsWith("net/neoforged/bus/")
-                || name.startsWith("net/neoforged/neoforgespi/");
+                || name.startsWith("net/neoforged/neoforgespi/") || name.startsWith("legacyconnector/");
     }
 }
