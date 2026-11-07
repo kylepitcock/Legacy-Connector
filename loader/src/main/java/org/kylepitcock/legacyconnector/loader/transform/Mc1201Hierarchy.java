@@ -140,6 +140,42 @@ public final class Mc1201Hierarchy {
         return result;
     }
 
+    /**
+     * A class writer that recomputes frames (and maxima) with this hierarchy: rewriting calls and constructors changes the stack at branch targets, so the
+     * frames of a changed class cannot be kept. Unknown classes (other mods, libraries) fall back to the JVM's class loading, then to Object.
+     */
+    public org.objectweb.asm.ClassWriter frameWriter() {
+        return new org.objectweb.asm.ClassWriter(org.objectweb.asm.ClassWriter.COMPUTE_FRAMES) {
+            @Override
+            protected String getCommonSuperClass(String a, String b) {
+                return commonSuperClass(a, b, () -> super.getCommonSuperClass(a, b));
+            }
+        };
+    }
+
+    String commonSuperClass(String a, String b, java.util.function.Supplier<String> fallback) {
+        if (a.equals(b)) return a;
+        boolean known = (mod.containsKey(a) || mc().containsKey(a)) && (mod.containsKey(b) || mc().containsKey(b));
+        if (!known) {
+            try {
+                return fallback.get();
+            } catch (RuntimeException | LinkageError e) {
+                return "java/lang/Object";
+            }
+        }
+        if (isSubclassOf(b, a)) return a;
+        if (isSubclassOf(a, b)) return b;
+        String c = a;
+        for (int guard = 0; guard < 64 && c != null; guard++) {
+            ClassNode n = mod.get(c);
+            String sup = n != null ? n.superName : (mc().containsKey(c) ? mc().get(c).superName() : null);
+            if (sup == null) break;
+            if (isSubclassOf(b, sup)) return sup;
+            c = sup;
+        }
+        return "java/lang/Object";
+    }
+
     /** The owner itself and its Minecraft ancestors, nearest first (rule lookup for calls through a subclass of the declaring class). */
     public List<String> minecraftAncestors(String owner) {
         List<String> out = new ArrayList<>();

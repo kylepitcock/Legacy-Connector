@@ -291,7 +291,8 @@ public final class Gap1201 {
      * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
      */
     private static List<Path> translated(List<Path> mods) throws IOException {
-        Path dir = Files.createTempDirectory("gap1201-");
+        String keep = System.getProperty("gap.translated.dir");
+        Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
         var transformer = new org.kylepitcock.legacyconnector.loader.transform.Forge1201Transformer(org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty());
         List<Path> out = new ArrayList<>();
         for (Path m : mods) {

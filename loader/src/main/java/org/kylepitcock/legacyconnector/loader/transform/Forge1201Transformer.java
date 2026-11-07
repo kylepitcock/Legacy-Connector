@@ -186,11 +186,29 @@ public final class Forge1201Transformer {
         Mc1201Migration.Counts mc = new Mc1201Migration.Counts();
         for (ClassNode node : nodes) {
             stringsMapped += mapSrgStrings(node);
-            rewrites += CallRewrites1201.apply(node);
-            mc.add(Mc1201Migration.apply(node, hierarchy));
-            ClassWriter writer = new ClassWriter(0);
-            node.accept(writer);
-            outClasses.put(node.name + ".class", writer.toByteArray());
+            int viaCalls = CallRewrites1201.apply(node);
+            rewrites += viaCalls;
+            Mc1201Migration.Counts changed = Mc1201Migration.apply(node, hierarchy);
+            mc.add(changed);
+            byte[] bytes;
+            if (viaCalls + changed.total() > 0) {
+                // the stack at branch targets changed: frames are computed again
+                try {
+                    ClassWriter writer = hierarchy.frameWriter();
+                    node.accept(writer);
+                    bytes = writer.toByteArray();
+                } catch (RuntimeException ex) {
+                    result.notes.add("Frames of " + node.name + " could not be recomputed (" + ex + "); the class keeps the old ones and may fail to verify");
+                    ClassWriter writer = new ClassWriter(0);
+                    node.accept(writer);
+                    bytes = writer.toByteArray();
+                }
+            } else {
+                ClassWriter writer = new ClassWriter(0);
+                node.accept(writer);
+                bytes = writer.toByteArray();
+            }
+            outClasses.put(node.name + ".class", bytes);
             result.classes++;
         }
         if (mc.total() > 0) result.notes.add("Minecraft 1.20.1 to 1.21.1 migration: " + mc);
