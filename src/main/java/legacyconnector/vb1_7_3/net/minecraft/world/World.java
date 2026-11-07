@@ -321,7 +321,10 @@ public class World implements BlockView {
         org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.play(mcc$level,new org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Request(org.kylepitcock.legacyconnector.vb1_7_3.AudioB173.Kind.STREAMING,name,x+.5,y+.5,z+.5,4,1,false));
     }
     public boolean spawnEntity(legacyconnector.vb1_7_3.net.minecraft.entity.Entity entity) {
-        return mcc$level != null && org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
+        if(mcc$level==null||entity==null)return false;
+        if(entity instanceof legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity living)
+            return org.kylepitcock.legacyconnector.vb1_7_3.MobsB173.spawn(mcc$level,living);
+        return org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173Arrow.spawn(mcc$level, entity);
     }
     public List<legacyconnector.vb1_7_3.net.minecraft.entity.Entity> getEntities(legacyconnector.vb1_7_3.net.minecraft.entity.Entity except,
             legacyconnector.vb1_7_3.net.minecraft.util.math.Box box) {

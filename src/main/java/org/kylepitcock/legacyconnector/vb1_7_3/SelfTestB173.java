@@ -280,7 +280,7 @@ public final class SelfTestB173 {
         behaviour(level, blocks, base.above(4));
         int[] recipes = RecipesB173.counts();
         LOG.info("B1.7.3 SELF TEST: {} of {} blocks placed, {} drop something; {} items; recipes {} translated, {} not; {} texture overrides; "
-                        + "{} tile entities and {} entities registered (not bridged yet)",
+                        + "{} tile entities and {} entity registrations (hosting partial)",
                 placed, blocks.size(), drops, items, recipes[0], recipes[1], ContentB173.textureOverrides().size(), ContentB173.tileEntities().size(),
                 ContentB173.entities().size());
         for (String f : failed.subList(0, Math.min(20, failed.size()))) LOG.info("  failed: {}", f);

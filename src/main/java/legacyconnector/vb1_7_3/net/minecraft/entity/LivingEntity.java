@@ -24,6 +24,9 @@ public abstract class LivingEntity extends Entity {
         super(world);
     }
 
+    /** The original skin path, also used by the native mob fallback renderer. */
+    public String mcc$texture(){return texture;}
+
     public ItemStack getHeldItem() {
         return null;
     }

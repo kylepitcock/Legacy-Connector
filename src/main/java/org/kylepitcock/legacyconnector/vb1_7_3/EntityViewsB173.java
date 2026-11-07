@@ -9,7 +9,8 @@ public final class EntityViewsB173 {
     private static final ThreadLocal<java.util.List<Touched>> TOUCHED = ThreadLocal.withInitial(java.util.ArrayList::new);
     public static Entity wrap(net.minecraft.world.entity.Entity modern) {
         if (modern instanceof LegacyB173Arrow arrow && arrow.legacy != null) return arrow.legacy;
-        Entity view = modern instanceof net.minecraft.world.entity.player.Player p ? PlayerViewB173.of(p)
+        Entity view = modern instanceof LegacyB173Cow cow && cow.legacy()!=null ? cow.legacy()
+                : modern instanceof net.minecraft.world.entity.player.Player p ? PlayerViewB173.of(p)
                 : modern instanceof net.minecraft.world.entity.item.ItemEntity item
                 ? new legacyconnector.vb1_7_3.net.minecraft.entity.ItemEntity(World.mcc$wrap(modern.level()),modern.getX(),modern.getY(),modern.getZ(),StacksB173.toLegacy(item.getItem()))
                 : modern instanceof net.minecraft.world.entity.LivingEntity ? new legacyconnector.vb1_7_3.net.minecraft.entity.LivingEntity(World.mcc$wrap(modern.level())) {}
