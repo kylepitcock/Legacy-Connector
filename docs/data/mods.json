@@ -1819,8 +1819,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "loads",
-      "notes": "Loads in 1.4.7 corpus server self test (2026-11-07) without errors (no blocks, items or entities of its own)."
+      "status": "works",
+      "notes": "Real client 2026-11-07: a redstone-powered wooden engine drives the pump over a water source and the tank beside it fills with 1000 mB of water. The pump needs a world floor above y=0 (it scans down while y > 0)."
     },
     {
       "name": "BC Robotics",
@@ -3450,7 +3450,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Old-only. Loads in a real client; the camera block draws from the mod's sheet and the monitor item shows its icon (an item that never sets an icon index draws tile 0, fixed 2026-11-07); the picture-in-picture view was not exercised."
+      "notes": "Old-only. Real client 2026-11-07: the monitor item now hangs on a wall and draws its screen (it did not place); the camera block draws with a placeholder tile and the camera feed was not checked."
     },
     {
       "name": "Ceiling Torch",
@@ -6089,7 +6089,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "works",
-      "notes": "Old-only ModLoader mod. Loads in a real client; the four detector blocks draw with their face textures (survival placement)."
+      "notes": "Old-only ModLoader mod. Real client 2026-11-07: the four detector blocks draw with their face textures and a detector powers a redstone lamp beside it when a cow comes near."
     },
     {
       "name": "Entity Render Extender",
@@ -12445,7 +12445,7 @@
       "source": "client",
       "date": "2026-11-07",
       "status": "partial",
-      "notes": "Loads and registers (15 items, 10 blocks, 3 entities). Client check 2026-11-07: an age can be created (DimensionUtils.createAge) and entered, it generates an empty sky; the self test found errors in 43% of the content (lectern, book binder, writing desk machines). Writing and linking books by hand not tried."
+      "notes": "Loads and registers (15 items, 10 blocks, 3 entities). Real client 2026-11-07: an age can be created and the writing desk screen opens in survival; ages beyond creation and the other machines were not tried."
     },
     {
       "name": "Mysterious Mountain Lib",
@@ -13880,8 +13880,8 @@
       "mc": "1.4.7",
       "source": "client",
       "date": "2026-11-07",
-      "status": "loads",
-      "notes": "Old-only (Old Vein Miner). Loads in a real client and prints its start message; the vein mining itself needs the LWJGL key ` held with left-click, which the test harness cannot press: not exercised."
+      "status": "partial",
+      "notes": "Old-only (Old Vein Miner). Loads in a real client; the activation key and left-click events arrive, but the mod reaches the game by reflecting on method names (World.getBlockId...) the layer does not offer to reflection, so no vein is mined."
     },
     {
       "name": "PackagedAuto",
