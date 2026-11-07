@@ -243,10 +243,43 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             String renamed = VANILLA_RENAMES.get(folder + bare);
             if (renamed == null && !folder.equals(block ? "blocks/" : "items/")) renamed = null;
             if (renamed != null) return "minecraft:" + renamed;
+            // ModLoader-era mods (and MCreator's) put their own textures in assets/minecraft/textures/{blocks,items}: no vanilla texture of that name, so the file
+            // the mod ships is stitched under its legacy folder
+            String shipped = modShippedMinecraftTexture(folder, bare);
+            if (shipped != null) return shipped;
             String n = folder.equals("blocks/") ? VANILLA_TEXTURE_RENAMES.getOrDefault(bare, bare) : bare;
             return "minecraft:" + (folder.equals("items/") ? "item/" : "block/") + Ids.normalizePath(n);
         }
         return domain + ":" + (block ? "blocks/" : "items/") + Ids.normalizePath(name);
+    }
+
+    private static volatile java.util.Set<String> shippedMinecraftTextures;
+
+    /** {@code minecraft:blocks/name} when a legacy mod ships assets/minecraft/textures/blocks/name.png and the game has no texture of that name, else null. */
+    private static String modShippedMinecraftTexture(String folder, String bare) {
+        java.util.Set<String> set = shippedMinecraftTextures;
+        if (set == null) {
+            set = new java.util.HashSet<>();
+            for (org.kylepitcock.legacyconnector.core.LegacyModRecord m : org.kylepitcock.legacyconnector.core.LegacyMods.ordered()) {
+                try (var zip = new java.util.zip.ZipFile(m.originalFile().toFile())) {
+                    for (var en = zip.entries(); en.hasMoreElements();) {
+                        String n = Ids.normalizePath(en.nextElement().getName());
+                        if (n.startsWith("assets/minecraft/textures/blocks/") || n.startsWith("assets/minecraft/textures/items/")) {
+                            if (n.endsWith(".png")) set.add(n.substring("assets/minecraft/textures/".length(), n.length() - 4));
+                        }
+                    }
+                } catch (java.io.IOException | RuntimeException e) {
+                    // not a zip (a directory mod): its textures are not found this way
+                }
+            }
+            shippedMinecraftTextures = set;
+        }
+        String name = Ids.normalizePath(bare);
+        if (!set.contains(folder + name)) return null;
+        // a texture the game has itself wins (mods that ship vanilla-named files are resource packs, not content)
+        String modern = (folder.equals("items/") ? "item/" : "block/") + name;
+        if (Assets1710.class.getResource("/assets/minecraft/textures/" + modern + ".png") != null) return null;
+        return "minecraft:" + folder + name;
     }
 
     /** perf.shareBlockModels: metadata values with identical models share the first one's file. */
