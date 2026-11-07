@@ -81,6 +81,25 @@ public final class Gap1201 {
     }
 
     private static void index(Path jar, Map<String, Cls> into) throws IOException {
+        if (Files.isDirectory(jar)) {
+            // compiled facade classes (legacyconnector/v1_20_1/...): the Forge API the layer provides itself
+            try (Stream<Path> files = Files.walk(jar)) {
+                for (Path f : files.filter(x -> x.toString().endsWith(".class")).toList()) {
+                    String rel = jar.relativize(f).toString().replace((char) 92, '/');
+                    if (!rel.startsWith("legacyconnector/v1_20_1/")) continue;
+                    ClassNode n = new ClassNode();
+                    new ClassReader(Files.readAllBytes(f)).accept(n, ClassReader.SKIP_CODE | ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
+                    Cls c = new Cls();
+                    c.name = n.name;
+                    c.superName = n.superName;
+                    c.interfaces = n.interfaces.toArray(new String[0]);
+                    n.methods.forEach(m -> c.methods.add(m.name + m.desc));
+                    n.fields.forEach(fl -> c.fields.add(fl.name + ":" + fl.desc));
+                    into.putIfAbsent(n.name, c);
+                }
+            }
+            return;
+        }
         try (ZipFile zip = new ZipFile(jar.toFile())) {
             for (var en = zip.entries(); en.hasMoreElements(); ) {
                 ZipEntry e = en.nextElement();
@@ -124,6 +143,10 @@ public final class Gap1201 {
     private String cls(String name) {
         if (name == null) return null;
         if (name.startsWith("[")) return desc(name);
+        if (name.startsWith("net/minecraftforge/") || name.startsWith("cpw/")) {
+            String facade = "legacyconnector/v1_20_1/" + name;
+            if (target.containsKey(facade)) return facade;
+        }
         String r = classRenames.get(name);
         if (r != null) return r;
         int dollar = name.indexOf('$');
@@ -173,6 +196,14 @@ public final class Gap1201 {
         if (hasMember(c.superName, key, method, own, seen)) return true;
         if (c.interfaces != null) for (String i : c.interfaces) if (hasMember(i, key, method, own, seen)) return true;
         return method && owner.equals(c.name) && c.superName == null && hasMember("java/lang/Object", key, true, own, seen);
+    }
+
+    private long totalForge;
+
+    /** A symbol of the Forge/NeoForge API (not of Minecraft or a third-party mod). */
+    private static boolean forgeSymbol(String s) {
+        return s.startsWith("net/minecraftforge/") || s.startsWith("net/neoforged/") || s.startsWith("cpw/") || s.startsWith("legacyconnector/v1_20_1/")
+                || s.contains("Lnet/minecraftforge/") || s.contains("Lcpw/");
     }
 
     private final Map<String, Set<String>> missingClasses = new TreeMap<>();
@@ -232,7 +263,9 @@ public final class Gap1201 {
                     if (src != null) jar = src; // a translated jar is named after the original
                 }
             }
-            out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields%n", jar, refs, mc.size(), mm.size(), mf.size());
+            long forgeApi = java.util.stream.Stream.of(mc, mm, mf).flatMap(Set::stream).filter(Gap1201::forgeSymbol).count();
+            out.printf("%s: %d references, %d missing classes, %d missing methods, %d missing fields, %d unresolved Forge-API symbols%n", jar, refs, mc.size(), mm.size(), mf.size(), forgeApi);
+            totalForge += forgeApi;
             final String jarName = jar;
             mc.forEach(x -> detail.println(jarName + "	class	" + x));
             mm.forEach(x -> detail.println(jarName + "	method	" + x));
@@ -242,6 +275,7 @@ public final class Gap1201 {
             mm.forEach(s -> missingMethods.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
             mf.forEach(s -> missingFields.computeIfAbsent(s, k -> new TreeSet<>()).add(jarName));
         }
+        out.printf("%nTOTAL unresolved Forge-API symbols: %d%n", totalForge);
         ranked(out, "Missing classes (by number of jars)", missingClasses);
         ranked(out, "Missing methods", missingMethods);
         ranked(out, "Missing fields", missingFields);

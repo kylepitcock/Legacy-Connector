@@ -1,9 +1,14 @@
 package org.kylepitcock.legacyconnector.loader.transform;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -17,6 +22,7 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.kylepitcock.legacyconnector.loader.LegacyJar;
+import org.kylepitcock.legacyconnector.loader.LegacyJarInspector;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
 import org.kylepitcock.legacyconnector.loader.Provenance;
 import org.kylepitcock.legacyconnector.loader.mapping.SrgMojangTable;
@@ -69,9 +75,9 @@ public final class Forge1201Transformer {
         for (String f : List.of("forge-event-renames.tsv", "forge-fml-renames.tsv", "forge-curated-renames.tsv")) {
             try (InputStream in = Forge1201Transformer.class.getClassLoader().getResourceAsStream("legacyconnector/forward/1.20.1/" + f)) {
                 if (in == null) continue;
-                for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\n")) {
+                for (String l : new String(in.readAllBytes(), StandardCharsets.UTF_8).split("\\R")) {
                     if (l.startsWith("#")) continue;
-                    String[] a = l.split("\t");
+                    String[] a = l.strip().split("\t");
                     if (a.length == 2) map.put(a[0], a[1]);
                 }
             } catch (IOException e) {
@@ -179,6 +185,15 @@ public final class Forge1201Transformer {
             // multi-loader jars: Sinytra Connector would load the same jar a second time as a Fabric mod
             if (name.equals("fabric.mod.json") || name.equals("quilt.mod.json")) continue;
             byte[] data = e.getValue();
+            if (name.startsWith("META-INF/jarjar/")) {
+                if (name.endsWith(".jar")) {
+                    byte[] nested = nestedJar(name, data, result);
+                    if (nested == null) continue;
+                    data = nested;
+                } else if (name.equals("META-INF/jarjar/metadata.json")) {
+                    data = jarJarMetadata(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8);
+                }
+            }
             if (name.equals("META-INF/mods.toml")) {
                 outResources.put("META-INF/neoforge.mods.toml", modsToml(new String(data, StandardCharsets.UTF_8)).getBytes(StandardCharsets.UTF_8));
                 continue;
@@ -195,6 +210,56 @@ public final class Forge1201Transformer {
         outResources.put(Provenance.RESOURCE, Provenance.json(jar, originalSha, LegacyJarTransformer.TRANSFORMER_VERSION));
         LegacyJarTransformer.write(output, outManifest, outClasses, outResources);
         return result;
+    }
+
+    // ---- jar-in-jar ------------------------------------------------------------------------------------------------------------
+
+    /** Nested libraries NeoForge 1.21.1 ships itself: a second (older) copy would split the module. */
+    static boolean providedByHost(String path) {
+        String n = path.substring(path.lastIndexOf('/') + 1).toLowerCase();
+        return n.startsWith("mixinextras");
+    }
+
+    /**
+     * A jar inside {@code META-INF/jarjar}: dropped when the host provides it (MixinExtras), translated when it is a Forge 1.20.1 mod of its own (SpectreLib,
+     * Registrate...), kept otherwise. Null drops it.
+     */
+    private byte[] nestedJar(String path, byte[] data, LegacyJarTransformer.Result result) throws IOException {
+        if (providedByHost(path)) {
+            result.notes.add("Dropped nested " + path.substring(path.lastIndexOf('/') + 1) + " (NeoForge provides it)");
+            return null;
+        }
+        Path in = Files.createTempFile("lc1201-in-", ".jar");
+        Path out = Files.createTempFile("lc1201-out-", ".jar");
+        try {
+            Files.write(in, data);
+            LegacyJar nested = LegacyJarInspector.inspect(in);
+            if (nested == null || nested.version != LegacyVersion.V1_20_1) return data;
+            new Forge1201Transformer(shim).transform(nested, out);
+            result.notes.add("Translated nested " + path.substring(path.lastIndexOf('/') + 1));
+            return Files.readAllBytes(out);
+        } finally {
+            Files.deleteIfExists(in);
+            Files.deleteIfExists(out);
+        }
+    }
+
+    /** {@code META-INF/jarjar/metadata.json}: the entries of dropped nested jars go. */
+    static String jarJarMetadata(String json) {
+        try {
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonArray jars = root.getAsJsonArray("jars");
+            if (jars == null) return json;
+            JsonArray kept = new JsonArray();
+            for (JsonElement el : jars) {
+                String path = el.getAsJsonObject().has("path") ? el.getAsJsonObject().get("path").getAsString() : "";
+                if (!providedByHost(path)) kept.add(el);
+            }
+            root.add("jars", kept);
+            return root.toString();
+        } catch (RuntimeException e) {
+            return json;
+        }
     }
 
     /** Reflection by SRG name ({@code ObfuscationReflectionHelper.findField(Foo.class, "f_1_")}): the runtime has Mojang names. */

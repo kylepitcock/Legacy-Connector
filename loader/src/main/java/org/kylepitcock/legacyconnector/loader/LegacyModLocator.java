@@ -190,7 +190,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // CodeChickenLib); a jar present in both places is taken from mods/. These folders are also where jars that ship
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))) {
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.4.7"), modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve("1.20.1"))) {
                 if (!Files.isDirectory(dir)) continue;
                 try (Stream<Path> files = Files.list(dir)) {
                     for (Path p : files.filter(f -> isModArchive(f))
