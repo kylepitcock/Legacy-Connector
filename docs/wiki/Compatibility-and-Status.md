@@ -13,7 +13,6 @@ Per-mod results are on the [compatibility site](https://kylepitcock.github.io/Le
 | 1.19.2, 1.18.2 | Planned (after 1.20.1). |
 | 1.16.5 | Planned (after 1.18.2). |
 | 1.2.5 | Planned (after 1.16.5). |
-| 1.3.2 | Only on demand. |
 
 Not supported (and likely never fully): coremod transformers and mixins that patch legacy Minecraft code itself,
 LaunchWrapper tweakers. They are reported, and the rest of the mod still loads. Where a coremod only exists to change

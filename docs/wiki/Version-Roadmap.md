@@ -1,6 +1,6 @@
 # Version roadmap
 
-Which legacy Minecraft versions the layer supports or will support, in order, and why. Written 2026-11-06. Back to [Home](Home.md).
+Which legacy Minecraft versions the layer supports or will support, in order, and why. Written 2026-11-06; 1.3.2 was removed from the roadmap on 2026-11-07 (few mods; its row in the mod-count table below is kept as evidence). Back to [Home](Home.md).
 
 | # | Version | State | Why here | Approach |
 |---|---|---|---|---|
@@ -14,7 +14,6 @@ Which legacy Minecraft versions the layer supports or will support, in order, an
 | 8 | 1.18.2 | Planned | Same | Same, one step further back |
 | 9 | 1.16.5 | Planned | Many abandoned mods and packs; Forge 36 still used MCP names | Same pipeline plus the MCP to Mojang names step |
 | 10 | 1.2.5 | Planned | Tekkit Classic / RedPower 2 era: mods that exist nowhere else | Different layer: `ModLoader`/`BaseMod` emulation and flat names, no FML |
-| 11 | 1.3.2 | On demand | Few mods | Only if a specific mod needs it |
 
 ## Estimates (wall-clock, 2026-11-06 evening; plus or minus 50%)
 

@@ -42,7 +42,6 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | 1.19.2, 1.18.2 | Planned (after 1.20.1; renames and diffs over the same pipeline). |
 | 1.16.5 | Planned (after 1.18.2). |
 | 1.2.5 | Planned (after 1.16.5; needs `ModLoader`/`BaseMod` emulation). |
-| 1.3.2 | Only on demand. |
 
 Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Beta/Alpha jar-mod era.
 
