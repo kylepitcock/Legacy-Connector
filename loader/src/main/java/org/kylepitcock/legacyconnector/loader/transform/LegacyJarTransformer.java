@@ -183,6 +183,25 @@ public final class LegacyJarTransformer {
             "org/slf4j/", "org/apache/logging/", "io/netty/", "org/joml/", "org/apache/commons/lang3/", "org/apache/commons/io/", "org/apache/commons/codec/",
             "com/google/errorprone/", "com/google/j2objc/", "org/checkerframework/", "org/jetbrains/annotations/");
 
+    /**
+     * A class of Netty's optional native transports (kqueue, epoll...) the game's own Netty does not ship (it has no kqueue): a mod that
+     * bundles Netty and names them in its network code keeps its copy, which is a package of its own and so splits nothing. The
+     * rest of a bundled Netty is dropped for the game's. The game's Netty is recognised by its core classes being visible here.
+     */
+    private static boolean isOptionalNativeClass(String name) {
+        if (!name.startsWith("io/netty/channel/kqueue/") && !name.startsWith("io/netty/channel/epoll/") && !name.startsWith("io/netty/channel/unix/")
+                && !name.startsWith("io/netty/channel/uring/")) {
+            return false;
+        }
+        try {
+            ClassLoader cl = LegacyJarTransformer.class.getClassLoader();
+            if (cl == null || cl.getResource("io/netty/channel/Channel.class") == null) return false;
+            return cl.getResource(name + ".class") == null;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     private int relocateBundled(LegacyJar jar, Map<String, byte[]> classes, LegacyRemapper remapper) {
         String privateRoot = "legacyconnector_extra/" + (jar.hasMods() ? jar.mods.get(0).modernId() : LegacyModDecl.toModernId(stripJar(jar.fileName()))) + "/";
         int dropped = 0;
@@ -202,7 +221,7 @@ public final class LegacyJarTransformer {
                 continue;
             }
             // Libraries the game already ships: a second copy would split the package between two modules.
-            if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith)) {
+            if (PROVIDED_LIBRARIES.stream().anyMatch(name::startsWith) && !isOptionalNativeClass(name)) {
                 classes.remove(name);
                 dropped++;
                 continue;
