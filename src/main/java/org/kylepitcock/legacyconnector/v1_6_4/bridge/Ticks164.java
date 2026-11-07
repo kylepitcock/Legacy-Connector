@@ -37,7 +37,7 @@ public final class Ticks164 {
         for (Side s : Side.values()) {
             if (s != side) continue;
             boolean server = s == Side.SERVER;
-            if (DISPATCH.wants(s, server ? TickType.SERVER : TickType.CLIENT) || DISPATCH.wants(s, null)) listen(server ? SERVER : CLIENT, server ? new ServerListener() : new ClientListener());
+            if (DISPATCH.wants(s, server ? TickType.SERVER : TickType.CLIENT) || DISPATCH.wants(s, TickType.GAME) || DISPATCH.wants(s, TickType.GLOBAL) || DISPATCH.wants(s, null)) listen(server ? SERVER : CLIENT, server ? new ServerListener() : new ClientListener());
             if (DISPATCH.wants(s, TickType.RENDER)) listen(RENDER, new RenderListener());
             if (DISPATCH.wants(s, TickType.WORLD) || DISPATCH.wants(s, TickType.WORLDLOAD)) listen(WORLD, new WorldListener());
             if (DISPATCH.wants(s, TickType.PLAYER)) listen(PLAYER, new PlayerListener());
@@ -48,6 +48,12 @@ public final class Ticks164 {
         if (flag.compareAndSet(false, true)) FMLCommonHandler.instance().bus().register(listener);
     }
 
+    /** {@code GAME} and {@code GLOBAL} ticks: once per game tick of the side (FML fired them from the same loop as the client and server ticks). */
+    private static void fireGame(Side side, boolean end) {
+        DISPATCH.fire(side, TickType.GAME, end);
+        DISPATCH.fire(side, TickType.GLOBAL, end);
+    }
+
     // The listeners are public because the event bus reflects on them.
 
     public static final class ServerListener {
@@ -56,6 +62,7 @@ public final class Ticks164 {
             boolean end = e.phase == TickEvent.Phase.END;
             if (!end) DISPATCH.beginGameTick(Side.SERVER);
             DISPATCH.fire(Side.SERVER, TickType.SERVER, end);
+            fireGame(Side.SERVER, end);
         }
     }
 
@@ -65,6 +72,7 @@ public final class Ticks164 {
             boolean end = e.phase == TickEvent.Phase.END;
             if (!end) DISPATCH.beginGameTick(Side.CLIENT);
             DISPATCH.fire(Side.CLIENT, TickType.CLIENT, end);
+            fireGame(Side.CLIENT, end);
         }
     }
 

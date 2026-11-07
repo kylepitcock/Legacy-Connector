@@ -63,6 +63,28 @@ public final class ItemStack {
 
     public ItemStack(Block block, int count, int meta) {
         this(Item.getItemFromBlock(block), count, meta);
+        if (mcc$item == null && block != null) {
+            // 1.5.2 and 1.6.4 stacks held the block's id and bound the item when used, so mods build recipe results from blocks they register later
+            mcc$deferredBlock = block;
+            mcc$deferredCount = count;
+            mcc$deferredMeta = meta;
+        }
+    }
+
+    /** A block whose item was not registered when the stack was made (see {@link #mcc$resolveDeferred}). */
+    private Block mcc$deferredBlock;
+    private int mcc$deferredCount;
+    private int mcc$deferredMeta;
+
+    /** Binds the item of a stack made from a block that had none yet, once the block's item exists. */
+    private void mcc$resolveDeferred() {
+        Block block = mcc$deferredBlock;
+        if (block == null) return;
+        Item item = Item.getItemFromBlock(block);
+        if (item == null) return;
+        mcc$deferredBlock = null;
+        mcc$item = item;
+        mcc$stack = ItemBridge.toModern(item, mcc$deferredCount, Math.max(0, mcc$deferredMeta));
     }
 
     public ItemStack(Item item) {
@@ -129,6 +151,7 @@ public final class ItemStack {
 
     /** Modern stack backing this view (shared, not a copy). */
     public net.minecraft.world.item.ItemStack mcc$modern() {
+        if (mcc$deferredBlock != null) mcc$resolveDeferred();
         if (!mcc$wrapped) mcc$stack = ItemBridge.upgradeVariant(mcc$item, mcc$stack);
         return mcc$stack;
     }
@@ -185,6 +208,7 @@ public final class ItemStack {
     // ------------------------------------------------------------------ identity
 
     public Item getItem() {
+        if (mcc$item == null && mcc$deferredBlock != null) mcc$resolveDeferred();
         return mcc$item;
     }
 
@@ -501,6 +525,16 @@ public final class ItemStack {
     // ------------------------------------------------------------------ copies and comparisons
 
     public ItemStack copy() {
+        if (mcc$deferredBlock != null) {
+            mcc$resolveDeferred();
+            if (mcc$deferredBlock != null) {
+                ItemStack c = new ItemStack(net.minecraft.world.item.ItemStack.EMPTY, null);
+                c.mcc$deferredBlock = mcc$deferredBlock;
+                c.mcc$deferredCount = mcc$deferredCount;
+                c.mcc$deferredMeta = mcc$deferredMeta;
+                return c;
+            }
+        }
         if (mcc$item != null && mcc$stack.isEmpty()) {
             // A stack used up to 0 still has its item in 1.7.10, and mods copy it and set the count back (Botania's apothecary decrements the
             // thrown petal, then stores a copy with stackSize 1): the modern copy of an empty stack is the shared empty stack, which kept the copy at 0.
