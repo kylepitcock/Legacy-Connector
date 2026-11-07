@@ -98,7 +98,7 @@ class Forward164MembersTest {
             int dot = key.indexOf('.');
             String owner = key.substring(0, dot);
             String fo = ForwardRenames.map(V, owner);
-            if (!hasField(LegacyVersion.V1_7_10, H17, fo, to)) bad.add("1.7.10 has no field " + fo + "." + to + " (for " + key + ")");
+            if (!fo.startsWith("net/minecraftforge/") && !hasField(LegacyVersion.V1_7_10, H17, fo, to)) bad.add("1.7.10 has no field " + fo + "." + to + " (for " + key + ")");   // Forge classes carry no field data
         });
         assertTrue(bad.isEmpty(), String.join("\n", bad));
     }
@@ -131,7 +131,9 @@ class Forward164MembersTest {
             }
         });
         t.fieldCallRules().forEach((key, r) -> {
-            if (r[4].equals("field")) {
+            if (r[4].equals("static")) {
+                assertTrue(r[5].startsWith("legacyconnector/v1_6_4/"), key);
+            } else if (r[4].equals("field")) {
                 if (!hasField(LegacyVersion.V1_7_10, H17, r[1], r[5])) bad.add("1.7.10 has no field " + r[1] + "." + r[5]);
             } else {
                 String to = r[4].equals("=") ? r[1] : r[4];
