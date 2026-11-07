@@ -151,6 +151,12 @@ final class IdConstructors {
                 fluidTexture = true;
             }
         }
+        // 1.4.7: an item that never calls setIconIndex shows tile 0 of its sheet (Item.iconIndex defaulted to 0); the shim keeps -1 for items that register icons
+        String itemTextureOwner = null;
+        if (claimOwner != null && isItem && h.version().flatNames()) {
+            String facade = h.facadeOf(itemCls);
+            if (facade != null && h.find(facade).hasMethod("mcc$claimItemTexture", "(L" + itemCls + ";)V")) itemTextureOwner = facade;
+        }
         InsnList pre = new InsnList();
         int[] slots = new int[args.length];
         int slot = method.maxLocals;
@@ -161,6 +167,7 @@ final class IdConstructors {
         for (int i = args.length - 1; i >= 0; i--) pre.add(new VarInsnNode(args[i].getOpcode(Opcodes.ISTORE), slots[i]));
         if (claimOwner != null) pre.add(new InsnNode(Opcodes.DUP)); // the receiver stays on the stack for the claim after the call
         if (textureOwner != null) pre.add(new InsnNode(Opcodes.DUP));
+        if (itemTextureOwner != null) pre.add(new InsnNode(Opcodes.DUP));
         Type[] target = Type.getArgumentTypes(targetDesc);
         int pushed = 0;
         for (int j = 0; j < target.length; j++) {
@@ -184,6 +191,9 @@ final class IdConstructors {
             } else if (textureOwner != null) {
                 post.add(new VarInsnNode(Opcodes.ILOAD, slots[1]));
                 post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, textureOwner, "mcc$claimTexture", "(L" + blockCls + ";I)V", false));
+            }
+            if (itemTextureOwner != null) {
+                post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, itemTextureOwner, "mcc$claimItemTexture", "(L" + itemCls + ";)V", false));
             }
             post.add(new VarInsnNode(Opcodes.ILOAD, slots[0]));
             post.add(new MethodInsnNode(Opcodes.INVOKESTATIC, claimOwner, "mcc$claimId", claimDesc, false));
