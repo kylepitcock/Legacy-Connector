@@ -30,36 +30,6 @@ public final class EnergyRates {
         return n < 1 ? 0 : n;
     }
 
-    /** The IC2 tier whose packet limit (8 * 4^tier) first covers {@code maxSafeInput} EU: 32 is tier 1, 33 to 128 tier 2, 512 tier 3, 2048 tier 4; 8 or less is tier 0. */
-    public static int tierFromMaxSafeInput(int maxSafeInput) {
-        int tier = 0;
-        while (tier < 12 && packetLimit(tier) < maxSafeInput) tier++;
-        return tier;
-    }
-
-    /** The largest packet a sink survives: its own max safe input when it reports one (above 0), else the limit of its tier. */
-    public static double sinkLimit(double maxSafeInput, int tier) {
-        return maxSafeInput > 0 ? maxSafeInput : packetLimit(tier);
-    }
-
-    /** Like {@link #euToInject} with an explicit packet limit instead of a tier. */
-    public static double euToInjectLimited(long fe, int fePerEu, double demanded, double limit) {
-        long eu = unitsFromFe(fe, fePerEu);
-        double n = Math.min(Math.min((double) eu, Math.floor(demanded)), Math.floor(limit));
-        return n < 1 ? 0 : n;
-    }
-
-    /** What a sink took of an offer when it returned {@code leftover} (IC2's inject calls return the rest): never below 0 nor above the offer. */
-    public static double accepted(double offered, double leftover) {
-        return Math.max(0, Math.min(offered, offered - leftover));
-    }
-
-    /** MJ to hand a BuildCraft receptor for {@code fe} FE: bounded by what it wants; 0 when that is below its minimum. */
-    public static double mjToOffer(long fe, int fePerMj, double wanted, double minimum) {
-        double offer = Math.min((double) unitsFromFe(fe, fePerMj), wanted);
-        return offer <= 0 || offer < minimum ? 0 : offer;
-    }
-
     /** The side index of a legacy ForgeDirection for a modern Direction ordinal (both use DOWN, UP, NORTH, SOUTH, WEST, EAST); -1 (unsided) is UNKNOWN (6). */
     public static int legacySide(int direction3dDataValue) {
         return direction3dDataValue < 0 || direction3dDataValue > 5 ? 6 : direction3dDataValue;

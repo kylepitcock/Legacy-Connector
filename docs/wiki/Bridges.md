@@ -304,6 +304,5 @@ the capability are also visible to legacy code (1.7.10: `ModernCapabilityTile` i
 | CoFH RF monolithic `IEnergyHandler` (`canInterface`) | 1.6.4, 1.5.2, 1.4.7 (late builds) | forwarded to the 1.7.10 shim; a bridge method adds `canConnectEnergy` | 1 RF = 1 FE |
 | Redstone Flux `cofh.redstoneflux.api` (`IEnergyReceiver`, `IEnergyProvider`, `IEnergyHandler`, `IEnergyConnection`, `IEnergyStorage`, `IEnergyContainerItem`) and `.impl` / `.util` helpers | 1.12.2 | `EnergyBridge1122` (tiles and items) | 1 RF = 1 FE |
 | Forge Energy `CapabilityEnergy.ENERGY` on tiles and items | 1.12.2 | `BuiltinAdapters.energy1122`, `ItemCapabilities1122` (entities are not bridged) | 1:1 |
-| IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10; sinks of 1.6.4, 1.5.2, 1.4.7 | `ForeignEnergy1710` (reflection; each API generation: `injectEnergy` 1.7.10, `injectEnergyUnits` 1.6.4, `injectEnergy(Direction, int)` 1.5.2) | `energy.fePerEu` = 4 |
-| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10, 1.6.4, 1.5.2, 1.4.7 | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
-| Universal Electricity `IEnergyInterface` / `IEnergyContainer` tiles | 1.6.4 | `ForeignEnergy1710` | `energy.fePerJoule` = 1 |
+| IC2 EU `IEnergySink` / `IEnergySource` tiles, `IElectricItem` items | 1.7.10 only | `ForeignEnergy1710` (reflection) | `energy.fePerEu` = 4 |
+| BuildCraft MJ `IPowerReceptor` (`PowerHandler` 4.x, `IPowerProvider` 3.x) | 1.7.10 only | `ForeignEnergy1710` (receive only) | `energy.fePerMj` = 10 |
