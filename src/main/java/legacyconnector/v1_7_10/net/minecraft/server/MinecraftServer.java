@@ -162,7 +162,7 @@ public class MinecraftServer implements ICommandSender, Runnable {
     }
 
     public String getMOTD() {
-        return mcc$server.getMotd();
+        return mcc$server == null ? "A Minecraft Server" : mcc$server.getMotd();
     }
 
     public boolean isServerRunning() {

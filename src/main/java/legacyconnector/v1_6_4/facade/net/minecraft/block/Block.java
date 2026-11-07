@@ -757,6 +757,16 @@ public final class Block {
         return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.Block.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.golden_rail);
     }
 
+    /** Block.redstoneComparatorActive = Blocks.powered_comparator */
+    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorActive() {
+        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.powered_comparator);
+    }
+
+    /** Block.redstoneComparatorIdle = Blocks.unpowered_comparator */
+    public static legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator mcc$get$redstoneComparatorIdle() {
+        return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.BlockRedstoneComparator.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.unpowered_comparator);
+    }
+
     /** Block.redstoneLampActive = Blocks.lit_redstone_lamp */
     public static legacyconnector.v1_7_10.net.minecraft.block.Block mcc$get$redstoneLampActive() {
         return Ids.as(legacyconnector.v1_7_10.net.minecraft.block.Block.class, legacyconnector.v1_7_10.net.minecraft.init.Blocks.lit_redstone_lamp);

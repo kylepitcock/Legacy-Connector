@@ -46,7 +46,8 @@ public class FMLCommonHandler {
 
     public MinecraftServer getMinecraftServerInstance() {
         var server = ServerLifecycleHooks.getCurrentServer();
-        return server == null ? null : MinecraftServer.mcc$wrap(server);
+        // while mods load 1.6.4/1.7.10 mods already had a server object (the stand-in), and read it in postInit
+        return server == null ? MinecraftServer.getServer() : MinecraftServer.mcc$wrap(server);
     }
 
     /** The side's handler: its {@code getServer()} is the server of the running world (MCHeli registers its commands through it). */

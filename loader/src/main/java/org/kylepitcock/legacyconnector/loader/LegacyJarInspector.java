@@ -486,7 +486,7 @@ public final class LegacyJarInspector {
     }
 
     /** The family of a jar that links against {@code cpw.mods.fml}: 1.5.2, 1.6.4 or 1.7.x (1.7.10 shim). */
-    private static LegacyVersion chooseCpw(LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers) {
+    private static LegacyVersion chooseCpw(ZipFile zip, LegacyJar jar, Map<String, JsonObject> infos, int refs17, Markers markers) {
         if (markers.v164 > 0 && markers.v17 == 0 && markers.v152 > 0 && markers.v16 == 0) {
             jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.5.2-only API (" + markers.v152 + " classes, e.g. " + markers.example152 + ")";
             return LegacyVersion.V1_5_2;
@@ -527,6 +527,12 @@ public final class LegacyJarInspector {
                     jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), mcmod.info mcversion=" + info.get("mcversion").getAsString();
                     return LegacyVersion.V1_6_4;
                 }
+            }
+            // a jar that names Minecraft by obfuscated (notch) names cannot be 1.7.x: the obfuscation that fits is the version (Advanced Survival declares nothing)
+            double[] fp = NotchFingerprint.scores(zip);
+            if (fp != null && fp[2] >= 0.6 && fp[2] > fp[1] + 0.15) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), obfuscated names match Minecraft 1.6.4 (" + Math.round(fp[2] * 100) + "% of the member references)";
+                return LegacyVersion.V1_6_4;
             }
         }
         jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes)"
@@ -649,7 +655,7 @@ public final class LegacyJarInspector {
             if (v147 != null) return v147;
         }
         // 1. The package the code actually links against is the most reliable signal.
-        if (refs17 > 0 && refs112 == 0) return chooseCpw(jar, infos, refs17, markers);
+        if (refs17 > 0 && refs112 == 0) return chooseCpw(zip, jar, infos, refs17, markers);
         if (refs112 > 0 && refs17 == 0) {
             jar.versionEvidence = "links against net.minecraftforge.fml (" + refs112 + " classes)";
             return LegacyVersion.V1_12_2;
