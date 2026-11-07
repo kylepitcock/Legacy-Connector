@@ -30,6 +30,11 @@ public class EnumHelper {
         return addEnum(legacyconnector.v1_7_10.net.minecraft.enchantment.EnumEnchantmentType.class, name);
     }
 
+    /** Forge 1.6.4: a new creature attribute (Tragic's mobs, Forestry's...). */
+    public static legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute addCreatureAttribute(String name) {
+        return addEnum(legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureAttribute.class, name);
+    }
+
     public static EnumRarity addRarity(String name, EnumChatFormatting color, String displayName) {
         return addEnum(EnumRarity.class, name, new Object[] {color, displayName});
     }

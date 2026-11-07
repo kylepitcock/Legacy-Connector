@@ -171,6 +171,11 @@ public class BiomeGenBase {
         spawnableCaveCreatureList.add(new SpawnListEntry(legacyconnector.v1_7_10.net.minecraft.entity.passive.EntityBat.class, 10, 8, 8));
     }
 
+    /** Forge: the decorator after the BiomeEvent.CreateDecorator hook (no listener changes it here). */
+    public BiomeDecorator getModdedBiomeDecorator(BiomeDecorator original) {
+        return original;
+    }
+
     public BiomeDecorator createBiomeDecorator() {
         return new BiomeDecorator();
     }

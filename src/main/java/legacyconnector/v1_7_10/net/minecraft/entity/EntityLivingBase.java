@@ -205,7 +205,7 @@ public abstract class EntityLivingBase extends Entity {
     }
 
     public Random getRNG() {
-        return mcc$rng;
+        return rand;
     }
 
     public boolean isChild() {

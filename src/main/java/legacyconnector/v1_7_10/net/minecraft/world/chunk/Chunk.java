@@ -142,6 +142,25 @@ public class Chunk {
     }
 
     /** A chunk of column arrays without metadata (the nether generator's 128-high chunks). */
+    /** 1.6.4 and earlier: the generator's byte array of block ids (x << 12 | z << 8 | y, like the Block array), metadata separate. */
+    public Chunk(World world, byte[] ids, int x, int z) {
+        this(world, ids, null, x, z);
+    }
+
+    public Chunk(World world, byte[] ids, byte[] meta, int x, int z) {
+        this(world, mcc$blocksOf(ids), meta, x, z);
+    }
+
+    private static Block[] mcc$blocksOf(byte[] ids) {
+        Block[] out = new Block[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            int id = ids[i] & 0xFF;
+            out[i] = id == 0 ? legacyconnector.v1_7_10.net.minecraft.init.Blocks.air : legacyconnector.v1_6_4.net.minecraft.util.Ids.block(id);
+            if (out[i] == null) out[i] = legacyconnector.v1_7_10.net.minecraft.init.Blocks.air;
+        }
+        return out;
+    }
+
     public Chunk(World world, Block[] blocks, int x, int z) {
         this(world, blocks, null, x, z);
     }
