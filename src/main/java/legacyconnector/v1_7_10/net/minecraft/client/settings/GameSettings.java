@@ -101,7 +101,10 @@ public class GameSettings {
     }
 
     public void saveOptions() {
-        modern().save();
+        // mods call this from loading threads; saving broadcasts the settings to the server, which wants the client thread
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc != null && !mc.isSameThread()) mc.execute(() -> modern().save());
+        else modern().save();
     }
 
     public void loadOptions() {

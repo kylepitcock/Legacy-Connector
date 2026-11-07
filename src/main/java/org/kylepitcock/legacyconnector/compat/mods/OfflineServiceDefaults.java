@@ -21,7 +21,7 @@ public final class OfflineServiceDefaults {
               "master-server-host": "localhost",
               "master-server-port": 1,
               "display-presents": false,
-              "resource-pack": {"url": "http://127.0.0.1:9/craftingdead.zip", "hash": "00000000000000000000000000000000"},
+              "resource-pack": {"url": "http://127.0.0.1:9/craftingdead.zip", "hash": "%HASH%"},
               "servers": {},
               "website": "http://localhost/",
               "store": "http://localhost/",
@@ -32,15 +32,32 @@ public final class OfflineServiceDefaults {
 
     private OfflineServiceDefaults() {}
 
-    /** Called before the mod's preInit; {@code gameDir} is the directory the mod resolves {@code user.dir} to. */
+    /**
+     * Called before the mod's preInit; {@code gameDir} is the directory the mod resolves {@code user.dir} to. The mod compares the
+     * SHA-1 of {@code resourcepacks/craftingdead.zip} with the settings' hash and only downloads (opening a Swing progress window,
+     * which a headless-AWT game cannot) when they differ, so an empty placeholder pack and its hash are seeded too.
+     */
     public static void beforePreInit(String modId, Path gameDir) {
         if (!MOD.equals(modId)) return;
         try {
             Path file = gameDir.resolve("craftingdead").resolve("craftingdead.json");
             if (Files.exists(file)) return;
+            Path pack = gameDir.resolve("resourcepacks").resolve("craftingdead.zip");
+            java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+            try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(bytes)) {
+                zip.putNextEntry(new java.util.zip.ZipEntry("pack.mcmeta"));
+                zip.write("{\"pack\":{\"pack_format\":1,\"description\":\"Crafting Dead offline placeholder\"}}".getBytes(StandardCharsets.UTF_8));
+                zip.closeEntry();
+            }
+            if (!Files.exists(pack)) {
+                Files.createDirectories(pack.getParent());
+                Files.write(pack, bytes.toByteArray());
+            }
+            StringBuilder hash = new StringBuilder();
+            for (byte b : java.security.MessageDigest.getInstance("SHA-1").digest(Files.readAllBytes(pack))) hash.append(String.format("%02x", b));
             Files.createDirectories(file.getParent());
-            Files.writeString(file, JSON, StandardCharsets.UTF_8);
-        } catch (IOException e) {
+            Files.writeString(file, JSON.replace("%HASH%", hash), StandardCharsets.UTF_8);
+        } catch (IOException | java.security.NoSuchAlgorithmException e) {
             // the mod then fails as it did before
         }
     }

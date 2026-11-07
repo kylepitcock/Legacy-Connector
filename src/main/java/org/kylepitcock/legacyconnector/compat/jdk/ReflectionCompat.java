@@ -137,6 +137,23 @@ public final class ReflectionCompat {
         }
     }
 
+    /**
+     * {@code Class.getFields()}: the shim's access widener makes the private fields of shim classes public, so a legacy subclass
+     * of e.g. {@code AchievementPage} would list their instance fields, which a mod looping over the fields with {@code get(null)}
+     * (Lion King's achievement list) trips over. Instance fields declared by shim classes are left out, as they were private.
+     */
+    public static Field[] getFields(Class<?> owner) {
+        Field[] all = owner.getFields();
+        java.util.ArrayList<Field> kept = new java.util.ArrayList<>(all.length);
+        for (Field f : all) {
+            String declaring = f.getDeclaringClass().getName();
+            if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())
+                    && (declaring.startsWith("legacyconnector.") || declaring.startsWith("legacyconnector_synth."))) continue;
+            kept.add(f);
+        }
+        return kept.toArray(new Field[0]);
+    }
+
     public static java.lang.reflect.Method getMethod(Class<?> owner, String name, Class<?>... types) throws NoSuchMethodException {
         try {
             return owner.getMethod(name, types);
