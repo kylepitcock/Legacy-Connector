@@ -13,6 +13,7 @@ public final class Data1122 implements GeneratedPack.Contributor {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.RuntimeApis1122.generate(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.LegacyBiomes1122.contribute(out);
         org.kylepitcock.legacyconnector.v1_12_2.bridge.Spawns1122.contribute(out);
+        org.kylepitcock.legacyconnector.compat.patchouli.PatchouliBooks1122.contribute(out);
         org.kylepitcock.legacyconnector.v1_12_2.dimension.Dimensions1122.contribute(out);
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles1122.data(out);
     }

@@ -41,6 +41,9 @@ public final class LibraryBridges {
             new Bridge("Waila", "mcp/mobius/waila/api/", "jade", "waila"),
             // NEI recipe handlers and hidden items are shown through JEI.
             new Bridge("NotEnoughItems", "codechicken/nei/", "jei", "nei"),
+            // Patchouli's API (1.12.2: books, multiblocks, custom components) runs on the modern Patchouli; books legacy mods ship as
+            // resources are converted into its data/<mod>/patchouli_books format by the runtime.
+            new Bridge("patchouli", "vazkii/patchouli/api/", "patchouli", "patchouli"),
             // NEI always came with CodeChickenLib, so NEI integrations use it too (DragonAPI's tooltip handlers: GuiDraw, Rectangle4i).
             // Without a legacy CodeChickenLib jar its API is synthesized with the bridged NEI; a real CodeChickenLib is loaded instead.
             new Bridge(null, "codechicken/lib/", "jei", "nei"),

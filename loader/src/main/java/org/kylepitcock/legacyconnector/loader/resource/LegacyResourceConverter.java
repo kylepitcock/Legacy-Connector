@@ -68,6 +68,11 @@ public final class LegacyResourceConverter {
             output.putIfAbsent("legacyconnector_legacy/" + modern, data);
             return true;
         }
+        if (modern.matches("assets/[^/]+/patchouli_books/.+")) {
+            // 1.12 Patchouli books live in assets; the modern Patchouli reads data/<ns>/patchouli_books. The runtime converts the staged
+            // copy (item and block ids need the registries) when the modern Patchouli is installed; the original stays for a legacy Patchouli.
+            output.putIfAbsent("legacyconnector_legacy/" + modern, data);
+        }
         if (modern.matches("assets/[^/]+/sounds\\.json")) {
             data = convertSounds(data, modern.substring("assets/".length(), modern.indexOf('/', "assets/".length())));
         } else if (modern.endsWith(".mcmeta")) {

@@ -60,6 +60,7 @@ public final class LegacyConfig {
             bridges.waila.enabled = true
             bridges.nei.enabled = true
             bridges.cofhEnergy.enabled = true
+            bridges.patchouli.enabled = true
 
             # Performance. perf.* switches of Legacy Connector's own work are on by default (they change nothing but its speed);
             # see docs/wiki/Performance.md.
@@ -174,6 +175,11 @@ public final class LegacyConfig {
         if (v.equalsIgnoreCase("false")) return false;
         LOG.warn("{}: '{}' is not true or false; using {}", key, v, fallback);
         return fallback;
+    }
+
+    /** {@code bridges.<name>.enabled}: whether a library bridge (see {@code LibraryBridges} in the loader) is switched on; default true. */
+    public static boolean bridgeEnabled(String name) {
+        return bool("bridges." + name + ".enabled", true);
     }
 
     private static int positiveInt(String key, int fallback) {
