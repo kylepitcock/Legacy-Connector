@@ -23,5 +23,7 @@ if (tick > 0 && tick % 600 == 0) {
     chunks += lv.getChunkSource().getLoadedChunksCount();
   });
   var rt = T("java.lang.Runtime").getRuntime();
+  // retained memory (what a leak shows): a full collection first, only every 3rd line because it pauses the server
+  if (tick % 1800 == 0) { T("java.lang.System").gc(); log.info("SERVERSCRIPT: live heap after GC at t" + tick + ": " + Math.round((rt.totalMemory() - rt.freeMemory()) / 1048576) + " MB"); }
   log.info("SERVERSCRIPT: t" + tick + " entities=" + total + " chunks=" + chunks + " heapMB=" + Math.round((rt.totalMemory() - rt.freeMemory()) / 1048576));
 }
