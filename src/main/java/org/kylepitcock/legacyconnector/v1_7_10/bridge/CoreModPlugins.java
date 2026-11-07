@@ -33,13 +33,19 @@ public final class CoreModPlugins {
         if (ran) return;
         ran = true;
         Set<String> classes = new LinkedHashSet<>();
+        Map<String, String> versions = new HashMap<>(); // plugin class -> Minecraft version of its jar
         try {
             var urls = loader.getResources(RESOURCE);
             while (urls.hasMoreElements()) {
                 URL url = urls.nextElement();
                 try (InputStream in = url.openStream()) {
-                    String name = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim();
-                    if (!name.isEmpty()) classes.add(name);
+                    // first line: the plugin class; optional second line: the Minecraft version of its jar
+                    String[] lines = new String(in.readAllBytes(), StandardCharsets.UTF_8).trim().split("\\R");
+                    String name = lines[0].trim();
+                    if (!name.isEmpty()) {
+                        classes.add(name);
+                        if (lines.length > 1 && !lines[1].isBlank()) versions.put(name, lines[1].trim());
+                    }
                 }
             }
         } catch (Exception e) {
@@ -54,6 +60,7 @@ public final class CoreModPlugins {
         List<Object[]> constructed = new ArrayList<>();
         for (String name : classes) {
             timed(name, loader, () -> {
+                legacyconnector.v1_7_10.cpw.mods.fml.relauncher.FMLInjectionData.mcc$setMcVersion(versions.getOrDefault(name, "1.7.10"));
                 Class<?> cls = Class.forName(name, true, loader);
                 Object plugin = cls.getDeclaredConstructor().newInstance();
                 var index = cls.getAnnotation(IFMLLoadingPlugin.SortingIndex.class);
@@ -70,7 +77,10 @@ public final class CoreModPlugins {
         ordered.sort(java.util.Comparator.comparingInt(o -> (Integer) o[2]));
         for (Object[] o : ordered) {
             String name = (String) o[0];
-            timed(name, loader, () -> setUp(name, o[1], loader, gameDir, plugins));
+            timed(name, loader, () -> {
+                legacyconnector.v1_7_10.cpw.mods.fml.relauncher.FMLInjectionData.mcc$setMcVersion(versions.getOrDefault(name, "1.7.10"));
+                setUp(name, o[1], loader, gameDir, plugins);
+            });
         }
     }
 

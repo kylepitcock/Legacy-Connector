@@ -11,6 +11,19 @@ public class AccessTransformer implements legacyconnector.v1_7_10.net.minecraft.
     /** The rules files this transformer was given, in order. */
     protected final java.util.List<String> mcc$rulesFiles = new java.util.ArrayList<>();
 
+    /**
+     * FML kept the parsed rules here, and a rule as an inner class with {@code name} and {@code desc}; CodeChickenCore (1.6.4) reads and rewrites both
+     * reflectively ({@code MCPDeobfuscationTransformer}) to turn SRG rule names into MCP names. Nothing is parsed here, so the map stays empty.
+     */
+    private final com.google.common.collect.Multimap<String, Modifier> modifiers = com.google.common.collect.ArrayListMultimap.create();
+
+    private class Modifier {
+        public String name = "";
+        public String desc = "";
+        public boolean isClass;
+        public boolean modifyClassVisibility;
+    }
+
     public AccessTransformer() throws IOException {
         this("fml_at.cfg");
     }

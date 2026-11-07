@@ -18,6 +18,11 @@ public final class LegacyJar {
     /** Value of the FMLCorePlugin manifest attribute, if the jar ships a coremod. */
     public String coreModClass;
     public boolean coreModContainsMod;
+    /**
+     * Mod ids of mcmod.info for a jar with a coremod plugin and no {@code @Mod} class: FML 1.6.4 registered the plugin's mod container (NEI's
+     * {@code NEIModContainer}) as the mod, so other mods depend on that id and a library bridge replaces it by it.
+     */
+    public final List<String> containerModIds = new ArrayList<>();
     public String tweakClass;
     public String mixinConfigs;
     /** Resource names of the mixin configs of the translated jar that NeoForge should register ({@code [[mixins]]}); set by the transformer. */

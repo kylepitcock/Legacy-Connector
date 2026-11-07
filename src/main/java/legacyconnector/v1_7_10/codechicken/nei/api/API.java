@@ -25,6 +25,10 @@ public class API {
         if (item != null) NeiBridge.hide(new ItemStack(item, 1, 32767));
     }
 
+    /** Groups items under a named subset of NEI's item panel; JEI has none, so the range is accepted and ignored. */
+    public static void addSetRange(String name, legacyconnector.v1_7_10.codechicken.nei.MultiItemRange range) {
+    }
+
     public static void addItemListEntry(ItemStack stack) {
     }
 

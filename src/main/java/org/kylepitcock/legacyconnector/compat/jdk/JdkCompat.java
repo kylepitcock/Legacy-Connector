@@ -59,4 +59,14 @@ public final class JdkCompat {
     public static void exit(int code) {
         throw exitRequested(code);
     }
+
+    /** {@code result}, or {@code fallback} when the result is null or empty (see the loader's UpdateCheckFix). */
+    public static String[] nonEmpty(String[] result, String[] fallback) {
+        return result == null || result.length == 0 ? fallback : result;
+    }
+
+    /** Inserted by the loader before client-class references a mod probes for under {@code catch (NoClassDefFoundError)} on a dedicated server. */
+    public static void clientClassAbsent(String className) {
+        throw new NoClassDefFoundError(className.replace('.', '/'));
+    }
 }

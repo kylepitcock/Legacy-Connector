@@ -179,7 +179,9 @@ dependencies {
                  // Forge 1.12.2 put typesafe config and akka on the game classpath too (OpenComputers' Scala code uses both; Apache 2.0, ~3 MB).
                  'com.typesafe:config:1.2.1', 'com.typesafe.akka:akka-actor_2.11:2.3.3',
                  // Java 8 had javax.activation (removed from the JDK in 11); 1.12.2 mods use it for MIME types (Silent Lib, Scaling Health).
-                 'com.sun.activation:jakarta.activation:1.2.2']) {
+                 'com.sun.activation:jakarta.activation:1.2.2',
+                 // Minecraft 1.6.4's launcher libraries included argo (JSON; 3.x keeps the 2.x argo.jdom API, whose 2.25 pom Gradle cannot parse); CodeChickenCore's DepLoader reads its dependency list with it.
+                 'net.sourceforge.argo:argo:3.5']) {
         legacyLibs(lib)
         if (project.hasProperty('embeddedLibs')) {
             // test mode: the libraries are NOT on the run class path; the loader reads them from build/legacy-libs like the production jar's resources

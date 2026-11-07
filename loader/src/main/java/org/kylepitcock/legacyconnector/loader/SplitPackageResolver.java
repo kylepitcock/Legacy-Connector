@@ -40,6 +40,11 @@ final class SplitPackageResolver {
      */
     private static final Set<String> DROP = Set.of("javax/activation");
 
+    /** DROP, plus the JDK's own XML packages (Mo' Creatures bundles javax.xml.namespace.QName, which java.xml exports). */
+    private static boolean dropped(String pkg) {
+        return DROP.contains(pkg) || pkg.equals("javax/xml") || pkg.startsWith("javax/xml/") || pkg.startsWith("org/w3c/dom") || pkg.startsWith("org/xml/sax");
+    }
+
     record Outcome(List<Path> jars, Path sharedLibrary, Set<String> sharedPackages) {}
 
     static Outcome resolve(List<Path> jars, Path cacheDir) throws IOException {
@@ -63,7 +68,7 @@ final class SplitPackageResolver {
 
         Set<String> shared = new TreeSet<>();
         owners.forEach((pkg, list) -> {
-            if (list.size() > 1 || DROP.contains(pkg)) shared.add(pkg);
+            if (list.size() > 1 || dropped(pkg)) shared.add(pkg);
         });
         if (shared.isEmpty()) return new Outcome(jars, null, shared);
 
@@ -111,7 +116,7 @@ final class SplitPackageResolver {
                             ZipEntry e = en.nextElement();
                             String n = e.getName();
                             int slash = n.lastIndexOf('/');
-                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash)) || DROP.contains(n.substring(0, slash))) continue;
+                            if (!n.endsWith(".class") || slash < 0 || !mine.contains(n.substring(0, slash)) || dropped(n.substring(0, slash))) continue;
                             try (InputStream in = zip.getInputStream(e)) {
                                 mineClasses.put(n, in.readAllBytes());
                             }

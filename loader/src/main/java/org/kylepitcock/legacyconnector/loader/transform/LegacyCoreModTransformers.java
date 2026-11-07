@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class LegacyCoreModTransformers {
     private static final Logger LOG = LoggerFactory.getLogger("Legacy Connector");
-    private static final String API_RESOURCE = "legacyconnector/legacy/1.7.10/coremod-api.jar";
+    private static final String API_RESOURCE = "legacyconnector/legacy/%s/coremod-api.jar";
 
     private record Transformer(String name, Object instance) {}
 
@@ -59,35 +59,58 @@ public final class LegacyCoreModTransformers {
         return transformers.isEmpty();
     }
 
-    /** The transformers of every 1.7.10 coremod among {@code jars}; empty when there are none or loading failed. */
-    public static LegacyCoreModTransformers load(List<LegacyJar> jars, Path cacheDir, Path gameDir, String side, Path runtimeJar) {
-        List<LegacyJar> legacy = jars.stream().filter(j -> j.version == LegacyVersion.V1_7_10).toList();
+    /** The coremod API flavour a version's plugins link against: 1.7.10's, or Forge 1.6.4's (java.util.logging, getLibraryRequestClass; also 1.5.2). */
+    public static LegacyVersion apiFor(LegacyVersion version) {
+        return version.numericIds() ? LegacyVersion.V1_6_4 : LegacyVersion.V1_7_10;
+    }
+
+    /** The cache file name of an API flavour's nested jar. */
+    public static String apiJarName(LegacyVersion api) {
+        return api == LegacyVersion.V1_6_4 ? "coremod-api-1.6.4.jar" : "coremod-api.jar";
+    }
+
+    /**
+     * The transformers of every coremod among {@code jars} whose version uses the {@code api} flavour (1.7.10, or 1.6.4 and 1.5.2 together); empty when
+     * there are none or loading failed. Each flavour has its own isolated class loader.
+     */
+    public static LegacyCoreModTransformers load(List<LegacyJar> jars, Path cacheDir, Path gameDir, String side, Path runtimeJar, LegacyVersion api) {
+        List<LegacyJar> legacy = jars.stream().filter(j -> j.version.family() == LegacyVersion.V1_7_10 && apiFor(j.version) == api).toList();
         List<LegacyJar> coremods = legacy.stream().filter(j -> j.coreModClass != null && !j.coreModClass.isBlank()).toList();
         if (coremods.isEmpty()) return empty();
         try {
-            Path api = cacheDir.resolve("coremod-api.jar");
-            try (InputStream in = LegacyCoreModTransformers.class.getClassLoader().getResourceAsStream(API_RESOURCE)) {
+            Path apiJar = cacheDir.resolve(apiJarName(api));
+            String apiResource = API_RESOURCE.formatted(api.id());
+            try (InputStream in = LegacyCoreModTransformers.class.getClassLoader().getResourceAsStream(apiResource)) {
                 if (in == null) {
-                    LOG.warn("Legacy Connector: {} is missing; legacy coremod transformers are not applied", API_RESOURCE);
+                    LOG.warn("Legacy Connector: {} is missing; legacy coremod transformers are not applied", apiResource);
                     return empty();
                 }
-                Files.copy(in, api, StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(in, apiJar, StandardCopyOption.REPLACE_EXISTING);
             }
             System.setProperty("java.awt.headless", "true");
             if (side != null) System.setProperty("legacyconnector.side", side);
             ClassLoader parent = LegacyCoreModTransformers.class.getClassLoader();
-            URLClassLoader apiLoader = new URLClassLoader("legacyconnector-coremod-api", new URL[] {api.toUri().toURL()}, parent);
+            URLClassLoader apiLoader = new URLClassLoader("legacyconnector-coremod-api", new URL[] {apiJar.toUri().toURL()}, parent);
             Path runtimeClasses = runtimeJar != null ? runtimeJar
                     : System.getProperty("legacyconnector.runtimeClasses") != null ? Path.of(System.getProperty("legacyconnector.runtimeClasses")) : null;
-            ClassLoader fml = runtimeClasses == null ? apiLoader : new ShimLoader(runtimeClasses, apiLoader);
+            ClassLoader fml = runtimeClasses == null ? apiLoader : new ShimLoader(runtimeClasses, apiLoader, api);
             List<URL> urls = new ArrayList<>();
             for (LegacyJar j : legacy) urls.add(j.path.toUri().toURL());
+            // Libraries the old launcher put on the class path that coremod plugins use (argo: CodeChickenCore's DepLoader), extracted by BundledLibraries
+            try (var dirs = Files.list(cacheDir)) {
+                for (Path dir : dirs.filter(d -> Files.isDirectory(d) && d.getFileName().toString().startsWith("libs-")).toList()) {
+                    try (var libs = Files.list(dir)) {
+                        for (Path lib : libs.filter(f -> f.getFileName().toString().startsWith("argo-") && f.toString().endsWith(".jar")).toList()) urls.add(lib.toUri().toURL());
+                    }
+                }
+            }
             Class<?> lclClass = apiLoader.loadClass("net.minecraft.launchwrapper.LaunchClassLoader");
             lclClass.getField("mcc$definer").set(null, (UnaryOperator<byte[]>) LegacyCoreModTransformers::modernizeApi);
             URLClassLoader lcl = (URLClassLoader) lclClass.getConstructor(URL[].class, ClassLoader.class)
                     .newInstance(urls.toArray(URL[]::new), fml);
             Class<?> launch = apiLoader.loadClass("net.minecraft.launchwrapper.Launch");
             launch.getField("classLoader").set(null, lcl);
+            apiLoader.loadClass("cpw.mods.fml.relauncher.FMLInjectionData").getField("mcVersion").set(null, coremods.get(0).version.id());
             launch.getField("minecraftHome").set(null, gameDir.toFile());
             @SuppressWarnings("unchecked")
             Map<String, Object> blackboard = (Map<String, Object>) launch.getField("blackboard").get(null);
@@ -259,12 +282,15 @@ public final class LegacyCoreModTransformers {
      */
     private static final class ShimLoader extends ClassLoader {
         private static final String PREFIX = LegacyVersion.V1_7_10.shimPrefix();
+        /** Shim roots tried in order: the 1.6.4 API (ITickHandler, TickType...) lives in its own root over the 1.7.10 one. */
+        private final List<String> prefixes;
         private final java.util.zip.ZipFile jar;
         private final Path dir;
 
         /** @param runtime the runtime jar, or (development) its classes directory */
-        ShimLoader(Path runtime, ClassLoader parent) throws java.io.IOException {
+        ShimLoader(Path runtime, ClassLoader parent, LegacyVersion api) throws java.io.IOException {
             super("legacyconnector-coremod-shim", parent);
+            this.prefixes = api == LegacyVersion.V1_6_4 ? List.of(LegacyVersion.V1_6_4.shimPrefix(), PREFIX) : List.of(PREFIX);
             this.dir = Files.isDirectory(runtime) ? runtime : null;
             this.jar = dir == null ? new java.util.zip.ZipFile(runtime.toFile()) : null;
         }
@@ -284,10 +310,16 @@ public final class LegacyCoreModTransformers {
         @Override
         protected Class<?> findClass(String name) throws ClassNotFoundException {
             String internal = name.replace('.', '/');
-            String entry = (LegacyVersion.isRelocatedRoot(internal) ? PREFIX + internal : internal) + ".class";
-            byte[] bytes;
+            byte[] bytes = null;
             try {
-                bytes = read(entry);
+                if (LegacyVersion.isRelocatedRoot(internal)) {
+                    for (String prefix : prefixes) {
+                        bytes = read(prefix + internal + ".class");
+                        if (bytes != null) break;
+                    }
+                } else {
+                    bytes = read(internal + ".class");
+                }
             } catch (java.io.IOException ex) {
                 throw new ClassNotFoundException(name, ex);
             }
@@ -309,7 +341,8 @@ public final class LegacyCoreModTransformers {
             new ClassReader(bytes).accept(new ClassRemapper(writer, new Remapper() {
                 @Override
                 public String map(String n) {
-                    return n.startsWith(PREFIX) ? n.substring(PREFIX.length()) : n;
+                    for (String prefix : prefixes) if (n.startsWith(prefix)) return n.substring(prefix.length());
+                    return n;
                 }
             }), 0);
             byte[] out = writer.toByteArray();

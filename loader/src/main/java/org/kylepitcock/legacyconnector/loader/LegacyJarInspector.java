@@ -136,6 +136,7 @@ public final class LegacyJarInspector {
                 jar.mods.add(decl);
             }
 
+            if (unique.isEmpty() && jar.coreModClass != null && !jar.coreModClass.isBlank()) jar.containerModIds.addAll(infoById.keySet());
             jar.version = chooseVersion(jar, infoById, refs17, refs112, markers);
             return jar.version == null ? null : jar;
         }
@@ -619,11 +620,26 @@ public final class LegacyJarInspector {
                 className = name;
             }
 
+            boolean sideOnlyClient;
+
             @Override
             public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+                // @SideOnly(Side.CLIENT) on the mod class (JourneyMap): FML stripped the class on a dedicated server, i.e. the mod is client-only
+                if (descriptor.equals("Lcpw/mods/fml/relauncher/SideOnly;") || descriptor.equals("Lnet/minecraftforge/fml/relauncher/SideOnly;")) {
+                    return new AnnotationVisitor(Opcodes.ASM9) {
+                        @Override
+                        public void visitEnum(String name, String enumDescriptor, String value) {
+                            if ("CLIENT".equals(value)) {
+                                sideOnlyClient = true;
+                                if (result[0] != null) result[0].clientSideOnly = true;
+                            }
+                        }
+                    };
+                }
                 if (!descriptor.equals(MOD_1_7) && !descriptor.equals(MOD_1_12)) return null;
                 LegacyModDecl decl = new LegacyModDecl();
                 decl.mainClass = className;
+                decl.clientSideOnly = sideOnlyClient;
                 result[0] = decl;
                 return new AnnotationVisitor(Opcodes.ASM9) {
                     @Override
