@@ -16,6 +16,12 @@ public abstract class TileEntitySpecialRenderer {
         RenderContext.bindTexture(TextureLocations.modern(location.getResourceDomain(), location.getResourcePath()));
     }
 
+    /** Forge 1.5.2: textures are string paths (see Textures152). */
+    protected void bindTextureByName(String path) {
+        ResourceLocation location = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(path);
+        if (location != null) bindTexture(location);
+    }
+
     public void func_147497_a(TileEntityRendererDispatcher dispatcher) {
         this.field_147501_a = dispatcher;
     }

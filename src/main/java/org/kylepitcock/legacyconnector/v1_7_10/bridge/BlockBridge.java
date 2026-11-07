@@ -143,7 +143,7 @@ public final class BlockBridge {
     private static <T extends Block> Class<? extends T> runtimeClass(String legacyName, Class<T> declared) {
         String simple = RUNTIME_CLASSES.get(legacyName);
         if (simple == null) return declared;
-        for (String prefix : new String[] {"legacyconnector.v1_7_10.net.minecraft.block.", "legacyconnector_synth.v1_7_10.net.minecraft.block."}) {
+        for (String prefix : org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.api1710("net.minecraft.block.")) {
             try {
                 Class<?> c = Class.forName(prefix + simple, false, Block.class.getClassLoader());
                 if (declared.isAssignableFrom(c) && !java.lang.reflect.Modifier.isAbstract(c.getModifiers())) return (Class<? extends T>) c;
@@ -265,6 +265,11 @@ public final class BlockBridge {
         if (NAMES.containsKey(block)) {
             LOG.warn("Legacy block {} registered twice (as {})", block, name);
             return;
+        }
+        if (name == null) {
+            // 1.5.2 and 1.6.4 let a mod register a block under its unlocalized name or no name at all (FML derived one)
+            String unlocalized = block.getUnlocalizedName();
+            name = unlocalized != null && !unlocalized.isEmpty() ? unlocalized.replaceFirst("^tile\\.", "") : block.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
         String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";

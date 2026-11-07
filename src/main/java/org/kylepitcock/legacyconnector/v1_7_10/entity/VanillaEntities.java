@@ -72,7 +72,7 @@ public final class VanillaEntities {
 
     private static String legacyName(Class<?> cls) {
         String n = cls.getName();
-        for (String prefix : new String[] {"legacyconnector.v1_7_10.net.minecraft.entity.", "legacyconnector_synth.v1_7_10.net.minecraft.entity."}) {
+        for (String prefix : org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.api1710("net.minecraft.entity.")) {
             if (n.startsWith(prefix)) return n.substring(prefix.length());
         }
         return null;

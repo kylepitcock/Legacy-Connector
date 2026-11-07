@@ -43,6 +43,12 @@ public class Minecraft {
     public legacyconnector.v1_7_10.net.minecraft.util.Timer field_71428_T = legacyconnector.v1_7_10.net.minecraft.util.Timer.INSTANCE;
     /** The game directory (mods build paths from it). */
     public final java.io.File mcDataDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
+    /** Forge 1.5.2 and 1.6.4 name of the game directory: a static field read by reflection (CodeChickenLib) and {@link #getMinecraftDir()}. */
+    public static final java.io.File minecraftDir = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get().toFile();
+
+    public static java.io.File getMinecraftDir() {
+        return minecraftDir;
+    }
     /** Read reflectively by mods that add a resource pack; what they add is served to the game (see LegacyResourcePacks). */
     private java.util.List defaultResourcePacks = org.kylepitcock.legacyconnector.v1_7_10.client.LegacyResourcePacks.DEFAULT_PACKS;
     /** The achievement popup (mods announce achievements they award themselves). */

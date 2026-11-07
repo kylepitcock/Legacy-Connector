@@ -16,6 +16,11 @@ public class EnumHelper {
                 new Object[] {harvestLevel, maxUses, efficiency, damage, enchantability});
     }
 
+    /** Forge 1.5.2 and 1.6.4: the damage is an int. */
+    public static Item.ToolMaterial addToolMaterial(String name, int harvestLevel, int maxUses, float efficiency, int damage, int enchantability) {
+        return addToolMaterial(name, harvestLevel, maxUses, efficiency, (float) damage, enchantability);
+    }
+
     public static ItemArmor.ArmorMaterial addArmorMaterial(String name, int durability, int[] reductionAmounts, int enchantability) {
         return addEnum(ItemArmor.ArmorMaterial.class, name, new Class<?>[] {int.class, int[].class, int.class},
                 new Object[] {durability, reductionAmounts, enchantability});

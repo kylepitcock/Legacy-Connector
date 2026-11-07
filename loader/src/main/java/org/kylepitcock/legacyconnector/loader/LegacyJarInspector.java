@@ -41,6 +41,19 @@ public final class LegacyJarInspector {
     private static final java.util.Set<Path> DERIVATIVES = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     /** True once if the last {@link #inspect} of this path found a translated jar (it carries a provenance watermark). */
+    /** True when a zip in mods/ holds class files (a mod distributed as a zip, as most 1.5.2 ones were) rather than only resources. */
+    public static boolean zipHasClasses(Path path) {
+        try (ZipFile zip = new ZipFile(path.toFile())) {
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                if (entries.nextElement().getName().endsWith(".class")) return true;
+            }
+        } catch (IOException | RuntimeException e) {
+            // not a readable zip: leave it to whoever else looks at it
+        }
+        return false;
+    }
+
     static boolean takeDerivative(Path path) {
         return DERIVATIVES.remove(path);
     }
@@ -476,8 +489,14 @@ public final class LegacyJarInspector {
         }
         if (markers.v164 > 0 && markers.v17 == 0) {
             // the 1.6.4 markers (Icon, @PreInit, ForgeSubscribe...) exist in 1.5.2 as well: with neither side's own API present, the declared version decides
-            if (markers.v152 == 0 && markers.v16 == 0 && declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
+            // (a jar that also carries 1.6 API, like Immibis Core's texture switch, still is a 1.5.2 jar when it declares 1.5.2 and uses 1.5.2-only API)
+            if ((markers.v16 == 0 || markers.v152 > 0) && declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
                 jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
+            // nothing declared: a file name naming 1.5.2 (and no 1.6-only API) is the last hint
+            if (markers.v16 == 0 && jar.fileName().matches("(?i).*(1\\.5\\.2|mc15x).*")) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), file name says 1.5.2";
                 return LegacyVersion.V1_5_2;
             }
             jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes) and uses 1.6.4-only API (" + markers.v164 + " classes, e.g. " + markers.example164 + ")";
@@ -487,6 +506,10 @@ public final class LegacyJarInspector {
             // nothing in the code tells them apart: the declared Minecraft version does
             if (declaresVersion(jar, infos, LegacyVersion.V1_5_2)) {
                 jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), 1.5.2 declared";
+                return LegacyVersion.V1_5_2;
+            }
+            if (markers.v16 == 0 && jar.fileName().matches("(?i).*(1\\.5\\.2|mc15x).*")) {
+                jar.versionEvidence = "links against cpw.mods.fml (" + refs17 + " classes), file name says 1.5.2";
                 return LegacyVersion.V1_5_2;
             }
             for (LegacyModDecl decl : jar.mods) {
@@ -684,6 +707,7 @@ public final class LegacyJarInspector {
             JsonElement root = JsonParser.parseReader(reader);
             JsonArray list = root.isJsonArray() ? root.getAsJsonArray()
                     : root.getAsJsonObject().getAsJsonArray("modList");
+            if (list == null && root.isJsonObject()) list = root.getAsJsonObject().getAsJsonArray("modlist"); // TreeCapitator, ...
             if (list == null) return out;
             for (JsonElement e : list) {
                 if (e.isJsonObject() && e.getAsJsonObject().has("modid")) {

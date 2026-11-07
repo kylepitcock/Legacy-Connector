@@ -30,3 +30,5 @@ technical documentation; the [README](../../README.md) has installation and the 
 | [Legacy 1.6.4 corpus](Legacy-1.6.4-Corpus.md) | Measured API usage of 43 real 1.6.4 mods (numeric ids, old packets, renamed classes) |
 | [Legacy 1.4.7 estimate](Legacy-1.4.7-Estimate.md) | Effort and approach for a 1.4.7 layer (obfuscated names, ModLoader, sprite sheets) over the 1.5.2/1.6.4 layers |
 | [Legacy 1.4.7 corpus](Legacy-1.4.7-Corpus.md) | Measured API usage of 65 real 1.4.7 mods (notch names, sprite sheets, ModLoader, numeric ids) |
+| [Legacy 1.5.2 estimate](Legacy-1.5.2-Estimate.md) | Effort and measured state of a 1.5.2 layer (a delta over the 1.6.4 one) |
+| [Legacy 1.5.2 corpus](Legacy-1.5.2-Corpus.md) | Measured API usage of 67 real 1.5.2 mod files (EntityLiving split, string textures, zips) |

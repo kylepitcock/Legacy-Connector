@@ -1,0 +1,15 @@
+# Hand written 1.5.2 -> 1.7.10 member forwards, on top of forward/1.6.4/member-manual.tsv (same line formats, see there; a later file wins).
+# Owners, names and descriptors in 1.5.2 form. Checked against legacy/1.7.10/{methods,fields}.txt (or the shim) by Forward152Test.
+#
+# names 1.5.2 had that 1.6.4 already changed
+F	net/minecraft/item/Item	lightStoneDust	glowstone
+F	net/minecraft/util/EnumMovingObjectType	TILE	BLOCK
+M	net/minecraft/block/Block	setUnlocalizedName	(Ljava/lang/String;)Lnet/minecraft/block/Block;	setBlockName
+M	net/minecraft/item/Item	getContainerItemStack	(Lnet/minecraft/item/ItemStack;)Lnet/minecraft/item/ItemStack;	getContainerItem
+M	net/minecraft/server/management/ServerConfigurationManager	getPlayerForUsername	(Ljava/lang/String;)Lnet/minecraft/entity/player/EntityPlayerMP;	getPlayerByUsername
+# chat: sendChatToPlayer(String) is addChatMessage(IChatComponent)
+R	net/minecraft/entity/player/EntityPlayer	sendChatToPlayer	(Ljava/lang/String;)V	wrap-text	addChatMessage	(Lnet/minecraft/util/IChatComponent;)V
+R	net/minecraft/command/ICommandSender	sendChatToPlayer	(Ljava/lang/String;)V	wrap-text	addChatMessage	(Lnet/minecraft/util/IChatComponent;)V
+# MinecraftForge.setBlockHarvestLevel(block, toolClass, level) / (block, metadata, toolClass, level) became Block.setHarvestLevel
+R	net/minecraftforge/common/MinecraftForge	setBlockHarvestLevel	(Lnet/minecraft/block/Block;Ljava/lang/String;I)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	setBlockHarvestLevel	(Lnet/minecraft/block/Block;Ljava/lang/String;I)V
+R	net/minecraftforge/common/MinecraftForge	setBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;I)V	static	org/kylepitcock/legacyconnector/v1_6_4/bridge/Redirects164	setBlockHarvestLevel	(Lnet/minecraft/block/Block;ILjava/lang/String;I)V

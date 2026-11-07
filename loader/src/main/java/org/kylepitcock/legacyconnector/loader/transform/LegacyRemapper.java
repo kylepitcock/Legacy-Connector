@@ -182,6 +182,18 @@ public final class LegacyRemapper extends Remapper {
         fields.values().forEach(names -> {
             if (names.size() > 1) for (String n : names) if (!mcp.field(n).equals(n)) keep.add(original.name + "." + n);
         });
+        if (members != null) {
+            // A forward rename (1.5.2 Entity.getEntityName to 1.7.10 getCommandSenderName) must not collide with a method the class declares under
+            // the new name already (1.5.2 mods implement both; the two merged in 1.7.10): the class keeps its old name, calls through it too.
+            java.util.Set<String> declaredReadable = new java.util.HashSet<>();
+            for (var m : original.methods) declaredReadable.add(mcp.method(m.name) + m.desc);
+            for (var m : original.methods) {
+                String readable = mcp.method(m.name);
+                if (readable.startsWith("func_") || readable.startsWith("<")) continue;
+                String forwarded = members.method(legacyClass(original.name), readable, legacyDesc(m.desc), this::localSupers);
+                if (!forwarded.equals(readable) && declaredReadable.contains(forwarded + m.desc)) keep.add(original.name + "." + m.name + m.desc);
+            }
+        }
         java.util.Map<String, java.util.List<String>> methods = new HashMap<>();
         for (var m : original.methods) methods.computeIfAbsent(mcp.method(m.name) + m.desc, k -> new java.util.ArrayList<>()).add(m.name);
         methods.forEach((key, names) -> {
@@ -236,8 +248,20 @@ public final class LegacyRemapper extends Remapper {
         return version;
     }
 
+    /**
+     * Suffix {@link Living152ClassRemapper} puts on an {@code EntityLiving} reference that must stay the real 1.7.10 {@code EntityLiving} in a 1.5.2 jar
+     * (the superclass of a mod entity, {@code super.} calls); every other use of it becomes {@code EntityLivingBase} (see {@link LivingCasts152}).
+     */
+    static final String LIVING_KEEP = "$mcc152keep";
+
+    /** True for the class a 1.5.2 jar calls {@code EntityLiving} (also under its obfuscated name). */
+    boolean isLiving152(String internalName) {
+        return version == LegacyVersion.V1_5_2 && internalName != null && "net/minecraft/entity/EntityLiving".equals(legacyClass(internalName));
+    }
+
     @Override
     public String map(String internalName) {
+        if (internalName.endsWith(LIVING_KEEP)) return version.linkPrefix() + "net/minecraft/entity/EntityLiving";
         String o = overrides.get(internalName);
         if (o != null) return o;
         if (notch != null && internalName.indexOf('/') < 0 && !notchLocals.containsKey(internalName)) {
@@ -305,6 +329,7 @@ public final class LegacyRemapper extends Remapper {
 
     @Override
     public String mapMethodName(String owner, String name, String descriptor) {
+        if (owner.endsWith(LIVING_KEEP)) owner = owner.substring(0, owner.length() - LIVING_KEEP.length());
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
         if (notch != null && !name.startsWith("func_")) {
             String srg = notch.method(owner, name, descriptor, notchLocals);
@@ -325,6 +350,7 @@ public final class LegacyRemapper extends Remapper {
 
     @Override
     public String mapFieldName(String owner, String name, String descriptor) {
+        if (owner.endsWith(LIVING_KEEP)) owner = owner.substring(0, owner.length() - LIVING_KEEP.length());
         if (!keep.isEmpty() && keep.contains(owner + "." + name)) return name;
         if (notch != null && !name.startsWith("field_")) {
             String srg = notch.field(owner, name, notchLocals);

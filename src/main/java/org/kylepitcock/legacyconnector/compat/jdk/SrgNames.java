@@ -46,7 +46,7 @@ public final class SrgNames {
     private record Tables(Map<String, String> methods, Map<String, String> fields) {}
 
     private static String versionOf(String name) {
-        if (name.startsWith("legacyconnector.v1_7_10.") || name.startsWith("legacyconnector_synth.v1_7_10.")) return V1710;
+        if (LegacyPrefixes.isApi1710(name)) return V1710; // also the classes synthesized for 1.6.4 and 1.5.2 jars (they link against the 1.7.10 shim)
         if (name.startsWith("legacyconnector.v1_12_2.") || name.startsWith("legacyconnector_synth.v1_12_2.")) return V1122;
         return null;
     }

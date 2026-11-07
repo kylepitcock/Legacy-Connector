@@ -73,7 +73,7 @@ public class EntityList {
     }
 
     private static Class<?> vanillaClass(String relative) {
-        for (String prefix : new String[] {"legacyconnector.v1_7_10.net.minecraft.entity.", "legacyconnector_synth.v1_7_10.net.minecraft.entity."}) {
+        for (String prefix : org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.api1710("net.minecraft.entity.")) {
             for (ClassLoader loader : new ClassLoader[] {EntityList.class.getClassLoader(), Thread.currentThread().getContextClassLoader()}) {
                 if (loader == null) continue;
                 try {

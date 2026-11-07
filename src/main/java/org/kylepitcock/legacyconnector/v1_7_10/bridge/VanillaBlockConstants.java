@@ -14,7 +14,7 @@ import java.util.Map;
  * vanilla class that overrode the method with a constant. Mod classes override normally and never get here.
  */
 public final class VanillaBlockConstants {
-    private static final String[] PREFIXES = {"legacyconnector.v1_7_10.", "legacyconnector_synth.v1_7_10."};
+    private static final String[] PREFIXES = org.kylepitcock.legacyconnector.compat.jdk.LegacyPrefixes.API_1710;
     private static final Map<String, Integer> TABLE = load();
     private static final ClassValue<Map<String, Integer>> RESOLVED = new ClassValue<>() {
         @Override

@@ -32,6 +32,19 @@ public final class Redirects164 {
         return legacyconnector.v1_6_4.net.minecraft.util.AABBPool.INSTANCE;
     }
 
+    /** Forge 1.5.2's {@code MinecraftForge.setBlockHarvestLevel(block, toolClass, level)}. */
+    public static void setBlockHarvestLevel(legacyconnector.v1_7_10.net.minecraft.block.Block block, String toolClass, int level) {
+        if (block != null) block.setHarvestLevel(toolClass, level);
+    }
+
+    /** ... and the variant for one metadata value. */
+    public static void setBlockHarvestLevel(legacyconnector.v1_7_10.net.minecraft.block.Block block, int metadata, String toolClass, int level) {
+        if (block != null) block.setHarvestLevel(toolClass, level, metadata);
+    }
+
+
+
+
     /** {@code netServerHandler.sendPacketToPlayer(Packet)} is 1.7.10's {@code sendPacket}. */
     public static void sendPacketToPlayer(Object handler, Packet packet) {
         if (handler instanceof NetHandlerPlayServer server && packet != null) server.sendPacket(packet);

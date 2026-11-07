@@ -67515,10 +67515,10 @@
       "date": "2026-11-06",
       "version": "",
       "counts": {
-        "links": 7,
-        "stubs": 28,
+        "links": 5,
+        "stubs": 16,
         "gap_shim": 0,
-        "gap_mod": 2,
+        "gap_mod": 1,
         "gap_lib": 0,
         "obsolete": 0
       },
@@ -67532,21 +67532,9 @@
       "mods": [
         [
           "Advanced Machines",
-          "55.0.2",
-          "links",
-          ""
-        ],
-        [
-          "Advanced Machines",
           "55.0.3",
           "links",
           ""
-        ],
-        [
-          "Advanced Repulsion Systems",
-          "55.1.3",
-          "links",
-          "9 synthesized stub(s)"
         ],
         [
           "Advanced Repulsion Systems",
@@ -67562,12 +67550,6 @@
         ],
         [
           "BC Builders",
-          "3.7.3.1",
-          "stubs",
-          "114 synthesized stub(s)"
-        ],
-        [
-          "BC Builders",
           "3.7.4.1",
           "stubs",
           "114 synthesized stub(s)"
@@ -67579,28 +67561,10 @@
           "83 synthesized stub(s)"
         ],
         [
-          "Binnie Core",
-          "1.7.3b",
-          "stubs",
-          "83 synthesized stub(s)"
-        ],
-        [
           "ChickenChunks",
           "1.3.2.14",
           "links",
           "9 synthesized stub(s)"
-        ],
-        [
-          "ChickenChunks",
-          "1.3.2.5",
-          "gap_mod",
-          "codechicken.core.packet.PacketCustom.setChunkDataPacket()V"
-        ],
-        [
-          "Dimensional Anchors",
-          "55.0.2",
-          "stubs",
-          "10 synthesized stub(s)"
         ],
         [
           "Dimensional Anchors",
@@ -67622,21 +67586,9 @@
         ],
         [
           "Enchanting Plus",
-          "1.15.5",
-          "stubs",
-          "18 synthesized stub(s)"
-        ],
-        [
-          "Enchanting Plus",
           "1.15.6",
           "stubs",
           "18 synthesized stub(s)"
-        ],
-        [
-          "EnderStorage",
-          "1.4.2.15",
-          "stubs",
-          "22 synthesized stub(s)"
         ],
         [
           "EnderStorage",
@@ -67651,22 +67603,10 @@
           "137 synthesized stub(s)"
         ],
         [
-          "Forestry for Minecraft",
-          "2.2.8.3",
-          "stubs",
-          "137 synthesized stub(s)"
-        ],
-        [
           "Forge Microblocks",
           "1.0.0.149",
           "gap_mod",
           "scala.reflect.api.Trees$ClassDefExtractor.apply(Lscala.reflect.api.Trees$ModifiersApi;Lscala.reflect.api.Names$NameApi;Lscala.collection.immutable.List;Lscala.reflect.api.Trees$TreeApi;)Lscala.reflect.api.Trees$TreeApi;"
-        ],
-        [
-          "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
-          "55.0.6",
-          "stubs",
-          "15 synthesized stub(s)"
         ],
         [
           "Immibis's Microblocks (Checks for incorrect installation, ignore this)",
@@ -67676,21 +67616,9 @@
         ],
         [
           "Immibis's Peripherals",
-          "55.0.3",
-          "stubs",
-          "15 synthesized stub(s)"
-        ],
-        [
-          "Immibis's Peripherals",
           "55.0.4",
           "stubs",
           "15 synthesized stub(s)"
-        ],
-        [
-          "InfiniTubes",
-          "55.0.5",
-          "stubs",
-          "10 synthesized stub(s)"
         ],
         [
           "InfiniTubes",
@@ -67712,12 +67640,6 @@
         ],
         [
           "RedLogic",
-          "55.4.0",
-          "stubs",
-          "21 synthesized stub(s)"
-        ],
-        [
-          "RedLogic",
           "55.4.1",
           "stubs",
           "21 synthesized stub(s)"
@@ -67730,21 +67652,9 @@
         ],
         [
           "Translocator",
-          "1.1.0.4",
-          "stubs",
-          "21 synthesized stub(s)"
-        ],
-        [
-          "Translocator",
           "1.1.0.5",
           "stubs",
           "21 synthesized stub(s)"
-        ],
-        [
-          "Tubestuff",
-          "55.0.4",
-          "stubs",
-          "46 synthesized stub(s)"
         ],
         [
           "Tubestuff",
