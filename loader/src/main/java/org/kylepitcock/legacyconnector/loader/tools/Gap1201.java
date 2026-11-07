@@ -313,14 +313,6 @@ public final class Gap1201 {
      * -Dgap.translate=true: the jars go through the real Forge1201Transformer first (names, Minecraft migration), so the report shows what is left
      * after the layer. The facade classes of the Forge API (legacyconnector/v1_20_1) are not indexed here and count as present.
      */
-    private static org.kylepitcock.legacyconnector.loader.shim.ShimIndex shimIndex() throws IOException {
-        String f = System.getProperty("gap.shimIndex");
-        if (f == null || !Files.exists(Path.of(f))) return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.empty();
-        try (var in = Files.newInputStream(Path.of(f))) {
-            return org.kylepitcock.legacyconnector.loader.shim.ShimIndex.read(in);
-        }
-    }
-
     private static List<Path> translated(List<Path> mods) throws IOException {
         String keep = System.getProperty("gap.translated.dir");
         Path dir = keep != null ? Files.createDirectories(Path.of(keep)) : Files.createTempDirectory("gap1201-");
