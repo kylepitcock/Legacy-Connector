@@ -43,15 +43,76 @@ public final class LegacyConnectorJadePlugin implements IWailaPlugin {
     public void registerClient(IWailaClientRegistration registration) {
         registration.registerBlockComponent(new Blocks(), net.minecraft.world.level.block.Block.class);
         registration.registerEntityComponent(new Entities(), net.minecraft.world.entity.Entity.class);
+        LegacyJade1122.registerClient(registration);
+    }
+
+    @Override
+    public void register(snownee.jade.api.IWailaCommonRegistration registration) {
+        registration.registerBlockDataProvider(new BlockData(), net.minecraft.world.level.block.entity.BlockEntity.class);
+        LegacyJade1122.registerCommon(registration);
+    }
+
+    private static final String DATA_KEY = "mcc_waila_1710";
+    private static final ResourceLocation BLOCK_DATA = ResourceLocation.fromNamespaceAndPath("legacyconnector", "legacy_waila_block_data");
+
+    /** Waila's synced tile data: the legacy NBT providers (machine progress, owner, ...) run on the server. */
+    private static final class BlockData implements snownee.jade.api.IServerDataProvider<BlockAccessor> {
+        @Override
+        public void appendServerData(net.minecraft.nbt.CompoundTag data, BlockAccessor accessor) {
+            if (!(accessor.getBlockEntity() instanceof LegacyBlockEntity be)) return;
+            TileEntity te = be.legacy();
+            if (te == null) return;
+            Block block = BlockBridge.legacyBlock(accessor.getBlockState());
+            try {
+                NBTTagCompound tag = new NBTTagCompound();
+                te.writeToNBT(tag);
+                World world = World.mcc$wrap(accessor.getLevel());
+                legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP player =
+                        EntityBridge.wrap(accessor.getPlayer()) instanceof legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayerMP p ? p : null;
+                var pos = accessor.getPosition();
+                for (var r : WailaBridge.INSTANCE.nbt) {
+                    if (!matches(r, block, te)) continue;
+                    NBTTagCompound out = r.provider().getNBTData(player, te, tag, world, pos.getX(), pos.getY(), pos.getZ());
+                    if (out != null) tag = out;
+                }
+                data.put(DATA_KEY, tag.mcc$modern());
+            } catch (RuntimeException | LinkageError e) {
+                // a broken legacy provider sends nothing
+            }
+        }
+
+        @Override
+        public boolean shouldRequestData(BlockAccessor accessor) {
+            if (WailaBridge.INSTANCE.nbt.isEmpty() || !(accessor.getBlockEntity() instanceof LegacyBlockEntity be)) return false;
+            TileEntity te = be.legacy();
+            Block block = BlockBridge.legacyBlock(accessor.getBlockState());
+            for (var r : WailaBridge.INSTANCE.nbt) if (matches(r, block, te)) return true;
+            return false;
+        }
+
+        @Override
+        public ResourceLocation getUid() {
+            return BLOCK_DATA;
+        }
+    }
+
+    /** Appends one line to Jade's tooltip. */
+    static void addLine(ITooltip tooltip, String line) {
+        // Waila layout markers (tabs, alignment, icons) have no Jade equivalent; drop them, keep the text.
+        String text = line.replaceAll("¤¤[a-e]", " ").replaceAll("¤¥[a-c]", "").replaceAll("¤¤\\{[^}]*}", "");
+        if (!text.isBlank()) tooltip.add(Component.literal(text));
     }
 
     private static void addLines(ITooltip tooltip, List<String> lines) {
         for (String line : lines) {
             if (line == null || line.isEmpty()) continue;
-            // Waila layout markers (tabs, alignment, icons) have no Jade equivalent; drop them, keep the text.
-            String text = line.replaceAll("¤¤[a-e]", " ").replaceAll("¤¥[a-c]", "").replaceAll("¤¤\\{[^}]*}", "");
-            if (!text.isBlank()) tooltip.add(Component.literal(text));
+            addLine(tooltip, line);
         }
+    }
+
+    private static boolean matches(WailaBridge.Registration<?> r, Object block, Object te) {
+        if (r.only() != null) return r.only() == block;
+        return r.target() != null && (r.target().isInstance(block) || r.target().isInstance(te));
     }
 
     private static final class Blocks implements IBlockComponentProvider {
@@ -63,12 +124,27 @@ public final class LegacyConnectorJadePlugin implements IWailaPlugin {
             if (block == null && te == null) return;
             Accessor legacy = new Accessor(accessor, block, te);
             ItemStack stack = legacy.getStack();
+            var reg = WailaBridge.INSTANCE;
             List<String> lines = new ArrayList<>();
             try {
-                for (var r : WailaBridge.INSTANCE.head) if (matches(r.target(), block, te)) lines = nonNull(r.provider().getWailaHead(stack, new ArrayList<>(), legacy, WailaBridge.INSTANCE));
-                List<String> body = new ArrayList<>();
-                for (var r : WailaBridge.INSTANCE.body) if (matches(r.target(), block, te)) body = nonNull(call(r.provider(), stack, body, legacy));
+                for (var r : reg.stack) {
+                    if (!matches(r, block, te)) continue;
+                    ItemStack override = r.provider().getWailaStack(legacy, reg);
+                    if (override != null) stack = override;
+                }
+                String name = stack == null ? "" : stack.getDisplayName();
+                // Waila's head already holds the block's name; Jade shows its own, so an unchanged first line is dropped
+                List<String> head = new legacyconnector.v1_7_10.mcp.mobius.waila.api.impl.TipList<>();
+                head.add(name);
+                for (var r : reg.head) if (matches(r, block, te)) head = nonNull(r.provider().getWailaHead(stack, head, legacy, reg));
+                if (!head.isEmpty() && name.equals(head.get(0))) head = new ArrayList<>(head.subList(1, head.size()));
+                List<String> body = new legacyconnector.v1_7_10.mcp.mobius.waila.api.impl.TipList<>();
+                for (var r : reg.body) if (matches(r, block, te)) body = nonNull(call(r.provider(), stack, body, legacy));
+                List<String> tail = new legacyconnector.v1_7_10.mcp.mobius.waila.api.impl.TipList<>();
+                for (var r : reg.tail) if (matches(r, block, te)) tail = nonNull(r.provider().getWailaTail(stack, tail, legacy, reg));
+                lines.addAll(head);
                 lines.addAll(body);
+                lines.addAll(tail);
             } catch (RuntimeException | LinkageError e) {
                 return; // a broken legacy provider must not break Jade
             }
@@ -156,9 +232,19 @@ public final class LegacyConnectorJadePlugin implements IWailaPlugin {
 
         @Override
         public NBTTagCompound getNBTData() {
+            var data = jade.getServerData();
+            if (data != null && data.contains(DATA_KEY)) return new NBTTagCompound(data.getCompound(DATA_KEY));
             NBTTagCompound tag = new NBTTagCompound();
             if (te != null) te.writeToNBT(tag);
             return tag;
+        }
+
+        @Override
+        public legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition getPosition() {
+            var p = jade.getPosition();
+            return new legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition(p.getX(), p.getY(), p.getZ(), jade.getSide().get3DDataValue(),
+                    legacyconnector.v1_7_10.net.minecraft.util.Vec3.createVectorHelper(jade.getHitResult().getLocation().x, jade.getHitResult().getLocation().y,
+                            jade.getHitResult().getLocation().z));
         }
 
         @Override

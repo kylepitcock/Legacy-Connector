@@ -38,7 +38,7 @@ public final class LibraryBridges {
             // Mods also call Baubles' PlayerHandler / InventoryBaubles directly (Botania's Flight Tiara and Travel Belt).
             new Bridge("Baubles", "baubles/common/", "curios", "baubles"),
             // Waila tooltip providers are shown through Jade.
-            new Bridge("Waila", "mcp/mobius/waila/api/", "jade", "waila"),
+            new Bridge("Waila", "mcp/mobius/waila/", "jade", "waila"),
             // NEI recipe handlers and hidden items are shown through JEI.
             new Bridge("NotEnoughItems", "codechicken/nei/", "jei", "nei"),
             // Patchouli's API (1.12.2: books, multiblocks, custom components) runs on the modern Patchouli; books legacy mods ship as

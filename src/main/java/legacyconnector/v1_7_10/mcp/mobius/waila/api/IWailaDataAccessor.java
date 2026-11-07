@@ -33,4 +33,7 @@ public interface IWailaDataAccessor {
     ForgeDirection getSide();
 
     ItemStack getStack();
+
+    /** The looked-at position (1.6.4 and 1.7.10 Waila). */
+    legacyconnector.v1_7_10.net.minecraft.util.MovingObjectPosition getPosition();
 }

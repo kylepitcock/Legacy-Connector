@@ -66,6 +66,20 @@ public final class CheckJar {
                 records.add(r);
             } else jars.add(jar);
         }
+        // As in a pack with Jade, JEI, Curios and Patchouli installed: bridged libraries are not translated, their API is relocated into the shim
+        // (-Pbridges=false checks the legacy jars as plain mods instead).
+        if (!"false".equalsIgnoreCase(System.getProperty("legacyconnector.check.bridges"))) {
+            boolean realCcl = jars.stream().anyMatch(j -> j.fileName().toLowerCase(java.util.Locale.ROOT).startsWith("codechickenlib"));
+            List<LibraryBridges.Bridge> bridges = LibraryBridges.KNOWN.stream().filter(b -> !(realCcl && "codechicken/lib/".equals(b.apiRoot()))).toList();
+            LegacyVersion.setBridgedRoots(bridges.stream().map(LibraryBridges.Bridge::apiRoot).toList());
+            for (LegacyJar jar : List.copyOf(jars)) {
+                LibraryBridges.Bridge replaced = LibraryBridges.replacing(jar, bridges);
+                if (replaced != null) {
+                    System.out.println(jar.fileName() + ": replaced by the " + replaced.configKey() + " bridge");
+                    jars.remove(jar);
+                }
+            }
+        }
         transformer.presentMods(jars.stream().flatMap(j -> j.mods.stream()).map(m -> m.legacyId).toList());
         Map<LegacyVersion, Map<String, ClassInfo>> peers = new EnumMap<>(LegacyVersion.class);
         for (LegacyJar jar : jars) {

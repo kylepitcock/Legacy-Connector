@@ -499,6 +499,7 @@ public final class Platform1122 implements LegacyPlatform {
         org.kylepitcock.legacyconnector.v1_12_2.bridge.FluidBridge1122.register();
         org.kylepitcock.legacyconnector.v1_12_2.bridge.TileEntityBridge1122.registerType();
         if (net.neoforged.fml.ModList.get().isLoaded("curios")) org.kylepitcock.legacyconnector.compat.curios.CuriosBaubles1122.registerItems();
+        org.kylepitcock.legacyconnector.compat.waila.Waila1122.processPlugins();
         java.util.Map<String, int[]> perMod = new java.util.TreeMap<>();
         for (var item : org.kylepitcock.legacyconnector.v1_12_2.bridge.ItemBridge1122.modItems()) {
             var name = item.getRegistryName();
