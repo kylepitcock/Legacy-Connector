@@ -114,11 +114,18 @@ public class CraftingManager {
      */
     private static net.minecraft.world.level.Level mcc$anyLevel() {
         if (net.neoforged.fml.loading.FMLEnvironment.dist.isClient()) {
-            var level = net.minecraft.client.Minecraft.getInstance().level;
+            var level = ClientAccess.level();
             if (level != null) return level;
         }
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         return server == null ? null : server.overworld();
+    }
+
+    /** Isolated so the dedicated server never loads (or verifies against) client classes. */
+    private static final class ClientAccess {
+        static net.minecraft.world.level.Level level() {
+            return net.minecraft.client.Minecraft.getInstance().level;
+        }
     }
 
     /** A legacy recipe a data pack or KubeJS changed crafts as the changed recipe (and not at all once removed). */

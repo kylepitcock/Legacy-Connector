@@ -26,6 +26,20 @@ Complementary Reimagined r5.9.3 + Euphoria Patches (Iris reported "Using shaderp
 | `1.4.7/buildcraft-tank-pump-and-redpower-lamps-survival-shaders.png` | BuildCraft, RedPower 2 | 3.4.6, 2.0pr6 | Tank, pump and a lit lamp beside a redstone block in daylight | Works |
 | `1.4.7/applied-energistics-ore-and-machine-survival-shaders.png` | Applied Energistics | rv9 | Quartz ore and a machine block placed in survival mode | Partly working |
 
+| `1.4.7/redpower-logic-not-gate-lever-lamp-lit-survival-shaders.png`, `1.4.7/redpower-logic-not-gate-lever-lamp-dark-survival-shaders.png` | RedPower 2 (Wiring, Logic, Lighting) | 2.0pr6 | Survival, shaders: a vanilla lever beside a red alloy wire, a NOT gate and a red lamp, placed through the item path. Lever off: the gate outputs and the lamp is lit; lever on: the wire carries the signal and the lamp goes dark | Works |
+| `1.4.7/redpower-transposer-tubes-chest-survival-shaders.png` | RedPower 2 (Machine) | 2.0pr6 | Survival: a transposer moves items from a chest through two pneumatic tubes into a second chest when a redstone block pulses it | Works |
+| `1.4.7/redpower-deployer-places-cobblestone-survival-shaders.png` | RedPower 2 (Machine) | 2.0pr6 | Survival: a deployer with cobblestone in its inventory places the block in front of it on a redstone pulse (next to the chest and tubes) | Works |
+| `1.4.7/redpower-project-table-crafting-survival-shaders.png` | RedPower 2 (Base) | 2.0pr6 | Survival: the project table screen after crafting sticks from planks (the recipe lookup of the client container had no world and found nothing before) | Works |
+| `1.4.7/redpower-world-generation-ore-and-marble-in-cave-shaders.png` | RedPower 2 (World) | 2.0pr6 | A normal world (cave pocket cut by command): generated RedPower ore next to marble | Works |
+| `1.4.7/applied-energistics-terminal-gui-survival-shaders.png`, `1.4.7/applied-energistics-drive-gui-survival-shaders.png` | Applied Energistics | rv9 | Survival: the ME Terminal (title, search field, sort buttons) and the ME Drive screens opened on blocks placed through the item path | Works (screens), partial (network) |
+| `1.4.7/buildcraft-wooden-pipe-engine-cobblestone-pipes-chest-survival-shaders.png` | BuildCraft | 3.4.6 | Survival: a redstone-powered wooden engine drives a wooden pipe that pulls cobblestone out of a chest; cobblestone pipes carry it to the second chest | Works |
+| `1.4.7/buildcraft-oil-pool-pump-tank-survival-shaders.png` | BuildCraft | 3.4.6 | An oil pool (black, drawn by the mod's fluid renderer; it was a hole), a pump and a tank in a forest | Works (liquid transport untried) |
+| `1.4.7/entity-detector-and-cctv-blocks-survival-shaders.png` | Entity Detector, CCTV | 1.1, 1.0 | The four entity detector blocks (face textures from the mod's sheet) and the CCTV camera block (the mod's note-block-like tile with a lens) | Works |
+| `1.4.7/computercraft-computer-disk-drive-turtle-survival-shaders.png` | ComputerCraft | 1.5 | Computer, disk drive and turtle placed in survival | Works (blocks) |
+| `1.4.7/computercraft-computer-terminal-screen-shaders.png` | ComputerCraft | 1.5 | The computer screen opened: the terminal draws white rows instead of text (known defect, the font sheet is not applied) | Partly working |
+| `1.4.7/miscperipherals-blocks-survival-shaders.png` | MiscPeripherals | 3.1c | Charge station, iron note block, resupply station, interactive sorter, rail reader, teleporter, player detector and crafter, all drawn with their textures | Works (blocks) |
+| `1.4.7/forestry-apiary-block-and-bees-survival-shaders.png` | Forestry, Extra Bees | 2.0.0.11, 1.5.0.6b | The apiary placed (the screen does not open: this Forestry build targets another obfuscation); bee items show the missing texture | Partly working |
+
 
 ## 1.5.2 and 1.6.4: survival tests (2026-11-07)
 

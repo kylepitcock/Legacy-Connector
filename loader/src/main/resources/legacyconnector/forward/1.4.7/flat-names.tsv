@@ -430,7 +430,7 @@ net/minecraft/src/EntityAIMate	net/minecraft/entity/ai/EntityAIMate
 net/minecraft/src/EntityAIMoveIndoors	net/minecraft/entity/ai/EntityAIMoveIndoors
 net/minecraft/src/EntityAIMoveThroughVillage	net/minecraft/entity/ai/EntityAIMoveThroughVillage
 net/minecraft/src/EntityAIMoveTowardsTarget	net/minecraft/entity/ai/EntityAIMoveTowardsTarget
-net/minecraft/src/EntityAIMoveTwardsRestriction	net/minecraft/entity/ai/EntityAIMoveTwardsRestriction
+net/minecraft/src/EntityAIMoveTwardsRestriction	net/minecraft/entity/ai/EntityAIMoveTowardsRestriction
 net/minecraft/src/EntityAINearestAttackableTarget	net/minecraft/entity/ai/EntityAINearestAttackableTarget
 net/minecraft/src/EntityAINearestAttackableTargetSorter	net/minecraft/entity/ai/EntityAINearestAttackableTargetSorter
 net/minecraft/src/EntityAIOcelotAttack	net/minecraft/entity/ai/EntityAIOcelotAttack
