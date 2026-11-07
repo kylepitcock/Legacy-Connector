@@ -22,7 +22,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
  * light, sound, opacity and collision come from the legacy block when it is registered, its bounds (set in its constructor) are the shape,
  * and its drops are asked from the legacy block ({@code getDroppedItemId/Count/Meta}), as b1.7.3's {@code dropStacks} did.
  */
-public class LegacyB173Block extends net.minecraft.world.level.block.Block {
+public class LegacyB173Block extends net.minecraft.world.level.block.Block implements net.minecraft.world.level.block.BucketPickup {
     public static final IntegerProperty META = IntegerProperty.create("meta", 0, 15);
     private static final Random RANDOM = new Random();
 
@@ -48,6 +48,17 @@ public class LegacyB173Block extends net.minecraft.world.level.block.Block {
 
     public Block legacy() {
         return legacy;
+    }
+
+    /** Native empty buckets (including stacked/creative buckets) execute the original Forge handler. */
+    @Override public ItemStack pickupBlock(net.minecraft.world.entity.player.Player player,net.minecraft.world.level.LevelAccessor level,BlockPos pos,BlockState state){
+        if(!(level instanceof net.minecraft.world.level.Level real))return ItemStack.EMPTY;
+        return StacksB173.toModern(legacyconnector.vb1_7_3.net.minecraft.src.forge.MinecraftForge.fillCustomBucket(
+                World.mcc$wrap(real),pos.getX(),pos.getY(),pos.getZ()));
+    }
+    @Override public java.util.Optional<net.minecraft.sounds.SoundEvent> getPickupSound(){
+        return java.util.Optional.of(legacy.material==legacyconnector.vb1_7_3.net.minecraft.block.material.Material.LAVA
+                ? net.minecraft.sounds.SoundEvents.BUCKET_FILL_LAVA:net.minecraft.sounds.SoundEvents.BUCKET_FILL);
     }
 
     @Override

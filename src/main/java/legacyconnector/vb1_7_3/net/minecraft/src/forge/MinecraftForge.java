@@ -7,10 +7,23 @@ import legacyconnector.vb1_7_3.net.minecraft.item.Item;
 
 /**
  * Forge 1.0 for Beta 1.7.3: the tool and harvest-level registrations (kept in {@link ForgeHooks}) and the version checks, which pass as
- * Forge 1.0.7. Handler registrations that take Forge's interfaces are synthesized for now.
+ * Forge 1.0.7. Custom buckets dispatch their original callbacks; other handler families remain incomplete.
  */
 public class MinecraftForge {
+    private static final java.util.List<IBucketHandler> bucketHandlers=new java.util.concurrent.CopyOnWriteArrayList<>();
     public MinecraftForge() {}
+
+    public static void registerCustomBucketHandler(IBucketHandler handler){bucketHandlers.add(handler);}
+    /** Historical Forge spelling, retained by mods compiled against the earlier API. */
+    public static void registerCustomBucketHander(IBucketHandler handler){registerCustomBucketHandler(handler);}
+    public static legacyconnector.vb1_7_3.net.minecraft.item.ItemStack fillCustomBucket(
+            legacyconnector.vb1_7_3.net.minecraft.world.World world,int x,int y,int z){
+        for(IBucketHandler handler:bucketHandlers){
+            var filled=handler.fillCustomBucket(world,x,y,z);
+            if(filled!=null)return filled;
+        }
+        return null;
+    }
 
     public static void setToolClass(Item tool, String toolClass, int harvestLevel) {
         ForgeHooks.initTools();

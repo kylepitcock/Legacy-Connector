@@ -125,6 +125,7 @@ public final class SelfTestB173 {
                 net.minecraft.server.level.ClientInformation.createDefault());
         new TestConnection(level.getServer(), player);
         ItemUseSelfTestB173.run(level, player, base);
+        BucketSelfTestB173.run(level, player, base);
         org.kylepitcock.legacyconnector.compat.b173.BucketBowSelfTest.run(level, player, base);
         org.kylepitcock.legacyconnector.compat.b173.DurabilitySelfTest.run(level, player, base);
         org.kylepitcock.legacyconnector.compat.b173.ThrownSelfTest.run(level, player, base);
