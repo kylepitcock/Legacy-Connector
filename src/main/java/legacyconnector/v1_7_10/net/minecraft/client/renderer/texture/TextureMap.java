@@ -19,6 +19,8 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
 
     protected final int textureType;
     protected final String basePath;
+    /** Forge 1.5.2's name of the atlas ("terrain" for blocks, "items" for items): mods compare it in their texture stitch handlers. */
+    public final String textureName;
     protected Map mapRegisteredSprites = new LinkedHashMap();
     protected int mipmapLevels;
     protected int anisotropicFiltering = 1;
@@ -30,6 +32,7 @@ public class TextureMap implements IIconRegister, ITickableTextureObject {
     public TextureMap(int textureType, String basePath, boolean skipFirst) {
         this.textureType = textureType;
         this.basePath = basePath;
+        this.textureName = textureType == 0 ? "terrain" : textureType == 1 ? "items" : (basePath == null ? "" : basePath.replaceAll(".*/", ""));
         if (textureType != 0 && textureType != 1) MOD_MAPS.put(textureType, this);
     }
 

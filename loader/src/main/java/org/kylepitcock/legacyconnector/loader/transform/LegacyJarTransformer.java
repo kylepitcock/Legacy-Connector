@@ -410,6 +410,11 @@ public final class LegacyJarTransformer {
         for (var e : other.entrySet()) {
             String name = e.getKey();
             if (isSignatureFile(name)) continue;
+            // Forge 1.5.2 kept a mod's files under /mods/<id>/ (textures, lang, sounds); they are the mod's assets/<id>/ for the modern resource system.
+            // The original stays too: mods also read them as class path files.
+            if (version.numericIds() && name.startsWith("mods/") && name.indexOf('/', 5) > 5 && !name.endsWith("/")) {
+                resources.accept("assets/" + name.substring(5), e.getValue());
+            }
             if (resources.accept(name, e.getValue())) continue;
             outResources.put(name, e.getValue());
         }

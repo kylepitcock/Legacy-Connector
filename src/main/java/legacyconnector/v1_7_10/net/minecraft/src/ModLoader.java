@@ -20,6 +20,11 @@ public class ModLoader {
         return Loader.isModLoaded(name);
     }
 
+    /** The client (Forge's wrapper handed out the game instance); only meaningful on the client. */
+    public static legacyconnector.v1_7_10.net.minecraft.client.Minecraft getMinecraftInstance() {
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+    }
+
     public static void registerBlock(Block block) {
         registerBlock(block, null);
     }

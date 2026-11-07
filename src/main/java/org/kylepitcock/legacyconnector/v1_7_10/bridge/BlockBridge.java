@@ -270,6 +270,8 @@ public final class BlockBridge {
             // 1.5.2 and 1.6.4 let a mod register a block under its unlocalized name or no name at all (FML derived one)
             String unlocalized = block.getUnlocalizedName();
             name = unlocalized != null && !unlocalized.isEmpty() ? unlocalized.replaceFirst("^tile\\.", "") : block.getClass().getSimpleName().toLowerCase(java.util.Locale.ROOT);
+            // a block that was never named (Applied Energistics 1 registers its multi-blocks with a null name): the id its mod gave it
+            if (name.equals("null")) name = "block" + legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block);
         }
         LegacyModContainer1710 owner = LegacyModContainer1710.active();
         String legacyDomain = modId != null ? modId : owner != null ? owner.getModId() : "minecraft";

@@ -54,7 +54,23 @@ public final class ResourceCompat {
             if (lower != null) in = cls.getResourceAsStream(lower);
         }
         if (in == null && cls.getClassLoader() != null) in = fromLoader(cls, name);
+        if (in == null && name.startsWith("/") && cls.getClassLoader() != null) in = vanillaFile(cls.getClassLoader(), name);
         return in;
+    }
+
+    /**
+     * Forge 1.5.2 mods read vanilla's own files from the class path ({@code /font/default.png}, {@code /terrain.png}: ComputerCraft's
+     * terminal font); they are the game's textures at their modern places.
+     */
+    private static java.io.InputStream vanillaFile(ClassLoader loader, String name) {
+        try {
+            if (name.equals("/title/splashes.txt")) return loader.getResourceAsStream("assets/minecraft/texts/splashes.txt");
+            var loc = org.kylepitcock.legacyconnector.v1_6_4.bridge.Textures152.location(name);
+            if (loc == null || !loc.getResourceDomain().equals("minecraft") || loc.getResourcePath().startsWith("/")) return null;
+            return loader.getResourceAsStream("assets/minecraft/" + loc.getResourcePath());
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
     }
 
     /** Class-relative names resolve against the package, absolute ones against the root, then through the whole loader. */
