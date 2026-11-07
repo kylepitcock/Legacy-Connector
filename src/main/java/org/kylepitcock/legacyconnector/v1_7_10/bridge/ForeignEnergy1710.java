@@ -296,8 +296,18 @@ public final class ForeignEnergy1710 {
         static Object side(Class<?> type, ForgeDirection from) {
             if (type.isAssignableFrom(ForgeDirection.class)) return from;
             try {
-                return type.getMethod("fromForgeDirection", ForgeDirection.class).invoke(null, from == ForgeDirection.UNKNOWN ? ForgeDirection.DOWN : from);
-            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                // 1.5.2's ic2.api.Direction has the constants XN, XP, YN, YP, ZN, ZP and no factory for ForgeDirection
+                String name = switch (from) {
+                    case UP -> "YP";
+                    case NORTH -> "ZN";
+                    case SOUTH -> "ZP";
+                    case WEST -> "XN";
+                    case EAST -> "XP";
+                    default -> "YN";
+                };
+                for (Object c : type.getEnumConstants()) if (c.toString().equals(name)) return c;
+                return null;
+            } catch (RuntimeException | LinkageError e) {
                 return null;
             }
         }
