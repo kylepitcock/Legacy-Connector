@@ -64,10 +64,10 @@ F	net/minecraft/client/gui/GuiScreen	itemRenderer	itemRender
 F	net/minecraft/client/renderer/entity/Render	renderBlocks	field_147909_c
 F	net/minecraft/block/BlockLeavesBase	graphicsLevel	field_150121_P
 F	net/minecraft/block/BlockLeaves	graphicsLevel	field_150121_P
-F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerX	field_147560_j
-F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerY	field_147561_k
-F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerZ	field_147558_l
-F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	entityLivingPlayer	field_147551_g
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerX	field_147560_j
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerY	field_147561_k
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	playerZ	field_147558_l
+F	net/minecraft/client/renderer/tileentity/TileEntityRenderer	entityLivingPlayer	field_147551_g
 F	net/minecraft/client/renderer/tileentity/TileEntitySpecialRenderer	tileEntityRenderer	field_147501_a
 M	net/minecraft/server/management/ServerConfigurationManager	getPlayerForUsername	(Ljava/lang/String;)Lnet/minecraft/entity/player/EntityPlayerMP;	getPlayerByUsername
 G	net/minecraft/client/Minecraft	sndManager	Lnet/minecraft/client/audio/SoundManager;	static	legacyconnector/v1_6_4/forward/Forward164	sndManager	(Lnet/minecraft/client/Minecraft;)Lnet/minecraft/client/audio/SoundManager;
@@ -111,3 +111,4 @@ C	net/minecraftforge/common/util/FakePlayer	(Lnet/minecraft/world/World;Ljava/la
 C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/Item;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
 C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/block/Block;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
 C	net/minecraft/stats/Achievement	(ILjava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	(Ljava/lang/String;Ljava/lang/String;IILnet/minecraft/item/ItemStack;Lnet/minecraft/stats/Achievement;)V	args	1:legacyconnector/v1_6_4/forward/Forward164#achievementId#(Ljava/lang/String;)Ljava/lang/String;	1	2	3	4	5
+M	net/minecraft/world/gen/structure/MapGenStructureIO	func_143031_a	(Ljava/lang/Class;Ljava/lang/String;)V	registerStructureComponent
