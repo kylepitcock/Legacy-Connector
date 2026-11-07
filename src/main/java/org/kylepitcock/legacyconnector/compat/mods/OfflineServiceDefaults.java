@@ -66,6 +66,15 @@ public final class OfflineServiceDefaults {
             defaults.add("capes", new JsonObject());
             for (String k : new String[] {"website", "store", "maps", "discord"}) defaults.addProperty(k, "http://localhost/");
             boolean changed = !Files.exists(file);
+            // a file seeded by an earlier version holds the placeholder pack entries with a hash that no longer matches the placeholder files
+            for (String k : new String[] {"resource-pack", "team"}) {
+                if (have.has(k) && have.get(k).isJsonObject() && have.getAsJsonObject(k).has("url")
+                        && have.getAsJsonObject(k).get("url").getAsString().startsWith(url)
+                        && !have.getAsJsonObject(k).equals(defaults.get(k))) {
+                    have.add(k, defaults.get(k));
+                    changed = true;
+                }
+            }
             for (var e : defaults.entrySet()) {
                 if (!have.has(e.getKey())) {
                     have.add(e.getKey(), e.getValue());
