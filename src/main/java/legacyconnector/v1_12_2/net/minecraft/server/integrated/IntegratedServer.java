@@ -31,6 +31,12 @@ public class IntegratedServer extends legacyconnector.v1_12_2.net.minecraft.serv
         return m == null ? "" : m.getWorldData().getLevelName();
     }
 
+    /** Whether the server has started and runs its tick loop (false before startup and after it stopped). */
+    public boolean serverIsInRunLoop() {
+        var m = mcc$server();
+        return m != null && m.isRunning() && !m.isStopped();
+    }
+
     @Override
     public boolean isDedicatedServer() {
         return false;

@@ -20,29 +20,65 @@ public class KeyBinding implements Comparable<KeyBinding> {
 
     private final String description;
     private final String category;
-    private int keyCode;
+    // not named keyCode: that name is the legacy public field, a phantom read through mcc$get$keyCode
+    private int mcc$code;
     private final int keyCodeDefault;
     private KeyMapping modern;
 
     public KeyBinding(String description, int keyCode, String category) {
         this.description = description;
-        this.keyCode = keyCode;
+        this.mcc$code = keyCode;
         this.keyCodeDefault = keyCode;
         this.category = category;
         mcc$listed(this);
     }
 
+    /** 1.6.4's constructor (no category): the binding is listed under the miscellaneous controls. */
+    public KeyBinding(String description, int keyCode) {
+        this(description, keyCode, "key.categories.misc");
+    }
+
     private static synchronized void mcc$listed(KeyBinding key) {
         keybindArray.add(key);
         keybindSet.add(key.category);
-        hash.addKey(key.keyCode, key);
+        hash.addKey(key.mcc$code, key);
+    }
+
+    /** Phantom: the legacy public field {@code keyCode}, the bound key. */
+    @Deprecated
+    public int keyCode;
+    /** Phantom: the legacy public field {@code pressed}, whether the key is down. */
+    @Deprecated
+    public boolean pressed;
+    /** Phantom: the legacy public field {@code keyDescription}. */
+    @Deprecated
+    public String keyDescription;
+
+    public static int mcc$get$keyCode(KeyBinding key) {
+        return key.getKeyCode();
+    }
+
+    public static void mcc$set$keyCode(KeyBinding key, int code) {
+        key.setKeyCode(code);
+    }
+
+    public static boolean mcc$get$pressed(KeyBinding key) {
+        return key.getIsKeyPressed();
+    }
+
+    public static void mcc$set$pressed(KeyBinding key, boolean pressed) {
+        // the key state is the keyboard's
+    }
+
+    public static String mcc$get$keyDescription(KeyBinding key) {
+        return key.getKeyDescription();
     }
 
     /** A binding over an existing modern mapping (vanilla's). */
     public KeyBinding(KeyMapping existing) {
         this.description = existing.getName();
         this.category = existing.getCategory();
-        this.keyCode = KeyCodes.fromGlfw(existing.getKey().getValue());
+        this.mcc$code = KeyCodes.fromGlfw(existing.getKey().getValue());
         this.keyCodeDefault = KeyCodes.fromGlfw(existing.getDefaultKey().getValue());
         this.modern = existing;
         mcc$listed(this);
@@ -87,9 +123,9 @@ public class KeyBinding implements Comparable<KeyBinding> {
     public synchronized KeyMapping mcc$modern() {
         if (modern == null) {
             // 1.7.10 stored mouse buttons as -100 + button (middle click -98)
-            modern = keyCode < 0 && keyCode >= -100
-                    ? new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.MOUSE, keyCode + 100, category)
-                    : new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, KeyCodes.toGlfw(keyCode), category);
+            modern = mcc$code < 0 && mcc$code >= -100
+                    ? new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.MOUSE, mcc$code + 100, category)
+                    : new KeyMapping(uniqueName(description), com.mojang.blaze3d.platform.InputConstants.Type.KEYSYM, KeyCodes.toGlfw(mcc$code), category);
         }
         return modern;
     }
@@ -125,7 +161,7 @@ public class KeyBinding implements Comparable<KeyBinding> {
     /** The bound key in 1.7.10 codes: what the player set in the controls screen once the modern mapping exists. */
     public int getKeyCode() {
         KeyMapping m = modern;
-        if (m == null) return keyCode;
+        if (m == null) return mcc$code;
         var key = m.getKey();
         if (key.getType() == com.mojang.blaze3d.platform.InputConstants.Type.MOUSE) return key.getValue() - 100;
         return key.getValue() == com.mojang.blaze3d.platform.InputConstants.UNKNOWN.getValue() ? 0 : KeyCodes.fromGlfw(key.getValue());
@@ -141,7 +177,7 @@ public class KeyBinding implements Comparable<KeyBinding> {
     }
 
     public void setKeyCode(int keyCode) {
-        this.keyCode = keyCode;
+        this.mcc$code = keyCode;
         KeyMapping m = modern;
         if (m != null) {
             m.setKey(keyCode < 0 && keyCode >= -100 ? com.mojang.blaze3d.platform.InputConstants.Type.MOUSE.getOrCreate(keyCode + 100)

@@ -12,6 +12,11 @@ import legacyconnector.v1_12_2.net.minecraft.world.biome.BiomeProvider;
  * modern dimension type. Mods subclass it for their own dimensions.
  */
 public abstract class WorldProvider {
+    /** Forge: capabilities the dimension attaches to its worlds (none by default; dimension subclasses override it). */
+    public legacyconnector.v1_12_2.net.minecraftforge.common.capabilities.ICapabilityProvider initCapabilities() {
+        return null;
+    }
+
     public static final float[] MOON_PHASE_FACTORS = {1.0F, 0.75F, 0.5F, 0.25F, 0.0F, 0.25F, 0.5F, 0.75F};
 
     protected World world;

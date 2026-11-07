@@ -26,6 +26,12 @@ public class NetHandlerPlayClient implements legacyconnector.v1_7_10.net.minecra
         }
     }
 
+    @Override
+    public legacyconnector.v1_7_10.net.minecraft.entity.player.EntityPlayer getPlayer() {
+        var mc = legacyconnector.v1_7_10.net.minecraft.client.Minecraft.getMinecraft();
+        return legacyconnector.v1_7_10.net.minecraft.client.Minecraft.mcc$get$thePlayer(mc);
+    }
+
     /** The connection to the server. */
     public legacyconnector.v1_7_10.net.minecraft.network.NetworkManager getNetworkManager() {
         return org.kylepitcock.legacyconnector.v1_7_10.client.ClientNetwork1710.manager();

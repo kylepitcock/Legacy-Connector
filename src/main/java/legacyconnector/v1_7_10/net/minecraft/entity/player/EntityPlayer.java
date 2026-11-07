@@ -15,7 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.BlockBridge;
 import org.kylepitcock.legacyconnector.v1_7_10.bridge.GuiBridge;
 
-public abstract class EntityPlayer extends EntityLivingBase {
+public abstract class EntityPlayer extends EntityLivingBase implements legacyconnector.v1_7_10.cpw.mods.fml.common.network.Player {
     /** Phantom: redirected to {@link #mcc$get$eyeHeight}/{@link #mcc$set$eyeHeight} (Forge's field; mods change it, Thermal Dynamics' ducts). */
     @Deprecated
     public float eyeHeight;

@@ -21,7 +21,12 @@ public final class ViewLiveness {
      */
     public static boolean entityGone(Entity e) {
         if (LevelReleases.isDead(e.level())) return true;
-        if (!(e instanceof Player)) return e.isRemoved();
+        if (!(e instanceof Player)) {
+            if (e.isRemoved()) return true;
+            // an entity that was created but never put into a level (natural-spawn checks, failed spawns, mods that build entities
+            // to inspect them) is never removed either, so it would be viewed forever: drop it when it stayed unattached for two sweeps
+            return ViewSweeper.twice(e, !e.isAddedToLevel());
+        }
         if (!SWEEP_PLAYERS) return false;
         Entity.RemovalReason reason = e.getRemovalReason();
         return ViewSweeper.twice(e, reason != null && reason != Entity.RemovalReason.CHANGED_DIMENSION);

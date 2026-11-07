@@ -148,6 +148,8 @@ public final class Platform1122 implements LegacyPlatform {
     }
 
     /** @SidedProxy may sit on any class of the mod; FML found them through its annotation scan, as we do. */
+    private static final java.util.Set<String> INJECTED_PROXIES = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
     private static void injectProxies(LegacyModRecord mod, ClassLoader loader) throws Exception {
         List<ModFileScanData.AnnotationData> found = new ArrayList<>();
         var scan = mod.container.getModInfo().getOwningFile().getFile().getScanResult();
@@ -168,6 +170,9 @@ public final class Platform1122 implements LegacyPlatform {
             SidedProxy sp = f.getAnnotation(SidedProxy.class);
             if (sp == null) continue;
             if (!sp.modId().isEmpty() && !sp.modId().equals(mod.legacyId)) continue;
+            // a jar holding several mods (Tesla Core Lib: teslacorelib + teslacorelib_registries) must not replace the proxy the first one
+            // already constructed with a fresh instance that never got the construction event
+            if (!INJECTED_PROXIES.add(t[0] + "#" + t[1])) continue;
             String cls = client ? sp.clientSide() : sp.serverSide();
             if (cls.isEmpty()) {
                 // Forge's default: the nested ClientProxy / ServerProxy class of the field type

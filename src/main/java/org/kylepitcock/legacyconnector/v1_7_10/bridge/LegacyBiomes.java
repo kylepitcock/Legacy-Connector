@@ -197,6 +197,7 @@ public final class LegacyBiomes {
         json.addProperty("temperature", b.temperature);
         json.addProperty("downfall", Math.max(0.0F, Math.min(1.0F, b.rainfall)));
         json.addProperty("has_precipitation", b.getEnableSnow() || b.canSpawnLightningBolt());
+        applySpawnLists(json, b);
         JsonObject effects = json.getAsJsonObject("effects");
         if (effects == null) {
             effects = new JsonObject();
@@ -224,6 +225,40 @@ public final class LegacyBiomes {
         vegetation.add("legacyconnector:legacy_biome");
         steps.set(VEGETAL_DECORATION, vegetation);
         return json;
+    }
+
+    /**
+     * The biome's own spawn lists instead of the vanilla template's: a mod biome that cleared its monster list (the Aether has no
+     * zombies) must not get the overworld's hostile mobs.
+     */
+    private static void applySpawnLists(JsonObject json, BiomeGenBase b) {
+        JsonObject spawners = json.has("spawners") && json.get("spawners").isJsonObject() ? json.getAsJsonObject("spawners") : new JsonObject();
+        json.add("spawners", spawners);
+        String[] categories = {"monster", "creature", "water_creature", "ambient"};
+        var types = new legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType[] {
+                legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType.monster, legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType.creature,
+                legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType.waterCreature, legacyconnector.v1_7_10.net.minecraft.entity.EnumCreatureType.ambient};
+        for (int i = 0; i < categories.length; i++) {
+            JsonArray list = new JsonArray();
+            try {
+                var entries = b.getSpawnableList(types[i]);
+                if (entries != null) {
+                    for (var entry : entries) {
+                        net.minecraft.world.entity.EntityType<?> type = SpawnClasses.modernType(entry.entityClass);
+                        if (type == null || entry.itemWeight <= 0) continue;
+                        JsonObject o = new JsonObject();
+                        o.addProperty("type", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+                        o.addProperty("weight", entry.itemWeight);
+                        o.addProperty("minCount", Math.max(1, entry.minGroupCount));
+                        o.addProperty("maxCount", Math.max(Math.max(1, entry.minGroupCount), entry.maxGroupCount));
+                        list.add(o);
+                    }
+                }
+            } catch (RuntimeException | LinkageError e) {
+                continue; // keep the template's list for this category
+            }
+            spawners.add(categories[i], list);
+        }
     }
 
     private static int safeColor(Supplier<Integer> s, int fallback) {

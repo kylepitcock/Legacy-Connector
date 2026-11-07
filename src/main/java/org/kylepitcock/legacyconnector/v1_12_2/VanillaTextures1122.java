@@ -14,7 +14,7 @@ import java.util.Map;
  * legacyconnector/resource/vanilla-texture-renames.tsv from the loader); blockstate texture overrides turned into generated models at runtime
  * (Tinkers' Construct's slime dirt: "particle": "blocks/dirt") need the same rename.
  */
-final class VanillaTextures1122 {
+public final class VanillaTextures1122 {
     private VanillaTextures1122() {}
 
     /** "block/old" or "item/old" to the new basename path. */
@@ -36,7 +36,7 @@ final class VanillaTextures1122 {
     }
 
     /** The 1.21.1 path of a vanilla texture path ({@code blocks/dirt} gives {@code block/dirt}). */
-    static String modern(String path) {
+    public static String modern(String path) {
         if (path.startsWith("blocks/")) path = "block/" + path.substring("blocks/".length());
         else if (path.startsWith("items/")) path = "item/" + path.substring("items/".length());
         String renamed = RENAMES.get(path);

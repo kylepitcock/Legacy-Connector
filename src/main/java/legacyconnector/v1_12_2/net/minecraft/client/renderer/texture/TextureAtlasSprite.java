@@ -72,6 +72,7 @@ public class TextureAtlasSprite {
      */
     public void mcc$sync(net.minecraft.client.renderer.texture.TextureAtlasSprite modern) {
         if (modern == null) return;
+        mcc$pinned = false;
         mcc$modern = modern;
         var contents = modern.contents();
         width = contents.width();
@@ -107,7 +108,7 @@ public class TextureAtlasSprite {
 
     /** The modern sprite this one shows (stitched lazily if legacy code asks before the atlas reload told it). */
     public net.minecraft.client.renderer.texture.TextureAtlasSprite mcc$modern() {
-        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(iconName));
+        if (mcc$modern == null) mcc$sync(Sprites1122.sprite(getIconName()));
         return mcc$modern;
     }
 
@@ -116,8 +117,15 @@ public class TextureAtlasSprite {
         return mcc$modern;
     }
 
+    /** Pixels being generated while the resources are built: the atlas of an earlier build must not overwrite them. */
+    private boolean mcc$pinned;
+
+    public void mcc$pin(boolean pinned) {
+        mcc$pinned = pinned;
+    }
+
     private void ensure() {
-        if (mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(iconName));
+        if (!mcc$pinned && mcc$modern == null && maxU == 0.0F && maxV == 0.0F) mcc$sync(Sprites1122.sprite(getIconName()));
     }
 
     public int getOriginX() {
@@ -250,6 +258,10 @@ public class TextureAtlasSprite {
         int[] pixels = new int[w * h];
         image.getRGB(0, 0, w, h, pixels, 0, w);
         int levels = Math.max(1, mipmaplevels);
+        if (width == 0 || height == 0) {
+            width = w;
+            height = h > w && h % w == 0 ? w : h;
+        }
         if (h > w && h % w == 0) {
             int frame = w * w;
             for (int i = 0; i < h / w; i++) {
@@ -262,6 +274,25 @@ public class TextureAtlasSprite {
             int[][] data = new int[levels][];
             data[0] = pixels;
             framesTextureData.add(data);
+        }
+    }
+
+    /**
+     * Loads this sprite's frames and size from the texture file of its name, with no atlas around (sprites that generate their pixels from other
+     * sprites read their sources this way while the resources are built). False when the file is missing.
+     */
+    public boolean mcc$loadFromFile(IResourceManager manager) {
+        ResourceLocation id = new ResourceLocation(iconName);
+        ResourceLocation file = new ResourceLocation(id.getNamespace(), "textures/" + id.getPath() + ".png");
+        mcc$pinned = true;
+        try (legacyconnector.v1_12_2.net.minecraft.client.resources.IResource resource = manager.getResource(file)) {
+            resetSprite();
+            width = 0;
+            height = 0;
+            loadSpriteFrames(resource, 1);
+            return !framesTextureData.isEmpty();
+        } catch (java.io.IOException | RuntimeException e) {
+            return false;
         }
     }
 

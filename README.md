@@ -21,7 +21,7 @@ NeoForge loads such jars from `mods/` as launcher plugins before they can be tra
 > mod set.
 
 Legacy content enters the game through the same hooks a modern mod uses: mod biomes through the pack's biome placement
-(a TerraBlender region when TerraBlender is installed), world generators as placed features in biome modifiers, village buildings
+(a TerraBlender region; TerraBlender is bundled), world generators as placed features in biome modifiers, village buildings
 in the vanilla village pools, structure chest loot through loot tables, items and machines as capabilities. So it works together
 with the pack's other mods instead of being painted over them, and data packs can tune it like any modern content.
 
@@ -34,11 +34,18 @@ Screenshots of legacy mods running on 1.21.1 are at the [end of this page](#scre
 | Legacy version | Status |
 |---|---|
 | 1.7.10 | **Beta.** Mods with no modern version are the focus: Thaumcraft 4, Witchery, HBM's Nuclear Tech, OreSpawn, Fisk's Superheroes, Morph, the Reika mods (DragonAPI, RotaryCraft, ReactorCraft, ElectriCraft, ChromatiCraft) and Galacticraft with its addons run, with their mod biomes, dimensions and entities. The Betweenlands 1.0.6 loads and its dimension generates (its mob spawns are still being worked on). In-game self tests of the GT New Horizons pack and a 130-jar list rate 166 mods as working and 57 as partly working; 20 fail during loading. |
-| 1.12.2 | **Alpha (issue #64).** Old-only mods are the focus: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (Atum, the Midnight, the Betweenlands) can be entered. OpenComputers, Mekanism and RFTools machines are being brought up. |
+| 1.12.2 | **Alpha (issue #64).** Old-only mods are the focus: Atum 2, The Midnight, The Betweenlands, Scape and Run: Parasites and Abyssalcraft load and play in a real client with their own models, GUIs, mobs and world generation, and mod dimensions (Atum, the Midnight, the Betweenlands) can be entered. Botania, Chisel, Thermal Foundation and Expansion, Tinkers' Construct, Immersive Engineering, Mekanism, Astral Sorcery, Actually Additions, Electroblob's Wizardry and Recurrent Complex now render and load (2026-11-06 sweeps); Applied Energistics 2, EnderIO, Industrial Foregoing and Extra Utilities 2 still have rendering defects. |
+| 1.6.4 | **In development (started 2026-11-06).** A thin layer over the 1.7.10 support: numeric block/item ids, `Icon`, the old packet API, old tick handlers. Loader tables, the id layer and the network adapters are in, and the whole 42-jar test corpus boots on a server (IC2, Tinkers' Construct, Forestry, Twilight Forest and others, 19 still fail to load); mods' block behaviour and client rendering are being brought up ([estimate](docs/wiki/Legacy-1.6.4-Estimate.md)). |
+| 1.5.2 | **In development.** A small delta over 1.6.4 (same numeric ids and packet API; no `EntityLivingBase`, string texture paths). Test corpus of 47 mods, API tables and version detection are in. |
+| 1.4.7 | **Started.** After 1.5.2; adds the flat `net.minecraft.src` class names and sprite-sheet textures. Corpus and tables first. |
 | 1.20.1 | **Started (experimental, off by default; `experimental.forge1201`).** Forge 1.20.1 mods are remapped in place onto NeoForge 1.21.1 (SRG to Mojang names, Forge to NeoForge). So far: jar detection, the renames, `mods.toml` conversion and the first compatibility layer; no 1.20.1 mod has been run in game yet (see the [estimate](docs/wiki/Legacy-1.20.1-Estimate.md)). |
-| 1.16.5 | Planned (after 1.20.1). |
-| 1.2.5 | Planned (after 1.16.5). |
+| 1.19.2, 1.18.2 | Planned (after 1.20.1; renames and diffs over the same pipeline). |
+| 1.16.5 | Planned (after 1.18.2). |
+| 1.2.5 | Planned (after 1.16.5; needs `ModLoader`/`BaseMod` emulation). |
+| 1.3.2 | Only on demand. |
 | b1.7.3 | **Started.** Beta 1.7.3 ModLoader / Forge 1.0 mods in `mods/b1.7.3/` (jars or zips) are translated and their blocks, items and recipes load with their own textures the blocks' own behaviour (placing, ticks, clicks, redstone) and their tile entities, one creative tab per mod (IndustrialCraft 2, NetherCraft, Portal Gun, RedPower, Minefactory Renewed); no tile entities, entities, world generation or GUIs yet ([details](docs/wiki/Legacy-b1.7.3.md)). |
+
+Order and reasons: [Version roadmap](docs/wiki/Version-Roadmap.md). Not planned: 1.8 to 1.11.2 and the Alpha/early-Beta jar-mod era; Beta 1.7.3 ModLoader mods were started on request (row above).
 
 Legacy tile entities and items are NeoForge item, fluid and energy capabilities by default (RF, IC2 EU, BuildCraft MJ, Forge fluids, inventories), so hoppers, Create and modern cables work with them ([details](docs/wiki/Addon-API.md#capabilities)).
 

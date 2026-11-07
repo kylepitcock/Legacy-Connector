@@ -78,6 +78,11 @@ public final class JavaCompatRedirects {
                 "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;II)I"}) {
             staticToStatic("javax/swing/JOptionPane", "showConfirmDialog", desc, COMPAT + "DialogCompat", "showConfirmDialog");
         }
+        // log4j's resource loader found a mod's files through the shared 1.7.10 class loader (CoFH copies its world generation
+        // files with it); today the context loader does not see the mod jars.
+        for (String owner : new String[] {"org/apache/logging/log4j/core/helpers/Loader", "org/apache/logging/log4j/core/util/Loader"}) {
+            staticToStatic(owner, "getResource", "(Ljava/lang/String;Ljava/lang/ClassLoader;)Ljava/net/URL;", COMPAT + "Log4jCompat", "getResource");
+        }
         staticToStatic("javax/swing/JOptionPane", "showOptionDialog",
                 "(Ljava/awt/Component;Ljava/lang/Object;Ljava/lang/String;IILjavax/swing/Icon;[Ljava/lang/Object;Ljava/lang/Object;)I",
                 COMPAT + "DialogCompat", "showOptionDialog");

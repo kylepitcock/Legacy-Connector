@@ -221,6 +221,12 @@ public class EntityPlayerMP extends EntityPlayer implements legacyconnector.v1_1
         mcc$serverPlayer().setCamera(entity == null ? null : entity.mcc$entity);
     }
 
+    /** Starts elytra flight (the player glides until they land). */
+    public void setElytraFlying() {
+        var p = mcc$player();
+        if (p != null && !p.isFallFlying()) p.startFallFlying();
+    }
+
     public void markPlayerActive() {
         mcc$serverPlayer().resetLastActionTime();
     }

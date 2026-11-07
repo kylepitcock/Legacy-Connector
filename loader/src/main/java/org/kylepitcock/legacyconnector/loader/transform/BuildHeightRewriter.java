@@ -44,9 +44,9 @@ public final class BuildHeightRewriter {
 
     /** Number of comparisons rewritten in the class. */
     public static int apply(ClassNode node, Hierarchy hierarchy, LegacyVersion version) {
-        if (version != LegacyVersion.V1_7_10) return 0;
-        String world = version.shimPrefix() + "net/minecraft/world/World";
-        String access = version.shimPrefix() + "net/minecraft/world/IBlockAccess";
+        if (version.family() != LegacyVersion.V1_7_10) return 0;
+        String world = version.linkPrefix() + "net/minecraft/world/World";
+        String access = version.linkPrefix() + "net/minecraft/world/IBlockAccess";
         String helperArg = "(L" + access + ";)I";
         Map<String, Boolean> worldLike = new HashMap<>();
         int rewritten = 0;

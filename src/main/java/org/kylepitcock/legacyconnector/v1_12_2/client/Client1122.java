@@ -24,15 +24,41 @@ public final class Client1122 {
         // late: after Assets1122, whose OBJ models collect the material textures registered here
         GeneratedPack.addLateContributor((type, out) -> {
             if (type != PackType.CLIENT_RESOURCES || !present()) return;
-            try {
-                MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));
-            } catch (RuntimeException | LinkageError e) {
-                RenderErrors1122.report("posting TextureStitchEvent.Pre", e);
-            }
-            try {
-                CustomModels1122.registerTextures();
-            } catch (RuntimeException | LinkageError e) {
-                RenderErrors1122.report("listing the textures of custom-loader models", e);
+            // a handler reading a resource while the pack is being built asks for the pack again: that nested run does not repeat the event
+            boolean nested = Thread.holdsLock(STITCH_PRE);
+            synchronized (STITCH_PRE) {
+                if (!nested) {
+                    // mods' resource listeners come first in a reload (Forge 1.12 registered them before the game's own)
+                    try {
+                        if (legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                                instanceof legacyconnector.v1_12_2.net.minecraft.client.resources.SimpleReloadableResourceManager m) m.mcc$reloading();
+                    } catch (RuntimeException | LinkageError e) {
+                        RenderErrors1122.report("telling the resource reload listeners a reload starts", e);
+                    }
+                    // Forge loaded the models (and so ran the custom loaders) before it posted the event: Pre handlers ask the registry for models
+                    // that must already be cached (Tinkers' Construct walks the textures its loaders registered)
+                    try {
+                        CustomModels1122.registerTextures();
+                    } catch (RuntimeException | LinkageError e) {
+                        RenderErrors1122.report("loading the custom-loader models", e);
+                    }
+                    try {
+                        MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));
+                    } catch (RuntimeException | LinkageError e) {
+                        RenderErrors1122.report("posting TextureStitchEvent.Pre", e);
+                    }
+                    try {
+                        CustomModels1122.registerTextures();
+                    } catch (RuntimeException | LinkageError e) {
+                        RenderErrors1122.report("listing the textures of custom-loader models", e);
+                    }
+                    // sprites that make their own pixels (Tinkers' Construct's material textures) become texture files of the pack
+                    try {
+                        CustomSprites1122.generate(out);
+                    } catch (RuntimeException | LinkageError e) {
+                        RenderErrors1122.report("generating the sprites that make their own pixels", e);
+                    }
+                }
             }
             // textures of OBJ materials (Assets1122 ran first and collected them)
             for (String texture : org.kylepitcock.legacyconnector.v1_12_2.ObjAssets1122.TEXTURES) Sprites1122.register(texture);
@@ -124,6 +150,8 @@ public final class Client1122 {
         if (!present()) return;
         Models1122.invalidate();
         CustomModels1122.setBaking(event.getModels());
+        var textureGetter = event.getTextureGetter();
+        Sprites1122.setBaking(id -> textureGetter.apply(new net.minecraft.client.resources.model.Material(TextureAtlas.LOCATION_BLOCKS, id)));
         try {
             CustomModels1122.bakeInto(event.getModels());
         } catch (RuntimeException | LinkageError e) {
@@ -138,6 +166,7 @@ public final class Client1122 {
             RenderErrors1122.report("posting ModelBakeEvent", e);
         }
         CustomModels1122.setBaking(null);
+        Sprites1122.setBaking(null);
         try {
             ActualStateModels1122.wrap(event.getModels());
         } catch (RuntimeException | LinkageError e) {
@@ -155,13 +184,21 @@ public final class Client1122 {
      */
     public static void earlyStitchPre() {
         GeneratedPack.whileBuilding(() -> {
-            try {
-                MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));
-            } catch (RuntimeException | LinkageError e) {
-                RenderErrors1122.report("posting the early TextureStitchEvent.Pre", e);
+            synchronized (STITCH_PRE) {
+                try {
+                    MinecraftForge.EVENT_BUS.post(new TextureStitchEvent.Pre(TextureMap.mcc$blocks()));
+                } catch (RuntimeException | LinkageError e) {
+                    RenderErrors1122.report("posting the early TextureStitchEvent.Pre", e);
+                }
             }
         });
     }
+
+    /**
+     * The mods load on a worker thread while the main thread opens the generated pack (which posts the real Pre event): the two runs of a mod's
+     * Pre handler share its state (Tinkers' Construct iterates the base textures its model loaders add to), so only one runs at a time.
+     */
+    private static final Object STITCH_PRE = new Object();
 
     /** Whether any 1.12.2 mod is loaded (otherwise none of this runs). */
     static boolean present() {

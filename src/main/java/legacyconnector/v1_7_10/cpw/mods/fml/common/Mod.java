@@ -37,6 +37,54 @@ public @interface Mod {
     @interface EventHandler {
     }
 
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface PreInit {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface Init {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface PostInit {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface ServerAboutToStart {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface ServerStarting {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface ServerStarted {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface ServerStopping {
+    }
+
+    /** Forge 1.6.4's per-event annotation (1.7 replaced all of them with {@link EventHandler}); the platform dispatches it like one. */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface ServerStopped {
+    }
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     @interface Instance {

@@ -16,6 +16,8 @@ public class Loader {
     public static final String MC_VERSION = "1.7.10";
     private static final Loader INSTANCE = new Loader();
     /** Read reflectively by mods that show it (Custom Main Menu's #mcpversion#). */
+    /** FML's game directory field; mods (CodeChickenCore's CommonUtils.getMinecraftDir) read it by reflection. */
+    private static final File minecraftDir = FMLPaths.GAMEDIR.get().toFile();
     private static String mcpversion = "9.05";
 
     public String getFMLVersionString() {

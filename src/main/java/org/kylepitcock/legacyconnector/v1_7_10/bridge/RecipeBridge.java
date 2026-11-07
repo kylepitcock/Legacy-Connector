@@ -132,7 +132,9 @@ public final class RecipeBridge {
         if (recipe instanceof ShapedOreRecipe s) {
             addShapedSpec(s, s.getRecipeOutput(), s.mcc$args);
         } else if (recipe instanceof ShapelessOreRecipe s) {
-            if (s.getRecipeOutput() != null) RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
+            if (s.getRecipeOutput() != null && java.util.Arrays.stream(s.mcc$args).noneMatch(java.util.Objects::isNull)) {
+                RECIPES.add(new Shapeless(owner(), s, s.getRecipeOutput().copy(), new ArrayList<>(List.of(s.mcc$args))));
+            }
         } else if (recipe instanceof ShapedRecipes s) {
             List<String> pattern = new ArrayList<>();
             Map<Character, Object> key = new LinkedHashMap<>();

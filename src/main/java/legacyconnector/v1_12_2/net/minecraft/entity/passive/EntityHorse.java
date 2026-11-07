@@ -73,6 +73,13 @@ public class EntityHorse extends AbstractHorse {
         if (mcc$hosted() || mcc$self() == null) setHorseVariant(tag.getInteger("Variant"));
     }
 
+    /** Puts a stack in the armor slot (the horse's second inventory slot); a vanilla horse wears it as its body armor. */
+    public void setHorseArmorStack(legacyconnector.v1_12_2.net.minecraft.item.ItemStack itemStackIn) {
+        if (horseChest != null && horseChest.getSizeInventory() > 1) horseChest.setInventorySlotContents(1, itemStackIn);
+        var h = mcc$self();
+        if (h != null && !mcc$hosted()) h.setBodyArmorItem(org.kylepitcock.legacyconnector.v1_12_2.bridge.Stacks1122.toModern(itemStackIn));
+    }
+
     @Override
     protected SoundEvent getAmbientSound() {
         return legacy(SoundEvents.HORSE_AMBIENT);

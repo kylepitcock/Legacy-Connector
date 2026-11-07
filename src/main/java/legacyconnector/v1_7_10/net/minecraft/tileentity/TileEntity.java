@@ -31,6 +31,11 @@ public class TileEntity {
     private static java.util.Map<String, Class<?>> nameToClassMap = new java.util.HashMap<>();
     private static java.util.Map<Class<?>, String> classToNameMap = new java.util.HashMap<>();
 
+    static {
+        // a spawner a mod's own block hosts (Aether's dungeon spawners) saves under the vanilla id
+        addMapping(TileEntityMobSpawner.class, "MobSpawner");
+    }
+
     public static void addMapping(Class<?> cls, String id) {
         if (nameToClassMap.containsKey(id) && nameToClassMap.get(id) != cls) {
             org.slf4j.LoggerFactory.getLogger("LegacyConnector/TileEntities").warn("Duplicate tile entity id {} ({} and {})", id, nameToClassMap.get(id).getName(), cls.getName());

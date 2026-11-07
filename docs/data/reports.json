@@ -407,6 +407,30 @@
    "link": "",
    "date": "2026-11-06",
    "open": true
+  },
+  {
+   "issue": 166,
+   "mod": "astralsorcery-1.12.2-1.10.27",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "-most of the items loads properly but any of the custom models and some of the tools are missing their textures -the telescope feature is broken",
+   "lc": "0.3.10",
+   "neoforge": "21.1.265",
+   "link": "https://www.curseforge.com/minecraft/mc-mods/astral-sorcery/files/3044416",
+   "date": "2026-11-06",
+   "open": true
+  },
+  {
+   "issue": 167,
+   "mod": "aether-1.7.10-1.6.jar",
+   "mc": "1.7.10",
+   "status": "partial",
+   "details": "Monster spawners dont have a mob in them Some missing textures <img width=\"3440\" height=\"1369\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/1bcc43f3-5536-4531-82fc-90ee08647ef3\" /> MainMenu renders incorrectly <img width=\"856\" height=\"512\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/c701c96c-62db-4bbd-abb8-bfc90d594ae2\" /> Aether portal cant be created with bucket o…",
+   "lc": "legacyconnector-0.3.22",
+   "neoforge": "21.1.265",
+   "link": "",
+   "date": "2026-11-06",
+   "open": true
   }
  ]
 }

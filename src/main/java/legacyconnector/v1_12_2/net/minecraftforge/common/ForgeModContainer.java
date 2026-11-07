@@ -20,6 +20,8 @@ public class ForgeModContainer extends legacyconnector.v1_12_2.net.minecraftforg
     public static boolean disableVersionCheck = true;
     public static boolean logCascadingWorldGeneration = true;
     public static boolean zoomInMissingModelTextInGui = false;
+    /** Forge config: whether items may render at full brightness through their model's emissive quads. */
+    public static boolean allowEmissiveItems = true;
 
     /** The grass/foliage colour blend radii the video settings offered. */
     public static int[] blendRanges = {2, 4, 6, 8, 10, 12, 14};

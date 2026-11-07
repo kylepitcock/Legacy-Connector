@@ -119,7 +119,8 @@ public class Block {
         this.blockParticleGravity = 1.0F;
         this.slipperiness = 0.6F;
         this.unlocalizedName = org.kylepitcock.legacyconnector.v1_7_10.bridge.VanillaNames.unlocalized(true, info.legacyName());
-        this.textureName = info.legacyName();
+        // 1.7.10 named a few textures differently from the block (the brick block's is "brick"); mods read the field reflectively.
+        this.textureName = "brick_block".equals(info.legacyName()) || "minecraft:brick_block".equals(info.legacyName()) ? "brick" : info.legacyName();
         BlockBridge.initVanilla(this, info);
         this.setBlockBounds(0.0F, 0.0F, 0.0F, 1.0F, 1.0F, 1.0F);
         this.opaque = this.isOpaqueCube();
@@ -425,7 +426,46 @@ public class Block {
     }
 
     public TileEntity createTileEntity(World world, int metadata) {
-        return this instanceof ITileEntityProvider provider ? provider.createNewTileEntity(world, metadata) : null;
+        if (!(this instanceof ITileEntityProvider provider)) return null;
+        try {
+            return provider.createNewTileEntity(world, metadata);
+        } catch (AbstractMethodError e) {
+            // a 1.6.4 provider implements createNewTileEntity(World), which has no meta argument
+            TileEntity legacy = mcc$createNewTileEntity1(this, world);
+            if (legacy == null) throw e;
+            return legacy;
+        }
+    }
+
+    private static final ClassValue<java.lang.reflect.Method> CREATE_NEW_TILE_ENTITY_1 = new ClassValue<>() {
+        @Override
+        protected java.lang.reflect.Method computeValue(Class<?> type) {
+            for (Class<?> c = type; c != null && c != Object.class; c = c.getSuperclass()) {
+                try {
+                    java.lang.reflect.Method m = c.getDeclaredMethod("createNewTileEntity", World.class);
+                    m.setAccessible(true);
+                    return m;
+                } catch (ReflectiveOperationException | RuntimeException e) {
+                    // next superclass
+                }
+            }
+            return null;
+        }
+    };
+
+    /** The 1.6.4 {@code createNewTileEntity(World)} of a block that declares it, or null when it has none (or returns none). */
+    public static TileEntity mcc$createNewTileEntity1(Block block, World world) {
+        java.lang.reflect.Method m = CREATE_NEW_TILE_ENTITY_1.get(block.getClass());
+        if (m == null) return null;
+        try {
+            return (TileEntity) m.invoke(block, world);
+        } catch (java.lang.reflect.InvocationTargetException e) {
+            if (e.getCause() instanceof RuntimeException r) throw r;
+            if (e.getCause() instanceof Error r) throw r;
+            throw new IllegalStateException(e.getCause());
+        } catch (IllegalAccessException e) {
+            throw new IllegalStateException(e);
+        }
     }
 
     public int getRenderType() {

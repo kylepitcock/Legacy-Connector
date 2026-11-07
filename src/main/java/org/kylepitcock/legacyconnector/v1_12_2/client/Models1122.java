@@ -57,6 +57,7 @@ public final class Models1122 {
         return MODERN.computeIfAbsent(legacy, ModernView::new);
     }
 
+    private static final ThreadLocal<java.util.Set<Object>> BLOCK_ONLY_ACTIVE = ThreadLocal.withInitial(java.util.HashSet::new);
     private static final Map<IBakedModel, IBakedModel> BLOCK_ONLY = Collections.synchronizedMap(new WeakHashMap<>());
 
     /**
@@ -75,7 +76,15 @@ public final class Models1122 {
     private record BlockOnlyView(IBakedModel model) implements IBakedModel {
         @Override
         public List<BakedQuad> getQuads(IBlockState state, EnumFacing side, long rand) {
-            return model.getQuads(state, side, rand);
+            // asked again for its own quads while it is collecting them (EnderIO's QuadCollector gathers the "friendly" states' models, which are
+            // all this one model here): the nested ask draws nothing instead of recursing until the stack is gone
+            var active = BLOCK_ONLY_ACTIVE.get();
+            if (!active.add(this)) return List.of();
+            try {
+                return model.getQuads(state, side, rand);
+            } finally {
+                active.remove(this);
+            }
         }
 
         @Override
@@ -130,6 +139,56 @@ public final class Models1122 {
         return legacy(manager.getMissingModel());
     }
 
+    /** Whether a baked model is a copy of the missing model (a cube of missing-texture faces, baked for a location whose json failed to load). */
+    static boolean looksMissing(BakedModel model, BakedModel missing) {
+        if (model == missing) return true;
+        if (model instanceof ModernView || !(model instanceof net.minecraft.client.resources.model.SimpleBakedModel)) return false;
+        try {
+            var sprite = missing.getParticleIcon();
+            if (model.getParticleIcon() != sprite) return false;
+            var random = RandomSource.create(0);
+            int mine = 0;
+            int theirs = 0;
+            for (var side : new net.minecraft.core.Direction[] {null, net.minecraft.core.Direction.DOWN, net.minecraft.core.Direction.UP, net.minecraft.core.Direction.NORTH,
+                    net.minecraft.core.Direction.SOUTH, net.minecraft.core.Direction.WEST, net.minecraft.core.Direction.EAST}) {
+                for (var q : model.getQuads(null, side, random)) {
+                    if (q.getSprite() != sprite) return false;
+                    mine++;
+                }
+                theirs += missing.getQuads(null, side, random).size();
+            }
+            return mine == theirs;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /**
+     * The modern state locations of a block variant name given by a state mapper registered after the location map was built (Extra Utilities 2
+     * registers its mappers inside ModelBakeEvent): the block's current mapper is run again, for that block only.
+     */
+    private static List<net.minecraft.client.resources.model.ModelResourceLocation> viaCurrentMapper(ModelResourceLocation location) {
+        String variant = location.getVariant();
+        if (variant.equals("inventory")) return null;
+        try {
+            var block = Registries1122.BLOCKS.getValue(new legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation(location.getNamespace(), location.getPath()));
+            if (block == null || !(block.mcc$modern instanceof Legacy1122Block modern)) return null;
+            var mapper = legacyconnector.v1_12_2.net.minecraftforge.client.model.ModelLoader.mcc$stateMapper(block);
+            if (mapper == null) return null;
+            List<net.minecraft.client.resources.model.ModelResourceLocation> found = new ArrayList<>();
+            for (var e : mapper.putStateModelLocations(block).entrySet()) {
+                var mrl = e.getValue();
+                if (!mrl.getNamespace().equals(location.getNamespace()) || !mrl.getPath().equals(location.getPath()) || !mrl.getVariant().equals(variant)) continue;
+                BlockState state = modern.defaultBlockState().setValue(Legacy1122Block.META, block.getMetaFromState(e.getKey()) & 15);
+                var target = BlockModelShaper.stateToModelLocation(state);
+                if (!found.contains(target)) found.add(target);
+            }
+            return found.isEmpty() ? null : found;
+        } catch (RuntimeException | LinkageError e) {
+            return null;
+        }
+    }
+
     /** Forgets the location map (models were reloaded; registrations may have changed). */
     public static void invalidate() {
         locations = null;
@@ -143,6 +202,8 @@ public final class Models1122 {
         if (found != null) return found;
         var id = location.mcc$modern();
         String variant = location.getVariant();
+        List<net.minecraft.client.resources.model.ModelResourceLocation> viaMapper = viaCurrentMapper(location);
+        if (viaMapper != null) return viaMapper;
         return List.of(new net.minecraft.client.resources.model.ModelResourceLocation(id, variant.equals("normal") ? "" : variant));
     }
 
@@ -360,12 +421,49 @@ public final class Models1122 {
                 List<net.minecraft.client.renderer.block.model.BakedQuad> out = new ArrayList<>(quads.size());
                 for (BakedQuad q : quads) if (q != null) out.add(Quads1122.toModern(q));
                 return out;
-            } catch (RuntimeException | LinkageError e) {
-                RenderErrors1122.report("asking a legacy model " + legacy.getClass().getName() + " for quads", e);
+            } catch (RuntimeException | LinkageError | StackOverflowError e) {
+                // a model that relays to "its" model of another state (EnderIO's RelayingBakedModel: its render= states are one meta state here) can
+                // ask itself forever; that must cost the block its drawing, not the client
+                RenderErrors1122.report("asking a legacy model " + legacy.getClass().getName() + " for quads", e instanceof StackOverflowError so ? new RuntimeException(so.toString()) : e);
                 return List.of();
             } finally {
                 legacyconnector.v1_12_2.net.minecraftforge.client.ForgeHooksClient.setRenderLayer(previous);
             }
+        }
+
+        /**
+         * 1.12 drew a block in every terrain layer its {@code canRenderInLayer} accepted, asking the model for that layer's quads (a CodeChickenLib
+         * bakery model bakes cutout quads only). The modern default takes the layer from the model's own json, which a model a mod made in code lacks.
+         */
+        @Override
+        public net.neoforged.neoforge.client.ChunkRenderTypeSet getRenderTypes(BlockState state, RandomSource rand,
+                net.neoforged.neoforge.client.model.data.ModelData data) {
+            if (state != null && state.getBlock() instanceof Legacy1122Block) {
+                try {
+                    IBlockState given = data == null ? null : data.get(LEGACY_STATE);
+                    IBlockState legacyState = given != null ? given : StatesBridge1122.toLegacy(state);
+                    if (legacyState != null) {
+                        List<net.minecraft.client.renderer.RenderType> types = new ArrayList<>(4);
+                        var block = legacyState.getBlock();
+                        for (var layer : legacyconnector.v1_12_2.net.minecraft.util.BlockRenderLayer.values()) {
+                            if (!block.canRenderInLayer(legacyState, layer)) continue;
+                            types.add(switch (layer) {
+                                case SOLID -> net.minecraft.client.renderer.RenderType.solid();
+                                case CUTOUT_MIPPED -> net.minecraft.client.renderer.RenderType.cutoutMipped();
+                                case CUTOUT -> net.minecraft.client.renderer.RenderType.cutout();
+                                case TRANSLUCENT -> net.minecraft.client.renderer.RenderType.translucent();
+                            });
+                        }
+                        // only the solid layer (the default): the render type the block's own model json gave stays
+                        if (!types.isEmpty() && !(types.size() == 1 && types.get(0) == net.minecraft.client.renderer.RenderType.solid())) {
+                            return net.neoforged.neoforge.client.ChunkRenderTypeSet.of(types.toArray(new net.minecraft.client.renderer.RenderType[0]));
+                        }
+                    }
+                } catch (RuntimeException | LinkageError e) {
+                    // a layer check that needs a world: the default layers
+                }
+            }
+            return BakedModel.super.getRenderTypes(state, rand, data);
         }
 
         @Override

@@ -59,6 +59,8 @@ public class RenderManager {
         this.playerRenderer = new RenderPlayer(this);
         skinMap.put("default", playerRenderer);
         skinMap.put("slim", new RenderPlayer(this, true));
+        // vanilla's own renderer of dropped items: mods wrap it (CodeChickenLib replaces the entry with its item entity renderer)
+        entityRenderMap.put(legacyconnector.v1_12_2.net.minecraft.entity.item.EntityItem.class, new RenderEntityItem(this, itemRendererIn));
     }
 
     /** The game's manager ({@code Minecraft.getRenderManager()}). */

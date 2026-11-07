@@ -26,7 +26,8 @@ public final class VanillaModelIcons {
         String cached = CACHE.get(key);
         if (cached != null) return cached.isEmpty() ? null : cached;
         var models = Minecraft.getInstance().getModelManager();
-        var model = models.getBlockModelShaper().getBlockModel(state);
+        // The model manager does not exist yet while mods stitch their icons (Twilight Forest's plants and giant blocks ask then).
+        var model = models == null ? null : models.getBlockModelShaper().getBlockModel(state);
         if (model == null || model == models.getMissingModel()) {
             // not baked yet (legacy block models are generated before the first bake): read the vanilla blockstate and model files.
             // Witchery's trapped plants show Blocks.red_flower.getIcon(0, 0), the poppy. Not cached: the baked model answers later.

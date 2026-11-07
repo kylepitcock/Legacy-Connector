@@ -24,7 +24,13 @@ public class ModelManager {
     }
 
     public IBakedModel getMissingModel() {
-        return Models1122.legacy(net.minecraft.client.Minecraft.getInstance().getModelManager().getMissingModel());
+        var missing = net.minecraft.client.Minecraft.getInstance().getModelManager().getMissingModel();
+        if (missing == null) {
+            // during the first bake (ModelBakeEvent) the manager has none yet: the one being baked stands in (Extra Utilities 2 compares models with it)
+            var baking = org.kylepitcock.legacyconnector.v1_12_2.client.CustomModels1122.baking();
+            if (baking != null) missing = baking.get(net.minecraft.client.resources.model.ModelBakery.MISSING_MODEL_VARIANT);
+        }
+        return Models1122.legacy(missing);
     }
 
     public TextureMap getTextureMap() {

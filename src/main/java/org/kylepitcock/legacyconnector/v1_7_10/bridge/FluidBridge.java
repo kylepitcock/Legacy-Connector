@@ -343,7 +343,7 @@ public final class FluidBridge {
         LegacyFluidType(String name, legacyconnector.v1_7_10.net.minecraftforge.fluids.Fluid legacy) {
             super(FluidType.Properties.create().descriptionId("fluid." + name.replace(':', '.'))
                     .density(legacy.getDensity()).temperature(legacy.getTemperature()).viscosity(legacy.getViscosity())
-                    .lightLevel(legacy.getLuminosity()).canSwim(false).canDrown(false).supportsBoating(false));
+                    .lightLevel(Math.max(0, Math.min(15, legacy.getLuminosity()))).canSwim(false).canDrown(false).supportsBoating(false));
             this.name = name;
         }
 

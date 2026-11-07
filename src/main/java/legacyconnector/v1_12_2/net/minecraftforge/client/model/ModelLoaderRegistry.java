@@ -57,10 +57,14 @@ public class ModelLoaderRegistry {
     public static IModel getModel(ResourceLocation location) throws Exception {
         IModel cached = CACHE.get(location);
         if (cached != null) return cached;
-        ICustomModelLoader loader = mcc$loaderFor(location);
+        // Forge showed custom loaders the actual location of a plain model name: the json under models/ (Tinkers' Construct reads item/parts/x.tmat
+        // as models/item/parts/x.tmat.json)
+        ResourceLocation actual = location instanceof ModelResourceLocation || location.getPath().startsWith("models/") || location.getPath().startsWith("builtin/")
+                ? location : new ResourceLocation(location.getNamespace(), "models/" + location.getPath());
+        ICustomModelLoader loader = mcc$loaderFor(actual);
         IModel model;
         if (loader != null) {
-            model = loader.loadModel(location);
+            model = loader.loadModel(actual);
             if (model == null) throw new LoaderException("Loader " + loader + " returned null for " + location);
         } else {
             if (!(location instanceof ModelResourceLocation)) REQUESTED.add(location);
@@ -163,6 +167,46 @@ public class ModelLoaderRegistry {
 
         GameModel(ResourceLocation location) {
             this.location = location;
+        }
+
+        /**
+         * The textures a json model names (its own, then its parents', as Forge's wrapper of a vanilla model lists them; "#name" references to
+         * other textures are not textures): mods take the first of a model's textures (Tinkers' Construct reads a pattern's base texture).
+         */
+        @Override
+        public java.util.Collection<ResourceLocation> getTextures() {
+            if (location == null || location instanceof ModelResourceLocation) return com.google.common.collect.ImmutableList.of();
+            java.util.Set<ResourceLocation> out = new java.util.LinkedHashSet<>();
+            String path = location.getPath();
+            readTextures(location.getNamespace(), path.startsWith("models/") ? path : "models/" + path, out, 0);
+            return com.google.common.collect.ImmutableList.copyOf(out);
+        }
+
+        private static void readTextures(String namespace, String path, java.util.Set<ResourceLocation> out, int depth) {
+            if (depth > 12) return;
+            try {
+                var resource = legacyconnector.v1_12_2.net.minecraft.client.Minecraft.getMinecraft().getResourceManager()
+                        .getResource(new ResourceLocation(namespace, path.endsWith(".json") ? path : path + ".json"));
+                try (java.io.Reader reader = new java.io.InputStreamReader(resource.getInputStream(), java.nio.charset.StandardCharsets.UTF_8)) {
+                    var json = com.google.gson.JsonParser.parseReader(reader).getAsJsonObject();
+                    if (json.has("textures") && json.get("textures").isJsonObject()) {
+                        for (var e : json.getAsJsonObject("textures").entrySet()) {
+                            if (!e.getValue().isJsonPrimitive()) continue;
+                            String texture = e.getValue().getAsString();
+                            if (!texture.startsWith("#")) out.add(new ResourceLocation(texture));
+                        }
+                    }
+                    if (json.has("parent") && json.get("parent").isJsonPrimitive()) {
+                        String parent = json.get("parent").getAsString();
+                        if (!parent.startsWith("builtin/")) {
+                            ResourceLocation p = new ResourceLocation(parent);
+                            readTextures(p.getNamespace(), p.getPath().startsWith("models/") ? p.getPath() : "models/" + p.getPath(), out, depth + 1);
+                        }
+                    }
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                // a missing or unreadable model has no textures
+            }
         }
 
         @Override

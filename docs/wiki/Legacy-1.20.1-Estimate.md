@@ -39,7 +39,7 @@ type and format changes** (MC 1.20.2, 1.20.3, 1.20.5/1.20.6 and 1.21 each broke 
 
 - 1.20.1 Forge jars are **SRG-named at runtime** (`m_46859_`, `f_46441_`, class names are Mojang names). NeoForge 1.21.1 runs with
   **Mojang names**. Step 1 is SRG to Mojang for 1.20.1: tables come from the 1.20.1 MCPConfig/Forge `joined.tsrg` plus Mojang's mapping file. This is
-  the same shape as `McpMappings` (SRG id to name table, id unique, no owner context), so about 1 week to adapt.
+  the same shape as `McpMappings` (SRG id to name table, id unique, no owner context), so about a day to adapt.
 - Step 2 is the 1.20.1 Mojang name to the 1.21.1 Mojang name for everything Mojang moved or renamed (e.g. `net.minecraft.world.Container`
   users to `RecipeInput`, `ItemStack.getTag` to components, `ResourceLocation` constructors, `RenderSystem`/`BufferBuilder` calls). There is no
   ready table. Build one by diffing the two official mapping files (matching through the obfuscated names is unreliable across versions;
@@ -59,7 +59,7 @@ type and format changes** (MC 1.20.2, 1.20.3, 1.20.5/1.20.6 and 1.21 each broke 
 | Block entities | `load`/`saveAdditional` gain `HolderLookup.Provider`; `getUpdateTag`, `getUpdatePacket` same; `onDataPacket` | Via bridge methods | Bridge-method generator (above) |
 | Interactions | `Block.use` split into `useItemOn`/`useWithoutItem` (1.20.5); `InteractionResult`, `ItemInteractionResult` | Via bridge methods | Bridge dispatch |
 | Capabilities | `LazyOptional`, `ICapabilityProvider`, `getCapability(Capability, Direction)` to `BlockCapability`/`ItemCapability` registered with `RegisterCapabilitiesEvent`; item capabilities attach to item types, not stacks | No | Adapter: `LazyOptional` facade plus a registration shim that reads the mod's `getCapability` overrides. The repo already exposes legacy containers as capabilities (`CapabilityRules`, `BuiltinAdapters`), the same machinery in the other direction |
-| Networking | `SimpleChannel`/`NetworkRegistry`/`FriendlyByteBuf` messages to `CustomPacketPayload` + `StreamCodec` + `RegisterPayloadHandlersEvent` | No, but contained | `SimpleChannel` facade that registers one generic payload per message class and keeps the mod's encode/decode lambdas. 3 to 4 weeks is typical for such a facade |
+| Networking | `SimpleChannel`/`NetworkRegistry`/`FriendlyByteBuf` messages to `CustomPacketPayload` + `StreamCodec` + `RegisterPayloadHandlersEvent` | No, but contained | `SimpleChannel` facade that registers one generic payload per message class and keeps the mod's encode/decode lambdas. about a day of work at this project's pace for such a facade |
 | Recipes | `Container` to `RecipeInput`; `Recipe`/`RecipeSerializer` use `MapCodec` + `StreamCodec`; `assemble(Container, RegistryAccess)` to `assemble(RecipeInput, Provider)`; custom serializers need codecs | Partly | Bridge methods plus a codec derived from the mod's `fromJson`/`toNetwork`. JSON: result `item` to `id`, `count` stays, ingredient `{"item":..}` unchanged, `nbt` to `components`; **folders become singular** (`recipes` to `recipe`, `loot_tables` to `loot_table`, `advancements` to `advancement`, `structures` to `structure`, `tags/blocks` to `tags/block`) |
 | Loot | `LootContext`/`LootParams` renamed; functions `set_nbt`, `enchant_with_levels` and enchantments are **data-driven** since 1.21 (no `Enchantments.*` constants, enchantments are `Holder` from registry); Global Loot Modifier codec changes | Partly | Enchantment lookup helper; loot JSON rewriter |
 | Damage, enchantments, worldgen | Damage types data-driven since 1.19.4 (already in 1.20.1); enchantments new in 1.21; noise settings, density functions, structure sets changed formats | Data rewrite | JSON converters per type |
@@ -89,8 +89,8 @@ Minecraft classes. So:
 
 | Option | Description | Effort | Verdict |
 |---|---|---|---|
-| A. Hand-written shim like 1.7.10/1.12.2 | Copy 1.20.1 API under a relocated package and re-implement it over 1.21.1 | 80+ engineer-weeks, thousands of classes | Reject: duplicates classes that exist in both versions |
-| B. **Bytecode migration + thin adapters** | Remap SRG to Mojang 1.20.1, apply a 1.20.1 to 1.21.1 member/class migration table, generate bridge methods for changed overrides, redirect removed APIs to static helper classes, convert resources, translate Forge to NeoForge | 30 to 45 engineer-weeks to broad coverage; first mods in about 8 | Recommended |
+| A. Hand-written shim like 1.7.10/1.12.2 | Copy 1.20.1 API under a relocated package and re-implement it over 1.21.1 | the largest option (roughly the 1.12.2 effort again: 169k lines), thousands of classes | Reject: duplicates classes that exist in both versions |
+| B. **Bytecode migration + thin adapters** | Remap SRG to Mojang 1.20.1, apply a 1.20.1 to 1.21.1 member/class migration table, generate bridge methods for changed overrides, redirect removed APIs to static helper classes, convert resources, translate Forge to NeoForge | about 25 to 30 agent-days to broad coverage (2 to 4 weeks wall-clock); first mods load within 3 to 5 days | Recommended |
 | C. Synth only | Like B but resolve every miss with generated defaults | Cheap, loads mods, content silently broken | Use as the residue fallback only |
 | D. Wait for ports | Most popular 1.20.1 mods already have 1.21.1 NeoForge ports | 0 | Real alternative: value is limited to abandoned mods; the project rule that mods with 1.21.1 versions get low priority applies strongly here |
 
@@ -114,31 +114,36 @@ content mods, many Forge-only packs). Pick the corpus before committing.
 New: a version-diff table builder (mapping diff), bridge-method generator, `ItemStack` NBT to components layer, `SimpleChannel` facade, event
 renames, JSON format rewriter, per-library adapters, mixin/AT retargeting.
 
-## 5. Effort per component (engineer-weeks, one engineer who knows the repo)
+## 5. Effort per component (agent-days of wall-clock work, several agents in parallel)
 
-| Component | Weeks |
+Rewritten 2026-11-06. The first version of this table was in engineer-weeks (about 60 weeks in total), a conventional estimate that ignored how this
+project has actually moved: the first commit is 2026-10-10 and by 2026-11-06 the repository holds the 1.7.10 shim (112k lines), the 1.12.2 shim
+(169k lines) and the 1.20.1 groundwork. The numbers below keep the old table's relative sizes, converted at that measured pace (roughly one agent-day of
+parallel work per old engineer-week for the mechanical parts, less where tooling already exists).
+
+| Component | Days |
 |---|---|
-| Version plumbing, corpus collection, gap-report tool (link check against 1.21.1) | 2 |
-| SRG to Mojang 1.20.1 table and remapper mode (no relocation) | 1 |
-| 1.20.1 to 1.21.1 mapping/migration table (diff tooling + manual fix list) | 4 |
-| Forge to NeoForge package map, `@Mod` constructor/lifecycle, config, metadata | 2 |
-| Bridge-method generator for changed overrides (block entity, interaction, recipe, entity data) | 3 |
-| Registry/DeferredRegister/RegistryObject facade, `ResourceLocation`, `ForgeRegistries` | 2 |
-| `ItemStack` NBT to data components layer, item properties/tiers/armor/food | 5 |
-| Capabilities facade (`LazyOptional`, attach/provide), item capabilities | 3 |
-| Networking facade (`SimpleChannel`) | 3 |
-| Events (renames, moved fields, 40+ events) | 3 |
-| Recipes and recipe serializers, JSON converters (recipes, loot, advancements, tags, folder renames) | 4 |
-| Loot, enchantments, damage sources | 2 |
-| Rendering and client (vertex builder calls, model APIs, screens, client extensions) | 5 |
-| Mixin refmap/AT retargeting, mixin target failures triage | 3 |
-| Worldgen data formats and features | 2 |
-| Library adapters (Curios, GeckoLib, Patchouli, JEI, Cloth Config, Architectury; Create not feasible) | 4 |
-| Testing, bug triage, corpus runs, compat site data (ongoing, 25% of the above) | 12 |
-| **Total to broad coverage** | **about 60** (35 without the continuous testing share) |
-| Fabric 1.20.1 via Connector (reading b) | +10 to 15 |
+| Version plumbing, corpus collection, gap-report tool (link check against 1.21.1) | 0.5 to 1 |
+| SRG to Mojang 1.20.1 table and remapper mode (no relocation) | 0.5 |
+| 1.20.1 to 1.21.1 mapping/migration table (diff tooling + manual fix list) | 2 to 3 |
+| Forge to NeoForge package map, `@Mod` constructor/lifecycle, config, metadata | 1 |
+| Bridge-method generator for changed overrides (block entity, interaction, recipe, entity data) | 1.5 |
+| Registry/DeferredRegister/RegistryObject facade, `ResourceLocation`, `ForgeRegistries` | 1 |
+| `ItemStack` NBT to data components layer, item properties/tiers/armor/food | 2 to 3 |
+| Capabilities facade (`LazyOptional`, attach/provide), item capabilities | 1 to 1.5 |
+| Networking facade (`SimpleChannel`) | 1 |
+| Events (renames, moved fields, 40+ events) | 1 to 1.5 |
+| Recipes and recipe serializers, JSON converters (recipes, loot, advancements, tags, folder renames) | 1.5 to 2 |
+| Loot, enchantments, damage sources | 1 |
+| Rendering and client (vertex builder calls, model APIs, screens, client extensions) | 2 to 3 |
+| Mixin refmap/AT retargeting, mixin target failures triage | 1.5 |
+| Worldgen data formats and features | 1 |
+| Library adapters (Curios, GeckoLib, Patchouli, JEI, Cloth Config, Architectury; Create not feasible) | 2 |
+| Testing, bug triage, corpus runs, compat site data (ongoing, 25% of the above) | 5 |
+| **Total to broad coverage** | **about 25 to 30 agent-days, i.e. roughly 1 to 2 weeks of wall-clock time with about five agents in parallel** |
+| Fabric 1.20.1 via Connector (reading b) | +4 to 6 |
 
-These are rough, plus or minus 40%. Compare: 1.12.2 server-side alone is the output of many months of agent plus maintainer work.
+Still plus or minus 40%, and the long tail after "broad coverage" is open-ended (it is the issue list, as for every version).
 
 ## 6. Biggest risks
 
@@ -155,21 +160,21 @@ These are rough, plus or minus 40%. Compare: 1.12.2 server-side alone is the out
 6. **Rendering.** Custom `RenderType`/shader/vertex code (GeckoLib-free mods that draw by hand) breaks in many small ways with no compile-time guide.
 7. **Sinytra reading (b).** Depends on a third-party transformer whose internals shift between releases.
 
-## 7. Milestones
+## 7. Milestones (wall-clock, corrected 2026-11-06)
 
-| # | Milestone | Done when | Effort |
-|---|---|---|---|
-| 0 | Corpus and gap report | 30 to 50 real 1.20.1 jars in `test-mods4/`; `checkLegacyMod` reports missing symbols vs 1.21.1 per jar; ranked list of the most-missing APIs, mixin counts per mod; decide go/no-go | 2 to 3 weeks |
-| 1 | First mod loads | A simple content mod (blocks, items, one block entity, DeferredRegister, no mixins) is translated, loads on a server, registers its content | about 8 weeks cumulative |
-| 2 | Content registered across the corpus | 60% of the corpus loads without errors; items, blocks, recipes, loot, tags, assets resolve; server self-test prints registration counts like the 1.12.2 one | about 20 weeks |
-| 3 | Gameplay | Block entities, menus, networking, capabilities and entities work in a survival session; client renders blocks/items/tile entities; the three most-used library adapters in | about 35 weeks |
-| 4 | Breadth | NBT/component edge cases, worldgen, mixin triage, compat site entries | 50 to 60 weeks |
-| 5 | Fabric 1.20.1 through Connector | Optional | +10 to 15 weeks |
+| # | Milestone | Wall-clock |
+|---|---|---|
+| 0 | Corpus and gap report | about 1 day |
+| 1 | First mod loads on a server | 1 to 2 days |
+| 2 | Content registered across the corpus (60%) | 3 to 4 days |
+| 3 | Gameplay: block entities, menus, networking, capabilities, client rendering, main library adapters | about 1 week |
+| 4 | Breadth: NBT/component edge cases, worldgen, mixin triage | 1 to 2 weeks |
+| 5 | Fabric 1.20.1 through Sinytra Connector (reuse it at runtime, do not port it: MIT licensed, about 9 to 10k lines; our part is the 1.20.1 to 1.21.1 migration of the jar) | +3 to 5 days |
 
 ## 8. Recommendation
 
 1. Do milestone 0 before committing anything: collect jars and run the link check to turn this estimate into measured numbers. It reuses existing
-   tooling and takes about 2 weeks.
+   tooling and takes about a day.
 2. If the abandoned-mod set is meaningful, take **option B** (bytecode migration + thin adapters), never a hand-written shim. Start with the
    data-heavy, API-light mods (content packs, simple tech/magic mods), which pass milestone 2 early.
 3. Keep the existing order of the roadmap but treat 1.20.1 as a separate pipeline sharing only the loader plumbing; 1.7.10/1.12.2 work and the

@@ -35,6 +35,12 @@ public class RenderGlobal implements legacyconnector.v1_12_2.net.minecraft.clien
     public final List<Object> renderInfos = new java.util.ArrayList<>();
     public final Map<BlockPos, Object> mapSoundPositions = new java.util.HashMap<>();
 
+    /** Whether glowing entities are drawn with an outline this frame (the modern level renderer's own outline pass). */
+    public boolean isRenderEntityOutlines() {
+        var renderer = net.minecraft.client.Minecraft.getInstance().levelRenderer;
+        return renderer != null && renderer.shouldShowEntityOutlines();
+    }
+
     public RenderGlobal(Minecraft mcIn) {
         this.mc = mcIn;
     }

@@ -112,10 +112,48 @@ public class LootTable {
         if (isFrozen()) throw new RuntimeException("Attempted to modify LootTable after being finalized!");
     }
 
+    /**
+     * 1.12 vanilla tables name their pools "main" (or "pool1", "pool2"...); 1.21 tables have unnamed pools, so mods adding entries to
+     * {@code getPool("main")} got null. Those legacy names answer the first (or numbered) pool of the modern table.
+     */
+    private net.minecraft.world.level.storage.loot.LootPool mcc$legacyNamedPool(String name) {
+        if (name == null) return null;
+        int index;
+        if (name.equals("main")) index = 0;
+        else if (name.matches("pool[0-9]+")) index = Integer.parseInt(name.substring(4)) - 1;
+        else return null;
+        try {
+            java.lang.reflect.Field f = net.minecraft.world.level.storage.loot.LootTable.class.getDeclaredField("pools");
+            f.setAccessible(true);
+            java.util.List<?> list = (java.util.List<?>) f.get(mcc$modern);
+            return index >= 0 && index < list.size() ? (net.minecraft.world.level.storage.loot.LootPool) list.get(index) : null;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
+    }
+
     public LootPool getPool(String name) {
-        if (mcc$modern != null) return LootPool.mcc$view(mcc$modern.getPool(name));
+        if (mcc$modern != null) {
+            var found = mcc$modern.getPool(name);
+            return LootPool.mcc$view(found != null ? found : mcc$legacyNamedPool(name));
+        }
         for (LootPool p : pools) if (name != null && name.equals(p.getName())) return p;
         return null;
+    }
+
+    /**
+     * 1.12's vanilla tables name their (first) pool "main"; 1.21 tables have unnamed pools, so mods adding to "main" get the first one.
+     */
+    @SuppressWarnings("unchecked")
+    private static net.minecraft.world.level.storage.loot.LootPool firstPool(net.minecraft.world.level.storage.loot.LootTable table) {
+        try {
+            var f = net.minecraft.world.level.storage.loot.LootTable.class.getDeclaredField("pools");
+            f.setAccessible(true);
+            var list = (List<net.minecraft.world.level.storage.loot.LootPool>) f.get(table);
+            return list.isEmpty() ? null : list.get(0);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return null;
+        }
     }
 
     public LootPool removePool(String name) {

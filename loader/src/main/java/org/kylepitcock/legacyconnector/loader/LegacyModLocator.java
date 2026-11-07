@@ -119,13 +119,11 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             // CodeChickenLib); a jar present in both places is taken from mods/. These folders are also where jars that ship
             // launcher services (a shaded Mixin, as many 1.12.2 mods have) must go: NeoForge's early scan of mods/ itself
             // loads such jars as launcher services before anything can translate them, and the game stops.
-            // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods, which were distributed as zips as often as jars
-            for (Path dir : List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve(BetaJars.FOLDER))) {
+            // mods/b1.7.3/: Beta 1.7.3 ModLoader/Forge mods (BetaJars)
+            for (Path dir : List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"), modsDir.resolve(BetaJars.FOLDER))) {
                 if (!Files.isDirectory(dir)) continue;
-                boolean zips = dir.getFileName().toString().equals(BetaJars.FOLDER);
                 try (Stream<Path> files = Files.list(dir)) {
-                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar")
-                                    || zips && f.getFileName().toString().toLowerCase().endsWith(".zip"))
+                    for (Path p : files.filter(f -> f.getFileName().toString().toLowerCase().endsWith(".jar") || f.getFileName().toString().toLowerCase().endsWith(".zip")) // FML also loaded mods packed as .zip
                             .sorted(Comparator.comparing(f -> f.getFileName().toString().toLowerCase())).toList()) {
                         if (context.isLocated(p) || !seenNames.add(p.getFileName().toString().toLowerCase())) continue;
                         try {
@@ -173,7 +171,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             LIBRARY_SKIPS.clear();
             BundledLibraries.Result libraries = BundledLibraries.provide(pipeline, cacheDir,
                     legacy.stream().filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null).toList(),
-                    List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")), LOADER_DIGEST, libraryKeep);
+                    List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")), LOADER_DIGEST, libraryKeep);
             LIBRARY_SKIPS.putAll(libraries.unsupported());
             // b1.7.3 mods released as a client and a server build: the build for this side loads
             LIBRARY_SKIPS.putAll(BetaJars.selectBuilds(legacy, side()));
@@ -215,7 +213,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
                     return coremods.get().apply(name, bytes);
                 }
             });
-            LegacyModDecl.setFmlIds(fmlIdRenames(loading, legacy, List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))));
+            LegacyModDecl.setFmlIds(fmlIdRenames(loading, legacy, List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2"))));
             if (!LegacyModDecl.fmlIds().isEmpty()) LOG.info("Legacy Connector: mod ids a modern mod also uses; the legacy mods load as {}", LegacyModDecl.fmlIds());
             org.kylepitcock.legacyconnector.loader.meta.ModMetadataGenerator.setLoadedMods(legacy.stream()
                     .filter(j -> skipReason(j) == null && LibraryBridges.replacing(j, bridges) == null && LibraryBridges.obsoleteReason(j) == null)
@@ -227,7 +225,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
             keep.add(cacheDir.resolve("coremod-api.jar"));
             // Mods link against each other (RotaryCraft extends DragonAPI classes), so a jar's translation depends on
             // every legacy jar of its version: that set is part of the cache key, and peers are scanned on a miss.
-            var crossVersion = crossVersionPackages(loading, legacy, List.of(modsDir, modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
+            var crossVersion = crossVersionPackages(loading, legacy, List.of(modsDir, modsDir.resolve("1.5.2"), modsDir.resolve("1.6.4"), modsDir.resolve("1.7.10"), modsDir.resolve("1.12.2")));
             if (!crossVersion.modernClashes().isEmpty()) {
                 Set<String> pkgs = crossVersion.modernClashes();
                 LOG.info("Legacy Connector: {} packages that legacy jars share with modern mods are relocated in the legacy jars: {}",
@@ -635,7 +633,7 @@ public final class LegacyModLocator implements IModFileCandidateLocator {
         if (indexDigest != null) md.update(indexDigest);
         if (modSet != null) md.update(modSet);
         String name = jar.fileName().replaceAll("[^A-Za-z0-9._-]", "_");
-        if (name.endsWith(".jar")) name = name.substring(0, name.length() - 4);
+        if (name.endsWith(".jar") || name.endsWith(".zip")) name = name.substring(0, name.length() - 4);
         return name + "-" + HexFormat.of().formatHex(md.digest()).substring(0, 16) + ".jar";
     }
 

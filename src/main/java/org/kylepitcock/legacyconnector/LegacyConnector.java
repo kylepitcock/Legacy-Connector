@@ -196,6 +196,7 @@ public final class LegacyConnector {
             int[] ticks = {0};
             game.addListener((net.neoforged.neoforge.event.tick.ServerTickEvent.Post e) -> {
                 if (++ticks[0] != stopTicks) return;
+                org.kylepitcock.legacyconnector.v1_6_4.bridge.SelfTest164.report();
                 LOGGER.info("Test autostop after {} ticks: saving and stopping", stopTicks);
                 long chunks = 0;
                 for (var level : e.getServer().getAllLevels()) chunks += level.getChunkSource().getLoadedChunksCount();

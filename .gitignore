@@ -36,6 +36,8 @@ Thumbs.db
 /test-mods2/
 /test-mods3/
 /test-mods4/
+/test-mods-164/
+/test-mods-152/
 # Beta 1.7.3 test mods (ModLoader mods are often .zip, which *.jar does not cover)
 /test-mods-b173/
 /1.12.2 test mods/

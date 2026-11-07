@@ -42,19 +42,46 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
         }
     }
 
+    /** Listeners told at the start of this reload (see {@link #mcc$reloading}); the notification queued when they registered must not repeat it. */
+    private final Set<IResourceManagerReloadListener> toldBeforeStitch = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+
     @Override
     public void registerReloadListener(IResourceManagerReloadListener listener) {
         listeners.add(listener);
-        notify(listener);
+        notify(listener, true);
+    }
+
+    /**
+     * Forge 1.12 mods registered their listeners before the game's own, so each reload told them before the models were loaded and the block atlas
+     * stitched (their state is rebuilt by the stitch and model events that follow: Tinkers' Construct's texture generator clears itself here and
+     * is filled by TextureStitchEvent.Pre). The generated resources are built at the start of a reload, where this runs; the listeners are told again
+     * once the game has reloaded ({@link #mcc$reloaded}).
+     */
+    public void mcc$reloading() {
+        for (var l : listeners) {
+            synchronized (toldBeforeStitch) {
+                toldBeforeStitch.add(l);
+            }
+            notify(l, false);
+        }
     }
 
     /** Called after the game reloaded its resources. */
     public void mcc$reloaded() {
-        for (var l : listeners) notify(l);
+        synchronized (toldBeforeStitch) {
+            toldBeforeStitch.clear();
+        }
+        for (var l : listeners) notify(l, false);
     }
 
-    private void notify(IResourceManagerReloadListener listener) {
+    private void notify(IResourceManagerReloadListener listener, boolean registration) {
         Runnable run = () -> {
+            if (registration) {
+                synchronized (toldBeforeStitch) {
+                    // the reload already told it, after which the state it rebuilds was filled: this stale call must not clear it
+                    if (toldBeforeStitch.contains(listener)) return;
+                }
+            }
             try {
                 listener.onResourceManagerReload(this);
             } catch (RuntimeException | LinkageError e) {
@@ -125,7 +152,12 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
     private static final class Client {
         static void find(ResourceLocation location, List<IResource> out, boolean first) throws IOException {
             var manager = net.minecraft.client.Minecraft.getInstance().getResourceManager();
-            var id = net.minecraft.resources.ResourceLocation.tryBuild(location.getNamespace(), location.getPath());
+            String path = location.getPath();
+            // a vanilla texture under its 1.12 folder and name (minecraft:textures/blocks/gravel.png: Extra Utilities 2 reads them to draw its own)
+            if (location.getNamespace().equals("minecraft") && path.endsWith(".png") && (path.startsWith("textures/blocks/") || path.startsWith("textures/items/"))) {
+                path = "textures/" + org.kylepitcock.legacyconnector.v1_12_2.VanillaTextures1122.modern(path.substring("textures/".length(), path.length() - 4)) + ".png";
+            }
+            var id = net.minecraft.resources.ResourceLocation.tryBuild(location.getNamespace(), path);
             if (id == null) id = location.mcc$modern();
             for (var r : manager.getResourceStack(id)) {
                 byte[] bytes;
@@ -140,6 +172,16 @@ public class SimpleReloadableResourceManager implements IReloadableResourceManag
                 }
                 out.add(new Resource(location, bytes, meta, r.sourcePackId()));
                 if (first) return;
+            }
+            if (out.isEmpty() && id != null) {
+                // while the resource packs are being built (a mod making sprites from vanilla textures), the game's manager has no packs yet
+                var supplier = manager.getResourceStack(id).isEmpty() ? net.minecraft.client.Minecraft.getInstance().getVanillaPackResources()
+                        .getResource(net.minecraft.server.packs.PackType.CLIENT_RESOURCES, id) : null;
+                if (supplier != null) {
+                    try (var in = supplier.get()) {
+                        out.add(new Resource(location, in.readAllBytes(), false, "vanilla"));
+                    }
+                }
             }
         }
     }

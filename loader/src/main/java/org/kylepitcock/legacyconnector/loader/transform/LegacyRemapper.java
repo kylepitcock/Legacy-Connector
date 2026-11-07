@@ -3,6 +3,9 @@ package org.kylepitcock.legacyconnector.loader.transform;
 import java.util.HashMap;
 import java.util.Map;
 import org.kylepitcock.legacyconnector.loader.LegacyVersion;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardMembers;
+import org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames;
+import org.kylepitcock.legacyconnector.loader.mapping.NotchNames;
 import org.kylepitcock.legacyconnector.loader.mapping.McpMappings;
 import org.kylepitcock.legacyconnector.loader.shim.ShimIndex;
 import org.kylepitcock.legacyconnector.loader.synth.SynthDemand;
@@ -69,6 +72,71 @@ public final class LegacyRemapper extends Remapper {
         this.mcp = mcp;
         this.shim = shim;
         this.demand = demand;
+        this.notch = version.numericIds() ? NotchNames.get(version.id()) : null;
+        ForwardMembers table = version.forward() == null ? null : ForwardMembers.forVersion(version);
+        this.members = table == null || table.isEmpty() ? null : table;
+    }
+
+    /** Member renames of a forward version (1.6.4 to 1.7.10 names), null for the others. */
+    private final ForwardMembers members;
+
+    /** The MCP name of a (possibly notch-named) legacy class, as the forward tables and the 1.6.4 hierarchy data use them. */
+    private String legacyClass(String name) {
+        if (notch != null && name.indexOf('/') < 0 && !notchLocals.containsKey(name)) {
+            String mcpName = notch.mcpClass(name);
+            if (mcpName != null) return mcpName;
+        }
+        return name;
+    }
+
+    /** Supertypes of a class the 1.6.4 hierarchy data does not know: the jar's own classes. */
+    private String[] localSupers(String name) {
+        String[] up = notchLocals.get(name);
+        if (up == null) return null;
+        String[] out = new String[up.length];
+        for (int i = 0; i < up.length; i++) out[i] = up[i] == null ? null : legacyClass(up[i]);
+        return out;
+    }
+
+    /** A descriptor with notch class names replaced by MCP names, the form the forward tables use. */
+    private String legacyDesc(String desc) {
+        if (notch == null || !hasBareClass(desc)) return desc;
+        StringBuilder out = new StringBuilder(desc.length() + 16);
+        for (int i = 0; i < desc.length(); i++) {
+            char ch = desc.charAt(i);
+            out.append(ch);
+            if (ch == 'L') {
+                int end = desc.indexOf(';', i);
+                if (end < 0) break;
+                out.append(legacyClass(desc.substring(i + 1, end))).append(';');
+                i = end;
+            }
+        }
+        return out.toString();
+    }
+
+    private static boolean hasBareClass(String desc) {
+        for (int i = 0; i < desc.length(); i++) {
+            if (desc.charAt(i) == 'L') {
+                int end = desc.indexOf(';', i);
+                if (end < 0) return false;
+                int slash = desc.indexOf('/', i);
+                if (slash < 0 || slash > end) return true;
+                i = end;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Supertypes ({@code [super, interfaces...]}) of the jar's own classes, so a notch-named member inherited through a mod class is found.
+     * Only 1.6.4 uses it (see {@link NotchNames}); a jar's own default-package class named like a notch class is not renamed.
+     */
+    private java.util.Map<String, String[]> notchLocals = java.util.Map.of();
+    private final NotchNames notch;
+
+    public void notchLocals(java.util.Map<String, String[]> locals) {
+        this.notchLocals = locals;
     }
 
     public void override(String from, String to) {
@@ -98,6 +166,26 @@ public final class LegacyRemapper extends Remapper {
         methods.forEach((key, names) -> {
             if (names.size() > 1) for (String n : names) if (!mcp.method(n).equals(n)) keep.add(original.name + "." + n + key.substring(key.indexOf('(')));
         });
+        if (members != null) {
+            // a forward rename (getEntityName -> getCommandSenderName) onto a method the class declares itself, or two renames onto one name, would duplicate it
+            java.util.Map<String, java.util.List<org.objectweb.asm.tree.MethodNode>> byTarget = new HashMap<>();
+            for (var m : original.methods) {
+                String readable = mcp.method(m.name);
+                String mapped = members.method(legacyClass(original.name), readable, legacyDesc(m.desc), this::localSupers);
+                byTarget.computeIfAbsent(mapped + m.desc, k -> new java.util.ArrayList<>()).add(m);
+            }
+            byTarget.forEach((key, list) -> {
+                if (list.size() < 2) return;
+                String target = key.substring(0, key.indexOf('('));
+                boolean declaresTarget = list.stream().anyMatch(m -> mcp.method(m.name).equals(target));
+                boolean first = true;
+                for (var m : list) {
+                    if (mcp.method(m.name).equals(target)) continue; // the declaration that already has the target name stays
+                    if (!declaresTarget && first) { first = false; continue; } // one of the renamed ones may take the name
+                    keep.add(original.name + "." + m.name + m.desc);
+                }
+            });
+        }
     }
 
     /**
@@ -131,6 +219,10 @@ public final class LegacyRemapper extends Remapper {
     public String map(String internalName) {
         String o = overrides.get(internalName);
         if (o != null) return o;
+        if (notch != null && internalName.indexOf('/') < 0 && !notchLocals.containsKey(internalName)) {
+            String mcp = notch.mcpClass(internalName);
+            if (mcp != null) return map(mcp);
+        }
         String jdk = JDK_RELOCATIONS.get(internalName);
         if (jdk != null) return jdk;
         for (var e : JDK_PACKAGE_RELOCATIONS.entrySet()) {
@@ -184,7 +276,12 @@ public final class LegacyRemapper extends Remapper {
     }
 
     private String relocate(String legacyName) {
-        String shimName = version.shimPrefix() + legacyName;
+        String shimName = version.linkPrefix() + ForwardRenames.map(version, legacyName);
+        // A forward version's own classes (1.6.4's network/tick API, which 1.7.10 lacks or shapes differently) win over the forwarded shim.
+        if (shim != null && version.forward() != null) {
+            String own = version.shimPrefix() + ForwardRenames.map(version, legacyName);
+            if (shim.contains(own)) return own;
+        }
         if (shim == null || shim.contains(shimName) || shim.size() == 0) return shimName;
         String synth = version.synthPrefix() + legacyName;
         if (recording && demand != null) demand.addClass(synth);
@@ -194,8 +291,16 @@ public final class LegacyRemapper extends Remapper {
     @Override
     public String mapMethodName(String owner, String name, String descriptor) {
         if (!keep.isEmpty() && keep.contains(owner + "." + name + descriptor)) return name;
+        if (notch != null && !name.startsWith("func_")) {
+            String srg = notch.method(owner, name, descriptor, notchLocals);
+            if (srg != null) name = srg;
+        }
         if (!renameLocal.isEmpty() && !name.startsWith("func_") && renameLocal.contains(owner + "." + name + descriptor)) return name + "$mod";
-        return mcp.method(name);
+        String readable = mcp.method(name);
+        if (members != null) {
+            return members.method(legacyClass(owner), readable, legacyDesc(descriptor), this::localSupers);
+        }
+        return readable;
     }
 
     @Override
@@ -206,7 +311,13 @@ public final class LegacyRemapper extends Remapper {
     @Override
     public String mapFieldName(String owner, String name, String descriptor) {
         if (!keep.isEmpty() && keep.contains(owner + "." + name)) return name;
-        return mcp.field(name);
+        if (notch != null && !name.startsWith("field_")) {
+            String srg = notch.field(owner, name, notchLocals);
+            if (srg != null) name = srg;
+        }
+        String readable = mcp.field(name);
+        if (members != null) return members.field(legacyClass(owner), readable, this::localSupers);
+        return readable;
     }
 
     @Override
@@ -230,27 +341,43 @@ public final class LegacyRemapper extends Remapper {
             while (dims < s.length() && s.charAt(dims) == '[') dims++;
             if (dims < s.length() - 2 && s.charAt(dims) == 'L') return s.substring(0, dims + 1) + mapString(s.substring(dims + 1, s.length() - 1)) + ";";
         }
+        if (s.charAt(0) == '(' && DESCRIPTOR.matcher(s).matches()) {
+            // a method descriptor used for reflection (CodeChickenLib's ObfMapping finds methods by name and descriptor)
+            java.util.regex.Matcher m = CLASS_IN_DESCRIPTOR.matcher(s);
+            StringBuilder out = new StringBuilder();
+            while (m.find()) m.appendReplacement(out, java.util.regex.Matcher.quoteReplacement("L" + mapStringClass(m.group(1)) + ";"));
+            m.appendTail(out);
+            return out.toString();
+        }
         if (!looksLikeClassName(s)) return s;
         boolean dotted = s.indexOf('.') >= 0;
         String internal = dotted ? s.replace('.', '/') : s;
+        String mapped = mapStringClass(internal);
+        if (mapped.equals(internal)) {
+            // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.
+            if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.linkPrefix() + internal;
+            else return s;
+        }
+        return dotted ? mapped.replace('/', '.') : mapped;
+    }
+
+    private static final java.util.regex.Pattern DESCRIPTOR =
+            java.util.regex.Pattern.compile("\\((\\[*([BCDFIJSZ]|L[\\w/$]+;))*\\)(V|\\[*([BCDFIJSZ]|L[\\w/$]+;))");
+    private static final java.util.regex.Pattern CLASS_IN_DESCRIPTOR = java.util.regex.Pattern.compile("L([\\w/$]+);");
+
+    /** The relocated internal name of a class named by a string (unchanged when it is not a class of the legacy API). */
+    private String mapStringClass(String internal) {
         // Strings only create synthetic classes the legacy version really had (reflection on Forge internals);
         // Class.forName probes for APIs that never existed there (e.g. ModLoader) must keep failing.
         recording = shim != null && LegacyVersion.isRelocatedRoot(internal)
                 && org.kylepitcock.legacyconnector.loader.synth.LegacyHierarchyData.forVersion(version).get(internal) != null;
-        String mapped;
         mappingString = true;
         try {
-            mapped = map(internal);
+            return map(internal);
         } finally {
             recording = true;
             mappingString = false;
         }
-        if (mapped.equals(internal)) {
-            // Prefix checks such as name.startsWith("net.minecraft.") are relocated as well.
-            if (internal.endsWith("/") && LegacyVersion.isRelocatedRoot(internal)) mapped = version.shimPrefix() + internal;
-            else return s;
-        }
-        return dotted ? mapped.replace('/', '.') : mapped;
     }
 
     /**
@@ -260,7 +387,7 @@ public final class LegacyRemapper extends Remapper {
     private void recordReflectedField(String srg) {
         if (demand == null || shim == null || shim.size() == 0) return;
         org.kylepitcock.legacyconnector.loader.synth.LegacyFields.Field f = org.kylepitcock.legacyconnector.loader.synth.LegacyFields.bySrg(version, srg);
-        if (f == null || shim.contains(version.shimPrefix() + f.owner())) return;
+        if (f == null || shim.contains(version.linkPrefix() + ForwardRenames.map(version, f.owner()))) return;
         String owner = map(f.owner());
         if (owner.equals(f.owner())) return;
         demand.add(owner, f.isStatic() ? SynthDemand.Kind.STATIC_FIELD : SynthDemand.Kind.FIELD, f.name(), mapDesc(f.desc()));

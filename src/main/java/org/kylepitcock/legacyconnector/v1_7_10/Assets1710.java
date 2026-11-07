@@ -107,9 +107,6 @@ public final class Assets1710 implements GeneratedPack.Contributor {
      */
     private static void registerAll(legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap blocks,
             legacyconnector.v1_7_10.net.minecraft.client.renderer.texture.TextureMap items, boolean noteLeaves) {
-        // Forge fired TextureStitchEvent.Pre per map (blocks, then items): mods such as BuildCraft register their icons there.
-        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
-        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));
         boolean client = noteLeaves;
         for (Block b : BlockBridge.modBlocks()) {
             // the icons leaf blocks register are candidates for the modern leaf pattern (ModernLeaves)
@@ -122,6 +119,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             }
             if (leaves) org.kylepitcock.legacyconnector.v1_7_10.client.ModernLeaves.noteIcons(blocks, mark);
         }
+        // 1.7.10 fired TextureStitchEvent.Pre for a map after that map's registerIcons calls (mods such as BuildCraft register more
+        // icons there, Botania's prismarine fills the array its registerBlockIcons made).
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(blocks));
         for (Item i : ItemBridge.modItems()) {
             try {
                 // 1.7.10 registered an item's icons in the atlas its sprite number names: items drawing with block
@@ -131,6 +131,7 @@ public final class Assets1710 implements GeneratedPack.Contributor {
                 LOG.warn("registerIcons failed for {}", i, e);
             }
         }
+        postStitch(new legacyconnector.v1_7_10.net.minecraftforge.client.event.TextureStitchEvent.Pre(items));
         // As 1.7.10: every icon is registered, the atlas is stitched, then TextureStitchEvent.Post lets mods set up icons
         // that derive from the stitched ones (Chisel's leaves and connected textures); models read the icons after that.
         // (There is no atlas yet, so UVs are not final; the event fires again once the real atlas exists, see postStitched.)
@@ -415,6 +416,9 @@ public final class Assets1710 implements GeneratedPack.Contributor {
             // A sub-icon of a texture sheet (connected textures: "chisel:blocks/x-ctmv|0.0") is named after its sheet; the
             // suffix is no valid resource location, so models point at the whole sheet.
             if (name != null && name.indexOf('|') > 0) name = name.substring(0, name.indexOf('|'));
+            // A mod's own IIcon wrapping a vanilla one (Twilight Forest's giant blocks) reports the bare 1.7.10 name ("obsidian"),
+            // which is no modern sprite id; name folders mark ids the shim already produced.
+            if (name != null && name.indexOf('/') < 0 && !name.endsWith("missingno")) name = texture(name, true);
             if (name != null) return name;
         } catch (RuntimeException | LinkageError e) {
             // falls through

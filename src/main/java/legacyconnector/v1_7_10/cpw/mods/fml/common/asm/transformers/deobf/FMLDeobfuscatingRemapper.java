@@ -9,7 +9,7 @@ import java.util.Set;
  * FML's SRG -> MCP name map. Translated mods already use deobfuscated names, so every lookup answers with its
  * input; the tables exist (empty) for libraries that read them reflectively to build their own remappers.
  */
-public class FMLDeobfuscatingRemapper {
+public class FMLDeobfuscatingRemapper extends org.objectweb.asm.commons.Remapper {
     public static final FMLDeobfuscatingRemapper INSTANCE = new FMLDeobfuscatingRemapper();
 
     private Map<String, Map<String, String>> rawFieldMaps = new HashMap<>();

@@ -40,6 +40,23 @@ public class TileEntityBeacon extends TileEntity implements org.kylepitcock.lega
         return levels;
     }
 
+    /** The IInventory-style fields of the beacon screen: 0 the pyramid level, 1 the primary and 2 the secondary effect id (0 when none). */
+    public int getField(int id) {
+        if (id == 0) return levels;
+        if (id != 1 && id != 2 || mcc$beacon == null) return 0;
+        try {
+            var f = net.minecraft.world.level.block.entity.BeaconBlockEntity.class.getDeclaredField(id == 1 ? "primaryPower" : "secondaryPower");
+            f.setAccessible(true);
+            var holder = (net.minecraft.core.Holder<?>) f.get(mcc$beacon);
+            if (holder == null || !(holder.value() instanceof net.minecraft.world.effect.MobEffect effect)) return 0;
+            var key = net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT.getKey(effect);
+            Potion potion = key == null ? null : Potion.getPotionFromResourceLocation(key.toString());
+            return potion == null ? 0 : Potion.getIdFromPotion(potion);
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return 0;
+        }
+    }
+
     /** The coloured parts of the beam (a mod's beacon fills them in its update; a view reads the modern beacon's). */
     private final java.util.List<BeamSegment> beamSegments = new java.util.ArrayList<>();
     /** Whether the beam reaches the sky (a full pyramid is not needed). */

@@ -210,7 +210,9 @@ public final class LegacyJarTransformer {
                 continue;
             }
             if (!LegacyVersion.isRelocatedRoot(name)) continue;
-            if (shim.contains(jar.version.shimPrefix() + name)) {
+            String forwarded = org.kylepitcock.legacyconnector.loader.mapping.ForwardRenames.map(jar.version, name);
+            if (shim.contains(jar.version.linkPrefix() + forwarded)
+                    || (jar.version.forward() != null && shim.contains(jar.version.shimPrefix() + forwarded))) {
                 classes.remove(name);
                 dropped++;
             } else {
@@ -233,6 +235,7 @@ public final class LegacyJarTransformer {
     public List<ClassInfo> scan(LegacyJar jar) throws IOException {
         Contents c = readPatched(jar);
         LegacyRemapper remapper = remapperFor(jar.version, null);
+        notchLocals(c.classes, remapper);
         relocateBundled(jar, c.classes, remapper);
         preventCollisions(c.classes, remapper);
         List<ClassInfo> out = new ArrayList<>();
@@ -246,6 +249,25 @@ public final class LegacyJarTransformer {
             }
         }
         return out;
+    }
+
+    /** 1.6.4 jars that name Minecraft by its obfuscated names need the jar's own class hierarchy to find inherited members (see NotchNames). */
+    private static void notchLocals(Map<String, byte[]> classes, LegacyRemapper remapper) {
+        if (!remapper.version().numericIds()) return;
+        Map<String, String[]> locals = new java.util.HashMap<>();
+        for (byte[] data : classes.values()) {
+            try {
+                ClassReader r = new ClassReader(data);
+                String[] ifaces = r.getInterfaces();
+                String[] all = new String[1 + ifaces.length];
+                all[0] = r.getSuperName();
+                System.arraycopy(ifaces, 0, all, 1, ifaces.length);
+                locals.put(r.getClassName(), all);
+            } catch (RuntimeException ignored) {
+                // reported when the class is translated
+            }
+        }
+        remapper.notchLocals(locals);
     }
 
     public Result transform(LegacyJar jar, Path output) throws IOException {
@@ -267,6 +289,7 @@ public final class LegacyJarTransformer {
         result.notes.addAll(contents.notes);
         int platformCopies = dropPlatformLibraries(classes, other);
         if (platformCopies > 0) result.notes.add("Dropped " + platformCopies + " bundled Mixin class(es) and launcher service file(s) (NeoForge provides Mixin)");
+        notchLocals(classes, remapper);
         result.droppedShimDuplicates = relocateBundled(jar, classes, remapper);
         preventCollisions(classes, remapper);
         if (result.droppedShimDuplicates > 0) {
@@ -294,7 +317,7 @@ public final class LegacyJarTransformer {
         if (side != null) {
             int sided = 0;
             for (ClassNode node : nodes.values()) {
-                int n = SideOnlyStripper.apply(node, version.shimPrefix(), side);
+                int n = SideOnlyStripper.apply(node, version.linkPrefix(), side);
                 if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
                 sided += n;
             }
@@ -302,7 +325,7 @@ public final class LegacyJarTransformer {
         }
         int optionalStripped = 0;
         for (ClassNode node : nodes.values()) {
-            int n = OptionalStripper.apply(node, version.shimPrefix(), presentMods, hierarchy);
+            int n = OptionalStripper.apply(node, version.linkPrefix(), presentMods, hierarchy);
             if (n > 0) hierarchy.addLocal(ClassInfo.of(node));
             optionalStripped += n;
         }
@@ -321,9 +344,18 @@ public final class LegacyJarTransformer {
         if (absent > 0) result.notes.add(absent + " method(s) use mods that are not installed; they throw NoClassDefFoundError if called");
         int buildHeightChecks = 0;
         int floorClamps = 0;
+        int forwardCalls = 0;
+        int bridgeMethods = 0;
         for (ClassNode node : nodes.values()) {
             result.compatRedirects += JavaCompatRedirects.apply(node);
+            result.compatRedirects += ForwardRedirects.apply(node, version);
             InterfaceFlags.apply(node, hierarchy);
+            int bridged = BridgeMethods.apply(node, hierarchy, version);
+            if (bridged > 0) {
+                hierarchy.addLocal(ClassInfo.of(node));
+                bridgeMethods += bridged;
+            }
+            forwardCalls += ForwardCalls.apply(node, hierarchy, version);
             result.virtualFieldRedirects += ShimLinker.apply(node, hierarchy, result.links, shim.size() == 0 ? null : result.demand);
             buildHeightChecks += BuildHeightRewriter.apply(node, hierarchy, version);
             floorClamps += WorldFloorClampRewriter.apply(node, hierarchy, version);
@@ -333,6 +365,8 @@ public final class LegacyJarTransformer {
             result.classes++;
         }
 
+        if (bridgeMethods > 0) result.notes.add(bridgeMethods + " bridge method(s)/call(s) from " + version.id() + " method signatures to their " + version.forward().id() + " shape");
+        if (forwardCalls > 0) result.notes.add(forwardCalls + " call(s) of " + version.id() + " API now call their " + version.forward().id() + " equivalent");
         if (buildHeightChecks > 0) result.notes.add(buildHeightChecks + " hard-coded 0..256 height check(s) on a y coordinate now use the world's build range");
         if (floorClamps > 0) result.notes.add(floorClamps + " tile entity height clamp(s) to 1.7.10's bedrock floor now count from the world's bottom");
 

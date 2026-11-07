@@ -25,7 +25,14 @@ public final class BakedRegistry1122 implements IRegistry<ModelResourceLocation,
         if (name == null) return null;
         for (var modern : Models1122.modernLocations(name)) {
             BakedModel model = models.get(modern);
-            if (model != null) return Models1122.legacy(model);
+            if (model != null) {
+                // 1.12 gave every location whose json failed to load the missing model itself; the modern bake draws a copy of it per location, and a
+                // mod that asks "is this the missing model" (Extra Utilities 2 decides whether a json overrides its built-in models) must see it
+                BakedModel missing = models.get(net.minecraft.client.resources.model.ModelBakery.MISSING_MODEL_VARIANT);
+                if (missing != null && model != missing
+                        && (org.kylepitcock.legacyconnector.v1_12_2.Assets1122.isStandIn(modern) || Models1122.looksMissing(model, missing))) model = missing;
+                return Models1122.legacy(model);
+            }
         }
         return null;
     }

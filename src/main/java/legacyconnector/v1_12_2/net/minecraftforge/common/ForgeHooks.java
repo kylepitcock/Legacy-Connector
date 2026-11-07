@@ -65,6 +65,26 @@ public class ForgeHooks {
         return world.mcc$level().getBlockState(p).getEnchantPowerBonus(world.mcc$level(), p);
     }
 
+    /** Forge's list of grass seeds (private; mods read it by reflection, Extra Utilities 2's rare seeds); {@code MinecraftForge.addGrassSeed} adds to it. */
+    private static final java.util.List<legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item> seedList = new java.util.ArrayList<>();
+
+    public static class SeedEntry extends legacyconnector.v1_12_2.net.minecraft.util.WeightedRandom.Item {
+        public final ItemStack seed;
+
+        public SeedEntry(ItemStack seed, int weight) {
+            super(weight);
+            this.seed = seed;
+        }
+
+        public ItemStack getStack(Random rand, int fortune) {
+            return seed.copy();
+        }
+    }
+
+    public static synchronized void mcc$addSeedEntry(ItemStack seed, int weight) {
+        seedList.add(new SeedEntry(seed, weight));
+    }
+
     /** A seed broken grass drops (wheat seeds or one a mod added through {@code MinecraftForge.addGrassSeed}). */
     public static ItemStack getGrassSeed(Random rand, int fortune) {
         return new ItemStack(legacyconnector.v1_12_2.net.minecraft.init.Items.WHEAT_SEEDS);
@@ -439,7 +459,7 @@ public class ForgeHooks {
             legacyconnector.v1_12_2.net.minecraft.util.ResourceLocation name, String data, boolean custom,
             legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTableManager lootTableManager) {
         int[] previous = POOL_COUNT.get();
-        POOL_COUNT.set(new int[] {0, custom ? 1 : 0});
+        POOL_COUNT.set(new int[] {0, custom ? 1 : 0, 0});
         legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable ret;
         try {
             ret = gson.fromJson(data, legacyconnector.v1_12_2.net.minecraft.world.storage.loot.LootTable.class);
@@ -452,6 +472,27 @@ public class ForgeHooks {
         }
         if (ret != null) ret.freeze();
         return ret;
+    }
+
+    /** The name of a loot entry being read: its own, else "{type}#{n}" counted within the pool (custom tables use the json hash). */
+    public static String readLootEntryName(com.google.gson.JsonObject json, String type) {
+        if (json.has("entryName")) return json.get("entryName").getAsString();
+        if (json.has("name")) return json.get("name").getAsString();
+        int[] ctx = POOL_COUNT.get();
+        if (ctx == null || ctx[1] == 1 || ctx.length < 3) return "custom#" + json.hashCode();
+        return type + "#" + ctx[2]++;
+    }
+
+    /**
+     * A farmland block is about to be trampled: false when the entity cannot trample it or a handler of {@code FarmlandTrampleEvent}
+     * cancels it.
+     */
+    public static boolean onFarmlandTrample(legacyconnector.v1_12_2.net.minecraft.world.World world, legacyconnector.v1_12_2.net.minecraft.util.math.BlockPos pos,
+            legacyconnector.v1_12_2.net.minecraft.block.state.IBlockState state, float fallDistance, Entity entity) {
+        if (entity == null || !entity.canTrample(world, state.getBlock(), pos, fallDistance)) return false;
+        var event = new legacyconnector.v1_12_2.net.minecraftforge.event.world.BlockEvent.FarmlandTrampleEvent(world, pos, state, fallDistance, entity);
+        mcc$bus().post(event);
+        return !event.isCanceled();
     }
 
     /** The armour points shown in the HUD: the entity's armour value plus what armour with its own display (ISpecialArmor) adds. */
@@ -472,6 +513,7 @@ public class ForgeHooks {
         int[] ctx = POOL_COUNT.get();
         if (ctx == null || ctx[1] == 1) return "custom#" + json.hashCode();
         ctx[0]++;
+        if (ctx.length > 2) ctx[2] = 0;
         return ctx[0] == 1 ? "main" : "pool" + (ctx[0] - 1);
     }
 

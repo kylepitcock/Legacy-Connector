@@ -55,8 +55,26 @@ public final class Sprites1122 {
         }
     }
 
+    /**
+     * The block atlas sprites of the bake in progress: models are baked while the reload runs, before the atlas is uploaded (the first load has no
+     * atlas to ask, a later one only the previous build's). A legacy model baked then reads its sprites' uvs from here.
+     */
+    private static volatile java.util.function.Function<ResourceLocation, TextureAtlasSprite> baking;
+
+    public static void setBaking(java.util.function.Function<ResourceLocation, TextureAtlasSprite> getter) {
+        baking = getter;
+    }
+
     /** The modern sprite of a legacy name (the missing sprite when the atlas has none of that name), or null with no atlas yet. */
     public static TextureAtlasSprite sprite(String legacy) {
+        var getter = baking;
+        if (getter != null) {
+            try {
+                return getter.apply(modernName(legacy));
+            } catch (RuntimeException e) {
+                return null;
+            }
+        }
         TextureAtlas atlas = blockAtlas();
         if (atlas == null) return null;
         try {

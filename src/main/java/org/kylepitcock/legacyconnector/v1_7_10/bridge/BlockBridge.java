@@ -361,6 +361,23 @@ public final class BlockBridge {
                 return null;
             }
         }
+        // A 1.6.4 ItemBlock subclass takes the id of its block minus 256 where 1.7.10's takes the block (Forge 9.11's registerBlock(block, itemClass, name)).
+        for (Constructor<?> c : cls.getDeclaredConstructors()) {
+            Class<?>[] p = c.getParameterTypes();
+            if (p.length != full.length || p[0] != int.class) continue;
+            Object[] byId = full.clone();
+            byId[0] = legacyconnector.v1_6_4.net.minecraft.util.Ids.blockId(block) - 256;
+            boolean fits = true;
+            for (int i = 1; i < p.length; i++) fits &= byId[i] == null || box(p[i]).isInstance(byId[i]);
+            if (!fits) continue;
+            try {
+                c.setAccessible(true);
+                return (ItemBlock) c.newInstance(byId);
+            } catch (ReflectiveOperationException e) {
+                LOG.error("Could not construct item block {} for {}", cls.getName(), block, e);
+                return null;
+            }
+        }
         LOG.error("No matching constructor on {} for (Block{} extra args)", cls.getName(), args == null ? "" : ", " + args.length);
         return null;
     }
