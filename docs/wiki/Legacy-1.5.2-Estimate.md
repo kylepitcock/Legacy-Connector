@@ -34,6 +34,12 @@ the liquid API's link to fluids) and the client side.
 - Corpus artefact: two builds of one mod id make FML skip both; load a single build of each.
 - CodeChickenCore/NEI refuse to start on "Minecraft 1.7.10" (they check the version string); a per-version `Loader.getMCVersionString` would fix it.
 
+## Measured again (2026-11-07, one build per mod, 50 files, server load)
+
+- 55 legacy mods discovered (Immibis Core and its family included: they load now), **51 load, 4 fail**: ForgeMultipart (its Scala mixin compiler needs class bytes the loader cannot hand it), Sprintable and Sprint on CTRL (client-only mods, they touch client classes on a server), Block Helper (a bundled Waila plugin names `BlockComparator`, a block 1.4.7 did not have).
+- Fixed on the way: ModLoader default-package classes (bspkrsCore, TreeCapitator, Sprint on CTRL) were moved to one name and referenced by another; `BaseMod` was only resolved for 1.4.x jars; the 1.5.2 AI task constructors (`EntityLiving` owner, `float` speeds and target distance: every Twilight Forest, CustomNPCs and Grimoire of Gaia mob had inert targeting before, 21 entity tick errors per run, now 0); fields typed `EntityLiving` in the mod but narrower in 1.7.10 (`EntityAITarget.taskOwner`) read a synthesized field that was always null; the home area on `EntityLiving` (flying mobs); `cpw.mods.fml.relauncher.IClassTransformer` and `RelaunchClassLoader` for 1.5.2 coremods (CodeChickenCore, NEI, Immibis Microblocks and TreeCapitator transformers all start now).
+- Open: ForgeMultipart; client-only mods on a dedicated server are reported as failed (they could be skipped quietly); Mystcraft age dimensions are created by the self test without age data.
+
 ## Next, in order
 
 1. Immibis Core (unblocks 11 mods): find why `IDAllocator.allocate` ends in its error screen; make mod error screens log instead of sleeping forever.

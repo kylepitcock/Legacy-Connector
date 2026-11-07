@@ -762,6 +762,8 @@ public class LegacyBlockAdapter extends net.minecraft.world.level.block.Block {
             if (s == null) staticShapes[m] = s = boundsShape();
             return s;
         }
+        // No world at all (a state cache built at resource load, e.g. MoreCulling's): legacy code that walks neighbours (Booze's grape vine) can loop forever on it
+        if (!(level instanceof net.minecraft.world.level.LevelReader)) return Shapes.block();
         synchronized (legacy) {
             try {
                 legacy.setBlockBoundsBasedOnState(BlockAccessView.of(level), pos.getX(), pos.getY(), pos.getZ());

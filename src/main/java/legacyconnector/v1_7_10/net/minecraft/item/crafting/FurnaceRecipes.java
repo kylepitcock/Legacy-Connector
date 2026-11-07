@@ -35,6 +35,7 @@ public class FurnaceRecipes {
     }
 
     public ItemStack getSmeltingResult(ItemStack input) {
+        if (input == null) return null;
         for (Object o : smeltingList.entrySet()) {
             Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
             if (!func_151397_a(input, (ItemStack) e.getKey())) continue;
