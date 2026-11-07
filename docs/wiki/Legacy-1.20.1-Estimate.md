@@ -237,3 +237,24 @@ classes 610/1610, methods 1393/4700, fields 291/558. `./gradlew verify1201 -Pver
 
 Open: `ArmorMaterial`/`Tier` implementations, custom `Enchantment` subclasses (data-driven now), `MobType`, `RenderSystem.getModelViewStack`, `LootDataManager`,
 recipe serializers (codecs), datagen, super-constructor calls of changed constructors (only `=swap` ones), mixin triage (not started).
+## 10. Status 2026-11-08: milestone 1 (Forge API facades)
+
+**Milestone 1 reached:** a Forge 1.20.1 content mod loads and registers its content on a NeoForge 1.21.1 server through the layer. Another Furniture 3.0.4 registers
+174 blocks, 159 items, 1 entity type and 4 block entity types (`run-subtest/mods/1.20.1/`, `experimental.forge1201=true`; the server self test logs
+`1.20.1 content registered: ...`), and Calcmod and ClearDespawn construct and finish loading beside it (server reaches "Done"). Facades live in `src/main/java/legacyconnector/v1_20_1`
+(Forge classes that no longer exist; the translator prefers them to the rename tables), the runtime half in `org.kylepitcock.legacyconnector.v1_20_1.Forge1201Runtime`.
+
+| Area | What exists |
+|---|---|
+| Mod loading | `FMLJavaModLoadingContext`, `ModLoadingContext.registerConfig` (call rewrite), `DistExecutor`, `NonNull*`, `IExtensionPoint$DisplayTest`/`NetworkConstants` (accepted, ignored), `IEventBus.register` on classes without subscribers (Forge allowed it), `ForgeSpawnEggItem` to `DeferredSpawnEggItem`, `mods.toml` to `neoforge.mods.toml` with the manifest's `MixinConfigs` as `[[mixins]]`, nested jars in `META-INF/jarjar` (MixinExtras dropped, Forge mods inside translated) |
+| Registries | `ForgeRegistries` (+`Keys`), `IForgeRegistry`, tag views over the vanilla registries; `RegistryObject` stays `DeferredHolder` with the missing methods (`isPresent`, `ifPresent`, `map`...) as call rewrites; `DeferredRegister.create(IForgeRegistry, ..)` and `RegisterEvent.getForgeRegistry` rewritten |
+| Capabilities | `LazyOptional`, `Capability`, `CapabilityManager`/`CapabilityToken`, `ForgeCapabilities` (item, fluid, energy tied to the NeoForge keys), `ICapabilityProvider`/`Serializable`, `AttachCapabilitiesEvent`; every `getCapability` call goes to `Caps1201`, classes declaring it get the facade interface, and `Forge1201Runtime` registers NeoForge providers for all block entity and entity types of the legacy mods |
+| Networking | `SimpleChannel` (one payload type per channel, the mod's own encode/decode), `NetworkRegistry`/`ChannelBuilder`, `NetworkEvent.Context`, `NetworkDirection`, `PacketDistributor`, `NetworkHooks.openScreen`, `PlayMessages$SpawnEntity` |
+| Events | `TickEvent` (server, level, player, client, render) posted from NeoForge's `*TickEvent.Pre/Post`; `RegisterCapabilitiesEvent` fired on the legacy mods' buses |
+| Tools | `forward/1.20.1/forge-call-rewrites.tsv` (data), `ForgeApiRewrites1201`, `Forge1201ApiTest`; `gap1201` counts facades and call rewrites as present and prints `unresolved Forge-API symbols` per jar |
+
+Measurement on the 60-jar set of the first run (`gap1201`, same jars): unresolved Forge-API symbols **1172** (groundwork facades only) to **599**; part of the drop is the tool now
+indexing the FML and bus jars. Not done in the Forge API: generic filtering of `AttachCapabilitiesEvent<T>` (all handlers see all objects), item capabilities (`Item.initCapabilities`), renamed
+or removed events that need semantic adapters (`PlayerSleepInBedEvent`, `LivingHurtEvent`...), `ConfigScreenFactory`/gui overlays, `ModList`/`IModInfo` extras, `RecipeBookType.create`
+(enum extension), `INBTSerializable` with the old signatures. What blocks milestone 2 outside the Forge API (Minecraft side): mixins that fail hard when a target changed (Clumps,
+Spartan Weaponry, Bygone Nether abort the whole launch), data-driven `Enchantment` subclasses, `StairBlock`/`GlassBlock` changes, `ItemPredicate.serializeToJson`, mods registering custom stats in common setup (frozen registries), library mods (GeckoLib, PuzzlesLib, Resourceful Lib, Architectury).

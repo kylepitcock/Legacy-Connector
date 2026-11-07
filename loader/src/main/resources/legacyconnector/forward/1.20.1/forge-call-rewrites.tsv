@@ -19,3 +19,8 @@ net/neoforged/neoforge/registries/RegisterEvent.getForgeRegistry()Llegacyconnect
 *.getCapability(Llegacyconnector/v1_20_1/net/minecraftforge/common/capabilities/Capability;)Llegacyconnector/v1_20_1/net/minecraftforge/common/util/LazyOptional;	getCapability
 # event bus
 net/neoforged/bus/api/IEventBus.register(Ljava/lang/Object;)V	busRegister
+# mod loading
+net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;)V	registerConfig
+net/neoforged/fml/ModLoadingContext.registerConfig(Lnet/neoforged/fml/config/ModConfig$Type;Lnet/neoforged/fml/config/IConfigSpec;Ljava/lang/String;)V	registerConfig
+# entities
+net/minecraft/world/entity/EntityType$Builder.setCustomClientFactory(Ljava/util/function/BiFunction;)Lnet/minecraft/world/entity/EntityType$Builder;	builderCustomClientFactory

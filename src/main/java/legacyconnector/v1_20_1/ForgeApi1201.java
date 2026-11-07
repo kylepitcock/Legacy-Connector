@@ -23,6 +23,25 @@ public final class ForgeApi1201 {
     private ForgeApi1201() {
     }
 
+    // ---- mod loading ---------------------------------------------------------------------------------------------------------
+
+    /** {@code ModLoadingContext.get().registerConfig(type, spec)}: NeoForge registers configs on the mod container. */
+    public static void registerConfig(net.neoforged.fml.ModLoadingContext ctx, net.neoforged.fml.config.ModConfig.Type type, net.neoforged.fml.config.IConfigSpec spec) {
+        ctx.getActiveContainer().registerConfig(type, spec);
+    }
+
+    public static void registerConfig(net.neoforged.fml.ModLoadingContext ctx, net.neoforged.fml.config.ModConfig.Type type, net.neoforged.fml.config.IConfigSpec spec, String fileName) {
+        ctx.getActiveContainer().registerConfig(type, spec, fileName);
+    }
+
+    // ---- entities ------------------------------------------------------------------------------------------------------------
+
+    /** {@code EntityType.Builder.setCustomClientFactory(..)}: vanilla spawning with the type's own factory replaces it. */
+    public static <T extends net.minecraft.world.entity.Entity> net.minecraft.world.entity.EntityType.Builder<T> builderCustomClientFactory(
+            net.minecraft.world.entity.EntityType.Builder<T> builder, java.util.function.BiFunction<?, ?, ?> factory) {
+        return builder;
+    }
+
     // ---- event bus ----------------------------------------------------------------------------------------------------------
 
     /** Forge accepted {@code bus.register(obj)} for an object without subscriber methods (a mod registering its main class "just in case"); NeoForge throws. */

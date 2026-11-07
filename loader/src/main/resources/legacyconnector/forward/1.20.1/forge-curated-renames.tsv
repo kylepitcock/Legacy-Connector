@@ -48,3 +48,4 @@ net/minecraftforge/items/IItemHandlerModifiable	net/neoforged/neoforge/items/IIt
 net/minecraftforge/items/ItemHandlerHelper	net/neoforged/neoforge/items/ItemHandlerHelper
 net/minecraftforge/energy/IEnergyStorage	net/neoforged/neoforge/energy/IEnergyStorage
 net/minecraftforge/energy/EnergyStorage	net/neoforged/neoforge/energy/EnergyStorage
+net/minecraftforge/common/ForgeSpawnEggItem	net/neoforged/neoforge/common/DeferredSpawnEggItem
