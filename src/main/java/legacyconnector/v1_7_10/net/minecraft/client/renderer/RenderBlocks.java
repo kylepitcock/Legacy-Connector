@@ -181,19 +181,41 @@ public class RenderBlocks {
         if (overrideBlockTexture != null) return overrideBlockTexture;
         IIcon icon = block.getIcon(access, x, y, z, side);
         if (icon == null && access != null) icon = block.getIcon(side, access.getBlockMetadata(x, y, z));
-        return getIconSafe(icon);
+        return mcc$inSheet(getIconSafe(icon));
     }
 
     public IIcon getBlockIconFromSideAndMetadata(Block block, int side, int meta) {
-        return getIconSafe(block.getIcon(side, meta));
+        return mcc$inSheet(getIconSafe(block.getIcon(side, meta)));
     }
 
     public IIcon getBlockIconFromSide(Block block, int side) {
-        return getIconSafe(block.getBlockTextureFromSide(side));
+        return mcc$inSheet(getIconSafe(block.getBlockTextureFromSide(side)));
     }
 
     public IIcon getBlockIcon(Block block) {
-        return getIconSafe(block.getBlockTextureFromSide(1));
+        return mcc$inSheet(getIconSafe(block.getBlockTextureFromSide(1)));
+    }
+
+    /**
+     * Minecraft 1.4.7: a renderer that binds a mod's sprite sheet and then draws a block's faces with the icons of the block (BuildCraft's pipes:
+     * {@code renderStandardBlock} with the tile index the pipe names) expects the quads to carry positions in that sheet. The icon of a tile is the
+     * cut sprite of the atlas, whose UVs are atlas coordinates; while a block's geometry is captured with such a sheet bound the icon of the same
+     * tile in sheet space is used instead, and IsbrhQuads maps the quads back onto the cut tile (as it does for {@code renderFaceYPos(..., tile)}).
+     */
+    private static IIcon mcc$inSheet(IIcon icon) {
+        if (icon == null || !org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.capturing()) return icon;
+        String sheet = org.kylepitcock.legacyconnector.v1_7_10.client.RenderContext.sheet();
+        if (sheet == null) return icon;
+        String name = icon.mcc$modernName();
+        if (name == null) return icon;
+        String slug = "/" + org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.slug(org.kylepitcock.legacyconnector.v1_6_4.bridge.SpriteSheets147.normalize(sheet)) + "/";
+        int at = name.lastIndexOf(slug);
+        if (at < 0) return icon;
+        try {
+            return mcc$tile(Integer.parseInt(name.substring(at + slug.length())));
+        } catch (NumberFormatException e) {
+            return icon;
+        }
     }
 
     /** The icon, or the block atlas's missing-texture sprite for null (1.7.10 drew "missingno" rather than failing). */

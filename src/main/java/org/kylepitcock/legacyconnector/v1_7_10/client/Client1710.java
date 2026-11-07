@@ -121,7 +121,7 @@ public final class Client1710 {
                 var location = net.minecraft.client.renderer.block.BlockModelShaper.stateToModelLocation(state);
                 var original = models.get(location);
                 if (original == null || original instanceof IsbrhBlockModel) continue;
-                models.put(location, new IsbrhBlockModel(original, block, renderId, builtIn));
+                models.put(location, IsbrhBlockModel.create(original, block, renderId, builtIn));
                 replaced++;
             }
         }

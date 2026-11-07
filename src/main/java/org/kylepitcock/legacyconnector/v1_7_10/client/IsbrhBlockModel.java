@@ -122,6 +122,49 @@ public class IsbrhBlockModel extends BakedModelWrapper<BakedModel> {
         return base.derive().with(QUADS, solid).with(TRANSLUCENT_QUADS, translucent).build();
     }
 
+    /** The model of a block: one that is not a full cube must not claim to cover the faces of its neighbours (see {@link Open}). */
+    static IsbrhBlockModel create(BakedModel original, Block block, int renderId, ISimpleBlockRenderingHandler builtIn) {
+        IsbrhBlockModel model = new IsbrhBlockModel(original, block, renderId, builtIn);
+        return model.opaqueCube ? model : new Open(original, block, renderId, builtIn);
+    }
+
+    /**
+     * A block drawn by a handler that is not a full cube (RedPower tubes, Applied Energistics cables, BuildCraft pipes). MoreCulling (a standard
+     * performance mod, no dependency here) learns what a block covers from the generated cube model this one wraps, and culls the face of every
+     * neighbour that touches such a block: the ground under a tube or a cable was a hole, the sky showing through. MoreCulling's mixin makes
+     * {@link BakedModelWrapper} implement its {@code BakedOpacity}, delegating to the wrapped model; these two methods of that interface answer
+     * for this block instead: no culling shape, no quads on any side and a translucent texture.
+     */
+    static final class Open extends IsbrhBlockModel {
+        private static volatile java.lang.reflect.Method[] stateSetters;
+        private static boolean noMoreCulling;
+
+        Open(BakedModel original, Block block, int renderId, ISimpleBlockRenderingHandler builtIn) {
+            super(original, block, renderId, builtIn);
+        }
+
+        public net.minecraft.world.phys.shapes.VoxelShape moreculling$getCullingShape(BlockState state) {
+            return net.minecraft.world.phys.shapes.Shapes.empty();
+        }
+
+        public void moreculling$resetTranslucencyCache(BlockState state) {
+            if (noMoreCulling) return;
+            try {
+                var setters = stateSetters;
+                if (setters == null) {
+                    setters = new java.lang.reflect.Method[] {state.getClass().getMethod("moreculling$setHasQuadsOnSide", byte.class),
+                            state.getClass().getMethod("moreculling$setHasTextureTranslucency", boolean.class)};
+                    stateSetters = setters;
+                }
+                setters[0].invoke(state, (byte) 0x3F);
+                setters[1].invoke(state, true);
+            } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
+                noMoreCulling = true;
+                LOG.warn("Could not tell MoreCulling that a legacy block covers no faces: {}", e.toString());
+            }
+        }
+    }
+
     /**
      * The mod's handler as the block names it now. The render id is read again on every draw: a mod may register its handlers (and
      * so change the ids its blocks report) after the models were made, and the old id then names a stale instance that no longer

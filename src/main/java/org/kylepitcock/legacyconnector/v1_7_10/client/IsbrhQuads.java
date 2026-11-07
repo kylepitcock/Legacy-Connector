@@ -11,6 +11,8 @@ import net.minecraft.util.Mth;
 final class IsbrhQuads {
     private IsbrhQuads() {}
 
+    private static final boolean DUMP = Boolean.getBoolean("legacyconnector.dumpQuads");
+
     private static final java.util.Set<String> UNMAPPED = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private static final ThreadLocal<RenderContext.Capture> LAST = new ThreadLocal<>();
@@ -86,6 +88,12 @@ final class IsbrhQuads {
                 data[o + 5] = Float.floatToRawIntBits(tv);
                 data[o + 6] = emissive(capture, q, i);
                 data[o + 7] = packedNormal;
+            }
+            if (DUMP) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < 4; i++) sb.append(String.format(" (%.2f,%.2f,%.2f uv %.3f,%.3f)", Float.intBitsToFloat(data[i * 8]), Float.intBitsToFloat(data[i * 8 + 1]),
+                        Float.intBitsToFloat(data[i * 8 + 2]), Float.intBitsToFloat(data[i * 8 + 4]), Float.intBitsToFloat(data[i * 8 + 5])));
+                org.slf4j.LoggerFactory.getLogger("LegacyConnector/ISBRH").info("quad {} sheet {} sprite {} coloured {}{}", dir, sheet, quadSprite.contents().name(), coloured, sb);
             }
             if (!coloured) out.add(new BakedQuad(data, -1, dir, quadSprite, true));
             else out.add(new BakedQuad(data, -1, dir, quadSprite, unshade != 1.0F, uniform));
