@@ -16,3 +16,16 @@ net/minecraft/entity/EntityLiving	getDropItemId	()I	getDropItem	()Lnet/minecraft
 net/minecraftforge/common/IPlantable	getPlantID	(Lnet/minecraft/world/World;III)I	getPlant	(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraft/block/Block;
 net/minecraftforge/common/IPlantable	getPlantMetadata	(Lnet/minecraft/world/World;III)I	getPlantMetadata	(Lnet/minecraft/world/IBlockAccess;III)I
 net/minecraftforge/common/IPlantable	getPlantType	(Lnet/minecraft/world/World;III)Lnet/minecraftforge/common/EnumPlantType;	getPlantType	(Lnet/minecraft/world/IBlockAccess;III)Lnet/minecraftforge/common/EnumPlantType;
+net/minecraft/block/Block	isLeaves	(Lnet/minecraft/world/World;III)Z	isLeaves	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	isWood	(Lnet/minecraft/world/World;III)Z	isWood	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	isAirBlock	(Lnet/minecraft/world/World;III)Z	isAir	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	isBlockReplaceable	(Lnet/minecraft/world/World;III)Z	isReplaceable	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	canBeReplacedByLeaves	(Lnet/minecraft/world/World;III)Z	canBeReplacedByLeaves	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	canSustainLeaves	(Lnet/minecraft/world/World;III)Z	canSustainLeaves	(Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraft/block/Block	getLightOpacity	(Lnet/minecraft/world/World;III)I	getLightOpacity	(Lnet/minecraft/world/IBlockAccess;III)I
+net/minecraft/block/Block	canSustainPlant	(Lnet/minecraft/world/World;IIILnet/minecraftforge/common/util/ForgeDirection;Lnet/minecraftforge/common/IPlantable;)Z	canSustainPlant	(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraftforge/common/util/ForgeDirection;Lnet/minecraftforge/common/IPlantable;)Z
+net/minecraft/block/Block	removeBlockByPlayer	(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/EntityPlayer;III)Z	removedByPlayer	(Lnet/minecraft/world/World;Lnet/minecraft/entity/player/EntityPlayer;III)Z
+net/minecraft/block/Block	isGenMineableReplaceable	(Lnet/minecraft/world/World;IIII)Z	isReplaceableOreGen	(Lnet/minecraft/world/World;IIILnet/minecraft/block/Block;)Z
+net/minecraft/block/Block	canEntityDestroy	(Lnet/minecraft/world/World;IIILnet/minecraft/entity/Entity;)Z	canEntityDestroy	(Lnet/minecraft/world/IBlockAccess;IIILnet/minecraft/entity/Entity;)Z
+net/minecraftforge/common/IShearable	isShearable	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;III)Z	isShearable	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/IBlockAccess;III)Z
+net/minecraftforge/common/IShearable	onSheared	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/World;IIII)Ljava/util/ArrayList;	onSheared	(Lnet/minecraft/item/ItemStack;Lnet/minecraft/world/IBlockAccess;IIII)Ljava/util/ArrayList;

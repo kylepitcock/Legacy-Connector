@@ -20,6 +20,12 @@ public final class IBlockAccess {
         return self.isSideSolid(x, y, z, side, false);
     }
 
+    /** Forge's {@code isBlockSolidOnSide(x, y, z, side, default)}: the default answers for an unloaded position. */
+    public static boolean isBlockSolidOnSide(legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z,
+            legacyconnector.v1_7_10.net.minecraftforge.common.util.ForgeDirection side, boolean _default) {
+        return self.isSideSolid(x, y, z, side, _default);
+    }
+
     /** The material of the block at a position. */
     public static legacyconnector.v1_7_10.net.minecraft.block.material.Material getBlockMaterial(
             legacyconnector.v1_7_10.net.minecraft.world.IBlockAccess self, int x, int y, int z) {

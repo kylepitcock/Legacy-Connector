@@ -51,3 +51,39 @@ R	net/minecraft/entity/player/EntityPlayer	dropPlayerItem	(Lnet/minecraft/item/I
 R	cpw/mods/fml/common/event/FMLPreInitializationEvent	getModLog	()Ljava/util/logging/Logger;	static	legacyconnector/v1_6_4/forward/Forward164	getModLog	(Lcpw/mods/fml/common/event/FMLPreInitializationEvent;)Ljava/util/logging/Logger;
 # GUI
 F	net/minecraft/client/gui/GuiButton	drawButton	visible
+# Missing-shim pass (links that were synthesized empty before): renamed enum constant and fields, sound manager, NBT names, server lists
+F	net/minecraft/util/MovingObjectPosition$MovingObjectType	TILE	BLOCK
+F	net/minecraft/world/ChunkPosition	x	chunkPosX
+F	net/minecraft/world/ChunkPosition	y	chunkPosY
+F	net/minecraft/world/ChunkPosition	z	chunkPosZ
+F	net/minecraftforge/event/entity/player/BonemealEvent	X	x
+F	net/minecraftforge/event/entity/player/BonemealEvent	Y	y
+F	net/minecraftforge/event/entity/player/BonemealEvent	Z	z
+F	net/minecraft/client/gui/GuiScreen	fontRenderer	fontRendererObj
+F	net/minecraft/client/gui/GuiScreen	itemRenderer	itemRender
+F	net/minecraft/client/renderer/entity/Render	renderBlocks	field_147909_c
+F	net/minecraft/block/BlockLeavesBase	graphicsLevel	field_150121_P
+F	net/minecraft/block/BlockLeaves	graphicsLevel	field_150121_P
+F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerX	field_147560_j
+F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerY	field_147561_k
+F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	playerZ	field_147558_l
+F	net/minecraft/client/renderer/tileentity/TileEntityRendererDispatcher	entityLivingPlayer	field_147551_g
+F	net/minecraft/client/renderer/tileentity/TileEntitySpecialRenderer	tileEntityRenderer	field_147501_a
+M	net/minecraft/server/management/ServerConfigurationManager	getPlayerForUsername	(Ljava/lang/String;)Lnet/minecraft/entity/player/EntityPlayerMP;	getPlayerByUsername
+G	net/minecraft/client/Minecraft	sndManager	Lnet/minecraft/client/audio/SoundManager;	static	legacyconnector/v1_6_4/forward/Forward164	sndManager	(Lnet/minecraft/client/Minecraft;)Lnet/minecraft/client/audio/SoundManager;
+G	net/minecraft/client/settings/GameSettings	soundVolume	F	static	legacyconnector/v1_6_4/forward/Forward164	soundVolume	(Lnet/minecraft/client/settings/GameSettings;)F
+G	net/minecraft/client/settings/GameSettings	renderDistance	I	static	legacyconnector/v1_6_4/forward/Forward164	renderDistance	(Lnet/minecraft/client/settings/GameSettings;)I
+R	net/minecraft/client/audio/SoundManager	playSoundFX	(Ljava/lang/String;FF)V	static	legacyconnector/v1_6_4/forward/Forward164	playSoundFX	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FF)V
+R	net/minecraft/client/audio/SoundManager	playSound	(Ljava/lang/String;FFFFF)V	static	legacyconnector/v1_6_4/forward/Forward164	playSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FFFFF)V
+R	net/minecraft/client/audio/SoundManager	playEntitySound	(Ljava/lang/String;Lnet/minecraft/entity/Entity;FFZ)V	static	legacyconnector/v1_6_4/forward/Forward164	playEntitySound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;Lnet/minecraft/entity/Entity;FFZ)V
+R	net/minecraft/client/audio/SoundManager	playStreaming	(Ljava/lang/String;FFF)V	static	legacyconnector/v1_6_4/forward/Forward164	playStreaming	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;FFF)V
+R	net/minecraft/client/audio/SoundManager	addSound	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;)V
+R	net/minecraft/client/audio/SoundManager	addStreaming	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addSound	(Lnet/minecraft/client/audio/SoundManager;Ljava/lang/String;)V
+R	net/minecraft/client/audio/SoundManager	setEntitySoundPitch	(Lnet/minecraft/entity/Entity;F)V	static	legacyconnector/v1_6_4/forward/Forward164	setEntitySoundPitch	(Lnet/minecraft/client/audio/SoundManager;Lnet/minecraft/entity/Entity;F)V
+R	net/minecraft/client/audio/SoundManager	setEntitySoundVolume	(Lnet/minecraft/entity/Entity;F)V	static	legacyconnector/v1_6_4/forward/Forward164	setEntitySoundVolume	(Lnet/minecraft/client/audio/SoundManager;Lnet/minecraft/entity/Entity;F)V
+R	net/minecraft/nbt/NBTTagCompound	getTags	()Ljava/util/Collection;	static	legacyconnector/v1_6_4/forward/Forward164	getTags	(Lnet/minecraft/nbt/NBTTagCompound;)Ljava/util/Collection;
+R	net/minecraft/nbt/NBTBase	getName	()Ljava/lang/String;	static	legacyconnector/v1_6_4/forward/Forward164	getName	(Lnet/minecraft/nbt/NBTBase;)Ljava/lang/String;
+R	net/minecraft/nbt/NBTBase	setName	(Ljava/lang/String;)Lnet/minecraft/nbt/NBTBase;	static	legacyconnector/v1_6_4/forward/Forward164	setName	(Lnet/minecraft/nbt/NBTBase;Ljava/lang/String;)Lnet/minecraft/nbt/NBTBase;
+R	net/minecraft/server/management/ServerConfigurationManager	isPlayerOpped	(Ljava/lang/String;)Z	static	legacyconnector/v1_6_4/forward/Forward164	isPlayerOpped	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)Z
+R	net/minecraft/server/management/ServerConfigurationManager	getOps	()Ljava/util/Set;	static	legacyconnector/v1_6_4/forward/Forward164	getOps	(Lnet/minecraft/server/management/ServerConfigurationManager;)Ljava/util/Set;
+R	net/minecraft/server/management/ServerConfigurationManager	addOp	(Ljava/lang/String;)V	static	legacyconnector/v1_6_4/forward/Forward164	addOp	(Lnet/minecraft/server/management/ServerConfigurationManager;Ljava/lang/String;)V

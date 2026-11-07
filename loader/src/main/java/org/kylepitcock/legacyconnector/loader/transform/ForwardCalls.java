@@ -57,6 +57,11 @@ public final class ForwardCalls {
                                 method.instructions.insert(retyped, convert);
                                 insn = convert;
                             }
+                        } else if (rule[4].equals("static")) {
+                            // G owner field desc static helperOwner helper helperDesc: a static helper (receiver first) in the version's shim
+                            MethodInsnNode helper = new MethodInsnNode(Opcodes.INVOKESTATIC, rule[5], rule[6], norm.linkDesc(rule[7]), false);
+                            method.instructions.set(f, helper);
+                            insn = helper;
                         } else {
                             // G owner field desc getterOwner getterName getterDesc
                             MethodInsnNode getter = new MethodInsnNode(Opcodes.INVOKEVIRTUAL, rule[4].equals("=") ? f.owner : norm.link(rule[4]), rule[5], norm.linkDesc(rule[6]), false);
