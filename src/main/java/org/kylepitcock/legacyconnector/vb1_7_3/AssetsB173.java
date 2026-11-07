@@ -199,6 +199,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         int layer = safe(block::getRenderLayer, 0);
         JsonObject variants = new JsonObject();
         Map<String, String> modelByJson = new LinkedHashMap<>();
+        String[] metaModels = new String[16];
         for (int meta = 0; meta < 16; meta++) {
             final int m = meta;
             String[] tex = new String[6];
@@ -217,6 +218,7 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
                 byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
                 out.put("assets/" + id.getNamespace() + "/models/block/b173/" + id.getPath() + "_m" + meta + ".json", () -> bytes);
             }
+            metaModels[meta] = name;
             JsonObject variant = new JsonObject();
             variant.addProperty("model", name);
             variants.add("meta=" + meta, variant);
@@ -226,19 +228,72 @@ public final class AssetsB173 implements GeneratedPack.Contributor {
         put("assets/" + id.getNamespace() + "/blockstates/" + id.getPath() + ".json", state);
 
         var item = block.mcc$modern.asItem();
-        if (item != net.minecraft.world.item.Items.AIR) {
-            ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
-            JsonObject itemModel = new JsonObject();
-            if (renderType == 1 || renderType == 2 || renderType == 6) {
-                itemModel.addProperty("parent", "minecraft:item/generated");
-                JsonObject t = new JsonObject();
-                t.addProperty("layer0", texture(mod, sheet, safe(() -> block.getTexture(0, 0), block.textureId), false));
-                itemModel.add("textures", t);
-            } else {
-                itemModel.addProperty("parent", modelByJson.values().iterator().next());
+        if (item != net.minecraft.world.item.Items.AIR) itemModels(block, mod, sheet, renderType, metaModels, item);
+    }
+
+    /**
+     * The block item's model: the block's own (metadata 0), or a flat icon for plants, crops and the like (render types 1, 2, 6: the
+     * legacy item's {@code getIconFromDamage}). An item with subtypes gets an override per metadata on {@link LegacyB173BlockItem#META}
+     * (every metadata, since overrides pick the last one whose threshold the value reaches).
+     */
+    private void itemModels(Block block, LegacyModRecord mod, String sheet, int renderType, String[] metaModels, net.minecraft.world.item.Item item) {
+        ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(item);
+        Item legacy = block.id >= 0 && block.id < Item.ITEMS.length ? Item.ITEMS[block.id] : null;
+        boolean subtypes = item instanceof LegacyB173BlockItem bi && bi.hasSubtypes();
+        boolean flat = renderType == 1 || renderType == 2 || renderType == 6;
+        String[] models = new String[16];
+        String base = itemId.getNamespace() + ":item/b173/" + itemId.getPath() + "_m0";
+        for (int meta = 0; meta < (subtypes ? 16 : 1); meta++) {
+            if (!flat) {
+                models[meta] = metaModels[meta];
+                continue;
             }
-            put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", itemModel);
+            final int m = meta;
+            String icon = texture(mod, sheet, legacy != null ? safe(() -> legacy.getTextureId(m), block.textureId)
+                    : safe(() -> block.getTexture(2, m), block.textureId), false);
+            JsonObject flatModel = new JsonObject();
+            flatModel.addProperty("parent", "minecraft:item/generated");
+            JsonObject t = new JsonObject();
+            t.addProperty("layer0", icon);
+            flatModel.add("textures", t);
+            if (meta == 0) {
+                models[0] = GSON.toJson(flatModel);
+                // the subtypes that look like metadata 0 point to a copy (an override naming the item's own model would refer to itself)
+                if (subtypes) put("assets/" + itemId.getNamespace() + "/models/item/b173/" + itemId.getPath() + "_m0.json", flatModel);
+                continue;
+            }
+            String json = GSON.toJson(flatModel);
+            if (json.equals(models[0])) {
+                models[meta] = base;
+            } else {
+                models[meta] = itemId.getNamespace() + ":item/b173/" + itemId.getPath() + "_m" + meta;
+                put("assets/" + itemId.getNamespace() + "/models/item/b173/" + itemId.getPath() + "_m" + meta + ".json", flatModel);
+            }
         }
+        JsonObject itemModel;
+        if (flat) {
+            itemModel = GSON.fromJson(models[0], JsonObject.class);
+        } else {
+            itemModel = new JsonObject();
+            itemModel.addProperty("parent", metaModels[0]);
+        }
+        if (subtypes) {
+            boolean differ = false;
+            for (int meta = 1; meta < 16; meta++) differ |= !models[meta].equals(flat ? base : models[0]);
+            if (differ) {
+                JsonArray overrides = new JsonArray();
+                for (int meta = 1; meta < 16; meta++) {
+                    JsonObject o = new JsonObject();
+                    JsonObject predicate = new JsonObject();
+                    predicate.addProperty(LegacyB173BlockItem.META.toString(), meta / 16.0F);
+                    o.add("predicate", predicate);
+                    o.addProperty("model", models[meta]);
+                    overrides.add(o);
+                }
+                itemModel.add("overrides", overrides);
+            }
+        }
+        put("assets/" + itemId.getNamespace() + "/models/item/" + itemId.getPath() + ".json", itemModel);
     }
 
     private static JsonObject blockModel(Block block, int renderType, String[] tex, boolean opaque, int layer) {

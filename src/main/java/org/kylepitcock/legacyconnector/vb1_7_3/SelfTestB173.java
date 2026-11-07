@@ -258,5 +258,29 @@ public final class SelfTestB173 {
                 placed, blocks.size(), drops, items, recipes[0], recipes[1], ContentB173.textureOverrides().size(), ContentB173.tileEntities().size(),
                 ContentB173.entities().size());
         for (String f : failed.subList(0, Math.min(20, failed.size()))) LOG.info("  failed: {}", f);
+        subtypes();
+    }
+
+    /** Block items with subtypes: how many have names per metadata, with the names of each. */
+    private static void subtypes() {
+        int with = 0, named = 0;
+        List<String> lines = new ArrayList<>();
+        for (var item : BuiltInRegistries.ITEM) {
+            if (!(item instanceof LegacyB173BlockItem bi) || !bi.hasSubtypes()) continue;
+            with++;
+            java.util.Set<String> names = new java.util.LinkedHashSet<>();
+            for (int meta = 0; meta < 16; meta++) {
+                var stack = new net.minecraft.world.item.ItemStack(bi);
+                stack.set(net.minecraft.core.component.DataComponents.BLOCK_STATE,
+                        net.minecraft.world.item.component.BlockItemStateProperties.EMPTY.with(LegacyB173Block.META, meta));
+                String key = bi.getDescriptionId(stack);
+                String name = org.kylepitcock.legacyconnector.core.pack.GeneratedTranslations.get("en_us", key);
+                names.add(name == null ? key : name);
+            }
+            if (names.size() > 1) named++;
+            lines.add(BuiltInRegistries.ITEM.getKey(bi) + ": " + String.join(", ", names));
+        }
+        LOG.info("B1.7.3 SUBTYPES: {} block items with subtypes, {} named per metadata", with, named);
+        for (String l : lines.subList(0, Math.min(10, lines.size()))) LOG.info("  subtypes: {}", l);
     }
 }

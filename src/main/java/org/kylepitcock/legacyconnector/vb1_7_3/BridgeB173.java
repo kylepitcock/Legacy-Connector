@@ -144,7 +144,9 @@ public final class BridgeB173 {
             Block block = bi.mcc$blockId() >= 0 && bi.mcc$blockId() < 256 ? Block.BLOCKS[bi.mcc$blockId()] : null;
             if (block == null || block.mcc$modern == null) return;
             id = BuiltInRegistries.BLOCK.getKey(block.mcc$modern);
-            modern = new net.minecraft.world.item.BlockItem(block.mcc$modern, new net.minecraft.world.item.Item.Properties());
+            LegacyB173BlockItem blockItem = new LegacyB173BlockItem(block.mcc$modern, new net.minecraft.world.item.Item.Properties());
+            if (item.hasSubtypes()) blockItem.setNames(subtypeNames(item, id));
+            modern = blockItem;
         } else {
             id = ResourceLocation.fromNamespaceAndPath(mod.modernId, unique(mod.modernId, name(item.getTranslationKey(), "item.", "item_" + item.id)));
             var p = new net.minecraft.world.item.Item.Properties();
@@ -156,6 +158,32 @@ public final class BridgeB173 {
         LegacyRegistrar.register(BuiltInRegistries.ITEM, id, modern);
         item.mcc$modern = modern;
         PER_MOD.computeIfAbsent(mod.legacyId, k -> new int[2])[1]++;
+    }
+
+    /**
+     * Names of the subtypes of a block item ({@code getItemNameIS(stack)} per damage, localized as {@code ModLoader.AddName} did): translation
+     * keys per metadata, null where the name is the block's own (or the legacy item throws for that damage).
+     */
+    private static String[] subtypeNames(Item item, ResourceLocation id) {
+        String[] keys = new String[16];
+        String base = null;
+        for (int meta = 0; meta < 16; meta++) {
+            String legacyKey;
+            try {
+                legacyKey = item.getTranslationKey(new legacyconnector.vb1_7_3.net.minecraft.item.ItemStack(item.id, 1, meta));
+            } catch (RuntimeException | LinkageError e) {
+                continue;
+            }
+            if (legacyKey == null) continue;
+            String name = ContentB173.translate(legacyKey + ".name");
+            if (name.equals(legacyKey + ".name")) continue;
+            if (meta == 0) base = name;
+            if (meta > 0 && name.equals(base)) continue;
+            String key = "block." + id.getNamespace() + "." + id.getPath() + ".m" + meta;
+            GeneratedTranslations.put("en_us", key, name);
+            keys[meta] = key;
+        }
+        return keys;
     }
 
     /** The display name: ModLoader.AddName for the object, else a localization of its key, else the key made readable. */

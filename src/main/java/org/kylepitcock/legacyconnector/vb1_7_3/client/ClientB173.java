@@ -9,7 +9,7 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import org.kylepitcock.legacyconnector.vb1_7_3.GuiDrawB173;
 import org.kylepitcock.legacyconnector.vb1_7_3.MenusB173;
 
-/** Client side of b1.7.3 GUIs: the menu screen, the drawing sink, and the client half of {@link MenusB173}. */
+/** Client side of b1.7.3 mods: the menu screen, the GUI drawing sink, the client half of {@link MenusB173}, block item subtype models. */
 public final class ClientB173 implements MenusB173.Client {
     /** How long a GUI the client's callback built waits for its menu. */
     private static final long PENDING_MS = 10_000;
@@ -23,6 +23,15 @@ public final class ClientB173 implements MenusB173.Client {
         modBus.addListener((RegisterMenuScreensEvent e) -> {
             if (MenusB173.type() != null) e.register(MenusB173.type(), LegacyB173Screen::new);
         });
+        // block items with subtypes pick their model per metadata (Minefactory's machines are one block item)
+        modBus.addListener((net.neoforged.fml.event.lifecycle.FMLClientSetupEvent e) -> e.enqueueWork(() -> {
+            for (var item : net.minecraft.core.registries.BuiltInRegistries.ITEM) {
+                if (item instanceof org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem bi && bi.hasSubtypes()) {
+                    net.minecraft.client.renderer.item.ItemProperties.register(bi, org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.META,
+                            (stack, level, entity, seed) -> org.kylepitcock.legacyconnector.vb1_7_3.LegacyB173BlockItem.meta(stack) / 16.0F);
+                }
+            }
+        }));
         GuiDrawB173.install(new ClientGuiB173());
         MenusB173.installClient(new ClientB173());
     }

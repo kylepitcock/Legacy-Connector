@@ -92,6 +92,11 @@ mod block placed, read back and asked for drops).
   a `BlockBreakable`, said it was an opaque cube and drew black). The shim has `TranslucentBlock` (glass base: not opaque, no faces
   between two blocks of the same id), `GlassBlock`, `IceBlock`, `TransparentBlock` (leaves base), `PlantBlock` and `TorchBlock`.
   Block items use the block model (flat sprite for plants and torches), items a flat or handheld sprite.
+- **Block item subtypes.** One legacy block item is one modern item (`LegacyB173BlockItem`); the stack's damage is the metadata in its
+  `block_state` component. An item with subtypes (Minefactory's machines, IndustrialCraft 2's machines, generators and storage blocks,
+  RedPower's gates and covers are each one block with a metadata per kind) gets a model override per metadata on the item property
+  `legacyconnector:b173_meta` (metadata / 16; registered on the client for these items) pointing to that metadata's block model (or its
+  own flat icon from `getIconFromDamage`), and a name per metadata from the legacy `getItemNameIS(stack)` (`block.<mod>.<block>.m<meta>`).
 - **Names**: `ModLoader.AddName` / `AddLocalization`, else the translation key made readable.
 - **Creative tabs** (`CreativeTabsB173`): b1.7.3 had no creative inventory, so each mod gets one tab with its blocks then its items; a block
   item with subtypes lists each metadata whose sprites differ.
@@ -250,7 +255,7 @@ build now gets past OpenAL and stops at `ModLoader.getPrivateValue` with an obfu
    container)`; today the client draws a plain panel for those), item and entity GUIs (right click on an item or a mob), tile entity
    special renderers (`RegisterTileEntity(class, id, renderer)`, kept).
 1. **Rendering, rest**: custom block renderers (`RenderWorldBlock`, render types 7-17: doors, stairs, fences, rails, ...), animated
-   sprites (`ModTextureAnimation`), colour multipliers, item subtypes as their own items (today one modern item per legacy item).
+   sprites (`ModTextureAnimation`), colour multipliers; item subtypes of plain items (block items have them: models and names per metadata).
 2. **Behaviour**: block callbacks (`onUse`, `onPlaced`, `neighborUpdate`, `onTick`, redstone) through a `World` view, tile entities
    (`RegisterTileEntity`) on one modern block entity type, entities (`RegisterEntityID`), world generation (`GenerateSurface` /
    `GenerateNether` as placed features), fuel (`AddFuel`).
